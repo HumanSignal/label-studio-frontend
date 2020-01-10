@@ -215,7 +215,7 @@ class HyperTextPieceView extends Component {
     var selectedRanges = this.captureDocumentSelection();
 
     const states = this.props.item.activeStates();
-    if (states.length === 0) return;
+    if (!states || states.length === 0) return;
 
     if (selectedRanges.length === 0) {
       return;
