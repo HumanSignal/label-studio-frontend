@@ -18,19 +18,19 @@ npm install label-studio
 
 ## Usage
 
-```html
-
-<link href="https://unpkg.com/browse/label-studio@0.4.0/build/static/css/main.14acfaa5.css" rel="stylesheet">
+```xhtml
+<!-- Include Label Studio stylesheet -->
+<link href="https://unpkg.com/label-studio@0.4.0/build/static/css/main.14acfaa5.css" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
-<div id="editor"></div>
+<div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/browse/label-studio@0.4.0/build/static/js/main.0249ea16.js"></script>
+<script src="https://unpkg.com/label-studio@0.4.0/build/static/js/main.0249ea16.js"></script>
 
 <!-- Initialize Label Studio -->
-<script>    
-  var LS = new LabelStudio("label-studio", {
+<script>
+  var labelStudio = new LabelStudio('editor', {
     config: `
       <View>
         <Image name="img" value="$image"></Image>
@@ -41,26 +41,37 @@ npm install label-studio
       </View>
     `,
 
+    interfaces: [
+      "panel",
+      "update",
+      "controls",
+      "side-column",
+      "completions:menu",
+      "completions:add-new",
+      "completions:delete",
+      "predictions:menu",
+    ],
+
     user: {
-        pk: 1,
-        firstName: "Awesome",
-        lastName: "User"
+      pk: 1,
+      firstName: "James",
+      lastName: "Dean"
     },
 
     task: {
-        completions: [],
-        predictions: [],
-        id: 1,
-        data: {
-            image: "https://ls-pub.s3.amazonaws.com/earth.jpeg"
-        }
+      completions: [],
+      predictions: [],
+      id: 1,
+      data: {
+        image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
+      }
     },
-
+    
     onLabelStudioLoad: function(LS) {
-        var c = LS.completionStore.addCompletion({
-            userGenerate: true
-        });
-        LS.completionStore.selectCompletion(c.id);
+      var c = LS.completionStore.addCompletion({
+        userGenerate: true
+      });
+      LS.completionStore.selectCompletion(c.id);
     }
   });
 </script>    
