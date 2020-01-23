@@ -348,6 +348,8 @@ const HtxPolygonView = ({ store, item }) => {
       strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
     }
 
+    if (!item.closed && idx2 === 0) return null;
+
     const insertIdx = idx1 + 1; // idx1 + 1 or idx2
     const flattenedPoints = getFlattenedPoints([points[idx1], points[idx2]]);
     return (
@@ -506,7 +508,7 @@ const HtxPolygonView = ({ store, item }) => {
     >
       {item.mouseOverStartPoint}
 
-      {item.points ? renderPoly(item.points) : null}
+      {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>
