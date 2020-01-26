@@ -33,51 +33,16 @@ export default observer(
       // item.freezeHistory();
       const p = e.target.getParent();
 
-      if (p && p.className === "Transformer") {
-        return;
-      }
+      if (p && p.className === "Transformer") return;
 
-      if (e.target === e.target.getStage() || (e.target.parent && e.target.parent.attrs.name === "ruler")) {
+      if (
+        e.target === e.target.getStage() ||
+        (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
+      ) {
         return item.onMouseDown(e);
       }
 
       return true;
-      // /**
-      //  * Disable polygon event handler
-      //  */
-      // if (item.controlButtonType === "PolygonLabelsModel") {
-      //   return;
-      // }
-
-      // /**
-      //  * Brush event handler
-      //  */
-      // if (item.controlButtonType === "BrushLabelsModel") {
-      //   const { x, y } = e.target.getStage().getPointerPosition();
-
-      //   item.startDraw({ x: Math.floor(x), y: Math.floor(y) });
-
-      //   return;
-      // }
-
-      // if (e.target === e.target.getStage() || (e.target.parent && e.target.parent.attrs.name === "ruler")) {
-      //   // draw rect
-
-      //   const x = (e.evt.offsetX - item.zoomingPositionX) / item.zoomScale;
-      //   const y = (e.evt.offsetY - item.zoomingPositionY) / item.zoomScale;
-
-      //   item.startDraw({ x: x, y: y });
-
-      //   return;
-      // }
-
-      // const clickedOnTransformer = e.target.getParent().className === "Transformer";
-
-      // if (clickedOnTransformer) {
-      //   return;
-      // }
-
-      // return true;
     };
 
     /**
@@ -89,35 +54,6 @@ export default observer(
       item.freezeHistory();
 
       return item.onMouseUp(e);
-
-      // if (item.mode === "drawing") {
-      //   /**
-      //    * Set mode of Image for "view"
-      //    */
-      //   item.setMode("viewing");
-
-      //   /**
-      //    * Constants of min size of bounding box
-      //    */
-      //   const minSize = { width: 3, height: 3 };
-
-      //   /**
-      //    * Current shape
-      //    */
-      //   const currentShape = item.detachActiveShape();
-
-      //   /**
-      //    * Check for minimal size of boundng box
-      //    */
-      //   if (currentShape.width > minSize.width && currentShape.height > minSize.height) item.addShape(currentShape);
-      // } else if (item.mode === "brush") {
-      //   item.setMode("viewing");
-
-      //   const currentShape = item.detachActiveShape();
-      //   item.addShape(currentShape);
-      // } else if (item.mode === "eraser") {
-      //   item.setMode("viewing");
-      // }
     };
 
     /**
@@ -131,24 +67,6 @@ export default observer(
       item.freezeHistory();
 
       return item.onMouseMove(e);
-
-      // /**
-      //  *
-      //  */
-      // if (item.mode === "drawing") {
-      //   const x = (e.evt.offsetX - item.zoomingPositionX) / item.zoomScale;
-      //   const y = (e.evt.offsetY - item.zoomingPositionY) / item.zoomScale;
-
-      //   item.updateDraw({ x: x, y: y });
-      // } else if (item.mode === "brush") {
-      //   const { x, y } = e.target.getStage().getPointerPosition();
-      //   item.addPoints({ x: Math.floor(x), y: Math.floor(y) });
-      // } else if (item.mode === "eraser") {
-      //   const { x, y } = e.target.getStage().getPointerPosition();
-      //   item.addEraserPoints({ x: Math.floor(x), y: Math.floor(y) });
-      // }
-
-      // item.setPointerPosition({ x: e.evt.offsetX, y: e.evt.offsetY });
     };
 
     /**
@@ -160,10 +78,6 @@ export default observer(
 
       item.setBrightnessGrade(range);
     };
-
-    updateBrushControl = arg => this.props.item.updateBrushControl(arg);
-
-    updateBrushStrokeWidth = arg => this.props.item.updateBrushStrokeWidth(arg);
 
     updateGridSize = range => {
       const { item } = this.props;
@@ -353,6 +267,7 @@ export default observer(
               item.setStageRef(ref);
             }}
             style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+            className={"image-element"}
             width={item.stageWidth}
             height={item.stageHeight}
             scaleX={item.scale}
@@ -369,7 +284,13 @@ export default observer(
               let brushShape;
               if (shape.type === "brushregion") {
                 brushShape = (
-                  <Layer name="brushLayer" id={shape.id}>
+                  <Layer
+                    ref={ref => {
+                      shape.setLayerRef(ref);
+                    }}
+                    name={"brushLayer-" + shape.id}
+                    id={shape.id}
+                  >
                     {Tree.renderItem(shape)}
                   </Layer>
                 );

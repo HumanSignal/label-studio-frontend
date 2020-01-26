@@ -1,8 +1,10 @@
+import { encode, decode } from "@thi.ng/rle-pack";
+
 /**
  * Run Length Encode
  * @param {array} arr
  */
-export function RLEencode(arr) {
+function RLEencode(arr) {
   var encoding = [];
   var prev, count, i;
 
@@ -19,12 +21,14 @@ export function RLEencode(arr) {
   return encoding;
 }
 
+window.RLEencode = encode;
+
 /**
  * Run Length Decode
  * @param {array} arr
  */
-export function RLEdecode(encoded) {
-  let uncompressed = [];
+function RLEdecode(encoded) {
+  let uncompressed = new Uint8ClampedArray();
   let test = [];
 
   encoded.forEach((el, ind) => {
@@ -36,3 +40,9 @@ export function RLEdecode(encoded) {
   uncompressed.flat(2).forEach(el => test.push(parseInt(el)));
   return test;
 }
+
+window.RLEdecode = decode;
+
+window.addLineToMask = function(points, mask) {};
+
+export { RLEencode, RLEdecode };
