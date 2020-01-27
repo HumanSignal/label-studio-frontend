@@ -173,6 +173,8 @@ const HtxKeyPointView = ({ store, item }) => {
         x={x}
         y={y}
         radius={item.width}
+        scaleX={1 / item.parent.zoomScale}
+        scaleY={1 / item.parent.zoomScale}
         name={item.id}
         onDragEnd={e => {
           const t = e.target;

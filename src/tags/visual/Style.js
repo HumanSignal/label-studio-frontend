@@ -10,7 +10,12 @@ import Tree from "../../core/Tree";
 /**
  * Style tag, add css styles right through the config
  * @example
- * <Style># { hello: world }</Style>
+ * <View>
+ *   <Style> .cls-name { background: red; }</Style>
+ *   <View className="cls-name">
+ *     <Header value="Header" />
+ *   </View>
+ * </View>
  * @name Style
  */
 const Model = types.model({

@@ -79,13 +79,16 @@ const Model = types
 
     handleMouseMove({ e, flattenedPoints }) {
       let { offsetX: cursorX, offsetY: cursorY } = e.evt;
-
-      const [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
+      let [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
       const group = e.currentTarget;
       const layer = e.currentTarget.getLayer();
+      const zoom = self.parent.zoomScale;
 
-      moveHoverAnchor({ point: [x, y], group, layer });
+      // TODO add the hover point only when in a non-zoomed mode,
+      // reason is the coords in zoom mode act weird, need to put in
+      // some time to find out why
+      if (zoom == 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
     },
 
     handleMouseLeave({ e }) {
@@ -307,13 +310,16 @@ function getHoverAnchor({ layer }) {
 /**
  * Create new anchor for current polygon
  */
-function createHoverAnchor({ point, group, layer }) {
+function createHoverAnchor({ point, group, layer, zoom }) {
   const hoverAnchor = new Konva.Circle({
     name: "hoverAnchor",
     x: point[0],
     y: point[1],
     stroke: green.primary,
     fill: green[0],
+    scaleX: 1 / (zoom || 1),
+    scaleY: 1 / (zoom || 1),
+
     strokeWidth: 2,
     radius: 5,
   });
@@ -323,8 +329,8 @@ function createHoverAnchor({ point, group, layer }) {
   return hoverAnchor;
 }
 
-function moveHoverAnchor({ point, group, layer }) {
-  const hoverAnchor = getHoverAnchor({ layer }) || createHoverAnchor({ point, group, layer });
+function moveHoverAnchor({ point, group, layer, zoom }) {
+  const hoverAnchor = getHoverAnchor({ layer }) || createHoverAnchor({ point, group, layer, zoom });
   hoverAnchor.to({ x: point[0], y: point[1], duration: 0 });
 }
 
@@ -348,6 +354,8 @@ const HtxPolygonView = ({ store, item }) => {
       strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
     }
 
+    if (!item.closed && idx2 === 0) return null;
+
     const insertIdx = idx1 + 1; // idx1 + 1 or idx2
     const flattenedPoints = getFlattenedPoints([points[idx1], points[idx2]]);
     return (
@@ -368,6 +376,7 @@ const HtxPolygonView = ({ store, item }) => {
           opacity={item.opacity}
           lineJoin="bevel"
           strokeWidth={strokewidth}
+          strokeScaleEnabled={false}
         />
       </Group>
     );
@@ -506,7 +515,7 @@ const HtxPolygonView = ({ store, item }) => {
     >
       {item.mouseOverStartPoint}
 
-      {item.points ? renderPoly(item.points) : null}
+      {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>

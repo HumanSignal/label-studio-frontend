@@ -20,6 +20,9 @@ class ToolsManager {
     Object.values(this.tools).forEach(t => {
       if (typeof t.selected !== "undefined") t.setSelected(false);
     });
+
+    const stage = this.obj.stageRef;
+    stage.container().style.cursor = "default";
   }
 
   allTools() {
