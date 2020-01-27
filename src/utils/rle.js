@@ -21,8 +21,6 @@ function RLEencode(arr) {
   return encoding;
 }
 
-window.RLEencode = encode;
-
 /**
  * Run Length Decode
  * @param {array} arr
@@ -40,9 +38,5 @@ function RLEdecode(encoded) {
   uncompressed.flat(2).forEach(el => test.push(parseInt(el)));
   return test;
 }
-
-window.RLEdecode = decode;
-
-window.addLineToMask = function(points, mask) {};
 
 export { RLEencode, RLEdecode };

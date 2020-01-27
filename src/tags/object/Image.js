@@ -311,13 +311,9 @@ const Model = types
       self.stageHeight = height;
       self.sizeUpdated = true;
 
-      console.log("updateImageSize");
-
       self.shapes.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
-
-      window.IMAGE = self;
     },
 
     addShape(shape) {

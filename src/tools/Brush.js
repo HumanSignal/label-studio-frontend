@@ -78,8 +78,6 @@ const _Tool = types
         localStates = [states];
       }
 
-      console.log(self.strokeWidth);
-
       const brush = BrushRegionModel.create({
         id: guidGenerator(),
 
