@@ -117,7 +117,8 @@
   ],
   "dependencies": {
     "@thi.ng/rle-pack": "^2.1.6",
-    "magic-wand-js": "^1.0.0"
+    "magic-wand-js": "^1.0.0",
+    "string.prototype.matchall": "^4.0.2"
   },
   "nohoist": [
     "**/babel-preset-react-app/@babel/runtime"
