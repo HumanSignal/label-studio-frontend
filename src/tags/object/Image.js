@@ -272,6 +272,11 @@ const Model = types
       self.zoomingPositionY = y;
     },
 
+    setZoomPosition(x, y) {
+      self.zoomingPositionX = x;
+      self.zoomingPositionY = y;
+    },
+
     /**
      * Set mode of Image (drawing and viewing)
      * @param {string} mode
@@ -297,8 +302,11 @@ const Model = types
     updateImageSize(ev) {
       const { width, height, naturalWidth, naturalHeight, userResize } = ev.target;
 
-      self.naturalWidth = naturalWidth;
-      self.naturalHeight = naturalHeight;
+      if (naturalWidth !== undefined) {
+        self.naturalWidth = naturalWidth;
+        self.naturalHeight = naturalHeight;
+      }
+
       self.stageWidth = width;
       self.stageHeight = height;
       self.sizeUpdated = true;
@@ -332,7 +340,7 @@ const Model = types
       self.stageHeight = height;
       self.stageWidth = width;
       self.updateImageSize({
-        target: { width: width, height: height, naturalWidth: 1, naturalHeight: 1, userResize: userResize },
+        target: { width: width, height: height, userResize: userResize },
       });
     },
 

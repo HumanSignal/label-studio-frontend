@@ -1,8 +1,51 @@
 import React, { Fragment } from "react";
+import { Divider } from "antd";
+import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import BasicToolView from "../components/Tools/Basic";
+import ToolMixin from "../mixins/Tool";
+
+const ToolView = observer(({ item }) => {
+  return (
+    <Fragment>
+      <Divider style={{ margin: "5px 0;" }} dashed />
+      <BasicToolView
+        selected={item.selected}
+        icon="drag"
+        tooltip="Move position"
+        onClick={ev => {
+          const sel = item.selected;
+          item.manager.unselectAll();
+
+          item.setSelected(!sel);
+
+          if (item.selected) {
+            const stage = item.obj.stageRef;
+            stage.container().style.cursor = "all-scroll";
+          }
+        }}
+      />
+      <BasicToolView
+        icon="zoom-in"
+        tooltip="Zoom into the image"
+        onClick={ev => {
+          // console.log(self.image);
+          // console.log(self._image);
+          item.handleZoom(1.2);
+        }}
+      />
+      <BasicToolView
+        icon="zoom-out"
+        tooltip="Zoom out of the image"
+        onClick={ev => {
+          item.handleZoom(0.8);
+        }}
+      />
+    </Fragment>
+  );
+});
 
 const _Tool = types
   .model({
@@ -10,29 +53,36 @@ const _Tool = types
   })
   .views(self => ({
     get viewClass() {
-      return (
-        <Fragment>
-          <BasicToolView
-            icon="zoom-in"
-            tooltip="Zoom into the image"
-            onClick={ev => {
-              // console.log(self.image);
-              // console.log(self._image);
-              self.handleZoom(1.2);
-            }}
-          />
-          <BasicToolView
-            icon="zoom-out"
-            tooltip="Zoom out of the image"
-            onClick={ev => {
-              self.handleZoom(0.8);
-            }}
-          />
-        </Fragment>
-      );
+      return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
+    mouseupEv() {
+      self.mode = "viewing";
+    },
+
+    mousemoveEv(ev, [x, y]) {
+      if (self.mode !== "moving") return;
+
+      const item = self._manager.obj;
+      const stage = item.stageRef;
+
+      // console.log(item.zoomingPositionX);
+      // const newPos = {
+      //     x: -1*x,
+      //     y: -1*y
+      // }
+
+      // item.setZoomPosition(item.zoomingPositionX+1, item.zoomingPositionY+1);
+
+      // stage.position(newPos);
+      // stage.batchDraw();
+    },
+
+    mousedownEv(ev, [x, y]) {
+      self.mode = "moving";
+    },
+
     handleZoom(e, val) {
       if (e.evt && !e.evt.ctrlKey) {
         return;
@@ -107,7 +157,7 @@ const _Tool = types
     },
   }));
 
-const Zoom = types.compose("BaseTool", _Tool, BaseTool);
+const Zoom = types.compose(ToolMixin, BaseTool, _Tool);
 
 // Registry.addTool("zoom", Zoom);
 

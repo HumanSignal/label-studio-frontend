@@ -12,8 +12,8 @@ const PolygonPoint = types
     relativeX: types.optional(types.number, 0),
     relativeY: types.optional(types.number, 0),
 
-    init_x: types.optional(types.number, 0),
-    init_y: types.optional(types.number, 0),
+    initX: types.optional(types.number, 0),
+    initY: types.optional(types.number, 0),
 
     x: types.number,
     y: types.number,
@@ -39,8 +39,8 @@ const PolygonPoint = types
      * Triggered after create model
      */
     afterCreate() {
-      self.init_x = self.x;
-      self.init_y = self.y;
+      self.initX = self.x;
+      self.initY = self.y;
 
       if (self.parent.coordstype === "perc") {
         self.relativeX = self.x;
@@ -58,8 +58,8 @@ const PolygonPoint = types
      */
 
     movePoint(offsetX, offsetY) {
-      self.init_x = self.init_x + offsetX;
-      self.init_y = self.init_y + offsetY;
+      self.initX = self.initX + offsetX;
+      self.initY = self.initY + offsetY;
       self.x = self.x + offsetX;
       self.y = self.y + offsetY;
 
@@ -68,8 +68,8 @@ const PolygonPoint = types
     },
 
     _movePoint(x, y) {
-      self.init_x = x;
-      self.init_y = y;
+      self.initX = x;
+      self.initY = y;
 
       self.relativeX = (x / self.parent.parent.stageWidth) * 100;
       self.relativeY = (y / self.parent.parent.stageHeight) * 100;
@@ -115,7 +115,10 @@ const PolygonPoint = types
 
       const scale = scaleMap[self.size];
 
-      startPoint.scale({ x: scale, y: scale });
+      startPoint.scale({
+        x: scale / self.parent.parent.zoomScale,
+        y: scale / self.parent.parent.zoomScale,
+      });
 
       self.parent.setMouseOverStartPoint(true);
     },
@@ -131,7 +134,10 @@ const PolygonPoint = types
         t.setY(t.y() + t.height() / 2);
       }
 
-      t.scale({ x: 1, y: 1 });
+      t.scale({
+        x: 1 / self.parent.parent.zoomScale,
+        y: 1 / self.parent.parent.zoomScale,
+      });
 
       self.parent.setMouseOverStartPoint(false);
     },
@@ -204,6 +210,9 @@ const PolygonPointView = observer(({ item, name }) => {
         stroke="black"
         strokeWidth={stroke[item.size]}
         dragOnTop={false}
+        strokeScaleEnabled={false}
+        scaleX={1 / (item.parent.parent.zoomScale || 1)}
+        scaleY={1 / (item.parent.parent.zoomScale || 1)}
         onClick={ev => {
           if (item.parent.mouseOverStartPoint) {
             item.parent.closePoly();
