@@ -52,7 +52,8 @@
     "xml2js": "^0.4.22",
     "xpath-range": "^1.1.1"
   },
-  "scripts": {
+    "scripts": {
+        "build": "react-scripts build",
     "start": "npm run copy-examples && react-scripts start",
     "only-build": "npm run copy-examples && react-scripts build",
     "local": "npm run only-build && npm run start",
@@ -68,9 +69,10 @@
     "lint": "eslint --debug src/",
     "lint:write": "eslint --debug src/ --fix",
     "build-notsourcemap": "GENERATE_SOURCEMAP=false npm run build",
-    "copy-examples": "bash scripts/copy.sh",
+        "copy-examples": "bash scripts/copy.sh",
+        
     "copy-built-scripts": "bash scripts/copy-built-scripts.sh",
-    "build-bundle": "npm run copy-examples && npm run test && node scripts/build-without-split.js && npm run copy-built-scripts"
+    "build-bundle": "bash scripts/swap_prod.sh && npm run copy-examples && npm run test && node scripts/build-without-split.js && npm run copy-built-scripts && bash scripts/swap_back.sh"
   },
   "eslintConfig": {
     "extends": "react-app"
