@@ -116,6 +116,7 @@
     "text-annotation"
   ],
   "dependencies": {
+    "@thi.ng/rle-pack": "^2.1.6",
     "magic-wand-js": "^1.0.0"
   },
   "nohoist": [

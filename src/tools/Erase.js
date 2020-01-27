@@ -34,18 +34,20 @@ const _Tool = types
     mousemoveEv(ev, [x, y]) {
       if (self.mode !== "drawing") return;
 
-      const shape = self.getActiveShape;
+      const shape = self.getSelectedShape;
       if (shape && shape.type === "brushregion") {
-        shape.current.addPoints([Math.floor(x), Math.floor(y)]);
+        shape.currentTouch.addPoints(Math.floor(x), Math.floor(y));
       }
     },
 
     mousedownEv(ev, [x, y]) {
       self.mode = "drawing";
 
-      const shape = self.getActiveShape;
+      const shape = self.getSelectedShape;
+      if (!shape) return;
+
       if (shape && shape.type === "brushregion") {
-        shape.addPoints({ type: "eraser" });
+        shape.addTouch({ type: "eraser" });
       }
     },
   }));

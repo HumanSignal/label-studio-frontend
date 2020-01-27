@@ -60,6 +60,12 @@ const ToolMixin = types
       const obj = self.obj;
       return obj.shapes[obj.shapes.length - 1];
     },
+
+    get getSelectedShape() {
+      return self.control.completion.highlightedNode;
+      // const obj = self.obj;
+      // return obj.selectedShape;
+    },
   }))
   .actions(self => ({
     setSelected(val) {
