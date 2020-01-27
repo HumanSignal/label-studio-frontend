@@ -1,6 +1,6 @@
 {
   "name": "label-studio",
-  "version": "0.5.0-rc0",
+  "version": "0.5.0-rc1",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
   "homepage": "https://labelstud.io",
   "author": {
@@ -117,8 +117,7 @@
   ],
   "dependencies": {
     "@thi.ng/rle-pack": "^2.1.6",
-    "magic-wand-js": "^1.0.0",
-    "string.prototype.matchall": "^4.0.2"
+    "magic-wand-js": "^1.0.0"
   },
   "nohoist": [
     "**/babel-preset-react-app/@babel/runtime"
