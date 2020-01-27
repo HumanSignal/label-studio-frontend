@@ -146,13 +146,22 @@ function treeToModel(html) {
   // tree.
   let htseen = -1;
   const hypertexts = (function() {
-    var re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
-    return [...html.matchAll(re)];
+    let m;
+    const res = [];
+    const re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
+    do {
+      m = re.exec(html);
+      if (m) {
+        res.push(m[1]);
+      }
+    } while (m);
+
+    return res;
   })();
 
   function findHT(node) {
     htseen = htseen + 1;
-    return hypertexts[htseen][1];
+    return hypertexts[htseen];
   }
 
   /**
@@ -165,7 +174,7 @@ function treeToModel(html) {
     // if it's a hypertext process the children differently, that's
     // done for convenience. value attribute takes precedence if present
     if (node["#name"].toLowerCase() === "hypertext") {
-      return "value" in node.$ ? node.$["value"] : findHT(node);
+      return node.$ && "value" in node.$ ? node.$["value"] : findHT(node);
     }
 
     let text = null;
