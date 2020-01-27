@@ -1,6 +1,6 @@
 import React from "react";
 import { getType, getParentOfType } from "mobx-state-tree";
-import { parseString } from "xml2js";
+import xml2js from "xml2js";
 
 import Registry from "./Registry";
 import { guidGenerator } from "./Helpers";
@@ -137,12 +137,33 @@ function treeToModel(html) {
     return newData + split[split.length - 1];
   }
 
+  // TODO: this code shall be replaced with a proper XML tree
+  // rendering, as of right now, problem is that xml2js doesn't
+  // support that with the additional attributes used to parse the
+  // tree.
+  let htseen = -1;
+  const hypertexts = (function() {
+    var re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
+    return [...html.matchAll(re)];
+  })();
+
+  function findHT(node) {
+    htseen = htseen + 1;
+    return hypertexts[htseen][1];
+  }
+
   /**
    * Generate new node
    * @param {object} node
    */
   function addNode(node) {
     if (!node.$$) return null;
+
+    // if it's a hypertext process the children differently, that's
+    // done for convenience. value attribute takes precedence if present
+    if (node["#name"].toLowerCase() === "hypertext") {
+      return "value" in node.$ ? node.$["value"] : findHT(node);
+    }
 
     let text = null;
     const res = [];
@@ -191,7 +212,7 @@ function treeToModel(html) {
 
   // it's actually a sync function, but there is no sync interface
   // because of some backwards compat
-  parseString(
+  xml2js.parseString(
     htmlSelfClosingTags,
     {
       explicitChildren: true,
