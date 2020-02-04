@@ -31,6 +31,11 @@ import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-di
 import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
 
 /**
+ * TimeSeries
+ */
+import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-unused-vars
+
+/**
  * Different
  */
 import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unused-vars
@@ -38,7 +43,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
 /**
  * Custom Data
  */
-const data = ImagePolygons;
+const data = TimeSeries;
 
 /**
  * Get current config

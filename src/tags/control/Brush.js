@@ -32,7 +32,7 @@ const Model = types
     afterCreate() {
       const brush = Tools.Brush.create();
       const erase = Tools.Erase.create();
-      // const zoom  = Tools.Zoom.create();
+      const zoom = Tools.Zoom.create();
 
       brush._control = self;
       erase._control = self;
@@ -40,7 +40,7 @@ const Model = types
       self.tools = {
         brush: brush,
         erase: erase,
-        // zoom: zoom
+        zoom: zoom,
       };
     },
   }));

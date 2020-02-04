@@ -59,6 +59,8 @@ const Model = types.model({
     "dialog",
     "textarea",
     "pairwise",
+    "timeseries",
+    "timeserieslabels",
     "style",
   ]),
 });

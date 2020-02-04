@@ -65,7 +65,7 @@ const _Tool = types
       if (self.mode !== "moving") return;
 
       const item = self._manager.obj;
-      const stage = item.stageRef;
+      // const stage = item.stageRef;
 
       // console.log(item.zoomingPositionX);
       // const newPos = {
@@ -73,10 +73,55 @@ const _Tool = types
       //     y: -1*y
       // }
 
-      // item.setZoomPosition(item.zoomingPositionX+1, item.zoomingPositionY+1);
+      // console.log(ev);
 
-      // stage.position(newPos);
-      // stage.batchDraw();
+      const stage = item.stageRef;
+      const scaleBy = parseFloat(item.zoomby);
+      const oldScale = stage.scaleX();
+
+      let mousePointTo;
+      let newScale;
+      let pos;
+      let newPos;
+
+      mousePointTo = {
+        x: -1 * (ev.evt.layerX + ev.evt.movementX),
+        y: -1 * (ev.evt.layerY + ev.evt.movementY),
+      };
+
+      //   // coords where mouse points to on the original non scaled
+      //   // image
+      //   mousePointTo = {
+      //       x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
+      //       y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
+      //   };
+
+      //   mousePointTo.x = mousePointTo.x + ev.evt.movementX;
+      //   mousePointTo.y = mousePointTo.y + ev.evt.movementY;
+
+      //   // newPos = {
+      //   //     mousePointTo
+      //   // }
+
+      //   console.log("mousePointTo", mousePointTo);
+
+      // // newScale = ev.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+      //   console.log("newScale", newScale);
+
+      // newPos = {
+      //     x: (mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale,
+      //     y: (mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale,
+      // };
+
+      //   console.log("newPos", mousePointTo);
+
+      //console.log(newPos);
+
+      item.setZoomPosition(mousePointTo.x, mousePointTo.y);
+
+      stage.position(mousePointTo);
+      stage.batchDraw();
     },
 
     mousedownEv(ev, [x, y]) {

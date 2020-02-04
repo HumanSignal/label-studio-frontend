@@ -15,6 +15,7 @@ import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
 import { TextAreaModel } from "./TextArea";
+import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 
 export {
   LabelsModel,
@@ -34,4 +35,5 @@ export {
   RectangleModel,
   ShortcutModel,
   TextAreaModel,
+  TimeSeriesLabelsModel,
 };

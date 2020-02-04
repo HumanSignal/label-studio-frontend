@@ -10,17 +10,17 @@ import { HtxLabels, LabelsModel } from "./Labels";
 import { guidGenerator } from "../../core/Helpers";
 
 /**
- * HyperTextLabels tag
- * HyperTextLabels tag creates labeled keypoints
+ * TimeSeriesLabels tag
+ * TimeSeriesLabels tag creates labeled keypoints
  * @example
  * <View>
- *   <HyperTextLabels name="kp-1" toName="img-1">
+ *   <TimeSeriesLabels name="kp-1" toName="img-1">
  *     <Label value="Face"></Label>
  *     <Label value="Nose"></Label>
- *   </HyperTextLabels>
- *   <HyperText name="img-1" value="$img"></HyperText>
+ *   </TimeSeriesLabels>
+ *   <TimeSeries name="img-1" value="$img"></TimeSeries>
  * </View>
- * @name HyperTextLabels
+ * @name TimeSeriesLabels
  * @param {string} name name of the element
  * @param {string} toname name of the image to label
  * @param {float=} [opacity=0.9] opacity of keypoint
@@ -34,14 +34,15 @@ const TagAttrs = types.model({
   opacity: types.optional(types.string, "0.9"),
   fillcolor: types.maybeNull(types.string),
 
-  strokewidth: types.optional(types.string, "1"),
+  strokeWidth: types.optional(types.number, 1),
+  strokeColor: types.optional(types.string, "#f48a42"),
 });
 
 const ModelAttrs = types
-  .model("HyperTextLabelesModel", {
+  .model("TimeSeriesLabelesModel", {
     id: types.identifier,
     pid: types.optional(types.string, guidGenerator),
-    type: "htmllabels",
+    type: "timeserieslabels",
     children: Types.unionArray(["labels", "label", "choice"]),
   })
   .views(self => ({
@@ -51,7 +52,7 @@ const ModelAttrs = types
     },
   }));
 
-const Model = LabelMixin.props({ _type: "htmllabels" }).views(self => ({
+const Model = LabelMixin.props({ _type: "timeserieslabels" }).views(self => ({
   get shouldBeUnselected() {
     return self.choice === "single";
   },
@@ -59,12 +60,12 @@ const Model = LabelMixin.props({ _type: "htmllabels" }).views(self => ({
 
 const Composition = types.compose(LabelsModel, ModelAttrs, TagAttrs, Model, SelectedModelMixin);
 
-const HyperTextLabelsModel = types.compose("HyperTextLabelsModel", Composition);
+const TimeSeriesLabelsModel = types.compose("TimeSeriesLabelsModel", Composition);
 
-const HtxHyperTextLabels = observer(({ item }) => {
+const HtxTimeSeriesLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("hypertextlabels", HyperTextLabelsModel, HtxHyperTextLabels);
+Registry.addTag("timeserieslabels", TimeSeriesLabelsModel, HtxTimeSeriesLabels);
 
-export { HtxHyperTextLabels, HyperTextLabelsModel };
+export { HtxTimeSeriesLabels, TimeSeriesLabelsModel };

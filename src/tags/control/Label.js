@@ -72,6 +72,7 @@ const Model = types
         "KeyPointLabelsModel",
         "BrushLabelsModel",
         "HyperTextLabelsModel",
+        "TimeSeriesLabelsModel",
       ]);
 
       labels.finishCurrentObject();
