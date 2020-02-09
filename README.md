@@ -111,9 +111,9 @@ Label Studio for Teams is our enterprise edition (cloud & on-prem), that include
 
 | Project | Description |
 |-|-|
-| [label-studio](https://github.com/heartexlabs/label-studio-frontend) | Server part, distributed as a pip package |
+| [label-studio](https://github.com/heartexlabs/label-studio) | Server part, distributed as a pip package |
 | label-studio-frontend | Frontend part, written in JavaScript and React, can be embedded into your application | 
-| [converter](https://github.com/heartexlabs/converter) | Encode labels into the format of your favorite machine learning library | 
+| [label-studio-converter](https://github.com/heartexlabs/label-studio-converter) | Encode labels into the format of your favorite machine learning library | 
 | [label-studio-transformers](https://github.com/heartexlabs/label-studio-transformers) | Transformers library connected and configured for use with label studio | 
 
 ## License
