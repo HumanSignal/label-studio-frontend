@@ -11,6 +11,7 @@ import { BrushRegionModel } from "../../regions/BrushRegion";
 import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
+import { EllipseRegionModel } from "../../regions/EllipseRegion";
 
 /**
  * Image tag shows an image on the page
@@ -60,12 +61,15 @@ const TagAttrs = types.model({
 const IMAGE_CONSTANTS = {
   rectangleModel: "RectangleModel",
   rectangleLabelsModel: "RectangleLabelsModel",
+  ellipseModel: "EllipseModel",
+  ellipseLabelsModel: "EllipseLabelsModel",
   brushLabelsModel: "BrushLabelsModel",
   rectanglelabels: "rectanglelabels",
   keypointlabels: "keypointlabels",
   polygonlabels: "polygonlabels",
   brushlabels: "brushlabels",
   brushModel: "BrushModel",
+  ellipselabels: "ellipselabels",
 };
 
 const Model = types
@@ -129,13 +133,16 @@ const Model = types
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
 
     selectedShape: types.safeReference(
-      types.union(BrushRegionModel, RectRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
     ),
     // activePolygon: types.maybeNull(types.safeReference(PolygonRegionModel)),
 
     // activeShape: types.maybeNull(types.union(RectRegionModel, BrushRegionModel)),
 
-    shapes: types.array(types.union(BrushRegionModel, RectRegionModel, PolygonRegionModel, KeyPointRegionModel), []),
+    shapes: types.array(
+      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      [],
+    ),
   })
   .views(self => ({
     /**
@@ -168,7 +175,11 @@ const Model = types
       let returnedControl = names[0];
 
       names.forEach(item => {
-        if (item.type === IMAGE_CONSTANTS.rectanglelabels || item.type === IMAGE_CONSTANTS.brushlabels) {
+        if (
+          item.type === IMAGE_CONSTANTS.rectanglelabels ||
+          item.type === IMAGE_CONSTANTS.brushlabels ||
+          item.type === IMAGE_CONSTANTS.ellipselabels
+        ) {
           returnedControl = item;
         }
       });

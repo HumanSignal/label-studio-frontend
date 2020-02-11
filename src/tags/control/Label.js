@@ -67,6 +67,7 @@ const Model = types
 
       const labels = Types.getParentOfTypeString(self, [
         "LabelsModel",
+        "EllipseLabelsModel",
         "RectangleLabelsModel",
         "PolygonLabelsModel",
         "KeyPointLabelsModel",
