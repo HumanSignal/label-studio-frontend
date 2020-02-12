@@ -9,7 +9,7 @@ import Registry from "../../core/Registry";
  * Polygon is used to add polygons to an image
  * @example
  * <View>
- *   <Polygon name="rect-1" toName="img-1" value="Add Rectangle"></Polygon>
+ *   <Polygon name="rect-1" toName="img-1"></Polygon>
  *   <Image name="img-1" value="$img"></Image>
  * </View>
  * @name Polygon

@@ -243,7 +243,7 @@ function treeToModel(html) {
  * Render items of tree
  * @param {*} el
  */
-function renderItem(el) {
+function renderItem(el, {} = {}) {
   const View = Registry.getViewByModel(getType(el).name);
 
   if (!View) {
@@ -257,10 +257,10 @@ function renderItem(el) {
  *
  * @param {*} item
  */
-function renderChildren(item) {
+function renderChildren(item, opts) {
   if (item && item.children && item.children.length) {
     return item.children.map(el => {
-      return renderItem(el);
+      return renderItem(el, opts);
     });
   } else {
     return null;

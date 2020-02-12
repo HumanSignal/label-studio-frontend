@@ -12,6 +12,7 @@ import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
 import { RectRegionModel, HtxRectangle } from "./RectRegion";
 import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
 import { TextRegionModel, HtxTextRegion } from "./TextRegion";
+import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
@@ -22,6 +23,7 @@ const AllRegionsType = types.union(
   RectRegionModel,
   TextAreaRegionModel,
   TextRegionModel,
+  TimeSeriesRegionModel,
 );
 
 export {
@@ -42,4 +44,5 @@ export {
   RectRegionModel,
   TextAreaRegionModel,
   TextRegionModel,
+  TimeSeriesRegionModel,
 };

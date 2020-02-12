@@ -79,6 +79,15 @@ const NodeViews = {
       </span>
     </p>
   ),
+
+  TimeSeriesRegionModel: (node, click) => (
+    <p>
+      <Icon type="line-chart" />
+      <span onClick={click} className={styles.node}>
+        &nbsp; TimeSeries
+      </span>
+    </p>
+  ),
 };
 
 const Node = observer(({ node }) => {
@@ -163,6 +172,15 @@ const NodeMinimal = ({ node }) => {
       <Fragment>
         <Icon type="highlight" />
         &nbsp; Brush
+      </Fragment>
+    );
+  }
+
+  if (getType(node).name === "TimeSeriesRegionModel") {
+    return (
+      <Fragment>
+        <Icon type="line-chart" />
+        &nbsp; TimeSeries
       </Fragment>
     );
   }

@@ -62,6 +62,7 @@ const Model = types.model({
     "timeseries",
     "timeserieslabels",
     "style",
+    "timeserieschannel",
   ]),
 });
 

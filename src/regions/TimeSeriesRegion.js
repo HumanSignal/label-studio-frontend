@@ -7,8 +7,9 @@ import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import { TimeSeriesModel } from "../tags/control/TimeSeries";
+import { TimeSeriesModel } from "../tags/object/TimeSeries";
 import { guidGenerator } from "../core/Helpers";
+import { TimeSeriesLabelsModel } from "../tags/control/TimeSeriesLabels";
 
 const Model = types
   .model("TimeSeriesRegionModel", {
@@ -17,8 +18,10 @@ const Model = types
 
     type: "timeseriesregion",
 
-    _value: types.string,
-    // states: types.array(types.union(LabelsModel, ChoicesModel)),
+    start: types.number,
+    end: types.number,
+
+    states: types.maybeNull(types.array(types.union(TimeSeriesLabelsModel))),
   })
   .views(self => ({
     get parent() {
@@ -30,64 +33,55 @@ const Model = types
     },
   }))
   .actions(self => ({
-    toStateJSON() {
-      const toname = self.parent.toname || self.parent.name;
+    selectRegion() {
+      self.selected = true;
+      self.completion.setHighlightedNode(self);
+    },
 
-      return {
-        id: self.pid,
-        from_name: self.parent.name,
-        to_name: toname,
-        type: self.parent.type,
-        value: {
-          text: self._value,
-        },
+    /**
+     * Unselect timeseries region
+     */
+    unselectRegion() {
+      self.selected = false;
+      self.completion.setHighlightedNode(null);
+      self.parent.updateView();
+    },
+
+    toStateJSON() {
+      const parent = self.parent;
+      const buildTree = obj => {
+        const tree = {
+          id: self.pid,
+          from_name: obj.name,
+          to_name: parent.name,
+          source: parent.value,
+          type: "tsregion",
+          value: {
+            start: self.start,
+            end: self.end,
+          },
+        };
+
+        if (self.normalization) tree["normalization"] = self.normalization;
+
+        return tree;
       };
+
+      if (self.states && self.states.length) {
+        return self.states.map(s => {
+          const tree = buildTree(s);
+          // in case of labels it's gonna be, labels: ["label1", "label2"]
+          tree["value"][s.type] = s.getSelectedNames();
+          tree["type"] = s.type;
+
+          return tree;
+        });
+      } else {
+        return buildTree(parent);
+      }
     },
   }));
 
 const TimeSeriesRegionModel = types.compose("TimeSeriesRegionModel", RegionsMixin, NormalizationMixin, Model);
 
-const HtxTimeSeriesRegionView = ({ store, item }) => {
-  let markStyle = {
-    cursor: store.completionStore.selected.relationMode ? Constants.RELATION_MODE_CURSOR : Constants.POINTER_CURSOR,
-    display: "block",
-    marginBottom: "0.5em",
-  };
-
-  if (item.selected) {
-    markStyle = {
-      ...markStyle,
-      border: "1px solid red",
-    };
-  } else if (item.highlighted) {
-    markStyle = {
-      ...markStyle,
-      border: Constants.HIGHLIGHTED_CSS_BORDER,
-    };
-  }
-
-  return (
-    <div
-      onClick={item.onClickRegion}
-      onMouseOver={() => {
-        if (store.completionStore.selected.relationMode) {
-          item.setHighlight(true);
-        }
-      }}
-      onMouseOut={() => {
-        /* range.setHighlight(false); */
-        if (store.completionStore.selected.relationMode) {
-          item.setHighlight(false);
-        }
-      }}
-    >
-      <Alert type="success" message={item._value} style={markStyle} />
-    </div>
-  );
-};
-
-const HtxTimeSeriesRegion = inject("store")(observer(HtxTimeSeriesRegionView));
-
-Registry.addTag("timeseriesregion", TimeSeriesRegionModel, HtxTimeSeriesRegion);
-
-export { TimeSeriesRegionModel, HtxTimeSeriesRegion };
+export { TimeSeriesRegionModel };

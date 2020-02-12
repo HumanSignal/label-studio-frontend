@@ -18,7 +18,9 @@ import { guidGenerator } from "../../core/Helpers";
  *     <Label value="Face"></Label>
  *     <Label value="Nose"></Label>
  *   </TimeSeriesLabels>
- *   <TimeSeries name="img-1" value="$img"></TimeSeries>
+ *   <TimeSeries name="img-1" value="$time">
+ *     <TimeSeriesChannel value="$col" />
+ *   </TimeSeries>
  * </View>
  * @name TimeSeriesLabels
  * @param {string} name name of the element
@@ -49,6 +51,15 @@ const ModelAttrs = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
+    },
+
+    states() {
+      return self.completion.toNames.get(self.name);
+    },
+
+    activeStates() {
+      const states = self.states();
+      return states ? states.filter(c => c.isSelected === true) : null;
     },
   }));
 

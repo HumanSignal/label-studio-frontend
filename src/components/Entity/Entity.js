@@ -31,7 +31,8 @@ const RenderStates = ({ node }) => {
       getType(s).name === "RectangleLabelsModel" ||
       getType(s).name === "PolygonLabelsModel" ||
       getType(s).name === "KeyPointLabelsModel" ||
-      getType(s).name === "BrushLabelsModel"
+      getType(s).name === "BrushLabelsModel" ||
+      getType(s).name === "TimeSeriesLabelsModel"
     ) {
       return templateElement(s);
     } else if (getType(s).name === "RatingModel") {
