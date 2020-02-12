@@ -58,7 +58,6 @@
     "only-build": "npm run copy-examples && react-scripts build",
     "local": "npm run only-build && npm run start",
     "build-mac": "npm run only-build",
-    "test-win": "set CI=true && react-scripts test",
     "test:watch": "react-scripts test",
     "test": "set CI=true react-scripts test",
     "test:coverage": "npm test -- --coverage",
