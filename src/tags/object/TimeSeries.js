@@ -92,6 +92,8 @@ const Model = types
     },
 
     updateTR(tr) {
+      if (tr === null) return;
+
       self.initialRange = tr;
       self.brushRange = tr;
       self.updateView();
