@@ -84,8 +84,8 @@ const TagAttrs = types.model({
   height: types.optional(types.string, "200"),
 
   opacity: types.optional(types.string, "0.8"),
-  strokeWidth: types.optional(types.string, "1"),
-  strokeColor: types.optional(types.string, "#000000"),
+  strokewidth: types.optional(types.string, "1"),
+  strokecolor: types.optional(types.string, "#000000"),
 
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
@@ -154,8 +154,8 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   const style = {};
   style[item.value] = {
     normal: {
-      stroke: item.strokeColor,
-      strokeWidth: parseInt(item.strokeWidth),
+      stroke: item.strokecolor,
+      strokeWidth: parseInt(item.strokewidth),
       opacity: parseFloat(item.opacity),
     },
   };
