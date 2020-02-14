@@ -211,14 +211,24 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   const series = item._series;
 
   const getValue = function() {
+    if (!item.tracker) return;
+
     const approx = (+item.tracker - +timerange.begin()) / (+timerange.end() - +timerange.begin());
     const ii = Math.floor(approx * series.size());
     const i = series.bisect(new Date(item.tracker), ii);
 
-    return series.at(i).get(item.value);
+    try {
+      return series.at(i).get(item.value);
+    } catch {
+      return null;
+    }
   };
 
-  value = item.tracker && getValue();
+  const uval = getValue();
+
+  value = item.tracker && uval;
+
+  const showtracker = item.showtracker && uval;
 
   const formatFn = format(item.unitsformat);
 
@@ -239,43 +249,45 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   })();
 
   return (
-    <ChartContainer
-      trackerPosition={item.showtracker ? item.tracker : null}
-      onTrackerChanged={item.handleTrackerChanged}
-      timeRange={item.parent.initialRange}
-      //format={item.format.length && item.format}
-      enablePanZoom={false}
-      utc={true}
-      /* enableDragZoom={true} */
-      showGrid={item.showgrid}
-      onTimeRangeChanged={item.parent.updateTR}
-      maxTime={r.end()}
-      minTime={r.begin()}
-      minDuration={60000}
-    >
-      <ChartRow
-        height={item.height}
-        key={`row-${item.value}`}
-        trackerInfoValues={trackerInfoValues}
-        trackerInfoHeight={10 + trackerInfoValues.length * 16}
-        trackerInfoWidth={140}
+    <Resizable>
+      <ChartContainer
+        trackerPosition={showtracker ? item.tracker : null}
+        onTrackerChanged={item.handleTrackerChanged}
+        timeRange={item.parent.initialRange}
+        //format={item.format.length && item.format}
+        enablePanZoom={false}
+        utc={true}
+        /* enableDragZoom={true} */
+        showGrid={item.showgrid}
+        onTimeRangeChanged={item.parent.updateTR}
+        maxTime={r.end()}
+        minTime={r.begin()}
+        minDuration={60000}
       >
-        <LabelAxis
-          id={`${item.value}_axis`}
-          label={item.caption ? dn : ""}
-          values={item.caption ? summary : []}
-          min={item._min}
-          max={item._max}
-          width={item.caption ? 140 : 0}
-          type="linear"
-          format=",.1f"
-        />
-        <Charts>{charts}</Charts>
-        {item.units && (
-          <ValueAxis id={`${item.value}_valueaxis`} value={value} detail={item.units} width={80} min={0} max={35} />
-        )}
-      </ChartRow>
-    </ChartContainer>
+        <ChartRow
+          height={item.height}
+          key={`row-${item.value}`}
+          trackerInfoValues={!item.units && trackerInfoValues}
+          trackerInfoHeight={10 + trackerInfoValues.length * 16}
+          trackerInfoWidth={140}
+        >
+          <LabelAxis
+            id={`${item.value}_axis`}
+            label={item.caption ? dn : ""}
+            values={item.caption ? summary : []}
+            min={item._min}
+            max={item._max}
+            width={item.caption ? 140 : 0}
+            type="linear"
+            format=",.1f"
+          />
+          <Charts>{charts}</Charts>
+          {item.units && (
+            <ValueAxis id={`${item.value}_valueaxis`} value={value} detail={item.units} width={80} min={0} max={35} />
+          )}
+        </ChartRow>
+      </ChartContainer>
+    </Resizable>
   );
 
   // Line charts

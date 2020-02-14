@@ -2,7 +2,16 @@ import "moment-duration-format";
 import React, { Fragment } from "react";
 import _ from "underscore";
 import moment from "moment";
-import { AreaChart, Brush, ChartContainer, ChartRow, Charts, LabelAxis, styler } from "react-timeseries-charts";
+import {
+  AreaChart,
+  Brush,
+  ChartContainer,
+  ChartRow,
+  Charts,
+  LabelAxis,
+  styler,
+  Resizable,
+} from "react-timeseries-charts";
 import { Button, Icon } from "antd";
 import { Slider } from "antd";
 import { TimeSeries, TimeRange, avg, percentile, median } from "pondjs";
@@ -228,29 +237,31 @@ const speedFormat = format(".1f");
 const TimeSeriesOverview = observer(({ item }) => {
   return (
     <div data-id={item._needsUpdate}>
-      <ChartContainer
-        timeAxisHeight={0}
-        timeRange={item.series.timerange()}
-        // format="relative"
-        /* trackerPosition={this.state.tracker} */
-      >
-        <ChartRow height="40" debug={false} style={{ fill: "#333333" }}>
-          <Brush
-            timeRange={item.brushRange}
-            style={{ fill: "#cccccc", strokeWidth: 1, stroke: "#cacaca" }}
-            allowSelectionClear
-            onTimeRangeChanged={item.updateTR}
-          />
-          <Charts>
-            <AreaChart
-              axis="axis1"
-              style={{ fill: "#cc0000" }}
-              /* columns={{ up: ["altitude"], down: [] }} */
-              series={item.series}
+      <Resizable>
+        <ChartContainer
+          timeAxisHeight={0}
+          timeRange={item.series.timerange()}
+          // format="relative"
+          /* trackerPosition={this.state.tracker} */
+        >
+          <ChartRow height="40" debug={false} style={{ fill: "#333333" }}>
+            <Brush
+              timeRange={item.brushRange}
+              style={{ fill: "#cccccc", strokeWidth: 1, stroke: "#cacaca" }}
+              allowSelectionClear
+              onTimeRangeChanged={item.updateTR}
             />
-          </Charts>
-        </ChartRow>
-      </ChartContainer>
+            <Charts>
+              <AreaChart
+                axis="axis1"
+                style={{ fill: "#cc0000" }}
+                /* columns={{ up: ["altitude"], down: [] }} */
+                series={item.series}
+              />
+            </Charts>
+          </ChartRow>
+        </ChartContainer>
+      </Resizable>
     </div>
   );
 });
