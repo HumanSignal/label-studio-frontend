@@ -52,7 +52,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     type: "timeserieschannel",
     children: Types.unionArray(["channel", "view"]),
-    _value: types.optional(types.string, ""),
+    // _value: types.optional(types.string, ""),
   })
   .views(self => ({
     get parent() {
@@ -60,34 +60,30 @@ const Model = types
     },
   }))
   .actions(self => ({
-    afterAttach() {
-      const points = [];
-      for (let i = 0; i < 1000; i += 1) {
-        if (i > 0) {
-          const deltaTime = data.time[i] - data.time[i - 1];
-          const time = data.time[i] * 1000;
+    updateValue(store) {
+      console.log("updateValue start");
+      self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
-          points.push([time, data.watts[i]]);
-        }
+      const points = [];
+      for (let i = 0; i <= self._value[0].length; i++) {
+        points.push([self.parent._value[0][i] * 1000, self._value[0][i]]);
       }
 
       const series = new TimeSeries({
-        name: self.displayname,
-        columns: ["time", self.displayname],
+        columns: ["time", self.value],
         points: points,
       });
 
       // Some simple statistics for each channel
-      self._avg = parseInt(series.avg(self.displayname), 10);
-      self._max = parseInt(series.max(self.displayname), 10);
+      self._avg = parseInt(series.avg(self.value), 10);
+      self._max = parseInt(series.max(self.value), 10);
       self._series = series;
 
       self._minTime = series.range().begin();
       self._maxTime = series.range().end();
-    },
 
-    updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
+      // self.parent.updateView();
+      // console.log('updateValue end');
     },
   }));
 
@@ -122,7 +118,7 @@ const baselineStyles = {
 const speedFormat = format(".1f");
 
 const HtxTimeSeriesChannelView = observer(({ store, item }) => {
-  // if (!item._value) return null;
+  if (!item._value) return null;
 
   const u = item.parent._needsUpdate;
   const timerange = item.parent.initialRange;
@@ -134,15 +130,16 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
 
   const charts = [
     <LineChart
-      key={`line-${dn}-{$u}`}
-      axis={`${dn}_axis`}
+      key={`line-${item.value}-{$u}`}
+      axis={`${item.value}_axis`}
       series={item._series}
       interpolation="curveStep"
-      columns={[dn]}
+      columns={[item.value]}
       // style={style}
       breakLine
     />,
     <MultiBrush
+      key={`mb-${item.value}-{$u}`}
       timeRanges={item.parent.regionsTimeRanges}
       style={i => {
         let col = "#cccccc";
@@ -209,11 +206,11 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
       minTime={item._series.range().begin()}
       minDuration={60000}
     >
-      <ChartRow height="200" key={`row-${dn}`}>
+      <ChartRow height="200" key={`row-${item.value}`}>
         <LabelAxis
-          id={`${dn}_axis`}
-          label={item.caption && dn}
-          values={item.caption && summary}
+          id={`${item.value}_axis`}
+          label={item.caption ? dn : ""}
+          values={item.caption ? summary : []}
           min={0}
           max={item._max}
           width={item.caption ? 140 : 0}
@@ -222,7 +219,7 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
         />
         <Charts>{charts}</Charts>
         {item.units && (
-          <ValueAxis id={`${dn}_valueaxis`} value={value} detail={item.units} width={80} min={0} max={35} />
+          <ValueAxis id={`${item.value}_valueaxis`} value={value} detail={item.units} width={80} min={0} max={35} />
         )}
       </ChartRow>
     </ChartContainer>

@@ -37,6 +37,7 @@ const data = require("./bike.json");
 
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
+  value: types.maybeNull(types.string),
   multiaxis: types.optional(types.boolean, false), // show channels in the same view
   // visibilitycontrols: types.optional(types.boolean, false), // show channel visibility controls
   hotkey: types.maybeNull(types.string),
@@ -49,7 +50,7 @@ const Model = types
     children: Types.unionArray(["timeserieschannel", "timeseriesoverview", "view"]),
     regions: types.array(TimeSeriesRegionModel),
 
-    _value: types.optional(types.string, ""),
+    // _value: types.optional(types.string, ""),
     _needsUpdate: types.optional(types.number, 0),
   })
   .views(self => ({
@@ -57,6 +58,10 @@ const Model = types
       return self.regions.map(r => {
         return new TimeRange(r.start, r.end);
       });
+    },
+
+    get store() {
+      return getRoot(self);
     },
 
     get completion() {
@@ -100,6 +105,7 @@ const Model = types
     },
 
     updateValue(store) {
+      console.log("updateValue");
       self._value = runTemplate(self.value, store.task.dataObj);
     },
 
@@ -145,29 +151,46 @@ const Model = types
       }
     },
 
+    afterAttach() {
+      // console.log('afterAttach');
+      // console.log(self.store);
+      // window.A = self.store;
+      // self._value = runTemplate(self.value, self.store.task.dataObj);
+    },
+
     afterCreate() {
+      //     console.log('afterCreate');
+      //     self._value = runTemplate(self.value, self.store.task.dataObj);
+      // const tr = new TimeRange(1000, 1000000);
+      // self.initialRange = tr;
+      // self.brushRange = tr;
+      // const series = new TimeSeries({
+      //   name: "time",
+      //   columns: ["time"],
+      //   points: self._value,
+      // });
+      // self.series = series;
+    },
+
+    updateValue(store) {
+      self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
+
+      const points = self._value[0].map(t => t * 1000);
+
+      // TODO need to figure out why this TS object is not
+      // returning a proper timerange
+      const series = new TimeSeries({
+        name: "time",
+        columns: ["time"],
+        points: [points],
+      });
+
+      self.series = series;
+
       const tr = new TimeRange(1000, 1000000);
 
       self.initialRange = tr;
       self.brushRange = tr;
-
-      const points = [];
-      for (let i = 0; i < 1000; i += 1) {
-        if (i > 0) {
-          const deltaTime = data.time[i] - data.time[i - 1];
-          const time = data.time[i] * 1000;
-
-          points.push([time, data.watts[i]]);
-        }
-      }
-
-      const series = new TimeSeries({
-        name: "altitude",
-        columns: ["time", "altitude"],
-        points: points,
-      });
-
-      self.series = series;
     },
 
     onHotKey() {},

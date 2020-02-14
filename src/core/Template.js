@@ -34,7 +34,8 @@ function variableNotation(variable, obj) {
  * @param {Object} options
  * @returns {*}
  */
-function runTemplate(html, options) {
+function runTemplate(html, args, options) {
+  if (!args) args = {};
   if (!options) options = {};
 
   var re = /[$](.+)/g,
@@ -59,10 +60,10 @@ function runTemplate(html, options) {
   if (!html) return "";
 
   add(html.substr(cursor, html.length - cursor));
-  code = (code + 'return r.join(""); }').replace(/[\r\t\n]/g, " ");
+  code = (code + 'return (options["raw"] === true) ? r : r.join(""); }').replace(/[\r\t\n]/g, " ");
 
   try {
-    result = new Function("obj", code).apply(options, [options]);
+    result = new Function("obj", "options", code).apply(args, [args, options]);
   } catch (err) {
     console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
   }
