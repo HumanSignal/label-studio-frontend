@@ -33,6 +33,7 @@ function addKey(key, func, scope) {
 function overwriteKey(key, func) {}
 
 function removeKey(key) {
+  delete _hotkeys_map[key];
   keymaster.unbind(key);
 }
 

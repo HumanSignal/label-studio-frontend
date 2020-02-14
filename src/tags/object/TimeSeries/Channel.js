@@ -37,11 +37,55 @@ import { runTemplate } from "../../../core/Template";
 
 const data = require("../bike.json");
 
+/**
+ * TimeSeries tag can be used to label time series data
+ * @example
+ * <View>
+ *   <TimeSeries name="video">
+ *      <TimeSeriesChannel value="$val"  />
+ *   </TimeSeries>
+ * </View>
+ * @param {string} name of the element
+ */
+
+const csMap = {
+  curvestep: "curveStep",
+  curvebasis: "curvebasis",
+  curvebasisopen: "curveBasisOpen",
+  curvebundle: "curveBundle",
+  curvecardinal: "curveCardinal",
+  curvecardinalopen: "curveCardinalOpen",
+  curvecatmullrom: "curveCatmullRom",
+  curvecatmullromopen: "curveCatmullRomOpen",
+  curvelinear: "curveLinear",
+  curvemonotonex: "curveMonotoneX",
+  curvemonotoney: "curveMonotoneY",
+  curvenatural: "curveNatural",
+  curveradial: "curveRadial",
+  curvestep: "curveStep",
+  curvestepafter: "curveStepAfter",
+  curvestepbefore: "curveStepBefore",
+};
+
 const TagAttrs = types.model({
   displayname: types.maybeNull(types.string),
+
   units: types.maybeNull(types.string),
-  unitsformat: types.string,
+  unitsformat: types.optional(types.string, ".1f"),
   caption: types.optional(types.boolean, true), // show channel caption view, like channel name, etc
+
+  interpolation: types.optional(types.enumeration(Object.values(csMap)), "curveStep"),
+
+  showgrid: types.optional(types.boolean, false),
+  showtracker: types.optional(types.boolean, true),
+
+  format: types.optional(types.string, ""),
+
+  height: types.optional(types.string, "200"),
+
+  opacity: types.optional(types.string, "0.8"),
+  strokeWidth: types.optional(types.string, "1"),
+  strokeColor: types.optional(types.string, "#000000"),
 
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
@@ -59,14 +103,23 @@ const Model = types
       return Types.getParentOfTypeString(self, "TimeSeriesModel");
     },
   }))
+  .preProcessSnapshot(snapshot => {
+    snapshot.interpolation = csMap[snapshot.interpolation];
+    return snapshot;
+  })
   .actions(self => ({
+    handleTrackerChanged(t) {
+      self.tracker = t;
+      self.parent.updateView();
+    },
+
     updateValue(store) {
-      console.log("updateValue start");
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
       const points = [];
-      for (let i = 0; i <= self._value[0].length; i++) {
-        points.push([self.parent._value[0][i] * 1000, self._value[0][i]]);
+
+      for (let i = 0; i <= self.parent._value[0][i]; i++) {
+        points.push([self.parent._value[0][i], self._value[0][i]]);
       }
 
       const series = new TimeSeries({
@@ -77,45 +130,15 @@ const Model = types
       // Some simple statistics for each channel
       self._avg = parseInt(series.avg(self.value), 10);
       self._max = parseInt(series.max(self.value), 10);
+      self._min = parseInt(series.min(self.value), 10);
       self._series = series;
 
       self._minTime = series.range().begin();
       self._maxTime = series.range().end();
-
-      // self.parent.updateView();
-      // console.log('updateValue end');
     },
   }));
 
 const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, TagAttrs, ObjectBase);
-
-const style = styler([
-  { key: "distance", color: "#e2e2e2" },
-  { key: "altitude", color: "#e2e2e2" },
-  { key: "cadence", color: "#ff47ff" },
-  { key: "power", color: "green", width: 1, opacity: 0.5 },
-  { key: "temperature", color: "#cfc793" },
-  { key: "speed", color: "steelblue", width: 1, opacity: 0.5 },
-]);
-
-// Baselines are the dotted average lines displayed on the chart
-// In this case these are separately styled
-
-const baselineStyles = {
-  speed: {
-    stroke: "steelblue",
-    opacity: 0.5,
-    width: 0.25,
-  },
-  power: {
-    stroke: "green",
-    opacity: 0.5,
-    width: 0.25,
-  },
-};
-
-// d3 formatter to display the speed with one decimal place
-const speedFormat = format(".1f");
 
 const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   if (!item._value) return null;
@@ -128,12 +151,22 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   const durationPerPixel = timerange.duration() / 800 / 1000;
   const dn = item.displayname;
 
+  const style = {};
+  style[item.value] = {
+    normal: {
+      stroke: item.strokeColor,
+      strokeWidth: parseInt(item.strokeWidth),
+      opacity: parseFloat(item.opacity),
+    },
+  };
+
   const charts = [
     <LineChart
       key={`line-${item.value}-{$u}`}
       axis={`${item.value}_axis`}
       series={item._series}
-      interpolation="curveStep"
+      interpolation={item.interpolation}
+      style={style}
       columns={[item.value]}
       // style={style}
       breakLine
@@ -146,7 +179,7 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
         const r = item.parent.regions[i];
 
         if (r) {
-          if (r.selected) {
+          if (r.selected || r.highlighted) {
             col = "#ff0000";
           } else {
             col = r.states[0].getSelectedColor();
@@ -175,43 +208,63 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
 
   // Get the value at the current tracker position for the ValueAxis
   let value = "--";
-  // if (this.state.tracker) {
-  //     const approx =
-  //           (+this.state.tracker - +timerange.begin()) /
-  //           (+timerange.end() - +timerange.begin());
-  //     const ii = Math.floor(approx * series.size());
-  //     const i = series.bisect(new Date(this.state.tracker), ii);
-  //     const v = i < series.size() ? series.at(i).get(channelName) : null;
-  //     if (v) {
-  //         value = parseInt(v, 10);
-  //     }
-  // }
+  const series = item._series;
 
-  // Get the summary values for the LabelAxis
+  const getValue = function() {
+    const approx = (+item.tracker - +timerange.begin()) / (+timerange.end() - +timerange.begin());
+    const ii = Math.floor(approx * series.size());
+    const i = series.bisect(new Date(item.tracker), ii);
+
+    return series.at(i).get(item.value);
+  };
+
+  value = item.tracker && getValue();
+
+  const formatFn = format(item.unitsformat);
+
   const summary = [
-    { label: "Max", value: speedFormat(item._max) },
-    { label: "Avg", value: speedFormat(item._avg) },
+    { label: "Max", value: formatFn(item._max) },
+    { label: "Avg", value: formatFn(item._avg) },
+    { label: "Min", value: formatFn(item._min) },
   ];
 
   const rows = [];
+  const r = item._series.range();
+
+  const trackerInfoValues = (function() {
+    const label = item.units ? item.units : "value";
+    const value = item.tracker ? getValue() : "--";
+
+    return [{ label, value }];
+  })();
 
   return (
     <ChartContainer
+      trackerPosition={item.showtracker ? item.tracker : null}
+      onTrackerChanged={item.handleTrackerChanged}
       timeRange={item.parent.initialRange}
-      format="relative"
+      //format={item.format.length && item.format}
       enablePanZoom={false}
+      utc={true}
       /* enableDragZoom={true} */
+      showGrid={item.showgrid}
       onTimeRangeChanged={item.parent.updateTR}
-      maxTime={item._series.range().end()}
-      minTime={item._series.range().begin()}
+      maxTime={r.end()}
+      minTime={r.begin()}
       minDuration={60000}
     >
-      <ChartRow height="200" key={`row-${item.value}`}>
+      <ChartRow
+        height={item.height}
+        key={`row-${item.value}`}
+        trackerInfoValues={trackerInfoValues}
+        trackerInfoHeight={10 + trackerInfoValues.length * 16}
+        trackerInfoWidth={140}
+      >
         <LabelAxis
           id={`${item.value}_axis`}
           label={item.caption ? dn : ""}
           values={item.caption ? summary : []}
-          min={0}
+          min={item._min}
           max={item._max}
           width={item.caption ? 140 : 0}
           type="linear"

@@ -2,7 +2,7 @@ import "moment-duration-format";
 import React, { Fragment } from "react";
 import _ from "underscore";
 import moment from "moment";
-import { AreaChart, Brush, ChartContainer, ChartRow, Charts, styler } from "react-timeseries-charts";
+import { AreaChart, Brush, ChartContainer, ChartRow, Charts, LabelAxis, styler } from "react-timeseries-charts";
 import { Button, Icon } from "antd";
 import { Slider } from "antd";
 import { TimeSeries, TimeRange, avg, percentile, median } from "pondjs";
@@ -34,7 +34,6 @@ const data = require("./bike.json");
  * </View>
  * @param {string} name of the element
  */
-
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
@@ -47,7 +46,7 @@ const Model = types
   .model("TimeSeriesModel", {
     id: types.optional(types.identifier, guidGenerator),
     type: "timeseries",
-    children: Types.unionArray(["timeserieschannel", "timeseriesoverview", "view"]),
+    children: Types.unionArray(["timeserieschannel", "timeseriesoverview", "view", "hypertext"]),
     regions: types.array(TimeSeriesRegionModel),
 
     // _value: types.optional(types.string, ""),
@@ -175,22 +174,24 @@ const Model = types
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
-      const points = self._value[0].map(t => t * 1000);
+      const points = self._value[0].map(p => [p]);
 
       // TODO need to figure out why this TS object is not
       // returning a proper timerange
       const series = new TimeSeries({
         name: "time",
         columns: ["time"],
-        points: [points],
+        points: points,
       });
 
       self.series = series;
 
-      const tr = new TimeRange(1000, 1000000);
+      const size = series.size();
+      const piece = Math.ceil(size / 10);
+      const pcTR = series.slice(0, piece).timerange();
 
-      self.initialRange = tr;
-      self.brushRange = tr;
+      self.initialRange = pcTR;
+      self.brushRange = pcTR;
     },
 
     onHotKey() {},
@@ -230,13 +231,13 @@ const TimeSeriesOverview = observer(({ item }) => {
       <ChartContainer
         timeAxisHeight={0}
         timeRange={item.series.timerange()}
-        format="relative"
+        // format="relative"
         /* trackerPosition={this.state.tracker} */
       >
-        <ChartRow height="40" debug={false}>
+        <ChartRow height="40" debug={false} style={{ fill: "#333333" }}>
           <Brush
             timeRange={item.brushRange}
-            style={{ fill: "#cccccc" }}
+            style={{ fill: "#cccccc", strokeWidth: 1, stroke: "#cacaca" }}
             allowSelectionClear
             onTimeRangeChanged={item.updateTR}
           />
@@ -255,6 +256,8 @@ const TimeSeriesOverview = observer(({ item }) => {
 });
 
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
+  console.log(Tree.renderChildren(item));
+
   return (
     <ObjectTag item={item}>
       <div

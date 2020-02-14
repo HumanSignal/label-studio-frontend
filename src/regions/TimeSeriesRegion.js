@@ -4,12 +4,13 @@ import { types, getParentOfType, getRoot } from "mobx-state-tree";
 import { Alert } from "antd";
 
 import Constants from "../core/Constants";
+import Hotkey from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
+import { TimeSeriesLabelsModel } from "../tags/control/TimeSeriesLabels";
 import { TimeSeriesModel } from "../tags/object/TimeSeries";
 import { guidGenerator } from "../core/Helpers";
-import { TimeSeriesLabelsModel } from "../tags/control/TimeSeriesLabels";
 
 const Model = types
   .model("TimeSeriesRegionModel", {
@@ -33,15 +34,98 @@ const Model = types
     },
   }))
   .actions(self => ({
+    moveLeft(size) {
+      self.end = self.end - size;
+      self.start = self.start - size;
+    },
+
+    moveRight(size) {
+      self.end = self.end + size;
+      self.start = self.start + size;
+    },
+
+    growRight(size) {
+      self.end = self.end + size;
+    },
+
+    growLeft(size) {
+      self.start = self.start + size;
+    },
+
+    shrinkRight(size) {
+      self.end = self.end - size;
+    },
+
+    shrinkLeft(size) {
+      self.start = self.start - size;
+    },
+
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
+
+      const def = 1000;
+      const lots = def * 10;
+
+      Hotkey.addKey("left", function() {
+        self.moveLeft(def);
+      });
+      Hotkey.addKey("right", function() {
+        self.moveRight(def);
+      });
+      Hotkey.addKey("ctrl+left", function() {
+        self.moveLeft(lots);
+      });
+      Hotkey.addKey("ctrl+right", function() {
+        self.moveRight(lots);
+      });
+
+      Hotkey.addKey("up", function() {
+        self.growRight(def);
+      });
+      Hotkey.addKey("shift+up", function() {
+        self.shrinkRight(def);
+      });
+      Hotkey.addKey("down", function() {
+        self.growLeft(def);
+      });
+      Hotkey.addKey("shift+down", function() {
+        self.shrinkLeft(def);
+      });
+
+      Hotkey.addKey("ctrl+up", function() {
+        self.growRight(lots);
+      });
+      Hotkey.addKey("ctrl+shift+up", function() {
+        self.shrinkRight(lots);
+      });
+      Hotkey.addKey("ctrl+down", function() {
+        self.growLeft(lots);
+      });
+      Hotkey.addKey("ctrl+shift+down", function() {
+        self.shrinkLeft(lots);
+      });
     },
 
     /**
      * Unselect timeseries region
      */
     unselectRegion() {
+      [
+        "left",
+        "right",
+        "ctrl+left",
+        "ctrl+right",
+        "up",
+        "shift+up",
+        "down",
+        "shift+down",
+        "ctrl+up",
+        "ctrl+shift+up",
+        "ctrl+down",
+        "ctrl+shift+down",
+      ].forEach(Hotkey.removeKey);
+
       self.selected = false;
       self.completion.setHighlightedNode(null);
       self.parent.updateView();
