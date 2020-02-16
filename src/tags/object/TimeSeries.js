@@ -29,19 +29,17 @@ import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
 
-const data = require("./bike.json");
-
 /**
  * TimeSeries tag can be used to label time series data
  * @example
  * <View>
- *   <TimeSeries name="video" combineChannels="true">
- *      <TimeSeriesChannel value="$val" />
- *      <TimeSeriesChannel value="$val2" />
- *      <TimeSeriesOverview channel="0" />
+ *   <TimeSeries name="device" value="$time">
+ *      <TimeSeriesChannel value="$sensor1" />
+ *      <TimeSeriesChannel value="$sensor2" />
  *   </TimeSeries>
  * </View>
  * @param {string} name of the element
+ * @param {string} value timestamps
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -115,7 +113,6 @@ const Model = types
     },
 
     updateValue(store) {
-      console.log("updateValue");
       self._value = runTemplate(self.value, store.task.dataObj);
     },
 
@@ -269,8 +266,6 @@ const TimeSeriesOverview = observer(({ item }) => {
 });
 
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
-  console.log(Tree.renderChildren(item));
-
   return (
     <ObjectTag item={item}>
       <div

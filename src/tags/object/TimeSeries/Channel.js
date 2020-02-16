@@ -35,17 +35,27 @@ import Types from "../../../core/Types";
 import { guidGenerator, restoreNewsnapshot } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
 
-const data = require("../bike.json");
-
 /**
- * TimeSeries tag can be used to label time series data
+ * TimeSeriesChannel tag can be used to label time series data
  * @example
  * <View>
- *   <TimeSeries name="video">
- *      <TimeSeriesChannel value="$val"  />
+ *   <TimeSeries name="video" value="$timestamp">
+ *      <TimeSeriesChannel value="$sensor1" />
+ *      <TimeSeriesChannel value="$sensor2" />
  *   </TimeSeries>
  * </View>
- * @param {string} name of the element
+ * @param {string} displayName name of the channel
+ * @param {string} units units name
+ * @param {string} unitsFormat format string for the units
+ * @param {string} caption show channel caption view, like channel name, etc
+ * @param {string} interpolation line interpolation mode
+ * @param {string} showGrid show grid on the plot
+ * @param {string} showTracker show tracker line on the plot
+ * @param {string} height height of the plot
+ * @param {string} opacity opacity of the line
+ * @param {string=} [strokeColor=#f48a42] stroke color
+ * @param {number=} [strokeWidth=1] width of the stroke
+ * @param {string} value value
  */
 
 const csMap = {
@@ -79,8 +89,6 @@ const TagAttrs = types.model({
   showgrid: types.optional(types.boolean, false),
   showtracker: types.optional(types.boolean, true),
 
-  format: types.optional(types.string, ""),
-
   height: types.optional(types.string, "200"),
 
   opacity: types.optional(types.string, "0.8"),
@@ -88,7 +96,6 @@ const TagAttrs = types.model({
   strokecolor: types.optional(types.string, "#000000"),
 
   value: types.maybeNull(types.string),
-  hotkey: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -254,10 +261,8 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
         trackerPosition={showtracker ? item.tracker : null}
         onTrackerChanged={item.handleTrackerChanged}
         timeRange={item.parent.initialRange}
-        //format={item.format.length && item.format}
         enablePanZoom={false}
         utc={true}
-        /* enableDragZoom={true} */
         showGrid={item.showgrid}
         onTimeRangeChanged={item.parent.updateTR}
         maxTime={r.end()}
@@ -289,82 +294,6 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
       </ChartContainer>
     </Resizable>
   );
-
-  // Line charts
-  // const charts = [
-  //     <LineChart
-  //       key={`line-${dn}`}
-  //       axis={`${dn}_axis`}
-  //       series={item._series}
-  //       columns={[ dn ]}
-  //       // style={style}
-  //       breakLine
-  //     />,
-  // ];
-
-  // Tracker info box
-  // const trackerInfoValues = displayChannels
-  //   .filter(channelName => channels[channelName].show)
-  //   .map(channelName => {
-  //     const fmt = format(channels[channelName].format);
-
-  //     let series = channels[channelName].series.crop(timerange);
-
-  //     let v = "--";
-  //     if (this.state.tracker) {
-  //       const i = series.bisect(new Date(this.state.tracker));
-  //       const vv = series.at(i).get(channelName);
-  //       if (vv) {
-  //         v = fmt(vv);
-  //       }
-  //     }
-
-  //     const label = channels[channelName].label;
-  //     const value = `${v} ${channels[channelName].units}`;
-
-  //     return { label, value };
-  //   });
-
-  // Axis list
-  // const axisList = [
-  //     <YAxis
-  //       id={`${dn}_axis`}
-  //       key={`${dn}_axis`}
-  //       label={dn}
-  //       min={0}
-  //       max={item._max}
-  //       width={70}
-  //       type="linear"
-  //       format={item.unitsformat}
-  //     />
-  // ];
-
-  // return (
-  //     <Resizable>
-  //       <ChartContainer
-  //         timeRange={item.parent.initialRange}
-  //         format="relative"
-  //         /* trackerPosition={this.state.tracker} */
-  //         /* onTrackerChanged={this.handleTrackerChanged} */
-  //         trackerShowTime
-  //         enablePanZoom
-  //         maxTime={maxTime}
-  //         minTime={minTime}
-  //         minDuration={minDuration}
-  //         /* onTimeRangeChanged={this.handleTimeRangeChange} */
-  //       >
-  //         <ChartRow
-  //           height="200"
-  //           /* trackerInfoValues={trackerInfoValues} */
-  //           /* trackerInfoHeight={10 + trackerInfoValues.length * 16} */
-  //           trackerInfoWidth={140}
-  //         >
-  //           {axisList}
-  //           <Charts>{charts}</Charts>
-  //         </ChartRow>
-  //       </ChartContainer>
-  //     </Resizable>
-  // );
 });
 
 const HtxTimeSeriesChannel = inject("store")(observer(HtxTimeSeriesChannelView));
