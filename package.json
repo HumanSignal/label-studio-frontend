@@ -47,17 +47,17 @@
     "react-test-renderer": "^16.8.6",
     "rewire": "^4.0.1",
     "size-limit": "^1.3.7",
+    "string.prototype.matchall": "^4.0.2",
     "svg.js": "^2.7.0",
     "wavesurfer.js": "^3.0.0",
     "xml2js": "^0.4.22",
     "xpath-range": "^1.1.1"
   },
-    "scripts": {
-        "build": "react-scripts build",
+  "scripts": {
+    "build": "npm run copy-examples && npm run test && react-scripts build",
     "start": "npm run copy-examples && react-scripts start",
     "only-build": "npm run copy-examples && react-scripts build",
     "local": "npm run only-build && npm run start",
-    "build": "npm run copy-examples && npm run test && react-scripts build",
     "build-mac": "npm run only-build",
     "test:watch": "react-scripts test",
     "test": "CI=true react-scripts test",
@@ -69,8 +69,7 @@
     "lint": "eslint --debug src/",
     "lint:write": "eslint --debug src/ --fix",
     "build-notsourcemap": "GENERATE_SOURCEMAP=false npm run build",
-        "copy-examples": "bash scripts/copy.sh",
-        
+    "copy-examples": "bash scripts/copy.sh",
     "copy-built-scripts": "bash scripts/copy-built-scripts.sh",
     "build-bundle": "bash scripts/swap_prod.sh && npm run copy-examples && npm run test && node scripts/build-without-split.js && npm run copy-built-scripts && bash scripts/swap_back.sh"
   },
