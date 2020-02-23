@@ -39,6 +39,9 @@ const Model = types
     _start_x: types.optional(types.number, 0),
     _start_y: types.optional(types.number, 0),
 
+    relativeRadiusX: types.optional(types.number, 0),
+    relativeRadiusY: types.optional(types.number, 0),
+
     radiusX: types.number,
     radiusY: types.number,
 
@@ -84,6 +87,8 @@ const Model = types
       if (self.coordstype === "perc") {
         self.relativeX = self.x;
         self.relativeY = self.y;
+        self.relativeRadiusX = self.radiusX;
+        self.relativeRadiusY = self.radiusY;
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
       }
@@ -176,13 +181,13 @@ const Model = types
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
-        self.radiusX = (sw * self.relativeWidth) / 100;
-        self.radiusY = (sh * self.relativeHeight) / 100;
+        self.radiusX = (sw * self.relativeRadiusX) / 100;
+        self.radiusY = (sh * self.relativeRadiusY) / 100;
       } else if (self.coordstype === "perc") {
         self.x = (sw * self.x) / 100;
         self.y = (sh * self.y) / 100;
-        self.radiusX = (sw * self.width) / 100;
-        self.radiusY = (sh * self.height) / 100;
+        self.radiusX = (sw * self.radiusX) / 100;
+        self.radiusY = (sh * self.radiusY) / 100;
         self.coordstype = "px";
       }
     },
@@ -246,7 +251,6 @@ const HtxEllipseView = ({ store, item }) => {
     strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
     strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
-
   return (
     <Fragment>
       <Ellipse
