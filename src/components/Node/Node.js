@@ -65,12 +65,13 @@ const NodeViews = {
   EllipseRegionModel: (node, click) => {
     const radiusX = node.radiusX * node.scaleX;
     const radiusY = node.radiusY * node.scaleY;
+    const rotation = node.rotation;
     return (
       <p>
         <span onClick={click} className={styles.node}>
           <i className="expand icon" />
-          Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {node.rotation}, center = ({node.x.toFixed(2)},
-          {node.y.toFixed(2)})
+          Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {rotation.toFixed(2)}°, center = ({node.x.toFixed(2)}
+          , {node.y.toFixed(2)})
         </span>
       </p>
     );

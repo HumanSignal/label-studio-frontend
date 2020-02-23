@@ -42,7 +42,6 @@ const _Tool = types
       if ("ellipselabels" in obj.value) {
         const states = restoreNewsnapshot(fromModel);
         states.fromStateJSON(obj);
-
         self.createRegion({
           x: obj.value.x,
           y: obj.value.y,
