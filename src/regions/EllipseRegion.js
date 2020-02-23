@@ -148,8 +148,8 @@ const Model = types
       self.relativeX = (x / self.parent.stageWidth) * 100;
       self.relativeY = (y / self.parent.stageHeight) * 100;
 
-      self.relativeWidth = (radiusX / self.parent.stageWidth) * 100;
-      self.relativeHeight = (radiusY / self.parent.stageHeight) * 100;
+      self.relativeRadiusX = (radiusX / self.parent.stageWidth) * 100;
+      self.relativeRadiusY = (radiusY / self.parent.stageHeight) * 100;
 
       if (rotation < 0) {
         self.rotation = (rotation % 360) + 360;
