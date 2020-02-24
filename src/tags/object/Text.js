@@ -360,6 +360,31 @@ class TextPieceView extends Component {
         normedRange._range = r;
         normedRange.text = selection.toString();
 
+        const toGlobalOffset = (container, len) => {
+          let pos = 0;
+          const count = node => {
+            if (node == container) return pos;
+            if (node.nodeName == "#text") pos = pos + node.length;
+            if (node.nodeName == "BR") pos = pos + 1;
+
+            for (var i = 0; i <= node.childNodes.length; i++) {
+              const n = node.childNodes[i];
+              if (n) {
+                const res = count(n);
+                if (res) return res;
+              }
+            }
+          };
+
+          return len + count(self.myRef);
+        };
+
+        const ss = toGlobalOffset(r.startContainer, r.startOffset);
+        const ee = toGlobalOffset(r.endContainer, r.endOffset);
+
+        normedRange.startOffset = ss;
+        normedRange.endOffset = ee;
+
         // If the new range falls fully outside our this.element, we should
         // add it back to the document but not return it from this method.
         if (normedRange === null) {
@@ -438,7 +463,7 @@ class TextPieceView extends Component {
           }
 
           if (node.nodeName == "BR") {
-            if (left - 1 <= 0) return { node, left };
+            if (left - 1 < 0) return { node, left };
 
             left = left - 1;
           }
