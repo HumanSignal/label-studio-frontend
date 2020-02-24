@@ -90,7 +90,7 @@ const _Tool = types
     updateDraw(x, y) {
       const shape = self.getActiveShape;
 
-      const { x1, y1, x2, y2 } = reverseCoordinates({ x: shape._start_x, y: shape._start_y }, { x: x, y: y });
+      const { x1, y1, x2, y2 } = reverseCoordinates({ x: shape.startX, y: shape.startY }, { x: x, y: y });
 
       shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
     },
@@ -111,7 +111,7 @@ const _Tool = types
         coordstype: "px",
       });
 
-      if (self.control.type === "rectanglelabels") self.control.unselectAll();
+      // if (self.control.type === "rectanglelabels") self.control.unselectAll();
 
       return rect;
     },
@@ -127,7 +127,10 @@ const _Tool = types
 
       const s = self.getActiveShape;
 
-      if (s.width < minSize.w || s.height < minSize.h) destroy(s);
+      if (s.width < minSize.w || s.height < minSize.h) {
+        destroy(s);
+        if (self.control.type === "rectanglelabels") self.control.unselectAll();
+      }
 
       self.mode = "viewing";
     },

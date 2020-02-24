@@ -1,7 +1,7 @@
 import ColorScheme from "pleasejs";
 import React from "react";
 import { Tag } from "antd";
-import { getRoot, types } from "mobx-state-tree";
+import { getRoot, getParentOfType, types } from "mobx-state-tree";
 import { observer, inject } from "mobx-react";
 
 import Hint from "../../components/Hint/Hint";
@@ -11,6 +11,7 @@ import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
+import { LabelsModel } from "./Labels";
 
 const DEFAULT_BACKGROUND = "#36B37E";
 
@@ -74,7 +75,16 @@ const Model = types
         "HyperTextLabelsModel",
       ]);
 
-      labels.finishCurrentObject();
+      // labels.finshCurrentObject();
+      const reg = self.completion.highlightedNode;
+
+      // check if there is a region selected and if it is and user
+      // is changing the label we need to make sure that region is
+      // not going to endup without the label(s) at all
+      if (reg) {
+        const sel = labels.getSelected();
+        if (sel.length === 1 && sel[0]._value === self._value) return;
+      }
 
       /**
        * Multiple
@@ -96,6 +106,10 @@ const Model = types
         } else {
           labels.unselectAll();
         }
+      }
+
+      if (reg) {
+        reg.updateSingleState(labels);
       }
     },
 

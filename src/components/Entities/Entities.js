@@ -1,10 +1,36 @@
-import React from "react";
-import { Button, Popconfirm } from "antd";
+import React, { Fragment } from "react";
+import { Button, Popconfirm, List, Typography, Divider } from "antd";
+import { getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
 import Hint from "../Hint/Hint";
 import styles from "./Entities.module.scss";
 import { Node } from "../Node/Node";
+
+const EntityItem = observer(({ item, idx }) => {
+  const selected = item.selected ? "#f1f1f1" : "transparent";
+
+  return (
+    <List.Item
+      key={item.id}
+      style={{ cursor: "pointer", background: selected }}
+      onClick={() => {
+        getRoot(item).completionStore.selected.regionStore.unselectAll();
+        item.selectRegion();
+      }}
+      onMouseOver={() => {
+        item.toggleHighlight();
+      }}
+      onMouseOut={() => {
+        item.toggleHighlight();
+      }}
+    >
+      <span>
+        <span style={{ fontSize: "10px" }}>{idx + 1}</span>&nbsp; <Node node={item} />
+      </span>
+    </List.Item>
+  );
+});
 
 export default observer(({ store, regionStore }) => {
   const { regions } = regionStore;
@@ -24,10 +50,10 @@ export default observer(({ store, regionStore }) => {
         okType="danger"
         cancelText="Cancel"
       >
-        <Button type="link" style={{ paddingLeft: 0 }}>
+        <Button type="link" style={{ paddingLeft: "10px", paddingRight: 0, fontSize: "12px" }}>
           Remove all
           {regions.length > 0 && store.settings.enableHotkeys && store.settings.enableTooltips && (
-            <Hint>[ Ctrl+bksp ]</Hint>
+            <Hint>[ ctrl+bksp ]</Hint>
           )}
         </Button>
       </Popconfirm>
@@ -36,29 +62,20 @@ export default observer(({ store, regionStore }) => {
 
   return (
     <div>
-      <h4>Entities ({regions.length})</h4>
-      {regions.length > 0 && c.edittable === true && buttonRemove()}
+      <Divider dashed orientation="left">
+        Entities ({regions.length}) {c.edittable && buttonRemove()}
+      </Divider>
       {!regions.length && <p>No Entities added yet</p>}
       {regions.length > 0 && (
-        <ul className={styles.list}>
-          {regions.map(region => (
-            <li
-              key={region.id}
-              className={styles.item}
-              onMouseOver={() => {
-                // region.setHighlight(true);
-
-                region.toggleHightlight();
-              }}
-              onMouseOut={() => {
-                // region.setHighlight(false);
-                region.toggleHightlight();
-              }}
-            >
-              <Node node={region} />
-            </li>
-          ))}
-        </ul>
+        <div>
+          <List
+            size="small"
+            dataSource={regions}
+            className={styles.list}
+            bordered
+            renderItem={(item, idx) => <EntityItem item={item} idx={idx} />}
+          />
+        </div>
       )}
     </div>
   );

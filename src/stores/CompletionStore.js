@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, onPatch } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
 import NormalizationStore from "./NormalizationStore";
@@ -130,10 +130,24 @@ const Completion = types
       }
     },
 
-    /**
-     * Add relation
-     * @param {*} reg
-     */
+    loadRegionState(region) {
+      console.log(region.states);
+      region.states &&
+        region.states.forEach(s => {
+          const mainViewTag = self.names.get(s.name);
+          mainViewTag.unselectAll();
+          mainViewTag.copyState(s);
+        });
+    },
+
+    unloadRegionState(region) {
+      region.states &&
+        region.states.forEach(s => {
+          const mainViewTag = self.names.get(s.name);
+          mainViewTag.unselectAll();
+        });
+    },
+
     addRelation(reg) {
       self.relationStore.addRelation(self._relationObj, reg);
     },

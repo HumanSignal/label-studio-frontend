@@ -1,12 +1,9 @@
 import React from "react";
 import { getType, getParentOfType } from "mobx-state-tree";
 import xml2js from "xml2js";
-import shim from "string.prototype.matchall/shim";
 
 import Registry from "./Registry";
 import { guidGenerator } from "./Helpers";
-
-shim();
 
 /**
  * Clone React Tree

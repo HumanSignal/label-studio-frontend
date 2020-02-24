@@ -57,7 +57,7 @@ const Model = types
 
     type: "brushregion",
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, BrushLabelsModel))),
+    states: types.maybeNull(types.array(types.union(BrushLabelsModel))),
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
     /**
@@ -131,12 +131,14 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
     },
 
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+      self.completion.loadRegionState(self);
     },
 
     convertPointsToMask() {},

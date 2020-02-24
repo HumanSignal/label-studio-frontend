@@ -1,3 +1,8 @@
+.list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
 .block {
   display: flex;
   align-items: center;

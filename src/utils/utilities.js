@@ -63,3 +63,9 @@ export function toTimeString(ms) {
     return new Date(ms).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
   }
 }
+
+export function flatten(arr) {
+  return arr.reduce(function(flat, toFlatten) {
+    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+  }, []);
+}

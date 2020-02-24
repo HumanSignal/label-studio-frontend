@@ -24,7 +24,7 @@ const templateElement = element => {
   );
 };
 
-const RenderStates = ({ node }) => {
+const RenderStates = observer(({ node }) => {
   const _render = s => {
     if (
       getType(s).name === "LabelsModel" ||
@@ -42,7 +42,7 @@ const RenderStates = ({ node }) => {
   };
 
   return <Fragment>{node.states.map(s => _render(s))}</Fragment>;
-};
+});
 
 export default observer(({ store, completion }) => {
   const node = completion.highlightedNode;
@@ -57,7 +57,7 @@ export default observer(({ store, completion }) => {
         <p>
           Normalization: {node.normalization}
           <Icon
-            name="delete"
+            type="delete"
             style={{ cursor: "pointer" }}
             onClick={() => {
               node.deleteNormalization();
@@ -77,6 +77,8 @@ export default observer(({ store, completion }) => {
               }}
             >
               <Icon type="link" />
+
+              {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
             </Button>
           </Tooltip>
 
@@ -100,6 +102,7 @@ export default observer(({ store, completion }) => {
               }}
             >
               <Icon type="fullscreen-exit" />
+              {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
             </Button>
           </Tooltip>
 
