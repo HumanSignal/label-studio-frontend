@@ -31,7 +31,7 @@ const Model = types
     opacity: types.number,
     fillcolor: types.maybeNull(types.string),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, KeyPointLabelsModel))),
+    states: types.maybeNull(types.array(types.union(KeyPointLabelsModel))),
 
     sw: types.maybeNull(types.number),
     sh: types.maybeNull(types.number),
@@ -52,12 +52,20 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
     },
 
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+      self.completion.loadRegionState(self);
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+      self.fillcolor = stroke;
     },
 
     setPosition(x, y) {

@@ -10,10 +10,10 @@ const Normalization = types
   .actions(self => ({
     toggleHighlight() {
       if (self.node1 === self.node2) {
-        self.node1.toggleHightlight();
+        self.node1.toggleHighlight();
       } else {
-        self.node1.toggleHightlight();
-        self.node2.toggleHightlight();
+        self.node1.toggleHighlight();
+        self.node2.toggleHighlight();
       }
     },
   }));
