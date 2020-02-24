@@ -216,8 +216,6 @@ class TextPieceView extends Component {
       let passedEnd = false;
 
       const traverse = node => {
-        if (!node) return;
-
         if (node.nodeName == "#text") {
           if (node != range.startContainer && !passedStart) start = start + node.length;
           if (node == range.startContainer) passedStart = true;
@@ -235,9 +233,11 @@ class TextPieceView extends Component {
         if (node.childNodes.length > 0) {
           for (var i = 0; i <= node.childNodes.length; i++) {
             const n = node.childNodes[i];
-            const res = traverse(n);
 
-            if (res) return res;
+            if (n) {
+              const res = traverse(n);
+              if (res) return res;
+            }
           }
         }
       };
@@ -266,9 +266,11 @@ class TextPieceView extends Component {
         } else if (node.childNodes.length > 0) {
           for (var i = 0; i <= node.childNodes.length; i++) {
             const n = node.childNodes[i];
-            const res = traverse(n);
 
-            if (res) return res;
+            if (n) {
+              const res = traverse(n);
+              if (res) return res;
+            }
           }
         }
       };
