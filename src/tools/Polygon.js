@@ -94,9 +94,10 @@ const _Tool = types
       // the user has clicked on the labels without first finishing
       // it, we close it automatically and create a new one with new
       // labels
-      if (states.length && self.getActivePolygon) {
-        self.getActivePolygon.closePoly();
-      }
+
+      // if (states.length && self.getActivePolygon) {
+      //   self.getActivePolygon.closePoly();
+      // }
 
       self.createRegion({
         x: x,
@@ -108,7 +109,7 @@ const _Tool = types
         stateFlag: false,
       });
 
-      if (self.control.type == "polygonlabels") self.control.unselectAll();
+      // if (self.control.type == "polygonlabels") self.control.unselectAll();
     },
   }));
 

@@ -158,6 +158,22 @@ export default types
         selected.deleteAllRegions();
       });
 
+      // create relation
+      Hotkey.addKey("r", function() {
+        const c = self.completionStore.selected;
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.startRelationMode(c.highlightedNode);
+        }
+      });
+
+      // unselect region
+      Hotkey.addKey("u", function() {
+        const c = self.completionStore.selected;
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.regionStore.unselectAll();
+        }
+      });
+
       Hotkey.addKey("ctrl+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canUndo && history.undo();

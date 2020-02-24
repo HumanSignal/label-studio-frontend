@@ -6,6 +6,10 @@ import InfoModal from "../components/Infomodal/Infomodal";
  * Wrapper of Control item
  */
 const LabelMixin = types.model("LabelMixin").actions(self => ({
+  getSelected() {
+    return self.children.filter(c => c.selected === true);
+  },
+
   /**
    * Get current color from Label settings
    */
@@ -36,6 +40,14 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
     if (names && self.type === self._type) {
       self.unselectAll();
     }
+  },
+
+  // copy state from another Labels object
+  copyState(labels) {
+    // self.unselectAll();
+    labels.getSelectedNames().forEach(l => {
+      self.findLabel(l).setSelected(true);
+    });
   },
 
   fromStateJSON(obj, fromModel) {

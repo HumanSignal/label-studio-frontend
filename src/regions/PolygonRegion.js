@@ -37,7 +37,7 @@ const Model = types
 
     points: types.array(PolygonPoint, []),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, PolygonLabelsModel))),
+    states: types.maybeNull(types.array(types.union(PolygonLabelsModel))),
 
     mouseOverStartPoint: types.optional(types.boolean, false),
 
@@ -173,14 +173,26 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokecolor = stroke;
+      self.fillcolor = stroke;
     },
 
     selectRegion() {
+      if (self.parent.selected) {
+        self.parent.selected.closed = true;
+      }
       // self.points.forEach(p => p.computeOffset());
 
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+
+      self.completion.loadRegionState(self);
     },
 
     setScale(x, y) {

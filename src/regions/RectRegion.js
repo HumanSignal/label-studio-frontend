@@ -35,8 +35,8 @@ const Model = types
     relativeWidth: types.optional(types.number, 0),
     relativeHeight: types.optional(types.number, 0),
 
-    _start_x: types.optional(types.number, 0),
-    _start_y: types.optional(types.number, 0),
+    startX: types.optional(types.number, 0),
+    startY: types.optional(types.number, 0),
 
     width: types.number,
     height: types.number,
@@ -54,7 +54,7 @@ const Model = types
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, RectangleLabelsModel))),
+    states: types.maybeNull(types.array(types.union(RectangleLabelsModel))),
 
     wp: types.maybeNull(types.number),
     hp: types.maybeNull(types.number),
@@ -77,8 +77,8 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      self._start_x = self.x;
-      self._start_y = self.y;
+      self.startX = self.x;
+      self.startY = self.y;
 
       if (self.coordstype === "perc") {
         self.relativeX = self.x;
@@ -86,12 +86,22 @@ const Model = types
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
       }
+
+      self.updateAppearenceFromState();
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+      self.fillcolor = stroke;
     },
 
     unselectRegion() {
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+
+      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {
@@ -110,6 +120,8 @@ const Model = types
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+
+      self.completion.loadRegionState(self);
     },
 
     /**

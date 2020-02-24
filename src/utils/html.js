@@ -2,6 +2,14 @@ import insertAfter from "insert-after";
 
 // work directly with the html tree
 
+function createClass(name, rules) {
+  var style = document.createElement("style");
+  style.type = "text/css";
+  document.getElementsByTagName("head")[0].appendChild(style);
+  if (!(style.sheet || {}).insertRule) (style.styleSheet || style.sheet).addRule(name, rules);
+  else style.sheet.insertRule(name + "{" + rules + "}", 0);
+}
+
 function documentForward(node) {
   if (node.firstChild) return node.firstChild;
 
@@ -160,6 +168,14 @@ function highlightRange(normedRange, cssClass, cssStyle, labels) {
       hl.className = cssClass;
       node.parentNode.replaceChild(hl, node);
       hl.appendChild(node);
+
+      // window.S = hl;
+
+      // var sup = window.document.createElement("sup");
+      // sup.style.userSelect = "none";
+      // sup.textContent = "Hello";
+      // hl.appendChild(sup);
+
       results.push(hl);
     }
   }
@@ -201,4 +217,4 @@ function splitBoundaries(range) {
   }
 }
 
-export { highlightRange, splitBoundaries, normalizeBoundaries };
+export { highlightRange, splitBoundaries, normalizeBoundaries, createClass };

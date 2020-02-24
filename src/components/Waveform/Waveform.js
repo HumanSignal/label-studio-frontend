@@ -254,6 +254,8 @@ export default class Waveform extends React.Component {
        */
       this.wavesurfer.on("region-created", reg => {
         const region = self.props.addRegion(reg);
+        if (!region) return;
+
         reg._region = region;
         reg.color = region.selectedregionbg;
 

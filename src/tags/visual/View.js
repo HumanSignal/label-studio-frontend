@@ -60,6 +60,7 @@ const Model = types.model({
     "textarea",
     "pairwise",
     "style",
+    "label",
   ]),
 });
 

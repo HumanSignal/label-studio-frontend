@@ -4,8 +4,9 @@ import * as Floodfill from "./floodfill";
 import * as Image from "./image";
 import * as RLe from "./rle";
 import * as UDate from "./date";
+import * as HTML from "./html";
 import { debounce } from "./debounce";
 import { guidGenerator } from "./unique";
 import { styleToProp } from "./styles";
 
-export default { Image, Checkers, Colors, UDate, guidGenerator, debounce, styleToProp, RLe, Floodfill };
+export default { Image, HTML, Checkers, Colors, UDate, guidGenerator, debounce, styleToProp, RLe, Floodfill };

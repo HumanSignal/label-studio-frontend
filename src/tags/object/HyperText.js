@@ -186,6 +186,10 @@ class HyperTextPieceView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
 
+      if (r.endContainer.nodeName === "DIV") {
+        r.setEnd(r.startContainer, r.startContainer.length);
+      }
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef.current);
         splitBoundaries(r);

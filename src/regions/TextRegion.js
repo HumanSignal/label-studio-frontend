@@ -19,10 +19,17 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "textrange",
-    start: types.integer,
-    end: types.integer,
+
+    // start: types.integer,
+    // end: types.integer,
+
+    startOffset: types.integer,
+    start: types.string,
+    endOffset: types.integer,
+    end: types.string,
+
     text: types.string,
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel))),
   })
   .views(self => ({
     get parent() {
@@ -35,6 +42,51 @@ const Model = types
   }))
   .actions(self => ({
     // highlightStates() {},
+
+    // toggleHighlight() {
+    //     console.log('toggleHighlight');
+    // },
+
+    beforeDestroy() {
+      var norm = [];
+      if (self._spans) {
+        self._spans.forEach(span => {
+          while (span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
+
+          norm.push(span.parentNode);
+          span.parentNode.removeChild(span);
+        });
+      }
+
+      norm.forEach(n => n.normalize());
+    },
+
+    updateAppearenceFromState() {
+      const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
+
+      let labelColor = self.states.map(s => {
+        return s.getSelectedColor();
+      });
+
+      if (labelColor.length !== 0) {
+        labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
+      }
+
+      if (self._spans) {
+        self._spans.forEach(span => {
+          span.style.background = labelColor;
+        });
+      }
+
+      let cssCls = "htx-label-" + names.join("-");
+      cssCls = cssCls.toLowerCase();
+
+      const lastSpan = self._lastSpan;
+
+      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
+
+      Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
+    },
 
     /**
      *
@@ -50,8 +102,8 @@ const Model = types
           type: "region",
           // text: parent.text,
           value: {
-            start: self.start,
-            end: self.end,
+            start: self.startOffset,
+            end: self.endOffset,
             text: self.text,
           },
         };
@@ -173,7 +225,5 @@ const HtxTextRegionView = ({ store, item, letterGroup, range, textCharIndex, onM
 };
 
 const HtxTextRegion = inject("store")(observer(HtxTextRegionView));
-
-Registry.addTag("textrange", TextRegionModel, HtxTextRegion);
 
 export { TextRegionModel, HtxTextRegion };
