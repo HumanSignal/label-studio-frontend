@@ -96,8 +96,6 @@ const Model = types
         states: p.states,
       });
 
-      // console.log(p.start, p.end);
-
       r._range = p._range;
 
       self.regions.push(r);
@@ -148,8 +146,6 @@ const Model = types
       }
 
       const states = restoreNewsnapshot(fromModel);
-
-      // console.log(start, end);
 
       const tree = {
         pid: obj.id,
@@ -365,7 +361,9 @@ class TextPieceView extends Component {
         const toGlobalOffset = (container, len) => {
           let pos = 0;
           const count = node => {
-            if (node == container) return pos;
+            if (node == container) {
+              return pos;
+            }
             if (node.nodeName == "#text") pos = pos + node.length;
             if (node.nodeName == "BR") pos = pos + 1;
 
@@ -373,7 +371,7 @@ class TextPieceView extends Component {
               const n = node.childNodes[i];
               if (n) {
                 const res = count(n);
-                if (res) return res;
+                if (res !== undefined) return res;
               }
             }
           };
@@ -437,7 +435,12 @@ class TextPieceView extends Component {
 
     const names = Utils.Checkers.flatten(htxRange.states.map(s => s.getSelectedNames()));
 
-    let cssCls = "htx-label-" + names.join("-");
+    let cssCls =
+      "htx-label-" +
+      names
+        .join("-")
+        .split(" ")
+        .join("-");
     cssCls = cssCls.toLowerCase();
     htxRange._className = cssCls;
 
@@ -485,6 +488,9 @@ class TextPieceView extends Component {
       const ss = findNode(root, r.startOffset);
       const ee = findNode(root, r.endOffset);
 
+      // if (! ss || ! ee)
+      //     return;
+
       const range = document.createRange();
       range.setStart(ss.node, ss.left);
       range.setEnd(ee.node, ee.left);
@@ -508,11 +514,14 @@ class TextPieceView extends Component {
         r.states.map(s => s.getSelectedNames()),
       );
 
-      // console.log(spans);
-
       const names = Utils.Checkers.flatten(r.states.map(s => s.getSelectedNames()));
 
-      let cssCls = "htx-label-" + names.join("-");
+      let cssCls =
+        "htx-label-" +
+        names
+          .join("-")
+          .split(" ")
+          .join("-");
       cssCls = cssCls.toLowerCase();
 
       const lastSpan = spans[spans.length - 1];
@@ -548,8 +557,6 @@ class TextPieceView extends Component {
     if (item.encoding === "base64") val = atob(val);
 
     val = val.split("\n").join("<br/>");
-
-    // console.log("hello world");
 
     return (
       <ObjectTag item={item}>

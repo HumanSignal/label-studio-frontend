@@ -23,6 +23,19 @@
   animation-duration: 1s;
 }
 
+.htx-highlight > .htx-highlight {
+  padding: 2px;
+}
+
+.htx-highlight-last:after {
+  top: -0.3em;
+  margin-right: 2px;
+  position: relative;
+  color: #1f104d;
+  font-size: 75%;
+  font-weight: bold;
+}
+
 @keyframes fadeInOpacity {
   0% {
     opacity: 0;
