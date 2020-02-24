@@ -12,7 +12,7 @@ export default observer(({ store }) => {
       onCancel={store.toggleSettings}
     >
       <Tabs defaultActiveKey="1">
-        <Tabs.TabPane tab="Hotkeys" key="1">
+        <Tabs.TabPane tab="General" key="1">
           <Checkbox
             value="Enable labeling hotkeys"
             defaultChecked={store.settings.enableHotkeys}
@@ -33,6 +33,7 @@ export default observer(({ store }) => {
             Show tooltips
           </Checkbox>
         </Tabs.TabPane>
+        <Tabs.TabPane tab="Hotkeys" key="2"></Tabs.TabPane>
       </Tabs>
     </Modal>
   );

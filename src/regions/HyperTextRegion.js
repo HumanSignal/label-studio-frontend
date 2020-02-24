@@ -73,6 +73,7 @@ const Model = types
       self._spans.forEach(span => {
         span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, 0.8);
       });
+      self.completion.loadRegionState(self);
     },
 
     _updateSpansOpacity(opacity) {
@@ -89,6 +90,7 @@ const Model = types
       self.selected = false;
       self.completion.setHighlightedNode(null);
       self._updateSpansOpacity(0.3);
+      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {

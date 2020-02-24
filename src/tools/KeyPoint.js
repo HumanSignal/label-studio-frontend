@@ -58,7 +58,7 @@ const _Tool = types
         coordstype: "px",
       });
 
-      if (self.control.type === "keypointlabels") self.control.unselectAll();
+      // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));
 

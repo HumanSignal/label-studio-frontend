@@ -1,5 +1,6 @@
-import { types, getParent, getEnv } from "mobx-state-tree";
+import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
+import Hotkey from "../core/Hotkey";
 import { AllRegionsType } from "../regions";
 
 export default types
@@ -14,6 +15,33 @@ export default types
 
     findRegion(pid) {
       return self.regions.find(r => r.pid === pid);
+    },
+
+    afterCreate() {
+      onPatch(self, patch => {
+        if ((patch.op === "add" || patch.op === "delete") && patch.path.indexOf("/regions/") !== -1) {
+          self.initHotkeys();
+        }
+      });
+    },
+
+    // init Alt hotkeys for regions selection
+    initHotkeys() {
+      const PREFIX = "alt+shift+";
+      const keys = Hotkey.getKeys();
+      const rkeys = keys.filter(k => k.indexOf(PREFIX) !== -1);
+
+      rkeys.forEach(k => Hotkey.removeKey(k));
+
+      let n = 1;
+      self.regions.forEach(r => {
+        Hotkey.addKey(PREFIX + n, function() {
+          self.unselectAll();
+          r.selectRegion();
+        });
+
+        n = n + 1;
+      });
     },
 
     /**

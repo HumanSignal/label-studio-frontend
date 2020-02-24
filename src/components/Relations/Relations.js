@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Icon } from "antd";
+import { Icon, Divider, List, Button } from "antd";
 import { isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
@@ -17,35 +17,14 @@ const Relation = ({ store, rl }) => {
   }
 
   return (
-    <div className={styles.block}>
-      <div
-        className={styles.section}
-        onMouseOver={() => {
-          rl.toggleHighlight();
-        }}
-        onMouseOut={() => {
-          rl.toggleHighlight();
-        }}
-      >
-        <div className={styles.section__blocks}>
-          <div>
-            <NodeMinimal node={rl.node1} />
-          </div>
-          <Icon type="arrow-right" />
-          <div>
-            <NodeMinimal node={rl.node2} />
-          </div>
-        </div>
+    <div className={styles.section__blocks}>
+      <div>
+        <NodeMinimal node={rl.node1} />
       </div>
-      <button
-        className={styles.delete}
-        onClick={() => {
-          store.deleteRelation(rl);
-          return false;
-        }}
-      >
-        <Icon type="delete" />
-      </button>
+      <Icon type="arrow-right" style={{ marginLeft: "10px", marginRight: "10px" }} />
+      <div>
+        <NodeMinimal node={rl.node2} />
+      </div>
     </div>
   );
 };
@@ -56,13 +35,46 @@ export default observer(({ store }) => {
 
   return (
     <Fragment>
-      <h4>Relations ({relations.length})</h4>
-
+      <Divider dashed orientation="left">
+        Relations ({relations.length})
+      </Divider>
       {!relations.length && <p>No Relations added yet</p>}
 
-      {completion.relationStore.relations.map(rl => (
-        <Relation store={completion.relationStore} rl={rl} />
-      ))}
+      {relations.length > 0 && (
+        <List
+          size="small"
+          bordered
+          itemLayout="horizontal"
+          className={styles.list}
+          dataSource={completion.relationStore.relations}
+          renderItem={item => (
+            <List.Item
+              key={item.id}
+              actions={[
+                <Button
+                  type="danger"
+                  size="small"
+                  className={styles.button}
+                  onClick={() => {
+                    store.deleteRelation();
+                    return false;
+                  }}
+                >
+                  <Icon type="delete" />
+                </Button>,
+              ]}
+              onMouseOver={() => {
+                item.toggleHighlight();
+              }}
+              onMouseOut={() => {
+                item.toggleHighlight();
+              }}
+            >
+              <Relation store={completion.relationStore} rl={item} />
+            </List.Item>
+          )}
+        />
+      )}
     </Fragment>
   );
 });
