@@ -20,11 +20,13 @@ const NodeViews = {
   ),
 
   HyperTextRegionModel: (node, click) => (
-    <div onClick={click}>
-      <Icon type="font-colors" style={pt} />
-      &nbsp; HTML &nbsp;
-      <span style={{ color: "#5a5a5a" }}>{node.text}</span>
-    </div>
+    <Fragment>
+      <span onClick={click} className={styles.node}>
+        <Icon type="font-colors" style={pt} />
+        &nbsp; HTML &nbsp;
+        <span style={{ color: "#5a5a5a" }}>{node.text}</span>
+      </span>
+    </Fragment>
   ),
 
   AudioRegionModel: (node, click) => (

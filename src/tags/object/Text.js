@@ -96,6 +96,8 @@ const Model = types
         states: p.states,
       });
 
+      // console.log(p.start, p.end);
+
       r._range = p._range;
 
       self.regions.push(r);
@@ -147,15 +149,14 @@ const Model = types
 
       const states = restoreNewsnapshot(fromModel);
 
-      console.log("fromStateJSON");
-      console.log(self._ref);
+      // console.log(start, end);
 
       const tree = {
         pid: obj.id,
         startOffset: start,
         endOffset: end,
-        start: "/text()[1]",
-        end: "/text()[1]",
+        start: "",
+        end: "",
         text: text,
         normalization: obj.normalization,
         states: [states],
@@ -427,44 +428,74 @@ class TextPieceView extends Component {
     const { item } = this.props;
 
     item.regions.forEach(function(r) {
-      try {
-        const range = xpath.toRange(r.start, r.startOffset, r.end, r.endOffset, root);
+      const findNode = (el, pos) => {
+        let left = pos;
+        const traverse = node => {
+          if (node.nodeName == "#text") {
+            if (left - node.length <= 0) return { node, left };
 
-        splitBoundaries(range);
+            left = left - node.length;
+          }
 
-        r._range = range;
+          if (node.nodeName == "BR") {
+            if (left - 1 <= 0) return { node, left };
 
-        let labelColor = r.states.map(s => {
-          return s.getSelectedColor();
-        });
+            left = left - 1;
+          }
 
-        if (labelColor.length !== 0) {
-          labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-        }
+          for (var i = 0; i <= node.childNodes.length; i++) {
+            const n = node.childNodes[i];
+            if (n) {
+              const res = traverse(n);
+              if (res) return res;
+            }
+          }
+        };
 
-        const spans = highlightRange(
-          r,
-          "htx-highlight",
-          { backgroundColor: labelColor },
-          r.states.map(s => s.getSelectedNames()),
-        );
+        return traverse(el);
+      };
 
-        const names = Utils.Checkers.flatten(r.states.map(s => s.getSelectedNames()));
+      const ss = findNode(root, r.startOffset);
+      const ee = findNode(root, r.endOffset);
 
-        let cssCls = "htx-label-" + names.join("-");
-        cssCls = cssCls.toLowerCase();
+      const range = document.createRange();
+      range.setStart(ss.node, ss.left);
+      range.setEnd(ee.node, ee.left);
 
-        const lastSpan = spans[spans.length - 1];
-        lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
+      splitBoundaries(range);
 
-        Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
+      r._range = range;
 
-        r._className = cssCls;
-        r._lastSpan = lastSpan;
-        r._spans = spans;
-      } catch (err) {
-        console.log(r);
+      let labelColor = r.states.map(s => {
+        return s.getSelectedColor();
+      });
+
+      if (labelColor.length !== 0) {
+        labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
       }
+
+      const spans = highlightRange(
+        r,
+        "htx-highlight",
+        { backgroundColor: labelColor },
+        r.states.map(s => s.getSelectedNames()),
+      );
+
+      // console.log(spans);
+
+      const names = Utils.Checkers.flatten(r.states.map(s => s.getSelectedNames()));
+
+      let cssCls = "htx-label-" + names.join("-");
+      cssCls = cssCls.toLowerCase();
+
+      const lastSpan = spans[spans.length - 1];
+      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
+
+      Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
+
+      r._className = cssCls;
+      r._lastSpan = lastSpan;
+      r._spans = spans;
     });
 
     Array.from(this.myRef.getElementsByTagName("a")).forEach(a => {
@@ -491,7 +522,7 @@ class TextPieceView extends Component {
 
     val = val.split("\n").join("<br/>");
 
-    console.log("hello world");
+    // console.log("hello world");
 
     return (
       <ObjectTag item={item}>
@@ -500,8 +531,7 @@ class TextPieceView extends Component {
             this.myRef = ref;
             item.setRef(ref);
           }}
-          styles={styles.block}
-          className="htx-text"
+          className={styles.block + " htx-text"}
           data-update={item._update}
           style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
