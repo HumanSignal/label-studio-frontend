@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
 import { types, getType, getRoot } from "mobx-state-tree";
 
+import Constants from "../../core/Constants";
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
@@ -18,20 +19,23 @@ import styles from "./Text/Text.module.scss";
 /**
  * Text tag shows an Text markup that can be labeled
  * @example
- * <Text name="text-1" value="$text"></Text>
+ * <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000"></Text>
  * @name Text
  * @param {string} name of the element
  * @param {string} value of the element
- * @param {string} [encoding=string|base64] provide the html as an escaped string or base64 encoded string
+ * @param {boolean} selectionEnabled enable or disable selection
+ * @param {string} highlightColor hex string with highlight color, if not provided uses the labels color
+ * @param {symbol|word} granularity control per symbol or word selection, default is symbol
+ * @param {string} [encoding=string|base64] decode value from a plain or base64 encoded string
  */
 const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
-  hidden: types.optional(types.enumeration(["true", "false"]), "false"),
   selectionenabled: types.optional(types.boolean, true),
 
-  matchlabel: types.optional(types.boolean, false),
+  highlightcolor: types.maybeNull(types.string),
+  // matchlabel: types.optional(types.boolean, false),
 
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
   encoding: types.optional(types.string, "string"),
@@ -404,9 +408,13 @@ class TextPieceView extends Component {
   }
 
   onMouseUp(ev) {
+    const item = this.props.item;
+
+    if (!item.selectionenabled) return;
+
     var selectedRanges = this.captureDocumentSelection();
 
-    const states = this.props.item.activeStates();
+    const states = item.activeStates();
 
     if (!states || states.length === 0) return;
 
@@ -414,14 +422,16 @@ class TextPieceView extends Component {
       return;
     }
 
-    const htxRange = this.props.item.addRegion(selectedRanges[0]);
+    const htxRange = item.addRegion(selectedRanges[0]);
 
-    let labelColor = htxRange.states.map(s => {
-      return s.getSelectedColor();
-    });
+    let labelColor =
+      item.highlightcolor ||
+      htxRange.states.map(s => {
+        return s.getSelectedColor();
+      })[0];
 
-    if (labelColor.length !== 0) {
-      labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
+    if (labelColor) {
+      labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
     }
 
     const spans = highlightRange(
@@ -432,6 +442,24 @@ class TextPieceView extends Component {
     );
 
     htxRange._spans = spans;
+
+    spans.forEach(s => {
+      s.onmouseover = function() {
+        if (item.completion.relationMode) {
+          htxRange.toggleHighlight();
+          s.style.cursor = Constants.RELATION_MODE_CURSOR;
+        } else {
+          s.style.cursor = Constants.POINTER_CURSOR;
+        }
+      };
+
+      s.onmouseout = function() {
+        htxRange.setHighlight(false);
+        s.style.cursor = Constants.DEFAULT_CURSOR;
+      };
+
+      // store.completionStore.selected.relationMode ? Constants.RELATION_MODE_CURSOR : Constants.POINTER_CURSOR
+    });
 
     const names = Utils.Checkers.flatten(htxRange.states.map(s => s.getSelectedNames()));
 
@@ -499,12 +527,14 @@ class TextPieceView extends Component {
 
       r._range = range;
 
-      let labelColor = r.states.map(s => {
-        return s.getSelectedColor();
-      });
+      let labelColor =
+        item.highlightcolor ||
+        r.states.map(s => {
+          return s.getSelectedColor();
+        })[0];
 
-      if (labelColor.length !== 0) {
-        labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
+      if (labelColor) {
+        labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
       }
 
       const spans = highlightRange(

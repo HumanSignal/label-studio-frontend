@@ -131,7 +131,6 @@ const Completion = types
     },
 
     loadRegionState(region) {
-      console.log(region.states);
       region.states &&
         region.states.forEach(s => {
           const mainViewTag = self.names.get(s.name);
@@ -246,7 +245,7 @@ const Completion = types
       // Hotkeys setup
       self.traverseTree(node => {
         if (node && node.onHotKey && node.hotkey) {
-          Hotkey.addKey(node.hotkey, node.onHotKey, node.hotkeyScope);
+          Hotkey.addKey(node.hotkey, node.onHotKey, undefined, node.hotkeyScope);
         }
       });
 
@@ -257,7 +256,7 @@ const Completion = types
           else audioNode = node;
 
           node.hotkey = comb;
-          Hotkey.addKey(comb, node.onHotKey);
+          Hotkey.addKey(comb, node.onHotKey, "Play an audio");
 
           audiosNum++;
         }

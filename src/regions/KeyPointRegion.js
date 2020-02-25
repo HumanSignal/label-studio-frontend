@@ -129,6 +129,8 @@ const Model = types
             y: (self.y * 100) / self.parent.stageHeight,
             width: (self.width * 100) / self.parent.stageWidth, //  * (self.scaleX || 1)
           },
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;

@@ -70,21 +70,21 @@ const NodeViews = {
   ),
 
   KeyPointRegionModel: (node, click) => (
-    <p>
-      <Icon type="eye" style={pt} />
+    <Fragment>
       <span onClick={click} className={styles.node}>
+        <Icon type="eye" style={pt} />
         &nbsp; KeyPoint
       </span>
-    </p>
+    </Fragment>
   ),
 
   BrushRegionModel: (node, click) => (
-    <p>
-      <Icon type="highlight" style={pt} />
+    <Fragment>
       <span onClick={click} className={styles.node}>
+        <Icon type="highlight" style={pt} />
         &nbsp; Brush
       </span>
-    </p>
+    </Fragment>
   ),
 };
 

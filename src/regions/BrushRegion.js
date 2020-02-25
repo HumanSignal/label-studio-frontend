@@ -143,6 +143,11 @@ const Model = types
 
     convertPointsToMask() {},
 
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+    },
+
     // addPoints(x, y, mode) {
     //   if (mode) self.mode = "eraser";
     //   self.points.push(x);
@@ -211,6 +216,8 @@ const Model = types
             rle: Array.prototype.slice.call(rle),
           },
 
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
           // value: {
           //   points: self.points,
           //   eraserpoints: self.eraserpoints,

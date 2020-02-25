@@ -114,7 +114,7 @@ const App = inject("store")(
 
                 <div className={styles.common + " ls-common"}>
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                    <Segment className="ls-segment">
+                    <Segment className={styles.segment + " ls-segment"}>
                       {Tree.renderItem(root)}
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>

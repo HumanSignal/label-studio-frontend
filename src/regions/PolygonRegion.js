@@ -262,6 +262,8 @@ const Model = types
           value: {
             points: perc_points,
           },
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;
