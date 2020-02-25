@@ -19,7 +19,7 @@ keymaster.filter = function(event) {
  * @param {*} key
  * @param {*} func
  */
-function addKey(key, func, scope = "__main__", desc) {
+function addKey(key, func, desc, scope = "__main__") {
   if (_hotkeys_map[key]) return;
 
   _hotkeys_map[key] = func;
@@ -33,6 +33,10 @@ function addKey(key, func, scope = "__main__", desc) {
  * after the returning function is called
  */
 function overwriteKey(key, func) {}
+
+function keysDescipritions() {
+  return _hotkeys_desc;
+}
 
 function removeKey(key) {
   keymaster.unbind(key);
@@ -81,4 +85,4 @@ function makeComb() {
   return null;
 }
 
-export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys };
+export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescipritions };

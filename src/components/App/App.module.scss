@@ -1,5 +1,10 @@
 @import "../../assets/styles/global.scss";
 
+.segment {
+  position: sticky;
+  top: 1rem;
+}
+
 .editor {
   min-width: 320px;
   margin: 0 auto;
