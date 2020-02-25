@@ -41,11 +41,37 @@ const Model = types
     },
   }))
   .actions(self => ({
-    // highlightStates() {},
+    setHighlight(val) {
+      self.highlighted = val;
 
-    // toggleHighlight() {
-    //     console.log('toggleHighlight');
-    // },
+      if (self._spans) {
+        const len = self._spans.length;
+        const fspan = self._spans[0];
+        const lspan = self._spans[len - 1];
+        const mspans = self._spans.slice(1, len - 2);
+
+        const set = (span, s, { top = true, bottom = true, right = true, left = true } = {}) => {
+          if (right) span.style.borderRight = s;
+          if (left) span.style.borderLeft = s;
+          if (top) span.style.borderTop = s;
+          if (bottom) span.style.borderBottom = s;
+        };
+
+        if (self.highlighted) {
+          const h = Constants.HIGHLIGHTED_CSS_BORDER;
+          set(fspan, h, { right: false });
+          set(lspan, h, { left: false });
+
+          if (mspans.length) mspans.forEach(s => set(s, h, { top: false, bottom: false }));
+        } else {
+          const zpx = "0px";
+          set(fspan, zpx);
+          set(lspan, zpx);
+
+          if (mspans.length) mspans.forEach(s => set(s, zpx, { top: false, bottom: false }));
+        }
+      }
+    },
 
     beforeDestroy() {
       var norm = [];
@@ -64,12 +90,15 @@ const Model = types
     updateAppearenceFromState() {
       const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
 
-      let labelColor = self.states.map(s => {
-        return s.getSelectedColor();
-      });
+      const hc = self.parent.highlightcolor;
+      let labelColor =
+        hc ||
+        self.states.map(s => {
+          return s.getSelectedColor();
+        })[0];
 
-      if (labelColor.length !== 0) {
-        labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
+      if (labelColor) {
+        labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
       }
 
       if (self._spans) {
@@ -100,7 +129,6 @@ const Model = types
           to_name: parent.name,
           source: parent.value,
           type: "region",
-          // text: parent.text,
           value: {
             start: self.startOffset,
             end: self.endOffset,

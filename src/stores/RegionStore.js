@@ -39,9 +39,10 @@ export default types
           self.unselectAll();
           r.selectRegion();
         });
-
         n = n + 1;
       });
+
+      Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");
     },
 
     /**

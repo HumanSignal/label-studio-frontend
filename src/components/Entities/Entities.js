@@ -52,9 +52,7 @@ export default observer(({ store, regionStore }) => {
       >
         <Button type="link" style={{ paddingLeft: "10px", paddingRight: 0, fontSize: "12px" }}>
           Remove all
-          {regions.length > 0 && store.settings.enableHotkeys && store.settings.enableTooltips && (
-            <Hint>[ ctrl+bksp ]</Hint>
-          )}
+          {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ ctrl+bksp ]</Hint>}
         </Button>
       </Popconfirm>
     );
@@ -63,7 +61,7 @@ export default observer(({ store, regionStore }) => {
   return (
     <div>
       <Divider dashed orientation="left">
-        Entities ({regions.length}) {c.edittable && buttonRemove()}
+        Entities ({regions.length}) {regions.length > 0 && c.edittable && buttonRemove()}
       </Divider>
       {!regions.length && <p>No Entities added yet</p>}
       {regions.length > 0 && (

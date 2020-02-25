@@ -214,6 +214,9 @@ const Model = types
             height: (self.height * (self.scaleY || 1) * 100) / self.parent.stageHeight,
             rotation: self.rotation,
           },
+
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;
