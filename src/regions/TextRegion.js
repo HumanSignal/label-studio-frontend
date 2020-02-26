@@ -6,6 +6,7 @@ import Constants from "../core/Constants";
 import Hint from "../components/Hint/Hint";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
+import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import styles from "./TextRegion/TextRegion.module.scss";
@@ -156,7 +157,7 @@ const Model = types
     },
   }));
 
-const TextRegionModel = types.compose("TextRegionModel", RegionsMixin, NormalizationMixin, Model);
+const TextRegionModel = types.compose("TextRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 /**
  * Region state hint
@@ -234,7 +235,7 @@ const HtxTextRegionView = ({ store, item, letterGroup, range, textCharIndex, onM
   return (
     <span
       style={markStyle}
-      onClick={range.onClickRegion}
+      // onClick={range.onClickRegion}
       onMouseOver={() => {
         if (store.completionStore.selected.relationMode) {
           range.setHighlight(true);

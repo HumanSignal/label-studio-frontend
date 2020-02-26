@@ -69,16 +69,6 @@ export default observer(
       return item.onMouseMove(e);
     };
 
-    /**
-     * Update brightness of Image
-     */
-    updateBrightness = range => {
-      const { item } = this.props;
-      item.freezeHistory();
-
-      item.setBrightnessGrade(range);
-    };
-
     updateGridSize = range => {
       const { item } = this.props;
       item.freezeHistory();
@@ -208,6 +198,22 @@ export default observer(
       window.removeEventListener("resize", this.onResize);
     }
 
+    renderTools() {
+      const { item, store } = this.props;
+      const cs = store.completionStore;
+
+      if (cs.viewingAllCompletions || cs.viewingAllPredictions) return null;
+
+      return (
+        <div className={styles.block}>
+          {item
+            .getToolsManager()
+            .allTools()
+            .map(tool => tool.viewClass)}
+        </div>
+      );
+    }
+
     render() {
       const { item, store } = this.props;
 
@@ -226,12 +232,13 @@ export default observer(
         width: item.width,
         maxWidth: item.maxwidth,
         transformOrigin: "left top",
-        filter: `brightness(${item.brightnessGrade}%)`,
+        filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
       };
 
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;
         const translate = "translate(" + zoomingPositionX + "px," + zoomingPositionY + "px) ";
+        const rotate = "rotate(" + item.rotation + "deg) ";
         imgStyle["transform"] = translate + "scale(" + item.resize + ", " + item.resize + ")";
       }
 
@@ -307,12 +314,7 @@ export default observer(
             </Layer>
           </Stage>
 
-          <div className={styles.block}>
-            {item
-              .getToolsManager()
-              .allTools()
-              .map(tool => tool.viewClass)}
-          </div>
+          {this.renderTools()}
         </ObjectTag>
       );
     }

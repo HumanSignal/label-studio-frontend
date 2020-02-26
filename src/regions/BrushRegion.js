@@ -4,6 +4,7 @@ import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 import { encode, decode } from "@thi.ng/rle-pack";
 
+import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -244,7 +245,7 @@ const Model = types
     },
   }));
 
-const BrushRegionModel = types.compose("BrushRegionModel", RegionsMixin, NormalizationMixin, Model);
+const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
   let currentPoints = [];

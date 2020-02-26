@@ -1,5 +1,9 @@
 @import "../../assets/styles/global.scss";
 
+.ant-list-item-action {
+  margin-left: 10px !important;
+}
+
 .segment {
   position: sticky;
   top: 1rem;

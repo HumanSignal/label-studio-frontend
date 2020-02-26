@@ -13,8 +13,8 @@ const NodeViews = {
       <span onClick={click} className={styles.node}>
         <Icon type="font-colors" style={pt} />
         &nbsp; Text: &nbsp;
-        {node.text.substring(0, 25)}
-        {node.text.length > 28 && "..."}
+        {node.text.substring(0, 23)}
+        {node.text.length > 26 && "..."}
       </span>
     </Fragment>
   ),

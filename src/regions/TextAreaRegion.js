@@ -3,6 +3,7 @@ import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 import { Alert } from "antd";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -45,7 +46,13 @@ const Model = types
     },
   }));
 
-const TextAreaRegionModel = types.compose("TextAreaRegionModel", RegionsMixin, NormalizationMixin, Model);
+const TextAreaRegionModel = types.compose(
+  "TextAreaRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 const HtxTextAreaRegionView = ({ store, item }) => {
   let markStyle = {

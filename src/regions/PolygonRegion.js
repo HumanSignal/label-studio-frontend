@@ -4,6 +4,7 @@ import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
@@ -286,7 +287,13 @@ const Model = types
     },
   }));
 
-const PolygonRegionModel = types.compose("PolygonRegionModel", RegionsMixin, NormalizationMixin, Model);
+const PolygonRegionModel = types.compose(
+  "PolygonRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 /**
  * Get coordinates of anchor point

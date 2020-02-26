@@ -1,5 +1,6 @@
 import { types, getParent, getEnv, getRoot, destroy, detach, onPatch } from "mobx-state-tree";
 
+import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
 import NormalizationStore from "./NormalizationStore";
 import RegionStore from "./RegionStore";
@@ -107,9 +108,13 @@ const Completion = types
     startRelationMode(node1) {
       self._relationObj = node1;
       self.relationMode = true;
+
+      document.body.style.cursor = Constants.CHOOSE_CURSOR;
     },
 
     stopRelationMode() {
+      document.body.style.cursor = Constants.DEFAULT_CURSOR;
+
       self._relationObj = null;
       self.relationMode = false;
 
@@ -153,6 +158,19 @@ const Completion = types
 
     addNormalization(normalization) {
       self.normalizationStore.addNormalization();
+    },
+
+    validate() {
+      let ok = true;
+
+      self.traverseTree(function(node) {
+        if (node.required === true) {
+          ok = node.validate();
+          if (ok === false) ok = false;
+        }
+      });
+
+      return ok;
     },
 
     traverseTree(cb) {
@@ -199,9 +217,20 @@ const Completion = types
     afterAttach() {
       self.traverseTree(node => {
         if (node.updateValue) node.updateValue(self.store);
+
+        // called when the completion is attached to the main store,
+        // at this point the whole tree is available. This method
+        // may come handy when you have a tag that acts or depends
+        // on other elements in the tree.
         if (node.completionAttached) node.completionAttached();
 
-        // Copy tools from control tags into object tools manager
+        // copy tools from control tags into object tools manager
+        // [DOCS] each object tag may have an assigned tools
+        // manager. This assignment may happen because user asked
+        // for it through the config, or because the attached
+        // control tags are complex and require additional UI
+        // interfaces. Each control tag defines a set of tools it
+        // supports
         if (node && node.getToolsManager) {
           const tools = node.getToolsManager();
           const states = self.toNames.get(node.name);
@@ -218,7 +247,8 @@ const Completion = types
         self.loadedDate = new Date();
       }
 
-      // initialize toName bindings
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
       self.traverseTree(node => {
         if (node && node.name && node.id) self.names.set(node.name, node.id);
 
@@ -250,7 +280,8 @@ const Completion = types
       });
 
       self.traverseTree(node => {
-        // add Space hotkey for playbacks of audio
+        // add Space hotkey for playbacks of audio, there might be
+        // multiple audios on the screen
         if (node && !node.hotkey && node.type === "audio") {
           if (audiosNum > 0) comb = mod + "+" + (audiosNum + 1);
           else audioNode = node;

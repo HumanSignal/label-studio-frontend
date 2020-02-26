@@ -10,7 +10,6 @@ import ToolMixin from "../mixins/Tool";
 const ToolView = observer(({ item }) => {
   return (
     <Fragment>
-      <Divider style={{ margin: "5px 0;" }} dashed />
       <BasicToolView
         selected={item.selected}
         icon="drag"
@@ -18,9 +17,7 @@ const ToolView = observer(({ item }) => {
         onClick={ev => {
           const sel = item.selected;
           item.manager.unselectAll();
-
           item.setSelected(!sel);
-
           if (item.selected) {
             const stage = item.obj.stageRef;
             stage.container().style.cursor = "all-scroll";
@@ -61,22 +58,27 @@ const _Tool = types
       self.mode = "viewing";
     },
 
-    mousemoveEv(ev, [x, y]) {
-      if (self.mode !== "moving") return;
-
+    handleDrag(ev) {
       const item = self._manager.obj;
       const stage = item.stageRef;
+      const scale = stage.scaleX();
 
-      // console.log(item.zoomingPositionX);
-      // const newPos = {
-      //     x: -1*x,
-      //     y: -1*y
-      // }
+      let posx = stage.x() + ev.evt.movementX;
+      let posy = stage.y() + ev.evt.movementY;
 
-      // item.setZoomPosition(item.zoomingPositionX+1, item.zoomingPositionY+1);
+      if (posx > 0) posx = 0;
+      if (posy > 0) posy = 0;
 
-      // stage.position(newPos);
-      // stage.batchDraw();
+      item.setZoom(scale, posx, posy);
+      stage.position({ x: posx, y: posy });
+      stage.batchDraw();
+    },
+
+    mousemoveEv(ev, [x, y]) {
+      const scale = self._manager.obj.stageRef.scaleX();
+
+      if (scale <= 1) return;
+      if (self.mode === "moving") self.handleDrag(ev);
     },
 
     mousedownEv(ev, [x, y]) {
