@@ -132,6 +132,8 @@ const _Tool = types
         if (self.control.type === "rectanglelabels") self.control.unselectAll();
       }
 
+      self.obj.completion().highlightedNode.unselectRegion();
+
       self.mode = "viewing";
     },
   }));

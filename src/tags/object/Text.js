@@ -37,6 +37,9 @@ const TagAttrs = types.model("TextModel", {
   highlightcolor: types.maybeNull(types.string),
   // matchlabel: types.optional(types.boolean, false),
 
+  // [TODO]
+  enableempty: types.optional(types.boolean, false),
+
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
   encoding: types.optional(types.string, "string"),
 });
@@ -362,29 +365,8 @@ class TextPieceView extends Component {
         normedRange._range = r;
         normedRange.text = selection.toString();
 
-        const toGlobalOffset = (container, len) => {
-          let pos = 0;
-          const count = node => {
-            if (node == container) {
-              return pos;
-            }
-            if (node.nodeName == "#text") pos = pos + node.length;
-            if (node.nodeName == "BR") pos = pos + 1;
-
-            for (var i = 0; i <= node.childNodes.length; i++) {
-              const n = node.childNodes[i];
-              if (n) {
-                const res = count(n);
-                if (res !== undefined) return res;
-              }
-            }
-          };
-
-          return len + count(self.myRef);
-        };
-
-        const ss = toGlobalOffset(r.startContainer, r.startOffset);
-        const ee = toGlobalOffset(r.endContainer, r.endOffset);
+        const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
+        const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
 
         normedRange.startOffset = ss;
         normedRange.endOffset = ee;
@@ -407,7 +389,45 @@ class TextPieceView extends Component {
     return ranges;
   }
 
+  onClick(ev) {
+    // console.log('click');
+  }
+
+  addEventsToSpans(item, range, spans) {
+    const addEvent = s => {
+      s.onmouseover = function() {
+        if (item.completion.relationMode) {
+          range.toggleHighlight();
+          s.style.cursor = Constants.RELATION_MODE_CURSOR;
+        } else {
+          s.style.cursor = Constants.POINTER_CURSOR;
+        }
+      };
+
+      s.onmouseout = function() {
+        range.setHighlight(false);
+        s.style.cursor = Constants.DEFAULT_CURSOR;
+      };
+
+      s.onclick = function(ev) {
+        if (ev.doSelection) return;
+
+        range.onClickRegion();
+      };
+
+      s.mouseover = function() {
+        this.style.cursor = "pointer";
+      };
+
+      return false;
+    };
+
+    spans.forEach(s => addEvent(s));
+  }
+
   onMouseUp(ev) {
+    // console.log('mouseup');
+
     const item = this.props.item;
 
     if (!item.selectionenabled) return;
@@ -416,11 +436,9 @@ class TextPieceView extends Component {
 
     const states = item.activeStates();
 
-    if (!states || states.length === 0) return;
+    if (!states || states.length === 0 || selectedRanges.length === 0) return;
 
-    if (selectedRanges.length === 0) {
-      return;
-    }
+    ev.nativeEvent.doSelection = true;
 
     const htxRange = item.addRegion(selectedRanges[0]);
 
@@ -443,23 +461,7 @@ class TextPieceView extends Component {
 
     htxRange._spans = spans;
 
-    spans.forEach(s => {
-      s.onmouseover = function() {
-        if (item.completion.relationMode) {
-          htxRange.toggleHighlight();
-          s.style.cursor = Constants.RELATION_MODE_CURSOR;
-        } else {
-          s.style.cursor = Constants.POINTER_CURSOR;
-        }
-      };
-
-      s.onmouseout = function() {
-        htxRange.setHighlight(false);
-        s.style.cursor = Constants.DEFAULT_CURSOR;
-      };
-
-      // store.completionStore.selected.relationMode ? Constants.RELATION_MODE_CURSOR : Constants.POINTER_CURSOR
-    });
+    this.addEventsToSpans(item, htxRange, spans);
 
     const names = Utils.Checkers.flatten(htxRange.states.map(s => s.getSelectedNames()));
 
@@ -482,6 +484,7 @@ class TextPieceView extends Component {
   }
 
   _handleUpdate() {
+    const self = this;
     const root = this.myRef;
     const { item } = this.props;
 
@@ -544,6 +547,8 @@ class TextPieceView extends Component {
         r.states.map(s => s.getSelectedNames()),
       );
 
+      self.addEventsToSpans(item, r, spans);
+
       const names = Utils.Checkers.flatten(r.states.map(s => s.getSelectedNames()));
 
       let cssCls =
@@ -562,13 +567,6 @@ class TextPieceView extends Component {
       r._className = cssCls;
       r._lastSpan = lastSpan;
       r._spans = spans;
-    });
-
-    Array.from(this.myRef.getElementsByTagName("a")).forEach(a => {
-      a.addEventListener("click", function(ev) {
-        ev.preventDefault();
-        return false;
-      });
     });
   }
 
@@ -599,6 +597,7 @@ class TextPieceView extends Component {
           data-update={item._update}
           style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
+          //onClick={this.onClick.bind(this)}
           dangerouslySetInnerHTML={{ __html: val }}
         />
       </ObjectTag>

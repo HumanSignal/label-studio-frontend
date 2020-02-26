@@ -56,7 +56,9 @@ export default observer(({ store }) => {
                   size="small"
                   className={styles.button}
                   onClick={() => {
-                    store.deleteRelation();
+                    item.node1.setHighlight(false);
+                    item.node2.setHighlight(false);
+                    item.parent.deleteRelation(item);
                     return false;
                   }}
                 >

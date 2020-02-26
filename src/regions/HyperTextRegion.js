@@ -1,5 +1,6 @@
 import { types, getRoot, getParentOfType } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
@@ -115,6 +116,12 @@ const Model = types
     },
   }));
 
-const HyperTextRegionModel = types.compose("HyperTextRegionModel", RegionsMixin, NormalizationMixin, Model);
+const HyperTextRegionModel = types.compose(
+  "HyperTextRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 export { HyperTextRegionModel };

@@ -3,6 +3,7 @@ import { Form } from "antd";
 import { observer } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
+import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Tree from "../../core/Tree";
@@ -32,6 +33,9 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, false),
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
+
+  required: types.optional(types.boolean, false),
+  requiredmessage: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -55,6 +59,16 @@ const Model = types
     },
   }))
   .actions(self => ({
+    validate() {
+      const names = self.getSelectedNames();
+      if (names.length === 0) {
+        InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
+        return false;
+      }
+
+      return true;
+    },
+
     toStateJSON() {
       const names = self.getSelectedNames();
 

@@ -3,6 +3,7 @@ import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
@@ -94,6 +95,10 @@ const Model = types
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
       self.fillcolor = stroke;
+    },
+
+    rotate(degree) {
+      self.rotation = self.rotation + degree;
     },
 
     unselectRegion() {
@@ -239,7 +244,14 @@ const Model = types
     },
   }));
 
-const RectRegionModel = types.compose("RectRegionModel", RegionsMixin, NormalizationMixin, DisabledMixin, Model);
+const RectRegionModel = types.compose(
+  "RectRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  DisabledMixin,
+  Model,
+);
 
 const HtxRectangleView = ({ store, item }) => {
   let { strokeColor, strokeWidth } = item;

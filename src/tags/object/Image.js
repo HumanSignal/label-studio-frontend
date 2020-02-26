@@ -52,7 +52,9 @@ const TagAttrs = types.model({
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
-  brightness: types.optional(types.boolean, false),
+  zoomcontrol: types.optional(types.boolean, false),
+  brightnesscontrol: types.optional(types.boolean, false),
+  contrastcontrol: types.optional(types.boolean, false),
 
   showmousepos: types.optional(types.boolean, false),
 });
@@ -75,6 +77,8 @@ const Model = types
     _value: types.optional(types.string, ""),
 
     // tools: types.array(BaseTool),
+
+    rotation: types.optional(types.number, 0),
 
     sizeUpdated: types.optional(types.boolean, false),
 
@@ -111,6 +115,8 @@ const Model = types
      */
     brightnessGrade: types.optional(types.number, 100),
 
+    contrastGrade: types.optional(types.number, 100),
+
     /**
      * Cursor coordinates
      */
@@ -131,9 +137,6 @@ const Model = types
     selectedShape: types.safeReference(
       types.union(BrushRegionModel, RectRegionModel, PolygonRegionModel, KeyPointRegionModel),
     ),
-    // activePolygon: types.maybeNull(types.safeReference(PolygonRegionModel)),
-
-    // activeShape: types.maybeNull(types.union(RectRegionModel, BrushRegionModel)),
 
     shapes: types.array(types.union(BrushRegionModel, RectRegionModel, PolygonRegionModel, KeyPointRegionModel), []),
   })
@@ -189,18 +192,12 @@ const Model = types
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
-      // console.log(self.id);
-      // console.log(getType(self));
-      // toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
-      // tools["zoom"] = Tools.Zoom.create({ image: self.id });
-      // tools["zoom"]._image = self;
-      // console.log(getRoot(self));
-      // const st = self.states();
-      // self.states().forEach(item => {
-      // const tools = item.getTools();
-      // if (tools)
-      //     tools.forEach(t => t._image = self);
-      // });
+      if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
+
+      if (self.brightnesscontrol)
+        toolsManager.addTool("brightness", Tools.Brightness.create({}, { manager: toolsManager }));
+
+      if (self.contrastcontrol) toolsManager.addTool("contrast", Tools.Contrast.create({}, { manager: toolsManager }));
     }
 
     function getTools() {
@@ -215,17 +212,7 @@ const Model = types
       tools = null;
     }
 
-    function afterAttach() {
-      // console.log("afterAttach Image");
-      // console.log(self.completion().toNames);
-      // console.log(self.states());
-      // self.states() && self.states().forEach(item => {
-      //     console.log("TOOOL:");
-      //     console.log(item.getTools().get("keypoint"));
-      // });
-    }
-
-    return { afterCreate, beforeDestroy, getTools, afterAttach, getToolsManager };
+    return { afterCreate, beforeDestroy, getTools, getToolsManager };
   })
 
   .actions(self => ({
@@ -247,6 +234,10 @@ const Model = types
      */
     setBrightnessGrade(value) {
       self.brightnessGrade = value;
+    },
+
+    setContrastGrade(value) {
+      self.contrastGrade = value;
     },
 
     setGridSize(value) {
@@ -297,6 +288,17 @@ const Model = types
 
     setSelected(shape) {
       self.selectedShape = shape;
+    },
+
+    rotate(degree = 90) {
+      self.rotation = self.rotation + degree;
+
+      if (self.rotation == 360) {
+        self.rotation = 0;
+        degree = 0;
+      }
+
+      self.shapes.forEach(s => s.rotate(degree));
     },
 
     updateImageSize(ev) {
