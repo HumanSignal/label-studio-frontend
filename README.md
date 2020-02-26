@@ -30,7 +30,7 @@ npm install label-studio
 
 <!-- Initialize Label Studio -->
 <script>
-  var labelStudio = new LabelStudio('editor', {
+  var labelStudio = new LabelStudio('label-studio', {
     config: `
       <View>
         <Image name="img" value="$image"></Image>
