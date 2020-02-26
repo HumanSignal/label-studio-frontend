@@ -13,6 +13,22 @@ export default types
       getEnv(self).onEntityCreate(region);
     },
 
+    /**
+     * Delete region
+     * @param {obj} region
+     */
+    deleteRegion(region) {
+      const arr = self.regions;
+
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === region) {
+          arr.splice(i, 1);
+        }
+      }
+
+      getEnv(self).onEntityDelete(region);
+    },
+
     findRegion(pid) {
       return self.regions.find(r => r.pid === pid);
     },
@@ -43,22 +59,6 @@ export default types
       });
 
       Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");
-    },
-
-    /**
-     * Delete region
-     * @param {obj} region
-     */
-    deleteRegion(region) {
-      const arr = self.regions;
-
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === region) {
-          arr.splice(i, 1);
-        }
-      }
-
-      getEnv(self).onEntityDelete(region);
     },
 
     unselectAll() {

@@ -157,14 +157,6 @@ function highlightRange(normedRange, cssClass, cssStyle, labels) {
       var hl = window.document.createElement("span");
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
-      hl.addEventListener("click", function() {
-        normedRange.onClickRegion();
-      });
-
-      hl.addEventListener("mouseover", function() {
-        this.style.cursor = "pointer";
-      });
-
       hl.className = cssClass;
       node.parentNode.replaceChild(hl, node);
       hl.appendChild(node);
@@ -217,4 +209,25 @@ function splitBoundaries(range) {
   }
 }
 
-export { highlightRange, splitBoundaries, normalizeBoundaries, createClass };
+const toGlobalOffset = (container, element, len) => {
+  let pos = 0;
+  const count = node => {
+    if (node == element) {
+      return pos;
+    }
+    if (node.nodeName == "#text") pos = pos + node.length;
+    if (node.nodeName == "BR") pos = pos + 1;
+
+    for (var i = 0; i <= node.childNodes.length; i++) {
+      const n = node.childNodes[i];
+      if (n) {
+        const res = count(n);
+        if (res !== undefined) return res;
+      }
+    }
+  };
+
+  return len + count(container);
+};
+
+export { toGlobalOffset, highlightRange, splitBoundaries, normalizeBoundaries, createClass };

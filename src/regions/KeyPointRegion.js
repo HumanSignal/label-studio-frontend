@@ -3,6 +3,7 @@ import { Circle } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -153,7 +154,13 @@ const Model = types
     },
   }));
 
-const KeyPointRegionModel = types.compose("KeyPointRegionModel", RegionsMixin, NormalizationMixin, Model);
+const KeyPointRegionModel = types.compose(
+  "KeyPointRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 const HtxKeyPointView = ({ store, item }) => {
   const x = item.x;

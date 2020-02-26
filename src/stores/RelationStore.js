@@ -1,4 +1,4 @@
-import { types, destroy } from "mobx-state-tree";
+import { types, destroy, getParentOfType } from "mobx-state-tree";
 
 import { AllRegionsType } from "../regions";
 
@@ -10,6 +10,11 @@ const Relation = types
     node1: types.reference(AllRegionsType),
     node2: types.reference(AllRegionsType),
   })
+  .views(self => ({
+    get parent() {
+      return getParentOfType(self, RelationStore);
+    },
+  }))
   .actions(self => ({
     toggleHighlight() {
       if (self.node1 === self.node2) {
@@ -21,7 +26,7 @@ const Relation = types
     },
   }));
 
-export default types
+const RelationStore = types
   .model("RelationStore", {
     relations: types.array(Relation),
   })
@@ -80,3 +85,5 @@ export default types
       self.addRelation(node1, node2);
     },
   }));
+
+export default RelationStore;

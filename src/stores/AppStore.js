@@ -236,6 +236,8 @@ export default types
       const c = self.completionStore.selected;
       c.beforeSend();
 
+      if (!c.validate()) return;
+
       c.sendUserGenerate();
       getEnv(self).onSubmitCompletion(self, c);
     }

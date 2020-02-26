@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Button, Popconfirm, List, Typography, Divider } from "antd";
+import { Button, Popconfirm, List, Typography, Divider, Badge } from "antd";
 import { getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
@@ -25,9 +25,8 @@ const EntityItem = observer(({ item, idx }) => {
         item.toggleHighlight();
       }}
     >
-      <span>
-        <span style={{ fontSize: "10px" }}>{idx + 1}</span>&nbsp; <Node node={item} />
-      </span>
+      <Badge count={idx + 1} style={{ backgroundColor: item.getOneColor() }} />
+      &nbsp; <Node node={item} />
     </List.Item>
   );
 });

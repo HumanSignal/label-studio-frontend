@@ -1,5 +1,6 @@
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -154,6 +155,6 @@ const Model = types
     },
   }));
 
-const AudioRegionModel = types.compose("AudioRegionModel", RegionsMixin, NormalizationMixin, Model);
+const AudioRegionModel = types.compose("AudioRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 export { AudioRegionModel };

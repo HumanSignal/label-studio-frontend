@@ -10,7 +10,15 @@ export default {
 
   // cursors
   DEFAULT_CURSOR: "default",
+  CHOOSE_CURSOR: "pointer",
   POINTER_CURSOR: "pointer",
   MOVE_CURSOR: "move",
   RELATION_MODE_CURSOR: "crosshair",
+
+  // images
+  BRIGHTNESS_VALUE: 100,
+  BRIGHTNESS_MAX: 400,
+
+  CONTRAST_VALUE: 100,
+  CONTRAST_MAX: 400,
 };
