@@ -117,7 +117,7 @@ const NodeMinimal = ({ node }) => {
     return (
       <Fragment>
         <Icon type="block" />
-        &nbsp; Rectangle
+        &nbsp; Rect
       </Fragment>
     );
   }

@@ -130,9 +130,9 @@ const _Tool = types
       if (s.width < minSize.w || s.height < minSize.h) {
         destroy(s);
         if (self.control.type === "rectanglelabels") self.control.unselectAll();
+      } else {
+        self.obj.completion().highlightedNode.unselectRegion();
       }
-
-      self.obj.completion().highlightedNode.unselectRegion();
 
       self.mode = "viewing";
     },
