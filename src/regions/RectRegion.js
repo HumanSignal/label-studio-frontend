@@ -22,7 +22,7 @@ import { guidGenerator } from "../core/Helpers";
  */
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     type: "rectangleregion",
@@ -98,7 +98,7 @@ const Model = types
     },
 
     rotate(degree) {
-      self.rotation = self.rotation + degree;
+      // self.rotation = self.rotation + degree;
     },
 
     unselectRegion() {

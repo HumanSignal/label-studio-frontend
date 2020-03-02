@@ -117,7 +117,7 @@ const Model = types
         return false;
       };
 
-      spans.forEach(s => addEvent(s));
+      spans && spans.forEach(s => addEvent(s));
     },
 
     getLabelColor() {
