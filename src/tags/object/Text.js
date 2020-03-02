@@ -95,6 +95,7 @@ const Model = types
 
     createRegion(p) {
       const r = TextRegionModel.create({
+        pid: p.pid,
         startOffset: p.startOffset,
         endOffset: p.endOffset,
         start: p.start,

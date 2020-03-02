@@ -48,6 +48,7 @@ const _Tool = types
         states.fromStateJSON(obj);
 
         const region = self.createRegion({
+          pid: obj.id,
           stroke: states.getSelectedColor(),
           states: states,
           // coordstype: "px",
@@ -69,7 +70,7 @@ const _Tool = types
       self.updateCursor();
     },
 
-    createRegion({ stroke, states, coordstype, mode, points }) {
+    createRegion({ pid, stroke, states, coordstype, mode, points }) {
       const c = self.control;
 
       let localStates = states;
@@ -80,6 +81,7 @@ const _Tool = types
 
       const brush = BrushRegionModel.create({
         id: guidGenerator(),
+        pid: pid,
 
         strokeWidth: self.strokeWidth || c.strokeWidth,
         strokeColor: stroke,

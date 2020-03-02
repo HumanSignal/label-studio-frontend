@@ -79,6 +79,7 @@ const Model = types
 
     createRegion(p) {
       const r = HyperTextRegionModel.create({
+        pid: p.pid,
         startOffset: p.startOffset,
         endOffset: p.endOffset,
         start: p.start,
