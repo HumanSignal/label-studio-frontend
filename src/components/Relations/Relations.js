@@ -1,33 +1,123 @@
 import React, { Fragment } from "react";
-import { Icon, Divider, List, Button } from "antd";
+import { Popover, Select, Icon, Divider, List, Button, Dropdown, Menu } from "antd";
 import { isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
+import Registry from "../../core/Registry";
+import Tree from "../../core/Tree";
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
+
+const { Option } = Select;
+
+const RelationMeta = observer(({ store, rl }) => {
+  const r = rl.relations;
+  const selected = r.getSelected().map(v => v.value);
+
+  return (
+    <div style={{ marginTop: "10px" }}>
+      <h4 className={styles.header}>LABELS</h4>
+      <Select
+        mode={r.choice === "multiple" ? "multiple" : ""}
+        style={{ width: "100%" }}
+        placeholder="Please select"
+        defaultValue={selected}
+        onChange={(val, option) => {
+          r.unselectAll();
+          val.forEach(v => r.findRelation(v).setSelected(true));
+        }}
+      >
+        {r.children.map(c => (
+          <Option key={c.value} style={{ background: c.background }}>
+            {c.value}
+          </Option>
+        ))}
+      </Select>
+    </div>
+  );
+});
 
 /**
  * Relation Component
  *
  * Shows the relationship between two selected items
  */
-const Relation = ({ store, rl }) => {
+const Relation = observer(({ store, rl }) => {
   if (!isValidReference(() => rl.node1) || !isValidReference(() => rl.node2)) {
     return null;
   }
 
+  const iconMap = {
+    left: "arrow-left",
+    right: "arrow-right",
+    bi: "swap",
+  };
+
   return (
-    <div className={styles.section__blocks}>
-      <div>
-        <NodeMinimal node={rl.node1} />
-      </div>
-      <Icon type="arrow-right" style={{ marginLeft: "10px", marginRight: "10px" }} />
-      <div>
-        <NodeMinimal node={rl.node2} />
+    <div>
+      <div className={styles.section__blocks}>
+        <div>
+          <NodeMinimal node={rl.node1} />
+        </div>
+        <Button onClick={() => rl.rotateDirection()} size="small" className={styles.relationbtn}>
+          <Icon type={iconMap[rl.direction]} />
+        </Button>
+        <div>
+          <NodeMinimal node={rl.node2} />
+        </div>
       </div>
     </div>
   );
-};
+});
+
+const ListItem = observer(({ item }) => {
+  return (
+    <List.Item
+      key={item.id}
+      actions={[]}
+      onMouseOver={() => {
+        item.toggleHighlight();
+      }}
+      onMouseOut={() => {
+        item.toggleHighlight();
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div>
+          <Relation rl={item} />
+        </div>
+        <div>
+          {item.hasRelations && (
+            <Button
+              size="small"
+              onClick={() => {
+                item.toggleMeta();
+              }}
+              className={styles.button}
+            >
+              <Icon type="more" />
+            </Button>
+          )}
+          &nbsp;
+          <Button
+            type="danger"
+            size="small"
+            className={styles.button}
+            onClick={() => {
+              item.node1.setHighlight(false);
+              item.node2.setHighlight(false);
+              item.parent.deleteRelation(item);
+              return false;
+            }}
+          >
+            <Icon type="delete" />
+          </Button>
+        </div>
+      </div>
+      {item.showMeta && <RelationMeta rl={item} />}
+    </List.Item>
+  );
+});
 
 export default observer(({ store }) => {
   const completion = store.completionStore.selected;
@@ -44,37 +134,10 @@ export default observer(({ store }) => {
         <List
           size="small"
           bordered
-          itemLayout="horizontal"
+          itemLayout="vertical"
           className={styles.list}
           dataSource={completion.relationStore.relations}
-          renderItem={item => (
-            <List.Item
-              key={item.id}
-              actions={[
-                <Button
-                  type="danger"
-                  size="small"
-                  className={styles.button}
-                  onClick={() => {
-                    item.node1.setHighlight(false);
-                    item.node2.setHighlight(false);
-                    item.parent.deleteRelation(item);
-                    return false;
-                  }}
-                >
-                  <Icon type="delete" />
-                </Button>,
-              ]}
-              onMouseOver={() => {
-                item.toggleHighlight();
-              }}
-              onMouseOut={() => {
-                item.toggleHighlight();
-              }}
-            >
-              <Relation store={completion.relationStore} rl={item} />
-            </List.Item>
-          )}
+          renderItem={item => <ListItem item={item} />}
         />
       )}
     </Fragment>
