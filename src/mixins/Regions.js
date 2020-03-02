@@ -3,6 +3,7 @@ import { cloneNode } from "../core/Helpers";
 
 const RegionsMixin = types
   .model({
+    readonly: types.optional(types.boolean, false),
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
   })
