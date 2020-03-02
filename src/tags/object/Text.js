@@ -200,138 +200,69 @@ class TextPieceView extends Component {
     return val;
   }
 
+  alignWord(r, start, end) {
+    const val = this.getValue();
+    const strleft = val.substring(0, start);
+    const r2 = r.cloneRange();
+
+    if (strleft.length > 0) {
+      let idxSpace = strleft.lastIndexOf(" ");
+      let idxNewline = strleft.lastIndexOf("\n");
+
+      let idx = idxSpace > idxNewline ? idxSpace : idxNewline;
+
+      if (idx === -1) {
+        r2.setStart(r.startContainer, 0);
+      }
+
+      if (idx > 0) {
+        const { node, len } = Utils.HTML.findIdxContainer(idx + 1);
+        r2.setStart(node, len);
+      }
+    }
+
+    const strright = val.substring(end, val.length);
+
+    if (strright.length > 0) {
+      let idxSpace = strright.indexOf(" ");
+      let idxNewline = strright.indexOf("\n");
+
+      let idx;
+
+      if (idxNewline == -1) idx = idxSpace;
+      if (idxSpace == -1) idx = idxNewline;
+
+      if (idxNewline > 0 && idxSpace > 0) {
+        idx = idxSpace > idxNewline ? idxNewline : idxSpace;
+      }
+
+      idx = idx + end;
+
+      if (idx === -1) {
+        r2.setEnd(r.endContainer, r.endContainer.length);
+      }
+
+      if (idx > 0) {
+        const { node, len } = Utils.HTML.findIdxContainer(idx + 1);
+        r2.setEnd(node, len - 1);
+      }
+    }
+
+    return r2;
+  }
+
   alignRange(r) {
     const item = this.props.item;
 
     if (item.granularity == "symbol") return r;
 
     const offset = r.startOffset;
-
-    const mainOffsets = element => {
-      var range = window
-        .getSelection()
-        .getRangeAt(0)
-        .cloneRange();
-      let start = range.startOffset;
-      let end = range.endOffset;
-
-      let passedStart = false;
-      let passedEnd = false;
-
-      const traverse = node => {
-        if (node.nodeName == "#text") {
-          if (node != range.startContainer && !passedStart) start = start + node.length;
-          if (node == range.startContainer) passedStart = true;
-
-          if (node != range.endContainer && !passedEnd) end = end + node.length;
-          if (node == range.endContainer) passedEnd = true;
-        }
-
-        if (node.nodeName == "BR") {
-          if (!passedStart) start = start + 1;
-
-          if (!passedEnd) end = end + 1;
-        }
-
-        if (node.childNodes.length > 0) {
-          for (var i = 0; i <= node.childNodes.length; i++) {
-            const n = node.childNodes[i];
-
-            if (n) {
-              const res = traverse(n);
-              if (res) return res;
-            }
-          }
-        }
-      };
-
-      const node = traverse(element);
-
-      return { start: start, end: end };
-    };
-
-    const { start, end } = mainOffsets(this.myRef);
+    const { start, end } = Utils.HTML.mainOffsets(this.myRef);
 
     // given gobal position and selection node find node
     // with correct position
-    const findIdxContainer = globidx => {
-      const el = this.myRef;
-      let len = globidx;
-
-      const traverse = node => {
-        if (!node) return;
-
-        if (node.nodeName == "#text") {
-          if (len - node.length <= 0) return node;
-          else len = len - node.length;
-        } else if (node.nodeName == "BR") {
-          len = len - 1;
-        } else if (node.childNodes.length > 0) {
-          for (var i = 0; i <= node.childNodes.length; i++) {
-            const n = node.childNodes[i];
-
-            if (n) {
-              const res = traverse(n);
-              if (res) return res;
-            }
-          }
-        }
-      };
-
-      const node = traverse(el);
-
-      return { node, len };
-    };
-
     if (item.granularity == "word") {
-      const val = this.getValue();
-      const strleft = val.substring(0, start);
-      const r2 = r.cloneRange();
-
-      if (strleft.length > 0) {
-        let idxSpace = strleft.lastIndexOf(" ");
-        let idxNewline = strleft.lastIndexOf("\n");
-
-        let idx = idxSpace > idxNewline ? idxSpace : idxNewline;
-
-        if (idx === -1) {
-          r2.setStart(r.startContainer, 0);
-        }
-
-        if (idx > 0) {
-          const { node, len } = findIdxContainer(idx + 1);
-          r2.setStart(node, len);
-        }
-      }
-
-      const strright = val.substring(end, val.length);
-
-      if (strright.length > 0) {
-        let idxSpace = strright.indexOf(" ");
-        let idxNewline = strright.indexOf("\n");
-
-        let idx;
-
-        if (idxNewline == -1) idx = idxSpace;
-        if (idxSpace == -1) idx = idxNewline;
-
-        if (idxNewline > 0 && idxSpace > 0) {
-          idx = idxSpace > idxNewline ? idxNewline : idxSpace;
-        }
-
-        idx = idx + end;
-
-        if (idx === -1) {
-          r2.setEnd(r.endContainer, r.endContainer.length);
-        }
-
-        if (idx > 0) {
-          const { node, len } = findIdxContainer(idx + 1);
-          r2.setEnd(node, len - 1);
-        }
-      }
-
-      return r2;
+      return this.alignWord(r, start, end);
     }
 
     if (item.granularity == "sentence") {
@@ -393,41 +324,7 @@ class TextPieceView extends Component {
     // console.log('click');
   }
 
-  addEventsToSpans(item, range, spans) {
-    const addEvent = s => {
-      s.onmouseover = function() {
-        if (item.completion.relationMode) {
-          range.toggleHighlight();
-          s.style.cursor = Constants.RELATION_MODE_CURSOR;
-        } else {
-          s.style.cursor = Constants.POINTER_CURSOR;
-        }
-      };
-
-      s.onmouseout = function() {
-        range.setHighlight(false);
-        s.style.cursor = Constants.DEFAULT_CURSOR;
-      };
-
-      s.onclick = function(ev) {
-        if (ev.doSelection) return;
-
-        range.onClickRegion();
-      };
-
-      s.mouseover = function() {
-        this.style.cursor = "pointer";
-      };
-
-      return false;
-    };
-
-    spans.forEach(s => addEvent(s));
-  }
-
   onMouseUp(ev) {
-    // console.log('mouseup');
-
     const item = this.props.item;
 
     if (!item.selectionenabled) return;
@@ -441,46 +338,8 @@ class TextPieceView extends Component {
     ev.nativeEvent.doSelection = true;
 
     const htxRange = item.addRegion(selectedRanges[0]);
-
-    let labelColor =
-      item.highlightcolor ||
-      htxRange.states.map(s => {
-        return s.getSelectedColor();
-      })[0];
-
-    if (labelColor) {
-      labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
-    }
-
-    const spans = highlightRange(
-      htxRange,
-      "htx-highlight",
-      { backgroundColor: labelColor },
-      htxRange.states.map(s => s.getSelectedNames()),
-    );
-
-    htxRange._spans = spans;
-
-    this.addEventsToSpans(item, htxRange, spans);
-
-    const names = Utils.Checkers.flatten(htxRange.states.map(s => s.getSelectedNames()));
-
-    let cssCls =
-      "htx-label-" +
-      names
-        .join("-")
-        .split(" ")
-        .join("-");
-    cssCls = cssCls.toLowerCase();
-    htxRange._className = cssCls;
-
-    Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
-
-    const lastSpan = spans[spans.length - 1];
-    if (!lastSpan) return;
-
-    lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
-    htxRange._lastSpan = lastSpan;
+    const spans = htxRange.createSpans();
+    htxRange.addEventsToSpans(spans);
   }
 
   _handleUpdate() {
@@ -530,43 +389,8 @@ class TextPieceView extends Component {
 
       r._range = range;
 
-      let labelColor =
-        item.highlightcolor ||
-        r.states.map(s => {
-          return s.getSelectedColor();
-        })[0];
-
-      if (labelColor) {
-        labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
-      }
-
-      const spans = highlightRange(
-        r,
-        "htx-highlight",
-        { backgroundColor: labelColor },
-        r.states.map(s => s.getSelectedNames()),
-      );
-
-      self.addEventsToSpans(item, r, spans);
-
-      const names = Utils.Checkers.flatten(r.states.map(s => s.getSelectedNames()));
-
-      let cssCls =
-        "htx-label-" +
-        names
-          .join("-")
-          .split(" ")
-          .join("-");
-      cssCls = cssCls.toLowerCase();
-
-      const lastSpan = spans[spans.length - 1];
-      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
-
-      Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
-
-      r._className = cssCls;
-      r._lastSpan = lastSpan;
-      r._spans = spans;
+      const spans = r.createSpans();
+      r.addEventsToSpans(spans);
     });
   }
 

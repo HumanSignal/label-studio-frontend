@@ -14,6 +14,7 @@ import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
 import { guidGenerator } from "../core/Helpers";
+import { highlightRange, splitBoundaries } from "../utils/html";
 
 const Model = types
   .model("TextRegionModel", {
@@ -88,19 +89,76 @@ const Model = types
       norm.forEach(n => n.normalize());
     },
 
-    updateAppearenceFromState() {
-      const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
+    addEventsToSpans(spans) {
+      const addEvent = s => {
+        s.onmouseover = function() {
+          if (self.completion.relationMode) {
+            self.toggleHighlight();
+            s.style.cursor = Constants.RELATION_MODE_CURSOR;
+          } else {
+            s.style.cursor = Constants.POINTER_CURSOR;
+          }
+        };
 
-      const hc = self.parent.highlightcolor;
-      let labelColor =
-        hc ||
-        self.states.map(s => {
-          return s.getSelectedColor();
-        })[0];
+        s.onmouseout = function() {
+          self.setHighlight(false);
+          s.style.cursor = Constants.DEFAULT_CURSOR;
+        };
+
+        s.onclick = function(ev) {
+          if (ev.doSelection) return;
+          self.onClickRegion();
+        };
+
+        s.mouseover = function() {
+          this.style.cursor = "pointer";
+        };
+
+        return false;
+      };
+
+      spans.forEach(s => addEvent(s));
+    },
+
+    getLabelColor() {
+      let labelColor = self.parent.highlightcolor || self.states.map(s => s.getSelectedColor())[0];
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
       }
+
+      return labelColor;
+    },
+
+    applyCSSClass(lastSpan) {
+      const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
+      const clsName = Utils.Checkers.hashCode(names.join("-"));
+
+      let cssCls = "htx-label-" + clsName;
+      cssCls = cssCls.toLowerCase();
+
+      Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
+
+      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
+    },
+
+    createSpans() {
+      const labelColor = self.getLabelColor();
+      const spans = highlightRange(self, "htx-highlight", { backgroundColor: labelColor });
+
+      const lastSpan = spans[spans.length - 1];
+      if (!lastSpan) return;
+
+      self.applyCSSClass(lastSpan);
+
+      self._lastSpan = lastSpan;
+      self._spans = spans;
+
+      return spans;
+    },
+
+    updateAppearenceFromState() {
+      const labelColor = self.getLabelColor();
 
       if (self._spans) {
         self._spans.forEach(span => {
@@ -108,14 +166,7 @@ const Model = types
         });
       }
 
-      let cssCls = "htx-label-" + names.join("-");
-      cssCls = cssCls.toLowerCase();
-
-      const lastSpan = self._lastSpan;
-
-      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
-
-      Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
+      self.applyCSSClass(self._lastSpan);
     },
 
     /**

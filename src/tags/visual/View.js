@@ -61,6 +61,7 @@ const Model = types.model({
     "pairwise",
     "style",
     "label",
+    "relations",
   ]),
 });
 

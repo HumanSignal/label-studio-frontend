@@ -15,6 +15,8 @@ import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
 import { TextAreaModel } from "./TextArea";
+import { RelationsModel } from "./Relations";
+import { RelationModel } from "./Relation";
 
 export {
   LabelsModel,
@@ -34,4 +36,6 @@ export {
   RectangleModel,
   ShortcutModel,
   TextAreaModel,
+  RelationsModel,
+  RelationModel,
 };

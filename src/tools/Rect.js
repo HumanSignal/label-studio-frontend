@@ -44,6 +44,7 @@ const _Tool = types
         states.fromStateJSON(obj);
 
         self.createRegion({
+          pid: obj.id,
           x: obj.value.x,
           y: obj.value.y,
           sw: obj.value.width,
@@ -56,7 +57,7 @@ const _Tool = types
       }
     },
 
-    createRegion({ x, y, sw, sh, states, coordstype, stroke, rotation }) {
+    createRegion({ pid, x, y, sw, sh, states, coordstype, stroke, rotation }) {
       const control = self.control;
 
       let localStates = states;
@@ -67,6 +68,7 @@ const _Tool = types
 
       const rect = RectRegionModel.create({
         id: guidGenerator(),
+        pid: pid,
         states: localStates,
         coordstype: coordstype,
 

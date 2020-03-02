@@ -3,6 +3,11 @@ export default {
   STROKE_COLOR: "",
   STROKE_WIDTH: 1,
 
+  // labels
+  LABEL_BACKGROUND: "#36B37E",
+
+  RELATION_BACKGROUND: "#fff",
+
   // when region gets highlighted styling
   HIGHLIGHTED_STROKE_COLOR: "red",
   HIGHLIGHTED_STROKE_WIDTH: 2,
