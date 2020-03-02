@@ -7,7 +7,7 @@ import { guidGenerator } from "../core/Helpers";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
 
     relativeX: types.optional(types.number, 0),
     relativeY: types.optional(types.number, 0),

@@ -16,6 +16,7 @@ const _Tool = types
         states.fromStateJSON(obj);
 
         self.createRegion({
+          pid: obj.id,
           x: obj.value.x,
           y: obj.value.y,
           width: obj.value.width,
@@ -26,11 +27,12 @@ const _Tool = types
       }
     },
 
-    createRegion({ x, y, width, fillcolor, states, coordstype }) {
+    createRegion({ pid, x, y, width, fillcolor, states, coordstype }) {
       const c = self.control;
       const image = self.obj;
 
       const kp = KeyPointRegionModel.create({
+        pid: pid,
         id: guidGenerator(),
         x: x,
         y: y,

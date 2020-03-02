@@ -17,7 +17,7 @@ import Canvas from "../utils/canvas";
 
 const Points = types
   .model("Points", {
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     type: types.optional(types.enumeration(["add", "eraser"]), "add"),
     points: types.array(types.number),
     /**
