@@ -7,13 +7,12 @@ import { observer, inject } from "mobx-react";
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
 import { LabelsModel } from "./Labels";
-
-const DEFAULT_BACKGROUND = "#36B37E";
 
 /**
  * Label tag represents a single label
@@ -44,7 +43,7 @@ const TagAttrs = types.model({
   showalias: types.optional(types.boolean, false),
   aliasstyle: types.optional(types.string, "opacity: 0.6"),
   size: types.optional(types.string, "medium"),
-  background: types.optional(types.string, DEFAULT_BACKGROUND),
+  background: types.optional(types.string, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(types.string, "white"),
 });
 
@@ -126,7 +125,7 @@ const Model = types
     },
 
     _updateBackgroundColor(val) {
-      if (self.background === DEFAULT_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
+      if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
     },
 
     afterCreate() {

@@ -374,10 +374,16 @@ const Completion = types
 
             toModel.fromStateJSON(obj, fromModel);
           });
-        } else {
+        }
+      });
+
+      objCompletion.forEach(obj => {
+        if (obj["type"] === "relation") {
           self.relationStore.deserializeRelation(
             self.regionStore.findRegion(obj.from_id),
             self.regionStore.findRegion(obj.to_id),
+            obj.direction,
+            obj.labels,
           );
         }
       });
