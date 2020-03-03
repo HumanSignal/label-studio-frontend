@@ -42,7 +42,7 @@ const ModelAttrs = types
     id: types.identifier,
     pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
-    children: Types.unionArray(["label"]),
+    children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
@@ -57,7 +57,13 @@ const Model = LabelMixin.props({ _type: "htmllabels" }).views(self => ({
   },
 }));
 
-const Composition = types.compose(LabelsModel, ModelAttrs, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const HyperTextLabelsModel = types.compose("HyperTextLabelsModel", Composition);
 

@@ -66,10 +66,6 @@ const _Tool = types
       }
     },
 
-    afterAttach() {
-      self.updateCursor();
-    },
-
     createRegion({ pid, stroke, states, coordstype, mode, points }) {
       const c = self.control;
 

@@ -1,10 +1,16 @@
 import { types } from "mobx-state-tree";
 
+import Tree from "../core/Tree";
+
 const SelectedModelMixin = types
   .model()
   .views(self => ({
+    get tiedChildren() {
+      return Tree.filterChildrenOfType(self, self._child);
+    },
+
     get selectedLabels() {
-      return self.children.filter(c => c.selected === true);
+      return self.tiedChildren.filter(c => c.selected === true);
     },
 
     get isSelected() {
@@ -12,12 +18,21 @@ const SelectedModelMixin = types
     },
   }))
   .actions(self => ({
+    /**
+     * Get current color from Label settings
+     */
+    getSelectedColor() {
+      // return first selected label color
+      const sel = self.tiedChildren.find(c => c.selected === true);
+      return sel && sel.background;
+    },
+
     findLabel(value) {
-      return self.children.find(c => c.alias === value || c.value === value);
+      return self.tiedChildren.find(c => c.alias === value || c.value === value);
     },
 
     unselectAll() {
-      self.children.map(c => c.setSelected(false));
+      self.tiedChildren.forEach(c => c.setSelected(false));
     },
 
     getSelectedNames() {

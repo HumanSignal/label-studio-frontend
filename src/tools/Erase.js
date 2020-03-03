@@ -2,6 +2,7 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
+import Hotkey from "../core/Hotkey";
 import BaseTool from "./Base";
 import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
@@ -42,10 +43,6 @@ const _Tool = types
       const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
 
       stage.container().style.cursor = cursor.join("");
-    },
-
-    afterAttach() {
-      self.updateCursor();
     },
 
     mouseupEv() {
