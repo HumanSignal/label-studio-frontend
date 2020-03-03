@@ -50,7 +50,7 @@ const ModelAttrs = types.model({
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label"]),
 });
 
 const Model = LabelMixin.props({ _type: "labels" })

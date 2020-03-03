@@ -39,11 +39,6 @@ const Model = types
     type: "rectangle",
   })
   .views(self => ({
-    get hasStates() {
-      const states = self.states();
-      return states && states.length > 0;
-    },
-
     get completion() {
       return getRoot(self).completionStore.selected;
     },

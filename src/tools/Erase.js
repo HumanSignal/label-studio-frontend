@@ -5,14 +5,22 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
+import Canvas from "../utils/canvas";
 
 const ToolView = observer(({ item }) => {
   return (
     <BasicTool
       selected={item.selected}
       onClick={ev => {
+        const sel = item.selected;
+
         item.manager.unselectAll();
-        item.setSelected(true);
+
+        item.setSelected(!sel);
+
+        if (item.selected) {
+          item.updateCursor();
+        }
       }}
       icon={"scissor"}
     />
@@ -27,6 +35,19 @@ const _Tool = types
     },
   }))
   .actions(self => ({
+    updateCursor() {
+      const val = 24;
+      const stage = self.obj.stageRef;
+      const base64 = Canvas.brushSizeCircle(val);
+      const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
+
+      stage.container().style.cursor = cursor.join("");
+    },
+
+    afterAttach() {
+      self.updateCursor();
+    },
+
     mouseupEv() {
       self.mode = "viewing";
     },

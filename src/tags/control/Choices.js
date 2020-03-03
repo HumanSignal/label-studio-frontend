@@ -43,7 +43,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "choices",
-    children: Types.unionArray(["choice", "choices", "labels", "label"]),
+    children: Types.unionArray(["choice"]),
   })
   .views(self => ({
     get shouldBeUnselected() {
