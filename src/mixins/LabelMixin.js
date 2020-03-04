@@ -6,31 +6,6 @@ import InfoModal from "../components/Infomodal/Infomodal";
  * Wrapper of Control item
  */
 const LabelMixin = types.model("LabelMixin").actions(self => ({
-  getSelected() {
-    return self.children.filter(c => c.selected === true);
-  },
-
-  /**
-   * Get current color from Label settings
-   */
-  getSelectedColor() {
-    // return first selected label color
-    const sel = self.children.find(c => c.selected === true);
-
-    return sel && sel.background;
-  },
-
-  /**
-   * Close current polygon if user clicked on another Label
-   */
-  finishCurrentObject() {
-    getParent(self).forEach(obj => {
-      if (obj.activePolygon) {
-        obj.activePolygon.closePoly();
-      }
-    });
-  },
-
   /**
    * Usage check of selected controls before send completion to server
    */

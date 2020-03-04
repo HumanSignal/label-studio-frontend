@@ -39,19 +39,9 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get typeOfChoice() {
-      const choice = getParentOfType(self, ChoicesModel).choice;
-
-      return choice;
-    },
-
     get isCheckbox() {
       const choice = getParentOfType(self, ChoicesModel).choice;
       return choice === "multiple" || choice === "single";
-    },
-
-    get name() {
-      return getParentOfType(self, ChoicesModel).name;
     },
 
     get completion() {

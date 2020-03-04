@@ -27,7 +27,6 @@ const RegionsMixin = types
     },
 
     selectRegion() {
-      console.log("selectRegion");
       self.selected = true;
       self.completion.setHighlightedNode(self);
 

@@ -19,7 +19,7 @@ const ModelAttrs = types.model("BrushLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "brushlabels" }).views(self => ({
@@ -35,7 +35,7 @@ const BrushLabelsModel = types.compose(
   BrushModel,
   TagAttrs,
   Model,
-  SelectedModelMixin,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
 );
 
 const HtxBrushLabels = observer(({ item }) => {

@@ -40,6 +40,8 @@ const TagAttrs = types.model("TextModel", {
   // [TODO]
   enableempty: types.optional(types.boolean, false),
 
+  showlabels: types.optional(types.boolean, true),
+
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
   encoding: types.optional(types.string, "string"),
 });
@@ -116,18 +118,11 @@ const Model = types
       const states = self.activeStates();
       if (states.length === 0) return;
 
-      const clonedStates = states
-        ? states.map(s => {
-            return cloneNode(s);
-          })
-        : null;
+      const clonedStates = states.map(s => cloneNode(s));
 
       const r = self.createRegion({ ...range, states: clonedStates });
 
-      states &&
-        states.forEach(s => {
-          return s.unselectAll();
-        });
+      states.forEach(s => s.unselectAll());
 
       return r;
     },

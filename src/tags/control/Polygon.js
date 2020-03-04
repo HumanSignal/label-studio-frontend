@@ -45,22 +45,8 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get hasStates() {
-      const states = self.states();
-      return states && states.length > 0;
-    },
-
     get completion() {
       return getRoot(self).completionStore.selected;
-    },
-
-    states() {
-      return self.completion.toNames.get(self.name);
-    },
-
-    activeStates() {
-      const states = self.states();
-      return states ? states.filter(c => c.isSelected === true) : null;
     },
   }))
   .actions(self => ({
