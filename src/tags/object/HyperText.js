@@ -21,6 +21,7 @@ import { runTemplate } from "../../core/Template";
  * @name HyperText
  * @param {string} name of the element
  * @param {string} value of the element
+ * @param {boolean} [showLabels=false] show labels next to the region
  * @param {string} [encoding=string|base64] provide the html as an escaped string or base64 encoded string
  */
 const TagAttrs = types.model("HyperTextModel", {

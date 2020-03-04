@@ -27,15 +27,11 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {float=} [opacity=0.9] opacity of keypoint
  * @param {string=} fillColor keypoint fill color, default is transparent
  * @param {number=} [strokeWidth=1] width of the stroke
+ * @param {string=} [stokeColor=#8bad00] keypoint stroke color
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
-
-  opacity: types.optional(types.string, "0.9"),
-  fillcolor: types.maybeNull(types.string),
-
-  strokewidth: types.optional(types.string, "1"),
 });
 
 const ModelAttrs = types

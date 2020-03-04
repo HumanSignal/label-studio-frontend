@@ -10,6 +10,20 @@ import { BrushModel } from "./Brush";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { guidGenerator } from "../../core/Helpers";
 
+/**
+ * BrushLabels tag creates segmented labeling
+ * @example
+ * <View>
+ *   <BrushLabels name="labels" toName="image">
+ *     <Label value="Person"></Label>
+ *     <Label value="Animal"></Label>
+ *   </BrushLabels>
+ *   <Image name="image" value="$image"></Image>
+ * </View>
+ * @name BrushLabels
+ * @param {string} name name of the element
+ * @param {string} toname name of the image to label
+ */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),

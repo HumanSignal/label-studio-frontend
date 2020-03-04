@@ -33,8 +33,10 @@ import { RectRegionModel } from "../../regions/RectRegion";
  * @param {boolean=} [grid=false] show grid
  * @param {number=} [gridSize=30] size of the grid
  * @param {string=} [gridColor="#EEEEF4"] color of the grid, opacity is 0.15
- * @param {boolean=} showMousePos show mouse position coordinates under an image
- * @param {boolean} brightness brightness of the image
+ * @param {boolean} [zoomControl=false] show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false] show brightness control in toolbar
+ * @param {boolean} [contrastControl=false] show contrast control in toolbar
+ * @param {boolean} [rotateControl=false] show rotate control in toolbar
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -55,8 +57,7 @@ const TagAttrs = types.model({
   zoomcontrol: types.optional(types.boolean, false),
   brightnesscontrol: types.optional(types.boolean, false),
   contrastcontrol: types.optional(types.boolean, false),
-
-  showmousepos: types.optional(types.boolean, false),
+  rotatecontrol: types.optional(types.boolean, false),
 });
 
 const IMAGE_CONSTANTS = {
@@ -198,6 +199,8 @@ const Model = types
         toolsManager.addTool("brightness", Tools.Brightness.create({}, { manager: toolsManager }));
 
       if (self.contrastcontrol) toolsManager.addTool("contrast", Tools.Contrast.create({}, { manager: toolsManager }));
+
+      if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
     }
 
     function getTools() {
