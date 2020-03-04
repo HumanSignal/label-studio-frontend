@@ -40,7 +40,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "imageregionslabels",
-    children: Types.unionArray(["labels", "label", "choice"]),
+    children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .actions(self => ({
     fromStateJSON(obj, fromModel) {

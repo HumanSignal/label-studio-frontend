@@ -81,7 +81,7 @@ const Model = types
       // is changing the label we need to make sure that region is
       // not going to endup without the label(s) at all
       if (reg) {
-        const sel = labels.getSelected();
+        const sel = labels.selectedLabels;
         if (sel.length === 1 && sel[0]._value === self._value) return;
       }
 

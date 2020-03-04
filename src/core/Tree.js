@@ -311,23 +311,29 @@ function findParentOfType(obj, classes) {
  */
 function filterChildrenOfType(obj, classes) {
   const res = [];
+  if (!Array.isArray(classes)) classes = [classes];
 
-  let fn;
-  fn = function(node) {
+  traverseTree(obj, function(node) {
     for (let c of classes) {
       if (getType(node).name === c) res.push(node);
     }
+  });
+
+  return res;
+}
+
+function traverseTree(root, cb) {
+  let visitNode;
+
+  visitNode = function(node) {
+    cb(node);
 
     if (node.children) {
-      for (let chld of node.children) {
-        fn(chld);
-      }
+      node.children.forEach(chld => visitNode(chld));
     }
   };
 
-  fn(obj);
-
-  return res;
+  visitNode(root);
 }
 
 export default {
@@ -339,4 +345,5 @@ export default {
   findParentOfType,
   filterChildrenOfType,
   cssConverter,
+  traverseTree,
 };

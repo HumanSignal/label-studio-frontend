@@ -27,6 +27,9 @@ const TagAttrs = types.model("HyperTextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
+  highlightcolor: types.maybeNull(types.string),
+  showlabels: types.optional(types.boolean, false),
+
   encoding: types.optional(types.string, "string"),
 });
 
@@ -100,18 +103,11 @@ const Model = types
       const states = self.activeStates();
       if (states.length === 0) return;
 
-      const clonedStates = states
-        ? states.map(s => {
-            return cloneNode(s);
-          })
-        : null;
+      const clonedStates = states.map(s => cloneNode(s));
 
       const r = self.createRegion({ ...range, states: clonedStates });
 
-      states &&
-        states.forEach(s => {
-          return s.unselectAll();
-        });
+      states.forEach(s => s.unselectAll());
 
       return r;
     },
@@ -227,22 +223,8 @@ class HyperTextPieceView extends Component {
     }
 
     const htxRange = this.props.item.addRegion(selectedRanges[0]);
-
-    let labelColor = htxRange.states.map(s => {
-      return s.getSelectedColor();
-    });
-
-    if (labelColor.length !== 0) {
-      labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-    }
-
-    const spans = highlightRange(
-      htxRange,
-      "htx-highlight",
-      { backgroundColor: labelColor },
-      htxRange.states.map(s => s.getSelectedNames()),
-    );
-    htxRange._spans = spans;
+    const spans = htxRange.createSpans();
+    htxRange.addEventsToSpans(spans);
   }
 
   _handleUpdate() {
@@ -256,22 +238,8 @@ class HyperTextPieceView extends Component {
         splitBoundaries(range);
 
         r._range = range;
-
-        let labelColor = r.states.map(s => {
-          return s.getSelectedColor();
-        });
-
-        if (labelColor.length !== 0) {
-          labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-        }
-
-        const spans = highlightRange(
-          r,
-          "htx-highlight",
-          { backgroundColor: labelColor },
-          r.states.map(s => s.getSelectedNames()),
-        );
-        r._spans = spans;
+        const spans = r.createSpans();
+        r.addEventsToSpans(spans);
       } catch (err) {
         console.log(r);
       }

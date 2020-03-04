@@ -43,7 +43,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "choices",
-    children: Types.unionArray(["choice", "choices", "labels", "label"]),
+    children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
   .views(self => ({
     get shouldBeUnselected() {
@@ -103,7 +103,12 @@ const Model = types
     },
   }));
 
-const ChoicesModel = types.compose("ChoicesModel", Model, TagAttrs, SelectedModelMixin);
+const ChoicesModel = types.compose(
+  "ChoicesModel",
+  Model,
+  TagAttrs,
+  SelectedModelMixin.props({ _child: "ChoiceModel" }),
+);
 
 const HtxChoices = observer(({ item }) => {
   return (

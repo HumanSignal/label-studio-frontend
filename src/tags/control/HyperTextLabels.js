@@ -31,7 +31,7 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(types.string, "0.9"),
+  opacity: types.optional(types.string, "0.2"),
   fillcolor: types.maybeNull(types.string),
 
   strokewidth: types.optional(types.string, "1"),
@@ -42,7 +42,7 @@ const ModelAttrs = types
     id: types.identifier,
     pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
-    children: Types.unionArray(["labels", "label", "choice"]),
+    children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
@@ -57,7 +57,13 @@ const Model = LabelMixin.props({ _type: "htmllabels" }).views(self => ({
   },
 }));
 
-const Composition = types.compose(LabelsModel, ModelAttrs, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const HyperTextLabelsModel = types.compose("HyperTextLabelsModel", Composition);
 

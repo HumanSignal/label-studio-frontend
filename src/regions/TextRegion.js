@@ -15,6 +15,7 @@ import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
 import { guidGenerator } from "../core/Helpers";
 import { highlightRange, splitBoundaries } from "../utils/html";
+import SpanTextMixin from "../mixins/SpanText";
 
 const Model = types
   .model("TextRegionModel", {
@@ -43,38 +44,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    setHighlight(val) {
-      self.highlighted = val;
-
-      if (self._spans) {
-        const len = self._spans.length;
-        const fspan = self._spans[0];
-        const lspan = self._spans[len - 1];
-        const mspans = self._spans.slice(1, len - 2);
-
-        const set = (span, s, { top = true, bottom = true, right = true, left = true } = {}) => {
-          if (right) span.style.borderRight = s;
-          if (left) span.style.borderLeft = s;
-          if (top) span.style.borderTop = s;
-          if (bottom) span.style.borderBottom = s;
-        };
-
-        if (self.highlighted) {
-          const h = Constants.HIGHLIGHTED_CSS_BORDER;
-          set(fspan, h, { right: false });
-          set(lspan, h, { left: false });
-
-          if (mspans.length) mspans.forEach(s => set(s, h, { top: false, bottom: false }));
-        } else {
-          const zpx = "0px";
-          set(fspan, zpx);
-          set(lspan, zpx);
-
-          if (mspans.length) mspans.forEach(s => set(s, zpx, { top: false, bottom: false }));
-        }
-      }
-    },
-
     beforeDestroy() {
       var norm = [];
       if (self._spans) {
@@ -87,86 +56,6 @@ const Model = types
       }
 
       norm.forEach(n => n.normalize());
-    },
-
-    addEventsToSpans(spans) {
-      const addEvent = s => {
-        s.onmouseover = function() {
-          if (self.completion.relationMode) {
-            self.toggleHighlight();
-            s.style.cursor = Constants.RELATION_MODE_CURSOR;
-          } else {
-            s.style.cursor = Constants.POINTER_CURSOR;
-          }
-        };
-
-        s.onmouseout = function() {
-          self.setHighlight(false);
-          s.style.cursor = Constants.DEFAULT_CURSOR;
-        };
-
-        s.onclick = function(ev) {
-          if (ev.doSelection) return;
-          self.onClickRegion();
-        };
-
-        s.mouseover = function() {
-          this.style.cursor = "pointer";
-        };
-
-        return false;
-      };
-
-      spans && spans.forEach(s => addEvent(s));
-    },
-
-    getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.states.map(s => s.getSelectedColor())[0];
-
-      if (labelColor) {
-        labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
-      }
-
-      return labelColor;
-    },
-
-    applyCSSClass(lastSpan) {
-      const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
-      const clsName = Utils.Checkers.hashCode(names.join("-"));
-
-      let cssCls = "htx-label-" + clsName;
-      cssCls = cssCls.toLowerCase();
-
-      Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
-
-      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
-    },
-
-    createSpans() {
-      const labelColor = self.getLabelColor();
-      const spans = highlightRange(self, "htx-highlight", { backgroundColor: labelColor });
-
-      const lastSpan = spans[spans.length - 1];
-      if (!lastSpan) return;
-
-      self.applyCSSClass(lastSpan);
-
-      self._lastSpan = lastSpan;
-      self._spans = spans;
-
-      return spans;
-    },
-
-    updateAppearenceFromState() {
-      const labelColor = self.getLabelColor();
-
-      if (self._spans) {
-        self._spans.forEach(span => {
-          span.style.background = labelColor;
-        });
-      }
-
-      self.applyCSSClass(self._lastSpan);
     },
 
     /**
@@ -208,7 +97,14 @@ const Model = types
     },
   }));
 
-const TextRegionModel = types.compose("TextRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+const TextRegionModel = types.compose(
+  "TextRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+  SpanTextMixin,
+);
 
 /**
  * Region state hint
@@ -235,75 +131,4 @@ const RegionState = props => {
   );
 };
 
-const HtxTextRegionView = ({ store, item, letterGroup, range, textCharIndex, onMouseOverHighlightedWord }) => {
-  /**
-   * Get color of label
-   */
-  let labelColor = "rgba(0, 0, 255, 0.1)";
-
-  if (range.states) {
-    labelColor = range.states.map(s => {
-      return s.getSelectedColor();
-    });
-  }
-
-  /**
-   * TODO
-   * Update function to all formats
-   */
-  if (labelColor.length !== 0) {
-    labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-  }
-
-  let markStyle = {
-    padding: "2px 0px",
-    position: "relative",
-    borderRadius: "2px",
-    cursor: store.completionStore.selected.relationMode ? Constants.RELATION_MODE_CURSOR : Constants.POINTER_CURSOR,
-  };
-
-  let regionStates = range.states.map(state => (
-    <RegionState
-      key={range.id}
-      state={state}
-      bg={labelColor}
-      hover={store.completionStore.selected.relationMode ? true : false}
-      selected={range.selected}
-      style={range.highlighted ? { outline: Constants.HIGHLIGHTED_CSS_BORDER } : null}
-    />
-  ));
-
-  /**
-   * Without label
-   */
-  if (!regionStates.length) {
-    markStyle = {
-      ...markStyle,
-      background: "rgba(0, 0, 255, 0.1)",
-    };
-  }
-
-  return (
-    <span
-      style={markStyle}
-      // onClick={range.onClickRegion}
-      onMouseOver={() => {
-        if (store.completionStore.selected.relationMode) {
-          range.setHighlight(true);
-        }
-      }}
-      onMouseOut={() => {
-        if (store.completionStore.selected.relationMode) {
-          range.setHighlight(false);
-        }
-      }}
-    >
-      {letterGroup}
-      {regionStates}
-    </span>
-  );
-};
-
-const HtxTextRegion = inject("store")(observer(HtxTextRegionView));
-
-export { TextRegionModel, HtxTextRegion };
+export { TextRegionModel };
