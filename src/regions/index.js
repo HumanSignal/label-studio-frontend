@@ -11,7 +11,7 @@ import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
 import { RectRegionModel, HtxRectangle } from "./RectRegion";
 import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
-import { TextRegionModel, HtxTextRegion } from "./TextRegion";
+import { TextRegionModel } from "./TextRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
@@ -33,7 +33,6 @@ export {
   HtxPolygon,
   HtxRectangle,
   HtxTextAreaRegion,
-  HtxTextRegion,
   HyperTextRegionModel,
   KeyPointRegionModel,
   PolygonPoint,

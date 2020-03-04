@@ -50,7 +50,7 @@ const ModelAttrs = types.model({
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "labels" })
@@ -82,7 +82,13 @@ const Model = LabelMixin.props({ _type: "labels" })
     },
   }));
 
-const LabelsModel = types.compose("LabelsModel", ModelAttrs, TagAttrs, Model, SelectedModelMixin);
+const LabelsModel = types.compose(
+  "LabelsModel",
+  ModelAttrs,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const HtxLabels = observer(({ item }) => {
   const style = {

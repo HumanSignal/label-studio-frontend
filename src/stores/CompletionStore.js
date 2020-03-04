@@ -174,17 +174,7 @@ const Completion = types
     },
 
     traverseTree(cb) {
-      let visitNode;
-
-      visitNode = function(node) {
-        cb(node);
-
-        if (node.children) {
-          node.children.forEach(chld => visitNode(chld));
-        }
-      };
-
-      visitNode(self.root);
+      return Tree.traverseTree(self.root, cb);
     },
 
     /**

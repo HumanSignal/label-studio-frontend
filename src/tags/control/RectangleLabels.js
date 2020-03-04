@@ -39,7 +39,7 @@ const ModelAttrs = types.model("RectangleLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "rectanglelabels",
-  children: Types.unionArray(["labels", "view", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "rectanglelabels" }).views(self => ({
@@ -48,7 +48,14 @@ const Model = LabelMixin.props({ _type: "rectanglelabels" }).views(self => ({
   },
 }));
 
-const Composition = types.compose(LabelsModel, ModelAttrs, RectangleModel, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  RectangleModel,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const RectangleLabelsModel = types.compose("RectangleLabelsModel", Composition);
 
