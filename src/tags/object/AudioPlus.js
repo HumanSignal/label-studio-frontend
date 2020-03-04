@@ -45,6 +45,7 @@ const Model = types
     id: types.identifier,
     type: "audio",
     _value: types.optional(types.string, ""),
+
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
     height: types.optional(types.number, 128),

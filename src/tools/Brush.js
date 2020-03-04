@@ -79,7 +79,7 @@ const _Tool = types
         id: guidGenerator(),
         pid: pid,
 
-        strokeWidth: self.strokeWidth || c.strokeWidth,
+        strokeWidth: self.strokeWidth || Number(c.strokewidth),
         strokeColor: stroke,
 
         states: localStates,

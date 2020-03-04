@@ -19,6 +19,7 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {string} name Name of the element
  * @param {string} toName Name of the element that you want to label
  * @param {number} [maxRating=5] Maximum rating value
+ * @param {number} [defaultValue=0] Default rating value
  * @param {string} [size=medium] One of: small, medium, large
  * @param {string} [icon=start] One of: star, heart, fire, smile
  * @param {string} hotkey HotKey of Rating
@@ -27,10 +28,10 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
 
-  maxRating: types.optional(types.number, 5),
+  maxrating: types.optional(types.string, "5"),
   icon: types.optional(types.string, "star"),
   size: types.optional(types.string, "medium"),
-  defaultValue: types.optional(types.number, 0),
+  defaultvalue: types.optional(types.string, "0"),
 
   hotkey: types.maybeNull(types.string),
 });
@@ -65,7 +66,7 @@ const Model = types
     },
 
     increaseValue() {
-      if (self.rating >= self.maxRating) {
+      if (self.rating >= Number(self.maxrating)) {
         self.rating = 0;
       } else {
         if (self.rating > 0) {
@@ -121,8 +122,8 @@ const HtxRating = inject("store")(
         <Rate
           character={<Icon type={item.icon} style={{ fontSize: iconSize }} />}
           value={item.rating}
-          count={Number(item.maxRating)}
-          defaultValue={item.defaultValue}
+          count={Number(item.maxrating)}
+          defaultValue={Number(item.defaultvalue)}
           onChange={item.handleRate}
         />
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (

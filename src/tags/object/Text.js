@@ -23,9 +23,10 @@ import styles from "./Text/Text.module.scss";
  * @name Text
  * @param {string} name of the element
  * @param {string} value of the element
- * @param {boolean} selectionEnabled enable or disable selection
+ * @param {boolean} [selectionEnabled=true] enable or disable selection
  * @param {string} highlightColor hex string with highlight color, if not provided uses the labels color
  * @param {symbol|word} granularity control per symbol or word selection, default is symbol
+ * @param {boolean} [showLabels=true] show labels next to the region
  * @param {string} [encoding=string|base64] decode value from a plain or base64 encoded string
  */
 const TagAttrs = types.model("TextModel", {
@@ -38,8 +39,6 @@ const TagAttrs = types.model("TextModel", {
   // matchlabel: types.optional(types.boolean, false),
 
   // [TODO]
-  enableempty: types.optional(types.boolean, false),
-
   showlabels: types.optional(types.boolean, true),
 
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
@@ -212,7 +211,7 @@ class TextPieceView extends Component {
       }
 
       if (idx > 0) {
-        const { node, len } = Utils.HTML.findIdxContainer(idx + 1);
+        const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
         r2.setStart(node, len);
       }
     }
@@ -239,7 +238,7 @@ class TextPieceView extends Component {
       }
 
       if (idx > 0) {
-        const { node, len } = Utils.HTML.findIdxContainer(idx + 1);
+        const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
         r2.setEnd(node, len - 1);
       }
     }
@@ -279,6 +278,7 @@ class TextPieceView extends Component {
 
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
+
       if (r.endContainer.nodeName === "DIV") {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
@@ -287,6 +287,7 @@ class TextPieceView extends Component {
 
       try {
         var normedRange = xpath.fromRange(r, self.myRef);
+
         splitBoundaries(r);
 
         normedRange._range = r;

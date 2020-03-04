@@ -20,7 +20,7 @@ import Registry from "../../core/Registry";
  * @param {string=} strokeColor stroke color
  * @param {number=} [strokeWidth=1] width of stroke
  * @param {small|medium|large=} [pointSize=medium] size of polygon handle points
- * @param {rectangle|circle=} [pointStyle=rectangle] style of points
+ * @param {rectangle|circle=} [pointStyle=circle] style of points
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

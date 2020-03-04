@@ -47,8 +47,6 @@ const RegionsMixin = types
     },
 
     onClickRegion() {
-      console.log("onClickRegion");
-
       const completion = self.completion;
       if (!completion.edittable) return;
 

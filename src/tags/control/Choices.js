@@ -27,13 +27,14 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {string} toName name of the elements that you want to label
  * @param {single|single-radio|multiple=} [choice=single] single or multi-class
  * @param {boolean} showInline show items in the same visual line
+ * @param {boolean} [required=false] validation if choice has been selected
+ * @param {string} requiredMessage message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.string,
   toname: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, false),
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
-
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
 });

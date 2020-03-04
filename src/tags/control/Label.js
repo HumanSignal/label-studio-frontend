@@ -27,12 +27,12 @@ import { LabelsModel } from "./Labels";
  * @name Label
  * @param {string} value A value of the label
  * @param {boolean} selected If this label should be preselected
- * @param {string} alias Label alias
  * @param {string} hotkey Hotkey
- * @param {boolean} showalias Show alias inside label text
- * @param {string} aliasstyle Alias CSS style default=opacity: 0.6
+ * @param {string} alias Label alias
+ * @param {boolean} showAlias Show alias inside label text
+ * @param {string} aliasStyle Alias CSS style default=opacity: 0.6
  * @param {string} size Size of text in the label
- * @param {string} background The background color of active label
+ * @param {string} background The background color of an active label
  * @param {string} selectedColor Color of text in an active label
  */
 const TagAttrs = types.model({

@@ -15,7 +15,7 @@ import { guidGenerator } from "../../core/Helpers";
  *   </Relations>
  * </View>
  * @name Relations
- * @param {single|multiple=} [choice=single] configure if you can select just one or multiple relations
+ * @param {single|multiple=} [choice=single] configure if you can select just one or multiple labels
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

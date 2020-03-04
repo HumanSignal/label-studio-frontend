@@ -255,8 +255,7 @@ const mainOffsets = element => {
   return { start: start, end: end };
 };
 
-const findIdxContainer = globidx => {
-  const el = this.myRef;
+const findIdxContainer = (el, globidx) => {
   let len = globidx;
 
   const traverse = node => {
