@@ -11,37 +11,29 @@ import { guidGenerator } from "../../core/Helpers";
 
 /**
  * HyperTextLabels tag
- * HyperTextLabels tag creates labeled keypoints
+ * HyperTextLabels tag creates labeled hyper text (HTML)
  * @example
  * <View>
- *   <HyperTextLabels name="kp-1" toName="img-1">
- *     <Label value="Face"></Label>
- *     <Label value="Nose"></Label>
+ *   <HyperTextLabels name="labels" toName="ht">
+ *     <Label value="Face" />
+ *     <Label value="Nose" />
  *   </HyperTextLabels>
- *   <HyperText name="img-1" value="$img"></HyperText>
+ *   <HyperText name="ht" value="$html" />
  * </View>
  * @name HyperTextLabels
  * @param {string} name name of the element
- * @param {string} toname name of the image to label
- * @param {float=} [opacity=0.9] opacity of keypoint
- * @param {string=} fillColor keypoint fill color, default is transparent
- * @param {number=} [strokeWidth=1] width of the stroke
+ * @param {string} toName name of the html element to label
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
-
-  opacity: types.optional(types.string, "0.2"),
-  fillcolor: types.maybeNull(types.string),
-
-  strokewidth: types.optional(types.string, "1"),
 });
 
 const ModelAttrs = types
   .model("HyperTextLabelesModel", {
     id: types.identifier,
     pid: types.optional(types.string, guidGenerator),
-    type: "keypointlabels",
+    type: "htmllabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({

@@ -25,17 +25,16 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {string} name name of the element
  * @param {string} toName name of the element that you want to label
  * @param {single|multiple=} [choice=single] configure if you can select just one or multiple labels
- * @param {boolean} showInline show items in the same visual line
+ * @param {boolean} [showInline=true] show items in the same visual line
+ * @param {boolean} [required=false] validation if choice has been selected
+ * @param {string} requiredMessage message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
-
   showinline: types.optional(types.boolean, true),
-  // TODO make enum
-  selectionstyle: types.maybeNull(types.optional(types.string, "basic", "border", "bottom")),
 
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),

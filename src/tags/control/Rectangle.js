@@ -27,8 +27,8 @@ const TagAttrs = types.model({
   opacity: types.optional(types.string, "0.6"),
   fillcolor: types.maybeNull(types.string),
 
-  strokeWidth: types.optional(types.number, 1),
-  strokeColor: types.optional(types.string, "#f48a42"),
+  strokewidth: types.optional(types.string, "1"),
+  strokecolor: types.optional(types.string, "#f48a42"),
 
   canrotate: types.optional(types.boolean, true),
 });
