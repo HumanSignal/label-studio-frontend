@@ -23,9 +23,6 @@ const Model = types
     pid: types.optional(types.string, guidGenerator),
     type: "textrange",
 
-    // start: types.integer,
-    // end: types.integer,
-
     startOffset: types.integer,
     start: types.string,
     endOffset: types.integer,
