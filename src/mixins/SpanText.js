@@ -122,7 +122,7 @@ export default types
         const len = self._spans.length;
         const fspan = self._spans[0];
         const lspan = self._spans[len - 1];
-        const mspans = self._spans.slice(1, len - 2);
+        const mspans = self._spans.slice(1, len - 1);
 
         const set = (span, s, { top = true, bottom = true, right = true, left = true } = {}) => {
           if (right) span.style.borderRight = s;
@@ -136,13 +136,13 @@ export default types
           set(fspan, h, { right: false });
           set(lspan, h, { left: false });
 
-          if (mspans.length) mspans.forEach(s => set(s, h, { top: false, bottom: false }));
+          if (mspans.length) mspans.forEach(s => set(s, h, { left: false, right: false }));
         } else {
           const zpx = "0px";
           set(fspan, zpx);
           set(lspan, zpx);
 
-          if (mspans.length) mspans.forEach(s => set(s, zpx, { top: false, bottom: false }));
+          if (mspans.length) mspans.forEach(s => set(s, zpx, { left: false, right: false }));
         }
       }
     },
