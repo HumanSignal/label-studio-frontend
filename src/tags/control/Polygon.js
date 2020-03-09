@@ -20,7 +20,7 @@ import Registry from "../../core/Registry";
  * @param {string=} strokeColor stroke color
  * @param {number=} [strokeWidth=1] width of stroke
  * @param {small|medium|large=} [pointSize=medium] size of polygon handle points
- * @param {rectangle|circle=} [pointStyle=rectangle] style of points
+ * @param {rectangle|circle=} [pointStyle=circle] style of points
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -45,22 +45,8 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get hasStates() {
-      const states = self.states();
-      return states && states.length > 0;
-    },
-
     get completion() {
       return getRoot(self).completionStore.selected;
-    },
-
-    states() {
-      return self.completion.toNames.get(self.name);
-    },
-
-    activeStates() {
-      const states = self.states();
-      return states ? states.filter(c => c.isSelected === true) : null;
     },
   }))
   .actions(self => ({

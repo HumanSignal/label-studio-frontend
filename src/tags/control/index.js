@@ -15,9 +15,12 @@ import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
 import { TextAreaModel } from "./TextArea";
+
 import { EllipseLabelsModel } from "./EllipseLabels";
 import { EllipseModel } from "./Ellipse";
-import { im } from "mathjs";
+
+import { RelationsModel } from "./Relations";
+import { RelationModel } from "./Relation";
 
 export {
   LabelsModel,
@@ -39,4 +42,6 @@ export {
   TextAreaModel,
   EllipseLabelsModel,
   EllipseModel,
+  RelationsModel,
+  RelationModel,
 };

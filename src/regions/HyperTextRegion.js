@@ -1,11 +1,14 @@
 import { types, getRoot, getParentOfType } from "mobx-state-tree";
 
+import Constants from "../core/Constants";
+import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
 import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
 import { HyperTextModel } from "../tags/object/HyperText";
 import { guidGenerator } from "../core/Helpers";
+import SpanTextMixin from "../mixins/SpanText";
 
 const Model = types
   .model("HyperTextRegionModel", {
@@ -29,8 +32,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    highlightStates() {},
-
     toStateJSON() {
       const parent = self.parent;
       const buildTree = obj => {
@@ -67,37 +68,6 @@ const Model = types
       }
     },
 
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self._spans.forEach(span => {
-        span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, 0.8);
-      });
-    },
-
-    _updateSpansOpacity(opacity) {
-      self._spans &&
-        self._spans.forEach(span => {
-          span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, opacity);
-        });
-    },
-
-    /**
-     * Unselect audio region
-     */
-    unselectRegion() {
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
-      self._updateSpansOpacity(0.3);
-    },
-
-    setHighlight(val) {
-      self.highlighted = val;
-
-      if (val) self._updateSpansOpacity(0.8);
-      else if (!self.selected) self._updateSpansOpacity(0.3);
-    },
-
     beforeDestroy() {
       var norm = [];
       if (self._spans) {
@@ -113,6 +83,13 @@ const Model = types
     },
   }));
 
-const HyperTextRegionModel = types.compose("HyperTextRegionModel", RegionsMixin, NormalizationMixin, Model);
+const HyperTextRegionModel = types.compose(
+  "HyperTextRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+  SpanTextMixin,
+);
 
 export { HyperTextRegionModel };

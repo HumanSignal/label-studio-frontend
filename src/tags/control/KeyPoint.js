@@ -18,8 +18,8 @@ import Types from "../../core/Types";
  * @param {float=} [opacity=0.9] opacity of keypoint
  * @param {string=} [fillColor=#8bad00] keypoint fill color
  * @param {number=} [strokeWidth=1] width of the stroke
+ * @param {string=} [stokeColor=#8bad00] keypoint stroke color
  */
-
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
@@ -27,6 +27,7 @@ const TagAttrs = types.model({
   opacity: types.optional(types.string, "0.9"),
   fillcolor: types.optional(types.string, "#8bad00"),
 
+  strokecolor: types.optional(types.string, "#8bad00"),
   strokewidth: types.optional(types.string, "1"),
 });
 

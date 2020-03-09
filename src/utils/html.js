@@ -2,6 +2,14 @@ import insertAfter from "insert-after";
 
 // work directly with the html tree
 
+function createClass(name, rules) {
+  var style = document.createElement("style");
+  style.type = "text/css";
+  document.getElementsByTagName("head")[0].appendChild(style);
+  if (!(style.sheet || {}).insertRule) (style.styleSheet || style.sheet).addRule(name, rules);
+  else style.sheet.insertRule(name + "{" + rules + "}", 0);
+}
+
 function documentForward(node) {
   if (node.firstChild) return node.firstChild;
 
@@ -127,7 +135,7 @@ function normalizeBoundaries(range) {
   range.setEnd(end, end.length);
 }
 
-function highlightRange(normedRange, cssClass, cssStyle, labels) {
+function highlightRange(normedRange, cssClass, cssStyle) {
   if (typeof cssClass === "undefined" || cssClass === null) {
     cssClass = "htx-annotation";
   }
@@ -149,31 +157,13 @@ function highlightRange(normedRange, cssClass, cssStyle, labels) {
       var hl = window.document.createElement("span");
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
-      hl.addEventListener("click", function() {
-        normedRange.onClickRegion();
-      });
-
-      hl.addEventListener("mouseover", function() {
-        this.style.cursor = "pointer";
-      });
-
       hl.className = cssClass;
       node.parentNode.replaceChild(hl, node);
       hl.appendChild(node);
+
       results.push(hl);
     }
   }
-
-  // if (labels && labels.length !== 0) {
-  //     var dateSpan = document.createElement('sup');
-  //     dateSpan.style.userSelect="none";
-  //     dateSpan.style.fontSize="12px";
-
-  //     dateSpan.innerHTML = "[" + labels.join(" ") + "]";
-
-  //     var lastSpan = results[results.length - 1];
-  //     lastSpan.appendChild(dateSpan);
-  // }
 
   return results;
 }
@@ -201,4 +191,104 @@ function splitBoundaries(range) {
   }
 }
 
-export { highlightRange, splitBoundaries, normalizeBoundaries };
+const toGlobalOffset = (container, element, len) => {
+  let pos = 0;
+  const count = node => {
+    if (node == element) {
+      return pos;
+    }
+    if (node.nodeName == "#text") pos = pos + node.length;
+    if (node.nodeName == "BR") pos = pos + 1;
+
+    for (var i = 0; i <= node.childNodes.length; i++) {
+      const n = node.childNodes[i];
+      if (n) {
+        const res = count(n);
+        if (res !== undefined) return res;
+      }
+    }
+  };
+
+  return len + count(container);
+};
+
+const mainOffsets = element => {
+  var range = window
+    .getSelection()
+    .getRangeAt(0)
+    .cloneRange();
+  let start = range.startOffset;
+  let end = range.endOffset;
+
+  let passedStart = false;
+  let passedEnd = false;
+
+  const traverse = node => {
+    if (node.nodeName == "#text") {
+      if (node != range.startContainer && !passedStart) start = start + node.length;
+      if (node == range.startContainer) passedStart = true;
+
+      if (node != range.endContainer && !passedEnd) end = end + node.length;
+      if (node == range.endContainer) passedEnd = true;
+    }
+
+    if (node.nodeName == "BR") {
+      if (!passedStart) start = start + 1;
+
+      if (!passedEnd) end = end + 1;
+    }
+
+    if (node.childNodes.length > 0) {
+      for (var i = 0; i <= node.childNodes.length; i++) {
+        const n = node.childNodes[i];
+
+        if (n) {
+          const res = traverse(n);
+          if (res) return res;
+        }
+      }
+    }
+  };
+
+  const node = traverse(element);
+
+  return { start: start, end: end };
+};
+
+const findIdxContainer = (el, globidx) => {
+  let len = globidx;
+
+  const traverse = node => {
+    if (!node) return;
+
+    if (node.nodeName == "#text") {
+      if (len - node.length <= 0) return node;
+      else len = len - node.length;
+    } else if (node.nodeName == "BR") {
+      len = len - 1;
+    } else if (node.childNodes.length > 0) {
+      for (var i = 0; i <= node.childNodes.length; i++) {
+        const n = node.childNodes[i];
+
+        if (n) {
+          const res = traverse(n);
+          if (res) return res;
+        }
+      }
+    }
+  };
+
+  const node = traverse(el);
+
+  return { node, len };
+};
+
+export {
+  mainOffsets,
+  findIdxContainer,
+  toGlobalOffset,
+  highlightRange,
+  splitBoundaries,
+  normalizeBoundaries,
+  createClass,
+};

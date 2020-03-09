@@ -1,5 +1,6 @@
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -15,7 +16,7 @@ const Model = types
     pid: types.optional(types.string, guidGenerator),
     start: types.number,
     end: types.number,
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel))),
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
@@ -65,6 +66,19 @@ const Model = types
       }
     },
 
+    updateAppearenceFromState() {
+      self.selectedregionbg = Utils.Colors.convertToRGBA(self.states[0].getSelectedColor(), 0.3);
+      if (self._ws_region.update) {
+        self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
+      }
+
+      //   opacity: parseFloat(control.opacity),
+
+      //   fillcolor: stroke || control.fillcolor,
+      // strokeWidth: control.strokeWidth,
+      // strokeColor: stroke || control.stroke,
+    },
+
     /**
      * Select audio region
      */
@@ -72,6 +86,7 @@ const Model = types
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
+      self.completion.loadRegionState(self);
     },
 
     /**
@@ -83,6 +98,7 @@ const Model = types
       if (self._ws_region.update) {
         self._ws_region.update({ color: self.selectedregionbg });
       }
+      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {
@@ -139,6 +155,6 @@ const Model = types
     },
   }));
 
-const AudioRegionModel = types.compose("AudioRegionModel", RegionsMixin, NormalizationMixin, Model);
+const AudioRegionModel = types.compose("AudioRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 export { AudioRegionModel };

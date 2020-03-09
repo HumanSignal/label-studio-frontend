@@ -3,6 +3,7 @@ import { Circle } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -15,7 +16,7 @@ import { guidGenerator } from "../core/Helpers";
 
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     type: "keypointregion",
@@ -31,7 +32,7 @@ const Model = types
     opacity: types.number,
     fillcolor: types.maybeNull(types.string),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, KeyPointLabelsModel))),
+    states: types.maybeNull(types.array(types.union(KeyPointLabelsModel))),
 
     sw: types.maybeNull(types.number),
     sh: types.maybeNull(types.number),
@@ -52,12 +53,20 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
     },
 
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+      self.completion.loadRegionState(self);
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+      self.fillcolor = stroke;
     },
 
     setPosition(x, y) {
@@ -121,6 +130,8 @@ const Model = types
             y: (self.y * 100) / self.parent.stageHeight,
             width: (self.width * 100) / self.parent.stageWidth, //  * (self.scaleX || 1)
           },
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;
@@ -143,7 +154,13 @@ const Model = types
     },
   }));
 
-const KeyPointRegionModel = types.compose("KeyPointRegionModel", RegionsMixin, NormalizationMixin, Model);
+const KeyPointRegionModel = types.compose(
+  "KeyPointRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 const HtxKeyPointView = ({ store, item }) => {
   const x = item.x;

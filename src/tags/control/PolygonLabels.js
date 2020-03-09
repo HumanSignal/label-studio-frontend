@@ -39,12 +39,19 @@ const ModelAttrs = types.model("PolygonLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "polygonlabels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "polygonlabels" });
 
-const Composition = types.compose(LabelsModel, ModelAttrs, PolygonModel, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  PolygonModel,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const PolygonLabelsModel = types.compose("PolygonLabelsModel", Composition);
 

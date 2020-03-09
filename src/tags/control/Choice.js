@@ -21,8 +21,10 @@ import { ChoicesModel } from "./Choices";
  *   <Text name="txt-1" value="John went to see Marry"></Text>
  * </View>
  * @name Choice
- * @param {string} value lLbel value
+ * @param {string} value choice value
  * @param {boolean} selected If this label should be preselected
+ * @param {string} alias alias for the label
+ * @param {style} style css style of the checkbox element
  * @param {string} hotkey HotKey
  */
 const TagAttrs = types.model({
@@ -39,19 +41,9 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get typeOfChoice() {
-      const choice = getParentOfType(self, ChoicesModel).choice;
-
-      return choice;
-    },
-
     get isCheckbox() {
       const choice = getParentOfType(self, ChoicesModel).choice;
       return choice === "multiple" || choice === "single";
-    },
-
-    get name() {
-      return getParentOfType(self, ChoicesModel).name;
     },
 
     get completion() {

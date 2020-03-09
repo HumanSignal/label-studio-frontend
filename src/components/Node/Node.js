@@ -5,61 +5,68 @@ import { observer } from "mobx-react";
 
 import styles from "./Node.module.scss";
 
+const pt = { paddingTop: "3px" };
+
 const NodeViews = {
   TextRegionModel: (node, click) => (
-    <div onClick={click}>
-      <Icon type="font-colors" />
-      Text &nbsp;
-      <span style={{ color: "#5a5a5a" }}>{node.text}</span>
-    </div>
+    <Fragment>
+      <span onClick={click} className={styles.node}>
+        <Icon type="font-colors" style={pt} />
+        &nbsp; Text: &nbsp;
+        {node.text.substring(0, 23)}
+        {node.text.length > 26 && "..."}
+      </span>
+    </Fragment>
   ),
 
   HyperTextRegionModel: (node, click) => (
-    <div onClick={click}>
-      <Icon type="font-colors" />
-      HTML &nbsp;
-      <span style={{ color: "#5a5a5a" }}>{node.text}</span>
-    </div>
+    <Fragment>
+      <span onClick={click} className={styles.node}>
+        <Icon type="font-colors" style={pt} />
+        &nbsp; HTML &nbsp;
+        <span style={{ color: "#5a5a5a" }}>{node.text}</span>
+      </span>
+    </Fragment>
   ),
 
   AudioRegionModel: (node, click) => (
-    <p>
+    <Fragment>
       <span onClick={click} className={styles.node}>
-        <i className="microphone icon" />
-        Audio {node.start.toFixed(2)} - {node.end.toFixed(2)}
+        <Icon type="audio" style={pt} />
+        &nbsp; Audio {node.start.toFixed(2)} - {node.end.toFixed(2)}
       </span>
-    </p>
+    </Fragment>
   ),
 
   TextAreaRegionModel: (node, click) => (
-    <p>
+    <Fragment>
+      <Icon type="message" style={pt} />
       <span onClick={click} className={styles.node}>
-        <i className="i cursor icon" />
-        Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
+        &nbsp; Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
       </span>
-    </p>
+    </Fragment>
   ),
 
   RectRegionModel: (node, click) => {
     const w = node.width * node.scaleX;
     const y = node.height * node.scaleY;
     return (
-      <p>
+      <Fragment>
+        <Icon type="block" style={pt} />
         <span onClick={click} className={styles.node}>
-          <i className="expand icon" />
-          Rectangle {w.toFixed(2)} x {y.toFixed(2)}
+          &nbsp; Rectangle {w.toFixed(2)} x {y.toFixed(2)}
         </span>
-      </p>
+      </Fragment>
     );
   },
 
   PolygonRegionModel: (node, click) => (
-    <p>
+    <Fragment>
       <span onClick={click} className={styles.node}>
-        <i className="i object ungroup outline icon" />
-        Polygon
+        <Icon type="gateway" style={pt} />
+        &nbsp; Polygon
       </span>
-    </p>
+    </Fragment>
   ),
 
   EllipseRegionModel: (node, click) => {
@@ -78,21 +85,21 @@ const NodeViews = {
   },
 
   KeyPointRegionModel: (node, click) => (
-    <p>
+    <Fragment>
       <span onClick={click} className={styles.node}>
-        <i className="i object bullseye icon" />
-        KeyPoint
+        <Icon type="eye" style={pt} />
+        &nbsp; KeyPoint
       </span>
-    </p>
+    </Fragment>
   ),
 
   BrushRegionModel: (node, click) => (
-    <p>
-      <Icon type="highlight" />
+    <Fragment>
       <span onClick={click} className={styles.node}>
+        <Icon type="highlight" style={pt} />
         &nbsp; Brush
       </span>
-    </p>
+    </Fragment>
   ),
 };
 
@@ -100,6 +107,7 @@ const Node = observer(({ node }) => {
   const click = ev => {
     ev.preventDefault();
     getRoot(node).completionStore.selected.regionStore.unselectAll();
+
     node.selectRegion();
 
     return false;
@@ -115,7 +123,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "TextRegionModel") {
     return (
       <Fragment>
-        <Icon type="font-colors" /> Text
+        <Icon type="font-colors" /> &nbsp; Text
       </Fragment>
     );
   }
@@ -123,8 +131,8 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "RectRegionModel") {
     return (
       <Fragment>
-        <i className="expand icon" />
-        Rectangle
+        <Icon type="block" />
+        &nbsp; Rect
       </Fragment>
     );
   }
@@ -141,8 +149,8 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "AudioRegionModel") {
     return (
       <Fragment>
-        <i className="microphone icon" />
-        Audio
+        <Icon type="audio" />
+        &nbsp; Audio
       </Fragment>
     );
   }
@@ -150,8 +158,8 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "TextAreaRegionModel") {
     return (
       <Fragment>
-        <i className="i cursor icon" />
-        Input
+        <Icon type="message" />
+        &nbsp; Input
       </Fragment>
     );
   }
@@ -159,7 +167,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "HyperTextRegionModel") {
     return (
       <Fragment>
-        <Icon type="font-colors" /> HTML
+        <Icon type="font-colors" /> &nbsp; HTML
       </Fragment>
     );
   }
@@ -167,8 +175,8 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "PolygonRegionModel") {
     return (
       <Fragment>
-        <i className="i object ungroup outline icon" />
-        Polygon
+        <Icon type="gateway" />
+        &nbsp; Polygon
       </Fragment>
     );
   }
@@ -176,8 +184,8 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "KeyPointRegionModel") {
     return (
       <Fragment>
-        <i className="i object bullseye icon" />
-        KeyPoint
+        <Icon type="eye" />
+        &nbsp; KeyPoint
       </Fragment>
     );
   }

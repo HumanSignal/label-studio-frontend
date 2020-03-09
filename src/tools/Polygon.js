@@ -30,7 +30,7 @@ const _Tool = types
         states.fromStateJSON(obj);
 
         const poly = self.createRegion({
-          id: obj.id,
+          pid: obj.id,
           x: obj.value.points[0][0],
           y: obj.value.points[0][1],
           width: 10,
@@ -48,7 +48,7 @@ const _Tool = types
       }
     },
 
-    createRegion({ x, y, width, stroke, states, coordstype, stateFlag, id }) {
+    createRegion({ pid, x, y, width, stroke, states, coordstype, stateFlag }) {
       let newPolygon = self.getActivePolygon;
       // self.freezeHistory();
       const image = self.obj;
@@ -56,12 +56,13 @@ const _Tool = types
 
       if (!newPolygon) {
         // const c = self.controlButton();
-        const polygonID = id ? id : guidGenerator();
+        // const polygonID = id ? id : guidGenerator();
         const polygonOpacity = parseFloat(c.opacity);
         const polygonStrokeWidth = parseInt(c.strokewidth);
 
         newPolygon = PolygonRegionModel.create({
-          id: polygonID,
+          // id: polygonID,
+          pid: pid,
 
           opacity: polygonOpacity,
           fillcolor: c.fillcolor,
@@ -94,9 +95,10 @@ const _Tool = types
       // the user has clicked on the labels without first finishing
       // it, we close it automatically and create a new one with new
       // labels
-      if (states.length && self.getActivePolygon) {
-        self.getActivePolygon.closePoly();
-      }
+
+      // if (states.length && self.getActivePolygon) {
+      //   self.getActivePolygon.closePoly();
+      // }
 
       self.createRegion({
         x: x,
@@ -108,7 +110,7 @@ const _Tool = types
         stateFlag: false,
       });
 
-      if (self.control.type == "polygonlabels") self.control.unselectAll();
+      // if (self.control.type == "polygonlabels") self.control.unselectAll();
     },
   }));
 

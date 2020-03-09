@@ -138,24 +138,48 @@ export default types
       /**
        * Hotkey for submit
        */
-      Hotkey.addKey("ctrl+enter", self.submitCompletion);
+      Hotkey.addKey("ctrl+enter", self.submitCompletion, "Submit a task");
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask);
+      if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask, "Skip a task");
 
       /**
        * Hotkey for update completion
        */
-      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion);
+      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion, "Update a task");
 
       /**
        * Hotkey for delete
        */
-      Hotkey.addKey("ctrl+backspace", function() {
-        const { selected } = self.completionStore;
-        selected.deleteAllRegions();
+      Hotkey.addKey(
+        "ctrl+backspace",
+        function() {
+          const { selected } = self.completionStore;
+          selected.deleteAllRegions();
+        },
+        "Delete all regions",
+      );
+
+      // create relation
+      Hotkey.addKey(
+        "r",
+        function() {
+          const c = self.completionStore.selected;
+          if (c && c.highlightedNode && !c.relationMode) {
+            c.startRelationMode(c.highlightedNode);
+          }
+        },
+        "Create relation when region is selected",
+      );
+
+      // unselect region
+      Hotkey.addKey("u", function() {
+        const c = self.completionStore.selected;
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.regionStore.unselectAll();
+        }
       });
 
       Hotkey.addKey("ctrl+z", function() {
@@ -163,19 +187,27 @@ export default types
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey("escape", function() {
-        const c = self.completionStore.selected;
-        if (c && c.relationMode) {
-          c.stopRelationMode();
-        }
-      });
+      Hotkey.addKey(
+        "escape",
+        function() {
+          const c = self.completionStore.selected;
+          if (c && c.relationMode) {
+            c.stopRelationMode();
+          }
+        },
+        "Exit relation mode",
+      );
 
-      Hotkey.addKey("backspace", function() {
-        const c = self.completionStore.selected;
-        if (c && c.highlightedNode) {
-          c.highlightedNode.deleteRegion();
-        }
-      });
+      Hotkey.addKey(
+        "backspace",
+        function() {
+          const c = self.completionStore.selected;
+          if (c && c.highlightedNode) {
+            c.highlightedNode.deleteRegion();
+          }
+        },
+        "Delete selected region",
+      );
 
       getEnv(self).onLabelStudioLoad(self);
     }
@@ -203,6 +235,8 @@ export default types
     function submitCompletion() {
       const c = self.completionStore.selected;
       c.beforeSend();
+
+      if (!c.validate()) return;
 
       c.sendUserGenerate();
       getEnv(self).onSubmitCompletion(self, c);

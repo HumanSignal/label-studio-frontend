@@ -7,27 +7,6 @@ import InfoModal from "../components/Infomodal/Infomodal";
  */
 const LabelMixin = types.model("LabelMixin").actions(self => ({
   /**
-   * Get current color from Label settings
-   */
-  getSelectedColor() {
-    // return first selected label color
-    const sel = self.children.find(c => c.selected === true);
-
-    return sel && sel.background;
-  },
-
-  /**
-   * Close current polygon if user clicked on another Label
-   */
-  finishCurrentObject() {
-    getParent(self).forEach(obj => {
-      if (obj.activePolygon) {
-        obj.activePolygon.closePoly();
-      }
-    });
-  },
-
-  /**
    * Usage check of selected controls before send completion to server
    */
   beforeSend() {
@@ -36,6 +15,14 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
     if (names && self.type === self._type) {
       self.unselectAll();
     }
+  },
+
+  // copy state from another Labels object
+  copyState(labels) {
+    // self.unselectAll();
+    labels.getSelectedNames().forEach(l => {
+      self.findLabel(l).setSelected(true);
+    });
   },
 
   fromStateJSON(obj, fromModel) {

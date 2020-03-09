@@ -1,18 +1,18 @@
 import ColorScheme from "pleasejs";
 import React from "react";
 import { Tag } from "antd";
-import { getRoot, types } from "mobx-state-tree";
+import { getRoot, getParentOfType, types } from "mobx-state-tree";
 import { observer, inject } from "mobx-react";
 
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
-
-const DEFAULT_BACKGROUND = "#36B37E";
+import { LabelsModel } from "./Labels";
 
 /**
  * Label tag represents a single label
@@ -27,12 +27,12 @@ const DEFAULT_BACKGROUND = "#36B37E";
  * @name Label
  * @param {string} value A value of the label
  * @param {boolean} selected If this label should be preselected
- * @param {string} alias Label alias
  * @param {string} hotkey Hotkey
- * @param {boolean} showalias Show alias inside label text
- * @param {string} aliasstyle Alias CSS style default=opacity: 0.6
+ * @param {string} alias Label alias
+ * @param {boolean} showAlias Show alias inside label text
+ * @param {string} aliasStyle Alias CSS style default=opacity: 0.6
  * @param {string} size Size of text in the label
- * @param {string} background The background color of active label
+ * @param {string} background The background color of an active label
  * @param {string} selectedColor Color of text in an active label
  */
 const TagAttrs = types.model({
@@ -43,7 +43,7 @@ const TagAttrs = types.model({
   showalias: types.optional(types.boolean, false),
   aliasstyle: types.optional(types.string, "opacity: 0.6"),
   size: types.optional(types.string, "medium"),
-  background: types.optional(types.string, DEFAULT_BACKGROUND),
+  background: types.optional(types.string, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(types.string, "white"),
 });
 
@@ -75,7 +75,16 @@ const Model = types
         "HyperTextLabelsModel",
       ]);
 
-      labels.finishCurrentObject();
+      // labels.finshCurrentObject();
+      const reg = self.completion.highlightedNode;
+
+      // check if there is a region selected and if it is and user
+      // is changing the label we need to make sure that region is
+      // not going to endup without the label(s) at all
+      if (reg) {
+        const sel = labels.selectedLabels;
+        if (sel.length === 1 && sel[0]._value === self._value) return;
+      }
 
       /**
        * Multiple
@@ -98,6 +107,10 @@ const Model = types
           labels.unselectAll();
         }
       }
+
+      if (reg) {
+        reg.updateSingleState(labels);
+      }
     },
 
     /**
@@ -113,7 +126,7 @@ const Model = types
     },
 
     _updateBackgroundColor(val) {
-      if (self.background === DEFAULT_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
+      if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
     },
 
     afterCreate() {

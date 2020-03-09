@@ -3,6 +3,7 @@ import { Form } from "antd";
 import { observer } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
+import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Tree from "../../core/Tree";
@@ -26,12 +27,16 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {string} toName name of the elements that you want to label
  * @param {single|single-radio|multiple=} [choice=single] single or multi-class
  * @param {boolean} showInline show items in the same visual line
+ * @param {boolean} [required=false] validation if choice has been selected
+ * @param {string} requiredMessage message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.string,
   toname: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, false),
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
+  required: types.optional(types.boolean, false),
+  requiredmessage: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -39,7 +44,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "choices",
-    children: Types.unionArray(["choice", "choices", "labels", "label"]),
+    children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
   .views(self => ({
     get shouldBeUnselected() {
@@ -55,6 +60,16 @@ const Model = types
     },
   }))
   .actions(self => ({
+    validate() {
+      const names = self.getSelectedNames();
+      if (names.length === 0) {
+        InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
+        return false;
+      }
+
+      return true;
+    },
+
     toStateJSON() {
       const names = self.getSelectedNames();
 
@@ -89,7 +104,12 @@ const Model = types
     },
   }));
 
-const ChoicesModel = types.compose("ChoicesModel", Model, TagAttrs, SelectedModelMixin);
+const ChoicesModel = types.compose(
+  "ChoicesModel",
+  Model,
+  TagAttrs,
+  SelectedModelMixin.props({ _child: "ChoiceModel" }),
+);
 
 const HtxChoices = observer(({ item }) => {
   return (

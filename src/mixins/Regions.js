@@ -1,14 +1,36 @@
 import { types } from "mobx-state-tree";
+import { cloneNode } from "../core/Helpers";
 
 const RegionsMixin = types
   .model({
+    readonly: types.optional(types.boolean, false),
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
   })
   .actions(self => ({
+    moveTop(size) {},
+    moveBottom(size) {},
+    moveLeft(size) {},
+    moveRight(size) {},
+
+    sizeRight(size) {},
+    sizeLeft(size) {},
+    sizeTop(size) {},
+    sizeBottom(size) {},
+
+    updateAppearenceFromState() {},
+
+    updateSingleState(state) {
+      var foundIndex = self.states.findIndex(s => s.name == state.name);
+      self.states[foundIndex] = cloneNode(state);
+      self.updateAppearenceFromState();
+    },
+
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
+
+      self.completion.loadRegionState(self);
     },
 
     unselectRegion() {
@@ -20,6 +42,8 @@ const RegionsMixin = types
 
       self.selected = false;
       self.completion.setHighlightedNode(null);
+
+      self.completion.unloadRegionState(self);
     },
 
     onClickRegion() {
@@ -44,6 +68,8 @@ const RegionsMixin = types
      * Remove region
      */
     deleteRegion() {
+      if (!self.completion.edittable) return;
+
       self.unselectRegion();
 
       self.completion.relationStore.deleteNodeRelation(self);
@@ -61,7 +87,7 @@ const RegionsMixin = types
       self.highlighted = val;
     },
 
-    toggleHightlight() {
+    toggleHighlight() {
       self.setHighlight(!self.highlighted);
     },
   }));

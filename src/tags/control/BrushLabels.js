@@ -10,6 +10,20 @@ import { BrushModel } from "./Brush";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { guidGenerator } from "../../core/Helpers";
 
+/**
+ * BrushLabels tag creates segmented labeling
+ * @example
+ * <View>
+ *   <BrushLabels name="labels" toName="image">
+ *     <Label value="Person"></Label>
+ *     <Label value="Animal"></Label>
+ *   </BrushLabels>
+ *   <Image name="image" value="$image"></Image>
+ * </View>
+ * @name BrushLabels
+ * @param {string} name name of the element
+ * @param {string} toname name of the image to label
+ */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
@@ -19,7 +33,7 @@ const ModelAttrs = types.model("BrushLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "brushlabels" }).views(self => ({
@@ -35,7 +49,7 @@ const BrushLabelsModel = types.compose(
   BrushModel,
   TagAttrs,
   Model,
-  SelectedModelMixin,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
 );
 
 const HtxBrushLabels = observer(({ item }) => {

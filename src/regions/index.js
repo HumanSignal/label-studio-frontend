@@ -12,7 +12,7 @@ import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
 import { RectRegionModel, HtxRectangle } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
 import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
-import { TextRegionModel, HtxTextRegion } from "./TextRegion";
+import { TextRegionModel } from "./TextRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,

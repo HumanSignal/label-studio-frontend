@@ -1,6 +1,7 @@
 import keymaster from "keymaster";
 
 let _hotkeys_map = {};
+let _hotkeys_desc = {};
 
 keymaster.filter = function(event) {
   if (keymaster.getScope() === "__none__") return;
@@ -18,11 +19,12 @@ keymaster.filter = function(event) {
  * @param {*} key
  * @param {*} func
  */
-function addKey(key, func, scope) {
+function addKey(key, func, desc, scope = "__main__") {
   if (_hotkeys_map[key]) return;
-  if (!scope) scope = "__main__";
 
   _hotkeys_map[key] = func;
+  _hotkeys_desc[key] = desc;
+
   keymaster(key, scope, func);
 }
 
@@ -32,8 +34,19 @@ function addKey(key, func, scope) {
  */
 function overwriteKey(key, func) {}
 
+function keysDescipritions() {
+  return _hotkeys_desc;
+}
+
 function removeKey(key) {
   keymaster.unbind(key);
+
+  delete _hotkeys_map[key];
+  delete _hotkeys_desc[key];
+}
+
+function getKeys() {
+  return Object.keys(_hotkeys_map);
 }
 
 /**
@@ -72,4 +85,4 @@ function makeComb() {
   return null;
 }
 
-export default { removeKey, addKey, unbindAll, makeComb, setScope };
+export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescipritions };

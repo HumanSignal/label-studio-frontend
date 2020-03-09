@@ -6,6 +6,7 @@ import Constants from "../core/Constants";
 import Hint from "../components/Hint/Hint";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
+import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import styles from "./TextRegion/TextRegion.module.scss";
@@ -13,16 +14,22 @@ import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
 import { guidGenerator } from "../core/Helpers";
+import { highlightRange, splitBoundaries } from "../utils/html";
+import SpanTextMixin from "../mixins/SpanText";
 
 const Model = types
   .model("TextRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "textrange",
-    start: types.integer,
-    end: types.integer,
+
+    startOffset: types.integer,
+    start: types.string,
+    endOffset: types.integer,
+    end: types.string,
+
     text: types.string,
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel))),
   })
   .views(self => ({
     get parent() {
@@ -34,7 +41,19 @@ const Model = types
     },
   }))
   .actions(self => ({
-    // highlightStates() {},
+    beforeDestroy() {
+      var norm = [];
+      if (self._spans) {
+        self._spans.forEach(span => {
+          while (span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
+
+          norm.push(span.parentNode);
+          span.parentNode.removeChild(span);
+        });
+      }
+
+      norm.forEach(n => n.normalize());
+    },
 
     /**
      *
@@ -48,10 +67,9 @@ const Model = types
           to_name: parent.name,
           source: parent.value,
           type: "region",
-          // text: parent.text,
           value: {
-            start: self.start,
-            end: self.end,
+            start: self.startOffset,
+            end: self.endOffset,
             text: self.text,
           },
         };
@@ -76,7 +94,14 @@ const Model = types
     },
   }));
 
-const TextRegionModel = types.compose("TextRegionModel", RegionsMixin, NormalizationMixin, Model);
+const TextRegionModel = types.compose(
+  "TextRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+  SpanTextMixin,
+);
 
 /**
  * Region state hint
@@ -103,77 +128,4 @@ const RegionState = props => {
   );
 };
 
-const HtxTextRegionView = ({ store, item, letterGroup, range, textCharIndex, onMouseOverHighlightedWord }) => {
-  /**
-   * Get color of label
-   */
-  let labelColor = "rgba(0, 0, 255, 0.1)";
-
-  if (range.states) {
-    labelColor = range.states.map(s => {
-      return s.getSelectedColor();
-    });
-  }
-
-  /**
-   * TODO
-   * Update function to all formats
-   */
-  if (labelColor.length !== 0) {
-    labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-  }
-
-  let markStyle = {
-    padding: "2px 0px",
-    position: "relative",
-    borderRadius: "2px",
-    cursor: store.completionStore.selected.relationMode ? Constants.RELATION_MODE_CURSOR : Constants.POINTER_CURSOR,
-  };
-
-  let regionStates = range.states.map(state => (
-    <RegionState
-      key={range.id}
-      state={state}
-      bg={labelColor}
-      hover={store.completionStore.selected.relationMode ? true : false}
-      selected={range.selected}
-      style={range.highlighted ? { outline: Constants.HIGHLIGHTED_CSS_BORDER } : null}
-    />
-  ));
-
-  /**
-   * Without label
-   */
-  if (!regionStates.length) {
-    markStyle = {
-      ...markStyle,
-      background: "rgba(0, 0, 255, 0.1)",
-    };
-  }
-
-  return (
-    <span
-      style={markStyle}
-      onClick={range.onClickRegion}
-      onMouseOver={() => {
-        if (store.completionStore.selected.relationMode) {
-          range.setHighlight(true);
-        }
-      }}
-      onMouseOut={() => {
-        if (store.completionStore.selected.relationMode) {
-          range.setHighlight(false);
-        }
-      }}
-    >
-      {letterGroup}
-      {regionStates}
-    </span>
-  );
-};
-
-const HtxTextRegion = inject("store")(observer(HtxTextRegionView));
-
-Registry.addTag("textrange", TextRegionModel, HtxTextRegion);
-
-export { TextRegionModel, HtxTextRegion };
+export { TextRegionModel };

@@ -4,6 +4,7 @@ import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
@@ -19,7 +20,7 @@ import { guidGenerator } from "../core/Helpers";
 
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     type: "polygonregion",
@@ -37,7 +38,7 @@ const Model = types
 
     points: types.array(PolygonPoint, []),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, PolygonLabelsModel))),
+    states: types.maybeNull(types.array(types.union(PolygonLabelsModel))),
 
     mouseOverStartPoint: types.optional(types.boolean, false),
 
@@ -173,14 +174,26 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokecolor = stroke;
+      self.fillcolor = stroke;
     },
 
     selectRegion() {
+      if (self.parent.selected) {
+        self.parent.selected.closed = true;
+      }
       // self.points.forEach(p => p.computeOffset());
 
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+
+      self.completion.loadRegionState(self);
     },
 
     setScale(x, y) {
@@ -250,6 +263,8 @@ const Model = types
           value: {
             points: perc_points,
           },
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;
@@ -272,7 +287,13 @@ const Model = types
     },
   }));
 
-const PolygonRegionModel = types.compose("PolygonRegionModel", RegionsMixin, NormalizationMixin, Model);
+const PolygonRegionModel = types.compose(
+  "PolygonRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 /**
  * Get coordinates of anchor point

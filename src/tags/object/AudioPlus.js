@@ -45,6 +45,7 @@ const Model = types
     id: types.identifier,
     type: "audio",
     _value: types.optional(types.string, ""),
+
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
     height: types.optional(types.number, 128),
@@ -159,6 +160,11 @@ const Model = types
         return find_r;
       }
 
+      if (clonedStates.length == 0) {
+        ws_region.remove();
+        return;
+      }
+
       const bgColor =
         states && states[0] ? Utils.Colors.convertToRGBA(states[0].getSelectedColor(), 0.3) : self.selectedregionbg;
 
@@ -176,8 +182,6 @@ const Model = types
 
       self.regions.push(r);
       self.completion.addRegion(r);
-
-      states && states.forEach(s => s.unselectAll());
 
       return r;
     },

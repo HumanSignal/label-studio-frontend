@@ -4,6 +4,7 @@ import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 import { encode, decode } from "@thi.ng/rle-pack";
 
+import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -16,7 +17,7 @@ import Canvas from "../utils/canvas";
 
 const Points = types
   .model("Points", {
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     type: types.optional(types.enumeration(["add", "eraser"]), "add"),
     points: types.array(types.number),
     /**
@@ -57,7 +58,7 @@ const Model = types
 
     type: "brushregion",
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, BrushLabelsModel))),
+    states: types.maybeNull(types.array(types.union(BrushLabelsModel))),
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
     /**
@@ -131,15 +132,22 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
     },
 
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+      self.completion.loadRegionState(self);
     },
 
     convertPointsToMask() {},
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+    },
 
     // addPoints(x, y, mode) {
     //   if (mode) self.mode = "eraser";
@@ -209,6 +217,8 @@ const Model = types
             rle: Array.prototype.slice.call(rle),
           },
 
+          original_width: self.parent.naturalWidth,
+          original_height: self.parent.naturalHeight,
           // value: {
           //   points: self.points,
           //   eraserpoints: self.eraserpoints,
@@ -235,7 +245,7 @@ const Model = types
     },
   }));
 
-const BrushRegionModel = types.compose("BrushRegionModel", RegionsMixin, NormalizationMixin, Model);
+const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
   let currentPoints = [];

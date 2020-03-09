@@ -27,15 +27,11 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {float=} [opacity=0.9] opacity of keypoint
  * @param {string=} fillColor keypoint fill color, default is transparent
  * @param {number=} [strokeWidth=1] width of the stroke
+ * @param {string=} [stokeColor=#8bad00] keypoint stroke color
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
-
-  opacity: types.optional(types.string, "0.9"),
-  fillcolor: types.maybeNull(types.string),
-
-  strokewidth: types.optional(types.string, "1"),
 });
 
 const ModelAttrs = types
@@ -43,7 +39,7 @@ const ModelAttrs = types
     id: types.identifier,
     pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
-    children: Types.unionArray(["labels", "label", "choice"]),
+    children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
@@ -58,7 +54,14 @@ const Model = LabelMixin.props({ _type: "keypointlabels" }).views(self => ({
   },
 }));
 
-const Composition = types.compose(LabelsModel, ModelAttrs, KeyPointModel, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  KeyPointModel,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const KeyPointLabelsModel = types.compose("KeyPointLabelsModel", Composition);
 

@@ -48,6 +48,7 @@ const _Tool = types
         states.fromStateJSON(obj);
 
         const region = self.createRegion({
+          pid: obj.id,
           stroke: states.getSelectedColor(),
           states: states,
           // coordstype: "px",
@@ -65,11 +66,7 @@ const _Tool = types
       }
     },
 
-    afterAttach() {
-      self.updateCursor();
-    },
-
-    createRegion({ stroke, states, coordstype, mode, points }) {
+    createRegion({ pid, stroke, states, coordstype, mode, points }) {
       const c = self.control;
 
       let localStates = states;
@@ -80,8 +77,9 @@ const _Tool = types
 
       const brush = BrushRegionModel.create({
         id: guidGenerator(),
+        pid: pid,
 
-        strokeWidth: self.strokeWidth || c.strokeWidth,
+        strokeWidth: self.strokeWidth || Number(c.strokewidth),
         strokeColor: stroke,
 
         states: localStates,
@@ -110,8 +108,6 @@ const _Tool = types
 
     setStroke(val) {
       self.strokeWidth = val;
-
-      // el.style.cursor = "url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/9632/heart.png'), auto";
     },
 
     mouseupEv() {
@@ -128,19 +124,10 @@ const _Tool = types
 
     mousedownEv(ev, [x, y]) {
       const c = self.control;
+      const brush = self.getSelectedShape;
 
-      if (c.isSelected) {
+      if (brush) {
         self.mode = "drawing";
-
-        const { states, strokecolor } = self.statesAndParams;
-
-        const brush = self.createRegion({
-          x: x,
-          y: y,
-          stroke: strokecolor,
-          states: states,
-          coordstype: "px",
-        });
 
         const p = brush.addTouch({
           type: "add",
@@ -148,20 +135,27 @@ const _Tool = types
         });
 
         p.addPoints(Math.floor(x), Math.floor(y));
-
-        if (self.control.type == "brushlabels") self.control.unselectAll();
       } else {
-        const brush = self.getSelectedShape;
-        if (!brush) return;
+        if (c.isSelected) {
+          self.mode = "drawing";
 
-        self.mode = "drawing";
+          const { states, strokecolor } = self.statesAndParams;
 
-        const p = brush.addTouch({
-          type: "add",
-          strokeWidth: self.strokeWidth || c.strokeWidth,
-        });
+          const brush = self.createRegion({
+            x: x,
+            y: y,
+            stroke: strokecolor,
+            states: states,
+            coordstype: "px",
+          });
 
-        p.addPoints(Math.floor(x), Math.floor(y));
+          const p = brush.addTouch({
+            type: "add",
+            strokeWidth: self.strokeWidth || c.strokeWidth,
+          });
+
+          p.addPoints(Math.floor(x), Math.floor(y));
+        }
       }
     },
   }));

@@ -39,7 +39,9 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
 /**
  * Custom Data
  */
-const data = ImageEllipselabels;
+import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
+
+const data = HTMLDocument;
 
 /**
  * Get current config

@@ -44,6 +44,7 @@ const _Tool = types
         states.fromStateJSON(obj);
 
         self.createRegion({
+          pid: obj.id,
           x: obj.value.x,
           y: obj.value.y,
           sw: obj.value.width,
@@ -56,7 +57,7 @@ const _Tool = types
       }
     },
 
-    createRegion({ x, y, sw, sh, states, coordstype, stroke, rotation }) {
+    createRegion({ pid, x, y, sw, sh, states, coordstype, stroke, rotation }) {
       const control = self.control;
 
       let localStates = states;
@@ -67,6 +68,7 @@ const _Tool = types
 
       const rect = RectRegionModel.create({
         id: guidGenerator(),
+        pid: pid,
         states: localStates,
         coordstype: coordstype,
 
@@ -78,7 +80,7 @@ const _Tool = types
 
         opacity: parseFloat(control.opacity),
         fillcolor: stroke || control.fillcolor,
-        strokeWidth: control.strokeWidth,
+        strokeWidth: Number(control.strokewidth),
         strokeColor: stroke || control.stroke,
       });
 
@@ -90,7 +92,7 @@ const _Tool = types
     updateDraw(x, y) {
       const shape = self.getActiveShape;
 
-      const { x1, y1, x2, y2 } = reverseCoordinates({ x: shape._start_x, y: shape._start_y }, { x: x, y: y });
+      const { x1, y1, x2, y2 } = reverseCoordinates({ x: shape.startX, y: shape.startY }, { x: x, y: y });
 
       shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
     },
@@ -111,7 +113,7 @@ const _Tool = types
         coordstype: "px",
       });
 
-      if (self.control.type === "rectanglelabels") self.control.unselectAll();
+      // if (self.control.type === "rectanglelabels") self.control.unselectAll();
 
       return rect;
     },
@@ -127,7 +129,12 @@ const _Tool = types
 
       const s = self.getActiveShape;
 
-      if (s.width < minSize.w || s.height < minSize.h) destroy(s);
+      if (s.width < minSize.w || s.height < minSize.h) {
+        destroy(s);
+        if (self.control.type === "rectanglelabels") self.control.unselectAll();
+      } else {
+        self.obj.completion().highlightedNode.unselectRegion();
+      }
 
       self.mode = "viewing";
     },

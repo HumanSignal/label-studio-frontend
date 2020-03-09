@@ -1,5 +1,5 @@
 import React from "react";
-import { Card } from "antd";
+import { Card, Divider } from "antd";
 import { observer } from "mobx-react";
 
 import Entities from "../Entities/Entities";
@@ -17,11 +17,7 @@ export default observer(({ store }) => {
   const completion = store.completionStore.selected;
   const node = completion.highlightedNode;
 
-  let title = (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <h3 style={{ margin: 0 }}>Entity</h3>
-    </div>
-  );
+  let title = <h3 style={{ margin: 0 }}>Results</h3>;
 
   return (
     <Card title={title} size="small" className={styles.card}>

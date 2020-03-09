@@ -6,7 +6,7 @@ import Registry from "../../core/Registry";
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
-  strokeWidth: types.optional(types.number, 15),
+  strokewidth: types.optional(types.string, "15"),
 });
 
 const Model = types
