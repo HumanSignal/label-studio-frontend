@@ -35,7 +35,6 @@ export {
   HtxPolygon,
   HtxRectangle,
   HtxTextAreaRegion,
-  HtxTextRegion,
   HtxEllipse,
   HyperTextRegionModel,
   KeyPointRegionModel,

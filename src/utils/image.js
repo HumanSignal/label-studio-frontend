@@ -1,3 +1,27 @@
+export function reverseCoordinates(r1, r2) {
+  let r1X = r1.x,
+    r1Y = r1.y,
+    r2X = r2.x,
+    r2Y = r2.y,
+    d;
+
+  if (r1X > r2X) {
+    d = Math.abs(r1X - r2X);
+    r1X = r2X;
+    r2X = r1X + d;
+  }
+
+  if (r1Y > r2Y) {
+    d = Math.abs(r1Y - r2Y);
+    r1Y = r2Y;
+    r2Y = r1Y + d;
+  }
+  /**
+   * Return the corrected rect
+   */
+  return { x1: r1X, y1: r1Y, x2: r2X, y2: r2Y };
+}
+
 /**
  * Transform RGBA Canvas to Binary Matrix
  * @param {object} canvas

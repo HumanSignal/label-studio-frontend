@@ -1,35 +1,12 @@
 import { types, destroy } from "mobx-state-tree";
 
+import Utils from "../utils";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { EllipseRegionModel } from "../regions/EllipseRegion";
 import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 const minSize = { rx: 3, ry: 3 };
-
-function reverseCoordinates(r1, r2) {
-  let r1X = r1.x,
-    r1Y = r1.y,
-    r2X = r2.x,
-    r2Y = r2.y,
-    d;
-
-  if (r1X > r2X) {
-    d = Math.abs(r1X - r2X);
-    r1X = r2X;
-    r2X = r1X + d;
-  }
-
-  if (r1Y > r2Y) {
-    d = Math.abs(r1Y - r2Y);
-    r1Y = r2Y;
-    r2Y = r1Y + d;
-  }
-  /**
-   * Return the corrected rect
-   */
-  return { x1: r1X, y1: r1Y, x2: r2X, y2: r2Y };
-}
 
 const _Tool = types
   .model({
@@ -43,6 +20,7 @@ const _Tool = types
         const states = restoreNewsnapshot(fromModel);
         states.fromStateJSON(obj);
         self.createRegion({
+          pid: obj.pid,
           x: obj.value.x,
           y: obj.value.y,
           rx: obj.value.radiusX,
@@ -55,7 +33,7 @@ const _Tool = types
       }
     },
 
-    createRegion({ x, y, rx, ry, states, coordstype, stroke, rotation }) {
+    createRegion({ pid, x, y, rx, ry, states, coordstype, stroke, rotation }) {
       const control = self.control;
 
       let localStates = states;
@@ -66,6 +44,7 @@ const _Tool = types
 
       const ellipse = EllipseRegionModel.create({
         id: guidGenerator(),
+        pid: pid,
         states: localStates,
         coordstype: coordstype,
 
@@ -77,8 +56,8 @@ const _Tool = types
 
         opacity: parseFloat(control.opacity),
         fillcolor: stroke || control.fillcolor,
-        strokeWidth: control.strokeWidth,
-        strokeColor: stroke || control.stroke,
+        strokeWidth: control.strokewidth,
+        strokeColor: stroke || control.strokecolor,
       });
 
       self.obj.addShape(ellipse);
@@ -89,7 +68,7 @@ const _Tool = types
     updateDraw(x, y) {
       const shape = self.getActiveShape;
 
-      const { x1, y1, x2, y2 } = reverseCoordinates({ x: shape._start_x, y: shape._start_y }, { x: x, y: y });
+      const { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x: x, y: y });
 
       shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
     },
@@ -110,7 +89,7 @@ const _Tool = types
         coordstype: "px",
       });
 
-      if (self.control.type === "ellipselabels") self.control.unselectAll();
+      // if (self.control.type === "ellipselabels") self.control.unselectAll();
 
       return ellipse;
     },
@@ -126,7 +105,12 @@ const _Tool = types
 
       const s = self.getActiveShape;
 
-      if (s.width < minSize.w || s.height < minSize.h) destroy(s);
+      if (s.radiusX < minSize.rx || s.radiusY < minSize.ry) {
+        destroy(s);
+        if (self.control.type === "ellipselabels") self.control.unselectAll();
+      } else {
+        self.obj.completion().highlightedNode.unselectRegion();
+      }
 
       self.mode = "viewing";
     },

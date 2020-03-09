@@ -74,13 +74,13 @@ const NodeViews = {
     const radiusY = node.radiusY * node.scaleY;
     const rotation = node.rotation;
     return (
-      <p>
+      <Fragment>
         <span onClick={click} className={styles.node}>
-          <i className="expand icon" />
-          Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {rotation.toFixed(2)}°, center = ({node.x.toFixed(2)}
-          , {node.y.toFixed(2)})
+          <Icon type="loading-3-quarters" style={pt} />
+          &nbsp; Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {rotation.toFixed(2)}°, center = (
+          {node.x.toFixed(2)}, {node.y.toFixed(2)})
         </span>
-      </p>
+      </Fragment>
     );
   },
 

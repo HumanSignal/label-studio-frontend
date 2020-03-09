@@ -2,8 +2,9 @@ import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
-import { sin, cos, pow, abs, unit } from "mathjs";
+// import { sin, cos, pow, abs, unit } from Math;
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
@@ -36,8 +37,8 @@ const Model = types
     relativeWidth: types.optional(types.number, 0),
     relativeHeight: types.optional(types.number, 0),
 
-    _start_x: types.optional(types.number, 0),
-    _start_y: types.optional(types.number, 0),
+    startX: types.optional(types.number, 0),
+    startY: types.optional(types.number, 0),
 
     relativeRadiusX: types.optional(types.number, 0),
     relativeRadiusY: types.optional(types.number, 0),
@@ -81,8 +82,8 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      self._start_x = self.x;
-      self._start_y = self.y;
+      self.startX = self.x;
+      self.startY = self.y;
 
       if (self.coordstype === "perc") {
         self.relativeX = self.x;
@@ -92,12 +93,22 @@ const Model = types
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
       }
+
+      self.updateAppearenceFromState();
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+      self.fillcolor = stroke;
     },
 
     unselectRegion() {
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+
+      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {
@@ -113,11 +124,11 @@ const Model = types
 
       //going to system where our ellipse has angle 0 to X-Axis via rotate matrix
       const theta = self.rotation;
-      rel_x = rel_x * cos(unit(theta, "deg")) - rel_y * sin(unit(theta, "deg"));
-      rel_y = rel_x * sin(unit(theta, "deg")) + rel_y * cos(unit(theta, "deg"));
+      rel_x = rel_x * Math.cos(Math.unit(theta, "deg")) - rel_y * Math.sin(Math.unit(theta, "deg"));
+      rel_y = rel_x * Math.sin(Math.unit(theta, "deg")) + rel_y * Math.cos(Math.unit(theta, "deg"));
 
-      if (abs(rel_x) < a) {
-        if (pow(rel_y, 2) < pow(b, 2) * (1 - pow(rel_x, 2) / pow(a, 2))) {
+      if (Math.abs(rel_x) < a) {
+        if (Math.pow(rel_y, 2) < Math.pow(b, 2) * (1 - Math.pow(rel_x, 2) / Math.pow(a, 2))) {
           return true;
         }
       } else {
@@ -129,6 +140,8 @@ const Model = types
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+
+      self.completion.loadRegionState(self);
     },
 
     /**
@@ -243,7 +256,14 @@ const Model = types
     },
   }));
 
-const EllipseRegionModel = types.compose("EllipseRegionModel", RegionsMixin, NormalizationMixin, DisabledMixin, Model);
+const EllipseRegionModel = types.compose(
+  "EllipseRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  DisabledMixin,
+  Model,
+);
 
 const HtxEllipseView = ({ store, item }) => {
   let { strokeColor, strokeWidth } = item;
