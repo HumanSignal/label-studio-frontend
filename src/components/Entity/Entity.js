@@ -28,6 +28,7 @@ const RenderStates = observer(({ node }) => {
   const _render = s => {
     if (
       getType(s).name === "LabelsModel" ||
+      getType(s).name === "EllipseLabelsModel" ||
       getType(s).name === "RectangleLabelsModel" ||
       getType(s).name === "PolygonLabelsModel" ||
       getType(s).name === "KeyPointLabelsModel" ||
