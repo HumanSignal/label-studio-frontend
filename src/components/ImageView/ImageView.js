@@ -66,7 +66,18 @@ export default observer(
        */
       item.freezeHistory();
 
-      return item.onMouseMove(e);
+      const stage = item.stageRef;
+      const scale = stage.scaleX();
+
+      if (e.evt && (e.evt.buttons == 4 || (e.evt.buttons == 1 && e.evt.shiftKey)) && scale > 1) {
+        e.evt.preventDefault();
+        const newPos = { x: stage.x() + e.evt.movementX, y: stage.y() + e.evt.movementY };
+        item.setZoom(scale, newPos.x, newPos.y);
+        stage.position(newPos);
+        stage.batchDraw();
+      } else {
+        return item.onMouseMove(e);
+      }
     };
 
     updateGridSize = range => {

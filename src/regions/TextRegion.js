@@ -103,29 +103,4 @@ const TextRegionModel = types.compose(
   SpanTextMixin,
 );
 
-/**
- * Region state hint
- * @param {*} props
- */
-const RegionState = props => {
-  const localState = props.state;
-
-  /**
-   * Get name of label
-   */
-  const selectedString = localState.getSelectedString();
-  const selectedColor = Utils.Colors.convertToRGBA(localState.getSelectedColor(), 0.3);
-  let style = {
-    background: selectedColor,
-  };
-
-  if (props.style) style = { ...style, outline: props.style.outline };
-
-  return (
-    <Hint className={styles.state} style={style}>
-      <span data-hint={true}>&nbsp;[{selectedString}]</span>
-    </Hint>
-  );
-};
-
 export { TextRegionModel };

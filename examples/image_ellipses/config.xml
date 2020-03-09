@@ -1,0 +1,11 @@
+<View>
+  <Image name="img" value="$image"></Image>
+  <EllipseLabels name="tag" toName="img" canRotate="true">
+    <Label value="Planet"></Label>
+    <Label value="Moonwalker" background="blue"></Label>
+  </EllipseLabels>
+  <Choices name="choice" toName="img">
+    <Choice value="Space" />
+    <Choice value="Underground" />
+  </Choices>
+</View>

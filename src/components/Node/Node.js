@@ -69,6 +69,21 @@ const NodeViews = {
     </Fragment>
   ),
 
+  EllipseRegionModel: (node, click) => {
+    const radiusX = node.radiusX * node.scaleX;
+    const radiusY = node.radiusY * node.scaleY;
+    const rotation = node.rotation;
+    return (
+      <Fragment>
+        <span onClick={click} className={styles.node}>
+          <Icon type="loading-3-quarters" style={pt} />
+          &nbsp; Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {rotation.toFixed(2)}°, center = (
+          {node.x.toFixed(2)}, {node.y.toFixed(2)})
+        </span>
+      </Fragment>
+    );
+  },
+
   KeyPointRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
@@ -118,6 +133,15 @@ const NodeMinimal = ({ node }) => {
       <Fragment>
         <Icon type="block" />
         &nbsp; Rect
+      </Fragment>
+    );
+  }
+
+  if (getType(node).name === "EllipseRegionModel") {
+    return (
+      <Fragment>
+        <i className="expand icon" />
+        Ellipse
       </Fragment>
     );
   }
