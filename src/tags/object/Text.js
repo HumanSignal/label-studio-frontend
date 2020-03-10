@@ -155,7 +155,7 @@ const Model = types
         endOffset: end,
         start: "",
         end: "",
-        text: text,
+        text: self._value.substring(start, end),
         normalization: obj.normalization,
         states: [states],
       };
