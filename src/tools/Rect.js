@@ -16,18 +16,28 @@ const _Tool = types
   .views(self => ({}))
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
-      if ("rectanglelabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-        states.fromStateJSON(obj);
+      let states = null;
+      let scolor = self.control.strokecolor;
 
+      if (obj.type === "rectanglelabels") {
+        states = restoreNewsnapshot(fromModel);
+        if (states.fromStateJSON) {
+          states.fromStateJSON(obj);
+          scolor = states.getSelectedColor();
+        }
+
+        states = [states];
+      }
+
+      if (obj.type === "rectanglelabels" || obj.type === "rectangle") {
         self.createRegion({
           pid: obj.id,
           x: obj.value.x,
           y: obj.value.y,
           sw: obj.value.width,
           sh: obj.value.height,
-          stroke: states.getSelectedColor(),
-          states: [states],
+          stroke: scolor,
+          states: states,
           coordstype: "perc",
           rotation: obj.value.rotation,
         });
