@@ -22,20 +22,27 @@ const _Tool = types
   }))
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
-      if ("polygonlabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
+      let states = null;
+      let scolor = self.control.strokecolor;
 
-        if (!states.fromStateJSON) return;
+      if (obj.type === "polygonlabels") {
+        states = restoreNewsnapshot(fromModel);
+        if (states.fromStateJSON) {
+          states.fromStateJSON(obj);
+          scolor = states.getSelectedColor();
+        }
 
-        states.fromStateJSON(obj);
+        states = [states];
+      }
 
+      if (obj.type === "polygonlabels" || obj.type === "polygon") {
         const poly = self.createRegion({
           pid: obj.id,
           x: obj.value.points[0][0],
           y: obj.value.points[0][1],
           width: 10,
-          stroke: states.getSelectedColor(),
-          states: [states],
+          stroke: scolor,
+          states: states,
           coordstype: "perc",
           stateFlag: true,
         });

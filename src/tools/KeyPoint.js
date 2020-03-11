@@ -11,17 +11,27 @@ const _Tool = types
   })
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
-      if ("keypointlabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-        states.fromStateJSON(obj);
+      let states = null;
+      let scolor = self.control.strokecolor;
 
+      if (obj.type === "keypointlabels") {
+        states = restoreNewsnapshot(fromModel);
+        if (states.fromStateJSON) {
+          states.fromStateJSON(obj);
+          scolor = states.getSelectedColor();
+        }
+
+        states = [states];
+      }
+
+      if (obj.type === "keypointlabels" || obj.type === "keypoint") {
         self.createRegion({
           pid: obj.id,
           x: obj.value.x,
           y: obj.value.y,
           width: obj.value.width,
-          fillcolor: states.getSelectedColor(),
-          states: [states],
+          fillcolor: scolor,
+          states: states,
           coordstype: "perc",
         });
       }
