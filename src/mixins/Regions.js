@@ -20,6 +20,51 @@ const RegionsMixin = types
 
     updateAppearenceFromState() {},
 
+    serialize() {
+      console.error("Region class needs to implement serialize");
+    },
+
+    toStateJSON() {
+      const parent = self.parent;
+      const buildTree = control => {
+        const tree = {
+          id: self.pid,
+          from_name: control.name,
+          to_name: parent.name,
+          source: parent.value,
+          type: control.type,
+        };
+
+        if (self.normalization) tree["normalization"] = self.normalization;
+
+        return tree;
+      };
+
+      if (self.states && self.states.length) {
+        return self.states.map(s => {
+          const tree = {
+            ...buildTree(s),
+            ...self.serialize(s, parent),
+          };
+
+          // in case of labels it's gonna be, labels: ["label1", "label2"]
+          tree["value"][s.type] = s.getSelectedNames();
+
+          return tree;
+        });
+      } else {
+        const obj = self.completion.toNames.get(parent.name);
+        const control = obj.length ? obj[0] : obj;
+
+        const tree = {
+          ...buildTree(control),
+          ...self.serialize(control, parent),
+        };
+
+        return tree;
+      }
+    },
+
     updateSingleState(state) {
       var foundIndex = self.states.findIndex(s => s.name == state.name);
       self.states[foundIndex] = cloneNode(state);

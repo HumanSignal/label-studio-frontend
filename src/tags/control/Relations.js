@@ -9,17 +9,20 @@ import { guidGenerator } from "../../core/Helpers";
  * Relations tag, create relations labels
  * @example
  * <View>
- *   <Relations name="type" toName="txt-1">
- *     <Relation alias="B" value="" />
- *     <Relation alias="P" value="" />
+ *   <Relations>
+ *     <Relation value="hello" />
+ *     <Relation value="world" />
  *   </Relations>
+ *   <Text name="txt-1" value="$text" />
+ *   <Labels name="lbl-1" toName="txt-1">
+ *     <Label value="Relevant" />
+ *     <Label value="Not Relevant" />
+ *   </Labels>
  * </View>
  * @name Relations
  * @param {single|multiple=} [choice=single] configure if you can select just one or multiple labels
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
-  toname: types.maybeNull(types.string),
   choice: types.optional(types.enumeration(["single", "multiple"]), "multiple"),
 });
 

@@ -18,7 +18,6 @@ const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-
     type: "keypointregion",
 
     x: types.number,
@@ -114,43 +113,17 @@ const Model = types
       }
     },
 
-    toStateJSON() {
-      const parent = self.parent;
-      const from = parent.states()[0];
+    serialize(control, object) {
+      return {
+        original_width: object.naturalWidth,
+        original_height: object.naturalHeight,
 
-      const buildTree = obj => {
-        const tree = {
-          id: self.id,
-          from_name: from.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "keypoint",
-          value: {
-            x: (self.x * 100) / self.parent.stageWidth,
-            y: (self.y * 100) / self.parent.stageHeight,
-            width: (self.width * 100) / self.parent.stageWidth, //  * (self.scaleX || 1)
-          },
-          original_width: self.parent.naturalWidth,
-          original_height: self.parent.naturalHeight,
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+        value: {
+          x: (self.x * 100) / object.stageWidth,
+          y: (self.y * 100) / object.stageHeight,
+          width: (self.width * 100) / object.stageWidth, //  * (self.scaleX || 1)
+        },
       };
-
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
-
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
     },
   }));
 

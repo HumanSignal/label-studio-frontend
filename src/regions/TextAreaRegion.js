@@ -15,7 +15,6 @@ const Model = types
   .model("TextAreaRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-
     type: "textarearegion",
 
     _value: types.string,
@@ -31,6 +30,10 @@ const Model = types
     },
   }))
   .actions(self => ({
+    // serialize(control, object) {
+
+    // },
+
     toStateJSON() {
       const toname = self.parent.toname || self.parent.name;
 

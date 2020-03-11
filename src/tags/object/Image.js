@@ -17,27 +17,28 @@ import { EllipseRegionModel } from "../../regions/EllipseRegion";
  * Image tag shows an image on the page
  * @example
  * <View>
+ *   <!-- Take the image url from the url column in JSON/CSV -->
  *   <Image value="$url"></Image>
  * </View>
  * @example
  * <View>
- *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px"></Image>
+ *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px" />
  * </View>
  * @name Image
- * @param {string} name name of the element
- * @param {string} value value
- * @param {string=} [width=100%] image width
- * @param {string=} [maxWidth=750px] image maximum width
- * @param {boolean=} zoom enable zooming an image by the mouse wheel
- * @param {boolean=} negativeZoom enable zooming out an image
- * @param {float=} [zoomBy=1.1] scale factor
- * @param {boolean=} [grid=false] show grid
- * @param {number=} [gridSize=30] size of the grid
- * @param {string=} [gridColor="#EEEEF4"] color of the grid, opacity is 0.15
- * @param {boolean} [zoomControl=false] show zoom controls in toolbar
- * @param {boolean} [brightnessControl=false] show brightness control in toolbar
- * @param {boolean} [contrastControl=false] show contrast control in toolbar
- * @param {boolean} [rotateControl=false] show rotate control in toolbar
+ * @param {string} name                       - name of the element
+ * @param {string} value                      - value
+ * @param {string=} [width=100%]              - image width
+ * @param {string=} [maxWidth=750px]          - image maximum width
+ * @param {boolean=} [zoom=false]             - enable zooming an image by the mouse wheel
+ * @param {boolean=} [negativeZoom=false]     - enable zooming out an image
+ * @param {float=} [zoomBy=1.1]               - scale factor
+ * @param {boolean=} [grid=false]             - show grid
+ * @param {number=} [gridSize=30]             - size of the grid
+ * @param {string=} [gridColor="#EEEEF4"]     - color of the grid, opacity is 0.15
+ * @param {boolean} [zoomControl=false]       - show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false] - show brightness control in toolbar
+ * @param {boolean} [contrastControl=false]   - show contrast control in toolbar
+ * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

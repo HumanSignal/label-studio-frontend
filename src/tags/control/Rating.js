@@ -11,8 +11,8 @@ import { guidGenerator } from "../../core/Helpers";
  *
  * @example
  * <View>
- *   <Text name="txt" value="$text"></Text>
- *   <Rating name="rating" toName="txt" maxRating="10" icon="star" size="medium"></Rating>
+ *   <Text name="txt" value="$text" />
+ *   <Rating name="rating" toName="txt" maxRating="10" icon="star" size="medium" />
  * </View>
  *
  * @name Rating
@@ -22,7 +22,7 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {number} [defaultValue=0] Default rating value
  * @param {string} [size=medium] One of: small, medium, large
  * @param {string} [icon=start] One of: star, heart, fire, smile
- * @param {string} hotkey HotKey of Rating
+ * @param {string} hotkey HotKey for changing rating value
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

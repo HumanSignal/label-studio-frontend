@@ -377,6 +377,8 @@ const Completion = types
           );
         }
       });
+
+      self.regionStore.unselectAll();
     },
   }));
 

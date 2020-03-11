@@ -15,14 +15,14 @@ import { guidGenerator } from "../../core/Helpers";
  * @example
  * <View>
  *   <BrushLabels name="labels" toName="image">
- *     <Label value="Person"></Label>
- *     <Label value="Animal"></Label>
+ *     <Label value="Person" />
+ *     <Label value="Animal" />
  *   </BrushLabels>
- *   <Image name="image" value="$image"></Image>
+ *   <Image name="image" value="$image" />
  * </View>
  * @name BrushLabels
- * @param {string} name name of the element
- * @param {string} toname name of the image to label
+ * @param {string} name   - name of the element
+ * @param {string} toName - name of the image to label
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

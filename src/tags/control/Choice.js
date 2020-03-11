@@ -15,17 +15,17 @@ import { ChoicesModel } from "./Choices";
  * @example
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single">
- *     <Choice value="Male"></Choice>
- *     <Choice value="Female"></Choice>
+ *     <Choice value="Male" />
+ *     <Choice value="Female" />
  *   </Choices>
- *   <Text name="txt-1" value="John went to see Marry"></Text>
+ *   <Text name="txt-1" value="John went to see Marry" />
  * </View>
  * @name Choice
- * @param {string} value choice value
- * @param {boolean} selected If this label should be preselected
- * @param {string} alias alias for the label
- * @param {style} style css style of the checkbox element
- * @param {string} hotkey HotKey
+ * @param {string} value       - choice value
+ * @param {boolean} [selected] - if this label should be preselected
+ * @param {string} [alias]     - alias for the label
+ * @param {style} [style]      - css style of the checkbox element
+ * @param {string} [hotkey]    - hotkey
  */
 const TagAttrs = types.model({
   selected: types.optional(types.boolean, false),

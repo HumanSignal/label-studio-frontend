@@ -39,7 +39,7 @@ const _Tool = types
 
       let localStates = states;
 
-      if (states && !states.length) {
+      if (states && !Array.isArray(states)) {
         localStates = [states];
       }
 

@@ -53,7 +53,7 @@ const Points = types
  */
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     type: "brushregion",
@@ -183,65 +183,20 @@ const Model = types
       self.states.push(state);
     },
 
-    toStateJSON() {
-      const parent = self.parent;
-      let fromElement = parent.states()[0];
-
-      if (parent.states().length > 1) {
-        parent.states().forEach(state => {
-          if (state.type === "brushlabels") {
-            fromElement = state;
-          }
-        });
-      }
-
-      // const ctx = self.layerRef.getContext("2d");
-
-      const rle = Canvas.Region2RLE(self, self.parent, {
+    serialize(control, object) {
+      const rle = Canvas.Region2RLE(self, object, {
         stroke: self.strokeColor,
         tension: self.tension,
       });
 
-      const buildTree = obj => {
-        //     const data = ctx.getImageData(0,0,750, 937);
-
-        const tree = {
-          id: self.id,
-          from_name: fromElement.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "brush",
-
-          value: {
-            format: "rle",
-            rle: Array.prototype.slice.call(rle),
-          },
-
-          original_width: self.parent.naturalWidth,
-          original_height: self.parent.naturalHeight,
-          // value: {
-          //   points: self.points,
-          //   eraserpoints: self.eraserpoints,
-          // },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+      return {
+        original_width: object.naturalWidth,
+        original_height: object.naturalHeight,
+        value: {
+          format: "rle",
+          rle: Array.prototype.slice.call(rle),
+        },
       };
-
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
-
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
     },
   }));
 

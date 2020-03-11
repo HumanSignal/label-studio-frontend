@@ -22,7 +22,6 @@ const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-
     type: "polygonregion",
 
     opacity: types.number,
@@ -236,8 +235,8 @@ const Model = types
       }
     },
 
-    toStateJSON() {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.parent;
+    serialize(control, object) {
+      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
 
       const perc_w = (stageWidth * 100) / naturalWidth;
       const perc_h = (stageHeight * 100) / naturalHeight;
@@ -252,38 +251,13 @@ const Model = types
         return [res_w, res_h];
       });
 
-      const parent = self.parent;
-      const buildTree = obj => {
-        const tree = {
-          id: self.id,
-          from_name: obj.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "polygon",
-          value: {
-            points: perc_points,
-          },
-          original_width: self.parent.naturalWidth,
-          original_height: self.parent.naturalHeight,
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+      return {
+        value: {
+          points: perc_points,
+        },
+        original_width: naturalWidth,
+        original_height: naturalHeight,
       };
-
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
-
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
     },
   }));
 

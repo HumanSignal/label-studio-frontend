@@ -283,7 +283,23 @@ const findIdxContainer = (el, globidx) => {
   return { node, len };
 };
 
+function removeSpans(spans) {
+  var norm = [];
+
+  if (spans) {
+    spans.forEach(span => {
+      while (span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
+
+      norm.push(span.parentNode);
+      span.parentNode.removeChild(span);
+    });
+  }
+
+  norm.forEach(n => n.normalize());
+}
+
 export {
+  removeSpans,
   mainOffsets,
   findIdxContainer,
   toGlobalOffset,
