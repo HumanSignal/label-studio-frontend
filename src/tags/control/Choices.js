@@ -17,18 +17,18 @@ import { guidGenerator } from "../../core/Helpers";
  * @example
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single-radio">
- *     <Choice alias="M" value="Male"></Choice>
- *     <Choice alias="F" value="Female"></Choice>
+ *     <Choice alias="M" value="Male" />
+ *     <Choice alias="F" value="Female" />
  *   </Choices>
- *   <Text name="txt-1" value="John went to see Marry"></Text>
+ *   <Text name="txt-1" value="John went to see Marry" />
  * </View>
  * @name Choices
- * @param {string} name of the group
- * @param {string} toName name of the elements that you want to label
- * @param {single|single-radio|multiple=} [choice=single] single or multi-class
- * @param {boolean} showInline show items in the same visual line
- * @param {boolean} [required=false] validation if choice has been selected
- * @param {string} requiredMessage message to show if validation fails
+ * @param {string} name                - name of the group
+ * @param {string} toName              - name of the element that you want to label
+ * @param {single|single-radio|multiple} [choice=single] - single or multi-class
+ * @param {boolean} [showInline=false] - show items in the same visual line
+ * @param {boolean} [required=false]   - validation if choice has been selected
+ * @param {string} [requiredMessage]   - message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.string,

@@ -8,17 +8,17 @@ import Registry from "../../core/Registry";
  * Ellipse is used to add ellipse (elleptic Bounding Box) to an image
  * @example
  * <View>
- *   <Ellipse name="ellipse1-1" toName="img-1"></Ellipse>
- *   <Image name="img-1" value="$img"></Image>
+ *   <Ellipse name="ellipse1-1" toName="img-1" />
+ *   <Image name="img-1" value="$img" />
  * </View>
  * @name Ellipse
- * @param {string} name name of the element
- * @param {string} toname name of the image to label
- * @param {float=} [opacity=0.6] opacity of ellipse
- * @param {string=} fillColor rectangle fill color, default is transparent
- * @param {string=} [strokeColor=#f48a42] stroke color
- * @param {number=} [strokeWidth=1] width of the stroke
- * @param {boolean=} [canRotate=true] show or hide rotation handle
+ * @param {string} name                  - name of the element
+ * @param {string} toName                - name of the image to label
+ * @param {float} [opacity=0.6]          - opacity of ellipse
+ * @param {string} [fillColor]           - rectangle fill color, default is transparent
+ * @param {string} [strokeColor=#f48a42] - stroke color
+ * @param {number} [strokeWidth=1]       - width of the stroke
+ * @param {boolean} [canRotate=true]     - show or hide rotation handle
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

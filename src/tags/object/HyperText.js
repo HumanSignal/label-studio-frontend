@@ -17,12 +17,12 @@ import { runTemplate } from "../../core/Template";
 /**
  * HyperText tag shows an HyperText markup that can be labeled
  * @example
- * <HyperText name="text-1" value="$text"></HyperText>
+ * <HyperText name="text-1" value="$text" />
  * @name HyperText
- * @param {string} name of the element
- * @param {string} value of the element
- * @param {boolean} [showLabels=false] show labels next to the region
- * @param {string} [encoding=string|base64] provide the html as an escaped string or base64 encoded string
+ * @param {string} name - name of the element
+ * @param {string} value - value of the element
+ * @param {boolean} [showLabels=false] - show labels next to the region
+ * @param {string} [encoding=string|base64] - provide the html as an escaped string or base64 encoded string
  */
 const TagAttrs = types.model("HyperTextModel", {
   name: types.maybeNull(types.string),

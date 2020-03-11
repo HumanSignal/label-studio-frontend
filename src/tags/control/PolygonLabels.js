@@ -14,21 +14,21 @@ import { guidGenerator } from "../../core/Helpers";
  * PolygonLabels tag, create labeled polygons
  * @example
  * <View>
- *   <Image name="image" value="$image"></Image>
+ *   <Image name="image" value="$image" />
  *   <PolygonLabels name="lables" toName="image">
- *     <Label value="Car"></Label>
- *     <Label value="Sign"></Label>
+ *     <Label value="Car" />
+ *     <Label value="Sign" />
  *   </PolygonLabels>
  * </View>
  * @name PolygonLabels
- * @param {string} name name of tag
- * @param {string} toname name of image to label
- * @param {number=} [opacity=0.6] opacity of polygon
- * @param {string=} fillColor rectangle fill color, default is transparent
- * @param {string=} strokeColor stroke color
- * @param {number=} [strokeWidth=1] width of stroke
- * @param {small|medium|large=} [pointSize=medium] size of polygon handle points
- * @param {rectangle|circle=} [pointStyle=rectangle] style of points
+ * @param {string} name                             - name of tag
+ * @param {string} toName                           - name of image to label
+ * @param {number} [opacity=0.6]                    - opacity of polygon
+ * @param {string} [fillColor]                      - rectangle fill color, default is transparent
+ * @param {string} [strokeColor]                    - stroke color
+ * @param {number} [strokeWidth=1]                  - width of stroke
+ * @param {small|medium|large} [pointSize=medium]   - size of polygon handle points
+ * @param {rectangle|circle} [pointStyle=rectangle] - style of points
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

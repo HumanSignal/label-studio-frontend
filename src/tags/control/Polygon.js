@@ -9,18 +9,18 @@ import Registry from "../../core/Registry";
  * Polygon is used to add polygons to an image
  * @example
  * <View>
- *   <Polygon name="rect-1" toName="img-1" value="Add Rectangle"></Polygon>
- *   <Image name="img-1" value="$img"></Image>
+ *   <Polygon name="rect-1" toName="img-1" />
+ *   <Image name="img-1" value="$img" />
  * </View>
  * @name Polygon
- * @param {string} name name of tag
- * @param {string} toname name of image to label
- * @param {number=} [opacity=0.6] opacity of polygon
- * @param {string=} fillColor rectangle fill color, default is transparent
- * @param {string=} strokeColor stroke color
- * @param {number=} [strokeWidth=1] width of stroke
- * @param {small|medium|large=} [pointSize=medium] size of polygon handle points
- * @param {rectangle|circle=} [pointStyle=circle] style of points
+ * @param {string} name                           - name of tag
+ * @param {string} toname                         - name of image to label
+ * @param {number} [opacity=0.6]                  - opacity of polygon
+ * @param {string} [fillColor]                    - rectangle fill color, default is transparent
+ * @param {string} [strokeColor]                  - stroke color
+ * @param {number} [strokeWidth=1]                - width of stroke
+ * @param {small|medium|large} [pointSize=medium] - size of polygon handle points
+ * @param {rectangle|circle} [pointStyle=circle]  - style of points
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

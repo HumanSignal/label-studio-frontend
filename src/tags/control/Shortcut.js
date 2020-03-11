@@ -13,13 +13,13 @@ import { guidGenerator } from "../../core/Helpers";
  * @example
  * <View>
  *   <TextArea name="txt-1">
- *     <Shortcut alias="Silence" value="<SILENCE>" hotkey="ctrl+1"></Shortcut>
+ *     <Shortcut alias="Silence" value="<SILENCE>" hotkey="ctrl+1" />
  *   </TextArea>
  * </View>
  * @name Shortcut
  * @param {string} value A value of the shortcut
- * @param {string} alias Shortcut alias
- * @param {string} hotkey Hotkey
+ * @param {string} [alias] Shortcut alias
+ * @param {string} [hotkey] Hotkey
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

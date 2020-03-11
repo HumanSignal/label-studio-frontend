@@ -26,9 +26,11 @@ import { runTemplate } from "../../core/Template";
  *   </View>
  * </View>
  * @name Pairwise
- * @param {string} selectionStyle style of the selection
- * @params {string} leftClass class name of the left object
- * @params {string} rightClass class name of the right object
+ * @param {string} name               - name of the element
+ * @param {string} toName             - names of the elements you want to compare
+ * @param {string} [selectionStyle]   - style of the selection
+ * @params {string} [leftClass=left]  - class name of the left object
+ * @params {string} [rightClass=left] - class name of the right object
  */
 const TagAttrs = types.model({
   name: types.string,

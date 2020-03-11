@@ -19,15 +19,15 @@ import styles from "./Text/Text.module.scss";
 /**
  * Text tag shows an Text markup that can be labeled
  * @example
- * <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000"></Text>
+ * <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
  * @name Text
- * @param {string} name of the element
- * @param {string} value of the element
- * @param {boolean} [selectionEnabled=true] enable or disable selection
- * @param {string} highlightColor hex string with highlight color, if not provided uses the labels color
- * @param {symbol|word} granularity control per symbol or word selection, default is symbol
- * @param {boolean} [showLabels=true] show labels next to the region
- * @param {string} [encoding=string|base64] decode value from a plain or base64 encoded string
+ * @param {string} name                      - name of the element
+ * @param {string} value                     - value of the element
+ * @param {boolean} [selectionEnabled=true]  - enable or disable selection
+ * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
+ * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
+ * @param {boolean} [showLabels=true]        - show labels next to the region
+ * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
  */
 const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
