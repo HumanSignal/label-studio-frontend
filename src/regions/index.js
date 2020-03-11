@@ -17,25 +17,26 @@ import { TextRegionModel } from "./TextRegion";
 const AllRegionsType = types.union(
   AudioRegionModel,
   BrushRegionModel,
+  EllipseRegionModel,
   HyperTextRegionModel,
   KeyPointRegionModel,
   PolygonRegionModel,
   RectRegionModel,
   TextAreaRegionModel,
   TextRegionModel,
-  EllipseRegionModel,
 );
 
 export {
   AllRegionsType,
   AudioRegionModel,
   BrushRegionModel,
+  EllipseRegionModel,
   HtxBrush,
+  HtxEllipse,
   HtxKeyPoint,
   HtxPolygon,
   HtxRectangle,
   HtxTextAreaRegion,
-  HtxEllipse,
   HyperTextRegionModel,
   KeyPointRegionModel,
   PolygonPoint,
@@ -44,5 +45,4 @@ export {
   RectRegionModel,
   TextAreaRegionModel,
   TextRegionModel,
-  EllipseRegionModel,
 };

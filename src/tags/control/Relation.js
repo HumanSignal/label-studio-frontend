@@ -15,8 +15,8 @@ import { guidGenerator } from "../../core/Helpers";
  *   </Relations>
  * </View>
  * @name Relation
- * @param {string} value A value of the relation
- * @param {string} background The background color of active label
+ * @param {string} value - value of the relation
+ * @param {string} [background] - background color of active label
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

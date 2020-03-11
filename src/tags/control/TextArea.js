@@ -23,9 +23,9 @@ const { TextArea } = Input;
  * @param {string} name name of the element
  * @param {string} toName name of the element that you want to label if any
  * @param {string} value
- * @param {string=} label label text
- * @param {string=} placeholder placeholder text
- * @param {string=} maxSubmissions maximum number of submissions
+ * @param {string=} [label] label text
+ * @param {string=} [placeholder] placeholder text
+ * @param {string=} [maxSubmissions] maximum number of submissions
  */
 const TagAttrs = types.model({
   allowSubmit: types.optional(types.boolean, true),

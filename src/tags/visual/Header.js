@@ -10,12 +10,14 @@ import Tree from "../../core/Tree";
 /**
  * Header tag, show header
  * @example
- * <Header name="text-1" value="$text"></Header>
+ * <Header name="text-1" value="$text" />
+ * @example
+ * <Header name="text-1" value="Please select the class" />
  * @name Header
- * @param {number} [size=4] Size of header
- * @param {string} value Text of header
- * @param {style} style css style string
- * @param {boolean} [underline=false] Underline of header
+ * @param {string} value              - text of header
+ * @param {number} [size=4]           - size of header
+ * @param {string} [style]            - css style string
+ * @param {boolean} [underline=false] - underline of header
  */
 const Model = types.model({
   type: "header",

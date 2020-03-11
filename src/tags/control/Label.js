@@ -19,21 +19,21 @@ import { LabelsModel } from "./Labels";
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
- *     <Label alias="B" value="Brand"></Label>
- *     <Label alias="P" value="Product"></Label>
+ *     <Label alias="B" value="Brand" />
+ *     <Label alias="P" value="Product" />
  *   </Labels>
- *   <Text name="txt-1" value="$text"></Text>
+ *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
- * @param {string} value A value of the label
- * @param {boolean} selected If this label should be preselected
- * @param {string} hotkey Hotkey
- * @param {string} alias Label alias
- * @param {boolean} showAlias Show alias inside label text
- * @param {string} aliasStyle Alias CSS style default=opacity: 0.6
- * @param {string} size Size of text in the label
- * @param {string} background The background color of an active label
- * @param {string} selectedColor Color of text in an active label
+ * @param {string} value                    - value of the label
+ * @param {boolean} [selected=false]        - if this label should be preselected
+ * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
+ * @param {string} [alias]                  - label alias
+ * @param {boolean} [showAlias=false]       - show alias inside label text
+ * @param {string} [aliasStyle=opacity:0.6] - alias CSS style
+ * @param {string} [size=medium]            - size of text in the label
+ * @param {string} [background]             - background color of an active label
+ * @param {string} [selectedColor]          - color of text in an active label
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

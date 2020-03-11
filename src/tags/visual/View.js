@@ -10,19 +10,19 @@ import Types from "../../core/Types";
  * View element. It's analogous to div element in html and can be used to visual configure display of blocks
  * @example
  * <View style="display: flex;">
- *  <View style="flex: 50%">
- *   <Header value="Facts:"></Header>
- *   <Text name="text" value="$fact"></Text>
- *  </View>
- *  <View style="flex: 50%; margin-left: 1em">
- *   <Header value="Enter your question:"></Header>
- *   <TextArea name="question" ></TextArea>
- *  </View>
+ *   <View style="flex: 50%">
+ *     <Header value="Facts:" />
+ *     <Text name="text" value="$fact" />
+ *   </View>
+ *   <View style="flex: 50%; margin-left: 1em">
+ *     <Header value="Enter your question:" />
+ *     <TextArea name="question" />
+ *   </View>
  * </View>
  * @name View
  * @param {block|inline} display
- * @param {style} style css style string
- * @param {className} class name of the css style to apply
+ * @param {string} [style] css style string
+ * @param {string} [className] - class name of the css style to apply
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),

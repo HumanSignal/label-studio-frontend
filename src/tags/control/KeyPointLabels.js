@@ -16,18 +16,18 @@ import { guidGenerator } from "../../core/Helpers";
  * @example
  * <View>
  *   <KeyPointLabels name="kp-1" toName="img-1">
- *     <Label value="Face"></Label>
- *     <Label value="Nose"></Label>
+ *     <Label value="Face" />
+ *     <Label value="Nose" />
  *   </KeyPointLabels>
- *   <Image name="img-1" value="$img"></Image>
+ *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPointLabels
- * @param {string} name name of the element
- * @param {string} toname name of the image to label
- * @param {float=} [opacity=0.9] opacity of keypoint
- * @param {string=} fillColor keypoint fill color, default is transparent
- * @param {number=} [strokeWidth=1] width of the stroke
- * @param {string=} [stokeColor=#8bad00] keypoint stroke color
+ * @param {string} name                  - name of the element
+ * @param {string} toName                - name of the image to label
+ * @param {float=} [opacity=0.9]         - opacity of keypoint
+ * @param {string=} [fillColor]          - keypoint fill color, default is transparent
+ * @param {number=} [strokeWidth=1]      - width of the stroke
+ * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),

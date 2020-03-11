@@ -29,41 +29,14 @@ const Model = types
     },
   }))
   .actions(self => ({
-    /**
-     * When you try to send completion
-     */
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = obj => {
-        const tree = {
-          id: self.pid,
-          from_name: obj.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "region",
-          value: {
-            start: self.start,
-            end: self.end,
-          },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+    serialize(control, object) {
+      return {
+        original_length: object._ws.getDuration(),
+        value: {
+          start: self.start,
+          end: self.end,
+        },
       };
-
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
-
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
     },
 
     updateAppearenceFromState() {
@@ -71,12 +44,6 @@ const Model = types
       if (self._ws_region.update) {
         self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
-
-      //   opacity: parseFloat(control.opacity),
-
-      //   fillcolor: stroke || control.fillcolor,
-      // strokeWidth: control.strokeWidth,
-      // strokeColor: stroke || control.stroke,
     },
 
     /**
