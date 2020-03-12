@@ -139,7 +139,7 @@ const Model = types
      * @param {*} fromModel
      */
     fromStateJSON(obj, fromModel) {
-      const { start, end, text } = obj.value;
+      const { start, end } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
         self.completion.names.get(obj.from_name).fromStateJSON(obj);

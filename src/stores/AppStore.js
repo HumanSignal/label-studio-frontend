@@ -225,12 +225,13 @@ export default types
       self.task = Task.create(taskObject);
     }
 
+    /* eslint-disable no-unused-vars */
     function showModal(message, type = "warning") {
-      // eslint-disable-line no-unused-vars
       InfoModal[type](message);
 
       // InfoModal.warning("You need to label at least something!");
     }
+    /* eslint-enable no-unused-vars */
 
     function submitCompletion() {
       const c = self.completionStore.selected;
