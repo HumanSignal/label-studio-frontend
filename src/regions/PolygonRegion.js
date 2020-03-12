@@ -6,15 +6,12 @@ import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tre
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
-import Hotkey from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
 import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
-import { RatingModel } from "../tags/control/Rating";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 
@@ -88,7 +85,7 @@ const Model = types
       // TODO add the hover point only when in a non-zoomed mode,
       // reason is the coords in zoom mode act weird, need to put in
       // some time to find out why
-      if (zoom == 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
+      if (zoom === 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
     },
 
     handleMouseLeave({ e }) {

@@ -13,7 +13,7 @@ const HotkeysDescription = () => {
 
   const data = Object.keys(descr)
     .filter(k => descr[k])
-    .map(k => new Object({ key: k, descr: descr[k] }));
+    .map(k => new Object({ key: k, descr: descr[k] })); // eslint-disable-line no-new-object
 
   return <Table columns={columns} dataSource={data} size="small" />;
 };

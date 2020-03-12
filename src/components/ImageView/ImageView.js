@@ -249,7 +249,6 @@ export default observer(
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;
         const translate = "translate(" + zoomingPositionX + "px," + zoomingPositionY + "px) ";
-        const rotate = "rotate(" + item.rotation + "deg) ";
         imgStyle["transform"] = translate + "scale(" + item.resize + ", " + item.resize + ")";
       }
 

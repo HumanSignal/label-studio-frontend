@@ -6,7 +6,6 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import BasicToolView from "../components/Tools/Basic";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 const ToolView = observer(({ item }) => {
   return (

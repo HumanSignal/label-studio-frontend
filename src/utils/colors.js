@@ -233,5 +233,5 @@ export function stringToColor(str) {
  * @param {number} alpha from 0 to 1
  */
 export function rgbaChangeAlpha(rgba, alpha) {
-  return rgba.replace(/[\d\.]+\)$/g, `${alpha})`);
+  return rgba.replace(/[\d\.]+\)$/g, `${alpha})`); // eslint-disable-line no-useless-escape
 }

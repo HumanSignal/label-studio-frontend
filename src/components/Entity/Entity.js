@@ -68,7 +68,7 @@ export default observer(({ store, completion }) => {
       )}
       {node.states && <RenderStates node={node} />}
 
-      {node.completion.edittable == true && (
+      {node.completion.edittable === true && (
         <div className={styles.block + " ls-entity-buttons"}>
           <Tooltip placement="topLeft" title="Create Relation">
             <Button

@@ -7,7 +7,6 @@ import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
 import { AudioPlusModel } from "../tags/object/AudioPlus";
 import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
 
 const Model = types

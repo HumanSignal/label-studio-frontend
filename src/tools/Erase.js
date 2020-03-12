@@ -2,7 +2,6 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
 import BaseTool from "./Base";
 import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";

@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach, onPatch } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";

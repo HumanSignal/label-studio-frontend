@@ -8,7 +8,6 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
-import { ShortcutModel } from "./Shortcut";
 import { guidGenerator } from "../../core/Helpers";
 
 const { TextArea } = Input;
@@ -144,7 +143,7 @@ const HtxTextArea = observer(({ item }) => {
         >
           <Form.Item>
             {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
-            {(rows != 1 || item.showSubmitButton) && (
+            {(rows !== 1 || item.showSubmitButton) && (
               <Form.Item>
                 <Button type="primary" htmlType="submit">
                   Add

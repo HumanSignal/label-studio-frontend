@@ -298,20 +298,20 @@ const MagicWand = (function() {
         ) {
           //if (visitedData[k + 1] + visitedData[k - 1] +
           //    visitedData[k1] + visitedData[k1 + 1] + visitedData[k1 - 1] +
-          //    visitedData[k2] + visitedData[k2 + 1] + visitedData[k2 - 1] == 8) continue;
+          //    visitedData[k2] + visitedData[k2 + 1] + visitedData[k2 - 1] === 8) continue;
           border.push(k);
         }
       }
 
     // walk through points on the boundary of the image if necessary
     // if the "black" point is adjacent to the boundary of the image, it is a border point
-    if (minX == 0) for (y = minY; y < maxY + 1; y++) if (data[y * w] === 1) border.push(y * w);
+    if (minX === 0) for (y = minY; y < maxY + 1; y++) if (data[y * w] === 1) border.push(y * w);
 
-    if (maxX == w - 1) for (y = minY; y < maxY + 1; y++) if (data[y * w + maxX] === 1) border.push(y * w + maxX);
+    if (maxX === w - 1) for (y = minY; y < maxY + 1; y++) if (data[y * w + maxX] === 1) border.push(y * w + maxX);
 
-    if (minY == 0) for (x = minX; x < maxX + 1; x++) if (data[x] === 1) border.push(x);
+    if (minY === 0) for (x = minX; x < maxX + 1; x++) if (data[x] === 1) border.push(x);
 
-    if (maxY == h - 1) for (x = minX; x < maxX + 1; x++) if (data[maxY * w + x] === 1) border.push(maxY * w + x);
+    if (maxY === h - 1) for (x = minX; x < maxX + 1; x++) if (data[maxY * w + x] === 1) border.push(maxY * w + x);
 
     var result = [], // border points with radius-neighbors
       start,
@@ -507,21 +507,21 @@ const MagicWand = (function() {
         ) {
           //if (data[k + 1] + data[k - 1] +
           //    data[k1] + data[k1 + 1] + data[k1 - 1] +
-          //    data[k2] + data[k2 + 1] + data[k2 - 1] == 8) continue;
+          //    data[k2] + data[k2 + 1] + data[k2 - 1] === 8) continue;
           result[(y - minY) * rw + (x - minX)] = 1;
         }
       }
 
     // walk through points on the boundary of the image if necessary
     // if the "black" point is adjacent to the boundary of the image, it is a border point
-    if (minX == 0) for (y = minY; y < maxY + 1; y++) if (data[y * w] === 1) result[(y - minY) * rw] = 1;
+    if (minX === 0) for (y = minY; y < maxY + 1; y++) if (data[y * w] === 1) result[(y - minY) * rw] = 1;
 
-    if (maxX == w - 1)
+    if (maxX === w - 1)
       for (y = minY; y < maxY + 1; y++) if (data[y * w + maxX] === 1) result[(y - minY) * rw + (maxX - minX)] = 1;
 
-    if (minY == 0) for (x = minX; x < maxX + 1; x++) if (data[x] === 1) result[x - minX] = 1;
+    if (minY === 0) for (x = minX; x < maxX + 1; x++) if (data[x] === 1) result[x - minX] = 1;
 
-    if (maxY == h - 1)
+    if (maxY === h - 1)
       for (x = minX; x < maxX + 1; x++) if (data[maxY * w + x] === 1) result[(maxY - minY) * rw + (x - minX)] = 1;
 
     return {
@@ -569,7 +569,7 @@ const MagicWand = (function() {
         ) {
           //if (data[k + 1] + data[k - 1] +
           //    data[k1] + data[k1 + 1] + data[k1 - 1] +
-          //    data[k2] + data[k2 + 1] + data[k2 - 1] == 8) continue;
+          //    data[k2] + data[k2 + 1] + data[k2 - 1] === 8) continue;
           border.push(k);
         }
       }

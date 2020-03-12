@@ -32,7 +32,7 @@ function addKey(key, func, desc, scope = "__main__") {
  * Given a key temp overwrites the function, the overwrite is removed
  * after the returning function is called
  */
-function overwriteKey(key, func) {}
+function overwriteKey(key, func) {} // eslint-disable-line no-unused-vars
 
 function keysDescipritions() {
   return _hotkeys_desc;

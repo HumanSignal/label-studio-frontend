@@ -1,4 +1,4 @@
-import { types, getParent, getType } from "mobx-state-tree";
+import { types, getType } from "mobx-state-tree";
 
 import Utils from "../utils";
 import { cloneNode } from "../core/Helpers";
@@ -21,7 +21,7 @@ export default types
     getOneColor(pick = "first") {
       if (!self.states) return;
 
-      if (pick == "first") {
+      if (pick === "first") {
         return self.states.map(s => {
           return s.getSelectedColor();
         })[0];

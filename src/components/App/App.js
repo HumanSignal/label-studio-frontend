@@ -26,9 +26,9 @@ import SideColumn from "../SideColumn/SideColumn";
 /**
  * Tags
  */
-import * as ObjectTags from "../../tags/object";
-import * as ControlTags from "../../tags/control";
-import * as VisualTags from "../../tags/visual";
+import * as ObjectTags from "../../tags/object"; // eslint-disable-line no-unused-vars
+import * as ControlTags from "../../tags/control"; // eslint-disable-line no-unused-vars
+import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unused-vars
 
 /**
  * Styles

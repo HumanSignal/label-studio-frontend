@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Divider } from "antd";
+import { Card } from "antd";
 import { observer } from "mobx-react";
 
 import Entities from "../Entities/Entities";

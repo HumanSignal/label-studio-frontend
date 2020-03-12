@@ -3,7 +3,6 @@ import { types, getEnv } from "mobx-state-tree";
 import CompletionStore from "./CompletionStore";
 import Hotkey from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
-import Message from "../utils/messages";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
@@ -227,6 +226,7 @@ export default types
     }
 
     function showModal(message, type = "warning") {
+      // eslint-disable-line no-unused-vars
       InfoModal[type](message);
 
       // InfoModal.warning("You need to label at least something!");

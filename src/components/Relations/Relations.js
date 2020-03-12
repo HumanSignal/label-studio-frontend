@@ -1,10 +1,8 @@
 import React, { Fragment } from "react";
-import { Popover, Select, Icon, Divider, List, Button, Dropdown, Menu } from "antd";
+import { Select, Icon, Divider, List, Button } from "antd";
 import { isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
-import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
 

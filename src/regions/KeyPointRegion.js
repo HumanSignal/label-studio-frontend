@@ -10,8 +10,6 @@ import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { ImageModel } from "../tags/object/Image";
 import { KeyPointLabelsModel } from "../tags/control/KeyPointLabels";
-import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
 
 const Model = types
