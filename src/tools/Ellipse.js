@@ -56,7 +56,7 @@ const _Tool = types
 
         opacity: parseFloat(control.opacity),
         fillcolor: stroke || control.fillcolor,
-        strokeWidth: control.strokewidth,
+        strokeWidth: Number(control.strokewidth),
         strokeColor: stroke || control.strokecolor,
       });
 

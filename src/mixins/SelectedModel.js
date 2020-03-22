@@ -6,6 +6,7 @@ const SelectedModelMixin = types
   .model()
   .views(self => ({
     get tiedChildren() {
+      console.log(Tree.filterChildrenOfType(self, self._child));
       return Tree.filterChildrenOfType(self, self._child);
     },
 
@@ -25,6 +26,12 @@ const SelectedModelMixin = types
       // return first selected label color
       const sel = self.tiedChildren.find(c => c.selected === true);
       return sel && sel.background;
+    },
+
+    getFillOpacity() {
+      const sel = self.tiedChildren.find(c => c.selected === true);
+      const fillOpacityParsed = Number(sel.fillopacity);
+      return fillOpacityParsed;
     },
 
     findLabel(value) {

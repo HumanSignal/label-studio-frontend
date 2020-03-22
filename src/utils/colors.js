@@ -154,7 +154,7 @@ export function hexToRGBA(hex, opacity) {
 
   let a = 0.3;
 
-  if (opacity && typeof parseInt(opacity) === "number") {
+  if (typeof parseInt(opacity) === "number") {
     a = opacity;
   }
 
