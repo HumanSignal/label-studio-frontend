@@ -45,7 +45,6 @@ const TagAttrs = types.model({
   size: types.optional(types.string, "medium"),
   background: types.optional(types.string, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(types.string, "white"),
-  fillopacity: types.optional(types.string, "0.2"),
 });
 
 const Model = types

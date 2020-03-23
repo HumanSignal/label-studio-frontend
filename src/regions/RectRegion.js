@@ -50,7 +50,7 @@ const Model = types
 
     fill: types.optional(types.boolean, true),
     fillcolor: types.optional(types.string, Constants.FILL_COLOR),
-    fillOpacity: types.optional(types.number, 0.3),
+    fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),

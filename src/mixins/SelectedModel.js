@@ -28,12 +28,6 @@ const SelectedModelMixin = types
       return sel && sel.background;
     },
 
-    getFillOpacity() {
-      const sel = self.tiedChildren.find(c => c.selected === true);
-      const fillOpacityParsed = Number(sel.fillopacity);
-      return fillOpacityParsed;
-    },
-
     findLabel(value) {
       return self.tiedChildren.find(c => c.alias === value || c.value === value);
     },

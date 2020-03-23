@@ -52,7 +52,7 @@ const Model = types
 
     fill: types.optional(types.boolean, true),
     fillcolor: types.optional(types.string, Constants.FILL_COLOR),
-    fillOpacity: types.optional(types.number, 0.3),
+    fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
@@ -98,7 +98,6 @@ const Model = types
     updateAppearenceFromState() {
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
-      self.fillOpacity = self.states[0].getFillOpacity();
       self.fillcolor = stroke;
     },
 
@@ -230,10 +229,13 @@ const EllipseRegionModel = types.compose(
 
 const HtxEllipseView = ({ store, item }) => {
   let { strokeColor, strokeWidth } = item;
+  console.log(item);
+  console.log("EllipseRegion strokeWidth: " + strokeWidth);
   if (item.highlighted) {
     strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
     strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
+  console.log("fillOpacity is: " + item.fillOpacity);
   return (
     <Fragment>
       <Ellipse
