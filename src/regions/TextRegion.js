@@ -12,8 +12,6 @@ import { guidGenerator } from "../core/Helpers";
 
 const Model = types
   .model("TextRegionModel", {
-    id: types.optional(types.identifier, guidGenerator),
-    pid: types.optional(types.string, guidGenerator),
     type: "textrange",
 
     startOffset: types.integer,

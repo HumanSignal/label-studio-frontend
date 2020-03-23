@@ -1,8 +1,14 @@
 import { types } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
+import { guidGenerator } from "../core/Helpers";
 
 const RegionsMixin = types
   .model({
+    id: types.optional(types.identifier, guidGenerator),
+    pid: types.optional(types.string, guidGenerator),
+
+    confidence: types.maybeNull(types.number),
+
     readonly: types.optional(types.boolean, false),
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),

@@ -98,13 +98,6 @@ const HtxChoice = inject("store")(
         </Form.Item>
       );
     } else {
-      const label = (
-        <label>
-          {item._value}
-          {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && <Hint>[{item.hotkey}]</Hint>}
-        </label>
-      );
-
       return (
         <div style={style}>
           <Radio
@@ -117,7 +110,10 @@ const HtxChoice = inject("store")(
               item.toggleSelected();
             }}
           >
-            {label}
+            {item._value}
+            {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+              store.settings.enableHotkeys &&
+              item.hotkey && <Hint>[{item.hotkey}]</Hint>}
           </Radio>
         </div>
       );

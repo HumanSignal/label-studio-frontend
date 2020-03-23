@@ -14,8 +14,10 @@ const Model = types
   .model("AudioRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
+    type: "audioregion",
     start: types.number,
     end: types.number,
+
     states: types.maybeNull(types.array(types.union(LabelsModel))),
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })

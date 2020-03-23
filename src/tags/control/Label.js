@@ -166,7 +166,9 @@ const HtxLabelView = inject("store")(
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}
-        {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && <Hint>[{item.hotkey}]</Hint>}
+        {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+          store.settings.enableHotkeys &&
+          item.hotkey && <Hint>[{item.hotkey}]</Hint>}
       </Tag>
     );
   }),

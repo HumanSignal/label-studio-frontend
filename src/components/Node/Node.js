@@ -2,17 +2,27 @@ import React, { Fragment } from "react";
 import { Icon } from "antd";
 import { getType, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
+import {
+  FontColorsOutlined,
+  AudioOutlined,
+  MessageOutlined,
+  BlockOutlined,
+  GatewayOutlined,
+  Loading3QuartersOutlined,
+  EyeOutlined,
+  HighlightOutlined,
+} from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
 
-const pt = { paddingTop: "3px" };
+const pt = { paddingTop: "4px" };
 
 const NodeViews = {
   TextRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
-        <Icon type="font-colors" style={pt} />
-        &nbsp; Text: &nbsp;
+        <FontColorsOutlined style={pt} />
+        &nbsp;
         {node.text.substring(0, 23)}
         {node.text.length > 26 && "..."}
       </span>
@@ -22,7 +32,7 @@ const NodeViews = {
   HyperTextRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
-        <Icon type="font-colors" style={pt} />
+        <FontColorsOutlined style={pt} />
         &nbsp; HTML &nbsp;
         <span style={{ color: "#5a5a5a" }}>{node.text}</span>
       </span>
@@ -32,7 +42,7 @@ const NodeViews = {
   AudioRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
-        <Icon type="audio" style={pt} />
+        <AudioOutlined style={pt} />
         &nbsp; Audio {node.start.toFixed(2)} - {node.end.toFixed(2)}
       </span>
     </Fragment>
@@ -40,7 +50,7 @@ const NodeViews = {
 
   TextAreaRegionModel: (node, click) => (
     <Fragment>
-      <Icon type="message" style={pt} />
+      <MessageOutlined style={pt} />
       <span onClick={click} className={styles.node}>
         &nbsp; Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
       </span>
@@ -52,7 +62,7 @@ const NodeViews = {
     const y = node.height * node.scaleY;
     return (
       <Fragment>
-        <Icon type="block" style={pt} />
+        <BlockOutlined style={pt} />
         <span onClick={click} className={styles.node}>
           &nbsp; Rectangle {w.toFixed(2)} x {y.toFixed(2)}
         </span>
@@ -63,7 +73,7 @@ const NodeViews = {
   PolygonRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
-        <Icon type="gateway" style={pt} />
+        <GatewayOutlined style={pt} />
         &nbsp; Polygon
       </span>
     </Fragment>
@@ -76,7 +86,7 @@ const NodeViews = {
     return (
       <Fragment>
         <span onClick={click} className={styles.node}>
-          <Icon type="loading-3-quarters" style={pt} />
+          <Loading3QuartersOutlined style={pt} />
           &nbsp; Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {rotation.toFixed(2)}°, center = (
           {node.x.toFixed(2)}, {node.y.toFixed(2)})
         </span>
@@ -87,7 +97,7 @@ const NodeViews = {
   KeyPointRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
-        <Icon type="eye" style={pt} />
+        <EyeOutlined style={pt} />
         &nbsp; KeyPoint
       </span>
     </Fragment>
@@ -96,7 +106,7 @@ const NodeViews = {
   BrushRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
-        <Icon type="highlight" style={pt} />
+        <HighlightOutlined style={pt} />
         &nbsp; Brush
       </span>
     </Fragment>
@@ -123,7 +133,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "TextRegionModel") {
     return (
       <Fragment>
-        <Icon type="font-colors" /> &nbsp; Text
+        <FontColorsOutlined /> &nbsp; Text
       </Fragment>
     );
   }
@@ -131,7 +141,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "RectRegionModel") {
     return (
       <Fragment>
-        <Icon type="block" />
+        <BlockOutlined />
         &nbsp; Rect
       </Fragment>
     );
@@ -140,8 +150,8 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "EllipseRegionModel") {
     return (
       <Fragment>
-        <i className="expand icon" />
-        Ellipse
+        <Loading3QuartersOutlined />
+        &nbsp; Ellipse
       </Fragment>
     );
   }
@@ -149,7 +159,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "AudioRegionModel") {
     return (
       <Fragment>
-        <Icon type="audio" />
+        <AudioOutlined />
         &nbsp; Audio
       </Fragment>
     );
@@ -158,7 +168,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "TextAreaRegionModel") {
     return (
       <Fragment>
-        <Icon type="message" />
+        <MessageOutlined />
         &nbsp; Input
       </Fragment>
     );
@@ -167,7 +177,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "HyperTextRegionModel") {
     return (
       <Fragment>
-        <Icon type="font-colors" /> &nbsp; HTML
+        <FontColorsOutlined /> &nbsp; HTML
       </Fragment>
     );
   }
@@ -175,7 +185,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "PolygonRegionModel") {
     return (
       <Fragment>
-        <Icon type="gateway" />
+        <GatewayOutlined />
         &nbsp; Polygon
       </Fragment>
     );
@@ -184,7 +194,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "KeyPointRegionModel") {
     return (
       <Fragment>
-        <Icon type="eye" />
+        <EyeOutlined />
         &nbsp; KeyPoint
       </Fragment>
     );
@@ -193,7 +203,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "BrushRegionModel") {
     return (
       <Fragment>
-        <Icon type="highlight" />
+        <HighlightOutlined />
         &nbsp; Brush
       </Fragment>
     );

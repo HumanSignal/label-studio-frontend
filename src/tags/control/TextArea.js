@@ -132,13 +132,12 @@ const HtxTextArea = observer(({ item }) => {
 
       {item.showSubmit && (
         <Form
-          onSubmit={ev => {
+          onFinish={ev => {
             if (item.allowSubmit) {
               item.addText(item._value);
               item.setValue("");
             }
 
-            ev.preventDefault();
             return false;
           }}
         >
