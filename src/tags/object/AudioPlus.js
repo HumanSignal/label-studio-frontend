@@ -167,7 +167,7 @@ const Model = types
       }
 
       if (clonedStates.length == 0) {
-        ws_region.remove();
+        ws_region && ws_region.remove();
         return;
       }
 
