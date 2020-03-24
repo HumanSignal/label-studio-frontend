@@ -22,9 +22,7 @@ export default types
       if (!self.states) return;
 
       if (pick == "first") {
-        return self.states.map(s => {
-          return s.getSelectedColor();
-        })[0];
+        return self.states[0].getSelectedColor();
       }
 
       if ((pick = "combine")) {

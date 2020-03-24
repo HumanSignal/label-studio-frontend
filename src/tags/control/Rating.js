@@ -1,7 +1,8 @@
 import React from "react";
-import { Rate, Icon } from "antd";
+import { Rate } from "antd";
 import { observer, inject } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { StarOutlined } from "@ant-design/icons";
 
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
@@ -120,7 +121,7 @@ const HtxRating = inject("store")(
     return (
       <div>
         <Rate
-          character={<Icon type={item.icon} style={{ fontSize: iconSize }} />}
+          character={<StarOutlined style={{ fontSize: iconSize }} />}
           value={item.rating}
           count={Number(item.maxrating)}
           defaultValue={Number(item.defaultvalue)}

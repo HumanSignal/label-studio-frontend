@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { ScissorOutlined } from "@ant-design/icons";
 
 import Hotkey from "../core/Hotkey";
 import BaseTool from "./Base";
@@ -23,7 +24,7 @@ const ToolView = observer(({ item }) => {
           item.updateCursor();
         }
       }}
-      icon={"scissor"}
+      icon={<ScissorOutlined />}
     />
   );
 });

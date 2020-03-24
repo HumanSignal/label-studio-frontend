@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { ControlOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import BasicToolView from "../components/Tools/Basic";
@@ -19,7 +20,7 @@ const ToolView = observer(({ item }) => {
         value={item.brightness}
         max={Constants.BRIGHTNESS_MAX}
         selected={item.selected}
-        icon={"setting"}
+        icon={<ControlOutlined />}
         onResetClick={ev => {
           item.setStroke(Constants.BRIGHTNESS_VALUE);
         }}

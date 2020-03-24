@@ -6,6 +6,8 @@ import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
 import { AudioPlusModel } from "../tags/object/AudioPlus";
+import { TextAreaModel } from "../tags/control/TextArea";
+import { ChoicesModel } from "../tags/control/Choices";
 import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
@@ -14,9 +16,10 @@ const Model = types
   .model("AudioRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
+    type: "audioregion",
     start: types.number,
     end: types.number,
-    states: types.maybeNull(types.array(types.union(LabelsModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel))),
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
@@ -30,13 +33,26 @@ const Model = types
   }))
   .actions(self => ({
     serialize(control, object) {
-      return {
+      let res = {
         original_length: object._ws.getDuration(),
         value: {
           start: self.start,
           end: self.end,
         },
       };
+
+      if (control.type === "labels") {
+        res.value["labels"] = control.getSelectedNames();
+      }
+
+      if (control.type === "textarea") {
+        const texts = control.regions.map(s => s._value);
+        if (texts.length === 0) return;
+
+        res.value["text"] = texts;
+      }
+
+      return res;
     },
 
     updateAppearenceFromState() {

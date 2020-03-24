@@ -75,7 +75,6 @@ const Model = types
         "HyperTextLabelsModel",
       ]);
 
-      // labels.finshCurrentObject();
       const reg = self.completion.highlightedNode;
 
       // check if there is a region selected and if it is and user
@@ -108,9 +107,7 @@ const Model = types
         }
       }
 
-      if (reg) {
-        reg.updateSingleState(labels);
-      }
+      reg && reg.updateSingleState(labels);
     },
 
     /**
@@ -166,7 +163,9 @@ const HtxLabelView = inject("store")(
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}
-        {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && <Hint>[{item.hotkey}]</Hint>}
+        {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+          store.settings.enableHotkeys &&
+          item.hotkey && <Hint>[{item.hotkey}]</Hint>}
       </Tag>
     );
   }),

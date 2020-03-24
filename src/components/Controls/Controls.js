@@ -1,6 +1,7 @@
 import React from "react";
-import { Button } from "antd";
+import { Button, Tooltip } from "antd";
 import { observer, inject } from "mobx-react";
+import { RollbackOutlined, CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
 import styles from "./Controls.module.scss";
@@ -46,30 +47,41 @@ export default inject("store")(
     if (!store.completionStore.predictSelect || store.explore) {
       if (store.hasInterface("skip")) {
         skipButton = (
-          <Button type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
-            Skip {buttons.skip}
-          </Button>
+          <Tooltip title="Skip task: [ Ctrl+Space ]">
+            <Button type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
+              Skip {buttons.skip}
+            </Button>
+          </Tooltip>
         );
       }
 
       if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
         submitButton = (
-          <Button
-            type="primary"
-            icon="check"
-            onClick={store.submitCompletion}
-            className={styles.submit + " ls-submit-btn"}
-          >
-            Submit {buttons.submit}
-          </Button>
+          <Tooltip title="Save results: [ Ctrl+Enter ]">
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              onClick={store.submitCompletion}
+              className={styles.submit + " ls-submit-btn"}
+            >
+              Submit {buttons.submit}
+            </Button>
+          </Tooltip>
         );
       }
 
       if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
         updateButton = (
-          <Button type="primary" icon="rollback" onClick={store.updateCompletion} className="ls-update-btn">
-            Update {buttons.update}
-          </Button>
+          <Tooltip title="Update this task: [ Alt+Enter ]">
+            <Button
+              type="primary"
+              icon={<CheckCircleOutlined />}
+              onClick={store.updateCompletion}
+              className="ls-update-btn"
+            >
+              Update {buttons.update}
+            </Button>
+          </Tooltip>
         );
       }
     }
