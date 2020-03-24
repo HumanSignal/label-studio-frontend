@@ -140,7 +140,7 @@ const Model = types
       let { text } = obj.value;
       if (!Array.isArray(text)) text = [text];
 
-      text.forEach(t => self.createRegion(t, obj.id));
+      text.forEach(t => self.addText(t, obj.id));
     },
   }));
 
@@ -166,9 +166,11 @@ const HtxTextArea = observer(({ item }) => {
 
   const region = item.completion.highlightedNode;
   const visibleStyle = !item.perregion || region ? {} : { display: "none" };
-  const showAddButton = rows != 1 || item.showSubmitButton;
+  const showAddButton = item.completion.edittable && (rows != 1 || item.showSubmitButton);
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
+
+  visibleStyle["marginTop"] = "4px";
 
   return (
     <div style={visibleStyle}>
