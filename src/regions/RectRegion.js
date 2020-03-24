@@ -201,6 +201,7 @@ const Model = types
           width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
           height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
           rotation: self.rotation,
+          rectanglelabels: control.getSelectedNames(),
         },
       };
     },
