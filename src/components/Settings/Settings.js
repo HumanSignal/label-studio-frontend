@@ -46,7 +46,17 @@ export default observer(({ store }) => {
               store.settings.toggleTooltips();
             }}
           >
-            Show tooltips
+            Show hotkey tooltips
+          </Checkbox>
+          <br />
+          <Checkbox
+            value="Show labels tooltips"
+            defaultChecked={store.settings.enableLabelTooltips}
+            onChange={() => {
+              store.settings.toggleLabelTooltips();
+            }}
+          >
+            Show labels hotkey tooltips
           </Checkbox>
         </Tabs.TabPane>
         <Tabs.TabPane tab="Hotkeys" key="2">

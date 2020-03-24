@@ -1,6 +1,14 @@
 import React, { Component, Fragment } from "react";
-import { Button, Divider, Icon, Slider, Tooltip } from "antd";
+import { Button, Divider, Slider, Tooltip } from "antd";
 import { observer } from "mobx-react";
+import {
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  BgColorsOutlined,
+  ToolOutlined,
+  HighlightOutlined,
+  ScissorOutlined,
+} from "@ant-design/icons";
 
 import styles from "./ImageControls.module.scss";
 
@@ -47,7 +55,7 @@ export default observer(
         <Fragment>
           <Button
             shape="circle"
-            icon="zoom-in"
+            icon={<ZoomInOutlined />}
             className={styles.button}
             onClick={event => {
               this.props.handleZoom(1.2);
@@ -55,7 +63,7 @@ export default observer(
           ></Button>
           <Button
             shape="circle"
-            icon="zoom-out"
+            icon={<ZoomOutOutlined />}
             className={styles.button}
             onClick={() => {
               this.props.handleZoom(0.8);
@@ -74,7 +82,7 @@ export default observer(
                 // this.props.updateBrushControl("brush");
               }}
             >
-              <Icon type={"bg-colors"} />
+              <BgColorsOutlined />
             </Button>
           </Tooltip>
 
@@ -87,7 +95,7 @@ export default observer(
                 // this.props.updateBrushControl("brush");
               }}
             >
-              <Icon type={"tool"} />
+              <ToolOutlined />
             </Button>
           </Tooltip>
 
@@ -100,7 +108,7 @@ export default observer(
                 this.props.updateBrushControl("brush");
               }}
             >
-              <Icon type={"highlight"} />
+              <HighlightOutlined />
             </Button>
           </Tooltip>
 
@@ -124,7 +132,7 @@ export default observer(
               this.props.updateBrushControl("eraser");
             }}
           >
-            <Icon type={"scissor"} />
+            <ScissorOutlined />
           </Button>
         </Fragment>
       );

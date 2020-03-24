@@ -6,11 +6,43 @@ import { AllRegionsType } from "../regions";
 export default types
   .model("RegionStore", {
     regions: types.array(types.safeReference(AllRegionsType)),
+
+    sort: types.optional(types.enumeration(["date", "confidence"]), "date"),
+    sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
+
+    group: types.optional(types.enumeration(["type", "label"]), "type"),
   })
+  .views(self => ({
+    get sortedRegions() {
+      const sorts = {
+        date: () => self.regions,
+        confidence: () => self.regions.sort((a, b) => a.confidence - b.confidence),
+      };
+
+      return sorts[self.sort]();
+      // TODO
+      // return (self.sortOrder === 'asc') ? r.slice().reverse() : r;
+    },
+  }))
   .actions(self => ({
     addRegion(region) {
       self.regions.push(region);
       getEnv(self).onEntityCreate(region);
+    },
+
+    toggleSortOrder() {
+      if (self.sortOrder === "asc") self.sortOrder = "desc";
+      else self.sortOrder = "asc";
+    },
+
+    setSort(sort) {
+      self.sortOrder = "desc";
+      self.sort = sort;
+      self.initHotkeys();
+    },
+
+    setGroup(group) {
+      self.group = group;
     },
 
     /**
@@ -27,6 +59,7 @@ export default types
       }
 
       getEnv(self).onEntityDelete(region);
+      self.initHotkeys();
     },
 
     findRegion(pid) {
@@ -49,13 +82,11 @@ export default types
 
       rkeys.forEach(k => Hotkey.removeKey(k));
 
-      let n = 1;
-      self.regions.forEach(r => {
-        Hotkey.addKey(PREFIX + n, function() {
+      self.sortedRegions.forEach((r, n) => {
+        Hotkey.addKey(PREFIX + (n + 1), function() {
           self.unselectAll();
           r.selectRegion();
         });
-        n = n + 1;
       });
 
       Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");

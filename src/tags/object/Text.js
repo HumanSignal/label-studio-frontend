@@ -103,6 +103,7 @@ const Model = types
         end: p.end,
         text: p.text,
         states: p.states,
+        confidence: p.confidence,
       });
 
       r._range = p._range;
@@ -155,6 +156,7 @@ const Model = types
         endOffset: end,
         start: "",
         end: "",
+        confidence: obj.confidence,
         text: self._value.substring(start, end),
         normalization: obj.normalization,
         states: [states],

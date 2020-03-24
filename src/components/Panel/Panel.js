@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { Button } from "antd";
+import { UndoOutlined, RedoOutlined, SettingOutlined, RollbackOutlined } from "@ant-design/icons";
 
 import styles from "./Panel.module.scss";
 import Hint from "../Hint/Hint";
@@ -21,7 +22,7 @@ export default observer(({ store }) => {
       <div className={`${styles.block} ${styles.block__controls}`}>
         <Button
           type="ghost"
-          icon="undo"
+          icon={<UndoOutlined />}
           onClick={ev => {
             history && history.canUndo && history.undo();
             ev.preventDefault();
@@ -32,7 +33,7 @@ export default observer(({ store }) => {
         </Button>
         <Button
           type="ghost"
-          icon="redo"
+          icon={<RedoOutlined />}
           onClick={ev => {
             history && history.canRedo && history.redo();
             ev.preventDefault();
@@ -42,7 +43,7 @@ export default observer(({ store }) => {
         </Button>
         <Button
           type="ghost"
-          icon="rest"
+          icon={<RollbackOutlined />}
           onClick={ev => {
             history && history.reset();
           }}
@@ -86,7 +87,7 @@ export default observer(({ store }) => {
 
         <Button
           type="dashed"
-          icon="setting"
+          icon={<SettingOutlined />}
           onClick={ev => {
             store.toggleSettings();
             ev.preventDefault();

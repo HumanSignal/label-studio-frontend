@@ -38,8 +38,8 @@ function keysDescipritions() {
   return _hotkeys_desc;
 }
 
-function removeKey(key) {
-  keymaster.unbind(key);
+function removeKey(key, scope = "__main__") {
+  keymaster.unbind(key, scope);
 
   delete _hotkeys_map[key];
   delete _hotkeys_desc[key];

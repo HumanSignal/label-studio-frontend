@@ -18,7 +18,9 @@ const SettingsModel = types
     /**
      * Tooltips preview
      */
-    enableTooltips: types.optional(types.boolean, true),
+    enableTooltips: types.optional(types.boolean, false),
+
+    enableLabelTooltips: types.optional(types.boolean, true),
   })
   .actions(self => ({
     toggleHotkeys() {
@@ -42,6 +44,10 @@ const SettingsModel = types
      */
     toggleTooltips() {
       self.enableTooltips = !self.enableTooltips;
+    },
+
+    toggleLabelTooltips() {
+      self.enableLabelTooltips = !self.enableLabelTooltips;
     },
   }));
 

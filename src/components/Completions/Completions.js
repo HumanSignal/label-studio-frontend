@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { Card, Button, Icon, Tooltip, Badge, List, Popconfirm } from "antd";
+import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
 import { observer } from "mobx-react";
+import { StarOutlined, DeleteOutlined, PlusCircleOutlined, WindowsOutlined, PlusOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
@@ -16,7 +17,7 @@ const Completion = observer(({ item, store }) => {
           item.setGroundTruth(false);
         }}
       >
-        <Icon type="star" />
+        <StarOutlined />
       </Button>
     </Tooltip>
   );
@@ -32,7 +33,7 @@ const Completion = observer(({ item, store }) => {
           item.setGroundTruth(true);
         }}
       >
-        <Icon type="star" />
+        <StarOutlined />
       </Button>
     </Tooltip>
   );
@@ -95,8 +96,8 @@ const Completion = observer(({ item, store }) => {
               okType="danger"
               cancelText="Cancel"
             >
-              <Button size="small" type="danger">
-                <Icon type="delete" />
+              <Button size="small" danger>
+                <DeleteOutlined />
               </Button>
             </Popconfirm>
           </Tooltip>
@@ -139,11 +140,11 @@ class Completions extends Component {
           <h3>Completions</h3>
         </div>
 
-        <div>
+        <div style={{ marginRight: "1px" }}>
           {store.hasInterface("completions:add-new") && (
-            <Tooltip placement="topLeft" title="Add a new completion">
+            <Tooltip placement="topLeft" title="Create a new completion">
               <Button
-                shape={"circle"}
+                size="small"
                 onClick={ev => {
                   ev.preventDefault();
                   const c = store.completionStore.addCompletion({ userGenerate: true });
@@ -151,21 +152,21 @@ class Completions extends Component {
                   // c.list.selectCompletion(c);
                 }}
               >
-                <Icon type="plus" />
+                <PlusOutlined />
               </Button>
             </Tooltip>
           )}
-          &nbsp;&nbsp;
+          &nbsp;
           <Tooltip placement="topLeft" title="View all completions">
             <Button
-              shape={"circle"}
+              size="small"
               type={store.completionStore.viewingAllCompletions ? "primary" : ""}
               onClick={ev => {
                 ev.preventDefault();
                 store.completionStore.toggleViewingAllCompletions();
               }}
             >
-              <Icon type="windows" />
+              <WindowsOutlined />
             </Button>
           </Tooltip>
         </div>

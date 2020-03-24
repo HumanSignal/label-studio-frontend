@@ -10,6 +10,7 @@ import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
 import { ShortcutModel } from "./Shortcut";
 import { guidGenerator } from "../../core/Helpers";
+import { cloneNode } from "../../core/Helpers";
 
 const { TextArea } = Input;
 
@@ -26,6 +27,7 @@ const { TextArea } = Input;
  * @param {string=} [label] label text
  * @param {string=} [placeholder] placeholder text
  * @param {string=} [maxSubmissions] maximum number of submissions
+ * @param {boolean=} [edittable=false] edittable textarea results
  */
 const TagAttrs = types.model({
   allowSubmit: types.optional(types.boolean, true),
@@ -37,6 +39,8 @@ const TagAttrs = types.model({
   showsubmitbutton: types.optional(types.boolean, false),
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
+  edittable: types.optional(types.boolean, false),
+  perregion: types.optional(types.boolean, false),
 });
 
 const Model = types
@@ -49,6 +53,10 @@ const Model = types
     children: Types.unionArray(["shortcut"]),
   })
   .views(self => ({
+    get holdsState() {
+      return self.regions.length > 0;
+    },
+
     get submissionsNum() {
       return self.regions.length;
     },
@@ -71,14 +79,30 @@ const Model = types
       self._value = value;
     },
 
-    addText(text, pid) {
-      const r = TextAreaRegionModel.create({
-        pid: pid,
-        _value: text,
-      });
+    copyState(obj) {
+      self.regions = obj.regions.map(r => cloneNode(r));
+    },
 
+    perRegionCleanup() {
+      self.regions = [];
+    },
+
+    createRegion(text, pid) {
+      const r = TextAreaRegionModel.create({ pid: pid, _value: text });
       self.regions.push(r);
-      self.completion.addRegion(r);
+
+      return r;
+    },
+
+    addText(text, pid) {
+      const r = self.createRegion(text, pid);
+
+      if (self.perregion) {
+        const reg = self.completion.highlightedNode;
+        reg && reg.updateSingleState(self);
+      } else {
+        self.completion.addRegion(r);
+      }
 
       return r;
     },
@@ -98,11 +122,25 @@ const Model = types
     },
 
     toStateJSON() {
-      return self.regions.map(r => r.toStateJSON());
+      const toname = self.toname || self.name;
+      const tree = {
+        id: self.pid,
+        from_name: self.name,
+        to_name: toname,
+        type: "textarea",
+        value: {
+          text: self.regions.map(r => r._value),
+        },
+      };
+
+      return tree;
     },
 
     fromStateJSON(obj, fromModel) {
-      return self.addText(obj.value.text, obj.id);
+      let { text } = obj.value;
+      if (!Array.isArray(text)) text = [text];
+
+      text.forEach(t => self.createRegion(t, obj.id));
     },
   }));
 
@@ -126,25 +164,30 @@ const HtxTextArea = observer(({ item }) => {
 
   if (!item.completion.edittable) props["disabled"] = true;
 
+  const region = item.completion.highlightedNode;
+  const visibleStyle = !item.perregion || region ? {} : { display: "none" };
+  const showAddButton = rows != 1 || item.showSubmitButton;
+  const itemStyle = {};
+  if (showAddButton) itemStyle["marginBottom"] = 0;
+
   return (
-    <div>
+    <div style={visibleStyle}>
       {Tree.renderChildren(item)}
 
       {item.showSubmit && (
         <Form
-          onSubmit={ev => {
+          onFinish={ev => {
             if (item.allowSubmit) {
               item.addText(item._value);
               item.setValue("");
             }
 
-            ev.preventDefault();
             return false;
           }}
         >
-          <Form.Item>
+          <Form.Item style={itemStyle}>
             {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
-            {(rows != 1 || item.showSubmitButton) && (
+            {showAddButton && (
               <Form.Item>
                 <Button type="primary" htmlType="submit">
                   Add
@@ -158,7 +201,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.regions.length > 0 && (
         <div style={{ marginBottom: "1em" }}>
           {item.regions.map(t => (
-            <HtxTextAreaRegion item={t} />
+            <HtxTextAreaRegion key={t.id} item={t} />
           ))}
         </div>
       )}

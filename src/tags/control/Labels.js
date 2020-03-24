@@ -97,6 +97,7 @@ const HtxLabels = observer(({ item }) => {
     justifyContent: "flex-start",
     alignItems: "center",
     flexFlow: "wrap",
+    marginLeft: "-5px",
   };
 
   if (!item.showinline) {

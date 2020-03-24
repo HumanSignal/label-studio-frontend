@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { Button, Icon, Slider, Tooltip, Menu, Dropdown } from "antd";
 import { observer } from "mobx-react";
+import { ReloadOutlined } from "@ant-design/icons";
 
 import styles from "./Styles.module.scss";
 
@@ -26,7 +27,7 @@ export default observer(
               className={styles.button}
               onClick={this.props.onResetClick}
             >
-              <Icon type="reload" />
+              <ReloadOutlined />
             </Button>
           </Menu.Item>
         </Menu>
@@ -36,7 +37,7 @@ export default observer(
         <Fragment>
           <Dropdown overlay={menu}>
             <Button shape="circle" className={styles.button}>
-              <Icon type={this.props.icon} />
+              {this.props.icon}
             </Button>
           </Dropdown>
         </Fragment>

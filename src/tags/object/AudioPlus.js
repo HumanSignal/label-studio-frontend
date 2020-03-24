@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { observer, inject } from "mobx-react";
 import { types, getRoot, getType } from "mobx-state-tree";
 
@@ -28,8 +28,8 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
  * @name AudioPlus
  * @param {string} name - name of the element
  * @param {string} value - value of the element
- * @param {boolean=} [volume=true] - show the volume slider (from 0 to 1)
- * @param {boolean} [speed=true] - show the speed slider (from 0.5 to 3)
+ * @param {boolean=} [volume=false] - show the volume slider (from 0 to 1)
+ * @param {boolean} [speed=false] - show the speed slider (from 0.5 to 3)
  * @param {boolean} [zoom=true] - show the zoom slider
  * @param {string} [hotkey] - hotkey used to play/pause audio
  */
@@ -37,8 +37,8 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
   zoom: types.optional(types.boolean, true),
-  volume: types.optional(types.boolean, true),
-  speed: types.optional(types.boolean, true),
+  volume: types.optional(types.boolean, false),
+  speed: types.optional(types.boolean, false),
   regs: types.optional(types.boolean, true),
   hotkey: types.maybeNull(types.string),
 });
@@ -51,7 +51,7 @@ const Model = types
 
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
-    height: types.optional(types.number, 128),
+    height: types.optional(types.string, "128"),
   })
   .views(self => ({
     get hasStates() {
@@ -69,9 +69,12 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return states
-        ? states.filter(s => s.isSelected && (getType(s).name === "LabelsModel" || getType(s).name === "RatingModel"))
-        : null;
+      return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
+    },
+
+    perRegionStates() {
+      const states = self.states();
+      return states && states.filter(s => s.perregion === true);
     },
   }))
   .actions(self => ({
@@ -97,7 +100,6 @@ const Model = types
 
       if (obj.value.choices) {
         self.completion.names.get(obj.from_name).fromStateJSON(obj);
-
         return;
       }
 
@@ -119,7 +121,7 @@ const Model = types
 
       if (fromModel) {
         m = restoreNewsnapshot(fromModel);
-        // m.fromStateJSON(obj);
+        m.fromStateJSON(obj);
 
         if (!region) {
           tree.states = [m];
@@ -149,12 +151,13 @@ const Model = types
 
     addRegion(ws_region) {
       const states = self.activeStates();
+      // if (! states || states.length === 0) {
+      //   ws_region.remove();
+      //   return;
+      // }
 
-      const clonedStates = states
-        ? states.map(s => {
-            return cloneNode(s);
-          })
-        : null;
+      const allStates = states.concat(self.perRegionStates());
+      const clonedStates = allStates.map(s => cloneNode(s));
 
       const find_r = self.findRegion(ws_region.start, ws_region.end);
 
@@ -189,6 +192,46 @@ const Model = types
       return r;
     },
 
+    // addRegion(ws_region) {
+    //     let states = self.activeStates();
+
+    //     if (! states || states.length === 0) {
+    //         ws_region.remove();
+    //         return;
+    //     }
+
+    //     states = states.concat(self.perRegionStates());
+    //     const clonedStates = states.map(s => cloneNode(s));
+
+    //   const find_r = self.findRegion(ws_region.start, ws_region.end);
+
+    //   if (self.findRegion(ws_region.start, ws_region.end)) {
+    //     find_r._ws_region = ws_region;
+    //     return find_r;
+    //   }
+
+    //   const bgColor =
+    //     states && states[0] ? Utils.Colors.convertToRGBA(states[0].getSelectedColor(), 0.3) : self.selectedregionbg;
+
+    //   const r = AudioRegionModel.create({
+    //     id: ws_region.id ? ws_region.id : guidGenerator(),
+    //     pid: ws_region.pid ? ws_region.pid : guidGenerator(),
+    //     start: ws_region.start,
+    //     end: ws_region.end,
+    //     regionbg: self.regionbg,
+    //     selectedregionbg: bgColor,
+    //       states: clonedStates,
+
+    //   });
+
+    //   r._ws_region = ws_region;
+
+    //   self.regions.push(r);
+    //   self.completion.addRegion(r);
+
+    //   return r;
+    // },
+
     /**
      * Play and stop
      */
@@ -219,21 +262,24 @@ const HtxAudioView = observer(({ store, item }) => {
 
   return (
     <ObjectTag item={item}>
-      <Waveform
-        src={item._value}
-        selectRegion={item.selectRegion}
-        handlePlay={item.handlePlay}
-        onCreate={item.wsCreated}
-        addRegion={item.addRegion}
-        onLoad={item.onLoad}
-        speed={item.speed}
-        zoom={item.zoom}
-        volume={item.volume}
-        regions={item.regs}
-        height={item.height}
-      />
+      <Fragment>
+        <Waveform
+          src={item._value}
+          selectRegion={item.selectRegion}
+          handlePlay={item.handlePlay}
+          onCreate={item.wsCreated}
+          addRegion={item.addRegion}
+          onLoad={item.onLoad}
+          speed={item.speed}
+          zoom={item.zoom}
+          volume={item.volume}
+          regions={item.regs}
+          height={item.height}
+        />
 
-      <AudioControls item={item} store={store} />
+        <AudioControls item={item} store={store} />
+        <div style={{ marginBottom: "4px" }}></div>
+      </Fragment>
     </ObjectTag>
   );
 });

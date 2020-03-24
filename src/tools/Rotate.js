@@ -2,6 +2,7 @@ import React from "react";
 
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { RotateLeftOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
@@ -12,7 +13,7 @@ const ToolView = observer(({ item }) => {
   return (
     <BasicToolView
       selected={item.selected}
-      icon="retweet"
+      icon={<RotateLeftOutlined />}
       tooltip="Rotate"
       onClick={ev => {
         item.rotate();

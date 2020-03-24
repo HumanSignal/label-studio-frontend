@@ -37,6 +37,7 @@ const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
+  perregion: types.optional(types.boolean, false),
 });
 
 const Model = types
@@ -68,6 +69,12 @@ const Model = types
       }
 
       return true;
+    },
+
+    copyState(choices) {
+      choices.getSelectedNames().forEach(l => {
+        self.findLabel(l).setSelected(true);
+      });
     },
 
     toStateJSON() {
@@ -112,8 +119,12 @@ const ChoicesModel = types.compose(
 );
 
 const HtxChoices = observer(({ item }) => {
+  const style = { marginTop: "1em", marginBottom: "1em" };
+  const region = item.completion.highlightedNode;
+  const visibleStyle = !item.perregion || region ? {} : { display: "none" };
+
   return (
-    <div style={{ marginTop: "1em", marginBottom: "1em" }}>
+    <div style={{ ...style, ...visibleStyle }}>
       {item.showinline ? (
         <Form layout="horizontal" style={{ display: "flex" }}>
           {Tree.renderChildren(item)}
