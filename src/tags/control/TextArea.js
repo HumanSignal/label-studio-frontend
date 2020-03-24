@@ -162,7 +162,7 @@ const HtxTextArea = observer(({ item }) => {
     },
   };
 
-  if (!item.completion.edittable) props["disabled"] = true;
+  if (!item.completion.editable) props["disabled"] = true;
 
   const region = item.completion.highlightedNode;
   const visibleStyle = !item.perregion || region ? {} : { display: "none" };
