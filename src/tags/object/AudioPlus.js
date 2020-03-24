@@ -103,6 +103,11 @@ const Model = types
         return;
       }
 
+      if (obj.value.text) {
+        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        return;
+      }
+
       if (obj.value.labels) {
         self.completion.names.get(obj.from_name).fromStateJSON(obj);
       }
@@ -121,7 +126,7 @@ const Model = types
 
       if (fromModel) {
         m = restoreNewsnapshot(fromModel);
-        m.fromStateJSON(obj);
+        // m.fromStateJSON(obj);
 
         if (!region) {
           tree.states = [m];
@@ -167,7 +172,7 @@ const Model = types
       }
 
       if (clonedStates.length == 0) {
-        ws_region && ws_region.remove();
+        ws_region.remove && ws_region.remove();
         return;
       }
 
