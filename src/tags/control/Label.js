@@ -75,7 +75,6 @@ const Model = types
         "HyperTextLabelsModel",
       ]);
 
-      // labels.finshCurrentObject();
       const reg = self.completion.highlightedNode;
 
       // check if there is a region selected and if it is and user
@@ -108,9 +107,7 @@ const Model = types
         }
       }
 
-      if (reg) {
-        reg.updateSingleState(labels);
-      }
+      reg && reg.updateSingleState(labels);
     },
 
     /**

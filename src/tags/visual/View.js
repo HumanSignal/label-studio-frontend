@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
@@ -28,50 +28,60 @@ const TagAttrs = types.model({
   classname: types.optional(types.string, ""),
   display: types.optional(types.string, "block"),
   style: types.maybeNull(types.string),
+
+  visiblewhen: types.maybeNull(types.string),
+  whentagname: types.maybeNull(types.string),
+  whenchoicename: types.maybeNull(types.string),
 });
 
-const Model = types.model({
-  id: types.identifier,
-  type: "view",
-  children: Types.unionArray([
-    "view",
-    "header",
-    "labels",
-    "label",
-    "table",
-    "choices",
-    "choice",
-    "rating",
-    "ranker",
-    "rectangle",
-    "ellipse",
-    "polygon",
-    "keypoint",
-    "brush",
-    "rectanglelabels",
-    "ellipselabels",
-    "polygonlabels",
-    "keypointlabels",
-    "brushlabels",
-    "hypertextlabels",
-    "text",
-    "audio",
-    "image",
-    "hypertext",
-    "audioplus",
-    "list",
-    "dialog",
-    "textarea",
-    "pairwise",
-    "style",
-    "label",
-    "relations",
-  ]),
-});
+const Model = types
+  .model({
+    id: types.identifier,
+    type: "view",
+    children: Types.unionArray([
+      "view",
+      "header",
+      "labels",
+      "label",
+      "table",
+      "choices",
+      "choice",
+      "rating",
+      "ranker",
+      "rectangle",
+      "ellipse",
+      "polygon",
+      "keypoint",
+      "brush",
+      "rectanglelabels",
+      "ellipselabels",
+      "polygonlabels",
+      "keypointlabels",
+      "brushlabels",
+      "hypertextlabels",
+      "text",
+      "audio",
+      "image",
+      "hypertext",
+      "audioplus",
+      "list",
+      "dialog",
+      "textarea",
+      "pairwise",
+      "style",
+      "label",
+      "relations",
+    ]),
+  })
+  .views(self => ({
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+  }));
 
 const ViewModel = types.compose("ViewModel", TagAttrs, Model);
 
-const HtxView = observer(({ item }) => {
+const HtxView = observer(({ item, store }) => {
   let style = {};
 
   if (item.display === "inline") {
@@ -80,6 +90,44 @@ const HtxView = observer(({ item }) => {
 
   if (item.style) {
     style = Tree.cssConverter(item.style);
+  }
+
+  if (item.visiblewhen) {
+    const fns = {
+      "region-selected": ({ tagName }) => {
+        const reg = item.completion.highlightedNode;
+        if (reg === null || (tagName && reg.parent.name != tagName)) {
+          return false;
+        }
+
+        return true;
+      },
+
+      "choice-selected": ({ tagName, choiceName }) => {
+        const tag = item.completion.names.get(tagName);
+
+        if (!tag) return false;
+
+        if (choiceName) {
+          return tag.findLabel(choiceName).selected;
+        } else {
+          return tag.isSelected;
+        }
+
+        return false;
+      },
+
+      "no-region-selected": ({ tagName }) => item.completion.highlightedNode === null,
+    };
+
+    if (Object.keys(fns).includes(item.visiblewhen)) {
+      const res = fns[item.visiblewhen]({
+        tagName: item.whentagname,
+        choiceName: item.whenchoicename,
+      });
+
+      if (res === false) style["display"] = "none";
+    }
   }
 
   return (

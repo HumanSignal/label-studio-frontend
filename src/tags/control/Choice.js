@@ -42,12 +42,16 @@ const Model = types
   })
   .views(self => ({
     get isCheckbox() {
-      const choice = getParentOfType(self, ChoicesModel).choice;
+      const choice = self.parent.choice;
       return choice === "multiple" || choice === "single";
     },
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get parent() {
+      return getParentOfType(self, ChoicesModel);
     },
   }))
   .actions(self => ({
@@ -57,6 +61,15 @@ const Model = types
       choice.shouldBeUnselected && choice.unselectAll();
 
       self.setSelected(!self.selected);
+
+      const reg = self.completion.highlightedNode;
+
+      // if (reg) {
+      //     const sel = self.parent.selectedLabels;
+      //     if (sel.length === 1 && sel[0]._value === self._value) return;
+      // }
+
+      reg && reg.updateSingleState(self.parent);
     },
 
     setSelected(val) {

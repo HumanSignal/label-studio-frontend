@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { getType } from "mobx-state-tree";
-import { Form, Input, Icon, Button, Tag, Tooltip } from "antd";
+import { Form, Input, Icon, Button, Tag, Tooltip, Badge } from "antd";
 import { DeleteOutlined, LinkOutlined, PlusOutlined, FullscreenOutlined } from "@ant-design/icons";
 
 import { NodeMinimal } from "../Node/Node";
@@ -52,11 +52,12 @@ export default observer(({ store, completion }) => {
   return (
     <Fragment>
       <p>
-        <NodeMinimal node={node} /> (id: {node.id})
+        <NodeMinimal node={node} /> (id: {node.id}){" "}
+        {(node.readonly || node.completion.edittable === false) && (
+          <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />
+        )}
       </p>
-
       {node.confidence && <p>Confidence: {node.confidence}</p>}
-
       {node.normalization && (
         <p>
           Normalization: {node.normalization}
@@ -76,7 +77,7 @@ export default observer(({ store, completion }) => {
       {/*                       Confidence: {node.confidence} */}
       {/*                     </div>} */}
 
-      {node.completion.edittable == true && (
+      {node.completion.edittable === true && (
         <div className={styles.block + " ls-entity-buttons"}>
           <Tooltip placement="topLeft" title="Create Relation: [r]">
             <Button

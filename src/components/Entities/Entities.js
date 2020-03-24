@@ -12,41 +12,74 @@ import { Node } from "../Node/Node";
 
 const { TabPane } = Tabs;
 
+const RenderSubState = observer(({ item, idx }) => {
+  const states = item.perRegionStates;
+  if (!states) return null;
+
+  return states
+    .filter(s => s.holdsState)
+    .map(s => (
+      <div key={s.id}>
+        <span style={{ marginRight: "16px" }}>•</span>
+        <Node node={s} onClick={() => {}} />
+      </div>
+    ));
+});
+
 const EntityItem = observer(({ item, idx }) => {
   const selected = item.selected ? "#f1f1f1" : "transparent";
+  const oneColor = item.getOneColor();
+  let style = {};
+
+  if (oneColor) {
+    style = {
+      backgroundColor: oneColor,
+    };
+  } else {
+    style = {
+      backgroundColor: "#fff",
+      color: "#999",
+      boxShadow: "0 0 0 1px #d9d9d9 inset",
+    };
+  }
 
   return (
-    <List.Item
-      key={item.id}
-      className={styles.lstitem}
-      style={{ background: selected }}
-      onClick={() => {
-        getRoot(item).completionStore.selected.regionStore.unselectAll();
-        item.selectRegion();
-      }}
-      onMouseOver={() => {
-        item.toggleHighlight();
-      }}
-      onMouseOut={() => {
-        item.toggleHighlight();
-      }}
-    >
-      <span>
-        <Badge count={idx + 1} style={{ backgroundColor: item.getOneColor() }} />
-        &nbsp; <Node node={item} />
-      </span>
-
-      {item.confidence && (
-        <span
-          className={styles.confbadge}
-          style={{
-            color: Utils.Colors.getScaleGradient(item.confidence),
-          }}
-        >
-          {item.confidence.toFixed(2)}
+    <div>
+      <List.Item
+        key={item.id}
+        className={styles.lstitem}
+        style={{ background: selected }}
+        onClick={() => {
+          getRoot(item).completionStore.selected.regionStore.unselectAll();
+          item.selectRegion();
+        }}
+        onMouseOver={() => {
+          item.toggleHighlight();
+        }}
+        onMouseOut={() => {
+          item.toggleHighlight();
+        }}
+      >
+        <span>
+          <Badge count={idx + 1} style={style} />
+          &nbsp; <Node node={item} />
         </span>
-      )}
-    </List.Item>
+
+        {item.score && (
+          <span
+            className={styles.confbadge}
+            style={{
+              color: Utils.Colors.getScaleGradient(item.score),
+            }}
+          >
+            {item.score.toFixed(2)}
+          </span>
+        )}
+      </List.Item>
+      <div style={{ paddingLeft: "23px", backgroundColor: "#f9f9f9" }}>
+        {item.selected && <RenderSubState item={item} />}
+      </div>
+    </div>
   );
 });
 
@@ -65,7 +98,7 @@ const groupMenu = (
   </Menu>
 );
 
-const LabelsTab = (store, regionStore) => {
+const LabelsGroup = (store, regionStore) => {
   const { regions } = regionStore;
   const c = store.completionStore.selected;
   const tabTitle = <span>Labels (2)</span>;
@@ -88,15 +121,13 @@ const LabelsTab = (store, regionStore) => {
   ];
 
   return (
-    <TabPane tab={tabTitle} key="2">
-      <Tree
-        showIcon
-        defaultExpandAll
-        defaultSelectedKeys={["0-0-0"]}
-        //switcherIcon={}
-        treeData={treeData}
-      />
-    </TabPane>
+    <Tree
+      showIcon
+      defaultExpandAll
+      defaultSelectedKeys={["0-0-0"]}
+      //switcherIcon={}
+      treeData={treeData}
+    />
   );
 };
 
@@ -104,7 +135,7 @@ const EntitiesTab = (store, regionStore) => {
   const { regions } = regionStore;
   const c = store.completionStore.selected;
 
-  const entname = <span>Entities ({regions.length})</span>;
+  const entname = <span>Regions ({regions.length})</span>;
 
   return (
     <TabPane tab={entname} key="1" style={{ marginBottom: "0" }}>
@@ -128,7 +159,7 @@ export default observer(({ store, regionStore }) => {
   const { regions } = regionStore;
   const c = store.completionStore.selected;
 
-  const entname = <span>Entities ({regions.length})</span>;
+  const entname = <span>Regions ({regions.length})</span>;
 
   const changeSortOrder = () => {
     regionStore.toggleSortOrder();
@@ -143,7 +174,7 @@ export default observer(({ store, regionStore }) => {
             ev.preventDefault();
             return false;
           }}
-          style={{ width: "175px", display: "flex", justifyContent: "space-between" }}
+          style={{ width: "135px", display: "flex", justifyContent: "space-between" }}
         >
           <div>
             <CalendarOutlined /> Date
@@ -153,20 +184,20 @@ export default observer(({ store, regionStore }) => {
           </div>
         </div>
       </Menu.Item>
-      <Menu.Item key="confidence">
+      <Menu.Item key="score">
         <div
           onClick={ev => {
-            regionStore.setSort("confidence");
+            regionStore.setSort("score");
             ev.preventDefault();
             return false;
           }}
-          style={{ width: "175px", display: "flex", justifyContent: "space-between" }}
+          style={{ width: "135px", display: "flex", justifyContent: "space-between" }}
         >
           <div>
-            <ThunderboltOutlined /> Confidence
+            <ThunderboltOutlined /> Score
           </div>
           <div>
-            {/* regionStore.sort === "confidence" &&  */
+            {/* regionStore.sort === "score" &&  */
             /* <Switch onChange={changeSortOrder} size="small" checkedChildren="Asc" unCheckedChildren="Desc" /> */}
           </div>
         </div>
@@ -180,14 +211,14 @@ export default observer(({ store, regionStore }) => {
         style={{
           display: "flex",
           justifyContent: "space-between",
-          paddingLeft: "6px",
+          paddingLeft: "4px",
           paddingRight: "4px",
           alignItems: "center",
         }}
       >
         <div style={{ flex: 1 }}>
           <Divider dashed orientation="left">
-            Entities ({regions.length})
+            Regions ({regions.length})
           </Divider>
         </div>
         {regions.length > 0 && (
@@ -206,7 +237,7 @@ export default observer(({ store, regionStore }) => {
           </div>
         )}
       </div>
-      {!regions.length && <p>No Entities added yet</p>}
+      {!regions.length && <p>No Regions created yet</p>}
       {regions.length > 0 && (
         <List
           size="small"

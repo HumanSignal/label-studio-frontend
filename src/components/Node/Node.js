@@ -11,6 +11,7 @@ import {
   Loading3QuartersOutlined,
   EyeOutlined,
   HighlightOutlined,
+  ApartmentOutlined,
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
@@ -111,9 +112,27 @@ const NodeViews = {
       </span>
     </Fragment>
   ),
+
+  ChoicesModel: (node, click) => (
+    <Fragment>
+      <ApartmentOutlined style={pt} />
+      <span onClick={click} className={styles.node}>
+        &nbsp; Classification
+      </span>
+    </Fragment>
+  ),
+
+  TextAreaModel: (node, click) => (
+    <Fragment>
+      <MessageOutlined style={pt} />
+      <span onClick={click} className={styles.node}>
+        &nbsp; Input
+      </span>
+    </Fragment>
+  ),
 };
 
-const Node = observer(({ node }) => {
+const Node = observer(({ node, onClick }) => {
   const click = ev => {
     ev.preventDefault();
     getRoot(node).completionStore.selected.regionStore.unselectAll();
@@ -126,7 +145,7 @@ const Node = observer(({ node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  return NodeViews[name](node, click);
+  return NodeViews[name](node, onClick || click);
 });
 
 const NodeMinimal = ({ node }) => {

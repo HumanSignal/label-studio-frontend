@@ -39,8 +39,6 @@ function keysDescipritions() {
 }
 
 function removeKey(key, scope = "__main__") {
-  console.log(key);
-
   keymaster.unbind(key, scope);
 
   delete _hotkeys_map[key];
