@@ -122,6 +122,8 @@ const Model = types
     },
 
     toStateJSON() {
+      if (!self.regions.length) return;
+
       const toname = self.toname || self.name;
       const tree = {
         id: self.pid,
@@ -162,7 +164,7 @@ const HtxTextArea = observer(({ item }) => {
     },
   };
 
-  if (!item.completion.editable) props["disabled"] = true;
+  if (!item.completion.edittable) props["disabled"] = true;
 
   const region = item.completion.highlightedNode;
   const visibleStyle = !item.perregion || region ? {} : { display: "none" };
