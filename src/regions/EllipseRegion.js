@@ -214,6 +214,7 @@ const Model = types
           radiusX: (self.radiusX * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
           radiusY: (self.radiusY * (self.scaleY || 1) * 100) / object.stageHeight,
           rotation: self.rotation,
+          ellipselabels: control.getSelectedNames(),
         },
       };
     },

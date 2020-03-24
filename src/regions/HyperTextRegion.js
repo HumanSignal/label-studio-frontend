@@ -44,6 +44,7 @@ const Model = types
           text: self.text,
           startOffset: self.startOffset,
           endOffset: self.endOffset,
+          htmllabels: control.getSelectedNames(),
         },
       };
     },

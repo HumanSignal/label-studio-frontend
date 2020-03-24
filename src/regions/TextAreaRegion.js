@@ -105,7 +105,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
 
   const params = {};
   const { parent } = item;
-  if (parent.edittable) {
+  if (parent.editable) {
     params["editable"] = {
       onChange: str => {
         item.setValue(str);
