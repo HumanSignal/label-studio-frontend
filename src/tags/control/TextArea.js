@@ -27,7 +27,7 @@ const { TextArea } = Input;
  * @param {string=} [label] label text
  * @param {string=} [placeholder] placeholder text
  * @param {string=} [maxSubmissions] maximum number of submissions
- * @param {boolean=} [edittable=false] edittable textarea results
+ * @param {boolean=} [editable=false] editable textarea results
  */
 const TagAttrs = types.model({
   allowSubmit: types.optional(types.boolean, true),
@@ -39,7 +39,7 @@ const TagAttrs = types.model({
   showsubmitbutton: types.optional(types.boolean, false),
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
-  edittable: types.optional(types.boolean, false),
+  editable: types.optional(types.boolean, false),
   perregion: types.optional(types.boolean, false),
 });
 
@@ -162,7 +162,7 @@ const HtxTextArea = observer(({ item }) => {
     },
   };
 
-  if (!item.completion.edittable) props["disabled"] = true;
+  if (!item.completion.editable) props["disabled"] = true;
 
   const region = item.completion.highlightedNode;
   const visibleStyle = !item.perregion || region ? {} : { display: "none" };
