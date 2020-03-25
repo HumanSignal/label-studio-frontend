@@ -48,6 +48,7 @@ const Model = types
 
     fill: types.optional(types.boolean, true),
     fillcolor: types.optional(types.string, Constants.FILL_COLOR),
+    fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
@@ -228,7 +229,7 @@ const HtxRectangleView = ({ store, item }) => {
         y={item.y}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, 0.4) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, item.fillOpacity) : null}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         strokeScaleEnabled={false}

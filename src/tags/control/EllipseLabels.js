@@ -39,7 +39,7 @@ const ModelAttrs = types.model("EllipseLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "ellipselabels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "ellipselabels" }).views(self => ({
@@ -48,7 +48,14 @@ const Model = LabelMixin.props({ _type: "ellipselabels" }).views(self => ({
   },
 }));
 
-const Composition = types.compose(LabelsModel, ModelAttrs, EllipseModel, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  EllipseModel,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+);
 
 const EllipseLabelsModel = types.compose("EllipseLabelsModel", Composition);
 

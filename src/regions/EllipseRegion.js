@@ -2,8 +2,6 @@ import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
-// import { sin, cos, pow, abs, unit } from Math;
-
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -54,6 +52,7 @@ const Model = types
 
     fill: types.optional(types.boolean, true),
     fillcolor: types.optional(types.string, Constants.FILL_COLOR),
+    fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
@@ -231,10 +230,13 @@ const EllipseRegionModel = types.compose(
 
 const HtxEllipseView = ({ store, item }) => {
   let { strokeColor, strokeWidth } = item;
+  console.log(item);
+  console.log("EllipseRegion strokeWidth: " + strokeWidth);
   if (item.highlighted) {
     strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
     strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
+  console.log("fillOpacity is: " + item.fillOpacity);
   return (
     <Fragment>
       <Ellipse
@@ -242,7 +244,7 @@ const HtxEllipseView = ({ store, item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, 0.4) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, item.fillOpacity) : null}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         strokeScaleEnabled={false}
