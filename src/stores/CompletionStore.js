@@ -76,6 +76,10 @@ const Completion = types
       self.history = { targetPath: "../root" };
     },
 
+    setEdit(val) {
+      self.edittable = val;
+    },
+
     setGroundTruth(value) {
       self.honeypot = value;
       getEnv(self).onGroundTruth(self.store, self, value);
