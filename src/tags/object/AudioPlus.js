@@ -37,8 +37,8 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
   zoom: types.optional(types.boolean, true),
-  volume: types.optional(types.boolean, false),
-  speed: types.optional(types.boolean, false),
+  volume: types.optional(types.boolean, true),
+  speed: types.optional(types.boolean, true),
   regs: types.optional(types.boolean, true),
   hotkey: types.maybeNull(types.string),
 });
