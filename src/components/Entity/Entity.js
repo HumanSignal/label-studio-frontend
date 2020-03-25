@@ -3,10 +3,13 @@ import { observer } from "mobx-react";
 import { getType } from "mobx-state-tree";
 import { Form, Input, Icon, Button, Tag, Tooltip, Badge } from "antd";
 import { DeleteOutlined, LinkOutlined, PlusOutlined, FullscreenOutlined } from "@ant-design/icons";
+import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
+
+const { Text } = Typography;
 
 const templateElement = element => {
   return (
@@ -58,9 +61,11 @@ export default observer(({ store, completion }) => {
         )}
       </p>
       {node.confidence && <p>Confidence: {node.confidence}</p>}
+
+      {node.states && <RenderStates node={node} />}
       {node.normalization && (
         <p>
-          Normalization: {node.normalization}
+          Normalization: <Text code>{node.normalization}</Text>
           &nbsp;
           <DeleteOutlined
             type="delete"
@@ -71,8 +76,6 @@ export default observer(({ store, completion }) => {
           />
         </p>
       )}
-      {node.states && <RenderStates node={node} />}
-
       {/* {node.confidence && <div> */}
       {/*                       Confidence: {node.confidence} */}
       {/*                     </div>} */}
