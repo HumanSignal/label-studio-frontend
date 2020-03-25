@@ -138,7 +138,6 @@ export default observer(({ store, completion }) => {
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
           onFinish={value => {
-            console.log("norm ", node.normInput);
             node.setNormalization(node.normInput);
             completion.setNormalizationMode(false);
 
@@ -149,9 +148,6 @@ export default observer(({ store, completion }) => {
           <Input
             onChange={ev => {
               const { value } = ev.target;
-
-              console.log(value);
-
               node.setNormInput(value);
             }}
             style={{ marginBottom: "0.5em" }}
