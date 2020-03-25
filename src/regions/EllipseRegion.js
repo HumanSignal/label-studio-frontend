@@ -230,13 +230,12 @@ const EllipseRegionModel = types.compose(
 
 const HtxEllipseView = ({ store, item }) => {
   let { strokeColor, strokeWidth } = item;
-  console.log(item);
-  console.log("EllipseRegion strokeWidth: " + strokeWidth);
+
   if (item.highlighted) {
     strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
     strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
-  console.log("fillOpacity is: " + item.fillOpacity);
+
   return (
     <Fragment>
       <Ellipse
