@@ -96,7 +96,7 @@ const Completion = observer(({ item, store }) => {
               okType="danger"
               cancelText="Cancel"
             >
-              <Button size="small" danger>
+              <Button size="small" danger style={{ background: "transparent" }}>
                 <DeleteOutlined />
               </Button>
             </Popconfirm>
