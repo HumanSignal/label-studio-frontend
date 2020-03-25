@@ -1,4 +1,4 @@
-import { types, getParent, getType } from "mobx-state-tree";
+import { types, getType } from "mobx-state-tree";
 
 import Utils from "../utils";
 import { cloneNode } from "../core/Helpers";

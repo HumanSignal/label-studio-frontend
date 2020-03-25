@@ -1,6 +1,6 @@
-import React, { Component, Fragment } from "react";
+import React from "react";
 import { observer } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
@@ -49,7 +49,7 @@ const _Tool = types
     },
 
     mousemoveEv(ev, [x, y]) {
-      if (self.mode != "drawing") return;
+      if (self.mode !== "drawing") return;
     },
 
     createPolygonRegion(points) {

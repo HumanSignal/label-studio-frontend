@@ -1,4 +1,4 @@
-import { types, getParent } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import InfoModal from "../components/Infomodal/Infomodal";
 

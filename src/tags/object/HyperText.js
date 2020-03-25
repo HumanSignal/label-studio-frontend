@@ -7,11 +7,10 @@ import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
-import Utils from "../../utils";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
-import { highlightRange, splitBoundaries } from "../../utils/html";
+import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 
 /**

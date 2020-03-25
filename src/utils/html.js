@@ -194,11 +194,11 @@ function splitBoundaries(range) {
 const toGlobalOffset = (container, element, len) => {
   let pos = 0;
   const count = node => {
-    if (node == element) {
+    if (node === element) {
       return pos;
     }
-    if (node.nodeName == "#text") pos = pos + node.length;
-    if (node.nodeName == "BR") pos = pos + 1;
+    if (node.nodeName === "#text") pos = pos + node.length;
+    if (node.nodeName === "BR") pos = pos + 1;
 
     for (var i = 0; i <= node.childNodes.length; i++) {
       const n = node.childNodes[i];
@@ -224,15 +224,15 @@ const mainOffsets = element => {
   let passedEnd = false;
 
   const traverse = node => {
-    if (node.nodeName == "#text") {
-      if (node != range.startContainer && !passedStart) start = start + node.length;
-      if (node == range.startContainer) passedStart = true;
+    if (node.nodeName === "#text") {
+      if (node !== range.startContainer && !passedStart) start = start + node.length;
+      if (node === range.startContainer) passedStart = true;
 
-      if (node != range.endContainer && !passedEnd) end = end + node.length;
-      if (node == range.endContainer) passedEnd = true;
+      if (node !== range.endContainer && !passedEnd) end = end + node.length;
+      if (node === range.endContainer) passedEnd = true;
     }
 
-    if (node.nodeName == "BR") {
+    if (node.nodeName === "BR") {
       if (!passedStart) start = start + 1;
 
       if (!passedEnd) end = end + 1;
@@ -250,7 +250,7 @@ const mainOffsets = element => {
     }
   };
 
-  const node = traverse(element);
+  traverse(element);
 
   return { start: start, end: end };
 };
@@ -261,10 +261,10 @@ const findIdxContainer = (el, globidx) => {
   const traverse = node => {
     if (!node) return;
 
-    if (node.nodeName == "#text") {
+    if (node.nodeName === "#text") {
       if (len - node.length <= 0) return node;
       else len = len - node.length;
-    } else if (node.nodeName == "BR") {
+    } else if (node.nodeName === "BR") {
       len = len - 1;
     } else if (node.childNodes.length > 0) {
       for (var i = 0; i <= node.childNodes.length; i++) {

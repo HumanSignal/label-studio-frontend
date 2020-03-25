@@ -1,6 +1,5 @@
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
-import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import SpanTextMixin from "../mixins/SpanText";

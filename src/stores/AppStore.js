@@ -3,7 +3,6 @@ import { types, getEnv } from "mobx-state-tree";
 import CompletionStore from "./CompletionStore";
 import Hotkey from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
-import Message from "../utils/messages";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
@@ -226,11 +225,13 @@ export default types
       self.task = Task.create(taskObject);
     }
 
+    /* eslint-disable no-unused-vars */
     function showModal(message, type = "warning") {
       InfoModal[type](message);
 
       // InfoModal.warning("You need to label at least something!");
     }
+    /* eslint-enable no-unused-vars */
 
     function submitCompletion() {
       const c = self.completionStore.selected;

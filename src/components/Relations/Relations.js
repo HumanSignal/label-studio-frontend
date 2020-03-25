@@ -4,8 +4,6 @@ import { isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
 

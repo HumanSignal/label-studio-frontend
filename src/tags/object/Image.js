@@ -1,4 +1,4 @@
-import { detach, types, flow, getParent, getType, destroy, getRoot } from "mobx-state-tree";
+import { types, getType, getRoot } from "mobx-state-tree";
 import { observer, inject } from "mobx-react";
 
 import * as Tools from "../../tools";
@@ -308,7 +308,7 @@ const Model = types
     rotate(degree = 90) {
       self.rotation = self.rotation + degree;
 
-      if (self.rotation == 360) {
+      if (self.rotation === 360) {
         self.rotation = 0;
         degree = 0;
       }

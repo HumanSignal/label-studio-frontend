@@ -7,7 +7,6 @@ import { RotateLeftOutlined } from "@ant-design/icons";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import BasicToolView from "../components/Tools/Basic";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 const ToolView = observer(({ item }) => {
   return (

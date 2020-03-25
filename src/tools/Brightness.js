@@ -4,11 +4,9 @@ import { types } from "mobx-state-tree";
 import { ControlOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
-import BasicToolView from "../components/Tools/Basic";
 import Constants from "../core/Constants";
 import SliderDropDownTool from "../components/Tools/SliderDropDown";
 import ToolMixin from "../mixins/Tool";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 import styles from "./Tools.module.scss";
 

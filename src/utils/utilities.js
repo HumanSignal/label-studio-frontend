@@ -46,7 +46,7 @@ export const isStringJSON = value => {
  */
 export function getUrl(i, text) {
   const stringToTest = text.slice(i);
-  const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g;
+  const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g; // eslint-disable-line no-useless-escape
   const match = myRegexp.exec(stringToTest);
 
   return match && match.length ? match[1] : "";
@@ -72,7 +72,7 @@ export function flatten(arr) {
 
 export function hashCode(str) {
   var hash = 0;
-  if (str.length == 0) {
+  if (str.length === 0) {
     return hash + "";
   }
   for (var i = 0; i < str.length; i++) {

@@ -1,7 +1,7 @@
 import ColorScheme from "pleasejs";
 import React from "react";
 import { Tag } from "antd";
-import { getRoot, getParentOfType, types } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 import { observer, inject } from "mobx-react";
 
 import Hint from "../../components/Hint/Hint";
@@ -12,7 +12,6 @@ import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
-import { LabelsModel } from "./Labels";
 
 /**
  * Label tag represents a single label

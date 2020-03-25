@@ -29,9 +29,9 @@ function RLE2Region(rle, image) {
 
   ctx.putImageData(newdata, 0, 0);
 
-  var image = new Image();
-  image.src = canvas.toDataURL();
-  return image;
+  var new_image = new Image();
+  new_image.src = canvas.toDataURL();
+  return new_image;
 }
 
 // given the brush region return the RLE encoded array
