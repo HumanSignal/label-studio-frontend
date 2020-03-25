@@ -2,7 +2,6 @@ import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
-import { encode, decode } from "@thi.ng/rle-pack";
 
 import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
@@ -10,8 +9,6 @@ import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { BrushLabelsModel } from "../tags/control/BrushLabels";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
 import Canvas from "../utils/canvas";
 
@@ -336,7 +333,7 @@ const HtxBrushView = ({ store, item }) => {
       >
         <Shape
           sceneFunc={(ctx, shape) => {
-            if (item.parent.naturalWidth == 1) return null;
+            if (item.parent.naturalWidth === 1) return null;
 
             if (item._loadedOnce === true) {
               ctx.drawImage(item._img, 0, 0, item.parent.stageWidth, item.parent.stageHeight);

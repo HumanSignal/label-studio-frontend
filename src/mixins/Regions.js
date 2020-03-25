@@ -82,7 +82,7 @@ const RegionsMixin = types
     },
 
     updateSingleState(state) {
-      var foundIndex = self.states.findIndex(s => s.name == state.name);
+      var foundIndex = self.states.findIndex(s => s.name === state.name);
       self.states[foundIndex] = cloneNode(state);
       self.updateAppearenceFromState();
     },

@@ -2,7 +2,6 @@ import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
 
 import { cloneNode } from "../core/Helpers";
 import { AllRegionsType } from "../regions";
-import Registry from "../core/Registry";
 import { RelationsModel } from "../tags/control/Relations";
 
 /**
@@ -37,7 +36,7 @@ const Relation = types
       // find <Relations> tag in the tree
       let relations = null;
       c.traverseTree(function(node) {
-        if (node.type == "relations") relations = node;
+        if (node.type === "relations") relations = node;
       });
 
       if (relations !== null) {

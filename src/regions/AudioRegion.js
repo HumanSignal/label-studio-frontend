@@ -9,7 +9,6 @@ import { AudioPlusModel } from "../tags/object/AudioPlus";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
 
 const Model = types

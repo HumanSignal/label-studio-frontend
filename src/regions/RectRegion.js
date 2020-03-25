@@ -11,8 +11,6 @@ import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
 import { guidGenerator } from "../core/Helpers";
 

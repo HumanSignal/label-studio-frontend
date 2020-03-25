@@ -69,7 +69,7 @@ export default observer(
       const stage = item.stageRef;
       const scale = stage.scaleX();
 
-      if (e.evt && (e.evt.buttons == 4 || (e.evt.buttons == 1 && e.evt.shiftKey)) && scale > 1) {
+      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && scale > 1) {
         e.evt.preventDefault();
         const newPos = { x: stage.x() + e.evt.movementX, y: stage.y() + e.evt.movementY };
         item.setZoom(scale, newPos.x, newPos.y);
@@ -249,7 +249,6 @@ export default observer(
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;
         const translate = "translate(" + zoomingPositionX + "px," + zoomingPositionY + "px) ";
-        const rotate = "rotate(" + item.rotation + "deg) ";
         imgStyle["transform"] = translate + "scale(" + item.resize + ", " + item.resize + ")";
       }
 

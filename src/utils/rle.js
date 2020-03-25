@@ -1,5 +1,3 @@
-import { encode, decode } from "@thi.ng/rle-pack";
-
 /**
  * Run Length Encode
  * @param {array} arr

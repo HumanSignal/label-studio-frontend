@@ -1,5 +1,3 @@
-import React from "react";
-import { observer } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
@@ -81,7 +79,7 @@ const Model = types
       if (!self.toname);
       const names = self.toname.split(",");
 
-      if (names.length != 2)
+      if (names.length !== 2)
         InfoModal.error(
           `Incorrect toName parameter on Pairwise, should be two names separated by the comma: name1,name2`,
         );
@@ -131,8 +129,8 @@ const Model = types
 
       const { left, right } = self.getLeftRight();
 
-      if (self.selected == "left") left.addProp("style", self._selection);
-      if (self.selected == "right") right.addProp("style", self._selection);
+      if (self.selected === "left") left.addProp("style", self._selection);
+      if (self.selected === "right") right.addProp("style", self._selection);
     },
   }));
 

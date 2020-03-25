@@ -22,7 +22,7 @@ import { TranscribeAudio } from "../examples/transcribe_audio"; // eslint-disabl
 import { ImageBbox } from "../examples/image_bbox"; // eslint-disable-line no-unused-vars
 import { ImageKeyPoint } from "../examples/image_keypoints"; // eslint-disable-line no-unused-vars
 import { ImageMultilabel } from "../examples/image_multilabel"; // eslint-disable-line no-unused-vars
-import { ImageEllipselabels } from "../examples/image_ellipses";
+import { ImageEllipselabels } from "../examples/image_ellipses"; // eslint-disable-line no-unused-vars
 import { ImagePolygons } from "../examples/image_polygons"; // eslint-disable-line no-unused-vars
 import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-disable-line no-unused-vars
 

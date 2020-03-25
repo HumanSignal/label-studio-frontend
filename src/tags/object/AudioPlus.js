@@ -9,7 +9,7 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import Waveform from "../../components/Waveform/Waveform";
-import styles from "./AudioPlus/AudioPlus.module.scss";
+import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";

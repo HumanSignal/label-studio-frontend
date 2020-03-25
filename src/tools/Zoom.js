@@ -1,5 +1,4 @@
 import React, { Fragment } from "react";
-import { Divider } from "antd";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 import { DragOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";

@@ -2,7 +2,7 @@ import { types } from "mobx-state-tree";
 
 import Utils from "../utils";
 import Constants from "../core/Constants";
-import { highlightRange, splitBoundaries } from "../utils/html";
+import { highlightRange } from "../utils/html";
 
 export default types
   .model()
@@ -61,8 +61,7 @@ export default types
       let cssCls = "htx-label-" + clsName;
       cssCls = cssCls.toLowerCase();
 
-      if (self.parent.showlabels === true)
-        Utils.HTML.createClass("." + cssCls + ":after", 'content:"' + "[" + names.join(",") + ']"');
+      if (self.parent.showlabels === true) Utils.HTML.createClass(`.${cssCls}:after`, `content:[${names.join(",")}]`);
 
       lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
     },

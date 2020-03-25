@@ -8,7 +8,6 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
-import { ShortcutModel } from "./Shortcut";
 import { guidGenerator } from "../../core/Helpers";
 import { cloneNode } from "../../core/Helpers";
 

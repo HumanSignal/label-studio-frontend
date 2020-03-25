@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
 import { types, getType, getRoot } from "mobx-state-tree";
 
-import Constants from "../../core/Constants";
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
@@ -12,7 +11,7 @@ import Utils from "../../utils";
 import { TextRegionModel } from "../../regions/TextRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
-import { highlightRange, splitBoundaries } from "../../utils/html";
+import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
 
@@ -141,7 +140,7 @@ const Model = types
      * @param {*} fromModel
      */
     fromStateJSON(obj, fromModel) {
-      const { start, startOffset, end, endOffset, text } = obj.value;
+      const { start, end } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
         self.completion.names.get(obj.from_name).fromStateJSON(obj);
@@ -164,7 +163,7 @@ const Model = types
 
       states.fromStateJSON(obj);
 
-      const r = self.createRegion(tree);
+      self.createRegion(tree);
 
       self.needsUpdate();
     },
@@ -226,8 +225,8 @@ class TextPieceView extends Component {
 
       let idx;
 
-      if (idxNewline == -1) idx = idxSpace;
-      if (idxSpace == -1) idx = idxNewline;
+      if (idxNewline === -1) idx = idxSpace;
+      if (idxSpace === -1) idx = idxNewline;
 
       if (idxNewline > 0 && idxSpace > 0) {
         idx = idxSpace > idxNewline ? idxNewline : idxSpace;
@@ -251,21 +250,20 @@ class TextPieceView extends Component {
   alignRange(r) {
     const item = this.props.item;
 
-    if (item.granularity == "symbol") return r;
+    if (item.granularity === "symbol") return r;
 
-    const offset = r.startOffset;
     const { start, end } = Utils.HTML.mainOffsets(this.myRef);
 
     // given gobal position and selection node find node
     // with correct position
-    if (item.granularity == "word") {
+    if (item.granularity === "word") {
       return this.alignWord(r, start, end);
     }
 
-    if (item.granularity == "sentence") {
+    if (item.granularity === "sentence") {
     }
 
-    if (item.granularity == "paragraph") {
+    if (item.granularity === "paragraph") {
     }
   }
 
@@ -342,7 +340,6 @@ class TextPieceView extends Component {
   }
 
   _handleUpdate() {
-    const self = this;
     const root = this.myRef;
     const { item } = this.props;
 
@@ -350,13 +347,13 @@ class TextPieceView extends Component {
       const findNode = (el, pos) => {
         let left = pos;
         const traverse = node => {
-          if (node.nodeName == "#text") {
+          if (node.nodeName === "#text") {
             if (left - node.length <= 0) return { node, left };
 
             left = left - node.length;
           }
 
-          if (node.nodeName == "BR") {
+          if (node.nodeName === "BR") {
             if (left - 1 < 0) return { node, left };
 
             left = left - 1;

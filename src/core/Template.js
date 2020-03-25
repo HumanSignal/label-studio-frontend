@@ -62,7 +62,7 @@ function runTemplate(html, options) {
   code = (code + 'return r.join(""); }').replace(/[\r\t\n]/g, " ");
 
   try {
-    result = new Function("obj", code).apply(options, [options]);
+    result = new Function("obj", code).apply(options, [options]); // eslint-disable-line no-new-func
   } catch (err) {
     console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
   }

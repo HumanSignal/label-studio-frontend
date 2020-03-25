@@ -3,7 +3,7 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { PolygonRegionModel } from "../regions/PolygonRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
+import { restoreNewsnapshot } from "../core/Helpers";
 
 const _Tool = types
   .model({
