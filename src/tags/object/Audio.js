@@ -83,7 +83,6 @@ const HtxAudioView = observer(({ store, item }) => {
         regions={false}
         height={item.height}
       />
-
       <AudioControls item={item} store={store} />
     </ObjectTag>
   );

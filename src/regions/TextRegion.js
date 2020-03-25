@@ -11,8 +11,6 @@ import { guidGenerator } from "../core/Helpers";
 
 const Model = types
   .model("TextRegionModel", {
-    id: types.optional(types.identifier, guidGenerator),
-    pid: types.optional(types.string, guidGenerator),
     type: "textrange",
 
     startOffset: types.integer,
@@ -43,6 +41,7 @@ const Model = types
           start: self.startOffset,
           end: self.endOffset,
           text: self.text,
+          labels: control.getSelectedNames(),
         },
       };
     },

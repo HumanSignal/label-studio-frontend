@@ -16,6 +16,11 @@ const SelectedModelMixin = types
     get isSelected() {
       return self.selectedLabels.length > 0;
     },
+
+    // right now this is duplicate code from the above and it's done for clarity
+    get holdsState() {
+      return self.selectedLabels.length > 0;
+    },
   }))
   .actions(self => ({
     /**

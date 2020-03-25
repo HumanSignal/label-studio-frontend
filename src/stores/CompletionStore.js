@@ -139,7 +139,7 @@ const Completion = types
       region.states &&
         region.states.forEach(s => {
           const mainViewTag = self.names.get(s.name);
-          mainViewTag.unselectAll();
+          mainViewTag.unselectAll && mainViewTag.unselectAll();
           mainViewTag.copyState(s);
         });
     },
@@ -148,7 +148,8 @@ const Completion = types
       region.states &&
         region.states.forEach(s => {
           const mainViewTag = self.names.get(s.name);
-          mainViewTag.unselectAll();
+          mainViewTag.unselectAll && mainViewTag.unselectAll();
+          mainViewTag.perRegionCleanup && mainViewTag.perRegionCleanup();
         });
     },
 
@@ -321,7 +322,7 @@ const Completion = types
       const arr = [];
 
       self.traverseTree(node => {
-        if (node.toStateJSON) {
+        if (node.toStateJSON && !node.perregion) {
           const val = node.toStateJSON();
 
           if (val) arr.push(val);

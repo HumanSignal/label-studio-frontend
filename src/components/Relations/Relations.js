@@ -1,7 +1,8 @@
 import React, { Fragment } from "react";
-import { Select, Icon, Divider, List, Button } from "antd";
+import { Popover, Select, Divider, List, Button, Dropdown, Menu } from "antd";
 import { isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
+import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
 
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
@@ -46,9 +47,9 @@ const Relation = observer(({ store, rl }) => {
   }
 
   const iconMap = {
-    left: "arrow-left",
-    right: "arrow-right",
-    bi: "swap",
+    left: <ArrowLeftOutlined />,
+    right: <ArrowRightOutlined />,
+    bi: <SwapOutlined />,
   };
 
   return (
@@ -58,7 +59,7 @@ const Relation = observer(({ store, rl }) => {
           <NodeMinimal node={rl.node1} />
         </div>
         <Button onClick={() => rl.rotateDirection()} size="small" className={styles.relationbtn}>
-          <Icon type={iconMap[rl.direction]} />
+          {iconMap[rl.direction]}
         </Button>
         <div>
           <NodeMinimal node={rl.node2} />
@@ -93,12 +94,11 @@ const ListItem = observer(({ item }) => {
               }}
               className={styles.button}
             >
-              <Icon type="more" />
+              <MoreOutlined />
             </Button>
           )}
           &nbsp;
           <Button
-            type="danger"
             size="small"
             className={styles.button}
             onClick={() => {
@@ -107,8 +107,9 @@ const ListItem = observer(({ item }) => {
               item.parent.deleteRelation(item);
               return false;
             }}
+            danger
           >
-            <Icon type="delete" />
+            <DeleteOutlined />
           </Button>
         </div>
       </div>

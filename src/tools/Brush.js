@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { HighlightOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
@@ -13,7 +14,7 @@ const ToolView = observer(({ item }) => {
   return (
     <SliderTool
       selected={item.selected}
-      icon={"highlight"}
+      icon={<HighlightOutlined />}
       onClick={ev => {
         const sel = item.selected;
         item.manager.unselectAll();

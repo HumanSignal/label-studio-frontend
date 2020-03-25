@@ -21,10 +21,8 @@ export default types
     getOneColor(pick = "first") {
       if (!self.states) return;
 
-      if (pick === "first") {
-        return self.states.map(s => {
-          return s.getSelectedColor();
-        })[0];
+      if (pick == "first") {
+        return self.states[0].getSelectedColor();
       }
 
       if ((pick = "combine")) {

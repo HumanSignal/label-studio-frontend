@@ -1,12 +1,24 @@
 import { types } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
+import { guidGenerator } from "../core/Helpers";
 
 const RegionsMixin = types
   .model({
+    id: types.optional(types.identifier, guidGenerator),
+    pid: types.optional(types.string, guidGenerator),
+
+    confidence: types.maybeNull(types.number),
+
     readonly: types.optional(types.boolean, false),
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
   })
+  .views(self => ({
+    get perRegionStates() {
+      const states = self.states;
+      return states && states.filter(s => s.perregion === true);
+    },
+  }))
   .actions(self => ({
     moveTop(size) {},
     moveBottom(size) {},
@@ -41,17 +53,21 @@ const RegionsMixin = types
       };
 
       if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = {
-            ...buildTree(s),
-            ...self.serialize(s, parent),
-          };
+        return self.states
+          .map(s => {
+            const ser = self.serialize(s, parent);
+            if (!ser) return;
 
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
+            const tree = {
+              ...buildTree(s),
+              ...ser,
+            };
 
-          return tree;
-        });
+            // in case of labels it's gonna be, labels: ["label1", "label2"]
+
+            return tree;
+          })
+          .filter(tree => tree);
       } else {
         const obj = self.completion.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;

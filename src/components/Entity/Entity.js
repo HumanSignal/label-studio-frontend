@@ -1,11 +1,15 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { getType } from "mobx-state-tree";
-import { Form, Input, Icon, Button, Tag, Tooltip } from "antd";
+import { Form, Input, Icon, Button, Tag, Tooltip, Badge } from "antd";
+import { DeleteOutlined, LinkOutlined, PlusOutlined, FullscreenOutlined } from "@ant-design/icons";
+import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
+
+const { Text } = Typography;
 
 const templateElement = element => {
   return (
@@ -51,13 +55,19 @@ export default observer(({ store, completion }) => {
   return (
     <Fragment>
       <p>
-        <NodeMinimal node={node} /> (id: {node.id})
+        <NodeMinimal node={node} /> (id: {node.id}){" "}
+        {(node.readonly || node.completion.edittable === false) && (
+          <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />
+        )}
       </p>
+      {node.confidence && <p>Confidence: {node.confidence}</p>}
 
+      {node.states && <RenderStates node={node} />}
       {node.normalization && (
         <p>
-          Normalization: {node.normalization}
-          <Icon
+          Normalization: <Text code>{node.normalization}</Text>
+          &nbsp;
+          <DeleteOutlined
             type="delete"
             style={{ cursor: "pointer" }}
             onClick={() => {
@@ -66,18 +76,20 @@ export default observer(({ store, completion }) => {
           />
         </p>
       )}
-      {node.states && <RenderStates node={node} />}
+      {/* {node.confidence && <div> */}
+      {/*                       Confidence: {node.confidence} */}
+      {/*                     </div>} */}
 
       {node.completion.edittable === true && (
         <div className={styles.block + " ls-entity-buttons"}>
-          <Tooltip placement="topLeft" title="Create Relation">
+          <Tooltip placement="topLeft" title="Create Relation: [r]">
             <Button
               className={styles.button}
               onClick={() => {
                 completion.startRelationMode(node);
               }}
             >
-              <Icon type="link" />
+              <LinkOutlined />
 
               {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
             </Button>
@@ -90,11 +102,11 @@ export default observer(({ store, completion }) => {
                 completion.setNormalizationMode(true);
               }}
             >
-              <Icon type="plus" />
+              <PlusOutlined />
             </Button>
           </Tooltip>
 
-          <Tooltip placement="topLeft" title="Unselect">
+          <Tooltip placement="topLeft" title="Unselect: [u]">
             <Button
               className={styles.button}
               type="dashed"
@@ -102,12 +114,12 @@ export default observer(({ store, completion }) => {
                 completion.highlightedNode.unselectRegion();
               }}
             >
-              <Icon type="fullscreen-exit" />
+              <FullscreenOutlined />
               {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
             </Button>
           </Tooltip>
 
-          <Tooltip placement="topLeft" title="Delete Entity">
+          <Tooltip placement="topLeft" title="Delete Entity: [Backspace]">
             <Button
               type="danger"
               className={styles.button}
@@ -115,7 +127,7 @@ export default observer(({ store, completion }) => {
                 completion.highlightedNode.deleteRegion();
               }}
             >
-              <Icon type="delete" />
+              <DeleteOutlined />
 
               {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Bksp ]</Hint>}
             </Button>
@@ -125,25 +137,31 @@ export default observer(({ store, completion }) => {
       {completion.normalizationMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
-          onSubmit={ev => {
+          onFinish={value => {
+            console.log("norm ", node.normInput);
             node.setNormalization(node.normInput);
             completion.setNormalizationMode(false);
 
-            ev.preventDefault();
-            return false;
+            // ev.preventDefault();
+            // return false;
           }}
         >
           <Input
             onChange={ev => {
               const { value } = ev.target;
+
+              console.log(value);
+
               node.setNormInput(value);
             }}
             style={{ marginBottom: "0.5em" }}
             placeholder="Add Normalization"
           />
+
           <Button type="primary" htmlType="submit" style={{ marginRight: "0.5em" }}>
             Add
           </Button>
+
           <Button
             type="danger"
             htmlType="reset"

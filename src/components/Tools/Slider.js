@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from "react";
-import { Button, Icon, Slider, Tooltip } from "antd";
+import { Button, Slider, Tooltip } from "antd";
 import { observer } from "mobx-react";
 
 import styles from "./Styles.module.scss";
@@ -25,7 +25,7 @@ export default observer(
               className={styles.button}
               onClick={this.props.onClick}
             >
-              <Icon type={this.props.icon} />
+              {this.props.icon}
             </Button>
           </Tooltip>
         </Fragment>

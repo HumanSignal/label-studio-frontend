@@ -4,6 +4,15 @@
 @import "./mixins";
 @import "./functions";
 
+.ant-divider-horizontal.ant-divider-with-text-center::before,
+.ant-divider-horizontal.ant-divider-with-text-left::before,
+.ant-divider-horizontal.ant-divider-with-text-right::before,
+.ant-divider-horizontal.ant-divider-with-text-center::after,
+.ant-divider-horizontal.ant-divider-with-text-left::after,
+.ant-divider-horizontal.ant-divider-with-text-right::after {
+  border-top-color: #cecece !important;
+}
+
 .ls-renderall {
   display: flex;
   flex-wrap: wrap;

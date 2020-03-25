@@ -251,6 +251,7 @@ const Model = types
       return {
         value: {
           points: perc_points,
+          polygonlabels: control.getSelectedNames(),
         },
         original_width: naturalWidth,
         original_height: naturalHeight,

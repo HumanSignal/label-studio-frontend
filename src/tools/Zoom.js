@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { DragOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import BasicToolView from "../components/Tools/Basic";
@@ -11,7 +12,7 @@ const ToolView = observer(({ item }) => {
     <Fragment>
       <BasicToolView
         selected={item.selected}
-        icon="drag"
+        icon={DragOutlined}
         tooltip="Move position"
         onClick={ev => {
           const sel = item.selected;
@@ -24,7 +25,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <BasicToolView
-        icon="zoom-in"
+        icon={ZoomInOutlined}
         tooltip="Zoom into the image"
         onClick={ev => {
           // console.log(self.image);
@@ -33,7 +34,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <BasicToolView
-        icon="zoom-out"
+        icon={ZoomOutOutlined}
         tooltip="Zoom out of the image"
         onClick={ev => {
           item.handleZoom(0.8);

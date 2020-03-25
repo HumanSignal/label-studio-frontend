@@ -192,6 +192,7 @@ const Model = types
         value: {
           format: "rle",
           rle: Array.prototype.slice.call(rle),
+          brushlabels: control.getSelectedNames(),
         },
       };
     },

@@ -1,6 +1,8 @@
 import React, { Component } from "react";
-import { Button, Card, Icon, List, Tooltip } from "antd";
+import { Button, Card, List, Tooltip } from "antd";
 import { observer } from "mobx-react";
+
+import { CopyOutlined, WindowsOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "../Completions/Completions.module.scss";
@@ -20,10 +22,11 @@ const Prediction = observer(({ item, store }) => {
           Created
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
         </div>
-        <div>
+        <div className={styles.buttons}>
           {item.selected && (
             <Tooltip placement="topLeft" title="Add a new completion based on this prediction">
               <Button
+                size="small"
                 onClick={ev => {
                   ev.preventDefault();
 
@@ -37,7 +40,7 @@ const Prediction = observer(({ item, store }) => {
                   }, 50);
                 }}
               >
-                <Icon type="copy" />
+                <CopyOutlined />
               </Button>
             </Tooltip>
           )}
@@ -58,14 +61,14 @@ class Predictions extends Component {
         {store.completionStore.predictions.length > 0 && (
           <Tooltip placement="topLeft" title="View all predictions">
             <Button
-              shape={"circle"}
+              size="small"
               type={store.completionStore.viewingAllPredictions ? "primary" : ""}
               onClick={ev => {
                 ev.preventDefault();
                 store.completionStore.toggleViewingAllPredictions();
               }}
             >
-              <Icon type="windows" />
+              <WindowsOutlined />
             </Button>
           </Tooltip>
         )}
