@@ -7,7 +7,7 @@ export default types
   .model("RegionStore", {
     regions: types.array(types.safeReference(AllRegionsType)),
 
-    sort: types.optional(types.enumeration(["date", "confidence"]), "date"),
+    sort: types.optional(types.enumeration(["date", "score"]), "date"),
     sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
 
     group: types.optional(types.enumeration(["type", "label"]), "type"),
@@ -16,7 +16,7 @@ export default types
     get sortedRegions() {
       const sorts = {
         date: () => self.regions,
-        confidence: () => self.regions.sort((a, b) => a.confidence - b.confidence),
+        score: () => self.regions.sort((a, b) => a.score - b.score),
       };
 
       return sorts[self.sort]();

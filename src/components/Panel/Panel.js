@@ -1,7 +1,14 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { Button } from "antd";
-import { UndoOutlined, RedoOutlined, SettingOutlined, RollbackOutlined } from "@ant-design/icons";
+import {
+  UndoOutlined,
+  RedoOutlined,
+  SettingOutlined,
+  RollbackOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+} from "@ant-design/icons";
 
 import styles from "./Panel.module.scss";
 import Hint from "../Hint/Hint";
@@ -90,6 +97,16 @@ export default observer(({ store }) => {
           icon={<SettingOutlined />}
           onClick={ev => {
             store.toggleSettings();
+            ev.preventDefault();
+            return false;
+          }}
+        />
+
+        <Button
+          type="dashed"
+          icon={store.settings.fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+          onClick={ev => {
+            store.settings.toggleFullscreen();
             ev.preventDefault();
             return false;
           }}

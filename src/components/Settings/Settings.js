@@ -62,6 +62,17 @@ export default observer(({ store }) => {
         <Tabs.TabPane tab="Hotkeys" key="2">
           <HotkeysDescription />
         </Tabs.TabPane>
+        <Tabs.TabPane tab="Layout" key="3">
+          <Checkbox
+            value="Move sidepanel to the bottom"
+            defaultChecked={store.settings.bottomSidePanel}
+            onChange={() => {
+              store.settings.toggleBottomSP();
+            }}
+          >
+            Move sidepanel to the bottom
+          </Checkbox>
+        </Tabs.TabPane>
       </Tabs>
     </Modal>
   );
