@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Checkbox, Tabs, Table } from "antd";
+import { Modal, Checkbox, Tabs, Table, InputNumber } from "antd";
 import { observer } from "mobx-react";
 
 import Hotkey from "../../core/Hotkey";
@@ -58,6 +58,21 @@ export default observer(({ store }) => {
           >
             Show labels hotkey tooltips
           </Checkbox>
+          {/* <br /> */}
+          {/* <Checkbox */}
+          {/*   value="Enable auto-save" */}
+          {/*   defaultChecked={store.settings.enableAutoSave} */}
+          {/*   onChange={() => { */}
+          {/*     store.settings.toggleAutoSave(); */}
+          {/*   }} */}
+          {/* > */}
+          {/*   Enable auto-save */}
+
+          {/* </Checkbox> */}
+          {/* { store.settings.enableAutoSave && */}
+          {/*   <div style={{ marginLeft: "1.7em" }}> */}
+          {/*     Save every <InputNumber size="small" min={5} max={120} /> seconds */}
+          {/*   </div> } */}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Hotkeys" key="2">
           <HotkeysDescription />

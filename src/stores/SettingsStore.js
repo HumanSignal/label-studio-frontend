@@ -25,6 +25,8 @@ const SettingsModel = types
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
+
+    enableAutoSave: types.optional(types.boolean, false),
   })
   .actions(self => ({
     afterCreate() {
@@ -49,6 +51,10 @@ const SettingsModel = types
           localStorage.setItem(lsKey, JSON.stringify(ss));
         });
       }
+    },
+
+    toggleAutoSave() {
+      self.enableAutoSave = !self.enableAutoSave;
     },
 
     toggleHotkeys() {
