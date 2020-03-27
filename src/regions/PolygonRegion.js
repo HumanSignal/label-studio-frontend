@@ -14,6 +14,7 @@ import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
+import { LabelOnRegion } from "../components/ImageView/LabelOnRegion";
 
 const Model = types
   .model({
@@ -511,6 +512,7 @@ const HtxPolygonView = ({ store, item }) => {
       {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
+      {/* <LabelOnRegion item={item} /> */}
     </Group>
   );
 };

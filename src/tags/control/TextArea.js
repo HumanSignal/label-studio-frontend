@@ -98,7 +98,7 @@ const Model = types
 
       if (self.perregion) {
         const reg = self.completion.highlightedNode;
-        reg && reg.updateSingleState(self);
+        reg && reg.updateOrAddState(self);
       } else {
         self.completion.addRegion(r);
       }

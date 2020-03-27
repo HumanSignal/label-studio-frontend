@@ -26,6 +26,10 @@ const Model = types
       return getParentOfType(self, AudioPlusModel);
     },
 
+    get labelsState() {
+      return self.states.find(s => s.type === "labels");
+    },
+
     get completion() {
       return getRoot(self).completionStore.selected;
     },
@@ -44,6 +48,10 @@ const Model = types
         res.value["labels"] = control.getSelectedNames();
       }
 
+      if (control.type === "choices") {
+        res.value["choices"] = control.getSelectedNames();
+      }
+
       if (control.type === "textarea") {
         const texts = control.regions.map(s => s._value);
         if (texts.length === 0) return;
@@ -55,7 +63,10 @@ const Model = types
     },
 
     updateAppearenceFromState() {
-      self.selectedregionbg = Utils.Colors.convertToRGBA(self.states[0].getSelectedColor(), 0.3);
+      const s = self.labelsState;
+      if (!s) return;
+
+      self.selectedregionbg = Utils.Colors.convertToRGBA(s.getSelectedColor(), 0.3);
       if (self._ws_region.update) {
         self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
@@ -93,10 +104,6 @@ const Model = types
         self._ws_region.update({ color: self.selectedregionbg });
         self._ws_region.element.style.border = "none";
       }
-    },
-
-    setNormalization(val) {
-      // console.log(val)
     },
 
     beforeDestroy() {
