@@ -41,7 +41,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = ImagePolygons; //TranscribeAudio;
+const data = TranscribeAudio;
 
 /**
  * Get current config

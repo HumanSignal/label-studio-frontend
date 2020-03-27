@@ -102,15 +102,15 @@ export default observer(({ store }) => {
           }}
         />
 
-        <Button
-          type="dashed"
-          icon={store.settings.fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-          onClick={ev => {
-            store.settings.toggleFullscreen();
-            ev.preventDefault();
-            return false;
-          }}
-        />
+        {/* <Button */}
+        {/*   type="dashed" */}
+        {/*   icon={store.settings.fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />} */}
+        {/*   onClick={ev => { */}
+        {/*     store.settings.toggleFullscreen(); */}
+        {/*     ev.preventDefault(); */}
+        {/*     return false; */}
+        {/*   }} */}
+        {/* /> */}
       </div>
     </div>
   );
