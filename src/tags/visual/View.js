@@ -96,7 +96,7 @@ const HtxView = observer(({ item, store }) => {
     const fns = {
       "region-selected": ({ tagName }) => {
         const reg = item.completion.highlightedNode;
-        if (reg === null || (tagName && reg.parent.name != tagName)) {
+        if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
           return false;
         }
 
