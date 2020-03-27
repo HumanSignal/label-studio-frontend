@@ -88,6 +88,7 @@ const App = inject("store")(
         const { store } = self.props;
         const cs = store.completionStore;
         const root = cs.selected && cs.selected.root;
+        const { settings } = store;
 
         if (store.isLoading) return self.renderLoader();
 
@@ -99,8 +100,12 @@ const App = inject("store")(
 
         if (!root) return self.renderNoCompletion();
 
+        const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
+        const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
+        const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
+
         return (
-          <div className={styles.editor + " ls-editor"}>
+          <div className={stEditor + " ls-editor"}>
             <Settings store={store} />
             <Provider store={store}>
               <div>
@@ -112,9 +117,9 @@ const App = inject("store")(
                   </Segment>
                 )}
 
-                <div className={styles.common + " ls-common"}>
+                <div className={stCommon + " ls-common"}>
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                    <Segment className={styles.segment + " ls-segment"}>
+                    <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
                       {Tree.renderItem(root)}
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>
@@ -122,7 +127,7 @@ const App = inject("store")(
                   {cs.viewingAllCompletions && this.renderAllCompletions()}
                   {cs.viewingAllPredictions && this.renderAllPredictions()}
 
-                  <div className={styles.menu + " ls-menu"}>
+                  <div className={stMenu + " ls-menu"}>
                     {store.hasInterface("completions:menu") && <Completions store={store} />}
                     {store.hasInterface("predictions:menu") && <Predictions store={store} />}
                     {store.hasInterface("side-column") && !cs.viewingAllCompletions && !cs.viewingAllPredictions && (

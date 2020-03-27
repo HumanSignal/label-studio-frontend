@@ -19,6 +19,15 @@
   }
 }
 
+.editorfs {
+  position: absolute;
+  background: white;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 2em;
+}
+
 .menu {
   width: 320px;
   min-width: 320px;
@@ -36,6 +45,21 @@
   @include respond("phone") {
     margin-left: 0;
     margin-top: 20px;
+  }
+}
+
+.menubsp {
+  display: flex;
+  flex-direction: row;
+  margin-top: 2em;
+
+  & > div {
+    margin-right: 2em;
+    width: 33.3%;
+
+    &:last-child {
+      margin-right: 0;
+    }
   }
 }
 
@@ -58,6 +82,10 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+}
+
+.commonbsp {
+  display: block;
 }
 
 @media only screen and (max-width: 768px) {
