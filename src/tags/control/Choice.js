@@ -56,7 +56,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      const choice = getParentOfType(self, ChoicesModel);
+      const choice = self.parent;
 
       choice.shouldBeUnselected && choice.unselectAll();
 
@@ -69,7 +69,7 @@ const Model = types
       //     if (sel.length === 1 && sel[0]._value === self._value) return;
       // }
 
-      reg && reg.updateSingleState(self.parent);
+      reg && reg.updateOrAddState(choice);
     },
 
     setSelected(val) {

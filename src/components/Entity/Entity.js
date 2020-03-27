@@ -13,7 +13,7 @@ const { Text } = Typography;
 
 const templateElement = element => {
   return (
-    <div key={element.pid} className={styles.labels}>
+    <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
       {element.getSelectedNames().map(title => {
         let bgColor = element.findLabel(title).background ? element.findLabel(title).background : "#000000";
@@ -24,7 +24,7 @@ const templateElement = element => {
           </Tag>
         );
       })}
-    </div>
+    </Text>
   );
 };
 
@@ -40,13 +40,33 @@ const RenderStates = observer(({ node }) => {
     ) {
       return templateElement(s);
     } else if (getType(s).name === "RatingModel") {
-      return <p>Rating: {s.getSelectedString()}</p>;
+      return <Text>Rating: {s.getSelectedString()}</Text>;
+    } else if (getType(s).name === "TextAreaModel") {
+      const text = s.regions.map(r => r._value).join("\n");
+      return (
+        <Text>
+          Text: <Text mark>{text.substring(0, 26)}...</Text>
+        </Text>
+      );
     }
 
     return null;
   };
 
-  return <Fragment>{node.states.map(s => _render(s))}</Fragment>;
+  return (
+    <Fragment>
+      {node.states
+        .filter(s => s.holdsState)
+        .map(s => {
+          return (
+            <Fragment>
+              {_render(s)}
+              <br />
+            </Fragment>
+          );
+        })}
+    </Fragment>
+  );
 });
 
 export default observer(({ store, completion }) => {
@@ -60,11 +80,14 @@ export default observer(({ store, completion }) => {
           <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />
         )}
       </p>
-      {node.confidence && <p>Confidence: {node.confidence}</p>}
-
+      {node.score && (
+        <Text>
+          Score: <Text underline>{node.score}</Text>
+        </Text>
+      )}
       {node.states && <RenderStates node={node} />}
       {node.normalization && (
-        <p>
+        <Text>
           Normalization: <Text code>{node.normalization}</Text>
           &nbsp;
           <DeleteOutlined
@@ -74,11 +97,8 @@ export default observer(({ store, completion }) => {
               node.deleteNormalization();
             }}
           />
-        </p>
+        </Text>
       )}
-      {/* {node.confidence && <div> */}
-      {/*                       Confidence: {node.confidence} */}
-      {/*                     </div>} */}
 
       {node.completion.edittable === true && (
         <div className={styles.block + " ls-entity-buttons"}>

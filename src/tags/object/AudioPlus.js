@@ -72,7 +72,7 @@ const Model = types
       return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
     },
 
-    perRegionStates() {
+    activePerRegionStates() {
       const states = self.states();
       return states && states.filter(s => s.perregion === true);
     },
@@ -98,19 +98,25 @@ const Model = types
       let r;
       let m;
 
-      if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
-        return;
-      }
+      const fm = self.completion.names.get(obj.from_name);
+      fm.fromStateJSON(obj);
 
-      if (obj.value.text) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
-        return;
-      }
+      if (!fm.perregion && fromModel.type !== "labels") return;
 
-      if (obj.value.labels) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
-      }
+      // if (obj.value.choices) {
+      //     fm.fromStateJSON(obj);
+      //     if (! fm.perregion) return;
+
+      //   // return;
+      // }
+
+      // if (obj.value.text) {
+      //     fm.fromStateJSON(obj);
+      // }
+
+      // if (obj.value.labels) {
+      //   fm.fromStateJSON(obj);
+      // }
 
       /**
        *
@@ -122,17 +128,18 @@ const Model = types
         normalization: obj.normalization,
       };
 
-      const region = self.findRegion(obj.value.start, obj.value.end);
+      r = self.findRegion(obj.value.start, obj.value.end);
 
       if (fromModel) {
         m = restoreNewsnapshot(fromModel);
         // m.fromStateJSON(obj);
 
-        if (!region) {
-          tree.states = [m];
-          r = self.addRegion(tree);
+        if (!r) {
+          // tree.states = [m];
+          r = self.createRegion(tree, [m]);
+          // r = self.addRegion(tree);
         } else {
-          region.states.push(m);
+          r.states.push(m);
         }
       }
 
@@ -142,6 +149,11 @@ const Model = types
           end: r.end,
         });
       }
+
+      // if (fm.perregion)
+      //     fm.perRegionCleanup();
+
+      r.updateAppearenceFromState();
 
       return r;
     },
@@ -154,6 +166,29 @@ const Model = types
       self.playBackRate = val;
     },
 
+    createRegion(wsRegion, states) {
+      let bgColor = self.selectedregionbg;
+      const st = states.find(s => s.type === "labels");
+      if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
+
+      const r = AudioRegionModel.create({
+        id: wsRegion.id ? wsRegion.id : guidGenerator(),
+        pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
+        start: wsRegion.start,
+        end: wsRegion.end,
+        regionbg: self.regionbg,
+        selectedregionbg: bgColor,
+        states: states,
+      });
+
+      r._ws_region = wsRegion;
+
+      self.regions.push(r);
+      self.completion.addRegion(r);
+
+      return r;
+    },
+
     addRegion(ws_region) {
       const states = self.activeStates();
       // if (! states || states.length === 0) {
@@ -161,7 +196,7 @@ const Model = types
       //   return;
       // }
 
-      const allStates = states.concat(self.perRegionStates());
+      const allStates = states; // states.concat(self.activePerRegionStates());
       const clonedStates = allStates.map(s => cloneNode(s));
 
       const find_r = self.findRegion(ws_region.start, ws_region.end);
@@ -176,66 +211,8 @@ const Model = types
         return;
       }
 
-      const bgColor =
-        states && states[0] ? Utils.Colors.convertToRGBA(states[0].getSelectedColor(), 0.3) : self.selectedregionbg;
-
-      const r = AudioRegionModel.create({
-        id: ws_region.id ? ws_region.id : guidGenerator(),
-        pid: ws_region.pid ? ws_region.pid : guidGenerator(),
-        start: ws_region.start,
-        end: ws_region.end,
-        regionbg: self.regionbg,
-        selectedregionbg: bgColor,
-        states: clonedStates,
-      });
-
-      r._ws_region = ws_region;
-
-      self.regions.push(r);
-      self.completion.addRegion(r);
-
-      return r;
+      return self.createRegion(ws_region, clonedStates);
     },
-
-    // addRegion(ws_region) {
-    //     let states = self.activeStates();
-
-    //     if (! states || states.length === 0) {
-    //         ws_region.remove();
-    //         return;
-    //     }
-
-    //     states = states.concat(self.perRegionStates());
-    //     const clonedStates = states.map(s => cloneNode(s));
-
-    //   const find_r = self.findRegion(ws_region.start, ws_region.end);
-
-    //   if (self.findRegion(ws_region.start, ws_region.end)) {
-    //     find_r._ws_region = ws_region;
-    //     return find_r;
-    //   }
-
-    //   const bgColor =
-    //     states && states[0] ? Utils.Colors.convertToRGBA(states[0].getSelectedColor(), 0.3) : self.selectedregionbg;
-
-    //   const r = AudioRegionModel.create({
-    //     id: ws_region.id ? ws_region.id : guidGenerator(),
-    //     pid: ws_region.pid ? ws_region.pid : guidGenerator(),
-    //     start: ws_region.start,
-    //     end: ws_region.end,
-    //     regionbg: self.regionbg,
-    //     selectedregionbg: bgColor,
-    //       states: clonedStates,
-
-    //   });
-
-    //   r._ws_region = ws_region;
-
-    //   self.regions.push(r);
-    //   self.completion.addRegion(r);
-
-    //   return r;
-    // },
 
     /**
      * Play and stop

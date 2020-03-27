@@ -30,6 +30,9 @@ const RegionsMixin = types
     sizeTop(size) {},
     sizeBottom(size) {},
 
+    // update region appearence based on it's current states, for
+    // example bbox needs to update its colors when you change the
+    // label, becuase it takes color from the label
     updateAppearenceFromState() {},
 
     serialize() {
@@ -81,6 +84,19 @@ const RegionsMixin = types
       }
     },
 
+    updateOrAddState(state) {
+      var foundIndex = self.states.findIndex(s => s.name === state.name);
+      if (foundIndex !== -1) {
+        self.states[foundIndex] = cloneNode(state);
+        self.updateAppearenceFromState();
+      } else {
+        self.states.push(cloneNode(state));
+      }
+    },
+
+    // given the specific state object (for example labels) it finds
+    // that inside the region states objects and updates that, this
+    // function is used to capture the state
     updateSingleState(state) {
       var foundIndex = self.states.findIndex(s => s.name === state.name);
       self.states[foundIndex] = cloneNode(state);
