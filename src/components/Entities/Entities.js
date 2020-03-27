@@ -76,9 +76,9 @@ const EntityItem = observer(({ item, idx }) => {
           </span>
         )}
       </List.Item>
-      <div style={{ paddingLeft: "23px", backgroundColor: "#f9f9f9" }}>
-        {item.selected && <RenderSubState item={item} />}
-      </div>
+      {/* <div style={{ paddingLeft: "23px", backgroundColor: "#f9f9f9" }}> */}
+      {/*   {item.selected && <RenderSubState item={item} />} */}
+      {/* </div> */}
     </div>
   );
 });

@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Rect } from "react-konva";
+import { Rect, Group, Text, Label } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
 
@@ -13,6 +13,7 @@ import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
 import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
 import { guidGenerator } from "../core/Helpers";
+import { LabelOnRegion } from "../components/ImageView/LabelOnRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -317,6 +318,7 @@ const HtxRectangleView = ({ store, item }) => {
         }}
         draggable={item.completion.edittable}
       />
+      {/* <LabelOnRegion item={item} /> */}
     </Fragment>
   );
 };

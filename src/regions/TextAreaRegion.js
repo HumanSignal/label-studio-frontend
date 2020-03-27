@@ -151,7 +151,11 @@ const HtxTextAreaRegionView = ({ store, item }) => {
             <a
               href=""
               onClick={ev => {
+                const reg = item.completion.highlightedNode;
                 item.completion.deleteRegion(item);
+
+                reg && reg.updateSingleState(item.parent);
+
                 ev.preventDefault();
                 return false;
               }}
