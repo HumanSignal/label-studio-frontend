@@ -237,13 +237,16 @@ export default observer(
       const divStyle = {
         overflow: "hidden",
         // width: item.stageWidth + "px",
+        backgroundImage: "",
       };
+      if (item._value2) divStyle.backgroundImage = `url(${item._value2})`
 
       const imgStyle = {
         width: item.width,
         maxWidth: item.maxwidth,
         transformOrigin: "left top",
         filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
+        opacity: store.opacityGrade,
       };
 
       if (item.zoomScale !== 1) {

@@ -72,6 +72,11 @@ export default types
      */
     showingDescription: types.optional(types.boolean, false),
     /**
+     * opacityGrade
+     * RGB/Depth
+     */
+    opacityGrade: types.optional(types.number, 1.0),
+    /**
      * Loading of Label Studio
      */
     isLoading: types.optional(types.boolean, false),
@@ -111,6 +116,10 @@ export default types
       self.showingDescription = !self.showingDescription;
     }
 
+    function toggleRGBD() {
+      self.opacityGrade = 1.0 - self.opacityGrade;
+    }
+    
     function setFlags(flags) {
       const names = ["showingSettings", "showingDescription", "isLoading", "noTask", "noAccess", "labeledSuccess"];
 
@@ -207,6 +216,10 @@ export default types
         },
         "Delete selected region",
       );
+
+      Hotkey.addKey("tab", function() {
+        self.toggleRGBD();
+      });
 
       getEnv(self).onLabelStudioLoad(self);
     }
@@ -305,5 +318,6 @@ export default types
 
       toggleSettings,
       toggleDescription,
+      toggleRGBD,
     };
   });

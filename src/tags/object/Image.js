@@ -4,7 +4,6 @@ import { observer, inject } from "mobx-react";
 import * as Tools from "../../tools";
 import ImageView from "../../components/ImageView/ImageView";
 import ObjectBase from "./Base";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import ToolsManager from "../../tools/Manager";
 import { BrushRegionModel } from "../../regions/BrushRegion";
@@ -12,6 +11,7 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
+import { runTemplate } from "../../core/Template";
 
 /**
  * Image tag shows an image on the page
@@ -43,6 +43,7 @@ import { EllipseRegionModel } from "../../regions/EllipseRegion";
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
+  value2: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
   maxwidth: types.optional(types.string, "750px"),
@@ -83,6 +84,7 @@ const Model = types
     id: types.identifier,
     type: "image",
     _value: types.optional(types.string, ""),
+    _value2: types.optional(types.string, ""),
 
     // tools: types.array(BaseTool),
 
@@ -402,9 +404,18 @@ const Model = types
         .allTools()
         .forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
     },
+
+    updateLocalValue(value) {
+      self._value = value;
+    },
+
+    updateValue(store) {
+      self._value = runTemplate(self.value, store.task.dataObj) || "";
+      if (self.value2) self._value2 = runTemplate(self.value2, store.task.dataObj) || "";
+    },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose("ImageModel", TagAttrs, Model, ObjectBase);
 
 const HtxImage = inject("store")(observer(ImageView));
 

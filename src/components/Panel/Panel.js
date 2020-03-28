@@ -57,6 +57,15 @@ export default observer(({ store }) => {
         >
           Reset
         </Button>
+        <Button
+          type="ghost"
+          icon={<RollbackOutlined />}
+          onClick={ev => {
+            store.toggleRGBD();
+          }}
+        >
+          RGB/Depth
+        </Button>
         {store.setPrelabeling && (
           <Button
             style={{ display: "none" }}
