@@ -246,8 +246,9 @@ export default observer(
         maxWidth: item.maxwidth,
         transformOrigin: "left top",
         filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
-        opacity: store.opacityGrade,
+        opacity: 1.0,
       };
+      if (item._value2) imgStyle.opacity = store.opacityGrade
 
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;
