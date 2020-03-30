@@ -14,6 +14,7 @@ import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { EllipseLabelsModel } from "../tags/control/EllipseLabels";
 import { guidGenerator } from "../core/Helpers";
+import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -331,6 +332,7 @@ const HtxEllipseView = ({ store, item }) => {
         }}
         draggable={item.completion.editable}
       />
+      {(item.parent.showlabels || getRoot(item).settings.showLabels) && <LabelOnEllipse item={item} />}
     </Fragment>
   );
 };

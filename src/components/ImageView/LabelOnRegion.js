@@ -1,6 +1,8 @@
 import React, { Fragment } from "react";
 import { Rect, Group, Text, Label, Tag } from "react-konva";
 
+import Constants from "../../core/Constants";
+
 function polytobbox(points) {
   var lats = [];
   var lngs = [];
@@ -26,10 +28,15 @@ function polytobbox(points) {
 const LabelOnBbox = ({ x, y, text }) => {
   return (
     <Label x={x} y={y}>
-      <Tag fill="black" />
-      <Text text={text} fontFamily="Calibri" fill="white" />
+      <Tag fill={Constants.SHOW_LABEL_BACKGROUND} cornerRadius="2" />
+      <Text text={text} fontFamily="Calibri" fill={Constants.SHOW_LABEL_FILL} padding="2" />
     </Label>
   );
+};
+
+const LabelOnEllipse = ({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+  return <LabelOnBbox x={item.x} y={item.y} text={item.states[0].getSelectedNames()} />;
 };
 
 const LabelOnRect = ({ item }) => {
@@ -76,4 +83,4 @@ const LabelOnKP = ({ item }) => {
   return null;
 };
 
-export { LabelOnBbox, LabelOnPolygon, LabelOnRect };
+export { LabelOnBbox, LabelOnPolygon, LabelOnRect, LabelOnEllipse };

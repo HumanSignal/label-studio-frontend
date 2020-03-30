@@ -326,7 +326,8 @@ function traverseTree(root, cb) {
   let visitNode;
 
   visitNode = function(node) {
-    cb(node);
+    const res = cb(node);
+    if (res === "break") return;
 
     if (node.children) {
       node.children.forEach(chld => visitNode(chld));

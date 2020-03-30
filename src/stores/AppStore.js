@@ -208,6 +208,15 @@ export default types
         "Delete selected region",
       );
 
+      Hotkey.addKey(
+        "alt+tab",
+        function() {
+          const c = self.completionStore.selected;
+          c && c.regionStore.selectNext();
+        },
+        "Circle through entities",
+      );
+
       getEnv(self).onLabelStudioLoad(self);
     }
 

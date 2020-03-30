@@ -3,6 +3,7 @@ import { Form } from "antd";
 import { observer } from "mobx-react";
 import { types, getRoot, getParent } from "mobx-state-tree";
 
+import ValidateMixin from "../../mixins/Validate";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
@@ -64,44 +65,8 @@ const Model = types
     },
   }))
   .actions(self => ({
-    validate() {
-      const fn = item => {
-        const names = item.getSelectedNames();
-        if (names.length === 0) InfoModal.warning(item.requiredmessage || `Checkbox "${item.name}" is required.`);
-      };
-
-      // if (self.perregion === true) {
-      //     // find all regions that are connected to this
-      //     const objectTag = self.completion.names.get(self.toname);
-      //     let me = null;
-
-      //     for (var i = 0; i <= objectTag.regions.length; i++) {
-      //         const reg = objectTag.regions[i];
-      //         me = reg.states.find(s => s.name === self.name);
-      //         if (me)
-      //             break;
-      //     }
-
-      //     if (! me) {
-
-      //     } else {
-      //         if (me.getSelectedNames().length === 0) {
-      //             const region = getParent(me);
-      //             self.completion.regionStore.unselectAll();
-      //             region.selectRegion();
-      //             InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
-      //             return false;
-      //         }
-      //     }
-      // } else {
-      // validation when its classifying the whole object, not magic here
-      if (self.getSelectedNames().length === 0) {
-        InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
-        return false;
-      }
-      // }
-
-      return true;
+    requiredModal() {
+      InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
 
     copyState(choices) {
@@ -153,6 +118,7 @@ const ChoicesModel = types.compose(
   Model,
   TagAttrs,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
+  ValidateMixin,
 );
 
 const HtxChoices = observer(({ item }) => {

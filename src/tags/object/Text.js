@@ -140,9 +140,6 @@ const Model = types
 
       const states = restoreNewsnapshot(fromModel);
 
-      console.log(obj);
-      console.log(obj.readonly);
-
       const tree = {
         pid: obj.id,
         startOffset: start,

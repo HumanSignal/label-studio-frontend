@@ -514,7 +514,7 @@ const HtxPolygonView = ({ store, item }) => {
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
 
-      {/* item.closed && <LabelOnPolygon item={item} /> */}
+      {item.closed && (item.parent.showlabels || getRoot(item).settings.showLabels) && <LabelOnPolygon item={item} />}
     </Group>
   );
 };

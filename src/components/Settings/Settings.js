@@ -26,7 +26,6 @@ export default observer(({ store }) => {
       bodyStyle={{ paddingTop: "0" }}
       footer=""
       onCancel={store.toggleSettings}
-      getContainer={() => this.dom}
     >
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="General" key="1">

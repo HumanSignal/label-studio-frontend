@@ -36,7 +36,10 @@ const Relation = types
       // find <Relations> tag in the tree
       let relations = null;
       c.traverseTree(function(node) {
-        if (node.type === "relations") relations = node;
+        if (node.type === "relations") {
+          relations = node;
+          return "break";
+        }
       });
 
       if (relations !== null) {

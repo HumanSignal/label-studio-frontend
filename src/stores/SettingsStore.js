@@ -63,11 +63,11 @@ const SettingsModel = types
     toggleShowLabels() {
       self.showLabels = !self.showLabels;
 
-      const c = getRoot(self).completionStore.selected;
-      c.regionStore.regions.forEach(r => {
-        // TODO there is no showLables in the regions right now
-        return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
-      });
+      // const c = getRoot(self).completionStore.selected;
+      // c.regionStore.regions.forEach(r => {
+      //   // TODO there is no showLables in the regions right now
+      //   return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
+      // });
     },
 
     toggleAutoSave() {

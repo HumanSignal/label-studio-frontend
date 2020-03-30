@@ -175,7 +175,10 @@ const Completion = types
       self.traverseTree(function(node) {
         if (node.required === true) {
           ok = node.validate();
-          if (ok === false) ok = false;
+          if (ok === false) {
+            ok = false;
+            return "break";
+          }
         }
       });
 

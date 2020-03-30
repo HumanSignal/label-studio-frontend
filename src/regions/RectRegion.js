@@ -318,7 +318,7 @@ const HtxRectangleView = ({ store, item }) => {
         }}
         draggable={item.completion.editable}
       />
-      <LabelOnRect item={item} />
+      {(item.parent.showlabels || getRoot(item).settings.showLabels) && <LabelOnRect item={item} />}
     </Fragment>
   );
 };

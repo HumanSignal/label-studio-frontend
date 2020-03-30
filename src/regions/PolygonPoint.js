@@ -224,7 +224,7 @@ const PolygonPointView = observer(({ item, name }) => {
         }}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.completion.edittable}
+        draggable={item.completion.editable}
       />
     );
   } else {
@@ -242,7 +242,7 @@ const PolygonPointView = observer(({ item, name }) => {
         dragOnTop={false}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.completion.edittable}
+        draggable={item.completion.editable}
       />
     );
   }
