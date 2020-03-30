@@ -163,11 +163,11 @@ const HtxTextArea = observer(({ item }) => {
     },
   };
 
-  if (!item.completion.edittable) props["disabled"] = true;
+  if (!item.completion.editable) props["disabled"] = true;
 
   const region = item.completion.highlightedNode;
   const visibleStyle = !item.perregion || region ? {} : { display: "none" };
-  const showAddButton = item.completion.edittable && (rows != 1 || item.showSubmitButton);
+  const showAddButton = item.completion.editable && (rows != 1 || item.showSubmitButton);
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 

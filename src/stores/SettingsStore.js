@@ -1,4 +1,4 @@
-import { types, onSnapshot } from "mobx-state-tree";
+import { types, onSnapshot, getRoot } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
 
@@ -27,7 +27,14 @@ const SettingsModel = types
     bottomSidePanel: types.optional(types.boolean, false),
 
     enableAutoSave: types.optional(types.boolean, false),
+
+    showLabels: types.optional(types.boolean, false),
   })
+  .views(self => ({
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+  }))
   .actions(self => ({
     afterCreate() {
       const { localStorage } = window;
@@ -51,6 +58,16 @@ const SettingsModel = types
           localStorage.setItem(lsKey, JSON.stringify(ss));
         });
       }
+    },
+
+    toggleShowLabels() {
+      self.showLabels = !self.showLabels;
+
+      const c = getRoot(self).completionStore.selected;
+      c.regionStore.regions.forEach(r => {
+        // TODO there is no showLables in the regions right now
+        return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
+      });
     },
 
     toggleAutoSave() {

@@ -94,16 +94,7 @@ const Model = types
     },
 
     createRegion(p) {
-      const r = TextRegionModel.create({
-        pid: p.pid,
-        startOffset: p.startOffset,
-        endOffset: p.endOffset,
-        start: p.start,
-        end: p.end,
-        text: p.text,
-        states: p.states,
-        confidence: p.confidence,
-      });
+      const r = TextRegionModel.create(p);
 
       r._range = p._range;
 
@@ -149,13 +140,17 @@ const Model = types
 
       const states = restoreNewsnapshot(fromModel);
 
+      console.log(obj);
+      console.log(obj.readonly);
+
       const tree = {
         pid: obj.id,
         startOffset: start,
         endOffset: end,
         start: "",
         end: "",
-        confidence: obj.confidence,
+        score: obj.score,
+        readonly: obj.readonly,
         text: self._value.substring(start, end),
         normalization: obj.normalization,
         states: [states],

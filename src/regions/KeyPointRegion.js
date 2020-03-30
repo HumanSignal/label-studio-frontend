@@ -207,7 +207,7 @@ const HtxKeyPointView = ({ store, item }) => {
         onClick={e => {
           const stage = item.parent.stageRef;
 
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = "default";
@@ -217,7 +217,7 @@ const HtxKeyPointView = ({ store, item }) => {
           item.onClickRegion();
         }}
         {...props}
-        draggable={item.completion.edittable}
+        draggable={item.completion.editable}
       />
     </Fragment>
   );

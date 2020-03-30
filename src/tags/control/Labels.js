@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
 import LabelMixin from "../../mixins/LabelMixin";

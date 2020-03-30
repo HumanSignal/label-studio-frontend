@@ -76,9 +76,7 @@ export default observer(({ store, completion }) => {
     <Fragment>
       <p>
         <NodeMinimal node={node} /> (id: {node.id}){" "}
-        {(node.readonly || node.completion.edittable === false) && (
-          <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />
-        )}
+        {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
       </p>
       {node.score && (
         <Text>
@@ -100,7 +98,7 @@ export default observer(({ store, completion }) => {
         </Text>
       )}
 
-      {node.completion.edittable === true && (
+      {node.editable && (
         <div className={styles.block + " ls-entity-buttons"}>
           <Tooltip placement="topLeft" title="Create Relation: [r]">
             <Button
@@ -154,6 +152,24 @@ export default observer(({ store, completion }) => {
           </Tooltip>
         </div>
       )}
+
+      {!node.editable && (
+        <div className={styles.block + " ls-entity-buttons"}>
+          <Tooltip placement="topLeft" title="Unselect: [u]">
+            <Button
+              className={styles.button}
+              type="dashed"
+              onClick={() => {
+                completion.highlightedNode.unselectRegion();
+              }}
+            >
+              <FullscreenOutlined />
+              {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
+            </Button>
+          </Tooltip>
+        </div>
+      )}
+
       {completion.normalizationMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}

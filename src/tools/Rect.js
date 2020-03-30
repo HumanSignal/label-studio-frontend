@@ -36,15 +36,17 @@ const _Tool = types
           y: obj.value.y,
           sw: obj.value.width,
           sh: obj.value.height,
+          score: obj.score,
           stroke: scolor,
           states: states,
           coordstype: "perc",
+          readonly: obj.readonly,
           rotation: obj.value.rotation,
         });
       }
     },
 
-    createRegion({ pid, x, y, sw, sh, states, coordstype, stroke, rotation }) {
+    createRegion({ pid, x, y, sw, sh, states, coordstype, stroke, rotation, score, readonly }) {
       const control = self.control;
 
       let localStates = states;
@@ -64,6 +66,9 @@ const _Tool = types
         width: sw,
         height: sh,
         rotation: rotation,
+
+        score: score,
+        readonly: readonly,
 
         opacity: parseFloat(control.opacity),
         fillcolor: stroke || control.fillcolor,

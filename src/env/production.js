@@ -69,6 +69,7 @@ function configureApplication(params) {
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
+    onSelectCompletion: params.onSelectCompletion || External.onSelectCompletion,
   };
 
   return options;

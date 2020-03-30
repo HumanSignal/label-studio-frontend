@@ -4,17 +4,18 @@ import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tree";
 
-import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
+import WithStatesMixin from "../mixins/WithStates";
+import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
+import { LabelOnPolygon } from "../components/ImageView/LabelOnRegion";
 import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
-import { LabelOnRegion } from "../components/ImageView/LabelOnRegion";
 
 const Model = types
   .model({
@@ -35,7 +36,7 @@ const Model = types
 
     points: types.array(PolygonPoint, []),
 
-    states: types.maybeNull(types.array(types.union(PolygonLabelsModel))),
+    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, ChoicesModel))),
 
     mouseOverStartPoint: types.optional(types.boolean, false),
 
@@ -492,7 +493,7 @@ const HtxPolygonView = ({ store, item }) => {
       onClick={e => {
         e.cancelBubble = true;
 
-        if (!item.completion.edittable) return;
+        if (!item.completion.editable) return;
 
         if (!item.closed) return;
 
@@ -505,14 +506,15 @@ const HtxPolygonView = ({ store, item }) => {
         item.setHighlight(false);
         item.onClickRegion();
       }}
-      draggable={item.completion.edittable && item.parent.zoomScale === 1}
+      draggable={item.completion.editable && item.parent.zoomScale === 1}
     >
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
-      {/* <LabelOnRegion item={item} /> */}
+
+      {/* item.closed && <LabelOnPolygon item={item} /> */}
     </Group>
   );
 };

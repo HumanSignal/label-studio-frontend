@@ -1,16 +1,14 @@
 import React, { Fragment } from "react";
 import { Rect, Group, Text, Label, Tag } from "react-konva";
 
-function polytobbox(coords) {
+function polytobbox(points) {
   var lats = [];
   var lngs = [];
 
-  for (var i = 0; i < coords[0].length; i++) {
-    lats.push(coords[0][i][1]);
-    lngs.push(coords[0][i][0]);
-    // following not needed to calc bbox, just so you can see the points
-    // L.marker([coords[0][i][1], coords[0][i][0]]).addTo(map);
-  }
+  points.forEach(p => {
+    lats.push(p.x);
+    lngs.push(p.y);
+  });
 
   // calc the min and max lng and lat
   var minlat = Math.min.apply(null, lats),
@@ -20,25 +18,62 @@ function polytobbox(coords) {
 
   // create a bounding rectangle that can be used in leaflet
   return [
-    [minlat, minlng],
-    [maxlat, maxlng],
+    [minlat, maxlat],
+    [minlng, maxlng],
   ];
 }
 
-const LabelInBbox = ({ item }) => {};
-
-const LabelOnRegion = ({ item }) => {
-  if (item.states && item.states[0].holdsState) {
-    const image = item.parent;
-    return (
-      <Label x={item.x + item.strokeWidth + 2} y={item.y + item.strokeWidth + 2}>
-        <Tag fill="black" />
-        <Text text={item.states[0].getSelectedNames()} fontFamily="Calibri" fill="white" />
-      </Label>
-    );
-  } else {
-    return null;
-  }
+const LabelOnBbox = ({ x, y, text }) => {
+  return (
+    <Label x={x} y={y}>
+      <Tag fill="black" />
+      <Text text={text} fontFamily="Calibri" fill="white" />
+    </Label>
+  );
 };
 
-export { LabelOnRegion };
+const LabelOnRect = ({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+
+  return (
+    <LabelOnBbox
+      x={item.x + item.strokeWidth + 2}
+      y={item.y + item.strokeWidth + 2}
+      text={item.states[0].getSelectedNames()}
+    />
+  );
+};
+
+const LabelOnPolygon = ({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+
+  const bbox = polytobbox(item.points);
+  return (
+    <Fragment>
+      <Rect
+        x={bbox[0][0]}
+        y={bbox[1][0]}
+        fillEnabled={false}
+        width={bbox[0][1] - bbox[0][0]}
+        height={bbox[1][1] - bbox[1][0]}
+        stroke={item.strokecolor}
+        strokeWidth="1"
+        strokeScaleEnabled={false}
+        shadowBlur={0}
+      />
+      {/* this is a problem here, it takes states[0] but nothing
+       * guarantees that this state is a lable one */}
+      <LabelOnBbox x={bbox[0][0] + 2} y={bbox[1][0] + 2} text={item.states[0].getSelectedNames()} />
+    </Fragment>
+  );
+};
+
+const LabelOnMask = ({ item }) => {
+  return null;
+};
+
+const LabelOnKP = ({ item }) => {
+  return null;
+};
+
+export { LabelOnBbox, LabelOnPolygon, LabelOnRect };

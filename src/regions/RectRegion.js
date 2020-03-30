@@ -13,7 +13,7 @@ import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
 import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
 import { guidGenerator } from "../core/Helpers";
-import { LabelOnRegion } from "../components/ImageView/LabelOnRegion";
+import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -307,7 +307,7 @@ const HtxRectangleView = ({ store, item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -316,9 +316,9 @@ const HtxRectangleView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.completion.edittable}
+        draggable={item.completion.editable}
       />
-      {/* <LabelOnRegion item={item} /> */}
+      <LabelOnRect item={item} />
     </Fragment>
   );
 };

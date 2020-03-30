@@ -1,7 +1,7 @@
 import React from "react";
 import { Form } from "antd";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types, getRoot, getParent } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
@@ -38,12 +38,15 @@ const TagAttrs = types.model({
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
   perregion: types.optional(types.boolean, false),
+
+  readonly: types.optional(types.boolean, false),
 });
 
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
+
     type: "choices",
     children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
@@ -62,11 +65,41 @@ const Model = types
   }))
   .actions(self => ({
     validate() {
-      const names = self.getSelectedNames();
-      if (names.length === 0) {
+      const fn = item => {
+        const names = item.getSelectedNames();
+        if (names.length === 0) InfoModal.warning(item.requiredmessage || `Checkbox "${item.name}" is required.`);
+      };
+
+      // if (self.perregion === true) {
+      //     // find all regions that are connected to this
+      //     const objectTag = self.completion.names.get(self.toname);
+      //     let me = null;
+
+      //     for (var i = 0; i <= objectTag.regions.length; i++) {
+      //         const reg = objectTag.regions[i];
+      //         me = reg.states.find(s => s.name === self.name);
+      //         if (me)
+      //             break;
+      //     }
+
+      //     if (! me) {
+
+      //     } else {
+      //         if (me.getSelectedNames().length === 0) {
+      //             const region = getParent(me);
+      //             self.completion.regionStore.unselectAll();
+      //             region.selectRegion();
+      //             InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
+      //             return false;
+      //         }
+      //     }
+      // } else {
+      // validation when its classifying the whole object, not magic here
+      if (self.getSelectedNames().length === 0) {
         InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
         return false;
       }
+      // }
 
       return true;
     },
@@ -100,6 +133,10 @@ const Model = types
       if (!obj.value.choices) throw new Error("No labels param");
 
       if (obj.id) self.pid = obj.id;
+
+      console.log(obj);
+
+      self.readonly = obj.readonly;
 
       obj.value.choices.forEach(l => {
         const choice = self.findLabel(l);

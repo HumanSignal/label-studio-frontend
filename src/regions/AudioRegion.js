@@ -111,7 +111,7 @@ const Model = types
     },
 
     onClick(wavesurfer) {
-      if (!self.completion.edittable) return;
+      if (!self.completion.editable) return;
 
       if (!self.completion.relationMode) {
         // Object.values(wavesurfer.regions.list).forEach(r => {

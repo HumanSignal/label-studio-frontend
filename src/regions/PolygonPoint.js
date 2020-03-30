@@ -83,7 +83,7 @@ const PolygonPoint = types
      * @param {*} ev
      */
     closeStartPoint(ev) {
-      if (!self.completion.edittable) return;
+      if (!self.completion.editable) return;
 
       if (self.parent.mouseOverStartPoint) {
         self.parent.closePoly();

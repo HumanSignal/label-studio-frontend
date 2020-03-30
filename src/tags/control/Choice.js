@@ -95,9 +95,10 @@ const HtxChoice = inject("store")(
       return (
         <Form.Item style={cStyle}>
           <Checkbox
+            disabled={item.parent.readonly}
             name={item._value}
             onChange={ev => {
-              if (!item.completion.edittable) return;
+              if (!item.completion.editable) return;
 
               item.toggleSelected();
             }}
@@ -114,11 +115,12 @@ const HtxChoice = inject("store")(
       return (
         <div style={style}>
           <Radio
+            disabled={item.parent.readonly}
             value={item._value}
             style={{ display: "inline-block", marginBottom: "0.5em" }}
             checked={item.selected}
             onChange={ev => {
-              if (!item.completion.edittable) return;
+              if (!item.completion.editable) return;
 
               item.toggleSelected();
             }}

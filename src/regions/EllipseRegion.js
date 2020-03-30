@@ -320,7 +320,7 @@ const HtxEllipseView = ({ store, item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -329,7 +329,7 @@ const HtxEllipseView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.completion.edittable}
+        draggable={item.completion.editable}
       />
     </Fragment>
   );

@@ -26,6 +26,7 @@ export default observer(({ store }) => {
       bodyStyle={{ paddingTop: "0" }}
       footer=""
       onCancel={store.toggleSettings}
+      getContainer={() => this.dom}
     >
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="General" key="1">
@@ -57,6 +58,16 @@ export default observer(({ store }) => {
             }}
           >
             Show labels hotkey tooltips
+          </Checkbox>
+          <br />
+          <Checkbox
+            value="Show labels inside the regions"
+            defaultChecked={store.settings.showLabels}
+            onChange={() => {
+              store.settings.toggleShowLabels();
+            }}
+          >
+            Show labels inside the regions
           </Checkbox>
           {/* <br /> */}
           {/* <Checkbox */}
