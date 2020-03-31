@@ -156,7 +156,6 @@ const Model = types
       states.fromStateJSON(obj);
 
       self.createRegion(tree);
-
       self.needsUpdate();
     },
   }));

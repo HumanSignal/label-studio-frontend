@@ -52,7 +52,7 @@ const Model = types
     opacity: types.number,
 
     fill: types.optional(types.boolean, true),
-    fillcolor: types.optional(types.string, Constants.FILL_COLOR),
+    fillColor: types.optional(types.string, Constants.FILL_COLOR),
     fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
@@ -99,7 +99,7 @@ const Model = types
     updateAppearenceFromState() {
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
-      self.fillcolor = stroke;
+      self.fillColor = stroke;
     },
 
     unselectRegion() {
@@ -244,7 +244,7 @@ const HtxEllipseView = ({ store, item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, item.fillOpacity) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillColor, item.fillOpacity) : null}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         strokeScaleEnabled={false}
@@ -330,9 +330,9 @@ const HtxEllipseView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.completion.editable}
+        draggable={item.editable}
       />
-      {(item.parent.showlabels || getRoot(item).settings.showLabels) && <LabelOnEllipse item={item} />}
+      <LabelOnEllipse item={item} />
     </Fragment>
   );
 };

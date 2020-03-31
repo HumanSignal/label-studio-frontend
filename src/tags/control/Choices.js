@@ -99,8 +99,6 @@ const Model = types
 
       if (obj.id) self.pid = obj.id;
 
-      console.log(obj);
-
       self.readonly = obj.readonly;
 
       obj.value.choices.forEach(l => {

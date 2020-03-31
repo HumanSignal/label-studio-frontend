@@ -41,6 +41,14 @@ import styles from "./App.module.scss";
 const App = inject("store")(
   observer(
     class App extends Component {
+      componentWillMount() {
+        window.startLoadTime = new Date();
+      }
+
+      componentDidMount() {
+        console.log("Mounted after: ", new Date() - window.startLoadTime);
+      }
+
       renderSuccess() {
         return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
       }

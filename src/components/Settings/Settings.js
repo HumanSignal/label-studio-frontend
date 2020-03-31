@@ -68,6 +68,16 @@ export default observer(({ store }) => {
           >
             Show labels inside the regions
           </Checkbox>
+          {/* <br/> */}
+          {/* <Checkbox */}
+          {/*   value="Show scores inside the regions" */}
+          {/*   defaultChecked={store.settings.showScore} */}
+          {/*   onChange={() => { */}
+          {/*     store.settings.toggleShowScore(); */}
+          {/*   }} */}
+          {/* > */}
+          {/*   Show scores inside the regions */}
+          {/* </Checkbox> */}
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}

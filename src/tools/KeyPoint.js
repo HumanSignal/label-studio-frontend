@@ -9,67 +9,44 @@ const _Tool = types
   .model({
     default: types.optional(types.boolean, true),
   })
-  .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      let states = null;
-      let scolor = self.control.strokecolor;
-
-      if (obj.type === "keypointlabels") {
-        states = restoreNewsnapshot(fromModel);
-        if (states.fromStateJSON) {
-          states.fromStateJSON(obj);
-          scolor = states.getSelectedColor();
-        }
-
-        states = [states];
-      }
-
-      if (obj.type === "keypointlabels" || obj.type === "keypoint") {
-        self.createRegion({
-          pid: obj.id,
-          x: obj.value.x,
-          y: obj.value.y,
-          width: obj.value.width,
-          fillcolor: scolor,
-          states: states,
-          coordstype: "perc",
-        });
-      }
+  .views(self => ({
+    get tagTypes() {
+      return {
+        stateTypes: "keypointlabels",
+        controlTagTypes: ["keypointlabels", "keypoint"],
+      };
     },
-
-    createRegion({ pid, x, y, width, fillcolor, states, coordstype }) {
-      const c = self.control;
+  }))
+  .actions(self => ({
+    createRegion(opts) {
       const image = self.obj;
+      const c = self.control;
 
       const kp = KeyPointRegionModel.create({
-        pid: pid,
-        id: guidGenerator(),
-        x: x,
-        y: y,
-        width: parseFloat(width),
         opacity: parseFloat(c.opacity),
-        fillcolor: fillcolor,
-        states: states,
-        coordstype: coordstype,
+        ...opts,
       });
 
       image.addShape(kp);
+
+      return kp;
     },
 
     clickEv(ev, [x, y]) {
-      if (self.control.type === "keypointlabels" && !self.control.isSelected) return;
+      const c = self.control;
+      if (c.type === "keypointlabels" && !c.isSelected) return;
 
-      const { states, fillcolor } = self.statesAndParams;
+      const sap = self.statesAndParams;
 
       self.createRegion({
         x: x,
         y: y,
-        width: self.control.strokewidth,
-        fillcolor: fillcolor,
-        states: states,
+        width: Number(c.strokewidth),
         coordstype: "px",
+        ...sap,
       });
 
+      self.obj.completion().highlightedNode.unselectRegion();
       // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));

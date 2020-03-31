@@ -10,6 +10,8 @@ const RegionsMixin = types
     score: types.maybeNull(types.number),
     readonly: types.optional(types.boolean, false),
 
+    hidden: types.optional(types.boolean, false),
+
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
   })
@@ -174,6 +176,10 @@ const RegionsMixin = types
 
     toggleHighlight() {
       self.setHighlight(!self.highlighted);
+    },
+
+    toggleHidden() {
+      self.hidden = !self.hidden;
     },
   }));
 

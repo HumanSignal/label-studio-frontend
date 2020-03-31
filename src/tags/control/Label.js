@@ -74,6 +74,15 @@ const Model = types
      * Select label
      */
     toggleSelected() {
+      // here we check if you click on label from labels group
+      // connected to the region on the same object tag that is
+      // right now highlighted, and if that region is readonly
+      const hn = self.completion.highlightedNode;
+      if (hn && hn.readonly === true && hn.parent.name === self.parent.toname) return;
+
+      // one more check if that label can be selected
+      if (!self.completion.editable) return;
+
       const selectedLabel = self.selected;
       const labels = self.parent;
 
@@ -153,15 +162,6 @@ const HtxLabelView = inject("store")(
     return (
       <Tag
         onClick={ev => {
-          // here we check if you click on label from labels group
-          // connected to the region on the same object tag that is
-          // right now highlighted, and if that region is readonly
-          const hn = item.completion.highlightedNode;
-          if (hn && hn.readonly === true && hn.parent.name === item.parent.toname) return;
-
-          // one more check if that label can be selected
-          if (!item.completion.editable) return;
-
           item.toggleSelected();
           return false;
         }}

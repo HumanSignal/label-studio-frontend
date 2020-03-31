@@ -29,6 +29,7 @@ let gradients = [
   "#1e9c1d",
   "#1c9a24",
   "#1c992d",
+  "#1c992d",
 ];
 
 let colorNames = {

@@ -1,6 +1,7 @@
 import { types, onSnapshot, getRoot } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
+import Utils from "../utils";
 
 /**
  * Setting store of Label Studio
@@ -29,6 +30,8 @@ const SettingsModel = types
     enableAutoSave: types.optional(types.boolean, false),
 
     showLabels: types.optional(types.boolean, false),
+
+    // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
     get completion() {
@@ -60,8 +63,14 @@ const SettingsModel = types
       }
     },
 
+    //   toggleShowScore() {
+    //       self.showScore = !self.showScore;
+    // },
+
     toggleShowLabels() {
       self.showLabels = !self.showLabels;
+
+      Utils.HTML.toggleLabelsAndScores(self.showLabels);
 
       // const c = getRoot(self).completionStore.selected;
       // c.regionStore.regions.forEach(r => {
