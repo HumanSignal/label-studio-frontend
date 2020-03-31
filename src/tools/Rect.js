@@ -13,63 +13,22 @@ const _Tool = types
     default: true,
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
   })
-  .views(self => ({}))
-  .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      let states = null;
-      let scolor = self.control.strokecolor;
-
-      if (obj.type === "rectanglelabels") {
-        states = restoreNewsnapshot(fromModel);
-        if (states.fromStateJSON) {
-          states.fromStateJSON(obj);
-          scolor = states.getSelectedColor();
-        }
-
-        states = [states];
-      }
-
-      if (obj.type === "rectanglelabels" || obj.type === "rectangle") {
-        self.createRegion({
-          pid: obj.id,
-          x: obj.value.x,
-          y: obj.value.y,
-          sw: obj.value.width,
-          sh: obj.value.height,
-          stroke: scolor,
-          states: states,
-          coordstype: "perc",
-          rotation: obj.value.rotation,
-        });
-      }
+  .views(self => ({
+    get tagTypes() {
+      return {
+        stateTypes: "rectanglelabels",
+        controlTagTypes: ["rectanglelabels", "rectangle"],
+      };
     },
-
-    createRegion({ pid, x, y, sw, sh, states, coordstype, stroke, rotation }) {
-      const control = self.control;
-
-      let localStates = states;
-
-      if (states && !Array.isArray(states)) {
-        localStates = [states];
-      }
-
+  }))
+  .actions(self => ({
+    createRegion(opts) {
+      const c = self.control;
       const rect = RectRegionModel.create({
-        id: guidGenerator(),
-        pid: pid,
-        states: localStates,
-        coordstype: coordstype,
-
-        x: x,
-        y: y,
-        width: sw,
-        height: sh,
-        rotation: rotation,
-
-        opacity: parseFloat(control.opacity),
-        fillcolor: stroke || control.fillcolor,
-        strokeWidth: Number(control.strokewidth),
-        fillOpacity: Number(control.fillopacity),
-        strokeColor: stroke || control.strokecolor,
+        opacity: parseFloat(c.opacity),
+        strokeWidth: Number(c.strokewidth),
+        fillOpacity: Number(c.fillopacity),
+        ...opts,
       });
 
       self.obj.addShape(rect);
@@ -90,15 +49,15 @@ const _Tool = types
 
       self.mode = "drawing";
 
-      const { states, strokecolor } = self.statesAndParams;
+      const sap = self.statesAndParams;
+
       const rect = self.createRegion({
         x: x,
         y: y,
-        sh: 1,
-        sw: 1,
-        stroke: strokecolor,
-        states: states,
+        height: 1,
+        width: 1,
         coordstype: "px",
+        ...sap,
       });
 
       // if (self.control.type === "rectanglelabels") self.control.unselectAll();

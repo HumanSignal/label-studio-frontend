@@ -82,13 +82,8 @@ const Model = types
 
     createRegion(p) {
       const r = HyperTextRegionModel.create({
-        pid: p.pid,
-        startOffset: p.startOffset,
-        endOffset: p.endOffset,
-        start: p.start,
-        end: p.end,
-        text: p.text,
-        states: p.states,
+        pid: p.id,
+        ...p,
       });
 
       r._range = p._range;
@@ -141,6 +136,8 @@ const Model = types
         start: start,
         end: end,
         text: text,
+        score: obj.score,
+        readonly: obj.readonly,
         normalization: obj.normalization,
         states: [states],
       };

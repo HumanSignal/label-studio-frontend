@@ -45,6 +45,8 @@ export default class TransformerComponent extends Component {
         resizeEnabled={true}
         keepRatio={false}
         rotateEnabled={this.props.rotateEnabled}
+        borderDash={[3, 1]}
+        // borderStroke={"red"}
         boundBoxFunc={(oldBox, newBox) => {
           newBox.width = Math.max(30, newBox.width);
           newBox.height = Math.max(30, newBox.height);

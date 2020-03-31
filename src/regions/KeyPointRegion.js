@@ -11,6 +11,7 @@ import Registry from "../core/Registry";
 import { ImageModel } from "../tags/object/Image";
 import { KeyPointLabelsModel } from "../tags/control/KeyPointLabels";
 import { guidGenerator } from "../core/Helpers";
+import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 
 const Model = types
   .model({
@@ -27,7 +28,7 @@ const Model = types
     width: types.number,
 
     opacity: types.number,
-    fillcolor: types.maybeNull(types.string),
+    fillColor: types.maybeNull(types.string),
 
     states: types.maybeNull(types.array(types.union(KeyPointLabelsModel))),
 
@@ -63,7 +64,7 @@ const Model = types
     updateAppearenceFromState() {
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
-      self.fillcolor = stroke;
+      self.fillColor = stroke;
     },
 
     setPosition(x, y) {
@@ -142,12 +143,12 @@ const HtxKeyPointView = ({ store, item }) => {
 
   props["opacity"] = item.opacity;
 
-  if (item.fillcolor) {
-    props["fill"] = item.fillcolor;
+  if (item.fillColor) {
+    props["fill"] = item.fillColor;
   }
 
-  props["stroke"] = item.strokecolor;
-  props["strokeWidth"] = item.strokewidth;
+  props["stroke"] = item.strokeColor;
+  props["strokeWidth"] = item.strokeWidth;
   props["strokeScaleEnabled"] = false;
   props["shadowBlur"] = 0;
 
@@ -207,7 +208,7 @@ const HtxKeyPointView = ({ store, item }) => {
         onClick={e => {
           const stage = item.parent.stageRef;
 
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = "default";
@@ -217,8 +218,9 @@ const HtxKeyPointView = ({ store, item }) => {
           item.onClickRegion();
         }}
         {...props}
-        draggable={item.completion.edittable}
+        draggable={item.editable}
       />
+      <LabelOnKP item={item} />
     </Fragment>
   );
 };

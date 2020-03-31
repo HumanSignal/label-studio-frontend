@@ -1,16 +1,19 @@
 import React, { Fragment } from "react";
 import { Rect, Group, Text, Label, Tag } from "react-konva";
+import { observer } from "mobx-react";
+import { getRoot } from "mobx-state-tree";
 
-function polytobbox(coords) {
+import Utils from "../../utils";
+import Constants from "../../core/Constants";
+
+function polytobbox(points) {
   var lats = [];
   var lngs = [];
 
-  for (var i = 0; i < coords[0].length; i++) {
-    lats.push(coords[0][i][1]);
-    lngs.push(coords[0][i][0]);
-    // following not needed to calc bbox, just so you can see the points
-    // L.marker([coords[0][i][1], coords[0][i][0]]).addTo(map);
-  }
+  points.forEach(p => {
+    lats.push(p.x);
+    lngs.push(p.y);
+  });
 
   // calc the min and max lng and lat
   var minlat = Math.min.apply(null, lats),
@@ -20,25 +23,144 @@ function polytobbox(coords) {
 
   // create a bounding rectangle that can be used in leaflet
   return [
-    [minlat, minlng],
-    [maxlat, maxlng],
+    [minlat, maxlat],
+    [minlng, maxlng],
   ];
 }
 
-const LabelInBbox = ({ item }) => {};
+const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) => {
+  const ss = showScore && score;
 
-const LabelOnRegion = ({ item }) => {
-  if (item.states && item.states[0].holdsState) {
-    const image = item.parent;
-    return (
-      <Label x={item.x + item.strokeWidth + 2} y={item.y + item.strokeWidth + 2}>
-        <Tag fill="black" />
-        <Text text={item.states[0].getSelectedNames()} fontFamily="Calibri" fill="white" />
-      </Label>
-    );
-  } else {
-    return null;
-  }
+  return (
+    <Group strokeScaleEnabled={false} scaleX={1 / (zoomScale || 1)} scaleY={1 / (zoomScale || 1)} opacity={0.8}>
+      {ss && (
+        <Label x={x} y={y - 20}>
+          <Tag fill={Utils.Colors.getScaleGradient(score)} cornerRadius="2" />
+          <Text text={score.toFixed(2)} fontFamily="Calibri" fill="white" padding="2" />
+        </Label>
+      )}
+
+      {showLabels && (
+        <Label x={ss ? x + 34 : x} y={y - 20}>
+          <Tag fill={Constants.SHOW_LABEL_BACKGROUND} cornerRadius="2" />
+          <Text text={text} fontFamily="Calibri" fill={Constants.SHOW_LABEL_FILL} padding="2" />
+        </Label>
+      )}
+    </Group>
+  );
 };
 
-export { LabelOnRegion };
+const LabelOnEllipse = observer(({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+  return (
+    <LabelOnBbox
+      x={item.x}
+      y={item.y}
+      text={item.states[0].getSelectedNames()}
+      score={item.score}
+      showLabels={getRoot(item).settings.showLabels}
+      showScore={getRoot(item).settings.showLabels}
+    />
+  );
+});
+
+const LabelOnRect = observer(({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+
+  return (
+    <LabelOnBbox
+      x={item.x}
+      y={item.y}
+      text={item.states[0].getSelectedNames()}
+      score={item.score}
+      showLabels={getRoot(item).settings.showLabels}
+      showScore={getRoot(item).settings.showLabels}
+    />
+  );
+});
+
+const LabelOnPolygon = observer(({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+
+  const bbox = polytobbox(item.points);
+  const settings = getRoot(item).settings;
+  return (
+    <Fragment>
+      {settings && (settings.showLabels || settings.showScore) && (
+        <Rect
+          x={bbox[0][0]}
+          y={bbox[1][0]}
+          fillEnabled={false}
+          width={bbox[0][1] - bbox[0][0]}
+          height={bbox[1][1] - bbox[1][0]}
+          stroke={item.strokeColor}
+          strokeWidth="1"
+          strokeScaleEnabled={false}
+          shadowBlur={0}
+        />
+      )}
+      {/* TODO this is a problem here, it takes states[0] but nothing
+       * guarantees that this state is a lable one */}
+      <LabelOnBbox
+        x={bbox[0][0]}
+        y={bbox[1][0] + 2}
+        text={item.states[0].getSelectedNames()}
+        score={item.score}
+        showLabels={settings && settings.showLabels}
+        showScore={settings && settings.showScore}
+      />
+    </Fragment>
+  );
+});
+
+const LabelOnMask = observer(({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+  if (item.touches.length === 0) return null;
+
+  const bbox = polytobbox(item.touches);
+  const settings = getRoot(item).settings;
+
+  return (
+    <Fragment>
+      <Rect
+        x={bbox[0][0]}
+        y={bbox[1][0]}
+        fillEnabled={false}
+        width={bbox[0][1] - bbox[0][0]}
+        height={bbox[1][1] - bbox[1][0]}
+        stroke={item.strokeColor}
+        strokeWidth="1"
+        strokeScaleEnabled={false}
+        shadowBlur={0}
+      />
+      {/* TODO this is a problem here, it takes states[0] but nothing
+       * guarantees that this state is a lable one */}
+      <LabelOnBbox
+        x={bbox[0][0]}
+        y={bbox[1][0] + 2}
+        text={item.states[0].getSelectedNames()}
+        score={item.score}
+        showLabels={getRoot(item).settings.showLabels}
+        showScore={settings && settings.showScore}
+      />
+    </Fragment>
+  );
+});
+
+const LabelOnKP = observer(({ item }) => {
+  if (!item.states || !item.states[0].holdsState) return null;
+
+  return (
+    <LabelOnBbox
+      x={item.x + item.width + 2}
+      y={item.y + item.width + 2}
+      text={item.states[0].getSelectedNames()}
+      score={item.score}
+      showLabels={getRoot(item).settings.showLabels}
+      showScore={getRoot(item).settings.showScore}
+      /* zoomScale={item.parent.zoomScale} */
+    />
+  );
+});
+
+export { LabelOnBbox, LabelOnPolygon, LabelOnRect, LabelOnEllipse, LabelOnKP, LabelOnMask };

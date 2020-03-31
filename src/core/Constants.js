@@ -8,6 +8,10 @@ export default {
 
   RELATION_BACKGROUND: "#fff",
 
+  // label on image
+  SHOW_LABEL_FILL: "white",
+  SHOW_LABEL_BACKGROUND: "black",
+
   // when region gets highlighted styling
   HIGHLIGHTED_STROKE_COLOR: "red",
   HIGHLIGHTED_STROKE_WIDTH: 2,

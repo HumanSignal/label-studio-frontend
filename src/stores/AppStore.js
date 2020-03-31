@@ -181,6 +181,13 @@ export default types
         }
       });
 
+      Hotkey.addKey("h", function() {
+        const c = self.completionStore.selected;
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.highlightedNode.toggleHidden();
+        }
+      });
+
       Hotkey.addKey("ctrl+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canUndo && history.undo();
@@ -206,6 +213,15 @@ export default types
           }
         },
         "Delete selected region",
+      );
+
+      Hotkey.addKey(
+        "alt+tab",
+        function() {
+          const c = self.completionStore.selected;
+          c && c.regionStore.selectNext();
+        },
+        "Circle through entities",
       );
 
       getEnv(self).onLabelStudioLoad(self);

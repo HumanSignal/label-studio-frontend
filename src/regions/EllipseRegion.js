@@ -14,6 +14,7 @@ import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { EllipseLabelsModel } from "../tags/control/EllipseLabels";
 import { guidGenerator } from "../core/Helpers";
+import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -51,7 +52,7 @@ const Model = types
     opacity: types.number,
 
     fill: types.optional(types.boolean, true),
-    fillcolor: types.optional(types.string, Constants.FILL_COLOR),
+    fillColor: types.optional(types.string, Constants.FILL_COLOR),
     fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
@@ -98,7 +99,7 @@ const Model = types
     updateAppearenceFromState() {
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
-      self.fillcolor = stroke;
+      self.fillColor = stroke;
     },
 
     unselectRegion() {
@@ -243,7 +244,7 @@ const HtxEllipseView = ({ store, item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, item.fillOpacity) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillColor, item.fillOpacity) : null}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         strokeScaleEnabled={false}
@@ -320,7 +321,7 @@ const HtxEllipseView = ({ store, item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -329,8 +330,9 @@ const HtxEllipseView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.completion.edittable}
+        draggable={item.editable}
       />
+      <LabelOnEllipse item={item} />
     </Fragment>
   );
 };

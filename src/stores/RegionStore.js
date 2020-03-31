@@ -89,6 +89,8 @@ export default types
         });
       });
 
+      // this is added just for the reference to show up in the
+      // settings page
       Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");
     },
 
@@ -99,5 +101,14 @@ export default types
 
     unhighlightAll() {
       self.regions.forEach(r => r.setHighlight(false));
+    },
+
+    selectNext() {
+      const { regions } = self;
+      const idx = self.regions.findIndex(r => r.selected);
+      idx !== -1 && regions[idx].unselectRegion();
+
+      const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
+      next && next.selectRegion();
     },
   }));

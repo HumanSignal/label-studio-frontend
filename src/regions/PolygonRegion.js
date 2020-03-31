@@ -4,17 +4,18 @@ import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tree";
 
-import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
+import WithStatesMixin from "../mixins/WithStates";
+import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
+import { LabelOnPolygon } from "../components/ImageView/LabelOnRegion";
 import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
-import { LabelOnRegion } from "../components/ImageView/LabelOnRegion";
 
 const Model = types
   .model({
@@ -23,19 +24,19 @@ const Model = types
     type: "polygonregion",
 
     opacity: types.number,
-    fillcolor: types.maybeNull(types.string),
+    fillColor: types.maybeNull(types.string),
 
-    strokewidth: types.number,
-    strokecolor: types.string,
+    strokeWidth: types.number,
+    strokeColor: types.string,
 
-    pointsize: types.string,
-    pointstyle: types.string,
+    pointSize: types.string,
+    pointStyle: types.string,
 
     closed: types.optional(types.boolean, false),
 
     points: types.array(PolygonPoint, []),
 
-    states: types.maybeNull(types.array(types.union(PolygonLabelsModel))),
+    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, ChoicesModel))),
 
     mouseOverStartPoint: types.optional(types.boolean, false),
 
@@ -116,22 +117,21 @@ const Model = types
         id: guidGenerator(),
         x: x,
         y: y,
-        size: self.pointsize,
-        style: self.pointstyle,
+        size: self.pointSize,
+        style: self.pointStyle,
         index: self.points.length,
       };
       self.points.splice(insertIdx, 0, p);
     },
 
     _addPoint(x, y) {
-      const index = self.points.length;
       self.points.push({
         id: guidGenerator(),
         x: x,
         y: y,
-        size: self.pointsize,
-        style: self.pointstyle,
-        index: index,
+        size: self.pointSize,
+        style: self.pointStyle,
+        index: self.points.length,
       });
     },
 
@@ -176,8 +176,8 @@ const Model = types
 
     updateAppearenceFromState() {
       const stroke = self.states[0].getSelectedColor();
-      self.strokecolor = stroke;
-      self.fillcolor = stroke;
+      self.strokeColor = stroke;
+      self.fillColor = stroke;
     },
 
     selectRegion() {
@@ -341,11 +341,11 @@ const HtxPolygonView = ({ store, item }) => {
    */
   function renderLine({ points, idx1, idx2 }) {
     const name = `border_${idx1}_${idx2}`;
-    let { strokecolor, strokewidth } = item;
+    let { strokeColor, strokeWidth } = item;
 
     if (item.highlighted) {
-      strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-      strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
+      strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
+      strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
     }
 
     if (!item.closed && idx2 === 0) return null;
@@ -358,7 +358,7 @@ const HtxPolygonView = ({ store, item }) => {
         name={name}
         onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
         onMouseMove={e => {
-          if (!item.closed || !item.selected) return;
+          if (!item.closed || !item.selected || !item.editable) return;
 
           item.handleMouseMove({ e, flattenedPoints });
         }}
@@ -366,10 +366,10 @@ const HtxPolygonView = ({ store, item }) => {
       >
         <Line
           points={flattenedPoints}
-          stroke={strokecolor}
+          stroke={strokeColor}
           opacity={item.opacity}
           lineJoin="bevel"
-          strokeWidth={strokewidth}
+          strokeWidth={strokeWidth}
           strokeScaleEnabled={false}
         />
       </Group>
@@ -396,7 +396,7 @@ const HtxPolygonView = ({ store, item }) => {
         <Line
           lineJoin="bevel"
           points={getFlattenedPoints(points)}
-          fill={item.strokecolor}
+          fill={item.strokeColor}
           closed={true}
           opacity={0.2}
         />
@@ -492,7 +492,7 @@ const HtxPolygonView = ({ store, item }) => {
       onClick={e => {
         e.cancelBubble = true;
 
-        if (!item.completion.edittable) return;
+        // if (!item.editable) return;
 
         if (!item.closed) return;
 
@@ -505,14 +505,15 @@ const HtxPolygonView = ({ store, item }) => {
         item.setHighlight(false);
         item.onClickRegion();
       }}
-      draggable={item.completion.edittable && item.parent.zoomScale === 1}
+      draggable={item.editable && item.parent.zoomScale === 1}
     >
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
-      {/* <LabelOnRegion item={item} /> */}
+
+      <LabelOnPolygon item={item} />
     </Group>
   );
 };

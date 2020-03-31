@@ -1,6 +1,8 @@
 import Konva from "konva";
 import { encode, decode } from "@thi.ng/rle-pack";
 
+import * as Colors from "./colors";
+
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
   var canvas = document.createElement("canvas");
@@ -133,9 +135,101 @@ function brushSizeCircle(size) {
   // return image;
 }
 
+function encodeSVG(data) {
+  var externalQuotesValue = "single";
+
+  function getQuotes() {
+    const double = `"`;
+    const single = `'`;
+
+    return {
+      level1: externalQuotesValue === "double" ? double : single,
+      level2: externalQuotesValue === "double" ? single : double,
+    };
+  }
+
+  var quotes = getQuotes();
+
+  function addNameSpace(data) {
+    if (data.indexOf("http://www.w3.org/2000/svg") < 0) {
+      data = data.replace(/<svg/g, `<svg xmlns=${quotes.level2}http://www.w3.org/2000/svg${quotes.level2}`);
+    }
+
+    return data;
+  }
+
+  data = addNameSpace(data);
+  var symbols = /[\r\n%#()<>?\[\\\]^`{|}]/g;
+
+  // Use single quotes instead of double to avoid encoding.
+  if (externalQuotesValue === "double") {
+    data = data.replace(/"/g, "'");
+  } else {
+    data = data.replace(/'/g, '"');
+  }
+
+  data = data.replace(/>\s{1,}</g, "><");
+  data = data.replace(/\s{2,}/g, " ");
+
+  // var resultCss = `background-image: url();`;
+
+  var escaped = data.replace(symbols, encodeURIComponent);
+  return `${quotes.level1}data:image/svg+xml,${escaped}${quotes.level1}`;
+}
+
+const labelToSVG = (function() {
+  const SVG_CACHE = {};
+
+  function calculateTextWidth(text) {
+    const svg = document.createElement("svg");
+    const svgText = document.createElement("text");
+    svgText.style = "font-size: 9.5px; font-weight: bold; color: red; fill: red; font-family: Monaco";
+    svgText.innerHTML = text;
+
+    svg.appendChild(svgText);
+    document.body.appendChild(svg);
+
+    const textLen = svg.getBoundingClientRect().width;
+    svg.remove();
+
+    return textLen;
+  }
+
+  return function({ label, score }) {
+    let cacheKey = label;
+    if (score !== null) cacheKey = cacheKey + score;
+
+    if (cacheKey in SVG_CACHE) return SVG_CACHE[cacheKey];
+
+    let width = 0;
+    const items = [];
+
+    if (score !== null && score !== undefined) {
+      const fillColor = Colors.getScaleGradient(score);
+      items.push(`<rect x="0" y="0" rx="2" ry="2" width="24" height="14" style="fill:${fillColor};opacity:0.5" />`);
+      items.push(`<text x="3" y="10" style="font-size: 8px; font-family: Monaco">${score.toFixed(2)}</text>`);
+      width = width + 26;
+    }
+
+    if (label) {
+      items.push(
+        `<text x="${width}" y="11" style="font-size: 9.5px; font-weight: bold; font-family: Monaco">${label}</text>`,
+      );
+      width = width + calculateTextWidth(label) + 2;
+    }
+
+    const res = `<svg height="16" width="${width}">${items.join("")}</svg>`;
+    const enc = encodeSVG(res);
+
+    SVG_CACHE[cacheKey] = enc;
+    return enc;
+  };
+})();
+
 export default {
   imageData2Image,
   Region2RLE,
   RLE2Region,
   brushSizeCircle,
+  labelToSVG,
 };

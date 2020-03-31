@@ -297,7 +297,7 @@ export default observer(
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
             {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-            {item.shapes.map(shape => {
+            {item.regions.map(shape => {
               let brushShape;
               if (shape.type === "brushregion") {
                 brushShape = (
@@ -315,10 +315,10 @@ export default observer(
               return brushShape;
             })}
             <Layer>
-              {item.shapes.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
+              {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
               {item.activeShape && Tree.renderItem(item.activeShape)}
 
-              {c.edittable === true && (
+              {item.selectedShape && item.selectedShape.editable && (
                 <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
               )}
             </Layer>

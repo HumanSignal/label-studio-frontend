@@ -28,7 +28,10 @@ const RenderSubState = observer(({ item, idx }) => {
 
 const EntityItem = observer(({ item, idx }) => {
   const selected = item.selected ? "#f1f1f1" : "transparent";
+  // const selected = item.selected ? "1px dashed #00aeff" : "none";
   const oneColor = item.getOneColor();
+
+  let opacity = 1.0;
   let style = {};
 
   if (oneColor) {
@@ -43,12 +46,16 @@ const EntityItem = observer(({ item, idx }) => {
     };
   }
 
+  if (item.hidden === true) {
+    opacity = 0.3;
+  }
+
   return (
     <div>
       <List.Item
         key={item.id}
         className={styles.lstitem}
-        style={{ background: selected }}
+        style={{ background: selected, opacity: opacity }}
         onClick={() => {
           getRoot(item).completionStore.selected.regionStore.unselectAll();
           item.selectRegion();
@@ -65,16 +72,20 @@ const EntityItem = observer(({ item, idx }) => {
           &nbsp; <Node node={item} />
         </span>
 
-        {item.score && (
-          <span
-            className={styles.confbadge}
-            style={{
-              color: Utils.Colors.getScaleGradient(item.score),
-            }}
-          >
-            {item.score.toFixed(2)}
-          </span>
-        )}
+        <div>
+          {item.readonly && <span className={styles.confbadge}>ro</span>}
+
+          {item.score && (
+            <span
+              className={styles.confbadge}
+              style={{
+                color: Utils.Colors.getScaleGradient(item.score),
+              }}
+            >
+              {item.score.toFixed(2)}
+            </span>
+          )}
+        </div>
       </List.Item>
       {/* <div style={{ paddingLeft: "23px", backgroundColor: "#f9f9f9" }}> */}
       {/*   {item.selected && <RenderSubState item={item} />} */}

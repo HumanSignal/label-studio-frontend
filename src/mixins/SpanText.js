@@ -1,8 +1,9 @@
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import Utils from "../utils";
 import Constants from "../core/Constants";
 import { highlightRange } from "../utils/html";
+import Canvas from "../utils/canvas";
 
 export default types
   .model()
@@ -55,15 +56,19 @@ export default types
     },
 
     applyCSSClass(lastSpan) {
+      const settings = getRoot(self).settings;
       const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
-      const clsName = Utils.Checkers.hashCode(names.join("-"));
 
-      let cssCls = "htx-label-" + clsName;
-      cssCls = cssCls.toLowerCase();
+      const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
+        labels: names,
+        score: self.score,
+      });
 
-      if (self.parent.showlabels === true) Utils.HTML.createClass(`.${cssCls}:after`, `content:[${names.join(",")}]`);
+      const classes = [lastSpan.className, "htx-highlight", "htx-highlight-last", cssCls];
 
-      lastSpan.className = "htx-highlight htx-highlight-last " + cssCls;
+      if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
+
+      lastSpan.className = classes.filter(c => c).join(" ");
     },
 
     addEventsToSpans(spans) {

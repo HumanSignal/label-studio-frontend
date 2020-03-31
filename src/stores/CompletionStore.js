@@ -44,7 +44,7 @@ const Completion = types
 
     dragMode: types.optional(types.boolean, false),
 
-    edittable: types.optional(types.boolean, true),
+    editable: types.optional(types.boolean, true),
 
     relationMode: types.optional(types.boolean, false),
     relationStore: types.optional(RelationStore, {
@@ -77,7 +77,7 @@ const Completion = types
     },
 
     setEdit(val) {
-      self.edittable = val;
+      self.editable = val;
     },
 
     setGroundTruth(value) {
@@ -125,8 +125,12 @@ const Completion = types
       self.regionStore.unhighlightAll();
     },
 
-    deleteAllRegions() {
-      self.regionStore.regions.forEach(r => r.deleteRegion());
+    deleteAllRegions({ deleteReadOnly = false } = {}) {
+      let { regions } = self.regionStore;
+
+      if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
+
+      regions.forEach(r => r.deleteRegion());
     },
 
     addRegion(reg) {
@@ -171,7 +175,10 @@ const Completion = types
       self.traverseTree(function(node) {
         if (node.required === true) {
           ok = node.validate();
-          if (ok === false) ok = false;
+          if (ok === false) {
+            ok = false;
+            return "break";
+          }
         }
       });
 
@@ -407,7 +414,7 @@ export default types
       if (self.viewingAllCompletions || self.viewingAllPredictions) {
         self.completions.forEach(c => {
           c.selected = false;
-          c.edittable = false;
+          c.editable = false;
           c.regionStore.unselectAll();
         });
 
@@ -458,10 +465,13 @@ export default types
      * @param {*} id
      */
     function selectCompletion(id) {
+      const { selected } = self;
       const c = selectItem(id, self.completions);
 
-      c.edittable = true;
+      c.editable = true;
       c.setupHotKeys();
+
+      getEnv(self).onSelectCompletion(c, selected);
 
       return c;
     }
@@ -520,7 +530,7 @@ export default types
     }
 
     function addPrediction(options = {}) {
-      options.edittable = false;
+      options.editable = false;
       options.type = "prediction";
 
       const item = addItem(options);

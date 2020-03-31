@@ -11,6 +11,7 @@ import { BrushLabelsModel } from "../tags/control/BrushLabels";
 import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import Canvas from "../utils/canvas";
+import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
 
 const Points = types
   .model("Points", {
@@ -361,6 +362,8 @@ const HtxBrushView = ({ store, item }) => {
         {item.touches.map(p => (
           <HtxBrushLayer store={store} item={item} points={p} />
         ))}
+
+        <LabelOnMask item={item} />
       </Group>
     </Fragment>
   );
