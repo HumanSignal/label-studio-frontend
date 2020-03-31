@@ -39,7 +39,6 @@ const _Tool = types
       const poly = self.createFromJSON(obj, controlTag);
       if (poly) {
         for (var i = 1; i < obj.value.points.length; i++) {
-          console.log(poly);
           poly.addPoint(obj.value.points[i][0], obj.value.points[i][1]);
         }
 
@@ -64,8 +63,6 @@ const _Tool = types
           pointStyle: c.pointstyle,
           ...opts,
         });
-
-        console.log(opts);
 
         image.addShape(newPolygon);
       }
