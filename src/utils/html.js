@@ -26,8 +26,6 @@ function labelWithCSS(node, { labels, score }) {
 
   node.setAttribute("data-labels", labelsStr);
 
-  console.log(labels, score);
-
   const resSVG = Canvas.labelToSVG({ label: labelsStr, score: score });
   const svgURL = `url(${resSVG})`;
 

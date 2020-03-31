@@ -4,6 +4,7 @@ import { observer } from "mobx-react";
 import { types, getRoot, getParent } from "mobx-state-tree";
 
 import ValidateMixin from "../../mixins/Validate";
+import PerRegionMixin from "../../mixins/PerRegion";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
@@ -117,12 +118,13 @@ const ChoicesModel = types.compose(
   TagAttrs,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
   ValidateMixin,
+  PerRegionMixin,
 );
 
 const HtxChoices = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
   const region = item.completion.highlightedNode;
-  const visibleStyle = !item.perregion || region ? {} : { display: "none" };
+  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
   return (
     <div style={{ ...style, ...visibleStyle }}>

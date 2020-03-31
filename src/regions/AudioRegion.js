@@ -113,6 +113,7 @@ const Model = types
      * Unselect audio region
      */
     unselectRegion() {
+      // debugger;
       self.selected = false;
       self.completion.setHighlightedNode(null);
       if (self._ws_region.update) {
