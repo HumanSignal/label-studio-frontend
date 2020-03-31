@@ -13,7 +13,7 @@ import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
 import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
 import { guidGenerator } from "../core/Helpers";
-import { LabelOnRegion } from "../components/ImageView/LabelOnRegion";
+import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -48,7 +48,7 @@ const Model = types
     opacity: types.number,
 
     fill: types.optional(types.boolean, true),
-    fillcolor: types.optional(types.string, Constants.FILL_COLOR),
+    fillColor: types.optional(types.string, Constants.FILL_COLOR),
     fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
@@ -94,7 +94,7 @@ const Model = types
       if (self.states && self.states.length) {
         const stroke = self.states[0].getSelectedColor();
         self.strokeColor = stroke;
-        self.fillcolor = stroke;
+        self.fillColor = stroke;
       }
     },
 
@@ -223,6 +223,8 @@ const HtxRectangleView = ({ store, item }) => {
     strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
 
+  if (item.hidden) return null;
+
   return (
     <Fragment>
       <Rect
@@ -230,7 +232,7 @@ const HtxRectangleView = ({ store, item }) => {
         y={item.y}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, item.fillOpacity) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillColor, item.fillOpacity) : null}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         strokeScaleEnabled={false}
@@ -307,7 +309,7 @@ const HtxRectangleView = ({ store, item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -316,9 +318,9 @@ const HtxRectangleView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.completion.edittable}
+        draggable={item.editable}
       />
-      {/* <LabelOnRegion item={item} /> */}
+      <LabelOnRect item={item} />
     </Fragment>
   );
 };

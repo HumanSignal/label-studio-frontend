@@ -41,57 +41,56 @@ const _Tool = types
     get viewClass() {
       return <ToolView item={self} />;
     },
+
+    get tagTypes() {
+      return {
+        stateTypes: "brushlabels",
+        controlTagTypes: ["brushlabels", "brush"],
+      };
+    },
   }))
   .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      if ("brushlabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-        states.fromStateJSON(obj);
+    fromStateJSON(json, controlTag) {
+      const region = self.createFromJSON(json, controlTag);
 
-        const region = self.createRegion({
-          pid: obj.id,
-          stroke: states.getSelectedColor(),
-          states: states,
-          // coordstype: "px",
-          // points: obj.value.points,
-        });
-
-        if (obj.value.points) {
-          const p = region.addPoints({ type: "add" });
-          p.addPoints(obj.value.points);
-        }
-
-        if (obj.value.format === "rle") {
-          region._rle = obj.value.rle;
-        }
+      if (json.value.points) {
+        const p = region.addPoints({ type: "add" });
+        p.addPoints(json.value.points);
       }
+
+      if (json.value.format === "rle") {
+        region._rle = json.value.rle;
+      }
+
+      return region;
     },
 
-    createRegion({ pid, stroke, states, coordstype, mode, points }) {
-      const c = self.control;
+    // fromStateJSON(obj, fromModel) {
+    //   if ("brushlabels" in obj.value) {
+    //     const states = restoreNewsnapshot(fromModel);
+    //     states.fromStateJSON(obj);
 
-      let localStates = states;
+    //     const region = self.createRegion({
+    //       pid: obj.id,
+    //       stroke: states.getSelectedColor(),
+    //       states: states,
+    //       // coordstype: "px",
+    //       // points: obj.value.points,
+    //     });
 
-      if (states && !states.length) {
-        localStates = [states];
-      }
+    //     if (obj.value.points) {
+    //       const p = region.addPoints({ type: "add" });
+    //       p.addPoints(obj.value.points);
+    //     }
 
-      const brush = BrushRegionModel.create({
-        id: guidGenerator(),
-        pid: pid,
+    //     if (obj.value.format === "rle") {
+    //       region._rle = obj.value.rle;
+    //     }
+    //   }
+    // },
 
-        strokeWidth: self.strokeWidth || Number(c.strokewidth),
-        strokeColor: stroke,
-
-        states: localStates,
-
-        // points: points,
-        // eraserpoints: eraserpoints,
-
-        coordstype: coordstype,
-
-        mode: mode,
-      });
+    createRegion(opts) {
+      const brush = BrushRegionModel.create(opts);
 
       self.obj.addShape(brush);
 
@@ -140,14 +139,13 @@ const _Tool = types
         if (c.isSelected) {
           self.mode = "drawing";
 
-          const { states, strokecolor } = self.statesAndParams;
+          const sap = self.statesAndParams;
 
           const brush = self.createRegion({
             x: x,
             y: y,
-            stroke: strokecolor,
-            states: states,
             coordstype: "px",
+            ...sap,
           });
 
           const p = brush.addTouch({

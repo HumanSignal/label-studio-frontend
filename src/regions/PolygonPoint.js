@@ -83,7 +83,7 @@ const PolygonPoint = types
      * @param {*} ev
      */
     closeStartPoint(ev) {
-      if (!self.completion.edittable) return;
+      if (!self.completion.editable) return;
 
       if (self.parent.mouseOverStartPoint) {
         self.parent.closePoly();
@@ -162,7 +162,7 @@ const PolygonPointView = observer(({ item, name }) => {
     item.index === 0
       ? {
           hitStrokeWidth: 12,
-          fill: item.parent.strokecolor ? item.parent.strokecolor : item.primary,
+          fill: item.parent.strokeColor ? item.parent.strokeColor : item.primary,
           onMouseOver: item.handleMouseOverStartPoint,
           onMouseOut: item.handleMouseOutStartPoint,
           onClick: item.closeStartPoint,
@@ -224,7 +224,7 @@ const PolygonPointView = observer(({ item, name }) => {
         }}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.completion.edittable}
+        draggable={item.parent.editable}
       />
     );
   } else {
@@ -242,7 +242,7 @@ const PolygonPointView = observer(({ item, name }) => {
         dragOnTop={false}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.completion.edittable}
+        draggable={item.parent.editable}
       />
     );
   }

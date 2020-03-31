@@ -47,7 +47,7 @@ export default observer(({ store }) => {
   let title = (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <h3 style={{ margin: 0 }}>Results</h3>
-      {regions.length > 0 && c.edittable && buttonRemove()}
+      {regions.length > 0 && c.editable && buttonRemove()}
     </div>
   );
 

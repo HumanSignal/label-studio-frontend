@@ -141,7 +141,7 @@ export default class Waveform extends React.Component {
         waveColor: "#97A0AF",
         progressColor: "#52c41a",
       },
-      zoom: 230,
+      zoom: 20,
       speed: 1,
       volume: 1,
     };

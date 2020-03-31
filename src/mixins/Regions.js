@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 
@@ -7,9 +7,11 @@ const RegionsMixin = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
-    confidence: types.maybeNull(types.number),
-
+    score: types.maybeNull(types.number),
     readonly: types.optional(types.boolean, false),
+
+    hidden: types.optional(types.boolean, false),
+
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
   })
@@ -17,6 +19,14 @@ const RegionsMixin = types
     get perRegionStates() {
       const states = self.states;
       return states && states.filter(s => s.perregion === true);
+    },
+
+    get parent() {
+      return getParent(self);
+    },
+
+    get editable() {
+      return self.readonly === false && self.completion.editable === true;
     },
   }))
   .actions(self => ({
@@ -125,7 +135,7 @@ const RegionsMixin = types
 
     onClickRegion() {
       const completion = self.completion;
-      if (!completion.edittable) return;
+      if (!completion.editable) return;
 
       if (completion.relationMode) {
         completion.addRelation(self);
@@ -145,7 +155,7 @@ const RegionsMixin = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.completion.edittable) return;
+      if (!self.completion.editable) return;
 
       self.unselectRegion();
 
@@ -166,6 +176,10 @@ const RegionsMixin = types
 
     toggleHighlight() {
       self.setHighlight(!self.highlighted);
+    },
+
+    toggleHidden() {
+      self.hidden = !self.hidden;
     },
   }));
 

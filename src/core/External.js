@@ -43,6 +43,11 @@ function onEntityDelete() {}
  */
 function onGroundTruth() {}
 
+/**
+ * Callback when a new completion gets selected
+ */
+function onSelectCompletion(completion, previousCompletion) {}
+
 export default {
   onDeleteCompletion,
   onEntityCreate,
@@ -53,4 +58,5 @@ export default {
   onSubmitCompletion,
   onTaskLoad,
   onUpdateCompletion,
+  onSelectCompletion,
 };

@@ -146,7 +146,7 @@ const Model = types
       types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
     ),
 
-    shapes: types.array(
+    regions: types.array(
       types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
       [],
     ),
@@ -315,7 +315,7 @@ const Model = types
         degree = 0;
       }
 
-      self.shapes.forEach(s => s.rotate(degree));
+      self.regions.forEach(s => s.rotate(degree));
     },
 
     updateImageSize(ev) {
@@ -330,13 +330,13 @@ const Model = types
       self.stageHeight = height;
       self.sizeUpdated = true;
 
-      self.shapes.forEach(shape => {
+      self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
     },
 
     addShape(shape) {
-      self.shapes.push(shape);
+      self.regions.push(shape);
 
       self.completion().addRegion(shape);
       self.setSelected(shape.id);
@@ -383,7 +383,7 @@ const Model = types
     },
 
     toStateJSON() {
-      return self.shapes.map(r => r.toStateJSON());
+      return self.regions.map(r => r.toStateJSON());
     },
 
     /**

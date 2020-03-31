@@ -94,16 +94,7 @@ const Model = types
     },
 
     createRegion(p) {
-      const r = TextRegionModel.create({
-        pid: p.pid,
-        startOffset: p.startOffset,
-        endOffset: p.endOffset,
-        start: p.start,
-        end: p.end,
-        text: p.text,
-        states: p.states,
-        confidence: p.confidence,
-      });
+      const r = TextRegionModel.create(p);
 
       r._range = p._range;
 
@@ -155,7 +146,8 @@ const Model = types
         endOffset: end,
         start: "",
         end: "",
-        confidence: obj.confidence,
+        score: obj.score,
+        readonly: obj.readonly,
         text: self._value.substring(start, end),
         normalization: obj.normalization,
         states: [states],
@@ -164,7 +156,6 @@ const Model = types
       states.fromStateJSON(obj);
 
       self.createRegion(tree);
-
       self.needsUpdate();
     },
   }));

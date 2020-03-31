@@ -13,52 +13,23 @@ const _Tool = types
     default: true,
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
   })
-  .views(self => ({}))
-  .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      if ("ellipselabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-        states.fromStateJSON(obj);
-        self.createRegion({
-          pid: obj.pid,
-          x: obj.value.x,
-          y: obj.value.y,
-          rx: obj.value.radiusX,
-          ry: obj.value.radiusY,
-          stroke: states.getSelectedColor(),
-          states: [states],
-          coordstype: "perc",
-          rotation: obj.value.rotation,
-        });
-      }
+  .views(self => ({
+    get tagTypes() {
+      return {
+        stateTypes: "ellipselabels",
+        controlTagTypes: ["ellipselabels", "ellipse"],
+      };
     },
-
-    createRegion({ pid, x, y, rx, ry, states, coordstype, stroke, rotation }) {
+  }))
+  .actions(self => ({
+    createRegion(opts) {
       const control = self.control;
 
-      let localStates = states;
-
-      if (states && !states.length) {
-        localStates = [states];
-      }
-
       const ellipse = EllipseRegionModel.create({
-        id: guidGenerator(),
-        pid: pid,
-        states: localStates,
-        coordstype: coordstype,
-
-        x: x,
-        y: y,
-        radiusX: rx,
-        radiusY: ry,
-        rotation: rotation,
-
         opacity: parseFloat(control.opacity),
-        fillcolor: stroke || control.fillcolor,
         strokeWidth: Number(control.strokewidth),
         fillOpacity: Number(control.fillopacity),
-        strokeColor: stroke || control.strokecolor,
+        ...opts,
       });
 
       self.obj.addShape(ellipse);
@@ -79,15 +50,14 @@ const _Tool = types
 
       self.mode = "drawing";
 
-      const { states, strokecolor } = self.statesAndParams;
+      const sap = self.statesAndParams;
       const ellipse = self.createRegion({
         x: x,
         y: y,
-        rx: 1,
-        ry: 1,
-        stroke: strokecolor,
-        states: states,
+        radiusX: 1,
+        radiusY: 1,
         coordstype: "px",
+        ...sap,
       });
 
       // if (self.control.type === "ellipselabels") self.control.unselectAll();

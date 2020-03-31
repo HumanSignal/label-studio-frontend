@@ -1,6 +1,7 @@
-import { types, onSnapshot } from "mobx-state-tree";
+import { types, onSnapshot, getRoot } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
+import Utils from "../utils";
 
 /**
  * Setting store of Label Studio
@@ -27,7 +28,16 @@ const SettingsModel = types
     bottomSidePanel: types.optional(types.boolean, false),
 
     enableAutoSave: types.optional(types.boolean, false),
+
+    showLabels: types.optional(types.boolean, false),
+
+    // showScore: types.optional(types.boolean, false),
   })
+  .views(self => ({
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+  }))
   .actions(self => ({
     afterCreate() {
       const { localStorage } = window;
@@ -51,6 +61,22 @@ const SettingsModel = types
           localStorage.setItem(lsKey, JSON.stringify(ss));
         });
       }
+    },
+
+    //   toggleShowScore() {
+    //       self.showScore = !self.showScore;
+    // },
+
+    toggleShowLabels() {
+      self.showLabels = !self.showLabels;
+
+      Utils.HTML.toggleLabelsAndScores(self.showLabels);
+
+      // const c = getRoot(self).completionStore.selected;
+      // c.regionStore.regions.forEach(r => {
+      //   // TODO there is no showLables in the regions right now
+      //   return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
+      // });
     },
 
     toggleAutoSave() {

@@ -1,6 +1,6 @@
 import { types } from "mobx-state-tree";
 
-import { cloneNode } from "../core/Helpers";
+import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 
 const ToolMixin = types
   .model({
@@ -36,35 +36,52 @@ const ToolMixin = types
           // )
           null;
 
-      const clonedStates = activeStates ? activeStates.map(s => cloneNode(s)) : null;
-      return clonedStates;
+      return activeStates ? activeStates.map(s => cloneNode(s)) : null;
     },
 
-    // returns clonedStates and some params based on the states like colors
-    get statesAndParams() {
-      const states = self.clonedStates;
-      let fillcolor = self.control.fillcolor;
-      let strokecolor = self.control.strokecolor;
+    //
+    moreRegionParams(obj) {},
+
+    // given states try to find a state that can provide a color
+    // params for the region
+    paramsFromStates(states) {
+      const c = self.control;
+      let fillcolor = c.fillcolor;
+      let strokecolor = c.strokecolor;
 
       if (states && states.length) {
-        const c = states[0].getSelectedColor();
-        fillcolor = c;
-        strokecolor = c;
+        const stateProvidesColor = states.find(s => s.hasOwnProperty("getSelectedColor"));
+        if (stateProvidesColor) {
+          const color = stateProvidesColor.getSelectedColor();
+          fillcolor = color;
+          strokecolor = color;
+        }
       }
 
-      return { states: states, fillcolor: fillcolor, strokecolor: strokecolor };
+      return {
+        fillColor: fillcolor,
+        strokeColor: strokecolor,
+      };
+    },
+
+    // clones the current state, dervies params from it (like colors)
+    // and returns that as an object. This method is used to
+    // reconstruct the region and it's labels.
+    get statesAndParams() {
+      const states = self.clonedStates;
+      const params = self.paramsFromStates(states);
+
+      return { states: states, ...params };
     },
 
     get getActiveShape() {
       // active shape here is the last one that was added
       const obj = self.obj;
-      return obj.shapes[obj.shapes.length - 1];
+      return obj.regions[obj.regions.length - 1];
     },
 
     get getSelectedShape() {
       return self.control.completion.highlightedNode;
-      // const obj = self.obj;
-      // return obj.selectedShape;
     },
   }))
   .actions(self => ({
@@ -75,6 +92,43 @@ const ToolMixin = types
     event(name, ev, args) {
       const fn = name + "Ev";
       if (typeof self[fn] !== "undefined") self[fn].call(self, ev, args);
+    },
+
+    createFromJSON(obj, fromModel) {
+      const { stateTypes, controlTagTypes } = self.tagTypes;
+      let states = null;
+
+      if (obj.type === stateTypes) {
+        states = restoreNewsnapshot(fromModel);
+        if (states.fromStateJSON) {
+          states.fromStateJSON(obj);
+        }
+
+        states = [states];
+      }
+
+      const params = self.paramsFromStates(states);
+      const moreParams = self.moreRegionParams(obj);
+
+      if (controlTagTypes.includes(obj.type)) {
+        return self.createRegion({
+          pid: obj.id,
+          score: obj.score,
+          readonly: obj.readonly,
+          coordstype: "perc",
+          states: states,
+          ...params,
+          ...obj.value,
+          ...moreParams,
+        });
+      }
+    },
+
+    fromStateJSON(obj, fromModel) {
+      // tool may not be implementing fromStateJSON at all
+      if (!self.tagTypes) return;
+
+      return self.createFromJSON(obj, fromModel);
     },
   }));
 

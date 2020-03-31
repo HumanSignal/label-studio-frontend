@@ -1,7 +1,42 @@
 import insertAfter from "insert-after";
+import * as Checkers from "./utilities";
+import Canvas from "./canvas";
+
+function toggleLabelsAndScores(show) {
+  const els = document.getElementsByClassName("htx-highlight");
+  Array.from(els).forEach(el => {
+    let foundCls = null;
+    Array.from(el.classList).forEach(cls => {
+      if (cls.indexOf("htx-label-") !== -1) foundCls = cls;
+    });
+
+    if (foundCls !== null) {
+      if (show) el.classList.remove("htx-no-label");
+      else el.classList.add("htx-no-label");
+    }
+  });
+}
+
+function labelWithCSS(node, { labels, score }) {
+  const labelsStr = labels ? labels.join(",") : "";
+  const clsName = Checkers.hashCode(labelsStr + score);
+
+  let cssCls = "htx-label-" + clsName;
+  cssCls = cssCls.toLowerCase();
+
+  node.setAttribute("data-labels", labelsStr);
+
+  console.log(labels, score);
+
+  const resSVG = Canvas.labelToSVG({ label: labelsStr, score: score });
+  const svgURL = `url(${resSVG})`;
+
+  createClass(`.${cssCls}:after`, `content:${svgURL}`);
+
+  return cssCls;
+}
 
 // work directly with the html tree
-
 function createClass(name, rules) {
   var style = document.createElement("style");
   style.type = "text/css";
@@ -299,6 +334,8 @@ function removeSpans(spans) {
 }
 
 export {
+  toggleLabelsAndScores,
+  labelWithCSS,
   removeSpans,
   mainOffsets,
   findIdxContainer,

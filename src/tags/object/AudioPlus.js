@@ -49,6 +49,9 @@ const Model = types
     type: "audio",
     _value: types.optional(types.string, ""),
 
+    showlabels: types.optional(types.boolean, false),
+    showscores: types.optional(types.boolean, false),
+
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
     height: types.optional(types.string, "128"),
@@ -126,6 +129,8 @@ const Model = types
         start: obj.value.start,
         end: obj.value.end,
         normalization: obj.normalization,
+        score: obj.score,
+        readonly: obj.readonly,
       };
 
       r = self.findRegion(obj.value.start, obj.value.end);
@@ -176,8 +181,11 @@ const Model = types
         pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
         start: wsRegion.start,
         end: wsRegion.end,
+        score: wsRegion.score,
+        readonly: wsRegion.readonly,
         regionbg: self.regionbg,
         selectedregionbg: bgColor,
+        normalization: wsRegion.normalization,
         states: states,
       });
 
@@ -202,6 +210,8 @@ const Model = types
       const find_r = self.findRegion(ws_region.start, ws_region.end);
 
       if (self.findRegion(ws_region.start, ws_region.end)) {
+        find_r.applyCSSClass(ws_region);
+
         find_r._ws_region = ws_region;
         return find_r;
       }
@@ -211,7 +221,10 @@ const Model = types
         return;
       }
 
-      return self.createRegion(ws_region, clonedStates);
+      const r = self.createRegion(ws_region, clonedStates);
+      r.applyCSSClass(ws_region);
+
+      return r;
     },
 
     /**
@@ -225,9 +238,17 @@ const Model = types
       self._ws = ws;
 
       self.regions.forEach(obj => {
+        let opts = {};
+        if (obj.readonly)
+          opts = {
+            drag: false,
+            resize: false,
+          };
+
         self._ws.addRegion({
           start: obj.start,
           end: obj.end,
+          ...opts,
         });
       });
     },

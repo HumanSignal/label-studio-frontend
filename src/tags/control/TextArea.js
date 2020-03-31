@@ -4,6 +4,8 @@ import { observer } from "mobx-react";
 import { types, destroy, getRoot } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
+import ValidateMixin from "../../mixins/Validate";
+import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
@@ -39,6 +41,9 @@ const TagAttrs = types.model({
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
+  required: types.optional(types.boolean, false),
+  requiredmessage: types.maybeNull(types.string),
+
   perregion: types.optional(types.boolean, false),
 });
 
@@ -72,8 +77,16 @@ const Model = types
         return true;
       }
     },
+
+    getSelectedNames() {
+      return self.regions.map(r => r._value);
+    },
   }))
   .actions(self => ({
+    requiredModal() {
+      InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
+
     setValue(value) {
       self._value = value;
     },
@@ -145,7 +158,7 @@ const Model = types
     },
   }));
 
-const TextAreaModel = types.compose("TextAreaModel", TagAttrs, Model, ProcessAttrsMixin);
+const TextAreaModel = types.compose("TextAreaModel", TagAttrs, Model, ProcessAttrsMixin, ValidateMixin);
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
@@ -163,11 +176,11 @@ const HtxTextArea = observer(({ item }) => {
     },
   };
 
-  if (!item.completion.edittable) props["disabled"] = true;
+  if (!item.completion.editable) props["disabled"] = true;
 
   const region = item.completion.highlightedNode;
   const visibleStyle = !item.perregion || region ? {} : { display: "none" };
-  const showAddButton = item.completion.edittable && (rows != 1 || item.showSubmitButton);
+  const showAddButton = item.completion.editable && (rows != 1 || item.showSubmitButton);
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
