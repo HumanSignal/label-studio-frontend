@@ -284,7 +284,7 @@ const Completion = types
       self.traverseTree(node => {
         // add Space hotkey for playbacks of audio, there might be
         // multiple audios on the screen
-        if (node && !node.hotkey && node.type === "audio") {
+        if (node && !node.hotkey && (node.type === "audio" || node.type === "audioplus")) {
           if (audiosNum > 0) comb = mod + "+" + (audiosNum + 1);
           else audioNode = node;
 

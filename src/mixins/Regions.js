@@ -28,6 +28,23 @@ const RegionsMixin = types
     get editable() {
       return self.readonly === false && self.completion.editable === true;
     },
+
+    get labelsState() {
+      return self.states.find(s => s._type === "labels");
+    },
+
+    hasLabelState(labelValue) {
+      // first of all check if this region implements labels
+      // interface
+      const s = self.labelsState;
+      if (!s) return false;
+
+      // find that label and check if its selected
+      const l = s.findLabel(labelValue);
+      if (!l || !l.selected) return false;
+
+      return true;
+    },
   }))
   .actions(self => ({
     moveTop(size) {},

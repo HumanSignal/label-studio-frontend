@@ -46,6 +46,7 @@ const TagAttrs = types.model({
   requiredmessage: types.maybeNull(types.string),
 
   perregion: types.optional(types.boolean, false),
+  whenlabelvalue: types.maybeNull(types.string),
 });
 
 const Model = types

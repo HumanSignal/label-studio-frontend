@@ -5,6 +5,7 @@ import React, { Component } from "react";
 import { Result, Spin } from "antd";
 import { getEnv } from "mobx-state-tree";
 import { observer, inject, Provider } from "mobx-react";
+import { PushpinOutlined } from "@ant-design/icons";
 
 /**
  * Core
@@ -116,6 +117,11 @@ const App = inject("store")(
                     <div dangerouslySetInnerHTML={{ __html: store.description }} />
                   </Segment>
                 )}
+
+                {/* <div className={styles.pins}> */}
+                {/*   <div style={{ width: "100%", marginRight: "20px" }}><PushpinOutlined /></div> */}
+                {/*   <div className={styles.pinsright}><PushpinOutlined /></div> */}
+                {/* </div> */}
 
                 <div className={stCommon + " ls-common"}>
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
