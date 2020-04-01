@@ -40,7 +40,7 @@ const TagAttrs = types.model({
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
   perregion: types.optional(types.boolean, false),
-
+  whenlabelvalue: types.maybeNull(types.string),
   readonly: types.optional(types.boolean, false),
 });
 
