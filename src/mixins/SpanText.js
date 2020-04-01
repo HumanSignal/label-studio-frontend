@@ -107,6 +107,8 @@ export default types
       self.completion.setHighlightedNode(self);
       self.updateSpansColor(null, 0.8);
       self.completion.loadRegionState(self);
+
+      if (self._spans[0]) self._spans[0].scrollIntoView({ block: "center", behavior: "smooth" });
     },
 
     /**

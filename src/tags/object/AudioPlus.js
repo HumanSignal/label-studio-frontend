@@ -41,6 +41,9 @@ const TagAttrs = types.model({
   speed: types.optional(types.boolean, true),
   regs: types.optional(types.boolean, true),
   hotkey: types.maybeNull(types.string),
+  showlabels: types.optional(types.boolean, false),
+  showscores: types.optional(types.boolean, false),
+  height: types.optional(types.string, "128"),
 });
 
 const Model = types
@@ -49,12 +52,8 @@ const Model = types
     type: "audio",
     _value: types.optional(types.string, ""),
 
-    showlabels: types.optional(types.boolean, false),
-    showscores: types.optional(types.boolean, false),
-
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
-    height: types.optional(types.string, "128"),
   })
   .views(self => ({
     get hasStates() {
@@ -73,11 +72,6 @@ const Model = types
     activeStates() {
       const states = self.states();
       return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
-    },
-
-    activePerRegionStates() {
-      const states = self.states();
-      return states && states.filter(s => s.perregion === true);
     },
   }))
   .actions(self => ({
@@ -198,13 +192,7 @@ const Model = types
     },
 
     addRegion(ws_region) {
-      const states = self.activeStates();
-      // if (! states || states.length === 0) {
-      //   ws_region.remove();
-      //   return;
-      // }
-
-      const allStates = states; // states.concat(self.activePerRegionStates());
+      const allStates = self.activeStates();
       const clonedStates = allStates.map(s => cloneNode(s));
 
       const find_r = self.findRegion(ws_region.start, ws_region.end);
