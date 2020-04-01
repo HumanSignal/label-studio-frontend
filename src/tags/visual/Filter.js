@@ -42,8 +42,6 @@ const FilterModel = types.compose("FilterModel", Model, ProcessAttrsMixin);
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;
 
-  console.log(tag, tag._type);
-
   if (tag._type !== "labels") return null;
 
   return (

@@ -17,8 +17,6 @@ const PerRegionMixin = types
       // check if selected region is the one this tag is connected to
       if (region.parent.name !== self.toname) return false;
 
-      console.log(self.whenlabelvalue);
-
       // we may need to check for specific value
       if (self.whenlabelvalue !== null && self.whenlabelvalue !== undefined)
         return region.hasLabelState(self.whenlabelvalue);

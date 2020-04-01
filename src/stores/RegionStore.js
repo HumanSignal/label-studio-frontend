@@ -110,8 +110,6 @@ export default types
 
       const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
 
-      console.log(next);
-
       next && next.selectRegion();
     },
   }));
