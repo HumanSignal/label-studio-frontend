@@ -68,9 +68,10 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return states
-        ? states.filter(s => s.isSelected && (getType(s).name === "LabelsModel" || getType(s).name === "RatingModel"))
-        : null;
+      return (
+        states &&
+        states.filter(s => s.isSelected && (getType(s).name === "LabelsModel" || getType(s).name === "RatingModel"))
+      );
     },
   }))
   .actions(self => ({
@@ -132,6 +133,11 @@ const Model = types
      */
     fromStateJSON(obj, fromModel) {
       const { start, end } = obj.value;
+
+      // const fm = self.completion.names.get(obj.from_name);
+      // fm.fromStateJSON(obj);
+
+      // if (!fm.perregion && fromModel.type !== "labels") return;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
         self.completion.names.get(obj.from_name).fromStateJSON(obj);

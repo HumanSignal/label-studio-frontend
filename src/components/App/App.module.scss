@@ -88,6 +88,20 @@
   display: block;
 }
 
+.pins {
+  width: 100%;
+  display: flex;
+}
+
+.pins div {
+  text-align: right;
+}
+
+.pinsright {
+  width: 320px;
+  min-width: 320px;
+}
+
 @media only screen and (max-width: 768px) {
   .common {
     display: initial !important;

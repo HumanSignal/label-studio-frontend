@@ -28,10 +28,6 @@ const Model = types
       return getParentOfType(self, AudioPlusModel);
     },
 
-    get labelsState() {
-      return self.states.find(s => s.type === "labels");
-    },
-
     get completion() {
       return getRoot(self).completionStore.selected;
     },

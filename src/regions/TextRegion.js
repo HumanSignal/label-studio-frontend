@@ -6,6 +6,8 @@ import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
 import { LabelsModel } from "../tags/control/Labels";
+import { TextAreaModel } from "../tags/control/TextArea";
+import { ChoicesModel } from "../tags/control/Choices";
 import { TextModel } from "../tags/object/Text";
 import { guidGenerator } from "../core/Helpers";
 
@@ -19,7 +21,7 @@ const Model = types
     end: types.string,
 
     text: types.string,
-    states: types.maybeNull(types.array(types.union(LabelsModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel))),
   })
   .views(self => ({
     get parent() {
@@ -36,14 +38,30 @@ const Model = types
     },
 
     serialize(control, object) {
-      return {
+      let res = {
         value: {
           start: self.startOffset,
           end: self.endOffset,
           text: self.text,
-          labels: control.getSelectedNames(),
         },
       };
+
+      if (control.type === "labels") {
+        res.value["labels"] = control.getSelectedNames();
+      }
+
+      if (control.type === "choices") {
+        res.value["choices"] = control.getSelectedNames();
+      }
+
+      if (control.type === "textarea") {
+        const texts = control.regions.map(s => s._value);
+        if (texts.length === 0) return;
+
+        res.value["text"] = texts;
+      }
+
+      return res;
     },
   }));
 

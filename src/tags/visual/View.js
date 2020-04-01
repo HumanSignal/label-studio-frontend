@@ -23,6 +23,9 @@ import Types from "../../core/Types";
  * @param {block|inline} display
  * @param {string} [style] css style string
  * @param {string} [className] - class name of the css style to apply
+ * @param {string} [visibleWhen]
+ * @param {string} [whenTagName]
+ * @param {string} [whenChoiceValue]
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),
@@ -31,7 +34,8 @@ const TagAttrs = types.model({
 
   visiblewhen: types.maybeNull(types.string),
   whentagname: types.maybeNull(types.string),
-  whenchoicename: types.maybeNull(types.string),
+  whenchoicevalue: types.maybeNull(types.string),
+  whenlabelvalue: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -71,6 +75,7 @@ const Model = types
       "style",
       "label",
       "relations",
+      "filter",
     ]),
   })
   .views(self => ({
@@ -94,27 +99,23 @@ const HtxView = observer(({ item, store }) => {
 
   if (item.visiblewhen) {
     const fns = {
-      "region-selected": ({ tagName }) => {
+      "region-selected": ({ tagName, labelValue }) => {
         const reg = item.completion.highlightedNode;
         if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
           return false;
         }
 
+        if (labelValue) return reg.hasLabelState(labelValue);
+
         return true;
       },
 
-      "choice-selected": ({ tagName, choiceName }) => {
+      "choice-selected": ({ tagName, choiceValue }) => {
         const tag = item.completion.names.get(tagName);
 
         if (!tag) return false;
 
-        if (choiceName) {
-          return tag.findLabel(choiceName).selected;
-        } else {
-          return tag.isSelected;
-        }
-
-        return false;
+        return choiceValue ? tag.findLabel(choiceValue).selected : tag.isSelected;
       },
 
       "no-region-selected": ({ tagName }) => item.completion.highlightedNode === null,
@@ -123,7 +124,8 @@ const HtxView = observer(({ item, store }) => {
     if (Object.keys(fns).includes(item.visiblewhen)) {
       const res = fns[item.visiblewhen]({
         tagName: item.whentagname,
-        choiceName: item.whenchoicename,
+        choiceValue: item.whenchoicevalue,
+        labelValue: item.whenlabelvalue,
       });
 
       if (res === false) style["display"] = "none";
