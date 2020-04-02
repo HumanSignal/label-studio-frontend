@@ -28,10 +28,6 @@ const Model = types
       return getParentOfType(self, AudioPlusModel);
     },
 
-    get labelsState() {
-      return self.states.find(s => s.type === "labels");
-    },
-
     get completion() {
       return getRoot(self).completionStore.selected;
     },
@@ -113,6 +109,7 @@ const Model = types
      * Unselect audio region
      */
     unselectRegion() {
+      // debugger;
       self.selected = false;
       self.completion.setHighlightedNode(null);
       if (self._ws_region.update) {

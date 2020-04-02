@@ -36,6 +36,8 @@ const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
   showinline: types.optional(types.boolean, true),
 
+  showfilter: types.optional(types.boolean, false),
+
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
 });

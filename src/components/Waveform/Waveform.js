@@ -388,12 +388,12 @@ export default class Waveform extends React.Component {
           <Row style={{ marginTop: "1em" }}>
             <Col span={16} style={{ textAlign: "right", marginTop: "6px", marginRight: "1em" }}>
               <div style={{ display: "flex" }}>
-                <div style={{ marginTop: "6px" }}>
+                <div style={{ marginTop: "6px", marginRight: "5px" }}>
                   <a
                     onClick={ev => {
                       let val = self.state.zoom;
                       val = val - 10;
-                      if (val < 200) val = 200;
+                      if (val < 20) val = 20;
 
                       self.onChangeZoom(val);
                       ev.preventDefault();
@@ -406,7 +406,7 @@ export default class Waveform extends React.Component {
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
-                    min={200}
+                    min={20}
                     step={10}
                     max={700}
                     value={typeof this.state.zoom === "number" ? this.state.zoom : 0}
@@ -415,7 +415,7 @@ export default class Waveform extends React.Component {
                     }}
                   />
                 </div>
-                <div style={{ marginTop: "6px" }}>
+                <div style={{ marginTop: "6px", marginLeft: "5px" }}>
                   <a
                     href=""
                     onClick={ev => {
@@ -453,7 +453,7 @@ export default class Waveform extends React.Component {
                 </div>
               )}
             </Col>
-            <Col span={2} style={{ marginTop: "6px" }}>
+            <Col span={2} style={{ marginTop: "6px", minWidth: "90px" }}>
               {this.props.speed && (
                 <Dropdown overlay={menu}>
                   <Button>

@@ -5,6 +5,7 @@ import { types, destroy, getRoot } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import ValidateMixin from "../../mixins/Validate";
+import PerRegionMixin from "../../mixins/PerRegion";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
@@ -45,6 +46,7 @@ const TagAttrs = types.model({
   requiredmessage: types.maybeNull(types.string),
 
   perregion: types.optional(types.boolean, false),
+  whenlabelvalue: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -158,7 +160,7 @@ const Model = types
     },
   }));
 
-const TextAreaModel = types.compose("TextAreaModel", TagAttrs, Model, ProcessAttrsMixin, ValidateMixin);
+const TextAreaModel = types.compose("TextAreaModel", TagAttrs, Model, ProcessAttrsMixin, ValidateMixin, PerRegionMixin);
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
@@ -179,7 +181,9 @@ const HtxTextArea = observer(({ item }) => {
   if (!item.completion.editable) props["disabled"] = true;
 
   const region = item.completion.highlightedNode;
-  const visibleStyle = !item.perregion || region ? {} : { display: "none" };
+
+  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+
   const showAddButton = item.completion.editable && (rows != 1 || item.showSubmitButton);
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
