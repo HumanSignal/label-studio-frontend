@@ -12,7 +12,7 @@ const ToolView = observer(({ item }) => {
     <Fragment>
       <BasicToolView
         selected={item.selected}
-        icon={DragOutlined}
+        icon={<DragOutlined />}
         tooltip="Move position"
         onClick={ev => {
           const sel = item.selected;
@@ -25,7 +25,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <BasicToolView
-        icon={ZoomInOutlined}
+        icon={<ZoomInOutlined />}
         tooltip="Zoom into the image"
         onClick={ev => {
           // console.log(self.image);
@@ -34,7 +34,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <BasicToolView
-        icon={ZoomOutOutlined}
+        icon={<ZoomOutOutlined />}
         tooltip="Zoom out of the image"
         onClick={ev => {
           item.handleZoom(0.8);
