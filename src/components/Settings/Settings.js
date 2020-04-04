@@ -107,6 +107,16 @@ export default observer(({ store }) => {
           >
             Move sidepanel to the bottom
           </Checkbox>
+          {/* <br/> */}
+          {/* <Checkbox */}
+          {/*   value="Show image in fullsize" */}
+          {/*   defaultChecked={store.settings.imageFullSize} */}
+          {/*   onChange={() => { */}
+          {/*     store.settings.toggleImageFS(); */}
+          {/*   }} */}
+          {/* > */}
+          {/*   Show image in fullsize */}
+          {/* </Checkbox> */}
         </Tabs.TabPane>
       </Tabs>
     </Modal>

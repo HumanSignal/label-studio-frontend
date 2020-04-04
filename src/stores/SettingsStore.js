@@ -27,6 +27,8 @@ const SettingsModel = types
 
     bottomSidePanel: types.optional(types.boolean, false),
 
+    imageFullSize: types.optional(types.boolean, false),
+
     enableAutoSave: types.optional(types.boolean, false),
 
     showLabels: types.optional(types.boolean, false),
@@ -112,6 +114,10 @@ const SettingsModel = types
 
     toggleBottomSP() {
       self.bottomSidePanel = !self.bottomSidePanel;
+    },
+
+    toggleImageFS() {
+      self.imageFullSize = !self.imageFullSize;
     },
 
     toggleLabelTooltips() {

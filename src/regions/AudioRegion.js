@@ -31,6 +31,14 @@ const Model = types
     get completion() {
       return getRoot(self).completionStore.selected;
     },
+
+    wsRegionElement(wsRegion) {
+      const elID = wsRegion.id;
+      let el = Array.from(document.querySelectorAll(`[data-id="${elID}"]`));
+
+      if (el && el.length) el = el[0];
+      return el;
+    },
   }))
   .actions(self => ({
     serialize(control, object) {
@@ -72,13 +80,12 @@ const Model = types
     },
 
     applyCSSClass(wsRegion) {
-      const elID = wsRegion.id;
-      let el = Array.from(document.querySelectorAll(`[data-id="${elID}"]`));
-
-      if (el && el.length) el = el[0];
+      const el = self.wsRegionElement(wsRegion);
 
       const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(self.states.filter(s => s.type === "labels").map(s => s.getSelectedNames()));
+      const names = Utils.Checkers.flatten(
+        self.states.filter(s => s._type === "labels").map(s => s.getSelectedNames()),
+      );
 
       const cssCls = Utils.HTML.labelWithCSS(el, {
         labels: names,
@@ -103,6 +110,9 @@ const Model = types
         // border: "1px dashed #00aeff"
       });
       self.completion.loadRegionState(self);
+
+      const el = self.wsRegionElement(self._ws_region);
+      if (el) el.scrollIntoView();
     },
 
     /**

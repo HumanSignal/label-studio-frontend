@@ -22,7 +22,7 @@ const Model = types
     type: "textarearegion",
 
     _value: types.string,
-    // states: types.array(types.union(LabelsModel, ChoicesModel)),
+    // states: types.array(types.union(ChoicesModel)),
   })
   .views(self => ({
     get parent() {

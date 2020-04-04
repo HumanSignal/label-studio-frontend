@@ -57,7 +57,9 @@ export default types
 
     applyCSSClass(lastSpan) {
       const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
+      const names = Utils.Checkers.flatten(
+        self.states.filter(s => s._type === "labels").map(s => s.getSelectedNames()),
+      );
 
       const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
         labels: names,
