@@ -121,7 +121,7 @@ const Model = types
           x: (self.x * 100) / object.stageWidth,
           y: (self.y * 100) / object.stageHeight,
           width: (self.width * 100) / object.stageWidth, //  * (self.scaleX || 1)
-          ketpointlabels: control.getSelectedNames(),
+          keypointlabels: control.getSelectedNames(),
         },
       };
     },

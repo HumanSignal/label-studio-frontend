@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Stage, Layer, Group, Line } from "react-konva";
 import { observer } from "mobx-react";
+import { getRoot } from "mobx-state-tree";
 
 import ImageGrid from "../ImageGrid/ImageGrid";
 import ImageTransformer from "../ImageTransformer/ImageTransformer";
@@ -241,10 +242,13 @@ export default observer(
 
       const imgStyle = {
         width: item.width,
-        maxWidth: item.maxwidth,
         transformOrigin: "left top",
         filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
       };
+
+      if (getRoot(item).settings.imageFullSize === false) {
+        imgStyle["maxWidth"] = item.maxwidth;
+      }
 
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;

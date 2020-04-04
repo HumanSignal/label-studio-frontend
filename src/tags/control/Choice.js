@@ -99,8 +99,8 @@ const HtxChoice = inject("store")(
             name={item._value}
             onChange={ev => {
               if (!item.completion.editable) return;
-
               item.toggleSelected();
+              ev.nativeEvent.target.blur();
             }}
             checked={item.selected}
           >
@@ -121,8 +121,8 @@ const HtxChoice = inject("store")(
             checked={item.selected}
             onChange={ev => {
               if (!item.completion.editable) return;
-
               item.toggleSelected();
+              ev.nativeEvent.target.blur();
             }}
           >
             {item._value}

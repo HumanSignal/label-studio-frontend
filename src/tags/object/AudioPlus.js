@@ -79,7 +79,8 @@ const Model = types
       return self.regions.map(r => r.toStateJSON());
     },
 
-    onHotKey() {
+    onHotKey(e) {
+      e && e.preventDefault();
       return self._ws.playPause();
     },
 

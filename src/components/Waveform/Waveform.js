@@ -8,6 +8,7 @@ import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
 import { Slider, InputNumber, Row, Col, Menu, Dropdown, Button, message, Tooltip } from "antd";
 import { SoundOutlined, DownOutlined, UserOutlined } from "@ant-design/icons";
+import lodash from "../../utils/lodash";
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
@@ -141,7 +142,7 @@ export default class Waveform extends React.Component {
         waveColor: "#97A0AF",
         progressColor: "#52c41a",
       },
-      zoom: 20,
+      zoom: 0,
       speed: 1,
       volume: 1,
     };
@@ -178,6 +179,41 @@ export default class Waveform extends React.Component {
     });
 
     this.wavesurfer.setPlaybackRate(value);
+  };
+
+  onZoomPlus = (ev, step = 10) => {
+    let val = this.state.zoom;
+    val = val + step;
+    if (val > 700) val = 700;
+
+    this.onChangeZoom(val);
+    ev && ev.preventDefault();
+    return false;
+  };
+
+  onZoomMinus = (ev, step = 10) => {
+    let val = this.state.zoom;
+    val = val - step;
+    if (val < 0) val = 0;
+
+    this.onChangeZoom(val);
+    ev.preventDefault();
+    return false;
+  };
+
+  onWheel = e => {
+    if (e && !e.shiftKey) {
+      return;
+    } else if (e && e.shiftKey) {
+      /**
+       * Disable scrolling page
+       */
+      e.preventDefault();
+    }
+
+    const step = e.deltaY > 0 ? 5 : -5;
+    // console.log(e.evt.deltaY);
+    this.onZoomPlus(e, step);
   };
 
   componentDidMount() {
@@ -289,6 +325,8 @@ export default class Waveform extends React.Component {
 
     this.wavesurfer.on("ready", () => {
       self.props.onCreate(this.wavesurfer);
+
+      this.wavesurfer.container.onwheel = lodash.throttle(this.onWheel, 100);
     });
 
     /**
@@ -337,78 +375,20 @@ export default class Waveform extends React.Component {
 
         <div id="timeline" />
 
-        {/* {this.props.speed && ( */}
-        {/*     <Row> */}
-        {/*   <Col span={24}> */}
-        {/*     <Col span={12}> */}
-        {/*       Speed:{" "} */}
-        {/*       <InputNumber */}
-        {/*         min={0.5} */}
-        {/*         max={3} */}
-        {/*         value={this.state.speed} */}
-        {/*         onChange={value => { */}
-        {/*           this.onChangeSpeed(value); */}
-        {/*         }} */}
-        {/*       /> */}
-        {/*     </Col> */}
-        {/*     <Col span={24}> */}
-        {/*       <Slider */}
-        {/*         min={0.5} */}
-        {/*         max={3} */}
-        {/*         step={0.1} */}
-        {/*         value={typeof this.state.speed === "number" ? this.state.speed : 1} */}
-        {/*         onChange={range => { */}
-        {/*           this.onChangeSpeed(range); */}
-        {/*         }} */}
-        {/*       /> */}
-        {/*     </Col> */}
-        {/*     </Col> */}
-        {/*     </Row> */}
-        {/* )} */}
-        {/* {this.props.volume && ( */}
-        {/*   <Col span={24}> */}
-        {/*     <Col span={12}> */}
-        {/*       Volume:{" "} */}
-        {/*       <InputNumber */}
-        {/*         min={0} */}
-        {/*         max={1} */}
-        {/*         value={this.state.volume} */}
-        {/*         step={0.1} */}
-        {/*         onChange={value => { */}
-        {/*           this.onChangeVolume(value); */}
-        {/*         }} */}
-        {/*       /> */}
-        {/*     </Col> */}
-        {/*     <Col span={24}> */}
-
-        {/*     </Col> */}
-        {/*   </Col> */}
-        {/* )} */}
         {this.props.zoom && (
           <Row style={{ marginTop: "1em" }}>
             <Col span={16} style={{ textAlign: "right", marginTop: "6px", marginRight: "1em" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
-                  <a
-                    onClick={ev => {
-                      let val = self.state.zoom;
-                      val = val - 10;
-                      if (val < 20) val = 20;
-
-                      self.onChangeZoom(val);
-                      ev.preventDefault();
-                      return false;
-                    }}
-                    href=""
-                  >
+                  <a onClick={this.onZoomMinus} href="">
                     <ZoomOutOutlined />
                   </a>
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
-                    min={20}
+                    min={0}
                     step={10}
-                    max={700}
+                    max={500}
                     value={typeof this.state.zoom === "number" ? this.state.zoom : 0}
                     onChange={value => {
                       this.onChangeZoom(value);
@@ -416,18 +396,7 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <a
-                    href=""
-                    onClick={ev => {
-                      let val = self.state.zoom;
-                      val = val + 10;
-                      if (val > 700) val = 700;
-
-                      self.onChangeZoom(val);
-                      ev.preventDefault();
-                      return false;
-                    }}
-                  >
+                  <a href="" onClick={this.onZoomPlus}>
                     <ZoomInOutlined />
                   </a>
                 </div>
