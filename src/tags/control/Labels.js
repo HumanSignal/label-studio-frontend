@@ -36,7 +36,7 @@ const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
   showinline: types.optional(types.boolean, true),
 
-  showfilter: types.optional(types.boolean, false),
+  visible: types.optional(types.boolean, true),
 
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
@@ -52,6 +52,8 @@ const ModelAttrs = types.model({
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
+
+  visible: types.optional(types.boolean, true),
 });
 
 const Model = LabelMixin.props({ _type: "labels" })
@@ -106,6 +108,10 @@ const HtxLabels = observer(({ item }) => {
     style["flexDirection"] = "column";
     style["alignItems"] = "flex-start";
     style["marginTop"] = "0";
+  }
+
+  if (!item.visible) {
+    style["display"] = "none";
   }
 
   return <div style={style}>{Tree.renderChildren(item)}</div>;

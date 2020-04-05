@@ -38,6 +38,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     type: "choice",
+    visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
@@ -72,6 +73,10 @@ const Model = types
       reg && reg.updateOrAddState(choice);
     },
 
+    setVisible(val) {
+      self.visible = val;
+    },
+
     setSelected(val) {
       self.selected = val;
     },
@@ -88,6 +93,10 @@ const HtxChoice = inject("store")(
     let style = {};
 
     if (item.style) style = Tree.cssConverter(item.style);
+
+    if (!item.visible) {
+      style["display"] = "none";
+    }
 
     if (item.isCheckbox) {
       const cStyle = Object.assign({ display: "flex", alignItems: "center", marginBottom: 0 }, style);
