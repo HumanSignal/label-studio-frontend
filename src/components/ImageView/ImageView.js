@@ -214,7 +214,7 @@ export default observer(
       const { item, store } = this.props;
       const cs = store.completionStore;
 
-      if (cs.viewingAllCompletions || cs.viewingAllPredictions) return null;
+      if (cs.viewingAll) return null;
 
       return (
         <div className={styles.block}>

@@ -62,26 +62,20 @@ const App = inject("store")(
         return <Result icon={<Spin size="large" />} />;
       }
 
-      _renderAll(obj) {
-        if (obj.length === 1) return <Segment>{[Tree.renderItem(obj[0].root)]}</Segment>;
+      renderAll() {
+        const all = [...this.props.store.completionStore.completions, ...this.props.store.completionStore.predictions];
+
+        if (all.length === 1) return <Segment>{[Tree.renderItem(all[0].root)]}</Segment>;
 
         return (
           <div className="ls-renderall">
-            {obj.map(c => (
+            {all.map(c => (
               <div className="ls-fade">
                 <Segment>{[Tree.renderItem(c.root)]}</Segment>
               </div>
             ))}
           </div>
         );
-      }
-
-      renderAllCompletions() {
-        return this._renderAll(this.props.store.completionStore.completions);
-      }
-
-      renderAllPredictions() {
-        return this._renderAll(this.props.store.completionStore.predictions);
       }
 
       render() {
@@ -124,21 +118,18 @@ const App = inject("store")(
                 {/* </div> */}
 
                 <div className={stCommon + " ls-common"}>
-                  {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
+                  {!cs.viewingAll && (
                     <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
                       {Tree.renderItem(root)}
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>
                   )}
-                  {cs.viewingAllCompletions && this.renderAllCompletions()}
-                  {cs.viewingAllPredictions && this.renderAllPredictions()}
+                  {cs.viewingAll && this.renderAll()}
 
                   <div className={stMenu + " ls-menu"}>
                     {store.hasInterface("completions:menu") && <Completions store={store} />}
                     {store.hasInterface("predictions:menu") && <Predictions store={store} />}
-                    {store.hasInterface("side-column") && !cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                      <SideColumn store={store} />
-                    )}
+                    {store.hasInterface("side-column") && !cs.viewingAll && <SideColumn store={store} />}
                   </div>
                 </div>
               </div>

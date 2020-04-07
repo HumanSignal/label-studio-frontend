@@ -157,13 +157,13 @@ class Completions extends Component {
             </Tooltip>
           )}
           &nbsp;
-          <Tooltip placement="topLeft" title="View all completions">
+          <Tooltip placement="topLeft" title="View all completions and predictions">
             <Button
               size="small"
-              type={store.completionStore.viewingAllCompletions ? "primary" : ""}
+              type={store.completionStore.viewingAll ? "primary" : ""}
               onClick={ev => {
                 ev.preventDefault();
-                store.completionStore.toggleViewingAllCompletions();
+                store.completionStore.toggleViewingAll();
               }}
             >
               <WindowsOutlined />

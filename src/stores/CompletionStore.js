@@ -401,8 +401,7 @@ export default types
     completions: types.array(Completion),
     predictions: types.array(Completion),
 
-    viewingAllCompletions: types.optional(types.boolean, false),
-    viewingAllPredictions: types.optional(types.boolean, false),
+    viewingAll: false,
   })
   .views(self => ({
     get store() {
@@ -411,7 +410,9 @@ export default types
   }))
   .actions(self => {
     function toggleViewingAll() {
-      if (self.viewingAllCompletions || self.viewingAllPredictions) {
+      self.viewingAll = !self.viewingAll;
+
+      if (self.viewingAll) {
         self.completions.forEach(c => {
           c.selected = false;
           c.editable = false;
@@ -425,22 +426,6 @@ export default types
       } else {
         selectCompletion(self.completions[0].id);
       }
-    }
-
-    function toggleViewingAllPredictions() {
-      self.viewingAllPredictions = !self.viewingAllPredictions;
-
-      if (self.viewingAllPredictions) self.viewingAllCompletions = false;
-
-      toggleViewingAll();
-    }
-
-    function toggleViewingAllCompletions() {
-      self.viewingAllCompletions = !self.viewingAllCompletions;
-
-      if (self.viewingAllCompletions) self.viewingAllPredictions = false;
-
-      toggleViewingAll();
     }
 
     function unselectViewingAll() {
@@ -566,8 +551,7 @@ export default types
     }
 
     return {
-      toggleViewingAllCompletions,
-      toggleViewingAllPredictions,
+      toggleViewingAll,
 
       addPrediction,
       addCompletion,

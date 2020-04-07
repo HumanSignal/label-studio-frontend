@@ -59,13 +59,13 @@ class Predictions extends Component {
       <div className={styles.title + " " + styles.titlespace}>
         <h3>Predictions</h3>
         {store.completionStore.predictions.length > 0 && (
-          <Tooltip placement="topLeft" title="View all predictions">
+          <Tooltip placement="topLeft" title="View all completions and predictions">
             <Button
               size="small"
-              type={store.completionStore.viewingAllPredictions ? "primary" : ""}
+              type={store.completionStore.viewingAll ? "primary" : ""}
               onClick={ev => {
                 ev.preventDefault();
-                store.completionStore.toggleViewingAllPredictions();
+                store.completionStore.toggleViewingAll();
               }}
             >
               <WindowsOutlined />
