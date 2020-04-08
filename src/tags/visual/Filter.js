@@ -25,13 +25,18 @@ const { Search } = Input;
 
 const TagAttrs = types.model({
   casesensetive: types.optional(types.boolean, false),
+
+  cleanup: types.optional(types.boolean, true),
+
   placeholder: types.optional(types.string, "Quick Filter"),
   minlength: types.optional(types.string, "3"),
+  hotkey: types.maybeNull(types.string),
 });
 
 const Model = types
   .model({
     type: "filter",
+    _value: types.maybeNull(types.string),
     name: types.maybeNull(types.string),
     toname: types.maybeNull(types.string),
   })
@@ -45,8 +50,8 @@ const Model = types
     },
   }))
   .actions(self => ({
-    applyFilter(e) {
-      let { value } = e.target;
+    applyFilter() {
+      let value = self._value;
       const tch = self.toTag.tiedChildren;
 
       if (value.length <= Number(self.minlength)) {
@@ -64,6 +69,33 @@ const Model = types
         else ch.setVisible(false);
       });
     },
+
+    applyFilterEv(e) {
+      let { value } = e.target;
+      self._value = value;
+
+      self.applyFilter();
+    },
+
+    onHotKey() {
+      if (self._ref) {
+        self._ref.focus();
+      }
+
+      return false;
+    },
+
+    setInputRef(ref) {
+      self._ref = ref;
+    },
+
+    selectFirstElement() {
+      const selected = self.toTag.selectFirstVisible();
+      if (selected && self.cleanup) {
+        self._value = "";
+        self.applyFilter();
+      }
+    },
   }));
 
 const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin);
@@ -71,17 +103,18 @@ const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMi
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;
 
-  console.log(tag.type, tag.type.indexOf("labels"));
-
   if (tag.type.indexOf("labels") === -1 && tag.type.indexOf("choices") === -1) return null;
-
-  console.log();
 
   return (
     <Input
+      ref={ref => {
+        item.setInputRef(ref);
+      }}
+      value={item._value}
       size="small"
       /* addonAfter={"clear"} */
-      onChange={item.applyFilter}
+      onChange={item.applyFilterEv}
+      onPressEnter={item.selectFirstElement}
       placeholder={item.placeholder}
     />
   );
