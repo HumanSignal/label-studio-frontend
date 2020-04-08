@@ -50,6 +50,7 @@ const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     type: "label",
+    visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
@@ -121,6 +122,10 @@ const Model = types
       reg && reg.updateSingleState(labels);
     },
 
+    setVisible(val) {
+      self.visible = val;
+    },
+
     /**
      *
      * @param {boolean} value
@@ -158,6 +163,10 @@ const HtxLabelView = inject("store")(
       cursor: "pointer",
       margin: "5px",
     };
+
+    if (!item.visible) {
+      labelStyle["display"] = "none";
+    }
 
     return (
       <Tag
