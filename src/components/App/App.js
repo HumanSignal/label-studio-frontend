@@ -127,8 +127,10 @@ const App = inject("store")(
                   {cs.viewingAll && this.renderAll()}
 
                   <div className={stMenu + " ls-menu"}>
-                    {store.hasInterface("completions:menu") && <Completions store={store} />}
-                    {store.hasInterface("predictions:menu") && <Predictions store={store} />}
+                    <div className={styles.models}>
+                      {store.hasInterface("completions:menu") && <Completions store={store} />}
+                      {store.hasInterface("predictions:menu") && <Predictions store={store} />}
+                    </div>
                     {store.hasInterface("side-column") && !cs.viewingAll && <SideColumn store={store} />}
                   </div>
                 </div>
