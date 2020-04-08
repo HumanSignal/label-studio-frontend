@@ -429,8 +429,7 @@ export default types
     }
 
     function unselectViewingAll() {
-      self.viewingAllCompletions = false;
-      self.viewingAllPredictions = false;
+      self.viewingAll = false;
     }
 
     function selectItem(id, list) {
