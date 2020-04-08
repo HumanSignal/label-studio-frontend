@@ -94,7 +94,7 @@ const Model = types
     },
 
     toStateJSON() {
-      const names = self.selectedValues;
+      const names = self.selectedValues();
 
       if (names && names.length) {
         const toname = self.toname || self.name;
