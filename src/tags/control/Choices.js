@@ -88,7 +88,7 @@ const Model = types
     },
 
     copyState(choices) {
-      choices.selectedValues.forEach(l => {
+      choices.selectedValues().forEach(l => {
         self.findLabel(l).setSelected(true);
       });
     },
