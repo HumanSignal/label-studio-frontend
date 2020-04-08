@@ -88,13 +88,13 @@ const Model = types
     },
 
     copyState(choices) {
-      choices.selectedValues.forEach(l => {
+      choices.selectedValues().forEach(l => {
         self.findLabel(l).setSelected(true);
       });
     },
 
     toStateJSON() {
-      const names = self.selectedValues;
+      const names = self.selectedValues();
 
       if (names && names.length) {
         const toname = self.toname || self.name;
