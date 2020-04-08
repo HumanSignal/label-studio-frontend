@@ -30,7 +30,12 @@ const VisibilityMixin = types
 
             if (!tag) return false;
 
-            return choiceValue ? tag.findLabel(choiceValue).selected : tag.isSelected;
+            if (choiceValue) {
+              const choice = tag.findLabel(choiceValue);
+              return choice && choice.selected ? true : false;
+            }
+
+            return true;
           },
 
           "no-region-selected": ({ tagName }) => self.completion.highlightedNode === null,

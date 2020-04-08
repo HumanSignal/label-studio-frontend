@@ -14,6 +14,8 @@ const ObjectBase = types
   }))
   .actions(self => ({
     toStateJSON() {
+      if (!self.regions) return;
+
       const objectsToReturn = self.regions.map(r => r.toStateJSON());
       return objectsToReturn;
     },
