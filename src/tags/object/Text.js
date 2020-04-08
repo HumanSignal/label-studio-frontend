@@ -119,28 +119,10 @@ const Model = types
 
       const { start, end } = obj.value;
 
-      // const fm = self.completion.names.get(obj.from_name);
-      // fm.fromStateJSON(obj);
-
-      // if (!fm.perregion && fromModel.type !== "labels") return;
-
       const fm = self.completion.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
-
-      console.log(!fm.perregion, fromModel.type !== "labels");
-
-      console.log(obj);
-      console.log(fm.perregion);
-      console.log(fromModel.type);
-
-      // if (fromModel.type === "textarea" || fromModel.type === "choices") {
-      //   self.completion.names.get(obj.from_name).fromStateJSON(obj);
-      //   return;
-      // }
-
-      // const states = restoreNewsnapshot(fromModel);
 
       const tree = {
         pid: obj.id,

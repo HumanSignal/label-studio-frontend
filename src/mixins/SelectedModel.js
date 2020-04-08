@@ -48,6 +48,13 @@ const SelectedModelMixin = types
     unselectAll() {
       self.tiedChildren.forEach(c => c.setSelected(false));
     },
+
+    selectFirstVisible() {
+      const f = self.tiedChildren.find(c => c.visible);
+      f && f.toggleSelected();
+
+      return f;
+    },
   }));
 
 export default SelectedModelMixin;
