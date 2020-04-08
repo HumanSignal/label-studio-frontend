@@ -68,7 +68,7 @@ export default types
         score: self.score,
       });
 
-      const classes = [lastSpan.className, "htx-highlight", "htx-highlight-last", cssCls];
+      const classes = ["htx-highlight", "htx-highlight-last", cssCls];
 
       if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
 
