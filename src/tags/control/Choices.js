@@ -39,8 +39,10 @@ const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
   required: types.optional(types.boolean, false),
   requiredmessage: types.maybeNull(types.string),
+
   perregion: types.optional(types.boolean, false),
   whenlabelvalue: types.maybeNull(types.string),
+
   readonly: types.optional(types.boolean, false),
 });
 
@@ -49,7 +51,10 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
+    visible: types.optional(types.boolean, true),
+
     type: "choices",
+    _type: "choices",
     children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
   .views(self => ({
@@ -125,6 +130,10 @@ const HtxChoices = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
   const region = item.completion.highlightedNode;
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+
+  if (!item.visible) {
+    style["display"] = "none";
+  }
 
   return (
     <div style={{ ...style, ...visibleStyle }}>
