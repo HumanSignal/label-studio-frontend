@@ -11,6 +11,7 @@ import { ChoicesModel } from "../tags/control/Choices";
 import { LabelsModel } from "../tags/control/Labels";
 import { guidGenerator } from "../core/Helpers";
 import Canvas from "../utils/canvas";
+import { RatingModel } from "../tags/control/Rating";
 
 const Model = types
   .model("AudioRegionModel", {
@@ -20,16 +21,12 @@ const Model = types
     start: types.number,
     end: types.number,
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
     get parent() {
       return getParentOfType(self, AudioPlusModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
 
     wsRegionElement(wsRegion) {
@@ -50,20 +47,7 @@ const Model = types
         },
       };
 
-      if (control.type === "labels") {
-        res.value["labels"] = control.getSelectedNames();
-      }
-
-      if (control.type === "choices") {
-        res.value["choices"] = control.getSelectedNames();
-      }
-
-      if (control.type === "textarea") {
-        const texts = control.regions.map(s => s._value);
-        if (texts.length === 0) return;
-
-        res.value["text"] = texts;
-      }
+      res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
@@ -83,9 +67,7 @@ const Model = types
       const el = self.wsRegionElement(wsRegion);
 
       const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(
-        self.states.filter(s => s._type === "labels").map(s => s.getSelectedNames()),
-      );
+      const names = Utils.Checkers.flatten(self.states.filter(s => s._type === "labels").map(s => s.selectedValues()));
 
       const cssCls = Utils.HTML.labelWithCSS(el, {
         labels: names,

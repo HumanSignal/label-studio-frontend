@@ -125,7 +125,7 @@ const RelationStore = types
           direction: r.direction,
         };
 
-        if (r.relations) s["labels"] = r.relations.getSelectedNames();
+        if (r.relations) s["labels"] = r.relations.selectedValues();
 
         return s;
       });

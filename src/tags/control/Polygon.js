@@ -3,6 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
+import ControlBase from "./Base";
 
 /**
  * Polygon tag
@@ -68,7 +69,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", TagAttrs, Model);
+const PolygonModel = types.compose("PolygonModel", TagAttrs, Model, ControlBase);
 
 const HtxView = inject("store")(
   observer(({ store, item }) => {

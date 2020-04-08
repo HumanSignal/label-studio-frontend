@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { runTemplate } from "../../core/Template";
+import ControlBase from "./Base";
 
 /**
  * Pairwise element. Compare two different objects, works with any label studio object
@@ -134,7 +135,7 @@ const Model = types
     },
   }));
 
-const PairwiseModel = types.compose("PairwiseModel", TagAttrs, Model);
+const PairwiseModel = types.compose("PairwiseModel", TagAttrs, Model, ControlBase);
 
 const HtxPairwise = () => {
   return null;
