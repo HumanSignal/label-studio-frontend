@@ -3,15 +3,17 @@ import { Form } from "antd";
 import { observer } from "mobx-react";
 import { types, getRoot, getParent } from "mobx-state-tree";
 
-import ValidateMixin from "../../mixins/Validate";
+import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
+import VisibilityMixin from "../../mixins/Visibility";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * Choices tag, create a group of choices, radio, or checkboxes. Shall
@@ -37,12 +39,6 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, false),
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
-  required: types.optional(types.boolean, false),
-  requiredmessage: types.maybeNull(types.string),
-
-  perregion: types.optional(types.boolean, false),
-  whenlabelvalue: types.maybeNull(types.string),
-
   readonly: types.optional(types.boolean, false),
 });
 
@@ -69,6 +65,22 @@ const Model = types
     states() {
       return self.completion.toNames.get(self.name);
     },
+
+    // perChoiceVisible() {
+    //     if (! self.whenchoicevalue) return true;
+
+    //     // this is a special check when choices are labeling other choices
+    //     // may need to show
+    //     if (self.whenchoicevalue) {
+    //         const choicesTag = self.completion.names.get(self.toname);
+    //         const ch = choicesTag.findLabel(self.whenchoicevalue);
+
+    //         if (ch && ch.selected)
+    //             return true;
+    //     }
+
+    //     return false;
+    // }
   }))
   .actions(self => ({
     requiredModal() {
@@ -76,13 +88,13 @@ const Model = types
     },
 
     copyState(choices) {
-      choices.getSelectedNames().forEach(l => {
+      choices.selectedValues.forEach(l => {
         self.findLabel(l).setSelected(true);
       });
     },
 
     toStateJSON() {
-      const names = self.getSelectedNames();
+      const names = self.selectedValues;
 
       if (names && names.length) {
         const toname = self.toname || self.name;
@@ -122,8 +134,10 @@ const ChoicesModel = types.compose(
   Model,
   TagAttrs,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
-  ValidateMixin,
+  RequiredMixin,
   PerRegionMixin,
+  VisibilityMixin,
+  ControlBase,
 );
 
 const HtxChoices = observer(({ item }) => {
@@ -131,16 +145,15 @@ const HtxChoices = observer(({ item }) => {
   const region = item.completion.highlightedNode;
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
-  if (!item.visible) {
-    style["display"] = "none";
+  if (item.isVisible === false) {
+    item.unselectAll();
+    visibleStyle["display"] = "none";
   }
 
   return (
     <div style={{ ...style, ...visibleStyle }}>
       {item.showinline ? (
-        <Form layout="horizontal" style={{ display: "flex" }}>
-          {Tree.renderChildren(item)}
-        </Form>
+        <Form layout="inline">{Tree.renderChildren(item)}</Form>
       ) : (
         <Form layout="vertical">{Tree.renderChildren(item)}</Form>
       )}

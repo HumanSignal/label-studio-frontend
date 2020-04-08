@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
+import ControlBase from "./Base";
 
 /**
  * KeyPoint tag
@@ -63,7 +64,7 @@ const Model = types
     },
   }));
 
-const KeyPointModel = types.compose("KeyPointModel", TagAttrs, Model);
+const KeyPointModel = types.compose("KeyPointModel", TagAttrs, Model, ControlBase);
 
 const HtxView = () => {
   return null;

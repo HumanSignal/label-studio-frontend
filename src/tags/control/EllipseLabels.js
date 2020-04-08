@@ -9,6 +9,7 @@ import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { EllipseModel } from "./Ellipse";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * EllipseLabels tag creates labeled ellipses
@@ -55,6 +56,7 @@ const Composition = types.compose(
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const EllipseLabelsModel = types.compose("EllipseLabelsModel", Composition);

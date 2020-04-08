@@ -1,11 +1,14 @@
 import React from "react";
 import { Rate } from "antd";
 import { observer, inject } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 import { StarOutlined } from "@ant-design/icons";
 
+import RequiredMixin from "../../mixins/Required";
+import PerRegionMixin from "../../mixins/PerRegion";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * Rating adds rating selection
@@ -45,7 +48,15 @@ const Model = types
     rating: types.maybeNull(types.number),
   })
   .views(self => ({
-    get isSelected() {
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+
+    selectedValues() {
+      return self.holdsState ? self.rating : null;
+    },
+
+    get holdsState() {
       return self.rating > 0;
     },
   }))
@@ -54,26 +65,31 @@ const Model = types
       return self.rating + " star";
     },
 
-    getSelectedNames() {
-      return self.rating;
+    copyState(obj) {
+      self.setRating(obj.rating);
     },
 
     unselectAll() {
       self.rating = 0;
     },
 
-    handleRate(value) {
+    setRating(value) {
       self.rating = value;
+
+      if (self.perregion) {
+        const reg = self.completion.highlightedNode;
+        reg && reg.updateOrAddState(self);
+      }
     },
 
     increaseValue() {
       if (self.rating >= Number(self.maxrating)) {
-        self.rating = 0;
+        self.setRating(0);
       } else {
         if (self.rating > 0) {
-          self.rating = self.rating + 1;
+          self.setRating(self.rating + 1);
         } else {
-          self.rating = 1;
+          self.setRating(1);
         }
       }
     },
@@ -104,7 +120,7 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose("RatingModel", TagAttrs, Model);
+const RatingModel = types.compose("RatingModel", TagAttrs, Model, RequiredMixin, PerRegionMixin, ControlBase);
 
 const HtxRating = inject("store")(
   observer(({ item, store }) => {
@@ -118,14 +134,16 @@ const HtxRating = inject("store")(
       iconSize = 40;
     }
 
+    const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+
     return (
-      <div>
+      <div style={visibleStyle}>
         <Rate
           character={<StarOutlined style={{ fontSize: iconSize }} />}
           value={item.rating}
           count={Number(item.maxrating)}
           defaultValue={Number(item.defaultvalue)}
-          onChange={item.handleRate}
+          onChange={item.setRating}
         />
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
           <sup style={{ fontSize: "9px" }}>[{item.hotkey}]</sup>

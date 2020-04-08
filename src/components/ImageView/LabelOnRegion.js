@@ -51,12 +51,14 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) =>
 };
 
 const LabelOnEllipse = observer(({ item }) => {
-  if (!item.states || !item.states[0].holdsState) return null;
+  const s = item.states.find(s => s.type === "labels");
+  if (!s || !s.holdsState) return null;
+
   return (
     <LabelOnBbox
       x={item.x}
       y={item.y}
-      text={item.states[0].getSelectedNames()}
+      text={s.getSelectedString(",")}
       score={item.score}
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showLabels}
@@ -65,13 +67,14 @@ const LabelOnEllipse = observer(({ item }) => {
 });
 
 const LabelOnRect = observer(({ item }) => {
-  if (!item.states || !item.states[0].holdsState) return null;
+  const s = item.states.find(s => s.type === "labels");
+  if (!s || !s.holdsState) return null;
 
   return (
     <LabelOnBbox
       x={item.x}
       y={item.y}
-      text={item.states[0].getSelectedNames()}
+      text={s.getSelectedString(",")}
       score={item.score}
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showLabels}
@@ -80,7 +83,8 @@ const LabelOnRect = observer(({ item }) => {
 });
 
 const LabelOnPolygon = observer(({ item }) => {
-  if (!item.states || !item.states[0].holdsState) return null;
+  const s = item.states.find(s => s.type === "labels");
+  if (!s || !s.holdsState) return null;
 
   const bbox = polytobbox(item.points);
   const settings = getRoot(item).settings;
@@ -104,7 +108,7 @@ const LabelOnPolygon = observer(({ item }) => {
       <LabelOnBbox
         x={bbox[0][0]}
         y={bbox[1][0] + 2}
-        text={item.states[0].getSelectedNames()}
+        text={s.getSelectedString(",")}
         score={item.score}
         showLabels={settings && settings.showLabels}
         showScore={settings && settings.showScore}
@@ -114,7 +118,8 @@ const LabelOnPolygon = observer(({ item }) => {
 });
 
 const LabelOnMask = observer(({ item }) => {
-  if (!item.states || !item.states[0].holdsState) return null;
+  const s = item.states.find(s => s.type === "labels");
+  if (!s || !s.holdsState) return null;
   if (item.touches.length === 0) return null;
 
   const bbox = polytobbox(item.touches);
@@ -138,7 +143,7 @@ const LabelOnMask = observer(({ item }) => {
       <LabelOnBbox
         x={bbox[0][0]}
         y={bbox[1][0] + 2}
-        text={item.states[0].getSelectedNames()}
+        text={s.getSelectedString(",")}
         score={item.score}
         showLabels={getRoot(item).settings.showLabels}
         showScore={settings && settings.showScore}
@@ -148,13 +153,14 @@ const LabelOnMask = observer(({ item }) => {
 });
 
 const LabelOnKP = observer(({ item }) => {
-  if (!item.states || !item.states[0].holdsState) return null;
+  const s = item.states.find(s => s.type === "labels");
+  if (!s || !s.holdsState) return null;
 
   return (
     <LabelOnBbox
       x={item.x + item.width + 2}
       y={item.y + item.width + 2}
-      text={item.states[0].getSelectedNames()}
+      text={s.getSelectedString(",")}
       score={item.score}
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showScore}

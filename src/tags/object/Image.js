@@ -382,10 +382,6 @@ const Model = types
       self.getToolsManager().event("mouseup", ev);
     },
 
-    toStateJSON() {
-      return self.regions.map(r => r.toStateJSON());
-    },
-
     /**
      * Transform JSON data (completions and predictions) to format
      */

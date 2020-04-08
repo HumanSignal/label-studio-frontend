@@ -8,6 +8,7 @@ import WithStatesMixin from "../mixins/WithStates";
 import { LabelsModel } from "../tags/control/Labels";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
+import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
 import { guidGenerator } from "../core/Helpers";
 
@@ -21,15 +22,11 @@ const Model = types
     end: types.string,
 
     text: types.string,
-    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel))),
+    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .views(self => ({
     get parent() {
       return getParentOfType(self, TextModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -46,20 +43,7 @@ const Model = types
         },
       };
 
-      if (control.type === "labels") {
-        res.value["labels"] = control.getSelectedNames();
-      }
-
-      if (control.type === "choices") {
-        res.value["choices"] = control.getSelectedNames();
-      }
-
-      if (control.type === "textarea") {
-        const texts = control.regions.map(s => s._value);
-        if (texts.length === 0) return;
-
-        res.value["text"] = texts;
-      }
+      res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },

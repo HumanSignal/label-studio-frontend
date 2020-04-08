@@ -23,7 +23,7 @@ const templateElement = element => {
   return (
     <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
-      {element.getSelectedNames().map(title => {
+      {element.selectedValues().map(title => {
         let bgColor = element.findLabel(title).background ? element.findLabel(title).background : "#000000";
 
         return (

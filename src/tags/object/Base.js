@@ -1,11 +1,23 @@
 import { types } from "mobx-state-tree";
+import lodash from "../../utils/lodash";
+import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 
 const ObjectBase = types
   .model({
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
   })
-  .views(self => ({}))
+  .views(self => ({
+    findRegion(params) {
+      return self.regions.find(r => lodash.isMatch(r, params));
+    },
+  }))
+  .actions(self => ({
+    toStateJSON() {
+      const objectsToReturn = self.regions.map(r => r.toStateJSON());
+      return objectsToReturn;
+    },
+  }))
   .actions(self => {
     let props = {};
 

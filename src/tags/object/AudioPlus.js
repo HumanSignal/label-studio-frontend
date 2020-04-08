@@ -75,21 +75,9 @@ const Model = types
     },
   }))
   .actions(self => ({
-    toStateJSON() {
-      return self.regions.map(r => r.toStateJSON());
-    },
-
     onHotKey(e) {
       e && e.preventDefault();
       return self._ws.playPause();
-    },
-
-    /**
-     * Find region of audio
-     */
-    findRegion(start, end) {
-      let findedRegion = self.regions.find(r => r.start === start && r.end === end);
-      return findedRegion;
     },
 
     fromStateJSON(obj, fromModel) {
@@ -100,21 +88,6 @@ const Model = types
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
-
-      // if (obj.value.choices) {
-      //     fm.fromStateJSON(obj);
-      //     if (! fm.perregion) return;
-
-      //   // return;
-      // }
-
-      // if (obj.value.text) {
-      //     fm.fromStateJSON(obj);
-      // }
-
-      // if (obj.value.labels) {
-      //   fm.fromStateJSON(obj);
-      // }
 
       /**
        *
@@ -128,7 +101,7 @@ const Model = types
         readonly: obj.readonly,
       };
 
-      r = self.findRegion(obj.value.start, obj.value.end);
+      r = self.findRegion({ start: obj.value.start, end: obj.value.end });
 
       if (fromModel) {
         m = restoreNewsnapshot(fromModel);
@@ -196,9 +169,9 @@ const Model = types
       const allStates = self.activeStates();
       const clonedStates = allStates.map(s => cloneNode(s));
 
-      const find_r = self.findRegion(ws_region.start, ws_region.end);
+      const find_r = self.findRegion({ start: ws_region.start, end: ws_region.end });
 
-      if (self.findRegion(ws_region.start, ws_region.end)) {
+      if (find_r) {
         find_r.applyCSSClass(ws_region);
 
         find_r._ws_region = ws_region;

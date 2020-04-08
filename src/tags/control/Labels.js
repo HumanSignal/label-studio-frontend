@@ -2,6 +2,7 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types, getParent } from "mobx-state-tree";
 
+import RequiredMixin from "../../mixins/Required";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
@@ -10,6 +11,7 @@ import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { LabelModel } from "./Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * Labels tag, create a group of labels
@@ -35,11 +37,6 @@ const TagAttrs = types.model({
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
   showinline: types.optional(types.boolean, true),
-
-  visible: types.optional(types.boolean, true),
-
-  required: types.optional(types.boolean, false),
-  requiredmessage: types.maybeNull(types.string),
 });
 
 /**
@@ -90,7 +87,9 @@ const LabelsModel = types.compose(
   ModelAttrs,
   TagAttrs,
   Model,
+  RequiredMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const HtxLabels = observer(({ item }) => {
