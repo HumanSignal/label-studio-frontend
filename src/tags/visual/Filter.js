@@ -23,17 +23,6 @@ const { Search } = Input;
  * @param {boolean} [underline=false] - underline of filter
  */
 
-var timer = function(name) {
-  var start = new Date();
-  return {
-    stop: function() {
-      var end = new Date();
-      var time = end.getTime() - start.getTime();
-      console.log("Timer:", name, "finished in", time, "ms");
-    },
-  };
-};
-
 const TagAttrs = types.model({
   casesensetive: types.optional(types.boolean, false),
   placeholder: types.optional(types.string, "Quick Filter"),
@@ -57,8 +46,6 @@ const Model = types
   }))
   .actions(self => ({
     applyFilter(e) {
-      var t = timer("applyFilter");
-
       let { value } = e.target;
       const tch = self.toTag.tiedChildren;
 
@@ -69,9 +56,6 @@ const Model = types
 
       if (!self.casesensetive) value = value.toLowerCase();
 
-      // if (value) {
-      // tag.
-
       tch.forEach(ch => {
         let chval = ch._value;
         if (!self.casesensetive) chval = chval.toLowerCase();
@@ -79,9 +63,6 @@ const Model = types
         if (chval.indexOf(value) !== -1) ch.setVisible(true);
         else ch.setVisible(false);
       });
-      // }
-
-      t.stop();
     },
   }));
 
@@ -90,7 +71,11 @@ const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMi
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;
 
-  if (tag.type.indexOf("labels") === -1 || tag.type.indexOf("choices") === -1) return null;
+  console.log(tag.type, tag.type.indexOf("labels"));
+
+  if (tag.type.indexOf("labels") === -1 && tag.type.indexOf("choices") === -1) return null;
+
+  console.log();
 
   return (
     <Input
