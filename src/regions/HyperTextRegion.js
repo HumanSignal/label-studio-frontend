@@ -5,8 +5,12 @@ import RegionsMixin from "../mixins/Regions";
 import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
+import { ChoicesModel } from "../tags/control/Choices";
 import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
 import { HyperTextModel } from "../tags/object/HyperText";
+import { LabelsModel } from "../tags/control/Labels";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 const Model = types
@@ -19,15 +23,11 @@ const Model = types
     endOffset: types.integer,
     end: types.string,
     text: types.string,
-    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel))),
+    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .views(self => ({
     get parent() {
       return getParentOfType(self, HyperTextModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -36,16 +36,19 @@ const Model = types
     },
 
     serialize(control, object) {
-      return {
+      let res = {
         value: {
           start: self.start,
           end: self.end,
           text: self.text,
           startOffset: self.startOffset,
           endOffset: self.endOffset,
-          htmllabels: control.getSelectedNames(),
         },
       };
+
+      res.value = Object.assign(res.value, control.serializableValue);
+
+      return res;
     },
   }));
 

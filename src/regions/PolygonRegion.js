@@ -16,6 +16,8 @@ import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 
 const Model = types
   .model({
@@ -36,7 +38,7 @@ const Model = types
 
     points: types.array(PolygonPoint, []),
 
-    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, ChoicesModel))),
+    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     mouseOverStartPoint: types.optional(types.boolean, false),
 
@@ -52,10 +54,6 @@ const Model = types
   .views(self => ({
     get parent() {
       return getParentOfType(self, ImageModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -249,14 +247,17 @@ const Model = types
         return [res_w, res_h];
       });
 
-      return {
+      let res = {
         value: {
           points: perc_points,
-          polygonlabels: control.getSelectedNames(),
         },
         original_width: naturalWidth,
         original_height: naturalHeight,
       };
+
+      res.value = Object.assign(res.value, control.serializableValue);
+
+      return res;
     },
   }));
 

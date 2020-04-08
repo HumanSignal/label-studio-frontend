@@ -9,6 +9,7 @@ import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { PolygonModel } from "./Polygon";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * PolygonLabels tag, create labeled polygons
@@ -51,6 +52,7 @@ const Composition = types.compose(
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const PolygonLabelsModel = types.compose("PolygonLabelsModel", Composition);

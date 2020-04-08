@@ -9,6 +9,7 @@ import Types from "../../core/Types";
 import { BrushModel } from "./Brush";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * BrushLabels tag creates segmented labeling
@@ -50,6 +51,7 @@ const BrushLabelsModel = types.compose(
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const HtxBrushLabels = observer(({ item }) => {

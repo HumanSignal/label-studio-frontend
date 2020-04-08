@@ -90,8 +90,7 @@ const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMi
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;
 
-  // if (tag._type !== "labels") return null;
-  //   if (tag._type !== 'choices') return null;
+  if (tag.type.indexOf("labels") === -1 || tag.type.indexOf("choices") === -1) return null;
 
   return (
     <Input

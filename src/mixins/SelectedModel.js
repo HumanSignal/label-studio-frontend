@@ -13,6 +13,12 @@ const SelectedModelMixin = types
       return self.tiedChildren.filter(c => c.selected === true);
     },
 
+    getSelectedColor() {
+      // return first selected label color
+      const sel = self.tiedChildren.find(c => c.selected === true);
+      return sel && sel.background;
+    },
+
     get isSelected() {
       return self.selectedLabels.length > 0;
     },
@@ -21,32 +27,26 @@ const SelectedModelMixin = types
     get holdsState() {
       return self.selectedLabels.length > 0;
     },
-  }))
-  .actions(self => ({
-    /**
-     * Get current color from Label settings
-     */
-    getSelectedColor() {
-      // return first selected label color
-      const sel = self.tiedChildren.find(c => c.selected === true);
-      return sel && sel.background;
-    },
 
-    findLabel(value) {
-      return self.tiedChildren.find(c => c.alias === value || c.value === value);
-    },
-
-    unselectAll() {
-      self.tiedChildren.forEach(c => c.setSelected(false));
-    },
-
-    getSelectedNames() {
+    selectedValues() {
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
     },
 
     getSelectedString(joinstr) {
       joinstr = joinstr || " ";
-      return self.getSelectedNames().join(joinstr);
+      return self.selectedValues().join(joinstr);
+    },
+
+    findLabel(value) {
+      return self.tiedChildren.find(c => c.alias === value || c.value === value);
+    },
+  }))
+  .actions(self => ({
+    /**
+     * Get current color from Label settings
+     */
+    unselectAll() {
+      self.tiedChildren.forEach(c => c.setSelected(false));
     },
   }));
 

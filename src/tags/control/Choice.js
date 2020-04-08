@@ -57,9 +57,9 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      const choice = self.parent;
+      const choices = self.parent;
 
-      choice.shouldBeUnselected && choice.unselectAll();
+      choices.shouldBeUnselected && choices.unselectAll();
 
       self.setSelected(!self.selected);
 
@@ -70,7 +70,11 @@ const Model = types
       //     if (sel.length === 1 && sel[0]._value === self._value) return;
       // }
 
-      reg && reg.updateOrAddState(choice);
+      // choice is toggled, we need to check if we need to update
+      // the currently selected region
+      if (reg && choices.perregion && reg.parent.name === choices.toname) {
+        reg.updateOrAddState(choices);
+      }
     },
 
     setVisible(val) {

@@ -8,6 +8,7 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * HyperTextLabels tag
@@ -55,6 +56,7 @@ const Composition = types.compose(
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const HyperTextLabelsModel = types.compose("HyperTextLabelsModel", Composition);

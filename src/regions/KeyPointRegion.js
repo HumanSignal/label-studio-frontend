@@ -12,6 +12,9 @@ import { ImageModel } from "../tags/object/Image";
 import { KeyPointLabelsModel } from "../tags/control/KeyPointLabels";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
+import { ChoicesModel } from "../tags/control/Choices";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 
 const Model = types
   .model({
@@ -30,7 +33,7 @@ const Model = types
     opacity: types.number,
     fillColor: types.maybeNull(types.string),
 
-    states: types.maybeNull(types.array(types.union(KeyPointLabelsModel))),
+    states: types.maybeNull(types.array(types.union(KeyPointLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     sw: types.maybeNull(types.number),
     sh: types.maybeNull(types.number),
@@ -40,10 +43,6 @@ const Model = types
   .views(self => ({
     get parent() {
       return getParentOfType(self, ImageModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -113,7 +112,7 @@ const Model = types
     },
 
     serialize(control, object) {
-      return {
+      const res = {
         original_width: object.naturalWidth,
         original_height: object.naturalHeight,
 
@@ -121,9 +120,12 @@ const Model = types
           x: (self.x * 100) / object.stageWidth,
           y: (self.y * 100) / object.stageHeight,
           width: (self.width * 100) / object.stageWidth, //  * (self.scaleX || 1)
-          keypointlabels: control.getSelectedNames(),
         },
       };
+
+      res.value = Object.assign(res.value, control.serializableValue);
+
+      return res;
     },
   }));
 
