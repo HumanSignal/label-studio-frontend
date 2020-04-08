@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import { types, destroy, getRoot } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import ValidateMixin from "../../mixins/Validate";
+import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
@@ -13,6 +13,7 @@ import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
 import { guidGenerator } from "../../core/Helpers";
 import { cloneNode } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 const { TextArea } = Input;
 
@@ -42,11 +43,6 @@ const TagAttrs = types.model({
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
-  required: types.optional(types.boolean, false),
-  requiredmessage: types.maybeNull(types.string),
-
-  perregion: types.optional(types.boolean, false),
-  whenlabelvalue: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -80,11 +76,18 @@ const Model = types
       }
     },
 
-    getSelectedNames() {
+    selectedValues() {
       return self.regions.map(r => r._value);
     },
   }))
   .actions(self => ({
+    getSerializableValue() {
+      const texts = self.regions.map(s => s._value);
+      if (texts.length === 0) return;
+
+      return { text: texts };
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
     },
@@ -160,7 +163,15 @@ const Model = types
     },
   }));
 
-const TextAreaModel = types.compose("TextAreaModel", TagAttrs, Model, ProcessAttrsMixin, ValidateMixin, PerRegionMixin);
+const TextAreaModel = types.compose(
+  "TextAreaModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  RequiredMixin,
+  PerRegionMixin,
+  ControlBase,
+);
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);

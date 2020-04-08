@@ -69,13 +69,6 @@ const Model = types
       self._update = self._update + 1;
     },
 
-    findRegion(start, startOffset, end, endOffset) {
-      const immutableRange = self.regions.find(r => {
-        return r.start === start && r.end === end && r.startOffset === startOffset && r.endOffset === endOffset;
-      });
-      return immutableRange;
-    },
-
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
     },
@@ -105,14 +98,6 @@ const Model = types
       states.forEach(s => s.unselectAll());
 
       return r;
-    },
-
-    /**
-     * Return JSON
-     */
-    toStateJSON() {
-      const objectsToReturn = self.regions.map(r => r.toStateJSON());
-      return objectsToReturn;
     },
 
     /**

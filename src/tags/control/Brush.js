@@ -2,6 +2,7 @@ import { types, getRoot } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
+import ControlBase from "./Base";
 
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -45,7 +46,7 @@ const Model = types
     },
   }));
 
-const BrushModel = types.compose("BrushModel", TagAttrs, Model);
+const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase);
 
 const HtxView = () => {
   return null;

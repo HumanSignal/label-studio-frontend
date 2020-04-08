@@ -2,6 +2,7 @@ import { types, getRoot } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
+import ControlBase from "./Base";
 
 /**
  * Rectangle
@@ -57,7 +58,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose("RectangleModel", TagAttrs, Model);
+const RectangleModel = types.compose("RectangleModel", TagAttrs, Model, ControlBase);
 
 const HtxView = () => {
   return null;
