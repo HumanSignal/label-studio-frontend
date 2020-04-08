@@ -6,17 +6,6 @@ import { cloneNode } from "../core/Helpers";
 export default types
   .model("WithStates")
   .views(self => ({
-    getAllStatesNames() {
-      return Utils.Checkers.flatten(self.states.map(s => s.getSelectedNames()));
-    },
-
-    getActiveStates(types = []) {
-      const states = self.states;
-      const selected = states.filter(s => s.isSelected);
-
-      return types.length ? selected.filter(s => types.includes(getType(s).name)) : selected;
-    },
-
     // returns one color from all the states
     getOneColor(pick = "first") {
       if (!self.states) return;

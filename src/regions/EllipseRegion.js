@@ -15,6 +15,8 @@ import { RatingModel } from "../tags/control/Rating";
 import { EllipseLabelsModel } from "../tags/control/EllipseLabels";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
+import { ChoicesModel } from "../tags/control/Choices";
+import { TextAreaModel } from "../tags/control/TextArea";
 
 /**
  * Ellipse object for Bounding Box
@@ -58,7 +60,7 @@ const Model = types
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, EllipseLabelsModel))),
+    states: types.maybeNull(types.array(types.union(EllipseLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     wp: types.maybeNull(types.number),
     hp: types.maybeNull(types.number),
@@ -73,10 +75,6 @@ const Model = types
   .views(self => ({
     get parent() {
       return getParentOfType(self, ImageModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -205,7 +203,7 @@ const Model = types
     },
 
     serialize(control, object) {
-      return {
+      const res = {
         original_width: object.naturalWidth,
         original_height: object.naturalHeight,
         value: {
@@ -214,9 +212,12 @@ const Model = types
           radiusX: (self.radiusX * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
           radiusY: (self.radiusY * (self.scaleY || 1) * 100) / object.stageHeight,
           rotation: self.rotation,
-          ellipselabels: control.getSelectedNames(),
         },
       };
+
+      res.value = Object.assign(res.value, control.serializableValue);
+
+      return res;
     },
   }));
 

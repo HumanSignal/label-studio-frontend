@@ -10,7 +10,7 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
    * Usage check of selected controls before send completion to server
    */
   beforeSend() {
-    const names = self.getSelectedNames();
+    const names = self.selectedValues();
 
     if (names && self.type === self._type) {
       self.unselectAll();
@@ -20,7 +20,7 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
   // copy state from another Labels object
   copyState(labels) {
     // self.unselectAll();
-    labels.getSelectedNames().forEach(l => {
+    labels.selectedValues().forEach(l => {
       self.findLabel(l).setSelected(true);
     });
   },
