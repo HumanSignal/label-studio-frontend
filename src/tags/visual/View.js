@@ -110,6 +110,8 @@ const HtxView = observer(({ item, store }) => {
         return true;
       },
 
+      filter: () => {},
+
       "choice-selected": ({ tagName, choiceValue }) => {
         const tag = item.completion.names.get(tagName);
 
