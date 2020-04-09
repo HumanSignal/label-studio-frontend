@@ -21,6 +21,8 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
   copyState(labels) {
     // self.unselectAll();
     labels.selectedValues().forEach(l => {
+      console.log("load label: ", l);
+
       self.findLabel(l).setSelected(true);
     });
   },

@@ -34,6 +34,7 @@ import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { guidGenerator, restoreNewsnapshot } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
+import Utils from "../../../utils";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -183,17 +184,25 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
       timeRanges={item.parent.regionsTimeRanges}
       style={i => {
         let col = "#cccccc";
+        let border = "";
+        let dash = "";
+
         const r = item.parent.regions[i];
 
         if (r) {
+          const stateProvidesColor = r.states.find(s => s.hasOwnProperty("getSelectedColor"));
+          const sCol = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), 1);
+
           if (r.selected || r.highlighted) {
-            col = "#ff0000";
+            col = sCol;
+            border = "#00aeff";
+            dash = "2 1";
           } else {
-            col = r.states[0].getSelectedColor();
+            col = Utils.Colors.rgbaChangeAlpha(sCol, 0.8);
           }
         }
 
-        return { fill: col };
+        return { fill: col, stroke: border, strokeDasharray: dash };
       }}
       allowSelectionClear
       onTimeRangeChanged={(timerange, i) => {

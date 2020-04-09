@@ -158,27 +158,6 @@ const Model = types
       }
     },
 
-    afterAttach() {
-      // console.log('afterAttach');
-      // console.log(self.store);
-      // window.A = self.store;
-      // self._value = runTemplate(self.value, self.store.task.dataObj);
-    },
-
-    afterCreate() {
-      //     console.log('afterCreate');
-      //     self._value = runTemplate(self.value, self.store.task.dataObj);
-      // const tr = new TimeRange(1000, 1000000);
-      // self.initialRange = tr;
-      // self.brushRange = tr;
-      // const series = new TimeSeries({
-      //   name: "time",
-      //   columns: ["time"],
-      //   points: self._value,
-      // });
-      // self.series = series;
-    },
-
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 

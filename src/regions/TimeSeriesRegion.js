@@ -5,6 +5,7 @@ import { Alert } from "antd";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
+import Utils from "../utils";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -106,6 +107,8 @@ const Model = types
       Hotkey.addKey("ctrl+shift+down", function() {
         self.shrinkLeft(lots);
       });
+
+      self.completion.loadRegionState(self);
     },
 
     /**
@@ -132,38 +135,33 @@ const Model = types
       self.parent.updateView();
     },
 
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = obj => {
-        const tree = {
-          id: self.pid,
-          from_name: obj.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "tsregion",
-          value: {
-            start: self.start,
-            end: self.end,
-          },
-        };
+    updateAppearenceFromState() {
+      const s = self.labelsState;
+      if (!s) return;
 
-        if (self.normalization) tree["normalization"] = self.normalization;
+      self.parent.updateView();
+    },
 
-        return tree;
+    unselectRegion() {
+      // debugger;
+      self.selected = false;
+      self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
+
+      self.parent.updateView();
+    },
+
+    serialize(control, object) {
+      let res = {
+        value: {
+          start: self.start,
+          end: self.end,
+        },
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
+      return res;
     },
   }));
 
