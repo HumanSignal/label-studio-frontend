@@ -27,6 +27,9 @@ import ControlBase from "./Base";
  * @param {string} [size=medium] One of: small, medium, large
  * @param {string} [icon=start] One of: star, heart, fire, smile
  * @param {string} hotkey HotKey for changing rating value
+ * @param {boolean} [required=false]   - validation if rating is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
