@@ -24,9 +24,10 @@ import VisibilityMixin from "../../mixins/Visibility";
  * @param {block|inline} display
  * @param {string} [style] css style string
  * @param {string} [className] - class name of the css style to apply
- * @param {string} [visibleWhen]
- * @param {string} [whenTagName]
- * @param {string} [whenChoiceValue]
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] show the contents of a view when condition is true
+ * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {string} [whenLabelValue] narrow down visibility by label value
+ * @param {string} [whenChoiceValue] narrow down visibility by choice value
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),

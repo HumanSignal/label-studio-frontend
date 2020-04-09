@@ -16,6 +16,7 @@ const VisibilityMixin = types
         const fns = {
           "region-selected": ({ tagName, labelValue }) => {
             const reg = self.completion.highlightedNode;
+
             if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
               return false;
             }
