@@ -11,6 +11,7 @@ import Registry from "../core/Registry";
 import { TimeSeriesLabelsModel } from "../tags/control/TimeSeriesLabels";
 import { TimeSeriesModel } from "../tags/object/TimeSeries";
 import { guidGenerator } from "../core/Helpers";
+import WithStatesMixin from "../mixins/WithStates";
 
 const Model = types
   .model("TimeSeriesRegionModel", {
@@ -166,6 +167,12 @@ const Model = types
     },
   }));
 
-const TimeSeriesRegionModel = types.compose("TimeSeriesRegionModel", RegionsMixin, NormalizationMixin, Model);
+const TimeSeriesRegionModel = types.compose(
+  "TimeSeriesRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 export { TimeSeriesRegionModel };

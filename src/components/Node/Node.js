@@ -1,5 +1,4 @@
 import React, { Fragment } from "react";
-import { Icon } from "antd";
 import { getType, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
@@ -12,6 +11,7 @@ import {
   EyeOutlined,
   HighlightOutlined,
   ApartmentOutlined,
+  LineChartOutlined,
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
@@ -132,12 +132,12 @@ const NodeViews = {
   ),
 
   TimeSeriesRegionModel: (node, click) => (
-    <p>
-      <Icon type="line-chart" />
+    <Fragment>
+      <LineChartOutlined style={pt} />
       <span onClick={click} className={styles.node}>
         &nbsp; TimeSeries
       </span>
-    </p>
+    </Fragment>
   ),
 };
 
@@ -240,7 +240,7 @@ const NodeMinimal = ({ node }) => {
   if (getType(node).name === "TimeSeriesRegionModel") {
     return (
       <Fragment>
-        <Icon type="line-chart" />
+        <LineChartOutlined />
         &nbsp; TimeSeries
       </Fragment>
     );
