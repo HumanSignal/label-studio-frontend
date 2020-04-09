@@ -31,12 +31,17 @@ const { TextArea } = Input;
  * @param {string=} [placeholder] placeholder text
  * @param {string=} [maxSubmissions] maximum number of submissions
  * @param {boolean=} [editable=false] editable textarea results
+ * @param {number} [rows] number of rows in the textarea
+ * @param {boolean} [required=false]   - validation if textarea is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {boolean=} [showSubmitButton] show submit button or hide it, it's shown by default when rows is more than one (i.e. textarea mode)
+ * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  allowSubmit: types.optional(types.boolean, true),
-  label: types.optional(types.string, ""),
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
+  allowsubmit: types.optional(types.boolean, true),
+  label: types.optional(types.string, ""),
   value: types.maybeNull(types.string),
   rows: types.optional(types.string, "1"),
   showsubmitbutton: types.optional(types.boolean, false),
@@ -208,7 +213,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.showSubmit && (
         <Form
           onFinish={ev => {
-            if (item.allowSubmit) {
+            if (item.allowsubmit) {
               item.addText(item._value);
               item.setValue("");
             }
