@@ -3,21 +3,23 @@ import { Circle } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { ImageModel } from "../tags/object/Image";
 import { KeyPointLabelsModel } from "../tags/control/KeyPointLabels";
-import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
+import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
+import { ChoicesModel } from "../tags/control/Choices";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-
     type: "keypointregion",
 
     x: types.number,
@@ -29,9 +31,9 @@ const Model = types
     width: types.number,
 
     opacity: types.number,
-    fillcolor: types.maybeNull(types.string),
+    fillColor: types.maybeNull(types.string),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, KeyPointLabelsModel))),
+    states: types.maybeNull(types.array(types.union(KeyPointLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     sw: types.maybeNull(types.number),
     sh: types.maybeNull(types.number),
@@ -42,22 +44,26 @@ const Model = types
     get parent() {
       return getParentOfType(self, ImageModel);
     },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
   }))
   .actions(self => ({
     unselectRegion() {
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
     },
 
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+      self.completion.loadRegionState(self);
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+      self.fillColor = stroke;
     },
 
     setPosition(x, y) {
@@ -105,45 +111,31 @@ const Model = types
       }
     },
 
-    toStateJSON() {
-      const parent = self.parent;
-      const from = parent.states()[0];
+    serialize(control, object) {
+      const res = {
+        original_width: object.naturalWidth,
+        original_height: object.naturalHeight,
 
-      const buildTree = obj => {
-        const tree = {
-          id: self.id,
-          from_name: from.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "keypoint",
-          value: {
-            x: (self.x * 100) / self.parent.stageWidth,
-            y: (self.y * 100) / self.parent.stageHeight,
-            width: (self.width * 100) / self.parent.stageWidth, //  * (self.scaleX || 1)
-          },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+        value: {
+          x: (self.x * 100) / object.stageWidth,
+          y: (self.y * 100) / object.stageHeight,
+          width: (self.width * 100) / object.stageWidth, //  * (self.scaleX || 1)
+        },
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
+      return res;
     },
   }));
 
-const KeyPointRegionModel = types.compose("KeyPointRegionModel", RegionsMixin, NormalizationMixin, Model);
+const KeyPointRegionModel = types.compose(
+  "KeyPointRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 const HtxKeyPointView = ({ store, item }) => {
   const x = item.x;
@@ -153,12 +145,12 @@ const HtxKeyPointView = ({ store, item }) => {
 
   props["opacity"] = item.opacity;
 
-  if (item.fillcolor) {
-    props["fill"] = item.fillcolor;
+  if (item.fillColor) {
+    props["fill"] = item.fillColor;
   }
 
-  props["stroke"] = item.strokecolor;
-  props["strokeWidth"] = item.strokewidth;
+  props["stroke"] = item.strokeColor;
+  props["strokeWidth"] = item.strokeWidth;
   props["strokeScaleEnabled"] = false;
   props["shadowBlur"] = 0;
 
@@ -218,7 +210,7 @@ const HtxKeyPointView = ({ store, item }) => {
         onClick={e => {
           const stage = item.parent.stageRef;
 
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = "default";
@@ -228,8 +220,9 @@ const HtxKeyPointView = ({ store, item }) => {
           item.onClickRegion();
         }}
         {...props}
-        draggable={item.completion.edittable}
+        draggable={item.editable}
       />
+      <LabelOnKP item={item} />
     </Fragment>
   );
 };

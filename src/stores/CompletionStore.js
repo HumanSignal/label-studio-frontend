@@ -1,5 +1,6 @@
 import { types, getParent, getEnv, getRoot, destroy, detach } from "mobx-state-tree";
 
+import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
 import NormalizationStore from "./NormalizationStore";
 import RegionStore from "./RegionStore";
@@ -43,7 +44,7 @@ const Completion = types
 
     dragMode: types.optional(types.boolean, false),
 
-    edittable: types.optional(types.boolean, true),
+    editable: types.optional(types.boolean, true),
 
     relationMode: types.optional(types.boolean, false),
     relationStore: types.optional(RelationStore, {
@@ -73,6 +74,10 @@ const Completion = types
   .actions(self => ({
     reinitHistory() {
       self.history = { targetPath: "../root" };
+    },
+
+    setEdit(val) {
+      self.editable = val;
     },
 
     setGroundTruth(value) {
@@ -107,22 +112,30 @@ const Completion = types
     startRelationMode(node1) {
       self._relationObj = node1;
       self.relationMode = true;
+
+      document.body.style.cursor = Constants.CHOOSE_CURSOR;
     },
 
     stopRelationMode() {
+      document.body.style.cursor = Constants.DEFAULT_CURSOR;
+
       self._relationObj = null;
       self.relationMode = false;
 
       self.regionStore.unhighlightAll();
     },
 
-    deleteAllRegions() {
-      self.regionStore.regions.forEach(r => r.deleteRegion());
+    deleteAllRegions({ deleteReadOnly = false } = {}) {
+      let { regions } = self.regionStore;
+
+      if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
+
+      regions.forEach(r => r.deleteRegion());
     },
 
     addRegion(reg) {
-      self.regionStore.unselectAll();
       self.regionStore.addRegion(reg);
+      self.regionStore.unselectAll();
 
       if (self.relationMode) {
         self.addRelation(reg);
@@ -130,10 +143,24 @@ const Completion = types
       }
     },
 
-    /**
-     * Add relation
-     * @param {*} reg
-     */
+    loadRegionState(region) {
+      region.states &&
+        region.states.forEach(s => {
+          const mainViewTag = self.names.get(s.name);
+          mainViewTag.unselectAll && mainViewTag.unselectAll();
+          mainViewTag.copyState(s);
+        });
+    },
+
+    unloadRegionState(region) {
+      region.states &&
+        region.states.forEach(s => {
+          const mainViewTag = self.names.get(s.name);
+          mainViewTag.unselectAll && mainViewTag.unselectAll();
+          mainViewTag.perRegionCleanup && mainViewTag.perRegionCleanup();
+        });
+    },
+
     addRelation(reg) {
       self.relationStore.addRelation(self._relationObj, reg);
     },
@@ -142,18 +169,24 @@ const Completion = types
       self.normalizationStore.addNormalization();
     },
 
-    traverseTree(cb) {
-      let visitNode;
+    validate() {
+      let ok = true;
 
-      visitNode = function(node) {
-        cb(node);
-
-        if (node.children) {
-          node.children.forEach(chld => visitNode(chld));
+      self.traverseTree(function(node) {
+        if (node.required === true) {
+          ok = node.validate();
+          if (ok === false) {
+            ok = false;
+            return "break";
+          }
         }
-      };
+      });
 
-      visitNode(self.root);
+      return ok;
+    },
+
+    traverseTree(cb) {
+      return Tree.traverseTree(self.root, cb);
     },
 
     /**
@@ -186,9 +219,20 @@ const Completion = types
     afterAttach() {
       self.traverseTree(node => {
         if (node.updateValue) node.updateValue(self.store);
+
+        // called when the completion is attached to the main store,
+        // at this point the whole tree is available. This method
+        // may come handy when you have a tag that acts or depends
+        // on other elements in the tree.
         if (node.completionAttached) node.completionAttached();
 
-        // Copy tools from control tags into object tools manager
+        // copy tools from control tags into object tools manager
+        // [DOCS] each object tag may have an assigned tools
+        // manager. This assignment may happen because user asked
+        // for it through the config, or because the attached
+        // control tags are complex and require additional UI
+        // interfaces. Each control tag defines a set of tools it
+        // supports
         if (node && node.getToolsManager) {
           const tools = node.getToolsManager();
           const states = self.toNames.get(node.name);
@@ -205,7 +249,8 @@ const Completion = types
         self.loadedDate = new Date();
       }
 
-      // initialize toName bindings
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
       self.traverseTree(node => {
         if (node && node.name && node.id) self.names.set(node.name, node.id);
 
@@ -232,18 +277,19 @@ const Completion = types
       // Hotkeys setup
       self.traverseTree(node => {
         if (node && node.onHotKey && node.hotkey) {
-          Hotkey.addKey(node.hotkey, node.onHotKey, node.hotkeyScope);
+          Hotkey.addKey(node.hotkey, node.onHotKey, undefined, node.hotkeyScope);
         }
       });
 
       self.traverseTree(node => {
-        // add Space hotkey for playbacks of audio
-        if (node && !node.hotkey && node.type === "audio") {
+        // add Space hotkey for playbacks of audio, there might be
+        // multiple audios on the screen
+        if (node && !node.hotkey && (node.type === "audio" || node.type === "audioplus")) {
           if (audiosNum > 0) comb = mod + "+" + (audiosNum + 1);
           else audioNode = node;
 
           node.hotkey = comb;
-          Hotkey.addKey(comb, node.onHotKey);
+          Hotkey.addKey(comb, node.onHotKey, "Play an audio");
 
           audiosNum++;
         }
@@ -287,7 +333,7 @@ const Completion = types
       const arr = [];
 
       self.traverseTree(node => {
-        if (node.toStateJSON) {
+        if (node.toStateJSON && !node.perregion) {
           const val = node.toStateJSON();
 
           if (val) arr.push(val);
@@ -330,13 +376,21 @@ const Completion = types
 
             toModel.fromStateJSON(obj, fromModel);
           });
-        } else {
+        }
+      });
+
+      objCompletion.forEach(obj => {
+        if (obj["type"] === "relation") {
           self.relationStore.deserializeRelation(
             self.regionStore.findRegion(obj.from_id),
             self.regionStore.findRegion(obj.to_id),
+            obj.direction,
+            obj.labels,
           );
         }
       });
+
+      self.regionStore.unselectAll();
     },
   }));
 
@@ -360,7 +414,7 @@ export default types
       if (self.viewingAllCompletions || self.viewingAllPredictions) {
         self.completions.forEach(c => {
           c.selected = false;
-          c.edittable = false;
+          c.editable = false;
           c.regionStore.unselectAll();
         });
 
@@ -411,10 +465,13 @@ export default types
      * @param {*} id
      */
     function selectCompletion(id) {
+      const { selected } = self;
       const c = selectItem(id, self.completions);
 
-      c.edittable = true;
+      c.editable = true;
       c.setupHotKeys();
+
+      getEnv(self).onSelectCompletion(c, selected);
 
       return c;
     }
@@ -473,7 +530,7 @@ export default types
     }
 
     function addPrediction(options = {}) {
-      options.edittable = false;
+      options.editable = false;
       options.type = "prediction";
 
       const item = addItem(options);

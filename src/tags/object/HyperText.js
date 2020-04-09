@@ -7,25 +7,28 @@ import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
-import Utils from "../../utils";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
-import { highlightRange, splitBoundaries } from "../../utils/html";
+import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 
 /**
  * HyperText tag shows an HyperText markup that can be labeled
  * @example
- * <HyperText name="text-1" value="$text"></HyperText>
+ * <HyperText name="text-1" value="$text" />
  * @name HyperText
- * @param {string} name of the element
- * @param {string} value of the element
- * @param {string} [encoding=string|base64] provide the html as an escaped string or base64 encoded string
+ * @param {string} name - name of the element
+ * @param {string} value - value of the element
+ * @param {boolean} [showLabels=false] - show labels next to the region
+ * @param {string} [encoding=string|base64] - provide the html as an escaped string or base64 encoded string
  */
 const TagAttrs = types.model("HyperTextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
+
+  highlightcolor: types.maybeNull(types.string),
+  showlabels: types.optional(types.boolean, false),
 
   encoding: types.optional(types.string, "string"),
 });
@@ -66,25 +69,14 @@ const Model = types
       self._update = self._update + 1;
     },
 
-    findRegion(start, startOffset, end, endOffset) {
-      const immutableRange = self.regions.find(r => {
-        return r.start === start && r.end === end && r.startOffset === startOffset && r.endOffset === endOffset;
-      });
-      return immutableRange;
-    },
-
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
     },
 
     createRegion(p) {
       const r = HyperTextRegionModel.create({
-        startOffset: p.startOffset,
-        endOffset: p.endOffset,
-        start: p.start,
-        end: p.end,
-        text: p.text,
-        states: p.states,
+        pid: p.id,
+        ...p,
       });
 
       r._range = p._range;
@@ -99,28 +91,13 @@ const Model = types
       const states = self.activeStates();
       if (states.length === 0) return;
 
-      const clonedStates = states
-        ? states.map(s => {
-            return cloneNode(s);
-          })
-        : null;
+      const clonedStates = states.map(s => cloneNode(s));
 
       const r = self.createRegion({ ...range, states: clonedStates });
 
-      states &&
-        states.forEach(s => {
-          return s.unselectAll();
-        });
+      states.forEach(s => s.unselectAll());
 
       return r;
-    },
-
-    /**
-     * Return JSON
-     */
-    toStateJSON() {
-      const objectsToReturn = self.regions.map(r => r.toStateJSON());
-      return objectsToReturn;
     },
 
     /**
@@ -144,6 +121,8 @@ const Model = types
         start: start,
         end: end,
         text: text,
+        score: obj.score,
+        readonly: obj.readonly,
         normalization: obj.normalization,
         states: [states],
       };
@@ -186,6 +165,10 @@ class HyperTextPieceView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
 
+      if (r.endContainer.nodeName === "DIV") {
+        r.setEnd(r.startContainer, r.startContainer.length);
+      }
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef.current);
         splitBoundaries(r);
@@ -222,22 +205,8 @@ class HyperTextPieceView extends Component {
     }
 
     const htxRange = this.props.item.addRegion(selectedRanges[0]);
-
-    let labelColor = htxRange.states.map(s => {
-      return s.getSelectedColor();
-    });
-
-    if (labelColor.length !== 0) {
-      labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-    }
-
-    const spans = highlightRange(
-      htxRange,
-      "htx-highlight",
-      { backgroundColor: labelColor },
-      htxRange.states.map(s => s.getSelectedNames()),
-    );
-    htxRange._spans = spans;
+    const spans = htxRange.createSpans();
+    htxRange.addEventsToSpans(spans);
   }
 
   _handleUpdate() {
@@ -251,22 +220,8 @@ class HyperTextPieceView extends Component {
         splitBoundaries(range);
 
         r._range = range;
-
-        let labelColor = r.states.map(s => {
-          return s.getSelectedColor();
-        });
-
-        if (labelColor.length !== 0) {
-          labelColor = Utils.Colors.convertToRGBA(labelColor[0], 0.3);
-        }
-
-        const spans = highlightRange(
-          r,
-          "htx-highlight",
-          { backgroundColor: labelColor },
-          r.states.map(s => s.getSelectedNames()),
-        );
-        r._spans = spans;
+        const spans = r.createSpans();
+        r.addEventsToSpans(spans);
       } catch (err) {
         console.log(r);
       }

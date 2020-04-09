@@ -4,6 +4,15 @@
 @import "./mixins";
 @import "./functions";
 
+.ant-divider-horizontal.ant-divider-with-text-center::before,
+.ant-divider-horizontal.ant-divider-with-text-left::before,
+.ant-divider-horizontal.ant-divider-with-text-right::before,
+.ant-divider-horizontal.ant-divider-with-text-center::after,
+.ant-divider-horizontal.ant-divider-with-text-left::after,
+.ant-divider-horizontal.ant-divider-with-text-right::after {
+  border-top-color: #cecece !important;
+}
+
 .ls-renderall {
   display: flex;
   flex-wrap: wrap;
@@ -21,6 +30,43 @@
   animation-iteration-count: 1;
   animation-timing-function: ease-in;
   animation-duration: 1s;
+}
+
+.htx-highlight > .htx-highlight {
+  padding: 2px;
+}
+
+// .htx-no-highlight {
+//     display: none;
+// }
+
+.htx-no-label:after {
+  display: none;
+}
+
+.htx-highlight {
+  // border: 1px dashed #00aeff;
+}
+
+.htx-highlight-last {
+  // position: relative;
+}
+
+.htx-highlight-last:after {
+  margin-left: 2px;
+  // top: -0.3em;
+  // margin-right: 2px;
+  // position: relative;
+  // color: #1f104d;
+  // font-size: 75%;
+  // font-weight: bold;
+}
+
+.htx-highlight-vertical:after {
+}
+
+.htx-yoyo:after {
+  content: "Yoyo";
 }
 
 @keyframes fadeInOpacity {

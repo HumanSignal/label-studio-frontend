@@ -1,21 +1,27 @@
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
+import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
 import { AudioPlusModel } from "../tags/object/AudioPlus";
+import { TextAreaModel } from "../tags/control/TextArea";
+import { ChoicesModel } from "../tags/control/Choices";
 import { LabelsModel } from "../tags/control/Labels";
-import { RatingModel } from "../tags/control/Rating";
 import { guidGenerator } from "../core/Helpers";
+import Canvas from "../utils/canvas";
+import { RatingModel } from "../tags/control/Rating";
 
 const Model = types
   .model("AudioRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
+    type: "audioregion",
     start: types.number,
     end: types.number,
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel))),
+
+    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
@@ -23,46 +29,56 @@ const Model = types
       return getParentOfType(self, AudioPlusModel);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    wsRegionElement(wsRegion) {
+      const elID = wsRegion.id;
+      let el = Array.from(document.querySelectorAll(`[data-id="${elID}"]`));
+
+      if (el && el.length) el = el[0];
+      return el;
     },
   }))
   .actions(self => ({
-    /**
-     * When you try to send completion
-     */
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = obj => {
-        const tree = {
-          id: self.pid,
-          from_name: obj.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "region",
-          value: {
-            start: self.start,
-            end: self.end,
-          },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+    serialize(control, object) {
+      let res = {
+        original_length: object._ws.getDuration(),
+        value: {
+          start: self.start,
+          end: self.end,
+        },
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
+      return res;
+    },
+
+    updateAppearenceFromState() {
+      const s = self.labelsState;
+      if (!s) return;
+
+      self.selectedregionbg = Utils.Colors.convertToRGBA(s.getSelectedColor(), 0.3);
+      if (self._ws_region.update) {
+        self.applyCSSClass(self._ws_region);
+        self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
+    },
+
+    applyCSSClass(wsRegion) {
+      const el = self.wsRegionElement(wsRegion);
+
+      const settings = getRoot(self).settings;
+      const names = Utils.Checkers.flatten(self.states.filter(s => s._type === "labels").map(s => s.selectedValues()));
+
+      const cssCls = Utils.HTML.labelWithCSS(el, {
+        labels: names,
+        score: self.score,
+      });
+
+      const classes = [el.className, "htx-highlight", "htx-highlight-last", cssCls];
+
+      if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
+
+      el.className = classes.filter(c => c).join(" ");
     },
 
     /**
@@ -71,18 +87,30 @@ const Model = types
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
-      self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
+      self._ws_region.update({
+        color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8),
+        // border: "1px dashed #00aeff"
+      });
+      self.completion.loadRegionState(self);
+
+      const el = self.wsRegionElement(self._ws_region);
+      if (el) el.scrollIntoView();
     },
 
     /**
      * Unselect audio region
      */
     unselectRegion() {
+      // debugger;
       self.selected = false;
       self.completion.setHighlightedNode(null);
       if (self._ws_region.update) {
-        self._ws_region.update({ color: self.selectedregionbg });
+        self._ws_region.update({
+          color: self.selectedregionbg,
+          // border: "none"
+        });
       }
+      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {
@@ -97,16 +125,12 @@ const Model = types
       }
     },
 
-    setNormalization(val) {
-      // console.log(val)
-    },
-
     beforeDestroy() {
       if (self._ws_region) self._ws_region.remove();
     },
 
     onClick(wavesurfer) {
-      if (!self.completion.edittable) return;
+      // if (! self.editable) return;
 
       if (!self.completion.relationMode) {
         // Object.values(wavesurfer.regions.list).forEach(r => {
@@ -139,6 +163,6 @@ const Model = types
     },
   }));
 
-const AudioRegionModel = types.compose("AudioRegionModel", RegionsMixin, NormalizationMixin, Model);
+const AudioRegionModel = types.compose("AudioRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 export { AudioRegionModel };

@@ -9,6 +9,7 @@ import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { RectangleModel } from "./Rectangle";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * RectangleLabels tag creates labeled rectangles
@@ -16,19 +17,19 @@ import { guidGenerator } from "../../core/Helpers";
  * @example
  * <View>
  *   <RectangleLabels name="labels" toName="image">
- *     <Label value="Person"></Label>
- *     <Label value="Animal"></Label>
+ *     <Label value="Person" />
+ *     <Label value="Animal" />
  *   </RectangleLabels>
- *   <Image name="image" value="$image"></Image>
+ *   <Image name="image" value="$image" />
  * </View>
  * @name RectangleLabels
- * @param {string} name name of the element
- * @param {string} toname name of the image to label
- * @param {float=} [opacity=0.6] opacity of rectangle
- * @param {string=} fillColor rectangle fill color, default is transparent
- * @param {string=} strokeColor stroke color
- * @param {number=} [strokeWidth=1] width of stroke
- * @param {boolean=} [canRotate=true] show or hide rotation handle
+ * @param {string} name              - name of the element
+ * @param {string} toName            - name of the image to label
+ * @param {float} [opacity=0.6]      - opacity of rectangle
+ * @param {string} [fillColor]       - rectangle fill color, default is transparent
+ * @param {string} [strokeColor]     - stroke color
+ * @param {number} [strokeWidth=1]   - width of stroke
+ * @param {boolean} [canRotate=true] - show or hide rotation handle
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -39,7 +40,7 @@ const ModelAttrs = types.model("RectangleLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "rectanglelabels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "rectanglelabels" }).views(self => ({
@@ -48,7 +49,15 @@ const Model = LabelMixin.props({ _type: "rectanglelabels" }).views(self => ({
   },
 }));
 
-const Composition = types.compose(LabelsModel, ModelAttrs, RectangleModel, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  RectangleModel,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
+);
 
 const RectangleLabelsModel = types.compose("RectangleLabelsModel", Composition);
 

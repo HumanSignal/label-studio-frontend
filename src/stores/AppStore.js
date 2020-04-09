@@ -3,7 +3,6 @@ import { types, getEnv } from "mobx-state-tree";
 import CompletionStore from "./CompletionStore";
 import Hotkey from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
-import Message from "../utils/messages";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
@@ -138,24 +137,55 @@ export default types
       /**
        * Hotkey for submit
        */
-      Hotkey.addKey("ctrl+enter", self.submitCompletion);
+      Hotkey.addKey("ctrl+enter", self.submitCompletion, "Submit a task");
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask);
+      if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask, "Skip a task");
 
       /**
        * Hotkey for update completion
        */
-      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion);
+      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion, "Update a task");
 
       /**
        * Hotkey for delete
        */
-      Hotkey.addKey("ctrl+backspace", function() {
-        const { selected } = self.completionStore;
-        selected.deleteAllRegions();
+      Hotkey.addKey(
+        "ctrl+backspace",
+        function() {
+          const { selected } = self.completionStore;
+          selected.deleteAllRegions();
+        },
+        "Delete all regions",
+      );
+
+      // create relation
+      Hotkey.addKey(
+        "r",
+        function() {
+          const c = self.completionStore.selected;
+          if (c && c.highlightedNode && !c.relationMode) {
+            c.startRelationMode(c.highlightedNode);
+          }
+        },
+        "Create relation when region is selected",
+      );
+
+      // unselect region
+      Hotkey.addKey("u", function() {
+        const c = self.completionStore.selected;
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.regionStore.unselectAll();
+        }
+      });
+
+      Hotkey.addKey("h", function() {
+        const c = self.completionStore.selected;
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.highlightedNode.toggleHidden();
+        }
       });
 
       Hotkey.addKey("ctrl+z", function() {
@@ -163,19 +193,36 @@ export default types
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey("escape", function() {
-        const c = self.completionStore.selected;
-        if (c && c.relationMode) {
-          c.stopRelationMode();
-        }
-      });
+      Hotkey.addKey(
+        "escape",
+        function() {
+          const c = self.completionStore.selected;
+          if (c && c.relationMode) {
+            c.stopRelationMode();
+          }
+        },
+        "Exit relation mode",
+      );
 
-      Hotkey.addKey("backspace", function() {
-        const c = self.completionStore.selected;
-        if (c && c.highlightedNode) {
-          c.highlightedNode.deleteRegion();
-        }
-      });
+      Hotkey.addKey(
+        "backspace",
+        function() {
+          const c = self.completionStore.selected;
+          if (c && c.highlightedNode) {
+            c.highlightedNode.deleteRegion();
+          }
+        },
+        "Delete selected region",
+      );
+
+      Hotkey.addKey(
+        "alt+tab",
+        function() {
+          const c = self.completionStore.selected;
+          c && c.regionStore.selectNext();
+        },
+        "Circle through entities",
+      );
 
       getEnv(self).onLabelStudioLoad(self);
     }
@@ -194,15 +241,19 @@ export default types
       self.task = Task.create(taskObject);
     }
 
+    /* eslint-disable no-unused-vars */
     function showModal(message, type = "warning") {
       InfoModal[type](message);
 
       // InfoModal.warning("You need to label at least something!");
     }
+    /* eslint-enable no-unused-vars */
 
     function submitCompletion() {
       const c = self.completionStore.selected;
       c.beforeSend();
+
+      if (!c.validate()) return;
 
       c.sendUserGenerate();
       getEnv(self).onSubmitCompletion(self, c);

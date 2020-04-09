@@ -1,28 +1,32 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
+import VisibilityMixin from "../../mixins/Visibility";
 
 /**
  * View element. It's analogous to div element in html and can be used to visual configure display of blocks
  * @example
  * <View style="display: flex;">
- *  <View style="flex: 50%">
- *   <Header value="Facts:"></Header>
- *   <Text name="text" value="$fact"></Text>
- *  </View>
- *  <View style="flex: 50%; margin-left: 1em">
- *   <Header value="Enter your question:"></Header>
- *   <TextArea name="question" ></TextArea>
- *  </View>
+ *   <View style="flex: 50%">
+ *     <Header value="Facts:" />
+ *     <Text name="text" value="$fact" />
+ *   </View>
+ *   <View style="flex: 50%; margin-left: 1em">
+ *     <Header value="Enter your question:" />
+ *     <TextArea name="question" />
+ *   </View>
  * </View>
  * @name View
  * @param {block|inline} display
- * @param {style} style css style string
- * @param {className} class name of the css style to apply
+ * @param {string} [style] css style string
+ * @param {string} [className] - class name of the css style to apply
+ * @param {string} [visibleWhen]
+ * @param {string} [whenTagName]
+ * @param {string} [whenChoiceValue]
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),
@@ -30,45 +34,57 @@ const TagAttrs = types.model({
   style: types.maybeNull(types.string),
 });
 
-const Model = types.model({
-  id: types.identifier,
-  type: "view",
-  children: Types.unionArray([
-    "view",
-    "header",
-    "labels",
-    "table",
-    "choices",
-    "rating",
-    "ranker",
-    "rectangle",
-    "polygon",
-    "keypoint",
-    "brush",
-    "rectanglelabels",
-    "polygonlabels",
-    "keypointlabels",
-    "brushlabels",
-    "hypertextlabels",
-    "text",
-    "audio",
-    "image",
-    "hypertext",
-    "audioplus",
-    "list",
-    "dialog",
-    "textarea",
-    "pairwise",
-    "timeseries",
-    "timeserieslabels",
-    "style",
-    "timeserieschannel",
-  ]),
-});
+const Model = types
+  .model({
+    id: types.identifier,
+    type: "view",
+    children: Types.unionArray([
+      "view",
+      "header",
+      "labels",
+      "label",
+      "table",
+      "choices",
+      "choice",
+      "rating",
+      "ranker",
+      "rectangle",
+      "ellipse",
+      "polygon",
+      "keypoint",
+      "brush",
+      "rectanglelabels",
+      "ellipselabels",
+      "polygonlabels",
+      "keypointlabels",
+      "brushlabels",
+      "hypertextlabels",
+      "text",
+      "audio",
+      "image",
+      "hypertext",
+      "audioplus",
+      "list",
+      "dialog",
+      "textarea",
+      "pairwise",
+      "style",
+      "label",
+      "relations",
+      "filter",
+      "timeseries",
+      "timeserieslabels",
+    ]),
+  })
+  .views(self => ({
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+  }));
 
-const ViewModel = types.compose("ViewModel", TagAttrs, Model);
+const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin);
 
-const HtxView = observer(({ item }) => {
+const HtxView = observer(({ item, store }) => {
   let style = {};
 
   if (item.display === "inline") {
@@ -77,6 +93,10 @@ const HtxView = observer(({ item }) => {
 
   if (item.style) {
     style = Tree.cssConverter(item.style);
+  }
+
+  if (item.isVisible === false) {
+    style["display"] = "none";
   }
 
   return (

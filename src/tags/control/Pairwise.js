@@ -1,5 +1,3 @@
-import React from "react";
-import { observer } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
@@ -7,6 +5,7 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { runTemplate } from "../../core/Template";
+import ControlBase from "./Base";
 
 /**
  * Pairwise element. Compare two different objects, works with any label studio object
@@ -26,9 +25,11 @@ import { runTemplate } from "../../core/Template";
  *   </View>
  * </View>
  * @name Pairwise
- * @param {string} selectionStyle style of the selection
- * @params {string} leftClass class name of the left object
- * @params {string} rightClass class name of the right object
+ * @param {string} name               - name of the element
+ * @param {string} toName             - names of the elements you want to compare
+ * @param {string} [selectionStyle]   - style of the selection
+ * @params {string} [leftClass=left]  - class name of the left object
+ * @params {string} [rightClass=left] - class name of the right object
  */
 const TagAttrs = types.model({
   name: types.string,
@@ -79,7 +80,7 @@ const Model = types
       if (!self.toname);
       const names = self.toname.split(",");
 
-      if (names.length != 2)
+      if (names.length !== 2)
         InfoModal.error(
           `Incorrect toName parameter on Pairwise, should be two names separated by the comma: name1,name2`,
         );
@@ -129,12 +130,12 @@ const Model = types
 
       const { left, right } = self.getLeftRight();
 
-      if (self.selected == "left") left.addProp("style", self._selection);
-      if (self.selected == "right") right.addProp("style", self._selection);
+      if (self.selected === "left") left.addProp("style", self._selection);
+      if (self.selected === "right") right.addProp("style", self._selection);
     },
   }));
 
-const PairwiseModel = types.compose("PairwiseModel", TagAttrs, Model);
+const PairwiseModel = types.compose("PairwiseModel", TagAttrs, Model, ControlBase);
 
 const HtxPairwise = () => {
   return null;

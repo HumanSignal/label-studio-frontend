@@ -1,11 +1,14 @@
 import CursorPlugin from "wavesurfer.js/dist/plugin/wavesurfer.cursor";
 import React from "react";
 import ReactDOM from "react-dom";
+import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js";
 import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
-import { Slider, InputNumber, Row, Col } from "antd";
+import { Slider, InputNumber, Row, Col, Menu, Dropdown, Button, message, Tooltip } from "antd";
+import { SoundOutlined, DownOutlined, UserOutlined } from "@ant-design/icons";
+import lodash from "../../utils/lodash";
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
@@ -139,7 +142,7 @@ export default class Waveform extends React.Component {
         waveColor: "#97A0AF",
         progressColor: "#52c41a",
       },
-      zoom: 20,
+      zoom: 0,
       speed: 1,
       volume: 1,
     };
@@ -178,6 +181,41 @@ export default class Waveform extends React.Component {
     this.wavesurfer.setPlaybackRate(value);
   };
 
+  onZoomPlus = (ev, step = 10) => {
+    let val = this.state.zoom;
+    val = val + step;
+    if (val > 700) val = 700;
+
+    this.onChangeZoom(val);
+    ev && ev.preventDefault();
+    return false;
+  };
+
+  onZoomMinus = (ev, step = 10) => {
+    let val = this.state.zoom;
+    val = val - step;
+    if (val < 0) val = 0;
+
+    this.onChangeZoom(val);
+    ev.preventDefault();
+    return false;
+  };
+
+  onWheel = e => {
+    if (e && !e.shiftKey) {
+      return;
+    } else if (e && e.shiftKey) {
+      /**
+       * Disable scrolling page
+       */
+      e.preventDefault();
+    }
+
+    const step = e.deltaY > 0 ? 5 : -5;
+    // console.log(e.evt.deltaY);
+    this.onZoomPlus(e, step);
+  };
+
   componentDidMount() {
     this.$el = ReactDOM.findDOMNode(this);
 
@@ -189,6 +227,8 @@ export default class Waveform extends React.Component {
       height: this.props.height,
       backend: "MediaElement",
       progressColor: this.state.colors.progressColor,
+
+      splitChannels: true,
     };
 
     if (this.props.regions) {
@@ -254,6 +294,8 @@ export default class Waveform extends React.Component {
        */
       this.wavesurfer.on("region-created", reg => {
         const region = self.props.addRegion(reg);
+        if (!region) return;
+
         reg._region = region;
         reg.color = region.selectedregionbg;
 
@@ -283,6 +325,8 @@ export default class Waveform extends React.Component {
 
     this.wavesurfer.on("ready", () => {
       self.props.onCreate(this.wavesurfer);
+
+      this.wavesurfer.container.onwheel = lodash.throttle(this.onWheel, 100);
     });
 
     /**
@@ -301,93 +345,94 @@ export default class Waveform extends React.Component {
   }
 
   render() {
+    const self = this;
+
+    const keymap = {
+      "1": 0.5,
+      "2": 1.0,
+      "3": 1.25,
+      "4": 1.5,
+      "5": 2.0,
+    };
+
+    const menu = (
+      <Menu
+        onClick={({ item, key }) => {
+          self.onChangeSpeed(keymap[key]);
+        }}
+      >
+        <Menu.Item key="1">0.5</Menu.Item>
+        <Menu.Item key="2">1.0</Menu.Item>
+        <Menu.Item key="3">1.25</Menu.Item>
+        <Menu.Item key="4">1.5</Menu.Item>
+        <Menu.Item key="5">2.0</Menu.Item>
+      </Menu>
+    );
+
     return (
       <div>
         <div id="wave" className={styles.wave} />
 
         <div id="timeline" />
 
-        <Row className={this.props.volume || this.props.speed || this.props.zoom ? styles.menu : ""}>
-          {this.props.speed && (
-            <Col span={24}>
-              <Col span={12}>
-                Speed:{" "}
-                <InputNumber
-                  min={0.5}
-                  max={3}
-                  value={this.state.speed}
-                  onChange={value => {
-                    this.onChangeSpeed(value);
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <Slider
-                  min={0.5}
-                  max={3}
-                  step={0.1}
-                  value={typeof this.state.speed === "number" ? this.state.speed : 1}
-                  onChange={range => {
-                    this.onChangeSpeed(range);
-                  }}
-                />
-              </Col>
+        {this.props.zoom && (
+          <Row style={{ marginTop: "1em" }}>
+            <Col span={16} style={{ textAlign: "right", marginTop: "6px", marginRight: "1em" }}>
+              <div style={{ display: "flex" }}>
+                <div style={{ marginTop: "6px", marginRight: "5px" }}>
+                  <a onClick={this.onZoomMinus} href="">
+                    <ZoomOutOutlined />
+                  </a>
+                </div>
+                <div style={{ width: "100%" }}>
+                  <Slider
+                    min={0}
+                    step={10}
+                    max={500}
+                    value={typeof this.state.zoom === "number" ? this.state.zoom : 0}
+                    onChange={value => {
+                      this.onChangeZoom(value);
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: "6px", marginLeft: "5px" }}>
+                  <a href="" onClick={this.onZoomPlus}>
+                    <ZoomInOutlined />
+                  </a>
+                </div>
+              </div>
             </Col>
-          )}
-          {this.props.volume && (
-            <Col span={24}>
-              <Col span={12}>
-                Volume:{" "}
-                <InputNumber
-                  min={0}
-                  max={1}
-                  value={this.state.volume}
-                  step={0.1}
-                  onChange={value => {
-                    this.onChangeVolume(value);
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <Slider
-                  min={0}
-                  max={1}
-                  step={0.1}
-                  value={typeof this.state.volume === "number" ? this.state.volume : 1}
-                  onChange={value => {
-                    this.onChangeVolume(value);
-                  }}
-                />
-              </Col>
+            <Col span={4} style={{ marginRight: "1em" }}>
+              {this.props.volume && (
+                <div style={{ display: "flex", marginTop: "6.5px" }}>
+                  <div style={{ width: "100%" }}>
+                    <Slider
+                      min={0}
+                      max={1}
+                      step={0.1}
+                      value={typeof this.state.volume === "number" ? this.state.volume : 1}
+                      onChange={value => {
+                        this.onChangeVolume(value);
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginLeft: "10px", marginTop: "5px" }}>
+                    <SoundOutlined />
+                  </div>
+                </div>
+              )}
             </Col>
-          )}
-          {this.props.zoom && (
-            <Col span={24}>
-              <Col span={12}>
-                Zoom:{" "}
-                <InputNumber
-                  min={20}
-                  max={500}
-                  value={this.state.zoom}
-                  onChange={value => {
-                    this.onChangeZoom(value);
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <Slider
-                  min={20}
-                  step={10}
-                  max={500}
-                  value={typeof this.state.zoom === "number" ? this.state.zoom : 0}
-                  onChange={value => {
-                    this.onChangeZoom(value);
-                  }}
-                />
-              </Col>
+            <Col span={2} style={{ marginTop: "6px", minWidth: "90px" }}>
+              {this.props.speed && (
+                <Dropdown overlay={menu}>
+                  <Button>
+                    Speed <DownOutlined />
+                  </Button>
+                </Dropdown>
+              )}
             </Col>
-          )}
-        </Row>
+          </Row>
+        )}
       </div>
     );
   }

@@ -46,7 +46,7 @@ export const isStringJSON = value => {
  */
 export function getUrl(i, text) {
   const stringToTest = text.slice(i);
-  const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g;
+  const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g; // eslint-disable-line no-useless-escape
   const match = myRegexp.exec(stringToTest);
 
   return match && match.length ? match[1] : "";
@@ -62,4 +62,23 @@ export function toTimeString(ms) {
   if (typeof ms === "number") {
     return new Date(ms).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
   }
+}
+
+export function flatten(arr) {
+  return arr.reduce(function(flat, toFlatten) {
+    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+  }, []);
+}
+
+export function hashCode(str) {
+  var hash = 0;
+  if (str.length === 0) {
+    return hash + "";
+  }
+  for (var i = 0; i < str.length; i++) {
+    var char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash + "";
 }

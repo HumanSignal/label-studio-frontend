@@ -1,3 +1,37 @@
+let gradients = [
+  "#c22525",
+  "#c13025",
+  "#bf3b24",
+  "#be4624",
+  "#bc5124",
+  "#bb5b23",
+  "#ba6623",
+  "#b87023",
+  "#b77a22",
+  "#b58422",
+  "#b48d22",
+  "#b39722",
+  "#b1a021",
+  "#b0aa21",
+  "#aaae21",
+  "#9ead20",
+  "#93ab20",
+  "#87aa20",
+  "#7ca91f",
+  "#71a71f",
+  "#66a61f",
+  "#5ba41e",
+  "#51a31e",
+  "#46a21e",
+  "#3ca01e",
+  "#329f1d",
+  "#289d1d",
+  "#1e9c1d",
+  "#1c9a24",
+  "#1c992d",
+  "#1c992d",
+];
+
 let colorNames = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
@@ -154,7 +188,7 @@ export function hexToRGBA(hex, opacity) {
 
   let a = 0.3;
 
-  if (opacity && typeof parseInt(opacity) === "number") {
+  if (typeof parseInt(opacity) === "number") {
     a = opacity;
   }
 
@@ -233,5 +267,10 @@ export function stringToColor(str) {
  * @param {number} alpha from 0 to 1
  */
 export function rgbaChangeAlpha(rgba, alpha) {
-  return rgba.replace(/[\d\.]+\)$/g, `${alpha})`);
+  return rgba.replace(/[\d\.]+\)$/g, `${alpha})`); // eslint-disable-line no-useless-escape
+}
+
+// given number from 0.00 to 1.00 return a color from red to green
+export function getScaleGradient(number) {
+  return gradients[Math.ceil(number * 30)];
 }

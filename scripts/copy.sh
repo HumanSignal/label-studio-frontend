@@ -1,2 +1,2 @@
-mkdir -p src/examples/
+mkdir -p src/examples
 cp -r examples/* src/examples/

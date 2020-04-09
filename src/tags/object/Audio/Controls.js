@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
-import { Button, Icon } from "antd";
+import { Button } from "antd";
 import { observer } from "mobx-react";
+import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../../../components/Hint/Hint";
 
@@ -15,7 +16,7 @@ const AudioControls = observer(({ item, store }) => {
       >
         {item.playing && (
           <Fragment>
-            <Icon type="pause-circle" /> Pause
+            <PauseCircleOutlined /> Pause
             {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
               <Hint>[{item.hotkey}]</Hint>
             )}
@@ -23,7 +24,7 @@ const AudioControls = observer(({ item, store }) => {
         )}
         {!item.playing && (
           <Fragment>
-            <Icon type="play-circle" /> Play
+            <PlayCircleOutlined /> Play
             {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
               <Hint>[{item.hotkey}]</Hint>
             )}

@@ -5,39 +5,40 @@ import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
-import Hotkey from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
+import WithStatesMixin from "../mixins/WithStates";
+import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
+import { LabelOnPolygon } from "../components/ImageView/LabelOnRegion";
 import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
-import { RatingModel } from "../tags/control/Rating";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-
     type: "polygonregion",
 
     opacity: types.number,
-    fillcolor: types.maybeNull(types.string),
+    fillColor: types.maybeNull(types.string),
 
-    strokewidth: types.number,
-    strokecolor: types.string,
+    strokeWidth: types.number,
+    strokeColor: types.string,
 
-    pointsize: types.string,
-    pointstyle: types.string,
+    pointSize: types.string,
+    pointStyle: types.string,
 
     closed: types.optional(types.boolean, false),
 
     points: types.array(PolygonPoint, []),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, PolygonLabelsModel))),
+    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     mouseOverStartPoint: types.optional(types.boolean, false),
 
@@ -53,10 +54,6 @@ const Model = types
   .views(self => ({
     get parent() {
       return getParentOfType(self, ImageModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -88,7 +85,7 @@ const Model = types
       // TODO add the hover point only when in a non-zoomed mode,
       // reason is the coords in zoom mode act weird, need to put in
       // some time to find out why
-      if (zoom == 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
+      if (zoom === 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
     },
 
     handleMouseLeave({ e }) {
@@ -118,22 +115,21 @@ const Model = types
         id: guidGenerator(),
         x: x,
         y: y,
-        size: self.pointsize,
-        style: self.pointstyle,
+        size: self.pointSize,
+        style: self.pointStyle,
         index: self.points.length,
       };
       self.points.splice(insertIdx, 0, p);
     },
 
     _addPoint(x, y) {
-      const index = self.points.length;
       self.points.push({
         id: guidGenerator(),
         x: x,
         y: y,
-        size: self.pointsize,
-        style: self.pointstyle,
-        index: index,
+        size: self.pointSize,
+        style: self.pointStyle,
+        index: self.points.length,
       });
     },
 
@@ -173,14 +169,26 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
+    },
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+      self.fillColor = stroke;
     },
 
     selectRegion() {
+      if (self.parent.selected) {
+        self.parent.selected.closed = true;
+      }
       // self.points.forEach(p => p.computeOffset());
 
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+
+      self.completion.loadRegionState(self);
     },
 
     setScale(x, y) {
@@ -223,8 +231,8 @@ const Model = types
       }
     },
 
-    toStateJSON() {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.parent;
+    serialize(control, object) {
+      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
 
       const perc_w = (stageWidth * 100) / naturalWidth;
       const perc_h = (stageHeight * 100) / naturalHeight;
@@ -239,40 +247,27 @@ const Model = types
         return [res_w, res_h];
       });
 
-      const parent = self.parent;
-      const buildTree = obj => {
-        const tree = {
-          id: self.id,
-          from_name: obj.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "polygon",
-          value: {
-            points: perc_points,
-          },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+      let res = {
+        value: {
+          points: perc_points,
+        },
+        original_width: naturalWidth,
+        original_height: naturalHeight,
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
+      return res;
     },
   }));
 
-const PolygonRegionModel = types.compose("PolygonRegionModel", RegionsMixin, NormalizationMixin, Model);
+const PolygonRegionModel = types.compose(
+  "PolygonRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 /**
  * Get coordinates of anchor point
@@ -347,11 +342,11 @@ const HtxPolygonView = ({ store, item }) => {
    */
   function renderLine({ points, idx1, idx2 }) {
     const name = `border_${idx1}_${idx2}`;
-    let { strokecolor, strokewidth } = item;
+    let { strokeColor, strokeWidth } = item;
 
     if (item.highlighted) {
-      strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-      strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
+      strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
+      strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
     }
 
     if (!item.closed && idx2 === 0) return null;
@@ -364,7 +359,7 @@ const HtxPolygonView = ({ store, item }) => {
         name={name}
         onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
         onMouseMove={e => {
-          if (!item.closed || !item.selected) return;
+          if (!item.closed || !item.selected || !item.editable) return;
 
           item.handleMouseMove({ e, flattenedPoints });
         }}
@@ -372,10 +367,10 @@ const HtxPolygonView = ({ store, item }) => {
       >
         <Line
           points={flattenedPoints}
-          stroke={strokecolor}
+          stroke={strokeColor}
           opacity={item.opacity}
           lineJoin="bevel"
-          strokeWidth={strokewidth}
+          strokeWidth={strokeWidth}
           strokeScaleEnabled={false}
         />
       </Group>
@@ -402,7 +397,7 @@ const HtxPolygonView = ({ store, item }) => {
         <Line
           lineJoin="bevel"
           points={getFlattenedPoints(points)}
-          fill={item.strokecolor}
+          fill={item.strokeColor}
           closed={true}
           opacity={0.2}
         />
@@ -498,7 +493,7 @@ const HtxPolygonView = ({ store, item }) => {
       onClick={e => {
         e.cancelBubble = true;
 
-        if (!item.completion.edittable) return;
+        // if (!item.editable) return;
 
         if (!item.closed) return;
 
@@ -511,13 +506,15 @@ const HtxPolygonView = ({ store, item }) => {
         item.setHighlight(false);
         item.onClickRegion();
       }}
-      draggable={item.completion.edittable && item.parent.zoomScale === 1}
+      draggable={item.editable && item.parent.zoomScale === 1}
     >
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
+
+      <LabelOnPolygon item={item} />
     </Group>
   );
 };

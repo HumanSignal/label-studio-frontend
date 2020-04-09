@@ -1,6 +1,6 @@
 .list {
   max-height: 350px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .item {
@@ -11,4 +11,19 @@
     cursor: pointer;
     color: #f5222d;
   }
+}
+
+.lstitem {
+  cursor: pointer;
+  align-items: center;
+  display: flex;
+}
+
+.confbadge {
+  background: #efefef;
+  padding-left: 4px;
+  border-radius: 10px;
+  padding-right: 5px;
+  font-size: 12px;
+  margin-left: 2px;
 }

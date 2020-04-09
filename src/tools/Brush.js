@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { HighlightOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
@@ -13,7 +14,7 @@ const ToolView = observer(({ item }) => {
   return (
     <SliderTool
       selected={item.selected}
-      icon={"highlight"}
+      icon={<HighlightOutlined />}
       onClick={ev => {
         const sel = item.selected;
         item.manager.unselectAll();
@@ -40,59 +41,56 @@ const _Tool = types
     get viewClass() {
       return <ToolView item={self} />;
     },
+
+    get tagTypes() {
+      return {
+        stateTypes: "brushlabels",
+        controlTagTypes: ["brushlabels", "brush"],
+      };
+    },
   }))
   .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      if ("brushlabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-        states.fromStateJSON(obj);
+    fromStateJSON(json, controlTag) {
+      const region = self.createFromJSON(json, controlTag);
 
-        const region = self.createRegion({
-          stroke: states.getSelectedColor(),
-          states: states,
-          // coordstype: "px",
-          // points: obj.value.points,
-        });
-
-        if (obj.value.points) {
-          const p = region.addPoints({ type: "add" });
-          p.addPoints(obj.value.points);
-        }
-
-        if (obj.value.format === "rle") {
-          region._rle = obj.value.rle;
-        }
-      }
-    },
-
-    afterAttach() {
-      self.updateCursor();
-    },
-
-    createRegion({ stroke, states, coordstype, mode, points }) {
-      const c = self.control;
-
-      let localStates = states;
-
-      if (states && !states.length) {
-        localStates = [states];
+      if (json.value.points) {
+        const p = region.addPoints({ type: "add" });
+        p.addPoints(json.value.points);
       }
 
-      const brush = BrushRegionModel.create({
-        id: guidGenerator(),
+      if (json.value.format === "rle") {
+        region._rle = json.value.rle;
+      }
 
-        strokeWidth: self.strokeWidth || c.strokeWidth,
-        strokeColor: stroke,
+      return region;
+    },
 
-        states: localStates,
+    // fromStateJSON(obj, fromModel) {
+    //   if ("brushlabels" in obj.value) {
+    //     const states = restoreNewsnapshot(fromModel);
+    //     states.fromStateJSON(obj);
 
-        // points: points,
-        // eraserpoints: eraserpoints,
+    //     const region = self.createRegion({
+    //       pid: obj.id,
+    //       stroke: states.getSelectedColor(),
+    //       states: states,
+    //       // coordstype: "px",
+    //       // points: obj.value.points,
+    //     });
 
-        coordstype: coordstype,
+    //     if (obj.value.points) {
+    //       const p = region.addPoints({ type: "add" });
+    //       p.addPoints(obj.value.points);
+    //     }
 
-        mode: mode,
-      });
+    //     if (obj.value.format === "rle") {
+    //       region._rle = obj.value.rle;
+    //     }
+    //   }
+    // },
+
+    createRegion(opts) {
+      const brush = BrushRegionModel.create(opts);
 
       self.obj.addShape(brush);
 
@@ -110,8 +108,6 @@ const _Tool = types
 
     setStroke(val) {
       self.strokeWidth = val;
-
-      // el.style.cursor = "url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/9632/heart.png'), auto";
     },
 
     mouseupEv() {
@@ -128,19 +124,10 @@ const _Tool = types
 
     mousedownEv(ev, [x, y]) {
       const c = self.control;
+      const brush = self.getSelectedShape;
 
-      if (c.isSelected) {
+      if (brush) {
         self.mode = "drawing";
-
-        const { states, strokecolor } = self.statesAndParams;
-
-        const brush = self.createRegion({
-          x: x,
-          y: y,
-          stroke: strokecolor,
-          states: states,
-          coordstype: "px",
-        });
 
         const p = brush.addTouch({
           type: "add",
@@ -148,20 +135,26 @@ const _Tool = types
         });
 
         p.addPoints(Math.floor(x), Math.floor(y));
-
-        if (self.control.type == "brushlabels") self.control.unselectAll();
       } else {
-        const brush = self.getSelectedShape;
-        if (!brush) return;
+        if (c.isSelected) {
+          self.mode = "drawing";
 
-        self.mode = "drawing";
+          const sap = self.statesAndParams;
 
-        const p = brush.addTouch({
-          type: "add",
-          strokeWidth: self.strokeWidth || c.strokeWidth,
-        });
+          const brush = self.createRegion({
+            x: x,
+            y: y,
+            coordstype: "px",
+            ...sap,
+          });
 
-        p.addPoints(Math.floor(x), Math.floor(y));
+          const p = brush.addTouch({
+            type: "add",
+            strokeWidth: self.strokeWidth || c.strokeWidth,
+          });
+
+          p.addPoints(Math.floor(x), Math.floor(y));
+        }
       }
     },
   }));

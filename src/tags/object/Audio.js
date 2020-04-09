@@ -13,22 +13,22 @@ import { AudioHOCModel } from "./AudioHOC";
  * Audio tag plays a simple audio file
  * @example
  * <View>
- *   <Audio name="audio" value="$audio"></Audio>
+ *   <Audio name="audio" value="$audio" />
  * </View>
  * @example
  * <!-- Audio classification -->
  * <View>
- *   <Audio name="audio" value="$audio"></Audio>
+ *   <Audio name="audio" value="$audio" />
  *   <Choices name="ch" toName="audio">
- *     <Choice value="Positive"></Choice>
- *     <Choice value="Negative"></Choice>
+ *     <Choice value="Positive" />
+ *     <Choice value="Negative" />
  *   </Choices>
  * </View>
  * @example
  * <!-- Audio transcription -->
  * <View>
- *   <Audio name="audio" value="$audio"></Audio>
- *   <TextArea name="ta" toName="audio"></TextArea>
+ *   <Audio name="audio" value="$audio" />
+ *   <TextArea name="ta" toName="audio" />
  * </View>
  * @name Audio
  * @param {string} name of the element
@@ -83,7 +83,6 @@ const HtxAudioView = observer(({ store, item }) => {
         regions={false}
         height={item.height}
       />
-
       <AudioControls item={item} store={store} />
     </ObjectTag>
   );

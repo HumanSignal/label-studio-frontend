@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Rect } from "react-konva";
+import { Rect, Group, Text, Label } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
 
@@ -9,10 +9,13 @@ import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import Utils from "../utils";
+import WithStatesMixin from "../mixins/WithStates";
+import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
+import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { RatingModel } from "../tags/control/Rating";
 import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
+import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 /**
@@ -21,9 +24,8 @@ import { guidGenerator } from "../core/Helpers";
  */
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-
     type: "rectangleregion",
 
     x: types.number,
@@ -35,8 +37,8 @@ const Model = types
     relativeWidth: types.optional(types.number, 0),
     relativeHeight: types.optional(types.number, 0),
 
-    _start_x: types.optional(types.number, 0),
-    _start_y: types.optional(types.number, 0),
+    startX: types.optional(types.number, 0),
+    startY: types.optional(types.number, 0),
 
     width: types.number,
     height: types.number,
@@ -49,12 +51,13 @@ const Model = types
     opacity: types.number,
 
     fill: types.optional(types.boolean, true),
-    fillcolor: types.optional(types.string, Constants.FILL_COLOR),
+    fillColor: types.optional(types.string, Constants.FILL_COLOR),
+    fillOpacity: types.optional(types.number, 0.6),
 
     strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
     strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, RectangleLabelsModel))),
+    states: types.maybeNull(types.array(types.union(RectangleLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     wp: types.maybeNull(types.number),
     hp: types.maybeNull(types.number),
@@ -70,15 +73,11 @@ const Model = types
     get parent() {
       return getParentOfType(self, ImageModel);
     },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
   }))
   .actions(self => ({
     afterCreate() {
-      self._start_x = self.x;
-      self._start_y = self.y;
+      self.startX = self.x;
+      self.startY = self.y;
 
       if (self.coordstype === "perc") {
         self.relativeX = self.x;
@@ -86,12 +85,28 @@ const Model = types
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
       }
+
+      self.updateAppearenceFromState();
+    },
+
+    updateAppearenceFromState() {
+      if (self.states && self.states.length) {
+        const stroke = self.states[0].getSelectedColor();
+        self.strokeColor = stroke;
+        self.fillColor = stroke;
+      }
+    },
+
+    rotate(degree) {
+      // self.rotation = self.rotation + degree;
     },
 
     unselectRegion() {
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+
+      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {
@@ -110,6 +125,8 @@ const Model = types
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+
+      self.completion.loadRegionState(self);
     },
 
     /**
@@ -173,58 +190,33 @@ const Model = types
       }
     },
 
-    /**
-     * Format for sending to server
-     */
-    toStateJSON() {
-      const parent = self.parent;
-      let fromEl = parent.states()[0];
-
-      if (parent.states().length > 1) {
-        parent.states().forEach(state => {
-          if (state.type === "rectanglelabels") {
-            fromEl = state;
-          }
-        });
-      }
-
-      const buildTree = obj => {
-        const tree = {
-          id: self.id,
-          from_name: fromEl.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "rectangle",
-          value: {
-            x: (self.x * 100) / self.parent.stageWidth,
-            y: (self.y * 100) / self.parent.stageHeight,
-            width: (self.width * (self.scaleX || 1) * 100) / self.parent.stageWidth, //  * (self.scaleX || 1)
-            height: (self.height * (self.scaleY || 1) * 100) / self.parent.stageHeight,
-            rotation: self.rotation,
-          },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+    serialize(control, object) {
+      let res = {
+        original_width: object.naturalWidth,
+        original_height: object.naturalHeight,
+        value: {
+          x: (self.x * 100) / object.stageWidth,
+          y: (self.y * 100) / object.stageHeight,
+          width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
+          height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
+          rotation: self.rotation,
+        },
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
+      return res;
     },
   }));
 
-const RectRegionModel = types.compose("RectRegionModel", RegionsMixin, NormalizationMixin, DisabledMixin, Model);
+const RectRegionModel = types.compose(
+  "RectRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  DisabledMixin,
+  Model,
+);
 
 const HtxRectangleView = ({ store, item }) => {
   let { strokeColor, strokeWidth } = item;
@@ -233,6 +225,8 @@ const HtxRectangleView = ({ store, item }) => {
     strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
 
+  if (item.hidden) return null;
+
   return (
     <Fragment>
       <Rect
@@ -240,7 +234,7 @@ const HtxRectangleView = ({ store, item }) => {
         y={item.y}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillcolor, 0.4) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillColor, item.fillOpacity) : null}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
         strokeScaleEnabled={false}
@@ -317,7 +311,7 @@ const HtxRectangleView = ({ store, item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.edittable) return;
+          if (!item.completion.editable) return;
 
           if (store.completionStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -326,8 +320,9 @@ const HtxRectangleView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.completion.edittable}
+        draggable={item.editable}
       />
+      <LabelOnRect item={item} />
     </Fragment>
   );
 };

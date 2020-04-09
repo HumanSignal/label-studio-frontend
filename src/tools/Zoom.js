@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
-import { Divider } from "antd";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
+import { DragOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import BasicToolView from "../components/Tools/Basic";
@@ -10,17 +10,14 @@ import ToolMixin from "../mixins/Tool";
 const ToolView = observer(({ item }) => {
   return (
     <Fragment>
-      <Divider style={{ margin: "5px 0;" }} dashed />
       <BasicToolView
         selected={item.selected}
-        icon="drag"
+        icon={<DragOutlined />}
         tooltip="Move position"
         onClick={ev => {
           const sel = item.selected;
           item.manager.unselectAll();
-
           item.setSelected(!sel);
-
           if (item.selected) {
             const stage = item.obj.stageRef;
             stage.container().style.cursor = "all-scroll";
@@ -28,7 +25,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <BasicToolView
-        icon="zoom-in"
+        icon={<ZoomInOutlined />}
         tooltip="Zoom into the image"
         onClick={ev => {
           // console.log(self.image);
@@ -37,7 +34,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <BasicToolView
-        icon="zoom-out"
+        icon={<ZoomOutOutlined />}
         tooltip="Zoom out of the image"
         onClick={ev => {
           item.handleZoom(0.8);
@@ -61,67 +58,27 @@ const _Tool = types
       self.mode = "viewing";
     },
 
-    mousemoveEv(ev, [x, y]) {
-      if (self.mode !== "moving") return;
-
+    handleDrag(ev) {
       const item = self._manager.obj;
-      // const stage = item.stageRef;
-
-      // console.log(item.zoomingPositionX);
-      // const newPos = {
-      //     x: -1*x,
-      //     y: -1*y
-      // }
-
-      // console.log(ev);
-
       const stage = item.stageRef;
-      const scaleBy = parseFloat(item.zoomby);
-      const oldScale = stage.scaleX();
+      const scale = stage.scaleX();
 
-      let mousePointTo;
-      let newScale;
-      let pos;
-      let newPos;
+      let posx = stage.x() + ev.evt.movementX;
+      let posy = stage.y() + ev.evt.movementY;
 
-      mousePointTo = {
-        x: -1 * (ev.evt.layerX + ev.evt.movementX),
-        y: -1 * (ev.evt.layerY + ev.evt.movementY),
-      };
+      if (posx > 0) posx = 0;
+      if (posy > 0) posy = 0;
 
-      //   // coords where mouse points to on the original non scaled
-      //   // image
-      //   mousePointTo = {
-      //       x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-      //       y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
-      //   };
-
-      //   mousePointTo.x = mousePointTo.x + ev.evt.movementX;
-      //   mousePointTo.y = mousePointTo.y + ev.evt.movementY;
-
-      //   // newPos = {
-      //   //     mousePointTo
-      //   // }
-
-      //   console.log("mousePointTo", mousePointTo);
-
-      // // newScale = ev.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-      //   console.log("newScale", newScale);
-
-      // newPos = {
-      //     x: (mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale,
-      //     y: (mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale,
-      // };
-
-      //   console.log("newPos", mousePointTo);
-
-      //console.log(newPos);
-
-      item.setZoomPosition(mousePointTo.x, mousePointTo.y);
-
-      stage.position(mousePointTo);
+      item.setZoom(scale, posx, posy);
+      stage.position({ x: posx, y: posy });
       stage.batchDraw();
+    },
+
+    mousemoveEv(ev, [x, y]) {
+      const scale = self._manager.obj.stageRef.scaleX();
+
+      if (scale <= 1) return;
+      if (self.mode === "moving") self.handleDrag(ev);
     },
 
     mousedownEv(ev, [x, y]) {

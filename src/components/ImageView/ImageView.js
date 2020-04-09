@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Stage, Layer, Group, Line } from "react-konva";
 import { observer } from "mobx-react";
+import { getRoot } from "mobx-state-tree";
 
 import ImageGrid from "../ImageGrid/ImageGrid";
 import ImageTransformer from "../ImageTransformer/ImageTransformer";
@@ -66,17 +67,18 @@ export default observer(
        */
       item.freezeHistory();
 
-      return item.onMouseMove(e);
-    };
+      const stage = item.stageRef;
+      const scale = stage.scaleX();
 
-    /**
-     * Update brightness of Image
-     */
-    updateBrightness = range => {
-      const { item } = this.props;
-      item.freezeHistory();
-
-      item.setBrightnessGrade(range);
+      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && scale > 1) {
+        e.evt.preventDefault();
+        const newPos = { x: stage.x() + e.evt.movementX, y: stage.y() + e.evt.movementY };
+        item.setZoom(scale, newPos.x, newPos.y);
+        stage.position(newPos);
+        stage.batchDraw();
+      } else {
+        return item.onMouseMove(e);
+      }
     };
 
     updateGridSize = range => {
@@ -208,6 +210,22 @@ export default observer(
       window.removeEventListener("resize", this.onResize);
     }
 
+    renderTools() {
+      const { item, store } = this.props;
+      const cs = store.completionStore;
+
+      if (cs.viewingAllCompletions || cs.viewingAllPredictions) return null;
+
+      return (
+        <div className={styles.block}>
+          {item
+            .getToolsManager()
+            .allTools()
+            .map(tool => tool.viewClass)}
+        </div>
+      );
+    }
+
     render() {
       const { item, store } = this.props;
 
@@ -224,10 +242,13 @@ export default observer(
 
       const imgStyle = {
         width: item.width,
-        maxWidth: item.maxwidth,
         transformOrigin: "left top",
-        filter: `brightness(${item.brightnessGrade}%)`,
+        filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
       };
+
+      if (getRoot(item).settings.imageFullSize === false) {
+        imgStyle["maxWidth"] = item.maxwidth;
+      }
 
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;
@@ -280,7 +301,7 @@ export default observer(
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
             {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-            {item.shapes.map(shape => {
+            {item.regions.map(shape => {
               let brushShape;
               if (shape.type === "brushregion") {
                 brushShape = (
@@ -298,21 +319,16 @@ export default observer(
               return brushShape;
             })}
             <Layer>
-              {item.shapes.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
+              {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
               {item.activeShape && Tree.renderItem(item.activeShape)}
 
-              {c.edittable === true && (
+              {item.selectedShape && item.selectedShape.editable && (
                 <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
               )}
             </Layer>
           </Stage>
 
-          <div className={styles.block}>
-            {item
-              .getToolsManager()
-              .allTools()
-              .map(tool => tool.viewClass)}
-          </div>
+          {this.renderTools()}
         </ObjectTag>
       );
     }

@@ -3,24 +3,25 @@ import { types, getRoot } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
+import ControlBase from "./Base";
 
 /**
  * Polygon tag
  * Polygon is used to add polygons to an image
  * @example
  * <View>
- *   <Polygon name="rect-1" toName="img-1"></Polygon>
- *   <Image name="img-1" value="$img"></Image>
+ *   <Polygon name="rect-1" toName="img-1" />
+ *   <Image name="img-1" value="$img" />
  * </View>
  * @name Polygon
- * @param {string} name name of tag
- * @param {string} toname name of image to label
- * @param {number=} [opacity=0.6] opacity of polygon
- * @param {string=} fillColor rectangle fill color, default is transparent
- * @param {string=} strokeColor stroke color
- * @param {number=} [strokeWidth=1] width of stroke
- * @param {small|medium|large=} [pointSize=medium] size of polygon handle points
- * @param {rectangle|circle=} [pointStyle=rectangle] style of points
+ * @param {string} name                           - name of tag
+ * @param {string} toname                         - name of image to label
+ * @param {number} [opacity=0.6]                  - opacity of polygon
+ * @param {string} [fillColor]                    - rectangle fill color, default is transparent
+ * @param {string} [strokeColor]                  - stroke color
+ * @param {number} [strokeWidth=1]                - width of stroke
+ * @param {small|medium|large} [pointSize=medium] - size of polygon handle points
+ * @param {rectangle|circle} [pointStyle=circle]  - style of points
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -45,22 +46,8 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get hasStates() {
-      const states = self.states();
-      return states && states.length > 0;
-    },
-
     get completion() {
       return getRoot(self).completionStore.selected;
-    },
-
-    states() {
-      return self.completion.toNames.get(self.name);
-    },
-
-    activeStates() {
-      const states = self.states();
-      return states ? states.filter(c => c.isSelected === true) : null;
     },
   }))
   .actions(self => ({
@@ -82,7 +69,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", TagAttrs, Model);
+const PolygonModel = types.compose("PolygonModel", TagAttrs, Model, ControlBase);
 
 const HtxView = inject("store")(
   observer(({ store, item }) => {

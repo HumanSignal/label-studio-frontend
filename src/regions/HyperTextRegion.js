@@ -2,9 +2,15 @@ import { types, getRoot, getParentOfType } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
+import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
+import WithStatesMixin from "../mixins/WithStates";
+import { ChoicesModel } from "../tags/control/Choices";
 import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
 import { HyperTextModel } from "../tags/object/HyperText";
+import { LabelsModel } from "../tags/control/Labels";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 const Model = types
@@ -17,102 +23,42 @@ const Model = types
     endOffset: types.integer,
     end: types.string,
     text: types.string,
-    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel))),
+    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .views(self => ({
     get parent() {
       return getParentOfType(self, HyperTextModel);
     },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
   }))
   .actions(self => ({
-    highlightStates() {},
+    beforeDestroy() {
+      Utils.HTML.removeSpans(self._spans);
+    },
 
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = obj => {
-        const tree = {
-          id: self.pid,
-          from_name: obj.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "htmllabels",
-          value: {
-            startOffset: self.startOffset,
-            endOffset: self.endOffset,
-            start: self.start,
-            end: self.end,
-            text: self.text,
-          },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+    serialize(control, object) {
+      let res = {
+        value: {
+          start: self.start,
+          end: self.end,
+          text: self.text,
+          startOffset: self.startOffset,
+          endOffset: self.endOffset,
+        },
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          tree["value"]["htmllabels"] = s.getSelectedNames();
-
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
-    },
-
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self._spans.forEach(span => {
-        span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, 0.8);
-      });
-    },
-
-    _updateSpansOpacity(opacity) {
-      self._spans &&
-        self._spans.forEach(span => {
-          span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, opacity);
-        });
-    },
-
-    /**
-     * Unselect audio region
-     */
-    unselectRegion() {
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
-      self._updateSpansOpacity(0.3);
-    },
-
-    setHighlight(val) {
-      self.highlighted = val;
-
-      if (val) self._updateSpansOpacity(0.8);
-      else if (!self.selected) self._updateSpansOpacity(0.3);
-    },
-
-    beforeDestroy() {
-      var norm = [];
-      if (self._spans) {
-        self._spans.forEach(span => {
-          while (span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
-
-          norm.push(span.parentNode);
-          span.parentNode.removeChild(span);
-        });
-      }
-
-      norm.forEach(n => n.normalize());
+      return res;
     },
   }));
 
-const HyperTextRegionModel = types.compose("HyperTextRegionModel", RegionsMixin, NormalizationMixin, Model);
+const HyperTextRegionModel = types.compose(
+  "HyperTextRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+  SpanTextMixin,
+);
 
 export { HyperTextRegionModel };

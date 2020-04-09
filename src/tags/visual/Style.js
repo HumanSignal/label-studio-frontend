@@ -1,11 +1,8 @@
 import React from "react";
 import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
-import { Typography } from "antd";
 
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
 
 /**
  * Style tag, add css styles right through the config

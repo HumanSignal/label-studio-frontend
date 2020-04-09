@@ -7,33 +7,32 @@ import { observer, inject } from "mobx-react";
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
-
-const DEFAULT_BACKGROUND = "#36B37E";
 
 /**
  * Label tag represents a single label
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
- *     <Label alias="B" value="Brand"></Label>
- *     <Label alias="P" value="Product"></Label>
+ *     <Label alias="B" value="Brand" />
+ *     <Label alias="P" value="Product" />
  *   </Labels>
- *   <Text name="txt-1" value="$text"></Text>
+ *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
- * @param {string} value A value of the label
- * @param {boolean} selected If this label should be preselected
- * @param {string} alias Label alias
- * @param {string} hotkey Hotkey
- * @param {boolean} showalias Show alias inside label text
- * @param {string} aliasstyle Alias CSS style default=opacity: 0.6
- * @param {string} size Size of text in the label
- * @param {string} background The background color of active label
- * @param {string} selectedColor Color of text in an active label
+ * @param {string} value                    - value of the label
+ * @param {boolean} [selected=false]        - if this label should be preselected
+ * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
+ * @param {string} [alias]                  - label alias
+ * @param {boolean} [showAlias=false]       - show alias inside label text
+ * @param {string} [aliasStyle=opacity:0.6] - alias CSS style
+ * @param {string} [size=medium]            - size of text in the label
+ * @param {string} [background]             - background color of an active label
+ * @param {string} [selectedColor]          - color of text in an active label
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -43,7 +42,7 @@ const TagAttrs = types.model({
   showalias: types.optional(types.boolean, false),
   aliasstyle: types.optional(types.string, "opacity: 0.6"),
   size: types.optional(types.string, "medium"),
-  background: types.optional(types.string, DEFAULT_BACKGROUND),
+  background: types.optional(types.string, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(types.string, "white"),
 });
 
@@ -51,22 +50,18 @@ const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     type: "label",
+    visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
     get completion() {
       return getRoot(self).completionStore.selected;
     },
-  }))
-  .actions(self => ({
-    /**
-     * Select label
-     */
-    toggleSelected() {
-      const selectedLabel = self.selected;
 
-      const labels = Types.getParentOfTypeString(self, [
+    get parent() {
+      return Types.getParentOfTypeString(self, [
         "LabelsModel",
+        "EllipseLabelsModel",
         "RectangleLabelsModel",
         "PolygonLabelsModel",
         "KeyPointLabelsModel",
@@ -74,8 +69,34 @@ const Model = types
         "HyperTextLabelsModel",
         "TimeSeriesLabelsModel",
       ]);
+    },
+  }))
+  .actions(self => ({
+    /**
+     * Select label
+     */
+    toggleSelected() {
+      // here we check if you click on label from labels group
+      // connected to the region on the same object tag that is
+      // right now highlighted, and if that region is readonly
+      const hn = self.completion.highlightedNode;
+      if (hn && hn.readonly === true && hn.parent.name === self.parent.toname) return;
 
-      labels.finishCurrentObject();
+      // one more check if that label can be selected
+      if (!self.completion.editable) return;
+
+      const selectedLabel = self.selected;
+      const labels = self.parent;
+
+      const reg = self.completion.highlightedNode;
+
+      // check if there is a region selected and if it is and user
+      // is changing the label we need to make sure that region is
+      // not going to endup without the label(s) at all
+      if (reg) {
+        const sel = labels.selectedLabels;
+        if (sel.length === 1 && sel[0]._value === self._value) return;
+      }
 
       /**
        * Multiple
@@ -98,6 +119,12 @@ const Model = types
           labels.unselectAll();
         }
       }
+
+      reg && reg.updateSingleState(labels);
+    },
+
+    setVisible(val) {
+      self.visible = val;
     },
 
     /**
@@ -113,7 +140,7 @@ const Model = types
     },
 
     _updateBackgroundColor(val) {
-      if (self.background === DEFAULT_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
+      if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
     },
 
     afterCreate() {
@@ -138,11 +165,13 @@ const HtxLabelView = inject("store")(
       margin: "5px",
     };
 
+    if (!item.visible) {
+      labelStyle["display"] = "none";
+    }
+
     return (
       <Tag
         onClick={ev => {
-          if (!item.completion.edittable) return;
-
           item.toggleSelected();
           return false;
         }}
@@ -153,7 +182,9 @@ const HtxLabelView = inject("store")(
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}
-        {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && <Hint>[{item.hotkey}]</Hint>}
+        {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+          store.settings.enableHotkeys &&
+          item.hotkey && <Hint>[{item.hotkey}]</Hint>}
       </Tag>
     );
   }),

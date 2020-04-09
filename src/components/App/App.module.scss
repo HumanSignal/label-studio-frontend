@@ -1,5 +1,14 @@
 @import "../../assets/styles/global.scss";
 
+.ant-list-item-action {
+  margin-left: 10px !important;
+}
+
+.segment {
+  position: sticky;
+  top: 1rem;
+}
+
 .editor {
   min-width: 320px;
   margin: 0 auto;
@@ -8,6 +17,15 @@
     width: 300px;
     min-width: 300px;
   }
+}
+
+.editorfs {
+  position: absolute;
+  background: white;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 2em;
 }
 
 .menu {
@@ -30,6 +48,21 @@
   }
 }
 
+.menubsp {
+  display: flex;
+  flex-direction: row;
+  margin-top: 2em;
+
+  & > div {
+    margin-right: 2em;
+    width: 33.3%;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
 .menu:empty {
   width: 0;
   min-width: auto;
@@ -49,6 +82,24 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+}
+
+.commonbsp {
+  display: block;
+}
+
+.pins {
+  width: 100%;
+  display: flex;
+}
+
+.pins div {
+  text-align: right;
+}
+
+.pinsright {
+  width: 320px;
+  min-width: 320px;
 }
 
 @media only screen and (max-width: 768px) {

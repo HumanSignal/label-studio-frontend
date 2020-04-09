@@ -9,26 +9,27 @@ import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { PolygonModel } from "./Polygon";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * PolygonLabels tag, create labeled polygons
  * @example
  * <View>
- *   <Image name="image" value="$image"></Image>
+ *   <Image name="image" value="$image" />
  *   <PolygonLabels name="lables" toName="image">
- *     <Label value="Car"></Label>
- *     <Label value="Sign"></Label>
+ *     <Label value="Car" />
+ *     <Label value="Sign" />
  *   </PolygonLabels>
  * </View>
  * @name PolygonLabels
- * @param {string} name name of tag
- * @param {string} toname name of image to label
- * @param {number=} [opacity=0.6] opacity of polygon
- * @param {string=} fillColor rectangle fill color, default is transparent
- * @param {string=} strokeColor stroke color
- * @param {number=} [strokeWidth=1] width of stroke
- * @param {small|medium|large=} [pointSize=medium] size of polygon handle points
- * @param {rectangle|circle=} [pointStyle=rectangle] style of points
+ * @param {string} name                             - name of tag
+ * @param {string} toName                           - name of image to label
+ * @param {number} [opacity=0.6]                    - opacity of polygon
+ * @param {string} [fillColor]                      - rectangle fill color, default is transparent
+ * @param {string} [strokeColor]                    - stroke color
+ * @param {number} [strokeWidth=1]                  - width of stroke
+ * @param {small|medium|large} [pointSize=medium]   - size of polygon handle points
+ * @param {rectangle|circle} [pointStyle=rectangle] - style of points
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -39,12 +40,20 @@ const ModelAttrs = types.model("PolygonLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "polygonlabels",
-  children: Types.unionArray(["labels", "label", "choice"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "polygonlabels" });
 
-const Composition = types.compose(LabelsModel, ModelAttrs, PolygonModel, TagAttrs, Model, SelectedModelMixin);
+const Composition = types.compose(
+  LabelsModel,
+  ModelAttrs,
+  PolygonModel,
+  TagAttrs,
+  Model,
+  SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
+);
 
 const PolygonLabelsModel = types.compose("PolygonLabelsModel", Composition);
 

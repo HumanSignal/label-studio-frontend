@@ -9,56 +9,45 @@ const _Tool = types
   .model({
     default: types.optional(types.boolean, true),
   })
-  .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      if ("keypointlabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-        states.fromStateJSON(obj);
-
-        self.createRegion({
-          x: obj.value.x,
-          y: obj.value.y,
-          width: obj.value.width,
-          fillcolor: states.getSelectedColor(),
-          states: [states],
-          coordstype: "perc",
-        });
-      }
+  .views(self => ({
+    get tagTypes() {
+      return {
+        stateTypes: "keypointlabels",
+        controlTagTypes: ["keypointlabels", "keypoint"],
+      };
     },
-
-    createRegion({ x, y, width, fillcolor, states, coordstype }) {
-      const c = self.control;
+  }))
+  .actions(self => ({
+    createRegion(opts) {
       const image = self.obj;
+      const c = self.control;
 
       const kp = KeyPointRegionModel.create({
-        id: guidGenerator(),
-        x: x,
-        y: y,
-        width: parseFloat(width),
         opacity: parseFloat(c.opacity),
-        fillcolor: fillcolor,
-        states: states,
-        coordstype: coordstype,
+        ...opts,
       });
 
       image.addShape(kp);
+
+      return kp;
     },
 
     clickEv(ev, [x, y]) {
-      if (self.control.type === "keypointlabels" && !self.control.isSelected) return;
+      const c = self.control;
+      if (c.type === "keypointlabels" && !c.isSelected) return;
 
-      const { states, fillcolor } = self.statesAndParams;
+      const sap = self.statesAndParams;
 
       self.createRegion({
         x: x,
         y: y,
-        width: self.control.strokewidth,
-        fillcolor: fillcolor,
-        states: states,
+        width: Number(c.strokewidth),
         coordstype: "px",
+        ...sap,
       });
 
-      if (self.control.type === "keypointlabels") self.control.unselectAll();
+      self.obj.completion().highlightedNode.unselectRegion();
+      // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));
 

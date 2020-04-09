@@ -15,15 +15,17 @@ import { ChoicesModel } from "./Choices";
  * @example
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single">
- *     <Choice value="Male"></Choice>
- *     <Choice value="Female"></Choice>
+ *     <Choice value="Male" />
+ *     <Choice value="Female" />
  *   </Choices>
- *   <Text name="txt-1" value="John went to see Marry"></Text>
+ *   <Text name="txt-1" value="John went to see Marry" />
  * </View>
  * @name Choice
- * @param {string} value lLbel value
- * @param {boolean} selected If this label should be preselected
- * @param {string} hotkey HotKey
+ * @param {string} value       - choice value
+ * @param {boolean} [selected] - if this label should be preselected
+ * @param {string} [alias]     - alias for the label
+ * @param {style} [style]      - css style of the checkbox element
+ * @param {string} [hotkey]    - hotkey
  */
 const TagAttrs = types.model({
   selected: types.optional(types.boolean, false),
@@ -36,35 +38,47 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     type: "choice",
+    visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get typeOfChoice() {
-      const choice = getParentOfType(self, ChoicesModel).choice;
-
-      return choice;
-    },
-
     get isCheckbox() {
-      const choice = getParentOfType(self, ChoicesModel).choice;
+      const choice = self.parent.choice;
       return choice === "multiple" || choice === "single";
-    },
-
-    get name() {
-      return getParentOfType(self, ChoicesModel).name;
     },
 
     get completion() {
       return getRoot(self).completionStore.selected;
     },
+
+    get parent() {
+      return getParentOfType(self, ChoicesModel);
+    },
   }))
   .actions(self => ({
     toggleSelected() {
-      const choice = getParentOfType(self, ChoicesModel);
+      const choices = self.parent;
 
-      choice.shouldBeUnselected && choice.unselectAll();
+      choices.shouldBeUnselected && choices.unselectAll();
 
       self.setSelected(!self.selected);
+
+      const reg = self.completion.highlightedNode;
+
+      // if (reg) {
+      //     const sel = self.parent.selectedLabels;
+      //     if (sel.length === 1 && sel[0]._value === self._value) return;
+      // }
+
+      // choice is toggled, we need to check if we need to update
+      // the currently selected region
+      if (reg && choices.perregion && reg.parent.name === choices.toname) {
+        reg.updateOrAddState(choices);
+      }
+    },
+
+    setVisible(val) {
+      self.visible = val;
     },
 
     setSelected(val) {
@@ -84,17 +98,22 @@ const HtxChoice = inject("store")(
 
     if (item.style) style = Tree.cssConverter(item.style);
 
+    if (!item.visible) {
+      style["display"] = "none";
+    }
+
     if (item.isCheckbox) {
       const cStyle = Object.assign({ display: "flex", alignItems: "center", marginBottom: 0 }, style);
 
       return (
         <Form.Item style={cStyle}>
           <Checkbox
+            disabled={item.parent.readonly}
             name={item._value}
             onChange={ev => {
-              if (!item.completion.edittable) return;
-
+              if (!item.completion.editable) return;
               item.toggleSelected();
+              ev.nativeEvent.target.blur();
             }}
             checked={item.selected}
           >
@@ -106,26 +125,23 @@ const HtxChoice = inject("store")(
         </Form.Item>
       );
     } else {
-      const label = (
-        <label>
-          {item._value}
-          {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && <Hint>[{item.hotkey}]</Hint>}
-        </label>
-      );
-
       return (
         <div style={style}>
           <Radio
+            disabled={item.parent.readonly}
             value={item._value}
             style={{ display: "inline-block", marginBottom: "0.5em" }}
             checked={item.selected}
             onChange={ev => {
-              if (!item.completion.edittable) return;
-
+              if (!item.completion.editable) return;
               item.toggleSelected();
+              ev.nativeEvent.target.blur();
             }}
           >
-            {label}
+            {item._value}
+            {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+              store.settings.enableHotkeys &&
+              item.hotkey && <Hint>[{item.hotkey}]</Hint>}
           </Radio>
         </div>
       );

@@ -3,7 +3,7 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { PolygonRegionModel } from "../regions/PolygonRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
+import { restoreNewsnapshot } from "../core/Helpers";
 
 const _Tool = types
   .model({
@@ -19,27 +19,25 @@ const _Tool = types
 
       return poly;
     },
+
+    get tagTypes() {
+      return {
+        stateTypes: "polygonlabels",
+        controlTagTypes: ["polygonlabels", "polygon"],
+      };
+    },
+
+    moreRegionParams(obj) {
+      return {
+        x: obj.value.points[0][0],
+        y: obj.value.points[0][1],
+      };
+    },
   }))
   .actions(self => ({
-    fromStateJSON(obj, fromModel) {
-      if ("polygonlabels" in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-
-        if (!states.fromStateJSON) return;
-
-        states.fromStateJSON(obj);
-
-        const poly = self.createRegion({
-          id: obj.id,
-          x: obj.value.points[0][0],
-          y: obj.value.points[0][1],
-          width: 10,
-          stroke: states.getSelectedColor(),
-          states: [states],
-          coordstype: "perc",
-          stateFlag: true,
-        });
-
+    fromStateJSON(obj, controlTag) {
+      const poly = self.createFromJSON(obj, controlTag);
+      if (poly) {
         for (var i = 1; i < obj.value.points.length; i++) {
           poly.addPoint(obj.value.points[i][0], obj.value.points[i][1]);
         }
@@ -48,39 +46,28 @@ const _Tool = types
       }
     },
 
-    createRegion({ x, y, width, stroke, states, coordstype, stateFlag, id }) {
+    createRegion(opts) {
       let newPolygon = self.getActivePolygon;
       // self.freezeHistory();
       const image = self.obj;
       const c = self.control;
 
+      delete opts["points"];
+
       if (!newPolygon) {
-        // const c = self.controlButton();
-        const polygonID = id ? id : guidGenerator();
-        const polygonOpacity = parseFloat(c.opacity);
-        const polygonStrokeWidth = parseInt(c.strokewidth);
-
         newPolygon = PolygonRegionModel.create({
-          id: polygonID,
-
-          opacity: polygonOpacity,
-          fillcolor: c.fillcolor,
-
-          strokewidth: polygonStrokeWidth,
-          strokecolor: stroke,
-
-          pointsize: c.pointsize,
-          pointstyle: c.pointstyle,
-
-          states: states,
-
-          coordstype: coordstype,
+          opacity: Number(c.opacity),
+          strokeWidth: Number(c.strokewidth),
+          fillOpacity: Number(c.fillopacity),
+          pointSize: c.pointsize,
+          pointStyle: c.pointstyle,
+          ...opts,
         });
 
         image.addShape(newPolygon);
       }
 
-      newPolygon.addPoint(x, y);
+      newPolygon.addPoint(opts.x, opts.y);
 
       return newPolygon;
     },
@@ -88,27 +75,26 @@ const _Tool = types
     clickEv(ev, [x, y]) {
       if (self.control.type === "polygonlabels") if (!self.control.isSelected && self.getActivePolygon === null) return;
 
-      const { states, strokecolor } = self.statesAndParams;
+      const sap = self.statesAndParams;
 
       // if there is a polygon in process of creation right now, but
       // the user has clicked on the labels without first finishing
       // it, we close it automatically and create a new one with new
       // labels
-      if (states.length && self.getActivePolygon) {
-        self.getActivePolygon.closePoly();
-      }
+
+      // if (states.length && self.getActivePolygon) {
+      //   self.getActivePolygon.closePoly();
+      // }
 
       self.createRegion({
         x: x,
         y: y,
         width: 10,
-        stroke: strokecolor,
-        states: states,
         coordstype: "px",
-        stateFlag: false,
+        ...sap,
       });
 
-      if (self.control.type == "polygonlabels") self.control.unselectAll();
+      // if (self.control.type == "polygonlabels") self.control.unselectAll();
     },
   }));
 

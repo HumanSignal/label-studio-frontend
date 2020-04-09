@@ -1,4 +1,4 @@
-import { detach, types, flow, getParent, getType, destroy, getRoot } from "mobx-state-tree";
+import { types, getType, getRoot } from "mobx-state-tree";
 import { observer, inject } from "mobx-react";
 
 import * as Tools from "../../tools";
@@ -11,30 +11,34 @@ import { BrushRegionModel } from "../../regions/BrushRegion";
 import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
+import { EllipseRegionModel } from "../../regions/EllipseRegion";
 
 /**
  * Image tag shows an image on the page
  * @example
  * <View>
+ *   <!-- Take the image url from the url column in JSON/CSV -->
  *   <Image value="$url"></Image>
  * </View>
  * @example
  * <View>
- *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px"></Image>
+ *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px" />
  * </View>
  * @name Image
- * @param {string} name name of the element
- * @param {string} value value
- * @param {string=} [width=100%] image width
- * @param {string=} [maxWidth=750px] image maximum width
- * @param {boolean=} zoom enable zooming an image by the mouse wheel
- * @param {boolean=} negativeZoom enable zooming out an image
- * @param {float=} [zoomBy=1.1] scale factor
- * @param {boolean=} [grid=false] show grid
- * @param {number=} [gridSize=30] size of the grid
- * @param {string=} [gridColor="#EEEEF4"] color of the grid, opacity is 0.15
- * @param {boolean=} showMousePos show mouse position coordinates under an image
- * @param {boolean} brightness brightness of the image
+ * @param {string} name                       - name of the element
+ * @param {string} value                      - value
+ * @param {string=} [width=100%]              - image width
+ * @param {string=} [maxWidth=750px]          - image maximum width
+ * @param {boolean=} [zoom=false]             - enable zooming an image by the mouse wheel
+ * @param {boolean=} [negativeZoom=false]     - enable zooming out an image
+ * @param {float=} [zoomBy=1.1]               - scale factor
+ * @param {boolean=} [grid=false]             - show grid
+ * @param {number=} [gridSize=30]             - size of the grid
+ * @param {string=} [gridColor="#EEEEF4"]     - color of the grid, opacity is 0.15
+ * @param {boolean} [zoomControl=false]       - show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false] - show brightness control in toolbar
+ * @param {boolean} [contrastControl=false]   - show contrast control in toolbar
+ * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -52,20 +56,26 @@ const TagAttrs = types.model({
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
-  brightness: types.optional(types.boolean, false),
+  showlabels: types.optional(types.boolean, false),
 
-  showmousepos: types.optional(types.boolean, false),
+  zoomcontrol: types.optional(types.boolean, false),
+  brightnesscontrol: types.optional(types.boolean, false),
+  contrastcontrol: types.optional(types.boolean, false),
+  rotatecontrol: types.optional(types.boolean, false),
 });
 
 const IMAGE_CONSTANTS = {
   rectangleModel: "RectangleModel",
   rectangleLabelsModel: "RectangleLabelsModel",
+  ellipseModel: "EllipseModel",
+  ellipseLabelsModel: "EllipseLabelsModel",
   brushLabelsModel: "BrushLabelsModel",
   rectanglelabels: "rectanglelabels",
   keypointlabels: "keypointlabels",
   polygonlabels: "polygonlabels",
   brushlabels: "brushlabels",
   brushModel: "BrushModel",
+  ellipselabels: "ellipselabels",
 };
 
 const Model = types
@@ -75,6 +85,8 @@ const Model = types
     _value: types.optional(types.string, ""),
 
     // tools: types.array(BaseTool),
+
+    rotation: types.optional(types.number, 0),
 
     sizeUpdated: types.optional(types.boolean, false),
 
@@ -111,6 +123,8 @@ const Model = types
      */
     brightnessGrade: types.optional(types.number, 100),
 
+    contrastGrade: types.optional(types.number, 100),
+
     /**
      * Cursor coordinates
      */
@@ -129,13 +143,13 @@ const Model = types
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
 
     selectedShape: types.safeReference(
-      types.union(BrushRegionModel, RectRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
     ),
-    // activePolygon: types.maybeNull(types.safeReference(PolygonRegionModel)),
 
-    // activeShape: types.maybeNull(types.union(RectRegionModel, BrushRegionModel)),
-
-    shapes: types.array(types.union(BrushRegionModel, RectRegionModel, PolygonRegionModel, KeyPointRegionModel), []),
+    regions: types.array(
+      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      [],
+    ),
   })
   .views(self => ({
     /**
@@ -168,7 +182,11 @@ const Model = types
       let returnedControl = names[0];
 
       names.forEach(item => {
-        if (item.type === IMAGE_CONSTANTS.rectanglelabels || item.type === IMAGE_CONSTANTS.brushlabels) {
+        if (
+          item.type === IMAGE_CONSTANTS.rectanglelabels ||
+          item.type === IMAGE_CONSTANTS.brushlabels ||
+          item.type === IMAGE_CONSTANTS.ellipselabels
+        ) {
           returnedControl = item;
         }
       });
@@ -189,18 +207,14 @@ const Model = types
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
-      // console.log(self.id);
-      // console.log(getType(self));
-      // toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
-      // tools["zoom"] = Tools.Zoom.create({ image: self.id });
-      // tools["zoom"]._image = self;
-      // console.log(getRoot(self));
-      // const st = self.states();
-      // self.states().forEach(item => {
-      // const tools = item.getTools();
-      // if (tools)
-      //     tools.forEach(t => t._image = self);
-      // });
+      if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
+
+      if (self.brightnesscontrol)
+        toolsManager.addTool("brightness", Tools.Brightness.create({}, { manager: toolsManager }));
+
+      if (self.contrastcontrol) toolsManager.addTool("contrast", Tools.Contrast.create({}, { manager: toolsManager }));
+
+      if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
     }
 
     function getTools() {
@@ -215,17 +229,7 @@ const Model = types
       tools = null;
     }
 
-    function afterAttach() {
-      // console.log("afterAttach Image");
-      // console.log(self.completion().toNames);
-      // console.log(self.states());
-      // self.states() && self.states().forEach(item => {
-      //     console.log("TOOOL:");
-      //     console.log(item.getTools().get("keypoint"));
-      // });
-    }
-
-    return { afterCreate, beforeDestroy, getTools, afterAttach, getToolsManager };
+    return { afterCreate, beforeDestroy, getTools, getToolsManager };
   })
 
   .actions(self => ({
@@ -247,6 +251,10 @@ const Model = types
      */
     setBrightnessGrade(value) {
       self.brightnessGrade = value;
+    },
+
+    setContrastGrade(value) {
+      self.contrastGrade = value;
     },
 
     setGridSize(value) {
@@ -299,6 +307,17 @@ const Model = types
       self.selectedShape = shape;
     },
 
+    rotate(degree = 90) {
+      self.rotation = self.rotation + degree;
+
+      if (self.rotation === 360) {
+        self.rotation = 0;
+        degree = 0;
+      }
+
+      self.regions.forEach(s => s.rotate(degree));
+    },
+
     updateImageSize(ev) {
       const { width, height, naturalWidth, naturalHeight, userResize } = ev.target;
 
@@ -311,13 +330,13 @@ const Model = types
       self.stageHeight = height;
       self.sizeUpdated = true;
 
-      self.shapes.forEach(shape => {
+      self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
     },
 
     addShape(shape) {
-      self.shapes.push(shape);
+      self.regions.push(shape);
 
       self.completion().addRegion(shape);
       self.setSelected(shape.id);
@@ -361,10 +380,6 @@ const Model = types
 
     onMouseUp(ev) {
       self.getToolsManager().event("mouseup", ev);
-    },
-
-    toStateJSON() {
-      return self.shapes.map(r => r.toStateJSON());
     },
 
     /**

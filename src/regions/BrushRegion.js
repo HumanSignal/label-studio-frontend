@@ -2,21 +2,23 @@ import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
-import { encode, decode } from "@thi.ng/rle-pack";
 
+import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
+import WithStatesMixin from "../mixins/WithStates";
 import { BrushLabelsModel } from "../tags/control/BrushLabels";
+import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
+import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
 import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
-import Canvas from "../utils/canvas";
 
 const Points = types
   .model("Points", {
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     type: types.optional(types.enumeration(["add", "eraser"]), "add"),
     points: types.array(types.number),
     /**
@@ -52,12 +54,12 @@ const Points = types
  */
 const Model = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     type: "brushregion",
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, RatingModel, BrushLabelsModel))),
+    states: types.maybeNull(types.array(types.union(BrushLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
     /**
@@ -99,10 +101,6 @@ const Model = types
     get parent() {
       return getParentOfType(self, ImageModel);
     },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -131,15 +129,22 @@ const Model = types
       self.selected = false;
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
+      self.completion.unloadRegionState(self);
     },
 
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self.parent.setSelected(self.id);
+      self.completion.loadRegionState(self);
     },
 
     convertPointsToMask() {},
+
+    updateAppearenceFromState() {
+      const stroke = self.states[0].getSelectedColor();
+      self.strokeColor = stroke;
+    },
 
     // addPoints(x, y, mode) {
     //   if (mode) self.mode = "eraser";
@@ -175,67 +180,28 @@ const Model = types
       self.states.push(state);
     },
 
-    toStateJSON() {
-      const parent = self.parent;
-      let fromElement = parent.states()[0];
-
-      if (parent.states().length > 1) {
-        parent.states().forEach(state => {
-          if (state.type === "brushlabels") {
-            fromElement = state;
-          }
-        });
-      }
-
-      // const ctx = self.layerRef.getContext("2d");
-
-      const rle = Canvas.Region2RLE(self, self.parent, {
+    serialize(control, object) {
+      const rle = Canvas.Region2RLE(self, object, {
         stroke: self.strokeColor,
         tension: self.tension,
       });
 
-      const buildTree = obj => {
-        //     const data = ctx.getImageData(0,0,750, 937);
-
-        const tree = {
-          id: self.id,
-          from_name: fromElement.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: "brush",
-
-          value: {
-            format: "rle",
-            rle: Array.prototype.slice.call(rle),
-          },
-
-          // value: {
-          //   points: self.points,
-          //   eraserpoints: self.eraserpoints,
-          // },
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
+      const res = {
+        original_width: object.naturalWidth,
+        original_height: object.naturalHeight,
+        value: {
+          format: "rle",
+          rle: Array.prototype.slice.call(rle),
+        },
       };
 
-      if (self.states && self.states.length) {
-        return self.states.map(s => {
-          const tree = buildTree(s);
-          // in case of labels it's gonna be, labels: ["label1", "label2"]
-          tree["value"][s.type] = s.getSelectedNames();
-          tree["type"] = s.type;
+      res.value = Object.assign(res.value, control.serializableValue);
 
-          return tree;
-        });
-      } else {
-        return buildTree(parent);
-      }
+      return res;
     },
   }));
 
-const BrushRegionModel = types.compose("BrushRegionModel", RegionsMixin, NormalizationMixin, Model);
+const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
   let currentPoints = [];
@@ -370,7 +336,7 @@ const HtxBrushView = ({ store, item }) => {
       >
         <Shape
           sceneFunc={(ctx, shape) => {
-            if (item.parent.naturalWidth == 1) return null;
+            if (item.parent.naturalWidth === 1) return null;
 
             if (item._loadedOnce === true) {
               ctx.drawImage(item._img, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
@@ -398,6 +364,8 @@ const HtxBrushView = ({ store, item }) => {
         {item.touches.map(p => (
           <HtxBrushLayer store={store} item={item} points={p} />
         ))}
+
+        <LabelOnMask item={item} />
       </Group>
     </Fragment>
   );

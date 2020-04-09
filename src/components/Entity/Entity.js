@@ -1,17 +1,29 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { getType } from "mobx-state-tree";
-import { Form, Input, Icon, Button, Tag, Tooltip } from "antd";
+import { Form, Input, Icon, Button, Tag, Tooltip, Badge } from "antd";
+import {
+  DeleteOutlined,
+  LinkOutlined,
+  PlusOutlined,
+  FullscreenOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  CompressOutlined,
+} from "@ant-design/icons";
+import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
 
+const { Text } = Typography;
+
 const templateElement = element => {
   return (
-    <div key={element.pid} className={styles.labels}>
+    <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
-      {element.getSelectedNames().map(title => {
+      {element.selectedValues().map(title => {
         let bgColor = element.findLabel(title).background ? element.findLabel(title).background : "#000000";
 
         return (
@@ -20,30 +32,30 @@ const templateElement = element => {
           </Tag>
         );
       })}
-    </div>
+    </Text>
   );
 };
 
-const RenderStates = ({ node }) => {
+const RenderStates = observer(({ node }) => {
   const _render = s => {
-    if (
-      getType(s).name === "LabelsModel" ||
-      getType(s).name === "RectangleLabelsModel" ||
-      getType(s).name === "PolygonLabelsModel" ||
-      getType(s).name === "KeyPointLabelsModel" ||
-      getType(s).name === "BrushLabelsModel" ||
-      getType(s).name === "TimeSeriesLabelsModel"
-    ) {
+    if (getType(s).name.indexOf("Labels") !== -1) {
       return templateElement(s);
     } else if (getType(s).name === "RatingModel") {
-      return <p>Rating: {s.getSelectedString()}</p>;
+      return <Text>Rating: {s.getSelectedString()}</Text>;
+    } else if (getType(s).name === "TextAreaModel") {
+      const text = s.regions.map(r => r._value).join("\n");
+      return (
+        <Text>
+          Text: <Text mark>{text.substring(0, 26)}...</Text>
+        </Text>
+      );
     }
 
     return null;
   };
 
-  return <Fragment>{node.states.map(s => _render(s))}</Fragment>;
-};
+  return <Fragment>{node.states.filter(s => s.holdsState).map(s => _render(s))}</Fragment>;
+});
 
 export default observer(({ store, completion }) => {
   const node = completion.highlightedNode;
@@ -51,60 +63,94 @@ export default observer(({ store, completion }) => {
   return (
     <Fragment>
       <p>
-        <NodeMinimal node={node} /> (id: {node.id})
+        <NodeMinimal node={node} /> (id: {node.id}){" "}
+        {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
       </p>
+      <div className={styles.statesblk + " ls-entity-states"}>
+        {node.score && (
+          <Fragment>
+            <Text>
+              Score: <Text underline>{node.score}</Text>
+            </Text>
+          </Fragment>
+        )}
 
-      {node.normalization && (
-        <p>
-          Normalization: {node.normalization}
-          <Icon
-            name="delete"
-            style={{ cursor: "pointer" }}
+        {node.normalization && (
+          <Text>
+            Normalization: <Text code>{node.normalization}</Text>
+            &nbsp;
+            <DeleteOutlined
+              type="delete"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                node.deleteNormalization();
+              }}
+            />
+          </Text>
+        )}
+
+        {node.states && <RenderStates node={node} />}
+      </div>
+
+      <div className={styles.block + " ls-entity-buttons"}>
+        {/* <Tooltip placement="topLeft" title="Hide: [h]"> */}
+        {/*   <Button */}
+        {/*     className={styles.button} */}
+        {/*     onClick={() => { */}
+        {/*         node.toggleHidden(); */}
+        {/*         //node.unselectRegion(); */}
+        {/*         //node.selectRegion(); */}
+        {/*         // completion.startRelationMode(node); */}
+        {/*     }} */}
+        {/*   > */}
+        {/*     { node.hidden ? <EyeOutlined /> : <EyeInvisibleOutlined /> } */}
+        {/*     {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ h ]</Hint>} */}
+        {/*   </Button> */}
+        {/* </Tooltip> */}
+
+        {node.editable && (
+          <Fragment>
+            <Tooltip placement="topLeft" title="Create Relation: [r]">
+              <Button
+                className={styles.button}
+                onClick={() => {
+                  completion.startRelationMode(node);
+                }}
+              >
+                <LinkOutlined />
+
+                {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
+              </Button>
+            </Tooltip>
+
+            <Tooltip placement="topLeft" title="Create Normalization">
+              <Button
+                className={styles.button}
+                onClick={() => {
+                  completion.setNormalizationMode(true);
+                }}
+              >
+                <PlusOutlined />
+              </Button>
+            </Tooltip>
+          </Fragment>
+        )}
+
+        <Tooltip placement="topLeft" title="Unselect: [u]">
+          <Button
+            className={styles.button}
+            type="dashed"
             onClick={() => {
-              node.deleteNormalization();
+              completion.highlightedNode.unselectRegion();
             }}
-          />
-        </p>
-      )}
-      {node.states && <RenderStates node={node} />}
+          >
+            <CompressOutlined />
+            {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
+          </Button>
+        </Tooltip>
 
-      {node.completion.edittable == true && (
-        <div className={styles.block + " ls-entity-buttons"}>
-          <Tooltip placement="topLeft" title="Create Relation">
-            <Button
-              className={styles.button}
-              onClick={() => {
-                completion.startRelationMode(node);
-              }}
-            >
-              <Icon type="link" />
-            </Button>
-          </Tooltip>
-
-          <Tooltip placement="topLeft" title="Create Normalization">
-            <Button
-              className={styles.button}
-              onClick={() => {
-                completion.setNormalizationMode(true);
-              }}
-            >
-              <Icon type="plus" />
-            </Button>
-          </Tooltip>
-
-          <Tooltip placement="topLeft" title="Unselect">
-            <Button
-              className={styles.button}
-              type="dashed"
-              onClick={() => {
-                completion.highlightedNode.unselectRegion();
-              }}
-            >
-              <Icon type="fullscreen-exit" />
-            </Button>
-          </Tooltip>
-
-          <Tooltip placement="topLeft" title="Delete Entity">
+        {node.editable && (
+          <Tooltip placement="topLeft" title="Delete Entity: [Backspace]">
             <Button
               type="danger"
               className={styles.button}
@@ -112,22 +158,23 @@ export default observer(({ store, completion }) => {
                 completion.highlightedNode.deleteRegion();
               }}
             >
-              <Icon type="delete" />
+              <DeleteOutlined />
 
               {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Bksp ]</Hint>}
             </Button>
           </Tooltip>
-        </div>
-      )}
+        )}
+      </div>
+
       {completion.normalizationMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
-          onSubmit={ev => {
+          onFinish={value => {
             node.setNormalization(node.normInput);
             completion.setNormalizationMode(false);
 
-            ev.preventDefault();
-            return false;
+            // ev.preventDefault();
+            // return false;
           }}
         >
           <Input
@@ -138,9 +185,11 @@ export default observer(({ store, completion }) => {
             style={{ marginBottom: "0.5em" }}
             placeholder="Add Normalization"
           />
+
           <Button type="primary" htmlType="submit" style={{ marginRight: "0.5em" }}>
             Add
           </Button>
+
           <Button
             type="danger"
             htmlType="reset"

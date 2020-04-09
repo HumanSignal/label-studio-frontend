@@ -63,7 +63,7 @@ function runTemplate(html, args, options) {
   code = (code + 'return (options["raw"] === true) ? r : r.join(""); }').replace(/[\r\t\n]/g, " ");
 
   try {
-    result = new Function("obj", "options", code).apply(args, [args, options]);
+    result = new Function("obj", "options", code).apply(args, [args, options]); // eslint-disable-line no-new-func
   } catch (err) {
     console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
   }
