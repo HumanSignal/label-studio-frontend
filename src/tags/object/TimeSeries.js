@@ -14,7 +14,7 @@ import {
 } from "react-timeseries-charts";
 import { Button, Icon } from "antd";
 import { Slider } from "antd";
-import { TimeSeries, TimeRange, avg, percentile, median } from "pondjs";
+import { TimeSeries, TimeRange, avg, percentile, median, indexedSeries } from "pondjs";
 import { format } from "d3-format";
 import { observer, inject } from "mobx-react";
 import { types, getRoot, getType } from "mobx-state-tree";
@@ -161,15 +161,34 @@ const Model = types
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
-      const points = self._value[0].map(p => [p]);
+      const points = [];
+      const val = 1400429552000;
+      const idx = 0;
+      for (let i = 0; i <= self._value[0].length; i++) {
+        points.push([val + 1000 * i]);
+      }
+
+      window.A = points;
+
+      // console.log(points);
+
+      // const points = self._value[0].map(p => [Math.floor(val + p * 100) * 1000]);
+
+      //const points = self._value[1].forEach(p => [ val + ]);
+      // const points = self._value[0].map(p => [p]);
+
+      console.log(points);
 
       // TODO need to figure out why this TS object is not
       // returning a proper timerange
       const series = new TimeSeries({
         name: "time",
         columns: ["time"],
+        utc: false,
         points: points,
       });
+
+      // console.log(points);
 
       self.series = series;
 
@@ -213,6 +232,8 @@ const baselineStyles = {
 const speedFormat = format(".1f");
 
 const TimeSeriesOverview = observer(({ item }) => {
+  // console.log(item.series.timerange());
+
   return (
     <div data-id={item._needsUpdate}>
       <Resizable>
