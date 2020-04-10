@@ -57,6 +57,24 @@ const RegionsMixin = types
     sizeTop(size) {},
     sizeBottom(size) {},
 
+    // @todo fix 90 and 180
+    // "web" degree is opposite to mathematical, -90 is 90 actually
+    rotatePoint(point, degree) {
+      // transform origin is (w/2, w/2) for ccw rotation
+      // h is used because canvas should be already rotated at this moment
+      const size = self.parent.stageHeight;
+      const { x, y } = point;
+      // actions: translate to fit origin, rotate, translate back
+      //   const shift = size / 2;
+      //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
+      //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
+      // for ortogonal degrees it's simple:
+      if (degree === -90) return { x: y, y: size - x };
+      if (degree === 90) return { x: size - y, y: x };
+      if (Math.abs(degree) === 180) return { x: size - x, y: size - y };
+      return { x, y };
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label

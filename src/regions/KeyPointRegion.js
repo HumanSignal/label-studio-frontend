@@ -67,9 +67,17 @@ const Model = types
       self.fillColor = stroke;
     },
 
+    rotate(degree) {
+      const p = self.rotatePoint(self, degree);
+      self.setPosition(p.x, p.y);
+    },
+
     setPosition(x, y) {
       self.x = x;
       self.y = y;
+
+      self.relativeX = (x / self.parent.stageWidth) * 100;
+      self.relativeY = (y / self.parent.stageHeight) * 100;
     },
 
     addState(state) {
