@@ -135,6 +135,25 @@ const Model = types
       });
     },
 
+    // only px coordtype here
+    // "web" degree is opposite to mathematical, -90 is 90 actually
+    // @todo allow 90 and 180
+    rotate(degree = -90) {
+      const size = self.parent.stageHeight;
+      self.points.forEach(point => {
+        const { x, y } = point;
+        // transform origin is (w/2, w/2) point for ccw rotation
+        // translate to fit origin, rotate, translate back
+        //   const shift = size / 2;
+        //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
+        //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
+        // for pi/2 it's very short:
+        const newX = y;
+        const newY = size - x;
+        point._movePoint(newX, newY);
+      });
+    },
+
     closePoly() {
       self.closed = true;
       self.selectRegion();
