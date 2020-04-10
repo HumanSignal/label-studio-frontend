@@ -81,6 +81,10 @@ const Model = types
       }
     },
 
+    get serializableValue() {
+      return { text: self.selectedValues() };
+    },
+
     selectedValues() {
       return self.regions.map(r => r._value);
     },
@@ -132,6 +136,7 @@ const Model = types
     beforeSend() {
       if (self._value && self._value.length) {
         self.addText(self._value);
+        self._value = "";
       }
     },
 
@@ -170,12 +175,12 @@ const Model = types
 
 const TextAreaModel = types.compose(
   "TextAreaModel",
+  ControlBase,
   TagAttrs,
   Model,
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
-  ControlBase,
 );
 
 const HtxTextArea = observer(({ item }) => {
@@ -213,7 +218,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.showSubmit && (
         <Form
           onFinish={ev => {
-            if (item.allowsubmit) {
+            if (item.allowsubmit && item._value) {
               item.addText(item._value);
               item.setValue("");
             }
