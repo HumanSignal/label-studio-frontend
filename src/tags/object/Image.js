@@ -326,19 +326,15 @@ const Model = types
       self.regions.forEach(s => s.rotate(degree));
 
       // 3. scale to fit original width and resize all regions
-      self.updateImageSize({
-        target: {
-          width: w,
-          height: Math.round(ratio * w),
-          naturalWidth: nw,
-          naturalHeight: Math.round(ratio * nw),
-        },
+      self._updateImageSize({
+        width: w,
+        height: Math.round(ratio * w),
+        naturalWidth: nw,
+        naturalHeight: Math.round(ratio * nw),
       });
     },
 
-    updateImageSize(ev) {
-      const { width, height, naturalWidth, naturalHeight, userResize } = ev.target;
-
+    _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
       if (naturalWidth !== undefined) {
         self.naturalWidth = naturalWidth;
         self.naturalHeight = naturalHeight;
@@ -351,6 +347,12 @@ const Model = types
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+    },
+
+    updateImageSize(ev) {
+      // onLoad should fire only once
+      if (self.sizeUpdated) return;
+      self._updateImageSize(ev.target);
     },
 
     addShape(shape) {
@@ -376,9 +378,7 @@ const Model = types
     onResize(width, height, userResize) {
       self.stageHeight = height;
       self.stageWidth = width;
-      self.updateImageSize({
-        target: { width: width, height: height, userResize: userResize },
-      });
+      self._updateImageSize({ width, height, userResize });
     },
 
     onImageClick(ev) {
