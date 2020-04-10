@@ -307,15 +307,33 @@ const Model = types
       self.selectedShape = shape;
     },
 
-    rotate(degree = 90) {
-      self.rotation = self.rotation + degree;
+    // @todo not 90? -90?
+    // @todo fullSize?
+    rotate(degree = -90) {
+      self.rotation = (self.rotation + degree + 360) % 360;
 
-      if (self.rotation === 360) {
-        self.rotation = 0;
-        degree = 0;
-      }
+      // 1. swap canvas sizes to correct relative calculations
+      const w = self.stageWidth;
+      self.stageWidth = self.stageHeight;
+      self.stageHeight = w;
+      const nw = self.naturalWidth;
+      self.naturalWidth = self.naturalHeight;
+      self.naturalHeight = nw;
 
+      const ratio = self.stageHeight / self.stageWidth;
+
+      // 2. rotate regions
       self.regions.forEach(s => s.rotate(degree));
+
+      // 3. scale to fit original width and resize all regions
+      self.updateImageSize({
+        target: {
+          width: w,
+          height: Math.round(ratio * w),
+          naturalWidth: nw,
+          naturalHeight: Math.round(ratio * nw),
+        },
+      });
     },
 
     updateImageSize(ev) {

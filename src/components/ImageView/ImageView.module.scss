@@ -19,3 +19,24 @@
 .button {
   margin: 0.3rem 0;
 }
+
+.container {
+  overflow: hidden;
+
+  &.rotated {
+    width: 100%;
+    position: relative;
+
+    // margin hack to fill the empty space with given aspect ratio
+    // see ImageView.render()
+    .filler {
+      content: "";
+      display: block;
+    }
+
+    img {
+      position: absolute;
+      top: 0;
+    }
+  }
+}

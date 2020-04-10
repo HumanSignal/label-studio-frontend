@@ -234,26 +234,48 @@ export default observer(
 
       const cb = item.controlButton();
       const c = store.completionStore.selected;
-
-      const divStyle = {
-        overflow: "hidden",
-        // width: item.stageWidth + "px",
-      };
+      let filler = null;
+      let containerClassName = styles.container;
 
       const imgStyle = {
         width: item.width,
         transformOrigin: "left top",
         filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
       };
+      const imgTransform = [];
 
-      if (getRoot(item).settings.imageFullSize === false) {
+      // @todo fix it for every rotation degree
+      if (getRoot(item).settings.imageFullSize === false && !item.rotation) {
         imgStyle["maxWidth"] = item.maxwidth;
+      }
+
+      if (item.rotation) {
+        const translate = {
+          90: `0, -100%`,
+          180: `-100%, -100%`,
+          270: `-100%, 0`,
+        };
+        // there is a top left origin already set for zoom; so translate+rotate
+        imgTransform.push(`rotate(${item.rotation}deg)`);
+        imgTransform.push(`translate(${translate[item.rotation] || "0, 0"})`);
+        if ([90, 270].includes(item.rotation)) {
+          // we can not rotate img itself, so we change container's size via css margin hack, ...
+          const ratio = item.stageHeight / item.stageWidth;
+          filler = <div className={styles.filler} style={{ marginTop: `${ratio * 100}%` }} />;
+          containerClassName += " " + styles.rotated;
+          // ... prepare image size for transform rotation and use position: absolute
+          imgStyle.width = item.stageHeight;
+        }
       }
 
       if (item.zoomScale !== 1) {
         let { zoomingPositionX, zoomingPositionY } = item;
-        const translate = "translate(" + zoomingPositionX + "px," + zoomingPositionY + "px) ";
-        imgStyle["transform"] = translate + "scale(" + item.resize + ", " + item.resize + ")";
+        imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
+        imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
+      }
+
+      if (imgTransform.length) {
+        imgStyle["transform"] = imgTransform.join(" ");
       }
 
       return (
@@ -270,8 +292,9 @@ export default observer(
             ref={node => {
               this.container = node;
             }}
-            style={divStyle}
+            className={containerClassName}
           >
+            {filler}
             <img
               ref={ref => {
                 item.setImageRef(ref);
