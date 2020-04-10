@@ -143,6 +143,11 @@ const Model = types
       self.completion.loadRegionState(self);
     },
 
+    rotate(degree) {
+      const p = self.rotatePoint(self, degree);
+      self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
+    },
+
     /**
      * Boundg Box set position on canvas
      * @param {number} x
@@ -163,11 +168,7 @@ const Model = types
       self.relativeRadiusX = (radiusX / self.parent.stageWidth) * 100;
       self.relativeRadiusY = (radiusY / self.parent.stageHeight) * 100;
 
-      if (rotation < 0) {
-        self.rotation = (rotation % 360) + 360;
-      } else {
-        self.rotation = rotation % 360;
-      }
+      self.rotation = (rotation + 360) % 360;
     },
 
     setScale(x, y) {

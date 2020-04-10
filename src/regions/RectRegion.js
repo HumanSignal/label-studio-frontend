@@ -99,7 +99,10 @@ const Model = types
     },
 
     rotate(degree) {
-      // self.rotation = self.rotation + degree;
+      const p = self.rotatePoint(self, degree);
+      if (degree === -90) p.y -= self.width;
+      if (degree === 90) p.x += self.width;
+      self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
     },
 
     unselectRegion() {
@@ -150,11 +153,7 @@ const Model = types
       self.relativeWidth = (width / self.parent.stageWidth) * 100;
       self.relativeHeight = (height / self.parent.stageHeight) * 100;
 
-      if (rotation < 0) {
-        self.rotation = (rotation % 360) + 360;
-      } else {
-        self.rotation = rotation % 360;
-      }
+      self.rotation = (rotation + 360) % 360;
     },
 
     setScale(x, y) {
