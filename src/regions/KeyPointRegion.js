@@ -121,14 +121,21 @@ const Model = types
     },
 
     serialize(control, object) {
+      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
+      const degree = -self.parent.rotation;
+      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
+      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
+
+      const { x, y } = self.rotatePoint(self, degree, false);
+
       return {
-        original_width: object.naturalWidth,
-        original_height: object.naturalHeight,
+        original_width: natural.width,
+        original_height: natural.height,
 
         value: {
-          x: (self.x * 100) / object.stageWidth,
-          y: (self.y * 100) / object.stageHeight,
-          width: (self.width * 100) / object.stageWidth, //  * (self.scaleX || 1)
+          x: (x * 100) / width,
+          y: (y * 100) / height,
+          width: (self.width * 100) / width, //  * (self.scaleX || 1)
           keypointlabels: control.getSelectedNames(),
         },
       };

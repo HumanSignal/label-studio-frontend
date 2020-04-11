@@ -191,14 +191,33 @@ const Model = types
     },
 
     serialize(control, object) {
-      return {
-        original_width: object.naturalWidth,
-        original_height: object.naturalHeight,
-        value: {
-          x: (self.x * 100) / object.stageWidth,
-          y: (self.y * 100) / object.stageHeight,
+      const degree = (360 - self.parent.rotation) % 360;
+      let { x, y } = self.rotatePoint(self, degree, false);
+      if (degree === 270) y -= self.width;
+      if (degree === 90) x -= self.height;
+      if (degree === 180) {
+        x -= self.width;
+        y -= self.height;
+      }
+
+      const natural = self.rotateDimensions({ width: object.naturalWidth, height: object.naturalHeight }, degree);
+      const stage = self.rotateDimensions({ width: object.stageWidth, height: object.stageHeight }, degree);
+      const { width, height } = self.rotateDimensions(
+        {
           width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
           height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
+        },
+        degree,
+      );
+
+      return {
+        original_width: natural.width,
+        original_height: natural.height,
+        value: {
+          x: (x * 100) / stage.width,
+          y: (y * 100) / stage.height,
+          width,
+          height,
           rotation: self.rotation,
           rectanglelabels: control.getSelectedNames(),
         },
