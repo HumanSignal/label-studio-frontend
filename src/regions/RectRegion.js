@@ -101,7 +101,7 @@ const Model = types
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       if (degree === -90) p.y -= self.width;
-      if (degree === 90) p.x += self.width;
+      if (degree === 90) p.x -= self.width;
       self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
     },
 

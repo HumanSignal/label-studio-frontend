@@ -61,17 +61,19 @@ const RegionsMixin = types
     // "web" degree is opposite to mathematical, -90 is 90 actually
     rotatePoint(point, degree) {
       // transform origin is (w/2, w/2) for ccw rotation
-      // h is used because canvas should be already rotated at this moment
-      const size = self.parent.stageHeight;
+      // (h/2, h/2) for cw rotation
+      // h <-> w because canvas is already rotated at this moment
+      const w = self.parent.stageHeight;
+      const h = self.parent.stageWidth;
       const { x, y } = point;
       // actions: translate to fit origin, rotate, translate back
       //   const shift = size / 2;
       //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
       //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
       // for ortogonal degrees it's simple:
-      if (degree === -90) return { x: y, y: size - x };
-      if (degree === 90) return { x: size - y, y: x };
-      if (Math.abs(degree) === 180) return { x: size - x, y: size - y };
+      if (degree === -90) return { x: y, y: w - x };
+      if (degree === 90) return { x: h - y, y: x };
+      if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
       return { x, y };
     },
 
