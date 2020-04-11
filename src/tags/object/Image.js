@@ -329,8 +329,8 @@ const Model = types
       self._updateImageSize({
         width: w,
         height: Math.round(ratio * w),
-        naturalWidth: nw,
-        naturalHeight: Math.round(ratio * nw),
+        naturalWidth: self.naturalWidth,
+        naturalHeight: self.naturalHeight,
       });
     },
 
