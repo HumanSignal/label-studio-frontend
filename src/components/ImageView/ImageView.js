@@ -249,6 +249,12 @@ export default observer(
         imgStyle["maxWidth"] = item.maxwidth;
       }
 
+      if (item.zoomScale !== 1) {
+        let { zoomingPositionX, zoomingPositionY } = item;
+        imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
+        imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
+      }
+
       if (item.rotation) {
         const translate = {
           90: `0, -100%`,
@@ -266,12 +272,6 @@ export default observer(
           // ... prepare image size for transform rotation and use position: absolute
           imgStyle.width = `${ratio * 100}%`;
         }
-      }
-
-      if (item.zoomScale !== 1) {
-        let { zoomingPositionX, zoomingPositionY } = item;
-        imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
-        imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
       }
 
       if (imgTransform.length) {
