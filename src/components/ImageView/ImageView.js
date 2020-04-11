@@ -260,11 +260,11 @@ export default observer(
         imgTransform.push(`translate(${translate[item.rotation] || "0, 0"})`);
         if ([90, 270].includes(item.rotation)) {
           // we can not rotate img itself, so we change container's size via css margin hack, ...
-          const ratio = item.stageHeight / item.stageWidth;
+          const ratio = item.naturalHeight / item.naturalWidth;
           filler = <div className={styles.filler} style={{ marginTop: `${ratio * 100}%` }} />;
           containerClassName += " " + styles.rotated;
           // ... prepare image size for transform rotation and use position: absolute
-          imgStyle.width = item.stageHeight;
+          imgStyle.width = `${ratio * 100}%`;
         }
       }
 

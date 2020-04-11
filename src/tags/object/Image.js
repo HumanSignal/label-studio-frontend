@@ -350,9 +350,18 @@ const Model = types
     },
 
     updateImageSize(ev) {
-      // onLoad should fire only once
-      if (self.sizeUpdated) return;
-      self._updateImageSize(ev.target);
+      const { width, height, naturalWidth, naturalHeight } = ev.target;
+      if ((self.rotation + 360) % 180 === 90) {
+        // swap sizes
+        self._updateImageSize({
+          width: height,
+          height: width,
+          naturalWidth: naturalHeight,
+          naturalHeight: naturalWidth,
+        });
+      } else {
+        self._updateImageSize({ width, height, naturalWidth, naturalHeight });
+      }
     },
 
     addShape(shape) {
@@ -376,8 +385,6 @@ const Model = types
      * @param {*} height
      */
     onResize(width, height, userResize) {
-      self.stageHeight = height;
-      self.stageWidth = width;
       self._updateImageSize({ width, height, userResize });
     },
 
