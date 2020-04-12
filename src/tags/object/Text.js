@@ -68,10 +68,7 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return (
-        states &&
-        states.filter(s => s.isSelected && (getType(s).name === "LabelsModel" || getType(s).name === "RatingModel"))
-      );
+      return states && states.filter(s => s.isSelected && s._type === "labels");
     },
   }))
   .actions(self => ({
@@ -81,13 +78,6 @@ const Model = types
 
     needsUpdate() {
       self._update = self._update + 1;
-    },
-
-    findRegion(start, startOffset, end, endOffset) {
-      const immutableRange = self.regions.find(r => {
-        return r.start === start && r.end === end && r.startOffset === startOffset && r.endOffset === endOffset;
-      });
-      return immutableRange;
     },
 
     updateValue(store) {
@@ -119,32 +109,20 @@ const Model = types
     },
 
     /**
-     * Return JSON
-     */
-    toStateJSON() {
-      const objectsToReturn = self.regions.map(r => r.toStateJSON());
-      return objectsToReturn;
-    },
-
-    /**
      *
      * @param {*} obj
      * @param {*} fromModel
      */
     fromStateJSON(obj, fromModel) {
+      let r;
+      let m;
+
       const { start, end } = obj.value;
 
-      // const fm = self.completion.names.get(obj.from_name);
-      // fm.fromStateJSON(obj);
+      const fm = self.completion.names.get(obj.from_name);
+      fm.fromStateJSON(obj);
 
-      // if (!fm.perregion && fromModel.type !== "labels") return;
-
-      if (fromModel.type === "textarea" || fromModel.type === "choices") {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
-        return;
-      }
-
-      const states = restoreNewsnapshot(fromModel);
+      if (!fm.perregion && fromModel.type !== "labels") return;
 
       const tree = {
         pid: obj.id,
@@ -156,13 +134,33 @@ const Model = types
         readonly: obj.readonly,
         text: self._value.substring(start, end),
         normalization: obj.normalization,
-        states: [states],
+        // states: [states],
       };
 
-      states.fromStateJSON(obj);
+      r = self.findRegion({ startOffset: obj.value.start, endOffset: obj.value.end });
 
-      self.createRegion(tree);
-      self.needsUpdate();
+      if (fromModel) {
+        m = restoreNewsnapshot(fromModel);
+        // m.fromStateJSON(obj);
+
+        if (!r) {
+          // tree.states = [m];
+          tree["states"] = [m];
+          r = self.createRegion(tree);
+          // r = self.addRegion(tree);
+        } else {
+          r.states.push(m);
+        }
+      }
+
+      // states.fromStateJSON(obj);
+
+      // r.updateAppearenceFromState();
+
+      return r;
+
+      // self.createRegion(tree);
+      // self.needsUpdate();
     },
   }));
 

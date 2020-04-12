@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * Relations tag, create relations labels
@@ -42,7 +43,7 @@ const ModelAttrs = types
       return self.children.filter(c => c.selected === true);
     },
 
-    getSelectedNames() {
+    selectedValues() {
       return self.getSelected().map(c => c.value);
     },
 
@@ -56,7 +57,7 @@ const ModelAttrs = types
     },
   }));
 
-const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs);
+const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs, ControlBase);
 
 const HtxRelations = () => {
   return null;

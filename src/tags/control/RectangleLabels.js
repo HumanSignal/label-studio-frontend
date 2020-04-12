@@ -9,6 +9,7 @@ import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { RectangleModel } from "./Rectangle";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * RectangleLabels tag creates labeled rectangles
@@ -55,6 +56,7 @@ const Composition = types.compose(
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const RectangleLabelsModel = types.compose("RectangleLabelsModel", Composition);

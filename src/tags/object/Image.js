@@ -371,6 +371,8 @@ const Model = types
     },
 
     getEvCoords(ev) {
+      if (!ev.evt) return [];
+
       const x = (ev.evt.offsetX - self.zoomingPositionX) / self.zoomScale;
       const y = (ev.evt.offsetY - self.zoomingPositionY) / self.zoomScale;
 
@@ -403,10 +405,6 @@ const Model = types
 
     onMouseUp(ev) {
       self.getToolsManager().event("mouseup", ev);
-    },
-
-    toStateJSON() {
-      return self.regions.map(r => r.toStateJSON());
     },
 
     /**

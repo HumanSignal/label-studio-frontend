@@ -2,6 +2,7 @@ import { types, getRoot } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
+import ControlBase from "./Base";
 
 /**
  * Ellipse
@@ -62,7 +63,7 @@ const Model = types
     },
   }));
 
-const EllipseModel = types.compose("EllipseModel", TagAttrs, Model);
+const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase);
 
 const HtxView = () => {
   return null;

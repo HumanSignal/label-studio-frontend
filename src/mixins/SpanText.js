@@ -46,7 +46,11 @@ export default types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.states.map(s => s.getSelectedColor())[0];
+      let labelColor = self.parent.highlightcolor;
+      if (!labelColor) {
+        const ls = self.states.find(s => s._type === "labels");
+        if (ls) labelColor = ls.getSelectedColor();
+      }
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
@@ -57,16 +61,14 @@ export default types
 
     applyCSSClass(lastSpan) {
       const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(
-        self.states.filter(s => s._type === "labels").map(s => s.getSelectedNames()),
-      );
+      const names = Utils.Checkers.flatten(self.states.filter(s => s._type === "labels").map(s => s.selectedValues()));
 
       const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
         labels: names,
         score: self.score,
       });
 
-      const classes = [lastSpan.className, "htx-highlight", "htx-highlight-last", cssCls];
+      const classes = ["htx-highlight", "htx-highlight-last", cssCls];
 
       if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
 

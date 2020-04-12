@@ -3,15 +3,18 @@ import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
-import WithStatesMixin from "../mixins/WithStates";
+import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
+import WithStatesMixin from "../mixins/WithStates";
 import { BrushLabelsModel } from "../tags/control/BrushLabels";
+import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
-import { guidGenerator } from "../core/Helpers";
-import Canvas from "../utils/canvas";
 import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
+import { RatingModel } from "../tags/control/Rating";
+import { TextAreaModel } from "../tags/control/TextArea";
+import { guidGenerator } from "../core/Helpers";
 
 const Points = types
   .model("Points", {
@@ -56,7 +59,7 @@ const Model = types
 
     type: "brushregion",
 
-    states: types.maybeNull(types.array(types.union(BrushLabelsModel))),
+    states: types.maybeNull(types.array(types.union(BrushLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
     /**
@@ -97,10 +100,6 @@ const Model = types
   .views(self => ({
     get parent() {
       return getParentOfType(self, ImageModel);
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
   }))
   .actions(self => ({
@@ -187,15 +186,18 @@ const Model = types
         tension: self.tension,
       });
 
-      return {
+      const res = {
         original_width: object.naturalWidth,
         original_height: object.naturalHeight,
         value: {
           format: "rle",
           rle: Array.prototype.slice.call(rle),
-          brushlabels: control.getSelectedNames(),
         },
       };
+
+      res.value = Object.assign(res.value, control.serializableValue);
+
+      return res;
     },
   }));
 

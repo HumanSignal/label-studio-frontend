@@ -17,22 +17,30 @@ function toggleLabelsAndScores(show) {
   });
 }
 
-function labelWithCSS(node, { labels, score }) {
-  const labelsStr = labels ? labels.join(",") : "";
-  const clsName = Checkers.hashCode(labelsStr + score);
+const labelWithCSS = (function() {
+  const cache = {};
 
-  let cssCls = "htx-label-" + clsName;
-  cssCls = cssCls.toLowerCase();
+  return function(node, { labels, score }) {
+    const labelsStr = labels ? labels.join(",") : "";
+    const clsName = Checkers.hashCode(labelsStr + score);
 
-  node.setAttribute("data-labels", labelsStr);
+    let cssCls = "htx-label-" + clsName;
+    cssCls = cssCls.toLowerCase();
 
-  const resSVG = Canvas.labelToSVG({ label: labelsStr, score: score });
-  const svgURL = `url(${resSVG})`;
+    if (cssCls in cache) return cache[cssCls];
 
-  createClass(`.${cssCls}:after`, `content:${svgURL}`);
+    node.setAttribute("data-labels", labelsStr);
 
-  return cssCls;
-}
+    const resSVG = Canvas.labelToSVG({ label: labelsStr, score: score });
+    const svgURL = `url(${resSVG})`;
+
+    createClass(`.${cssCls}:after`, `content:${svgURL}`);
+
+    cache[clsName] = true;
+
+    return cssCls;
+  };
+})();
 
 // work directly with the html tree
 function createClass(name, rules) {

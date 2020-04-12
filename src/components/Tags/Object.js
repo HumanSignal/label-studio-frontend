@@ -13,7 +13,7 @@ class ObjectTagView extends React.Component {
     const moreProps = item.getProps && item.getProps();
 
     return (
-      <div className={props.className} style={props.style} {...moreProps}>
+      <div className={props.className} dataneedsupdate={item._needsUpdate} style={props.style} {...moreProps}>
         {props.children}
       </div>
     );
