@@ -131,6 +131,7 @@ const Model = types
       return {
         original_width: natural.width,
         original_height: natural.height,
+        image_rotation: self.parent.rotation,
 
         value: {
           x: (x * 100) / width,

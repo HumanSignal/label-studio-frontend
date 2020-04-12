@@ -263,6 +263,7 @@ const Model = types
         },
         original_width: natural.width,
         original_height: natural.height,
+        image_rotation: self.parent.rotation,
       };
     },
   }));
