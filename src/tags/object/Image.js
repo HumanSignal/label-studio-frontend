@@ -307,8 +307,6 @@ const Model = types
       self.selectedShape = shape;
     },
 
-    // @todo not 90? -90?
-    // @todo fullSize?
     rotate(degree = -90) {
       self.rotation = (self.rotation + degree + 360) % 360;
 

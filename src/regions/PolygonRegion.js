@@ -136,7 +136,6 @@ const Model = types
     },
 
     // only px coordtype here
-    // @todo allow 90 and 180
     rotate(degree = -90) {
       self.points.forEach(point => {
         const p = self.rotatePoint(point, degree);
