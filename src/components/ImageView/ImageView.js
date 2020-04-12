@@ -236,6 +236,7 @@ export default observer(
       const c = store.completionStore.selected;
       let filler = null;
       let containerClassName = styles.container;
+      const containerStyle = {};
 
       const imgStyle = {
         width: item.width,
@@ -244,9 +245,8 @@ export default observer(
       };
       const imgTransform = [];
 
-      // @todo fix it for every rotation degree
-      if (getRoot(item).settings.imageFullSize === false && !item.rotation) {
-        imgStyle["maxWidth"] = item.maxwidth;
+      if (getRoot(item).settings.imageFullSize === false) {
+        containerStyle["maxWidth"] = item.maxwidth;
       }
 
       if (item.zoomScale !== 1) {
@@ -293,6 +293,7 @@ export default observer(
               this.container = node;
             }}
             className={containerClassName}
+            style={containerStyle}
           >
             {filler}
             <img
