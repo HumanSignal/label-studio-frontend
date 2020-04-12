@@ -57,7 +57,6 @@ const RegionsMixin = types
     sizeTop(size) {},
     sizeBottom(size) {},
 
-    // @todo fix 90 and 180
     // "web" degree is opposite to mathematical, -90 is 90 actually
     // swapSizes = true when canvas is already rotated at this moment
     rotatePoint(point, degree, swapSizes = true) {
