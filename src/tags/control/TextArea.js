@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import { types, destroy, getRoot } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import ValidateMixin from "../../mixins/Validate";
+import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
@@ -13,6 +13,7 @@ import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
 import { guidGenerator } from "../../core/Helpers";
 import { cloneNode } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 const { TextArea } = Input;
 
@@ -30,23 +31,23 @@ const { TextArea } = Input;
  * @param {string=} [placeholder] placeholder text
  * @param {string=} [maxSubmissions] maximum number of submissions
  * @param {boolean=} [editable=false] editable textarea results
+ * @param {number} [rows] number of rows in the textarea
+ * @param {boolean} [required=false]   - validation if textarea is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {boolean=} [showSubmitButton] show submit button or hide it, it's shown by default when rows is more than one (i.e. textarea mode)
+ * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  allowSubmit: types.optional(types.boolean, true),
-  label: types.optional(types.string, ""),
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
+  allowsubmit: types.optional(types.boolean, true),
+  label: types.optional(types.string, ""),
   value: types.maybeNull(types.string),
   rows: types.optional(types.string, "1"),
   showsubmitbutton: types.optional(types.boolean, false),
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
-  required: types.optional(types.boolean, false),
-  requiredmessage: types.maybeNull(types.string),
-
-  perregion: types.optional(types.boolean, false),
-  whenlabelvalue: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -80,11 +81,22 @@ const Model = types
       }
     },
 
-    getSelectedNames() {
+    get serializableValue() {
+      return { text: self.selectedValues() };
+    },
+
+    selectedValues() {
       return self.regions.map(r => r._value);
     },
   }))
   .actions(self => ({
+    getSerializableValue() {
+      const texts = self.regions.map(s => s._value);
+      if (texts.length === 0) return;
+
+      return { text: texts };
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
     },
@@ -124,6 +136,7 @@ const Model = types
     beforeSend() {
       if (self._value && self._value.length) {
         self.addText(self._value);
+        self._value = "";
       }
     },
 
@@ -160,7 +173,15 @@ const Model = types
     },
   }));
 
-const TextAreaModel = types.compose("TextAreaModel", TagAttrs, Model, ProcessAttrsMixin, ValidateMixin, PerRegionMixin);
+const TextAreaModel = types.compose(
+  "TextAreaModel",
+  ControlBase,
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  RequiredMixin,
+  PerRegionMixin,
+);
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
@@ -197,7 +218,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.showSubmit && (
         <Form
           onFinish={ev => {
-            if (item.allowSubmit) {
+            if (item.allowsubmit && item._value) {
               item.addText(item._value);
               item.setValue("");
             }

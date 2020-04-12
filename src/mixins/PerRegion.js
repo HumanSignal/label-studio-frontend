@@ -4,16 +4,19 @@ import { types } from "mobx-state-tree";
  * Per Region Mixin
  */
 const PerRegionMixin = types
-  .model()
+  .model({
+    perregion: types.optional(types.boolean, false),
+    whenlabelvalue: types.maybeNull(types.string),
+  })
   .views(self => ({
     perRegionVisible() {
       if (!self.perregion) return true;
 
       const region = self.completion.highlightedNode;
-
-      // no region is selected return hidden or
-      if (!region) return false;
-
+      if (!region) {
+        // no region is selected return hidden
+        return false;
+      }
       // check if selected region is the one this tag is connected to
       if (region.parent.name !== self.toname) return false;
 

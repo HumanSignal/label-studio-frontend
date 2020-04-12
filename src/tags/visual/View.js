@@ -5,6 +5,7 @@ import { types, getRoot } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
+import VisibilityMixin from "../../mixins/Visibility";
 
 /**
  * View element. It's analogous to div element in html and can be used to visual configure display of blocks
@@ -23,19 +24,15 @@ import Types from "../../core/Types";
  * @param {block|inline} display
  * @param {string} [style] css style string
  * @param {string} [className] - class name of the css style to apply
- * @param {string} [visibleWhen]
- * @param {string} [whenTagName]
- * @param {string} [whenChoiceValue]
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] show the contents of a view when condition is true
+ * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {string} [whenLabelValue] narrow down visibility by label value
+ * @param {string} [whenChoiceValue] narrow down visibility by choice value
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),
   display: types.optional(types.string, "block"),
   style: types.maybeNull(types.string),
-
-  visiblewhen: types.maybeNull(types.string),
-  whentagname: types.maybeNull(types.string),
-  whenchoicevalue: types.maybeNull(types.string),
-  whenlabelvalue: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -84,7 +81,7 @@ const Model = types
     },
   }));
 
-const ViewModel = types.compose("ViewModel", TagAttrs, Model);
+const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin);
 
 const HtxView = observer(({ item, store }) => {
   let style = {};
@@ -97,39 +94,8 @@ const HtxView = observer(({ item, store }) => {
     style = Tree.cssConverter(item.style);
   }
 
-  if (item.visiblewhen) {
-    const fns = {
-      "region-selected": ({ tagName, labelValue }) => {
-        const reg = item.completion.highlightedNode;
-        if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
-          return false;
-        }
-
-        if (labelValue) return reg.hasLabelState(labelValue);
-
-        return true;
-      },
-
-      "choice-selected": ({ tagName, choiceValue }) => {
-        const tag = item.completion.names.get(tagName);
-
-        if (!tag) return false;
-
-        return choiceValue ? tag.findLabel(choiceValue).selected : tag.isSelected;
-      },
-
-      "no-region-selected": ({ tagName }) => item.completion.highlightedNode === null,
-    };
-
-    if (Object.keys(fns).includes(item.visiblewhen)) {
-      const res = fns[item.visiblewhen]({
-        tagName: item.whentagname,
-        choiceValue: item.whenchoicevalue,
-        labelValue: item.whenlabelvalue,
-      });
-
-      if (res === false) style["display"] = "none";
-    }
+  if (item.isVisible === false) {
+    style["display"] = "none";
   }
 
   return (

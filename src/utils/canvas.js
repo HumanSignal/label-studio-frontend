@@ -104,35 +104,14 @@ function brushSizeCircle(size) {
   canvas.width = size * 4 + 8;
   canvas.height = size * 4 + 8;
 
-  // ctx.beginPath();
-  // ctx.rect(0, 0, size, size);
-  // ctx.lineWidth = "6";
-  // ctx.strokeStyle = "red";
-  // ctx.stroke();
-
   ctx.beginPath();
-
-  //    ctx.arc(size / 2, size / 2, size, 0, 2 * Math.PI);
-
   ctx.arc(size / 2 + 4, size / 2 + 4, size / 2, 0, 2 * Math.PI, false);
-  // ctx.fillStyle = '';
-  // ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-  // ctx.fill();
 
   ctx.lineWidth = 2;
   ctx.strokeStyle = "white";
   ctx.stroke();
 
-  // ctx.beginPath();
-  // ctx.arc(0, 0, size, 0, Math.PI * 2, true); // Outer circle
-  // ctx.stroke();
-
-  // ctx.putImageData(imagedata, 0, 0);
   return canvas.toDataURL();
-
-  // var image = new Image();
-  // image.src = canvas.toDataURL();
-  // return image;
 }
 
 function encodeSVG(data) {

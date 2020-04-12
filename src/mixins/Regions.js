@@ -1,4 +1,4 @@
-import { types, getParent } from "mobx-state-tree";
+import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 
@@ -25,12 +25,16 @@ const RegionsMixin = types
       return getParent(self);
     },
 
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+
     get editable() {
       return self.readonly === false && self.completion.editable === true;
     },
 
     get labelsState() {
-      return self.states.find(s => s._type === "labels");
+      return self.states.find(s => s.type.indexOf("labels") !== -1);
     },
 
     hasLabelState(labelValue) {
@@ -153,8 +157,19 @@ const RegionsMixin = types
     // function is used to capture the state
     updateSingleState(state) {
       var foundIndex = self.states.findIndex(s => s.name === state.name);
-      self.states[foundIndex] = cloneNode(state);
-      self.updateAppearenceFromState();
+      if (foundIndex !== -1) {
+        self.states[foundIndex] = cloneNode(state);
+
+        // user is updating the label of the region, there might
+        // be other states that depend on the value of the region,
+        // therefore we need to recheck here
+        if (state.type.indexOf("labels") !== -1) {
+          const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
+          states && states.forEach(s => self.states.remove(s));
+        }
+
+        self.updateAppearenceFromState();
+      }
     },
 
     selectRegion() {

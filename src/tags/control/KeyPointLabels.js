@@ -9,6 +9,7 @@ import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { KeyPointModel } from "./KeyPoint";
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * KeyPointLabels tag
@@ -61,6 +62,7 @@ const Composition = types.compose(
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const KeyPointLabelsModel = types.compose("KeyPointLabelsModel", Composition);

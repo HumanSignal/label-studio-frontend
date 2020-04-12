@@ -2,6 +2,7 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types, getParent } from "mobx-state-tree";
 
+import RequiredMixin from "../../mixins/Required";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
@@ -10,6 +11,7 @@ import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { LabelModel } from "./Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
+import ControlBase from "./Base";
 
 /**
  * Labels tag, create a group of labels
@@ -25,9 +27,9 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {string} name                      - name of the element
  * @param {string} toName                    - name of the element that you want to label
  * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
+ * @param {boolean} [required=false]   - validation if label is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
  * @param {boolean} [showInline=true]        - show items in the same visual line
- * @param {boolean} [required=false]         - validation if choice has been selected
- * @param {string} [requiredMessage]         - message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -35,11 +37,6 @@ const TagAttrs = types.model({
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
   showinline: types.optional(types.boolean, true),
-
-  showfilter: types.optional(types.boolean, false),
-
-  required: types.optional(types.boolean, false),
-  requiredmessage: types.maybeNull(types.string),
 });
 
 /**
@@ -52,6 +49,8 @@ const ModelAttrs = types.model({
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
+
+  visible: types.optional(types.boolean, true),
 });
 
 const Model = LabelMixin.props({ _type: "labels" })
@@ -88,7 +87,9 @@ const LabelsModel = types.compose(
   ModelAttrs,
   TagAttrs,
   Model,
+  RequiredMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
+  ControlBase,
 );
 
 const HtxLabels = observer(({ item }) => {
@@ -106,6 +107,10 @@ const HtxLabels = observer(({ item }) => {
     style["flexDirection"] = "column";
     style["alignItems"] = "flex-start";
     style["marginTop"] = "0";
+  }
+
+  if (!item.visible) {
+    style["display"] = "none";
   }
 
   return <div style={style}>{Tree.renderChildren(item)}</div>;

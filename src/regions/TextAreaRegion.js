@@ -28,44 +28,11 @@ const Model = types
     get parent() {
       return getParentOfType(self, TextAreaModel);
     },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
-    get parentRegion() {
-      getParent(self.parent);
-    },
   }))
   .actions(self => ({
-    // serialize(control, object) {
-
-    // },
-
     setValue(val) {
       self._value = val;
     },
-
-    // toStateJSON() {
-    //   const toname = self.parent.toname || self.parent.name;
-
-    //   const tree = {
-    //     id: self.pid,
-    //     from_name: self.parent.name,
-    //     to_name: toname,
-    //     type: self.parent.type,
-    //     value: {
-    //       text: self._value,
-    //     },
-    //   };
-
-    //     // if (self.parent.perregion) {
-    //     //     tree['perregion'] = true;
-    //     //     // tree['parent'] = self.parentRegion.pid;
-    //     // }
-
-    //     return tree;
-    // },
   }));
 
 const TextAreaRegionModel = types.compose(
@@ -110,6 +77,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
       onChange: str => {
         item.setValue(str);
 
+        // here we update the parent object's state
         if (parent.perregion) {
           const reg = parent.completion.highlightedNode;
           reg && reg.updateSingleState(parent);
