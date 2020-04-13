@@ -1,0 +1,15 @@
+{
+    "completions": [
+        {
+            "id": "1001",
+            "result": [
+                
+            ]
+        }
+    ],
+    "data": {
+        "url": "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3"
+    },
+    "id": 1,
+    "task_path": "../examples/audio_regions/tasks.json"
+}

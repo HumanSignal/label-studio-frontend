@@ -1,0 +1,13 @@
+<View>
+  <Header value="Select regions:"></Header>
+  <TimeSeriesLabels name="label" toName="ts">
+    <Label value="Beat"></Label>
+    <Label value="Voice"></Label>
+    <Label value="Guitar"></Label>
+    <Label value="Other"></Label>
+  </TimeSeriesLabels>
+  <TimeSeries name="ts" value="$time">
+    <TimeSeriesChannel units="miles" unitsFormat=",.1f" showgrid="true" strokeColor="#ff0000" displayName="Hello world" value="$sensor1" />
+    <TimeSeriesChannel units="miles" unitsFormat=",.1f" showgrid="true" strokeColor="#ff0000" displayName="Hello world" value="$sensor2" />    
+  </TimeSeries>
+</View>
