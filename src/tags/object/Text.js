@@ -117,25 +117,12 @@ const Model = types
       let r;
       let m;
 
-      const { start, end } = obj.value;
-
       const fm = self.completion.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
 
-      const tree = {
-        pid: obj.id,
-        startOffset: start,
-        endOffset: end,
-        start: "",
-        end: "",
-        score: obj.score,
-        readonly: obj.readonly,
-        text: self._value.substring(start, end),
-        normalization: obj.normalization,
-        // states: [states],
-      };
+      const { start, end } = obj.value;
 
       r = self.findRegion({ startOffset: obj.value.start, endOffset: obj.value.end });
 
@@ -145,8 +132,20 @@ const Model = types
 
         if (!r) {
           // tree.states = [m];
-          tree["states"] = [m];
-          r = self.createRegion(tree);
+          const data = {
+            pid: obj.id,
+            startOffset: start,
+            endOffset: end,
+            start: "",
+            end: "",
+            score: obj.score,
+            readonly: obj.readonly,
+            text: self._value.substring(start, end),
+            normalization: obj.normalization,
+            states: [m],
+          };
+
+          r = self.createRegion(data);
           // r = self.addRegion(tree);
         } else {
           r.states.push(m);
