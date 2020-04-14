@@ -1,5 +1,4 @@
-import { types } from "mobx-state-tree";
-
+import { types, getRoot } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 
 const ToolMixin = types
@@ -17,6 +16,10 @@ const ToolMixin = types
 
     get control() {
       return self._control;
+    },
+
+    get completion() {
+      return getRoot(self.control).completionStore.selected;
     },
 
     get viewClass() {
@@ -50,7 +53,7 @@ const ToolMixin = types
       let strokecolor = c.strokecolor;
 
       if (states && states.length) {
-        const stateProvidesColor = states.find(s => s.hasOwnProperty("getSelectedColor"));
+        const stateProvidesColor = states.find(s => s && s.hasOwnProperty("getSelectedColor"));
         if (stateProvidesColor) {
           const color = stateProvidesColor.getSelectedColor();
           fillcolor = color;
@@ -95,8 +98,15 @@ const ToolMixin = types
     },
 
     createFromJSON(obj, fromModel) {
-      const { stateTypes, controlTagTypes } = self.tagTypes;
+      let r;
       let states = null;
+
+      const fm = self.completion.names.get(obj.from_name);
+      fm.fromStateJSON(obj);
+
+      if (!fm.perregion && fromModel.type.indexOf("labels") === -1) return;
+
+      const { stateTypes, controlTagTypes } = self.tagTypes;
 
       if (obj.type === stateTypes) {
         states = restoreNewsnapshot(fromModel);
@@ -104,24 +114,42 @@ const ToolMixin = types
           states.fromStateJSON(obj);
         }
 
-        states = [states];
+        // states = [states];
       }
 
-      const params = self.paramsFromStates(states);
+      const params = self.paramsFromStates([states]);
       const moreParams = self.moreRegionParams(obj);
 
       if (controlTagTypes.includes(obj.type)) {
-        return self.createRegion({
+        const data = {
           pid: obj.id,
           score: obj.score,
           readonly: obj.readonly,
           coordstype: "perc",
-          states: states,
+          states: [states],
           ...params,
           ...obj.value,
           ...moreParams,
-        });
+        };
+
+        r = self.createRegion(data);
+      } else {
+        const m = restoreNewsnapshot(fromModel);
+
+        // [TODO] this is a poor mans findRegion for the image
+        // regions right now. This is based on a idea that
+        // results comming from the same region share the same
+        // id, which might not be the case since it'd a good
+        // practice to have unique ids
+        const { regions } = self.obj;
+        let r = regions.find(r => r.pid == obj.id);
+
+        // r = self.findRegion(obj.value);
+
+        if (r) r.states.push(m);
       }
+
+      return r;
     },
 
     fromStateJSON(obj, fromModel) {

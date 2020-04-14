@@ -388,12 +388,12 @@ const Model = types
      * Transform JSON data (completions and predictions) to format
      */
     fromStateJSON(obj, fromModel) {
-      if (obj.value.choices) {
-        self
-          .completion()
-          .names.get(obj.from_name)
-          .fromStateJSON(obj);
-      }
+      // if (obj.value.choices) {
+      //   self
+      //     .completion()
+      //     .names.get(obj.from_name)
+      //     .fromStateJSON(obj);
+      // }
 
       self
         .getToolsManager()
