@@ -2,6 +2,7 @@ import "moment-duration-format";
 import React, { Fragment } from "react";
 import _ from "underscore";
 import moment from "moment";
+import * as d3 from "d3";
 import {
   AreaChart,
   Brush,
@@ -28,6 +29,7 @@ import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
+import { line, idFromValue } from "./TimeSeries/helpers";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -56,6 +58,10 @@ const Model = types
     children: Types.unionArray(["timeserieschannel", "timeseriesoverview", "view", "hypertext"]),
     regions: types.array(TimeSeriesRegionModel),
 
+    width: 840,
+    margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 40 }),
+    brushRange: types.array(types.Date),
+
     // _value: types.optional(types.string, ""),
     _needsUpdate: types.optional(types.number, 0),
   })
@@ -80,6 +86,7 @@ const Model = types
 
     activeStates() {
       const states = self.states();
+      console.log("STATES", states);
       return states ? states.filter(s => s.isSelected && getType(s).name === "TimeSeriesLabelsModel") : null;
     },
   }))
@@ -91,6 +98,8 @@ const Model = types
 
     updateTR(tr) {
       if (tr === null) return;
+
+      console.log("UPD TR", tr);
 
       self.initialRange = tr;
       self.brushRange = tr;
@@ -113,6 +122,7 @@ const Model = types
     },
 
     updateValue(store) {
+      console.warn("TS UPDATE VALUE SMALL");
       self._value = runTemplate(self.value, store.task.dataObj);
     },
 
@@ -160,44 +170,46 @@ const Model = types
 
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
+      console.warn("TS UPDATE VALUE BIG", store.task.dataObj, self.value, self._value);
 
-      const points = [];
-      const val = 1400429552000;
-      const idx = 0;
-      for (let i = 0; i <= self._value[0].length; i++) {
-        points.push([val + 1000 * i]);
-      }
+      // const points = [];
+      // const val = 1400429552000;
+      // const idx = 0;
+      // for (let i = 0; i <= self._value[0].length; i++) {
+      //   points.push([val + 1000 * i]);
+      // }
 
-      window.A = points;
+      // window.A = points;
 
-      // console.log(points);
+      // // console.log(points);
 
-      // const points = self._value[0].map(p => [Math.floor(val + p * 100) * 1000]);
+      // // const points = self._value[0].map(p => [Math.floor(val + p * 100) * 1000]);
 
-      //const points = self._value[1].forEach(p => [ val + ]);
-      // const points = self._value[0].map(p => [p]);
-
-      console.log(points);
-
-      // TODO need to figure out why this TS object is not
-      // returning a proper timerange
-      const series = new TimeSeries({
-        name: "time",
-        columns: ["time"],
-        utc: false,
-        points: points,
-      });
+      // //const points = self._value[1].forEach(p => [ val + ]);
+      // // const points = self._value[0].map(p => [p]);
 
       // console.log(points);
 
-      self.series = series;
+      // // TODO need to figure out why this TS object is not
+      // // returning a proper timerange
+      // const series = new TimeSeries({
+      //   name: "time",
+      //   columns: ["time"],
+      //   utc: false,
+      //   points: points,
+      // });
 
-      const size = series.size();
-      const piece = Math.ceil(size / 10);
-      const pcTR = series.slice(0, piece).timerange();
+      // // console.log(points);
 
-      self.initialRange = pcTR;
-      self.brushRange = pcTR;
+      // self.series = series;
+
+      // const size = series.size();
+      // const piece = Math.ceil(size / 10);
+      // const pcTR = series.slice(0, piece).timerange();
+
+      // self.initialRange = pcTR;
+      const times = store.task.dataObj[idFromValue(self.value)];
+      self.brushRange = [times[0], times[times.length >> 2]];
     },
 
     onHotKey() {},
@@ -231,7 +243,7 @@ const baselineStyles = {
 // d3 formatter to display the speed with one decimal place
 const speedFormat = format(".1f");
 
-const TimeSeriesOverview = observer(({ item }) => {
+const TimeSeriesOverviewRTS = observer(({ item }) => {
   // console.log(item.series.timerange());
 
   return (
@@ -265,7 +277,83 @@ const TimeSeriesOverview = observer(({ item }) => {
   );
 });
 
+class TimeSeriesOverviewD3 extends React.Component {
+  ref = React.createRef();
+
+  componentDidMount() {
+    const { item, store } = this.props;
+    const focusHeight = 100;
+    const { margin, value, width } = item;
+    const series = store.task.dataObj[idFromValue(value)];
+
+    window.d3 = d3;
+
+    if (!this.ref.current) return;
+
+    console.log("TS MOUNTED", width, margin);
+
+    const x = d3
+      .scaleUtc()
+      .domain(d3.extent(series))
+      .range([0, width]);
+
+    const focus = d3
+      .select(this.ref.current)
+      .append("svg")
+      .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.top + margin.bottom])
+      .style("display", "block") // ?
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const brush = d3
+      .brushX()
+      .extent([
+        [0, 0],
+        [width, focusHeight],
+      ])
+      .on("brush", brushed)
+      .on("end", brushended);
+
+    const defaultSelection = [0, width / 4];
+
+    // svg.append("g")
+    //     .call(xAxis, x, focusHeight);
+
+    // focus
+    //   .append("path")
+    //   .datum(series)
+    //   .attr("stroke", "steelblue")
+    //   .attr("fill", "none")
+    //   .attr("d", line(x, y.copy().range([focusHeight - margin.bottom, 4])));
+
+    const gb = focus
+      .append("g")
+      .call(brush)
+      .call(brush.move, defaultSelection);
+
+    function brushed() {
+      if (d3.event.selection) {
+        const [start, end] = d3.event.selection.map(x.invert, x);
+        item.updateTR([start, end]);
+      }
+    }
+
+    function brushended() {
+      if (!d3.event.selection) {
+        gb.call(brush.move, defaultSelection);
+      }
+    }
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
+
+const Overview = observer(TimeSeriesOverviewD3);
+
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
+  console.log("TS RENDER");
   return (
     <ObjectTag item={item}>
       {/* <div
@@ -279,9 +367,9 @@ const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
         }}
       > */}
       {Tree.renderChildren(item)}
-      <div id="focus"></div>
-      {/* <TimeSeriesOverview item={item} /> */}
-      {/* </div> */}
+      {/* <div id="focus"></div> */}
+      {/* <TimeSeriesOverviewD3 store={store} item={item} /> */}
+      <Overview store={store} item={item} />
     </ObjectTag>
   );
 });

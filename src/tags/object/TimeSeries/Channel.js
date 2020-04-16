@@ -37,6 +37,7 @@ import Types from "../../../core/Types";
 import { guidGenerator, restoreNewsnapshot } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
 import Utils from "../../../utils";
+import { idFromValue, line } from "./helpers";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -124,6 +125,7 @@ const Model = types
     },
 
     updateValue(store) {
+      console.warn("CHANNEL UPDATE VALUE SMALL");
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
       console.log("UPD", self.value, store.task.dataObj);
@@ -519,69 +521,70 @@ const brushes = gBrushes => {
   drawBrushes();
 };
 
-const D3 = ({ name, series }) => {
-  name = name.substr(1);
-  const id = `chart_${name}`;
-  const width = 820;
-  const height = 400;
-  const focusHeight = 100;
-  // series = series.slice(0, 1000);
-  // for (let j = 5; j--; ) {
-  //   const last = +series[series.length - 1].date;
-  //   for (let i = 0, l = series.length; i < l; i++) {
-  //     series[l + l - i - 1] = {...series[i], date: new Date(1000*(l - i) + last) };
-  //   }
-  // }
-  console.log("SSSS", series);
-  document.title = series.length;
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+class ChannelD3 extends React.Component {
+  ref = React.createRef();
 
-  const x = d3
-    .scaleUtc()
-    .domain(d3.extent(series, d => d.date))
-    .range([margin.left, width - margin.right]);
+  componentDidMount() {
+    const { data, item, range, time, value } = this.props;
+    const { margin, width } = item.parent;
+    const height = +item.height;
+    const times = data[time];
+    const values = data[value];
+    const series = times.map((t, i) => [t, values[i]]);
+    // series = series.slice(0, 1000);
+    // for (let j = 5; j--; ) {
+    //   const last = +series[series.length - 1].date;
+    //   for (let i = 0, l = series.length; i < l; i++) {
+    //     series[l + l - i - 1] = {...series[i], date: new Date(1000*(l - i) + last) };
+    //   }
+    // }
+    // console.log("SSSS", series);
+    // document.title = series.length;
+    // const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
-  const y = d3
-    .scaleLinear()
-    .domain([0, d3.max(series, d => d[name])])
-    .range([height - margin.bottom, margin.top]);
+    if (!this.ref.current) return;
 
-  window.x = x;
-  window.y = y;
-  console.log("YYY", y(10));
-  console.log("YYY", y(0));
+    console.log("CHCHCHC", range, times, values);
 
-  const xAxis = (g, x, height) =>
-    g.attr("transform", `translate(0,${height - margin.bottom})`).call(
-      d3
-        .axisBottom(x)
-        .ticks(width / 80)
-        .tickSizeOuter(0),
-    );
+    const x = d3
+      .scaleUtc()
+      .domain(d3.extent(times))
+      .range([0, width]);
 
-  const area = (xx, yy) =>
-    d3
-      .area()
-      .defined(d => !isNaN(d[name]))
-      .x(d => xx(d.date))
-      .y0(yy(0))
-      .y1(d => yy(d[name]));
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(values)])
+      .range([height, 0]);
 
-  const line = (xx, yy) =>
-    d3
-      .line()
-      .x(d => xx(d.date))
-      .y(d => yy(d[name]));
+    window.x = x;
+    window.y = y;
+    console.log("YYY", y(10));
+    console.log("YYY", y(0));
 
-  //////////////////////////////////
-  setTimeout(() => {
+    // const xAxis = (g, x, height) =>
+    //   g.attr("transform", `translate(0,${height - margin.bottom})`).call(
+    //     d3
+    //       .axisBottom(x)
+    //       .ticks(width / 80)
+    //       .tickSizeOuter(0),
+    //   );
+
+    // const area = (xx, yy) =>
+    //   d3
+    //     .area()
+    //     .defined(d => !isNaN(d[name]))
+    //     .x(d => xx(d.date))
+    //     .y0(yy(0))
+    //     .y1(d => yy(d[name]));
+
+    //////////////////////////////////
     const main = d3
-      .select("#" + id)
+      .select(this.ref.current)
       .append("svg")
-      .attr("viewBox", [0, 0, width, height])
-      .style("display", "block");
-
-    console.log("SEL", d3.select("#" + id));
+      .attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom])
+      .style("display", "block")
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     const clipId = "clip_" + Math.random();
 
@@ -603,79 +606,33 @@ const D3 = ({ name, series }) => {
       .datum(series)
       .attr("clip-path", clipId)
       .attr("fill", "none")
-      .attr("stroke", "steelblue");
-
-    // return Object.assign(main.node(), {
-    //   update(focusX, focusY) {
-    //     gx.call(xAxis, focusX, height);
-    //     gy.call(yAxis, focusY, data.y);
-    //     path.attr("d", area(focusX, focusY));
-    //   }
-    // });
-
-    let focus = d3.select(`#focus svg`);
-    if (!focus.size()) focus = d3.select(`#focus`).append("svg");
-    focus.attr("viewBox", [0, 0, width, focusHeight]).style("display", "block");
-
-    const brush = d3
-      .brushX()
-      .extent([
-        [margin.left, 0.5],
-        [width - margin.right, focusHeight - margin.bottom + 0.5],
-      ])
-      .on("brush", brushed)
-      .on("end", brushended);
-
-    const defaultSelection = [margin.left, x.range()[1] / 10];
-
-    // svg.append("g")
-    //     .call(xAxis, x, focusHeight);
-
-    focus
-      .append("path")
-      .datum(series)
       .attr("stroke", "steelblue")
-      .attr("fill", "none")
-      .attr("d", line(x, y.copy().range([focusHeight - margin.bottom, 4])));
-
-    const gb = focus
-      .append("g")
-      .call(brush)
-      .call(brush.move, defaultSelection);
-
-    function brushed() {
-      if (d3.event.selection) {
-        const [minX, maxX] = d3.event.selection.map(x.invert, x);
-        const maxY = d3.max(series, d => (minX <= d.date && d.date <= maxX ? d[name] : 0));
-        const [focusX, focusY] = [x.copy().domain([minX, maxX]), y];
-        console.log("BRUSHED", d3.event.selection, d3.event.selection.map(x.invert, x), minX, maxX, maxY);
-        // gx.call(xAxis, focusX, height);
-        // gy.call(yAxis, focusY, data.y);
-        path.attr("d", line(focusX, focusY));
-      }
-    }
-
-    function brushended() {
-      if (!d3.event.selection) {
-        gb.call(brush.move, defaultSelection);
-      }
-    }
+      .attr("d", line(x.copy().domain(range), y));
 
     // We initially generate a SVG group to keep our brushes' DOM elements in:
     var gBrushes = main.append("g").attr("class", "brushes");
     brushes(gBrushes);
-  }, 400);
+  }
 
-  return (
-    <>
-      <div id={id}>Hello</div>
-      <div id={id + "_focus"}></div>
-    </>
-  );
-};
+  componentDidUpdate(prevProps) {
+    console.log("UPD", this.props.range, prevProps.range, prevProps);
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
 
 // const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
-const HtxTimeSeriesChannelViewD3 = observer(({ store, item }) => <D3 name={item.value} series={item._d3} />);
+const HtxTimeSeriesChannelViewD3 = ({ store, item }) => (
+  <ChannelD3
+    time={idFromValue(item.parent.value)}
+    value={idFromValue(item.value)}
+    item={item}
+    data={store.task.dataObj}
+    range={item.parent.brushRange}
+  />
+);
 
 const HtxTimeSeriesChannel = inject("store")(observer(HtxTimeSeriesChannelViewD3));
 
