@@ -27,7 +27,9 @@ import {
   TimeMarker,
   MultiBrush,
 } from "react-timeseries-charts";
-
+import d3_timeseries from "d3-timeseries";
+import * as d3 from "d3";
+import "../../../d3-timeseries.min.css";
 import ObjectBase from "../Base";
 import ObjectTag from "../../../components/Tags/Object";
 import Registry from "../../../core/Registry";
@@ -124,6 +126,23 @@ const Model = types
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
+      console.log("UPD", self.value, store.task.dataObj);
+      console.log("UPD2", self._value, self.parent._value);
+
+      self._simple = new TimeSeries({
+        columns: ["time", "sensor1"],
+        points: store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]).filter((_, i) => i < 100),
+      });
+
+      self._d3 = store.task.dataObj.time.map((t, i) => ({
+        date: new Date(t),
+        sensor1: store.task.dataObj.sensor1[i],
+        sensor2: store.task.dataObj.sensor2[i],
+      }));
+
+      // console.log('SIMEPLE', self._simple, store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]))
+      console.log("DDDDDDD3333", self._d3);
+
       const points = [];
 
       for (let i = 0; i <= self.parent._value[0][i]; i++) {
@@ -141,15 +160,17 @@ const Model = types
       self._min = parseInt(series.min(self.value), 10);
       self._series = series;
 
-      self._minTime = series.range().begin();
-      self._maxTime = series.range().end();
+      self._minTime = series.begin();
+      self._maxTime = series.end();
     },
   }));
 
 const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, TagAttrs, ObjectBase);
 
-const HtxTimeSeriesChannelView = observer(({ store, item }) => {
+const HtxTimeSeriesChannelViewTS = observer(({ store, item }) => {
   if (!item._value) return null;
+
+  console.time("prerender");
 
   const u = item.parent._needsUpdate;
   const timerange = item.parent.initialRange;
@@ -168,6 +189,7 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
     },
   };
 
+  console.time("charts");
   const charts = [
     <LineChart
       key={`line-${item.value}-{$u}`}
@@ -221,6 +243,7 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
       /* onTimeRangeClicked={i => this.setState({ selected: i })} */
     />,
   ];
+  console.timeEnd("charts");
 
   // Get the value at the current tracker position for the ValueAxis
   let value = "--";
@@ -240,7 +263,9 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
     }
   };
 
+  console.time("value");
   const uval = getValue();
+  console.timeEnd("value");
 
   value = item.tracker && uval;
 
@@ -255,7 +280,7 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   ];
 
   const rows = [];
-  const r = item._series.range();
+  const r = item._series;
 
   const trackerInfoValues = (function() {
     const label = item.units ? item.units : "value";
@@ -263,6 +288,9 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
 
     return [{ label, value }];
   })();
+  console.timeEnd("prerender");
+
+  console.log("CONSTANT RERENDER");
 
   return (
     <Resizable>
@@ -272,7 +300,7 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
         timeRange={item.parent.initialRange}
         enablePanZoom={false}
         utc={true}
-        showGrid={item.showgrid}
+        showGrid={false}
         onTimeRangeChanged={item.parent.updateTR}
         maxTime={r.end()}
         minTime={r.begin()}
@@ -305,7 +333,351 @@ const HtxTimeSeriesChannelView = observer(({ store, item }) => {
   );
 });
 
-const HtxTimeSeriesChannel = inject("store")(observer(HtxTimeSeriesChannelView));
+const TS = ({ series }) => {
+  const [range, setRange] = React.useState(series.slice(0, series.size() >> 3).timerange());
+  console.log("SSSSSSSSSS", series);
+
+  return (
+    <Resizable>
+      <ChartContainer timeRange={series.timerange()}>
+        <ChartRow height="200">
+          <YAxis
+            id="axis1"
+            label="AUD"
+            min={series.min("sensor1")}
+            max={series.max("sensor1")}
+            width="60"
+            type="linear"
+            format="$,.2f"
+          />
+          <Brush
+            timeRange={range}
+            style={{ fill: "#cccccc", strokeWidth: 1, stroke: "#cacaca" }}
+            allowSelectionClear
+            onTimeRangeChanged={setRange}
+          />
+          <Charts>
+            <LineChart axis="axis1" series={series} columns={["sensor1"]} />
+          </Charts>
+          <YAxis id="axis2" label="Euro" min={0.5} max={1.5} width="80" type="linear" format="$,.2f" />
+        </ChartRow>
+      </ChartContainer>
+    </Resizable>
+  );
+};
+
+const D31 = ({ name, series }) => {
+  name = name.substr(1);
+  const id = `chart_${name}`;
+  console.log("DDD333", name, series.slice(0, 20));
+  setTimeout(() => {
+    const width = 820;
+    const chart = d3_timeseries()
+      .addSerie(series, { x: "date", y: name }, { interpolate: "linear" })
+      .width(width);
+    // const e = chart(`#${id}`);
+    // console.log('CHHH', e);
+
+    // setTimeout(() => {
+    const svg = d3
+      .select(`#${id}`)
+      .append(`svg`)
+      .attr("viewBox", [0, 0, width, 400]);
+    console.log("WWWWW", svg.attr("width"));
+    console.log("SVG", svg.node(), svg.node().width);
+
+    const data = series.slice(0, 100);
+    const x = d3
+      .scaleLinear()
+      .domain(d3.extent(data, d => +d.date))
+      .nice()
+      .range([0, width]);
+
+    const y = d3
+      .scaleLinear()
+      .domain(d3.extent(data, d => d.sensor1))
+      .nice()
+      .range([0, 400]);
+
+    const brush = d3
+      .brushX()
+      // .extent([[0, 0], [300, 400]])
+      .on("start", () => console.log("STRTDDD"))
+      .on("brush", () => console.log("BRSHDD"));
+    // d3.select(`#${id}`)
+    // .append("g")
+    // .attr("class", "brush")
+    // .attr('viewBox', [0, 0, 820, 400])
+    svg
+      .append("g")
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 1.5)
+      .selectAll("g")
+      .data(data.slice(0, 100))
+      .enter()
+      .append("circle")
+      .attr("transform", d => `translate(${x(d.date)},${y(d.sensor1)})`)
+      .attr("r", 3);
+    svg.call(brush);
+    // }, 1300)
+  }, 400);
+  return <div id={id}>Hello</div>;
+};
+
+const brushes = gBrushes => {
+  // We also keep the actual d3-brush functions and their IDs in a list:
+  var brushes = [];
+
+  /* CREATE NEW BRUSH
+   *
+   * This creates a new brush. A brush is both a function (in our array) and a set of predefined DOM elements
+   * Brushes also have selections. While the selection are empty (i.e. a suer hasn't yet dragged)
+   * the brushes are invisible. We will add an initial brush when this viz starts. (see end of file)
+   * Now imagine the user clicked, moved the mouse, and let go. They just gave a selection to the initial brush.
+   * We now want to create a new brush.
+   * However, imagine the user had simply dragged an existing brush--in that case we would not want to create a new one.
+   * We will use the selection of a brush in brushend() to differentiate these cases.
+   */
+  function newBrush() {
+    var brush = d3
+      .brushX()
+      .on("start", brushstart)
+      .on("brush", brushed)
+      .on("end", brushend);
+
+    brushes.push({ id: brushes.length, brush: brush });
+
+    function brushstart() {
+      // your stuff here
+    }
+
+    function brushed() {
+      // your stuff here
+    }
+
+    function brushend() {
+      // Figure out if our latest brush has a selection
+      var lastBrushID = brushes[brushes.length - 1].id;
+      var lastBrush = document.getElementById("brush-" + lastBrushID);
+      var selection = d3.brushSelection(lastBrush);
+
+      // If it does, that means we need another one
+      if (selection && selection[0] !== selection[1]) {
+        newBrush();
+      }
+
+      // Always draw brushes
+      drawBrushes();
+    }
+  }
+
+  function drawBrushes() {
+    var brushSelection = gBrushes.selectAll(".brush").data(brushes, function(d) {
+      return d.id;
+    });
+
+    // Set up new brushes
+    brushSelection
+      .enter()
+      .insert("g", ".brush")
+      .attr("class", "brush")
+      .attr("id", function(brush) {
+        return "brush-" + brush.id;
+      })
+      .each(function(brushObject) {
+        //call the brush
+        brushObject.brush(d3.select(this));
+      });
+
+    /* REMOVE POINTER EVENTS ON BRUSH OVERLAYS
+     *
+     * This part is abbit tricky and requires knowledge of how brushes are implemented.
+     * They register pointer events on a .overlay rectangle within them.
+     * For existing brushes, make sure we disable their pointer events on their overlay.
+     * This frees the overlay for the most current (as of yet with an empty selection) brush to listen for click and drag events
+     * The moving and resizing is done with other parts of the brush, so that will still work.
+     */
+    brushSelection.each(function(brushObject) {
+      d3.select(this)
+        .attr("class", "brush")
+        .selectAll(".overlay")
+        .style("pointer-events", function() {
+          var brush = brushObject.brush;
+          if (brushObject.id === brushes.length - 1 && brush !== undefined) {
+            return "all";
+          } else {
+            return "none";
+          }
+        });
+    });
+
+    brushSelection.exit().remove();
+  }
+
+  newBrush();
+  drawBrushes();
+};
+
+const D3 = ({ name, series }) => {
+  name = name.substr(1);
+  const id = `chart_${name}`;
+  const width = 820;
+  const height = 400;
+  const focusHeight = 100;
+  // series = series.slice(0, 1000);
+  // for (let j = 5; j--; ) {
+  //   const last = +series[series.length - 1].date;
+  //   for (let i = 0, l = series.length; i < l; i++) {
+  //     series[l + l - i - 1] = {...series[i], date: new Date(1000*(l - i) + last) };
+  //   }
+  // }
+  console.log("SSSS", series);
+  document.title = series.length;
+  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+  const x = d3
+    .scaleUtc()
+    .domain(d3.extent(series, d => d.date))
+    .range([margin.left, width - margin.right]);
+
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(series, d => d[name])])
+    .range([height - margin.bottom, margin.top]);
+
+  window.x = x;
+  window.y = y;
+  console.log("YYY", y(10));
+  console.log("YYY", y(0));
+
+  const xAxis = (g, x, height) =>
+    g.attr("transform", `translate(0,${height - margin.bottom})`).call(
+      d3
+        .axisBottom(x)
+        .ticks(width / 80)
+        .tickSizeOuter(0),
+    );
+
+  const area = (xx, yy) =>
+    d3
+      .area()
+      .defined(d => !isNaN(d[name]))
+      .x(d => xx(d.date))
+      .y0(yy(0))
+      .y1(d => yy(d[name]));
+
+  const line = (xx, yy) =>
+    d3
+      .line()
+      .x(d => xx(d.date))
+      .y(d => yy(d[name]));
+
+  //////////////////////////////////
+  setTimeout(() => {
+    const main = d3
+      .select("#" + id)
+      .append("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .style("display", "block");
+
+    console.log("SEL", d3.select("#" + id));
+
+    const clipId = "clip_" + Math.random();
+
+    main
+      .append("clipPath")
+      .attr("id", clipId.id)
+      .append("rect")
+      .attr("x", margin.left)
+      .attr("y", 0)
+      .attr("height", height)
+      .attr("width", width - margin.left - margin.right);
+
+    const gx = main.append("g");
+
+    const gy = main.append("g");
+
+    const path = main
+      .append("path")
+      .datum(series)
+      .attr("clip-path", clipId)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue");
+
+    // return Object.assign(main.node(), {
+    //   update(focusX, focusY) {
+    //     gx.call(xAxis, focusX, height);
+    //     gy.call(yAxis, focusY, data.y);
+    //     path.attr("d", area(focusX, focusY));
+    //   }
+    // });
+
+    let focus = d3.select(`#focus svg`);
+    if (!focus.size()) focus = d3.select(`#focus`).append("svg");
+    focus.attr("viewBox", [0, 0, width, focusHeight]).style("display", "block");
+
+    const brush = d3
+      .brushX()
+      .extent([
+        [margin.left, 0.5],
+        [width - margin.right, focusHeight - margin.bottom + 0.5],
+      ])
+      .on("brush", brushed)
+      .on("end", brushended);
+
+    const defaultSelection = [margin.left, x.range()[1] / 10];
+
+    // svg.append("g")
+    //     .call(xAxis, x, focusHeight);
+
+    focus
+      .append("path")
+      .datum(series)
+      .attr("stroke", "steelblue")
+      .attr("fill", "none")
+      .attr("d", line(x, y.copy().range([focusHeight - margin.bottom, 4])));
+
+    const gb = focus
+      .append("g")
+      .call(brush)
+      .call(brush.move, defaultSelection);
+
+    function brushed() {
+      if (d3.event.selection) {
+        const [minX, maxX] = d3.event.selection.map(x.invert, x);
+        const maxY = d3.max(series, d => (minX <= d.date && d.date <= maxX ? d[name] : 0));
+        const [focusX, focusY] = [x.copy().domain([minX, maxX]), y];
+        console.log("BRUSHED", d3.event.selection, d3.event.selection.map(x.invert, x), minX, maxX, maxY);
+        // gx.call(xAxis, focusX, height);
+        // gy.call(yAxis, focusY, data.y);
+        path.attr("d", line(focusX, focusY));
+      }
+    }
+
+    function brushended() {
+      if (!d3.event.selection) {
+        gb.call(brush.move, defaultSelection);
+      }
+    }
+
+    // We initially generate a SVG group to keep our brushes' DOM elements in:
+    var gBrushes = main.append("g").attr("class", "brushes");
+    brushes(gBrushes);
+  }, 400);
+
+  return (
+    <>
+      <div id={id}>Hello</div>
+      <div id={id + "_focus"}></div>
+    </>
+  );
+};
+
+// const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
+const HtxTimeSeriesChannelViewD3 = observer(({ store, item }) => <D3 name={item.value} series={item._d3} />);
+
+const HtxTimeSeriesChannel = inject("store")(observer(HtxTimeSeriesChannelViewD3));
 
 Registry.addTag("timeserieschannel", TimeSeriesChannelModel, HtxTimeSeriesChannel);
 

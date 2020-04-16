@@ -268,7 +268,7 @@ const TimeSeriesOverview = observer(({ item }) => {
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
   return (
     <ObjectTag item={item}>
-      <div
+      {/* <div
         onWheel={e => {
           e = e || window.event;
           if (e.preventDefault) {
@@ -277,10 +277,11 @@ const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
           e.returnValue = false;
           return false;
         }}
-      >
-        {Tree.renderChildren(item)}
-        <TimeSeriesOverview item={item} />
-      </div>
+      > */}
+      {Tree.renderChildren(item)}
+      <div id="focus"></div>
+      {/* <TimeSeriesOverview item={item} /> */}
+      {/* </div> */}
     </ObjectTag>
   );
 });
