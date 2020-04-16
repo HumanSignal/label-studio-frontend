@@ -556,8 +556,8 @@ class ChannelD3 extends React.Component {
       .domain([0, d3.max(values)])
       .range([height, 0]);
 
-    window.x = x;
-    window.y = y;
+    this.x = x;
+    this.y = y;
     console.log("YYY", y(10));
     console.log("YYY", y(0));
 
@@ -601,7 +601,7 @@ class ChannelD3 extends React.Component {
 
     const gy = main.append("g");
 
-    const path = main
+    this.path = main
       .append("path")
       .datum(series)
       .attr("clip-path", clipId)
@@ -615,7 +615,10 @@ class ChannelD3 extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log("UPD", this.props.range, prevProps.range, prevProps);
+    console.log("UPD RANGE", this.props.forceUpdate, this.props.range, prevProps.range);
+    if (this.props.range !== prevProps.range) {
+      this.path.attr("d", line(this.x.copy().domain(this.props.range), this.y));
+    }
   }
 
   render() {
@@ -630,7 +633,8 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => (
     value={idFromValue(item.value)}
     item={item}
     data={store.task.dataObj}
-    range={item.parent.brushRange}
+    range={item.parent.initialRange}
+    forceUpdate={item.parent._needsUpdate}
   />
 );
 

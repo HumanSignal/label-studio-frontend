@@ -209,6 +209,7 @@ const Model = types
 
       // self.initialRange = pcTR;
       const times = store.task.dataObj[idFromValue(self.value)];
+      self.initialRange = [times[0], times[times.length >> 2]];
       self.brushRange = [times[0], times[times.length >> 2]];
     },
 
