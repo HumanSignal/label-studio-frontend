@@ -68,7 +68,7 @@ const Model = types
   .views(self => ({
     get regionsTimeRanges() {
       return self.regions.map(r => {
-        return new TimeRange(r.start, r.end);
+        return [r.start, r.end];
       });
     },
 
@@ -159,13 +159,18 @@ const Model = types
 
     regionChanged(timerange, i) {
       const r = self.regions[i];
+      let needUpdate = false;
+      console.log("REGION TO CHANGE", r, i);
 
       if (!r) {
-        self.addRegion(timerange.begin().getTime(), timerange.end().getTime());
+        self.addRegion(timerange.start, timerange.end);
+        needUpdate = true;
       } else {
-        r.start = timerange.begin().getTime();
-        r.end = timerange.end().getTime();
+        needUpdate = r.start !== timerange.start || r.end !== timerange.end;
+        r.start = timerange.start;
+        r.end = timerange.end;
       }
+      needUpdate && self.updateView();
     },
 
     updateValue(store) {
@@ -351,6 +356,7 @@ class TimeSeriesOverviewD3 extends React.Component {
   }
 }
 
+// const Overview = TimeSeriesOverviewD3;
 const Overview = observer(TimeSeriesOverviewD3);
 
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {

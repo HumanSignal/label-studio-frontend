@@ -113,6 +113,9 @@ const Model = types
     get parent() {
       return Types.getParentOfTypeString(self, "TimeSeriesModel");
     },
+    get regions() {
+      return self.parent.regions;
+    },
   }))
   .preProcessSnapshot(snapshot => {
     snapshot.interpolation = csMap[snapshot.interpolation];
@@ -427,85 +430,51 @@ const D31 = ({ name, series }) => {
   return <div id={id}>Hello</div>;
 };
 
-const brushes = gBrushes => {
+class ChannelD3 extends React.Component {
+  ref = React.createRef();
+  gBrushes;
+  id = String(Math.random());
   // We also keep the actual d3-brush functions and their IDs in a list:
-  var brushes = [];
+  brushes = [];
 
-  /* CREATE NEW BRUSH
-   *
-   * This creates a new brush. A brush is both a function (in our array) and a set of predefined DOM elements
-   * Brushes also have selections. While the selection are empty (i.e. a suer hasn't yet dragged)
-   * the brushes are invisible. We will add an initial brush when this viz starts. (see end of file)
-   * Now imagine the user clicked, moved the mouse, and let go. They just gave a selection to the initial brush.
-   * We now want to create a new brush.
-   * However, imagine the user had simply dragged an existing brush--in that case we would not want to create a new one.
-   * We will use the selection of a brush in brushend() to differentiate these cases.
-   */
-  function newBrush() {
-    var brush = d3
-      .brushX()
-      .on("start", brushstart)
-      .on("brush", brushed)
-      .on("end", brushend);
+  drawBrushes() {
+    const brushes = this.brushes;
 
-    brushes.push({ id: brushes.length, brush: brush });
-
-    function brushstart() {
-      // your stuff here
-    }
-
-    function brushed() {
-      // your stuff here
-    }
-
-    function brushend() {
-      // Figure out if our latest brush has a selection
-      var lastBrushID = brushes[brushes.length - 1].id;
-      var lastBrush = document.getElementById("brush-" + lastBrushID);
-      var selection = d3.brushSelection(lastBrush);
-
-      // If it does, that means we need another one
-      if (selection && selection[0] !== selection[1]) {
-        newBrush();
-      }
-
-      // Always draw brushes
-      drawBrushes();
-    }
-  }
-
-  function drawBrushes() {
-    var brushSelection = gBrushes.selectAll(".brush").data(brushes, function(d) {
-      return d.id;
-    });
+    var brushSelection = this.gBrushes.selectAll(".brush").data(brushes, d => d.id);
 
     // Set up new brushes
     brushSelection
       .enter()
+      // inserts to the start, that's crucial
       .insert("g", ".brush")
-      .attr("class", "brush")
-      .attr("id", function(brush) {
-        return "brush-" + brush.id;
+      .each(function(b) {
+        b.g = this;
       })
-      .each(function(brushObject) {
-        //call the brush
-        brushObject.brush(d3.select(this));
+      .attr("class", "brush")
+      .attr("id", (b, i) => {
+        console.log("I", i);
+        return `brush_${this.id}_${b.id}`;
+      })
+      .each(function(b) {
+        // b.g = this;
+        const group = d3.select(this);
+        b.brush(group);
+        if (b.range) {
+          const stateProvidesColor = b.range.states.find(s => s.hasOwnProperty("getSelectedColor"));
+          const sCol = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), 0.5);
+          group.select(".selection").attr("fill", sCol);
+
+          b.brush.move(group, [b.range.start, b.range.end]);
+        }
       });
 
-    /* REMOVE POINTER EVENTS ON BRUSH OVERLAYS
-     *
-     * This part is abbit tricky and requires knowledge of how brushes are implemented.
-     * They register pointer events on a .overlay rectangle within them.
-     * For existing brushes, make sure we disable their pointer events on their overlay.
-     * This frees the overlay for the most current (as of yet with an empty selection) brush to listen for click and drag events
-     * The moving and resizing is done with other parts of the brush, so that will still work.
-     */
     brushSelection.each(function(brushObject) {
       d3.select(this)
         .attr("class", "brush")
         .selectAll(".overlay")
         .style("pointer-events", function() {
           var brush = brushObject.brush;
+          // @todo why do we need `brush !== undefined` check?
           if (brushObject.id === brushes.length - 1 && brush !== undefined) {
             return "all";
           } else {
@@ -517,12 +486,136 @@ const brushes = gBrushes => {
     brushSelection.exit().remove();
   }
 
-  newBrush();
-  drawBrushes();
-};
+  /* CREATE NEW BRUSH
+   *
+   * This creates a new brush. A brush is both a function (in our array) and a set of predefined DOM elements
+   * Brushes also have selections. While the selection are empty (i.e. a suer hasn't yet dragged)
+   * the brushes are invisible. We will add an initial brush when this viz starts. (see end of file)
+   * Now imagine the user clicked, moved the mouse, and let go. They just gave a selection to the initial brush.
+   * We now want to create a new brush.
+   * However, imagine the user had simply dragged an existing brush--in that case we would not want to create a new one.
+   * We will use the selection of a brush in brushend() to differentiate these cases.
+   */
+  newBrush(range) {
+    const brush = d3.brushX();
+    const id = this.brushes.length;
 
-class ChannelD3 extends React.Component {
-  ref = React.createRef();
+    this.brushes.push({ id, brush, g: null, range });
+
+    function brushstart() {
+      // your stuff here
+    }
+
+    const brushed = () => {
+      console.log("BRUSHED", this, d3.event.selection, d3.event);
+    };
+
+    const brushend = () => {
+      const [start, end] = d3.event.selection;
+      console.log("REGION CHANGED", start, end);
+      this.props.item.parent.regionChanged({ start, end }, id);
+
+      // Figure out if our latest brush has a selection
+      // var lastBrushID = this.brushes[this.brushes.length - 1].id;
+      // var lastBrush = document.getElementById(`brush_${this.id}_${lastBrushID}`);
+      var lastBrush = this.brushes[this.brushes.length - 1].g;
+      var selection = d3.brushSelection(lastBrush);
+
+      // console.log('BRUSH END', selection, lastBrushID, this.brushes);
+
+      // If it does, that means we need another one
+      if (selection && selection[0] !== selection[1]) {
+        this.newBrush();
+      }
+
+      // Always draw brushes
+      this.drawBrushes();
+    };
+
+    brush
+      .on("start", brushstart)
+      .on("brush", brushed)
+      .on("end", brushend);
+  }
+
+  initBrushes() {
+    if (this.props.ranges.length) this.props.ranges.forEach(r => this.newBrush(r));
+    else this.newBrush();
+    this.drawBrushes();
+  }
+
+  brushes = [];
+
+  renderBrushes(ranges) {
+    const brushes = this.brushes;
+    console.log("RRR BBB", ranges, brushes);
+    console.dir(brushes);
+
+    this.gBrushes.selectAll(".brush").remove();
+    brushes.length = 0;
+    //   .selectAll(".brush")
+    //   .remove();
+    const brushSelection = this.gBrushes.selectAll(".brush").data(ranges);
+
+    const brushend = i => () => {
+      if (!d3.event.sourceEvent) return;
+      const [start, end] = d3.event.selection;
+      console.log("REALLY ENDED", start, end, i);
+      this.props.item.parent.regionChanged({ start, end }, i);
+    };
+
+    // Set up new brushes
+    brushSelection
+      .enter()
+      .append("g")
+      // .join("g")
+      .attr("class", "brush")
+      .attr("id", (b, i) => {
+        console.log("I", i);
+        return `brush_${this.id}_${i}`;
+      })
+      .each(function(r, i) {
+        const brush = (brushes[i] = d3.brushX());
+
+        brush.on("brush", () => console.log("BRUSHED")).on("end", brushend(i));
+        console.log("ENTER THE BRUSH", r, i);
+
+        const group = d3.select(this);
+        brush(group);
+
+        const stateProvidesColor = r.states.find(s => s.hasOwnProperty("getSelectedColor"));
+        const color = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), 0.5);
+        group.select(".selection").attr("fill", color);
+        group.select(".overlay").style("pointer-events", "none");
+      })
+      .merge(brushSelection)
+      .each(function(r, i) {
+        const brush = brushes[i];
+        const group = d3.select(this);
+        if (!brush) {
+          console.error("WHERE IS THE BRUSH", i);
+        }
+        brush.move(group, [r.start, r.end]);
+      });
+
+    // brushSelection
+    //   .selectAll(".overlay")
+    //   .style("pointer-events", "none");
+    // brushSelection
+    //   .filter(r => !r)
+    //   .each(b => console.log('BBBB', b))
+  }
+
+  brushCreator() {
+    const brush = d3.brushX().on("end", () => {
+      if (!d3.event.sourceEvent || !d3.event.selection) return;
+      const [start, end] = d3.event.selection;
+      console.log("CREATE BRUSH", start, end, this.props.ranges.length);
+      brush.move(this.gCreator, null);
+      this.props.item.parent.regionChanged({ start, end }, this.props.ranges.length);
+    });
+    this.gCreator.call(brush);
+  }
 
   componentDidMount() {
     const { data, item, range, time, value } = this.props;
@@ -586,11 +679,9 @@ class ChannelD3 extends React.Component {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    const clipId = "clip_" + Math.random();
-
     main
       .append("clipPath")
-      .attr("id", clipId.id)
+      .attr("id", `clip_${this.id}`)
       .append("rect")
       .attr("x", margin.left)
       .attr("y", 0)
@@ -604,39 +695,69 @@ class ChannelD3 extends React.Component {
     this.path = main
       .append("path")
       .datum(series)
-      .attr("clip-path", clipId)
+      .attr("clip-path", `url("#clip_${this.id}")`)
       .attr("fill", "none")
       .attr("stroke", "steelblue")
       .attr("d", line(x.copy().domain(range), y));
 
+    this.gCreator = main.append("g").attr("class", "new_brush");
+    this.brushCreator();
+
     // We initially generate a SVG group to keep our brushes' DOM elements in:
-    var gBrushes = main.append("g").attr("class", "brushes");
-    brushes(gBrushes);
+    this.gBrushes = main.append("g").attr("class", "brushes");
+
+    // this.initBrushes();
+    this.renderBrushes(this.props.ranges);
   }
 
   componentDidUpdate(prevProps) {
-    console.log("UPD RANGE", this.props.forceUpdate, this.props.range, prevProps.range);
+    console.log(
+      "UPD RANGES",
+      this.props.value,
+      this.props.ranges.length,
+      this.props.ranges,
+      prevProps.ranges,
+      this.props.ranges !== prevProps.ranges,
+    );
+    console.log("UPD RANGE", this.props.range, prevProps.range);
     if (this.props.range !== prevProps.range) {
       this.path.attr("d", line(this.x.copy().domain(this.props.range), this.y));
     }
+    // if (this.props.ranges !== prevProps.ranges)
+    this.renderBrushes(this.props.ranges);
   }
 
   render() {
-    return <div ref={this.ref} />;
+    return <div ref={this.ref} length={this.props.ranges} />;
   }
 }
 
+const ChannelD3Observed = ({ item, ranges }) => {
+  React.useEffect(() => {
+    console.log("EFFECT RANGES", ranges);
+  }, [ranges]);
+  console.log("RENDER RANGES", ranges);
+  const upd = () => item.parent.regionChanged({ start: 10, end: 100 }, ranges.length);
+
+  return <button onClick={upd}>Update it all</button>;
+};
+
 // const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
-const HtxTimeSeriesChannelViewD3 = ({ store, item }) => (
-  <ChannelD3
-    time={idFromValue(item.parent.value)}
-    value={idFromValue(item.value)}
-    item={item}
-    data={store.task.dataObj}
-    range={item.parent.initialRange}
-    forceUpdate={item.parent._needsUpdate}
-  />
-);
+const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
+  console.log("RENDER CHANNEL", item);
+  return (
+    <ChannelD3
+      time={idFromValue(item.parent.value)}
+      value={idFromValue(item.value)}
+      item={item}
+      data={store.task.dataObj}
+      // @todo initialBrush is out of store, but it triggers; change to brushRange
+      range={item.parent.initialRange}
+      ranges={item.regions}
+      forceUpdate={item.parent._needsUpdate}
+    />
+  );
+};
 
 const HtxTimeSeriesChannel = inject("store")(observer(HtxTimeSeriesChannelViewD3));
 
