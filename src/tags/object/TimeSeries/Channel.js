@@ -544,10 +544,16 @@ class ChannelD3 extends React.Component {
     this.drawBrushes();
   }
 
+  getRegion(selection) {
+    const [start, end] = selection.map(this.x.invert, this.x).map(Number);
+    return { start, end };
+  }
+
   brushes = [];
 
   renderBrushes(ranges) {
     const brushes = this.brushes;
+    const x = this.x;
     console.log("RRR BBB", ranges, brushes);
     console.dir(brushes);
 
@@ -558,10 +564,10 @@ class ChannelD3 extends React.Component {
     const brushSelection = this.gBrushes.selectAll(".brush").data(ranges);
 
     const brushend = i => () => {
-      if (!d3.event.sourceEvent) return;
-      const [start, end] = d3.event.selection;
-      console.log("REALLY ENDED", start, end, i);
-      this.props.item.parent.regionChanged({ start, end }, i);
+      if (!d3.event.sourceEvent || !d3.event.selection) return;
+      const region = this.getRegion(d3.event.selection);
+      console.log("REALLY ENDED", region, i);
+      this.props.item.parent.regionChanged(region, i);
     };
 
     // Set up new brushes
@@ -595,7 +601,7 @@ class ChannelD3 extends React.Component {
         if (!brush) {
           console.error("WHERE IS THE BRUSH", i);
         }
-        brush.move(group, [r.start, r.end]);
+        brush.move(group, [r.start, r.end].map(x));
       });
 
     // brushSelection
@@ -609,10 +615,10 @@ class ChannelD3 extends React.Component {
   brushCreator() {
     const brush = d3.brushX().on("end", () => {
       if (!d3.event.sourceEvent || !d3.event.selection) return;
-      const [start, end] = d3.event.selection;
-      console.log("CREATE BRUSH", start, end, this.props.ranges.length);
+      const region = this.getRegion(d3.event.selection);
+      console.log("CREATE BRUSH", region, this.props.ranges.length);
       brush.move(this.gCreator, null);
-      this.props.item.parent.regionChanged({ start, end }, this.props.ranges.length);
+      this.props.item.parent.regionChanged(region, this.props.ranges.length);
     });
     this.gCreator.call(brush);
   }
@@ -697,8 +703,9 @@ class ChannelD3 extends React.Component {
       .datum(series)
       .attr("clip-path", `url("#clip_${this.id}")`)
       .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("d", line(x.copy().domain(range), y));
+      .attr("stroke", "steelblue");
+
+    this.setRange(range);
 
     this.gCreator = main.append("g").attr("class", "new_brush");
     this.brushCreator();
@@ -708,6 +715,11 @@ class ChannelD3 extends React.Component {
 
     // this.initBrushes();
     this.renderBrushes(this.props.ranges);
+  }
+
+  setRange(range) {
+    this.x.domain(range);
+    this.path.attr("d", line(this.x, this.y));
   }
 
   componentDidUpdate(prevProps) {
@@ -721,7 +733,7 @@ class ChannelD3 extends React.Component {
     );
     console.log("UPD RANGE", this.props.range, prevProps.range);
     if (this.props.range !== prevProps.range) {
-      this.path.attr("d", line(this.x.copy().domain(this.props.range), this.y));
+      this.setRange(this.props.range);
     }
     // if (this.props.ranges !== prevProps.ranges)
     this.renderBrushes(this.props.ranges);
