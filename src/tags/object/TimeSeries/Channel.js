@@ -37,7 +37,7 @@ import Types from "../../../core/Types";
 import { guidGenerator, restoreNewsnapshot } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
 import Utils from "../../../utils";
-import { idFromValue, line } from "./helpers";
+import { idFromValue, line, getRegionColor } from "./helpers";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -460,9 +460,7 @@ class ChannelD3 extends React.Component {
         const group = d3.select(this);
         b.brush(group);
         if (b.range) {
-          const stateProvidesColor = b.range.states.find(s => s.hasOwnProperty("getSelectedColor"));
-          const sCol = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), 0.5);
-          group.select(".selection").attr("fill", sCol);
+          group.select(".selection").attr("fill", getRegionColor(b.range, 0.5));
 
           b.brush.move(group, [b.range.start, b.range.end]);
         }
@@ -566,8 +564,15 @@ class ChannelD3 extends React.Component {
     const brushend = i => () => {
       if (!d3.event.sourceEvent || !d3.event.selection) return;
       const region = this.getRegion(d3.event.selection);
-      console.log("REALLY ENDED", region, i);
-      this.props.item.parent.regionChanged(region, i);
+      // @todo click simulation - selection didn't move
+      if (region.start === ranges[i].start && region.end === ranges[i].end) {
+        ranges[i].selectRegion();
+        setTimeout(() => this.props.item.parent.updateView(), 0);
+      } else {
+        console.log("REALLY ENDED", this.id, region, i);
+        // clear d3 sourceEvent via async call
+        setTimeout(() => this.props.item.parent.regionChanged(region, i), 0);
+      }
     };
 
     // Set up new brushes
@@ -588,10 +593,6 @@ class ChannelD3 extends React.Component {
 
         const group = d3.select(this);
         brush(group);
-
-        const stateProvidesColor = r.states.find(s => s.hasOwnProperty("getSelectedColor"));
-        const color = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), 0.5);
-        group.select(".selection").attr("fill", color);
         group.select(".overlay").style("pointer-events", "none");
       })
       .merge(brushSelection)
@@ -601,6 +602,9 @@ class ChannelD3 extends React.Component {
         if (!brush) {
           console.error("WHERE IS THE BRUSH", i);
         }
+
+        group.select(".selection").attr("fill", getRegionColor(r, r.selected ? 0.8 : 0.5));
+
         brush.move(group, [r.start, r.end].map(x));
       });
 
@@ -614,11 +618,21 @@ class ChannelD3 extends React.Component {
 
   brushCreator() {
     const brush = d3.brushX().on("end", () => {
-      if (!d3.event.sourceEvent || !d3.event.selection) return;
+      const activeStates = this.props.item.parent.activeStates();
+      // if (!d3.event.sourceEvent || !d3.event.selection) return;
+      if (!d3.event.sourceEvent) return;
+      if (!d3.event.selection) {
+        console.log("NOTHING SELECTED");
+        // this.props.item.parent.completion.regionStore.unselectAll();
+        return;
+      }
+      if (!activeStates || !activeStates.length) return;
       const region = this.getRegion(d3.event.selection);
       console.log("CREATE BRUSH", region, this.props.ranges.length);
-      brush.move(this.gCreator, null);
-      this.props.item.parent.regionChanged(region, this.props.ranges.length);
+      setTimeout(() => {
+        brush.move(this.gCreator, null);
+        this.props.item.parent.regionChanged(region, this.props.ranges.length);
+      }, 0);
     });
     this.gCreator.call(brush);
   }

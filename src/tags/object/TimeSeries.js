@@ -29,7 +29,7 @@ import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
-import { line, idFromValue } from "./TimeSeries/helpers";
+import { idFromValue, getRegionColor } from "./TimeSeries/helpers";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -283,33 +283,77 @@ const TimeSeriesOverviewRTS = observer(({ item }) => {
   );
 });
 
-class TimeSeriesOverviewD3 extends React.Component {
-  ref = React.createRef();
+// class TimeSeriesOverviewD3 extends React.Component {
+const Overview = ({ item, store, regions, forceUpdate }) => {
+  const ref = React.useRef();
 
-  componentDidMount() {
-    const { item, store } = this.props;
-    const focusHeight = 100;
-    const { margin, value, width } = item;
-    const series = store.task.dataObj[idFromValue(value)];
+  const focusHeight = 100;
+  const { margin, value, width } = item;
+  const idX = idFromValue(value);
+  const data = store.task.dataObj;
+  const keys = Object.keys(data).filter(key => key !== idX);
+  const series = data[idX];
+  // const fullHeight = focusHeight + margin.min + margin.max;
 
-    window.d3 = d3;
+  let focus = React.useRef();
+  let gRegions = React.useRef();
 
-    if (!this.ref.current) return;
+  console.log("TS MOUNTED", width, margin);
 
-    console.log("TS MOUNTED", width, margin);
+  const x = d3
+    .scaleUtc()
+    .domain(d3.extent(series))
+    .range([0, width]);
 
-    const x = d3
-      .scaleUtc()
-      .domain(d3.extent(series))
-      .range([0, width]);
+  const drawPath = key => {
+    console.log("DRAW PATH", data[key], series);
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(data[key])])
+      .range([focusHeight - margin.max, margin.min]);
 
-    const focus = d3
-      .select(this.ref.current)
+    focus.current
+      .append("path")
+      .datum(data[key].slice(0, series.length))
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr(
+        "d",
+        d3
+          .line()
+          .x((d, i) => x(series[i]))
+          .y(d => y(d)),
+      );
+  };
+
+  const drawRegions = ranges => {
+    const rSelection = gRegions.current.selectAll(".region").data(ranges);
+    rSelection
+      .enter()
+      .append("rect")
+      .attr("class", "region")
+      .merge(rSelection)
+      .attr("y", 0)
+      .attr("height", focusHeight)
+      .attr("x", r => x(r.start))
+      .attr("width", r => x(r.end) - x(r.start))
+      .attr("fill", r => getRegionColor(r, r.selected ? 0.5 : 0.3));
+  };
+
+  React.useEffect(() => {
+    focus.current = d3
+      .select(ref.current)
       .append("svg")
-      .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.top + margin.bottom])
-      .style("display", "block") // ?
+      .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight])
+      .style("display", "block")
       .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      .attr("transform", "translate(" + margin.left + ",0)");
+
+    for (let key of keys) drawPath(key);
+
+    gRegions.current = focus.current.append("g").attr("class", "regions");
+    console.log("G REGIONS", gRegions.current, regions);
+    // drawRegions(regions);
 
     const brush = d3
       .brushX()
@@ -320,19 +364,9 @@ class TimeSeriesOverviewD3 extends React.Component {
       .on("brush", brushed)
       .on("end", brushended);
 
-    const defaultSelection = [0, width / 4];
+    const defaultSelection = [0, width >> 2];
 
-    // svg.append("g")
-    //     .call(xAxis, x, focusHeight);
-
-    // focus
-    //   .append("path")
-    //   .datum(series)
-    //   .attr("stroke", "steelblue")
-    //   .attr("fill", "none")
-    //   .attr("d", line(x, y.copy().range([focusHeight - margin.bottom, 4])));
-
-    const gb = focus
+    const gb = focus.current
       .append("g")
       .call(brush)
       .call(brush.move, defaultSelection);
@@ -349,15 +383,18 @@ class TimeSeriesOverviewD3 extends React.Component {
         gb.call(brush.move, defaultSelection);
       }
     }
-  }
+  }, []);
 
-  render() {
-    return <div ref={this.ref} />;
-  }
-}
+  React.useEffect(() => {
+    console.log("TS UPDATED", regions);
+    drawRegions(regions);
+  }, [item, item.regions, regions, forceUpdate]);
+
+  return <div ref={ref} />;
+};
 
 // const Overview = TimeSeriesOverviewD3;
-const Overview = observer(TimeSeriesOverviewD3);
+// const Overview = observer(TimeSeriesOverviewD3);
 
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
   console.log("TS RENDER");
@@ -376,7 +413,7 @@ const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
       {Tree.renderChildren(item)}
       {/* <div id="focus"></div> */}
       {/* <TimeSeriesOverviewD3 store={store} item={item} /> */}
-      <Overview store={store} item={item} />
+      <Overview store={store} item={item} regions={item.regions} forceUpdate={item._needsUpdate} />
     </ObjectTag>
   );
 });
