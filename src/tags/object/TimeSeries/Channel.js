@@ -647,16 +647,18 @@ class ChannelD3 extends React.Component {
 
     const x = d3
       .scaleUtc()
+      // .clamp(true)
       .domain(d3.extent(times))
       .range([0, width]);
 
     const y = d3
       .scaleLinear()
       .domain([0, d3.max(values)])
-      .range([height, 0]);
+      .range([height - margin.max, margin.min]);
 
     this.x = x;
     this.y = y;
+    this.plotX = x.copy();
     console.log("YYY", y(10));
     console.log("YYY", y(0));
 
@@ -689,10 +691,10 @@ class ChannelD3 extends React.Component {
       .append("clipPath")
       .attr("id", `clip_${this.id}`)
       .append("rect")
-      .attr("x", margin.left)
+      .attr("x", 0)
       .attr("y", 0)
       .attr("height", height)
-      .attr("width", width - margin.left - margin.right);
+      .attr("width", width);
 
     const gx = main.append("g");
 
@@ -705,20 +707,37 @@ class ChannelD3 extends React.Component {
       .attr("fill", "none")
       .attr("stroke", "steelblue");
 
+    // this.path.attr("d", line(this.plotX, this.y));
+
     this.setRange(range);
 
     this.gCreator = main.append("g").attr("class", "new_brush");
     this.brushCreator();
 
     // We initially generate a SVG group to keep our brushes' DOM elements in:
-    this.gBrushes = main.append("g").attr("class", "brushes");
+    this.gBrushes = main
+      .append("g")
+      .attr("class", "brushes")
+      .attr("clip-path", `url("#clip_${this.id}")`);
 
     // this.initBrushes();
     this.renderBrushes(this.props.ranges);
   }
 
+  setRangeWithScaling(range) {
+    this.x.domain(range);
+    const current = this.x.range();
+    const all = this.plotX.domain().map(this.x);
+    const scale = (all[1] - all[0]) / (current[1] - current[0]);
+    const translate = all[0] - current[0];
+    console.log("SOME MATH", range, this.plotX.domain(), current, all, scale, translate);
+    // this.path.attr("d", line(this.x, this.y));
+    this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
+  }
+
   setRange(range) {
     this.x.domain(range);
+    console.log("SOME MATH", range);
     this.path.attr("d", line(this.x, this.y));
   }
 

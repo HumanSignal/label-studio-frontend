@@ -59,7 +59,7 @@ const Model = types
     regions: types.array(TimeSeriesRegionModel),
 
     width: 840,
-    margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 40 }),
+    margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 40, min: 10, max: 10 }),
     brushRange: types.array(types.Date),
 
     // _value: types.optional(types.string, ""),
