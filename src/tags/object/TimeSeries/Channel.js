@@ -552,7 +552,7 @@ class ChannelD3 extends React.Component {
   renderBrushes(ranges) {
     const brushes = this.brushes;
     const x = this.x;
-    console.log("RRR BBB", ranges, brushes);
+    console.log("RRR BBB", x.domain(), ranges, brushes);
     console.dir(brushes);
 
     this.gBrushes.selectAll(".brush").remove();
@@ -637,6 +637,19 @@ class ChannelD3 extends React.Component {
     this.gCreator.call(brush);
   }
 
+  renderAxis = () => {
+    const { item } = this.props;
+    const { width } = item.parent;
+    const height = +item.height;
+    console.log("X AXIS", this.x.domain());
+    this.gx.attr("transform", `translate(0,${height})`).call(
+      d3
+        .axisBottom(this.x)
+        .ticks(width / 80)
+        .tickSizeOuter(0),
+    );
+  };
+
   componentDidMount() {
     const { data, item, range, time, value } = this.props;
     const { margin, width } = item.parent;
@@ -676,14 +689,6 @@ class ChannelD3 extends React.Component {
     console.log("YYY", y(10));
     console.log("YYY", y(0));
 
-    // const xAxis = (g, x, height) =>
-    //   g.attr("transform", `translate(0,${height - margin.bottom})`).call(
-    //     d3
-    //       .axisBottom(x)
-    //       .ticks(width / 80)
-    //       .tickSizeOuter(0),
-    //   );
-
     // const area = (xx, yy) =>
     //   d3
     //     .area()
@@ -710,10 +715,6 @@ class ChannelD3 extends React.Component {
       .attr("height", height)
       .attr("width", width);
 
-    const gx = main.append("g");
-
-    const gy = main.append("g");
-
     this.path = main
       .append("path")
       .datum(series)
@@ -722,6 +723,25 @@ class ChannelD3 extends React.Component {
       .attr("stroke", "steelblue");
 
     // this.path.attr("d", line(this.plotX, this.y));
+
+    this.gx = main.append("g");
+    main
+      .append("g")
+      .call(d3.axisLeft(y).tickSize(3))
+      .call(g => g.select(".domain").remove())
+      .call(g =>
+        g
+          .selectAll(".title")
+          .data([value])
+          .append("text")
+          .attr("class", "title")
+          .attr("font-size", 8)
+          .attr("x", -margin.left)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .text(value),
+      );
 
     this.setRange(range);
 
@@ -753,6 +773,7 @@ class ChannelD3 extends React.Component {
     this.x.domain(range);
     console.log("SOME MATH", range);
     this.path.attr("d", line(this.x, this.y));
+    this.renderAxis();
   }
 
   componentDidUpdate(prevProps) {

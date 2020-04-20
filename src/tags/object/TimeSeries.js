@@ -59,7 +59,7 @@ const Model = types
     regions: types.array(TimeSeriesRegionModel),
 
     width: 840,
-    margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 40, min: 10, max: 10 }),
+    margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
     brushRange: types.array(types.Date),
 
     // _value: types.optional(types.string, ""),
@@ -340,20 +340,33 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
       .attr("fill", r => getRegionColor(r, r.selected ? 0.5 : 0.3));
   };
 
+  const drawAxis = () => {
+    focus.current
+      .append("g")
+      .attr("transform", `translate(0,${focusHeight})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(width / 80)
+          .tickSizeOuter(0),
+      );
+  };
+
   React.useEffect(() => {
     focus.current = d3
       .select(ref.current)
       .append("svg")
-      .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight])
+      .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom])
       .style("display", "block")
       .append("g")
       .attr("transform", "translate(" + margin.left + ",0)");
 
     for (let key of keys) drawPath(key);
 
+    drawAxis();
+
     gRegions.current = focus.current.append("g").attr("class", "regions");
     console.log("G REGIONS", gRegions.current, regions);
-    // drawRegions(regions);
 
     const brush = d3
       .brushX()
