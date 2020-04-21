@@ -1,22 +1,6 @@
 import "moment-duration-format";
-import React, { Fragment } from "react";
-import _ from "underscore";
-import moment from "moment";
+import React from "react";
 import * as d3 from "d3";
-import {
-  AreaChart,
-  Brush,
-  ChartContainer,
-  ChartRow,
-  Charts,
-  LabelAxis,
-  styler,
-  Resizable,
-} from "react-timeseries-charts";
-import { Button, Icon } from "antd";
-import { Slider } from "antd";
-import { TimeSeries, TimeRange, avg, percentile, median, indexedSeries } from "pondjs";
-import { format } from "d3-format";
 import { observer, inject } from "mobx-react";
 import { types, getRoot, getType } from "mobx-state-tree";
 
@@ -24,7 +8,6 @@ import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
-import { TimeSeriesChannelModel, HtxTimeSeriesChannel } from "./TimeSeries/Channel";
 import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
@@ -221,15 +204,6 @@ const Model = types
     onHotKey() {},
   }));
 
-const style = styler([
-  { key: "distance", color: "#e2e2e2" },
-  { key: "altitude", color: "#e2e2e2" },
-  { key: "cadence", color: "#ff47ff" },
-  { key: "power", color: "green", width: 1, opacity: 0.5 },
-  { key: "temperature", color: "#cfc793" },
-  { key: "speed", color: "steelblue", width: 1, opacity: 0.5 },
-]);
-
 // Baselines are the dotted average lines displayed on the chart
 // In this case these are separately styled
 
@@ -245,43 +219,6 @@ const baselineStyles = {
     width: 0.25,
   },
 };
-
-// d3 formatter to display the speed with one decimal place
-const speedFormat = format(".1f");
-
-const TimeSeriesOverviewRTS = observer(({ item }) => {
-  // console.log(item.series.timerange());
-
-  return (
-    <div data-id={item._needsUpdate}>
-      <Resizable>
-        <ChartContainer
-          timeAxisHeight={0}
-          timeRange={item.series.timerange()}
-          // format="relative"
-          /* trackerPosition={this.state.tracker} */
-        >
-          <ChartRow height="40" debug={false} style={{ fill: "#333333" }}>
-            <Brush
-              timeRange={item.brushRange}
-              style={{ fill: "#cccccc", strokeWidth: 1, stroke: "#cacaca" }}
-              allowSelectionClear
-              onTimeRangeChanged={item.updateTR}
-            />
-            <Charts>
-              <AreaChart
-                axis="axis1"
-                style={{ fill: "#cc0000" }}
-                /* columns={{ up: ["altitude"], down: [] }} */
-                series={item.series}
-              />
-            </Charts>
-          </ChartRow>
-        </ChartContainer>
-      </Resizable>
-    </div>
-  );
-});
 
 // class TimeSeriesOverviewD3 extends React.Component {
 const Overview = ({ item, store, regions, forceUpdate }) => {
@@ -406,26 +343,11 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   return <div ref={ref} />;
 };
 
-// const Overview = TimeSeriesOverviewD3;
-// const Overview = observer(TimeSeriesOverviewD3);
-
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
   console.log("TS RENDER");
   return (
     <ObjectTag item={item}>
-      {/* <div
-        onWheel={e => {
-          e = e || window.event;
-          if (e.preventDefault) {
-            e.preventDefault();
-          }
-          e.returnValue = false;
-          return false;
-        }}
-      > */}
       {Tree.renderChildren(item)}
-      {/* <div id="focus"></div> */}
-      {/* <TimeSeriesOverviewD3 store={store} item={item} /> */}
       <Overview store={store} item={item} regions={item.regions} forceUpdate={item._needsUpdate} />
     </ObjectTag>
   );
