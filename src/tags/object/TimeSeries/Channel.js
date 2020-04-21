@@ -304,6 +304,7 @@ class ChannelD3 extends React.Component {
       .attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom])
       .style("display", "block")
       .append("g")
+      .on("mousemove", onHover)
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     main
@@ -321,6 +322,38 @@ class ChannelD3 extends React.Component {
       .attr("clip-path", `url("#clip_${this.id}")`)
       .attr("fill", "none")
       .attr("stroke", "steelblue");
+
+    const tracker = main.append("g");
+    const trackerText = tracker
+      .append("text")
+      .attr("font-size", 10)
+      .attr("fill", "#666");
+    const trackerPoint = tracker
+      .append("circle")
+      .attr("cx", 0)
+      .attr("r", 3)
+      .attr("stroke", "red")
+      .attr("fill", "none");
+    tracker
+      .append("line")
+      .attr("y1", height)
+      .attr("y2", 0)
+      .attr("stroke", "#666");
+
+    function onHover() {
+      const eX = d3.mouse(this)[0];
+      const i = d3.bisect(times, x.invert(eX));
+      const date = times[i];
+      const val = values[i];
+      const pX = x(date);
+      const pY = y(val);
+      console.log("HOVER", eX, date, val);
+      tracker.attr("transform", `translate(${pX + 0.5},0)`);
+      trackerText.text(val);
+      trackerPoint.attr("cy", pY);
+
+      d3.event.preventDefault();
+    }
 
     // this.path.attr("d", line(this.plotX, this.y));
 
