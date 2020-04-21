@@ -8,6 +8,7 @@ import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
+import { TimeSeriesChannelModel } from "./TimeSeries/Channel";
 import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
