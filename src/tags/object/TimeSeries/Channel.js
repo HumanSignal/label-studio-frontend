@@ -102,44 +102,44 @@ const Model = types
 
     updateValue(store) {
       console.warn("CHANNEL UPDATE VALUE SMALL");
-      self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
+      // self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
 
       console.log("UPD", self.value, store.task.dataObj);
       console.log("UPD2", self._value, self.parent._value);
 
-      self._simple = new TimeSeries({
-        columns: ["time", "sensor1"],
-        points: store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]).filter((_, i) => i < 100),
-      });
+      // self._simple = new TimeSeries({
+      //   columns: ["time", "sensor1"],
+      //   points: store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]).filter((_, i) => i < 100),
+      // });
 
-      self._d3 = store.task.dataObj.time.map((t, i) => ({
-        date: new Date(t),
-        sensor1: store.task.dataObj.sensor1[i],
-        sensor2: store.task.dataObj.sensor2[i],
-      }));
+      // self._d3 = store.task.dataObj.time.map((t, i) => ({
+      //   date: new Date(t),
+      //   sensor1: store.task.dataObj.sensor1[i],
+      //   sensor2: store.task.dataObj.sensor2[i],
+      // }));
 
       // console.log('SIMEPLE', self._simple, store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]))
-      console.log("DDDDDDD3333", self._d3);
+      // console.log("DDDDDDD3333", self._d3);
 
-      const points = [];
+      // const points = [];
 
-      for (let i = 0; i <= self.parent._value[0][i]; i++) {
-        points.push([self.parent._value[0][i], self._value[0][i]]);
-      }
+      // for (let i = 0; i <= self.parent._value[0][i]; i++) {
+      //   points.push([self.parent._value[0][i], self._value[0][i]]);
+      // }
 
-      const series = new TimeSeries({
-        columns: ["time", self.value],
-        points: points,
-      });
+      // const series = new TimeSeries({
+      //   columns: ["time", self.value],
+      //   points: points,
+      // });
 
       // Some simple statistics for each channel
-      self._avg = parseInt(series.avg(self.value), 10);
-      self._max = parseInt(series.max(self.value), 10);
-      self._min = parseInt(series.min(self.value), 10);
-      self._series = series;
+      // self._avg = parseInt(series.avg(self.value), 10);
+      // self._max = parseInt(series.max(self.value), 10);
+      // self._min = parseInt(series.min(self.value), 10);
+      // self._series = series;
 
-      self._minTime = series.begin();
-      self._maxTime = series.end();
+      // self._minTime = series.begin();
+      // self._maxTime = series.end();
     },
   }));
 

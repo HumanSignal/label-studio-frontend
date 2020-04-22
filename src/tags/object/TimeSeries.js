@@ -110,7 +110,7 @@ const Model = types
 
     updateValue(store) {
       console.warn("TS UPDATE VALUE SMALL");
-      self._value = runTemplate(self.value, store.task.dataObj);
+      // self._value = runTemplate(self.value, store.task.dataObj);
     },
 
     toStateJSON() {
@@ -162,8 +162,8 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
-      console.warn("TS UPDATE VALUE BIG", store.task.dataObj, self.value, self._value);
+      // self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
+      // console.warn("TS UPDATE VALUE BIG", store.task.dataObj, self.value, self._value);
 
       // const points = [];
       // const val = 1400429552000;
