@@ -7,7 +7,7 @@
     <Label value="Other"></Label>
   </TimeSeriesLabels>
   <TimeSeries name="ts" value="$time">
-    <TimeSeriesChannel units="miles" unitsFormat=",.1f" showgrid="true" strokeColor="#ff0000" displayName="Hello world" value="$sensor1" />
-    <TimeSeriesChannel units="miles" unitsFormat=",.1f" showgrid="true" strokeColor="#ff0000" displayName="Hello world" value="$sensor2" />    
+    <TimeSeriesChannel units="miles" unitsFormat=",.1f" showgrid="true" strokeColor="#1f77b4" displayName="Hello world" value="$sensor1" />
+    <TimeSeriesChannel units="miles" unitsFormat=",.1f" showgrid="true" strokeColor="#ff7f0e" displayName="Hello world" value="$sensor2" />
   </TimeSeries>
 </View>

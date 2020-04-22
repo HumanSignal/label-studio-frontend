@@ -46,6 +46,9 @@ const Model = types
     margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
     brushRange: types.array(types.Date),
 
+    format: types.optional(types.enumeration(["date", ""]), ""),
+    overviewchannels: "", // comma-separated list of channels to show
+
     // _value: types.optional(types.string, ""),
     _needsUpdate: types.optional(types.number, 0),
   })
@@ -230,7 +233,7 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   const { margin, value, width } = item;
   const idX = idFromValue(value);
   const data = store.task.dataObj;
-  const keys = Object.keys(data).filter(key => key !== idX);
+  const keys = item.overviewchannels ? item.overviewchannels.split(",") : Object.keys(data).filter(key => key !== idX);
   const series = data[idX];
   const minRegionWidth = 2;
 
@@ -240,10 +243,8 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
 
   console.log("TS MOUNTED", width, margin);
 
-  const x = d3
-    .scaleUtc()
-    .domain(d3.extent(series))
-    .range([0, width]);
+  const scale = item.format === "date" ? d3.scaleUtc() : d3.scaleLinear();
+  const x = scale.domain(d3.extent(series)).range([0, width]);
 
   function brushed() {
     if (d3.event.selection) {
@@ -273,16 +274,18 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
 
   const drawPath = key => {
     console.log("DRAW PATH", data[key], series);
+    const channel = item.children.find(c => c.value === `$${key}`);
+    const color = channel ? channel.strokecolor : "steelblue";
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(data[key])])
+      .domain([d3.min(data[key]), d3.max(data[key])])
       .range([focusHeight - margin.max, margin.min]);
 
     focus.current
       .append("path")
       .datum(data[key].slice(0, series.length))
       .attr("fill", "none")
-      .attr("stroke", "steelblue")
+      .attr("stroke", color)
       .attr(
         "d",
         d3
@@ -304,6 +307,7 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
       .attr("x", r => x(r.start))
       .attr("width", r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
       .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3));
+    rSelection.exit().remove();
   };
 
   const drawAxis = () => {
@@ -343,9 +347,8 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   }, []);
 
   React.useEffect(() => {
-    console.log("TS UPDATED", regions);
     drawRegions(regions);
-  }, [item, item.regions, regions, forceUpdate]);
+  });
 
   return <div ref={ref} />;
 };

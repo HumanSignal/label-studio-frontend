@@ -292,7 +292,7 @@ class ChannelD3 extends React.Component {
 
   componentDidMount() {
     const { data, item, range, time, value } = this.props;
-    const { margin, width } = item.parent;
+    const { format, margin, width } = item.parent;
     const height = +item.height;
     const times = data[time];
     const values = data[value];
@@ -312,16 +312,23 @@ class ChannelD3 extends React.Component {
 
     console.log("CHCHCHC", range, times, values);
 
-    const x = d3
-      .scaleUtc()
+    const scale = format === "date" ? d3.scaleUtc() : d3.scaleLinear();
+    const x = scale
       // .clamp(true)
       .domain(d3.extent(times))
       .range([0, width]);
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(values)])
+      .domain([d3.min(values), d3.max(values)])
       .range([height - margin.max, margin.min]);
+
+    const stick = screenX => {
+      const dataX = x.invert(screenX);
+      let i = d3.bisectLeft(times, dataX);
+      if (dataX - times[i] > times[i + 1] - dataX) i++;
+      return [times[i], values[i]];
+    };
 
     this.x = x;
     this.y = y;
@@ -353,7 +360,7 @@ class ChannelD3 extends React.Component {
       .datum(series)
       .attr("clip-path", `url("#clip_${this.id}")`)
       .attr("fill", "none")
-      .attr("stroke", "steelblue");
+      .attr("stroke", item.strokecolor || "steelblue");
 
     const tracker = main.append("g");
     const trackerText = tracker
@@ -373,16 +380,10 @@ class ChannelD3 extends React.Component {
       .attr("stroke", "#666");
 
     function onHover() {
-      const eX = d3.mouse(this)[0];
-      const i = d3.bisect(times, x.invert(eX));
-      const date = times[i];
-      const val = values[i];
-      const pX = x(date);
-      const pY = y(val);
-      console.log("HOVER", eX, date, val);
-      tracker.attr("transform", `translate(${pX + 0.5},0)`);
-      trackerText.text(val);
-      trackerPoint.attr("cy", pY);
+      const [dataX, dataY] = stick(d3.mouse(this)[0]);
+      tracker.attr("transform", `translate(${x(dataX) + 0.5},0)`);
+      trackerText.text(dataY);
+      trackerPoint.attr("cy", y(dataY));
 
       d3.event.preventDefault();
     }
@@ -464,6 +465,10 @@ class ChannelD3 extends React.Component {
 
 // const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
 const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
+  let channels = item.parent.overviewchannels;
+  if (channels) channels = channels.split(",");
+  if (channels && !channels.includes(item.value.substr(1))) return null;
+
   console.log("RENDER CHANNEL", item);
   return (
     <ChannelD3
