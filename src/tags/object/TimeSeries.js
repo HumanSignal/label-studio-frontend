@@ -226,7 +226,7 @@ const baselineStyles = {
 const Overview = ({ item, store, regions, forceUpdate }) => {
   const ref = React.useRef();
 
-  const focusHeight = 100;
+  const focusHeight = 60;
   const { margin, value, width } = item;
   const idX = idFromValue(value);
   const data = store.task.dataObj;
@@ -234,8 +234,9 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   const series = data[idX];
   // const fullHeight = focusHeight + margin.min + margin.max;
 
-  let focus = React.useRef();
-  let gRegions = React.useRef();
+  const focus = React.useRef();
+  const gRegions = React.useRef();
+  const gb = React.useRef();
 
   console.log("TS MOUNTED", width, margin);
 
@@ -243,6 +244,32 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
     .scaleUtc()
     .domain(d3.extent(series))
     .range([0, width]);
+
+  function brushed() {
+    if (d3.event.selection) {
+      const [start, end] = d3.event.selection.map(x.invert, x);
+      item.updateTR([start, end]);
+    }
+  }
+
+  function brushended() {
+    if (!d3.event.selection) {
+      // move selection on click; try to preserve it's width
+      const center = d3.mouse(this)[0];
+      const range = item.brushRange.map(x);
+      const half = (range[1] - range[0]) >> 1;
+      gb.current.call(brush.move, [Math.max(center - half, 0), Math.min(width, center + half)]);
+    }
+  }
+
+  const brush = d3
+    .brushX()
+    .extent([
+      [0, 0],
+      [width, focusHeight],
+    ])
+    .on("brush", brushed)
+    .on("end", brushended);
 
   const drawPath = key => {
     console.log("DRAW PATH", data[key], series);
@@ -307,34 +334,12 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
     gRegions.current = focus.current.append("g").attr("class", "regions");
     console.log("G REGIONS", gRegions.current, regions);
 
-    const brush = d3
-      .brushX()
-      .extent([
-        [0, 0],
-        [width, focusHeight],
-      ])
-      .on("brush", brushed)
-      .on("end", brushended);
-
     const defaultSelection = [0, width >> 2];
 
-    const gb = focus.current
+    gb.current = focus.current
       .append("g")
       .call(brush)
       .call(brush.move, defaultSelection);
-
-    function brushed() {
-      if (d3.event.selection) {
-        const [start, end] = d3.event.selection.map(x.invert, x);
-        item.updateTR([start, end]);
-      }
-    }
-
-    function brushended() {
-      if (!d3.event.selection) {
-        gb.call(brush.move, defaultSelection);
-      }
-    }
   }, []);
 
   React.useEffect(() => {
