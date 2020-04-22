@@ -214,8 +214,8 @@ class ChannelD3 extends React.Component {
           group
             .selectAll(".selection")
             .attr("stroke-width", 3)
-            .attr("stroke-opacity", r.selected ? 0.8 : 0.3)
-            .attr("fill-opacity", r.selected ? 1 : 0.8)
+            .attr("stroke-opacity", r.selected ? 0.6 : 0.2)
+            .attr("fill-opacity", r.selected ? 1 : 0.6)
             .attr("stroke", color)
             .attr("fill", color);
           // no resizing, only moving
@@ -223,6 +223,8 @@ class ChannelD3 extends React.Component {
         } else {
           group
             .selectAll(".selection")
+            .attr("stroke-opacity", r.selected ? 0.8 : 0.5)
+            .attr("fill-opacity", r.selected ? 0.6 : 0.3)
             .attr("stroke", color)
             .attr("fill", color);
         }

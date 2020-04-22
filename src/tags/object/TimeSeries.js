@@ -232,7 +232,7 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   const data = store.task.dataObj;
   const keys = Object.keys(data).filter(key => key !== idX);
   const series = data[idX];
-  // const fullHeight = focusHeight + margin.min + margin.max;
+  const minRegionWidth = 2;
 
   const focus = React.useRef();
   const gRegions = React.useRef();
@@ -302,8 +302,8 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
       .attr("y", 0)
       .attr("height", focusHeight)
       .attr("x", r => x(r.start))
-      .attr("width", r => x(r.end) - x(r.start))
-      .attr("fill", r => getRegionColor(r, r.selected ? 0.5 : 0.3));
+      .attr("width", r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
+      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3));
   };
 
   const drawAxis = () => {
