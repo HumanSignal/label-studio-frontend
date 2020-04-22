@@ -118,6 +118,7 @@ const Model = types
       const r = TimeSeriesRegionModel.create({
         start: start,
         end: end,
+        instant: start === end,
         states: states,
       });
 

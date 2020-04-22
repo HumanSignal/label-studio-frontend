@@ -145,14 +145,17 @@ const Model = types
 
 const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, TagAttrs, ObjectBase);
 
+// clear d3 sourceEvent via async call to prevent infinite loops
+const clearD3Event = f => setTimeout(f, 0);
+
 class ChannelD3 extends React.Component {
   ref = React.createRef();
   gBrushes;
   id = String(Math.round(Math.random() * 100000));
 
-  getRegion(selection) {
+  getRegion(selection, isInstant) {
     const [start, end] = selection.map(this.x.invert, this.x).map(Number);
-    return { start, end };
+    return { start, end: isInstant ? start : end };
   }
 
   renderBrushes(ranges) {
@@ -169,18 +172,19 @@ class ChannelD3 extends React.Component {
 
     const brushend = i => () => {
       if (!d3.event.sourceEvent || !d3.event.selection) return;
-      const region = this.getRegion(d3.event.selection);
-      // @todo click simulation - selection didn't move
-      if (region.start === ranges[i].start && region.end === ranges[i].end) {
-        setTimeout(() => {
+      const r = ranges[i];
+      const moved = this.getRegion(d3.event.selection, r.instant);
+      // click simulation - if selection didn't move
+      if (moved.start === r.start && moved.end === r.end) {
+        clearD3Event(() => {
           this.props.item.parent.completion.regionStore.unselectAll();
-          ranges[i].selectRegion();
+          r.selectRegion();
           this.props.item.parent.updateView();
-        }, 0);
+        });
       } else {
-        console.log("REALLY ENDED", this.id, region, i);
+        console.log("REALLY ENDED", this.id, moved, i);
         // clear d3 sourceEvent via async call
-        setTimeout(() => this.props.item.parent.regionChanged(region, i), 0);
+        clearD3Event(() => this.props.item.parent.regionChanged(moved, i));
       }
     };
 
@@ -203,14 +207,35 @@ class ChannelD3 extends React.Component {
         console.log("ENTER THE BRUSH", r, i);
 
         const group = d3.select(this);
+        const color = getRegionColor(r);
 
         brush(group);
-        group.selectAll(".selection").attr("fill", getRegionColor(r, r.selected ? 0.8 : 0.5));
+        if (r.instant) {
+          group
+            .selectAll(".selection")
+            .attr("stroke-width", 3)
+            .attr("stroke-opacity", r.selected ? 0.8 : 0.3)
+            .attr("fill-opacity", r.selected ? 1 : 0.8)
+            .attr("stroke", color)
+            .attr("fill", color);
+          // no resizing, only moving
+          group.selectAll(".handle").style("pointer-events", "none");
+        } else {
+          group
+            .selectAll(".selection")
+            .attr("stroke", color)
+            .attr("fill", color);
+        }
         group.selectAll(".overlay").style("pointer-events", "none");
       })
       .merge(brushSelection)
-      .each(function(r, i) {
-        managerBrush.move(d3.select(this), [r.start, r.end].map(x));
+      .each(function(r) {
+        if (r.instant) {
+          const at = x(r.start);
+          managerBrush.move(d3.select(this), [at, at + 1]);
+        } else {
+          managerBrush.move(d3.select(this), [r.start, r.end].map(x));
+        }
       });
   }
 
@@ -224,23 +249,28 @@ class ChannelD3 extends React.Component {
         [width, height],
       ])
       .on("end", () => {
-        const activeStates = this.props.item.parent.activeStates();
-        // if (!d3.event.sourceEvent || !d3.event.selection) return;
+        const parent = this.props.item.parent;
+        const activeStates = parent.activeStates();
+        const statesSelected = activeStates && activeStates.length;
         if (!d3.event.sourceEvent) return;
         if (!d3.event.selection) {
           console.log("NOTHING SELECTED");
-          setTimeout(() => {
-            this.props.item.parent.completion.regionStore.unselectAll();
-          }, 0);
+          if (statesSelected) {
+            const x = d3.mouse(d3.event.sourceEvent.target)[0];
+            const region = this.getRegion([x, x]);
+            clearD3Event(() => {
+              parent.regionChanged(region, this.props.ranges.length);
+            });
+          }
           return;
         }
         const region = this.getRegion(d3.event.selection);
-        setTimeout(() => brush.move(this.gCreator, null), 0);
-        if (!activeStates || !activeStates.length) return;
+        clearD3Event(() => brush.move(this.gCreator, null));
+        if (!statesSelected) return;
         console.log("CREATE BRUSH", region, this.props.ranges.length);
-        setTimeout(() => {
-          this.props.item.parent.regionChanged(region, this.props.ranges.length);
-        }, 0);
+        clearD3Event(() => {
+          parent.regionChanged(region, this.props.ranges.length);
+        });
       });
     this.gCreator.call(brush);
   }

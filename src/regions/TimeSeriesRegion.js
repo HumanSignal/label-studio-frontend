@@ -23,6 +23,7 @@ const Model = types
 
     start: types.number,
     end: types.number,
+    instant: false,
 
     states: types.maybeNull(types.array(types.union(TimeSeriesLabelsModel))),
   })
@@ -156,6 +157,7 @@ const Model = types
         value: {
           start: self.start,
           end: self.end,
+          instant: self.instant,
         },
       };
 
