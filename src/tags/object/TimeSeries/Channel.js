@@ -465,9 +465,10 @@ class ChannelD3 extends React.Component {
 
 // const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
 const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
-  let channels = item.parent.overviewchannels;
-  if (channels) channels = channels.split(",");
-  if (channels && !channels.includes(item.value.substr(1))) return null;
+  // @todo maybe later for some other option
+  // let channels = item.parent.overviewchannels;
+  // if (channels) channels = channels.split(",");
+  // if (channels && !channels.includes(item.value.substr(1))) return null;
 
   console.log("RENDER CHANNEL", item);
   return (
