@@ -3,6 +3,7 @@ import React from "react";
 import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
 import { types, getRoot, getType } from "mobx-state-tree";
+import { throttle } from "throttle-debounce";
 
 import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
@@ -246,10 +247,17 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   const scale = item.format === "date" ? d3.scaleUtc() : d3.scaleLinear();
   const x = scale.domain(d3.extent(series)).range([0, width]);
 
+  const upd = React.useCallback(
+    throttle(300, r => {
+      console.log("WIN", item, r);
+      item.updateTR(r);
+    }),
+  );
+
   function brushed() {
     if (d3.event.selection) {
       const [start, end] = d3.event.selection.map(x.invert, x);
-      item.updateTR([start, end]);
+      upd([start, end]);
     }
   }
 

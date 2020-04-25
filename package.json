@@ -52,6 +52,7 @@
     "size-limit": "^1.3.7",
     "string.prototype.matchall": "^4.0.2",
     "svg.js": "^2.7.0",
+    "throttle-debounce": "^2.1.0",
     "wavesurfer.js": "^3.0.0",
     "xml2js": "^0.4.22",
     "xpath-range": "^1.1.1"

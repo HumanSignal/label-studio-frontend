@@ -388,7 +388,8 @@ class ChannelD3 extends React.Component {
       d3.event.preventDefault();
     }
 
-    // this.path.attr("d", line(this.plotX, this.y));
+    this.path.attr("d", line(this.plotX, this.y));
+    this.path.attr("vector-effect", "non-scaling-stroke");
 
     this.gx = main.append("g");
     main
@@ -409,7 +410,7 @@ class ChannelD3 extends React.Component {
           .text(value),
       );
 
-    this.setRange(range);
+    this.setRangeWithScaling(range);
 
     this.gCreator = main.append("g").attr("class", "new_brush");
     this.brushCreator();
@@ -452,7 +453,7 @@ class ChannelD3 extends React.Component {
     );
     console.log("UPD RANGE", this.props.range, prevProps.range);
     if (this.props.range !== prevProps.range) {
-      this.setRange(this.props.range);
+      this.setRangeWithScaling(this.props.range);
     }
     // if (this.props.ranges !== prevProps.ranges)
     this.renderBrushes(this.props.ranges);
