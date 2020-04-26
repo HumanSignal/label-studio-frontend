@@ -161,10 +161,11 @@ class ChannelD3 extends React.Component {
   renderBrushes(ranges) {
     const { width } = this.props.item.parent;
     const height = +this.props.item.height;
-    const managerBrush = d3.brushX().extent([
+    const extent = [
       [0, 0],
       [width, height],
-    ]);
+    ];
+    const managerBrush = d3.brushX().extent(extent);
     const x = this.x;
     console.log("RRR BBB", x.domain(), ranges);
 
@@ -200,10 +201,7 @@ class ChannelD3 extends React.Component {
         return `brush_${this.id}_${r.id}`;
       })
       .each(function(r, i) {
-        const brush = d3.brushX().extent([
-          [0, 0],
-          [width, height],
-        ]);
+        const brush = d3.brushX().extent(extent);
 
         brush.on("brush", () => console.log("BRUSHED")).on("end", brushend(r.id));
         console.log("ENTER THE BRUSH", r, r.id);
@@ -224,8 +222,8 @@ class ChannelD3 extends React.Component {
         const color = getRegionColor(r);
         if (r.instant) {
           selection
-            .attr("stroke-opacity", r.selected ? 0.6 : 0.2)
-            .attr("fill-opacity", r.selected ? 1 : 0.6)
+            .attr("stroke-opacity", r.selected || r.highlighted ? 0.6 : 0.2)
+            .attr("fill-opacity", r.selected || r.highlighted ? 1 : 0.6)
             .attr("stroke-width", 3)
             .attr("stroke", color)
             .attr("fill", color);
@@ -233,8 +231,8 @@ class ChannelD3 extends React.Component {
           managerBrush.move(d3.select(this), [at, at + 1]);
         } else {
           selection
-            .attr("stroke-opacity", r.selected ? 0.8 : 0.5)
-            .attr("fill-opacity", r.selected ? 0.6 : 0.3)
+            .attr("stroke-opacity", r.selected || r.highlighted ? 0.8 : 0.5)
+            .attr("fill-opacity", r.selected || r.highlighted ? 0.6 : 0.3)
             .attr("stroke", color)
             .attr("fill", color);
           managerBrush.move(d3.select(this), [r.start, r.end].map(x));
@@ -436,13 +434,13 @@ class ChannelD3 extends React.Component {
     console.log("SOME MATH", range, this.plotX.domain(), current, all, scale, translate);
     // this.path.attr("d", line(this.x, this.y));
     this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
+    this.renderAxis();
   }
 
   setRange(range) {
     this.x.domain(range);
     console.log("SOME MATH", range);
     this.path.attr("d", line(this.x, this.y));
-    this.renderAxis();
   }
 
   componentDidUpdate(prevProps) {
@@ -460,12 +458,14 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div ref={this.ref} length={this.props.ranges} />;
   }
 }
+
+const ChannelD3Observed = observer(ChannelD3);
 
 // const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
 const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
@@ -476,7 +476,7 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
 
   console.log("RENDER CHANNEL", item);
   return (
-    <ChannelD3
+    <ChannelD3Observed
       time={idFromValue(item.parent.value)}
       value={idFromValue(item.value)}
       item={item}
