@@ -209,34 +209,34 @@ class ChannelD3 extends React.Component {
         console.log("ENTER THE BRUSH", r, r.id);
 
         const group = d3.select(this);
-        const color = getRegionColor(r);
 
         brush(group);
+
         if (r.instant) {
-          group
-            .selectAll(".selection")
-            .attr("stroke-width", 3)
-            .attr("stroke", color)
-            .attr("fill", color);
           // no resizing, only moving
           group.selectAll(".handle").style("pointer-events", "none");
-        } else {
-          group
-            .selectAll(".selection")
-            .attr("stroke", color)
-            .attr("fill", color);
         }
         group.selectAll(".overlay").style("pointer-events", "none");
       })
       .merge(brushSelection)
       .each(function(r, i) {
         const selection = d3.select(this).selectAll(".selection");
+        const color = getRegionColor(r);
         if (r.instant) {
-          selection.attr("stroke-opacity", r.selected ? 0.6 : 0.2).attr("fill-opacity", r.selected ? 1 : 0.6);
+          selection
+            .attr("stroke-opacity", r.selected ? 0.6 : 0.2)
+            .attr("fill-opacity", r.selected ? 1 : 0.6)
+            .attr("stroke-width", 3)
+            .attr("stroke", color)
+            .attr("fill", color);
           const at = x(r.start);
           managerBrush.move(d3.select(this), [at, at + 1]);
         } else {
-          selection.attr("stroke-opacity", r.selected ? 0.8 : 0.5).attr("fill-opacity", r.selected ? 0.6 : 0.3);
+          selection
+            .attr("stroke-opacity", r.selected ? 0.8 : 0.5)
+            .attr("fill-opacity", r.selected ? 0.6 : 0.3)
+            .attr("stroke", color)
+            .attr("fill", color);
           managerBrush.move(d3.select(this), [r.start, r.end].map(x));
         }
       });
