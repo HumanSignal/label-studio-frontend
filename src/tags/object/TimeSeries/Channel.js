@@ -10,7 +10,7 @@ import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { guidGenerator } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
-import { idFromValue, line, getRegionColor, fixMobxObserve } from "./helpers";
+import { idFromValue, line, getRegionColor, fixMobxObserve, formatTrackerTime } from "./helpers";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -364,8 +364,13 @@ class ChannelD3 extends React.Component {
       .attr("stroke", item.strokecolor || "steelblue");
 
     const tracker = main.append("g");
-    const trackerText = tracker
+    const trackerValue = tracker
       .append("text")
+      .attr("font-size", 10)
+      .attr("fill", "#666");
+    const trackerTime = tracker
+      .append("text")
+      .attr("y", height - 1)
       .attr("font-size", 10)
       .attr("fill", "#666");
     const trackerPoint = tracker
@@ -383,7 +388,8 @@ class ChannelD3 extends React.Component {
     function onHover() {
       const [dataX, dataY] = stick(d3.mouse(this)[0]);
       tracker.attr("transform", `translate(${x(dataX) + 0.5},0)`);
-      trackerText.text(dataY);
+      trackerTime.text(format === "date" ? formatTrackerTime(dataX) : dataX);
+      trackerValue.text(dataY);
       trackerPoint.attr("cy", y(dataY));
 
       d3.event.preventDefault();

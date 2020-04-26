@@ -15,6 +15,7 @@ import {
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
+import { formatRegion } from "../../tags/object/TimeSeries/helpers";
 
 const pt = { paddingTop: "4px" };
 
@@ -135,7 +136,7 @@ const NodeViews = {
     <Fragment>
       <LineChartOutlined style={pt} />
       <span onClick={click} className={styles.node}>
-        &nbsp; TimeSeries
+        &nbsp; {formatRegion(node)}
       </span>
     </Fragment>
   ),

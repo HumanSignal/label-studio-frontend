@@ -18,3 +18,26 @@ export const getRegionColor = (region, alpha = 1) => {
 // fixes `observe` - it watches only the changes of primitive props of observables count
 // so pass all the required primitives to this stub and they'll be observed
 export const fixMobxObserve = (...args) => {};
+
+const formatDateDiff = (start, end) => {
+  const dates = [start.toISOString(), end.toISOString()];
+  let ds = dates.map(d => d.substr(0, 10));
+  if (ds[1] !== ds[0]) return ds;
+  return dates.map(d => d.substr(11, 8));
+};
+
+export const formatRegion = node => {
+  let ranges = [];
+  if (node.parent.format === "date") {
+    ranges = formatDateDiff(new Date(node.start), new Date(node.end));
+  } else {
+    ranges = [node.start, node.end];
+  }
+  return node.instant ? ranges[0] : ranges.join("–");
+};
+
+export const formatTrackerTime = time =>
+  new Date(time)
+    .toISOString()
+    .substr(0, 19)
+    .replace("T", " ");
