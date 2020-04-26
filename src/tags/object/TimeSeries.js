@@ -14,7 +14,7 @@ import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
-import { idFromValue, getRegionColor } from "./TimeSeries/helpers";
+import { idFromValue, getRegionColor, fixMobxObserve } from "./TimeSeries/helpers";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -357,6 +357,8 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   React.useEffect(() => {
     drawRegions(regions);
   });
+
+  item.regions.map(r => fixMobxObserve(r.start, r.end, r.selected));
 
   return <div ref={ref} />;
 };

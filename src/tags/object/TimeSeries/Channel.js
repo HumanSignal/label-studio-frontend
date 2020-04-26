@@ -10,7 +10,7 @@ import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { guidGenerator } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
-import { idFromValue, line, getRegionColor } from "./helpers";
+import { idFromValue, line, getRegionColor, fixMobxObserve } from "./helpers";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -170,8 +170,10 @@ class ChannelD3 extends React.Component {
 
     const brushSelection = this.gBrushes.selectAll(".brush").data(ranges, r => r.id);
 
-    const brushend = i => () => {
+    const brushend = id => () => {
       if (!d3.event.sourceEvent || !d3.event.selection) return;
+      const i = ranges.findIndex(range => range.id === id);
+      if (i < 0) console.error(`REGION ${id} was not found`);
       const r = ranges[i];
       const moved = this.getRegion(d3.event.selection, r.instant);
       // click simulation - if selection didn't move
@@ -193,9 +195,9 @@ class ChannelD3 extends React.Component {
       .enter()
       .append("g")
       .attr("class", "brush")
-      .attr("id", (b, i) => {
-        console.log("I", i);
-        return `brush_${this.id}_${i}`;
+      .attr("id", r => {
+        console.log("I", r.id);
+        return `brush_${this.id}_${r.id}`;
       })
       .each(function(r, i) {
         const brush = d3.brushX().extent([
@@ -203,8 +205,8 @@ class ChannelD3 extends React.Component {
           [width, height],
         ]);
 
-        brush.on("brush", () => console.log("BRUSHED")).on("end", brushend(i));
-        console.log("ENTER THE BRUSH", r, i);
+        brush.on("brush", () => console.log("BRUSHED")).on("end", brushend(r.id));
+        console.log("ENTER THE BRUSH", r, r.id);
 
         const group = d3.select(this);
         const color = getRegionColor(r);
@@ -214,8 +216,6 @@ class ChannelD3 extends React.Component {
           group
             .selectAll(".selection")
             .attr("stroke-width", 3)
-            .attr("stroke-opacity", r.selected ? 0.6 : 0.2)
-            .attr("fill-opacity", r.selected ? 1 : 0.6)
             .attr("stroke", color)
             .attr("fill", color);
           // no resizing, only moving
@@ -223,22 +223,24 @@ class ChannelD3 extends React.Component {
         } else {
           group
             .selectAll(".selection")
-            .attr("stroke-opacity", r.selected ? 0.8 : 0.5)
-            .attr("fill-opacity", r.selected ? 0.6 : 0.3)
             .attr("stroke", color)
             .attr("fill", color);
         }
         group.selectAll(".overlay").style("pointer-events", "none");
       })
       .merge(brushSelection)
-      .each(function(r) {
+      .each(function(r, i) {
+        const selection = d3.select(this).selectAll(".selection");
         if (r.instant) {
+          selection.attr("stroke-opacity", r.selected ? 0.6 : 0.2).attr("fill-opacity", r.selected ? 1 : 0.6);
           const at = x(r.start);
           managerBrush.move(d3.select(this), [at, at + 1]);
         } else {
+          selection.attr("stroke-opacity", r.selected ? 0.8 : 0.5).attr("fill-opacity", r.selected ? 0.6 : 0.3);
           managerBrush.move(d3.select(this), [r.start, r.end].map(x));
         }
       });
+    brushSelection.exit().remove();
   }
 
   brushCreator() {
@@ -356,9 +358,10 @@ class ChannelD3 extends React.Component {
       .attr("width", width);
 
     this.path = main
+      .append("g")
+      .attr("clip-path", `url("#clip_${this.id}")`)
       .append("path")
       .datum(series)
-      .attr("clip-path", `url("#clip_${this.id}")`)
       .attr("fill", "none")
       .attr("stroke", item.strokecolor || "steelblue");
 
@@ -452,14 +455,14 @@ class ChannelD3 extends React.Component {
       this.props.ranges !== prevProps.ranges,
     );
     console.log("UPD RANGE", this.props.range, prevProps.range);
-    if (this.props.range !== prevProps.range) {
-      this.setRangeWithScaling(this.props.range);
-    }
-    // if (this.props.ranges !== prevProps.ranges)
+    this.setRangeWithScaling(this.props.range);
     this.renderBrushes(this.props.ranges);
   }
 
   render() {
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected));
+    fixMobxObserve(this.props.range.map(Number));
+
     return <div ref={this.ref} length={this.props.ranges} />;
   }
 }
@@ -479,7 +482,7 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
       item={item}
       data={store.task.dataObj}
       // @todo initialBrush is out of store, but it triggers; change to brushRange
-      range={item.parent.initialRange}
+      range={item.parent.brushRange}
       ranges={item.regions}
       forceUpdate={item.parent._needsUpdate}
     />
