@@ -227,15 +227,15 @@ const baselineStyles = {
 };
 
 // class TimeSeriesOverviewD3 extends React.Component {
-const Overview = ({ item, store, regions, forceUpdate }) => {
+const Overview = ({ item, data, series, regions, forceUpdate }) => {
   const ref = React.useRef();
 
   const focusHeight = 60;
   const { margin, value, width } = item;
   const idX = idFromValue(value);
-  const data = store.task.dataObj;
+  // const data = store.task.dataObj;
   const keys = item.overviewchannels ? item.overviewchannels.split(",") : Object.keys(data).filter(key => key !== idX);
-  const series = data[idX];
+  // const series = data[idX];
   const minRegionWidth = 2;
 
   const focus = React.useRef();
@@ -245,7 +245,7 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
   console.log("TS MOUNTED", width, margin);
 
   const scale = item.format === "date" ? d3.scaleUtc() : d3.scaleLinear();
-  const x = scale.domain(d3.extent(series)).range([0, width]);
+  const x = scale.domain(d3.extent(data[idX])).range([0, width]);
 
   const upd = React.useCallback(
     throttle(300, r => {
@@ -291,15 +291,15 @@ const Overview = ({ item, store, regions, forceUpdate }) => {
 
     focus.current
       .append("path")
-      .datum(data[key].slice(0, series.length))
+      .datum(series)
       .attr("fill", "none")
       .attr("stroke", color)
       .attr(
         "d",
         d3
           .line()
-          .x((d, i) => x(series[i]))
-          .y(d => y(d)),
+          .x(d => x(d[idX]))
+          .y(d => y(d[key])),
       );
   };
 
@@ -368,7 +368,13 @@ const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
   return (
     <ObjectTag item={item}>
       {Tree.renderChildren(item)}
-      <Overview store={store} item={item} regions={item.regions} forceUpdate={item._needsUpdate} />
+      <Overview
+        data={store.task.dataObj}
+        series={store.task.dataHash}
+        item={item}
+        regions={item.regions}
+        forceUpdate={item._needsUpdate}
+      />
     </ObjectTag>
   );
 });
