@@ -298,7 +298,8 @@ class ChannelD3 extends React.Component {
     const height = +item.height;
     const times = data[time];
     const values = data[value];
-    const series = times.map((t, i) => [t, values[i]]);
+    const { series } = this.props;
+    // const series = times.map((t, i) => [t, values[i]]);
     // series = series.slice(0, 1000);
     // for (let j = 5; j--; ) {
     //   const last = +series[series.length - 1].date;
@@ -398,7 +399,14 @@ class ChannelD3 extends React.Component {
       d3.event.preventDefault();
     }
 
-    this.path.attr("d", line(this.plotX, this.y));
+    // this.path.attr("d", line(this.plotX, this.y));
+    this.path.attr(
+      "d",
+      d3
+        .line()
+        .x(d => this.plotX(d[time]))
+        .y(d => this.y(d[value])),
+    );
     this.path.attr("vector-effect", "non-scaling-stroke");
 
     this.gx = main.append("g");
@@ -490,6 +498,7 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
       value={idFromValue(item.value)}
       item={item}
       data={store.task.dataObj}
+      series={store.task.dataHash}
       // @todo initialBrush is out of store, but it triggers; change to brushRange
       range={item.parent.brushRange}
       ranges={item.regions}

@@ -44,6 +44,27 @@ const TaskStore = types
         return null;
       }
     },
+
+    get dataHash() {
+      const raw = self.dataObj;
+      if (!raw) return null;
+      const [first, ...keys] = Object.keys(raw);
+      // assume that map is the fastest way to create array of hashes
+      const data = raw[first].map(val => ({ [first]: val }));
+      // there might be a difference in data arrays length; find the longest
+      const max = Math.max(...keys.map(key => raw[key].length));
+      // fill the gap if needed
+      for (let i = data.length; i < max; i++) {
+        data.push({ [first]: undefined });
+      }
+      for (let key of keys) {
+        for (let i = 0; i < max; i++) {
+          data[i][key] = raw[key][i];
+        }
+      }
+      console.log("DATA HASH", max);
+      return data;
+    },
   }));
 
 export default TaskStore;
