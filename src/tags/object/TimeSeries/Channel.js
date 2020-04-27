@@ -309,8 +309,9 @@ class ChannelD3 extends React.Component {
       "d",
       d3
         .line()
-        .x(d => this.plotX(d[time]))
-        .y(d => this.y(d[value])),
+        .y(d => this.y(d[value]))
+        .defined(d => d[time])
+        .x(d => this.plotX(d[time])),
     );
   };
 
@@ -420,7 +421,7 @@ class ChannelD3 extends React.Component {
     function onHover() {
       const [dataX, dataY] = stick(d3.mouse(this)[0]);
       tracker.attr("transform", `translate(${x(dataX) + 0.5},0)`);
-      trackerTime.text(format === "date" ? formatTrackerTime(dataX) : dataX);
+      trackerTime.text(format === "date" && dataX ? formatTrackerTime(dataX) : dataX);
       trackerValue.text(dataY);
       trackerPoint.attr("cy", y(dataY));
 

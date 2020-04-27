@@ -298,8 +298,9 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
         "d",
         d3
           .line()
-          .x(d => x(d[idX]))
-          .y(d => y(d[key])),
+          .y(d => y(d[key]))
+          .defined(d => d[idX])
+          .x(d => x(d[idX])),
       );
   };
 
