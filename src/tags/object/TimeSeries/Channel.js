@@ -94,9 +94,6 @@ const Model = types
     get parent() {
       return Types.getParentOfTypeString(self, "TimeSeriesModel");
     },
-    get regions() {
-      return self.parent.regions;
-    },
   }))
   .preProcessSnapshot(snapshot => {
     snapshot.interpolation = csMap[snapshot.interpolation];
@@ -528,7 +525,7 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
       series={store.task.dataHash}
       // @todo initialBrush is out of store, but it triggers; change to brushRange
       range={item.parent.brushRange}
-      ranges={item.regions}
+      ranges={item.parent.regions}
       forceUpdate={item.parent._needsUpdate}
     />
   );
