@@ -154,7 +154,7 @@ class ChannelD3 extends React.Component {
   id = String(Math.round(Math.random() * 100000));
 
   getRegion(selection, isInstant) {
-    const [start, end] = selection.map(this.x.invert, this.x).map(Number);
+    const [start, end] = selection.map(n => +this.stick(n)[0]);
     return { start, end: isInstant ? start : end };
   }
 
@@ -213,6 +213,8 @@ class ChannelD3 extends React.Component {
         if (r.instant) {
           // no resizing, only moving
           group.selectAll(".handle").style("pointer-events", "none");
+        } else {
+          group.selectAll(".selection").style("pointer-events", "none");
         }
         group.selectAll(".overlay").style("pointer-events", "none");
       })
@@ -333,6 +335,7 @@ class ChannelD3 extends React.Component {
     this.x = x;
     this.y = y;
     this.plotX = x.copy();
+    this.stick = stick;
     console.log("YYY", y(10));
     console.log("YYY", y(0));
 
