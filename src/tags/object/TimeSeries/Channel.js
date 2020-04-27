@@ -10,7 +10,15 @@ import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { guidGenerator } from "../../../core/Helpers";
 import { runTemplate } from "../../../core/Template";
-import { idFromValue, line, getRegionColor, fixMobxObserve, formatTrackerTime } from "./helpers";
+import {
+  idFromValue,
+  line,
+  getRegionColor,
+  fixMobxObserve,
+  formatTrackerTime,
+  sparseValues,
+  getOptimalWidth,
+} from "./helpers";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -153,6 +161,10 @@ class ChannelD3 extends React.Component {
   gBrushes;
   id = String(Math.round(Math.random() * 100000));
 
+  optimizedSeries = null;
+  needZoomOptimization = false;
+  zoomStep = 10;
+
   getRegion(selection, isInstant) {
     const [start, end] = selection.map(n => +this.stick(n)[0]);
     return { start, end: isInstant ? start : end };
@@ -292,6 +304,19 @@ class ChannelD3 extends React.Component {
     );
   };
 
+  drawPath = () => {
+    const { series, time, value } = this.props;
+    const data = this.needZoomOptimization ? this.optimizedSeries : series;
+    console.log("DRAWPATH", this.needZoomOptimization);
+    this.path.datum(data).attr(
+      "d",
+      d3
+        .line()
+        .x(d => this.plotX(d[time]))
+        .y(d => this.y(d[value])),
+    );
+  };
+
   componentDidMount() {
     const { data, item, range, time, value } = this.props;
     const { format, margin, width } = item.parent;
@@ -299,6 +324,10 @@ class ChannelD3 extends React.Component {
     const times = data[time];
     const values = data[value];
     const { series } = this.props;
+    this.needZoomOptimization = series.length > getOptimalWidth() * this.zoomStep;
+    if (this.needZoomOptimization) {
+      this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
+    }
     // const series = times.map((t, i) => [t, values[i]]);
     // series = series.slice(0, 1000);
     // for (let j = 5; j--; ) {
@@ -363,9 +392,11 @@ class ChannelD3 extends React.Component {
       .append("g")
       .attr("clip-path", `url("#clip_${this.id}")`)
       .append("path")
-      .datum(series)
+      .attr("vector-effect", "non-scaling-stroke")
       .attr("fill", "none")
       .attr("stroke", item.strokecolor || "steelblue");
+
+    this.drawPath();
 
     const tracker = main.append("g");
     const trackerValue = tracker
@@ -398,16 +429,6 @@ class ChannelD3 extends React.Component {
 
       d3.event.preventDefault();
     }
-
-    // this.path.attr("d", line(this.plotX, this.y));
-    this.path.attr(
-      "d",
-      d3
-        .line()
-        .x(d => this.plotX(d[time]))
-        .y(d => this.y(d[value])),
-    );
-    this.path.attr("vector-effect", "non-scaling-stroke");
 
     this.gx = main.append("g");
     main
@@ -443,13 +464,19 @@ class ChannelD3 extends React.Component {
   }
 
   setRangeWithScaling(range) {
+    // @todo check if range was really changed
     this.x.domain(range);
     const current = this.x.range();
     const all = this.plotX.domain().map(this.x);
     const scale = (all[1] - all[0]) / (current[1] - current[0]);
     const translate = all[0] - current[0];
     console.log("SOME MATH", range, this.plotX.domain(), current, all, scale, translate);
-    // this.path.attr("d", line(this.x, this.y));
+
+    if (this.optimizedSeries && scale > this.zoomStep === this.needZoomOptimization) {
+      this.needZoomOptimization = !this.needZoomOptimization;
+      this.drawPath();
+    }
+
     this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
     this.renderAxis();
   }

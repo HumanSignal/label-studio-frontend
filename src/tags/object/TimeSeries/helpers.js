@@ -9,6 +9,20 @@ export const line = (x, y) =>
 
 export const idFromValue = value => value.substr(1);
 
+export const getOptimalWidth = () => ((window.screen && window.screen.width) || 1440) * (window.devicePixelRatio || 2);
+
+export const sparseValues = (values, max = 10e6) => {
+  if (values.length <= max) return values;
+  let next = 0;
+  let step = (values.length - 1) / (max - 1);
+  // return values.filter((_, i) => i > next && (next += step))
+  return values.filter((_, i) => {
+    if (i < next) return false;
+    next += step;
+    return true;
+  });
+};
+
 export const getRegionColor = (region, alpha = 1) => {
   const stateProvidesColor = region.states.find(s => s.hasOwnProperty("getSelectedColor"));
   const color = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), alpha);

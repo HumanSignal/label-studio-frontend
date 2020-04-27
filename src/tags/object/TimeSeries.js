@@ -14,7 +14,7 @@ import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
-import { idFromValue, getRegionColor, fixMobxObserve } from "./TimeSeries/helpers";
+import { idFromValue, getRegionColor, fixMobxObserve, sparseValues, getOptimalWidth } from "./TimeSeries/helpers";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -291,7 +291,7 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
 
     focus.current
       .append("path")
-      .datum(series)
+      .datum(sparseValues(series, getOptimalWidth()))
       .attr("fill", "none")
       .attr("stroke", color)
       .attr(
