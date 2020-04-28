@@ -74,7 +74,6 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      console.log("STATES", states);
       return states ? states.filter(s => s.isSelected && getType(s).name === "TimeSeriesLabelsModel") : null;
     },
   }))
@@ -86,8 +85,6 @@ const Model = types
 
     updateTR(tr) {
       if (tr === null) return;
-
-      console.log("UPD TR", tr);
 
       self.initialRange = tr;
       self.brushRange = tr;
@@ -107,11 +104,6 @@ const Model = types
 
         self.updateView();
       }
-    },
-
-    updateValue(store) {
-      console.warn("TS UPDATE VALUE SMALL");
-      // self._value = runTemplate(self.value, store.task.dataObj);
     },
 
     toStateJSON() {
@@ -149,7 +141,6 @@ const Model = types
     regionChanged(timerange, i) {
       const r = self.regions[i];
       let needUpdate = false;
-      console.log("REGION TO CHANGE", r, i);
 
       if (!r) {
         self.addRegion(timerange.start, timerange.end);
@@ -163,45 +154,6 @@ const Model = types
     },
 
     updateValue(store) {
-      // self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
-      // console.warn("TS UPDATE VALUE BIG", store.task.dataObj, self.value, self._value);
-
-      // const points = [];
-      // const val = 1400429552000;
-      // const idx = 0;
-      // for (let i = 0; i <= self._value[0].length; i++) {
-      //   points.push([val + 1000 * i]);
-      // }
-
-      // window.A = points;
-
-      // // console.log(points);
-
-      // // const points = self._value[0].map(p => [Math.floor(val + p * 100) * 1000]);
-
-      // //const points = self._value[1].forEach(p => [ val + ]);
-      // // const points = self._value[0].map(p => [p]);
-
-      // console.log(points);
-
-      // // TODO need to figure out why this TS object is not
-      // // returning a proper timerange
-      // const series = new TimeSeries({
-      //   name: "time",
-      //   columns: ["time"],
-      //   utc: false,
-      //   points: points,
-      // });
-
-      // // console.log(points);
-
-      // self.series = series;
-
-      // const size = series.size();
-      // const piece = Math.ceil(size / 10);
-      // const pcTR = series.slice(0, piece).timerange();
-
-      // self.initialRange = pcTR;
       const times = store.task.dataObj[idFromValue(self.value)];
       self.initialRange = [times[0], times[times.length >> 2]];
       self.brushRange = [times[0], times[times.length >> 2]];
@@ -242,17 +194,10 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
   const gRegions = React.useRef();
   const gb = React.useRef();
 
-  console.log("TS MOUNTED", width, margin);
-
   const scale = item.format === "date" ? d3.scaleUtc() : d3.scaleLinear();
   const x = scale.domain(d3.extent(data[idX])).range([0, width]);
 
-  const upd = React.useCallback(
-    throttle(300, r => {
-      console.log("WIN", item, r);
-      item.updateTR(r);
-    }),
-  );
+  const upd = React.useCallback(throttle(300, item.updateTR));
 
   function brushed() {
     if (d3.event.selection) {
@@ -281,7 +226,6 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
     .on("end", brushended);
 
   const drawPath = key => {
-    console.log("DRAW PATH", data[key], series);
     const channel = item.children.find(c => c.value === `$${key}`);
     const color = channel ? channel.strokecolor : "steelblue";
     const y = d3
@@ -345,7 +289,6 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
     drawAxis();
 
     gRegions.current = focus.current.append("g").attr("class", "regions");
-    console.log("G REGIONS", gRegions.current, regions);
 
     const defaultSelection = [0, width >> 2];
 
@@ -365,7 +308,6 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
 };
 
 const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
-  console.log("TS RENDER");
   return (
     <ObjectTag item={item}>
       {Tree.renderChildren(item)}

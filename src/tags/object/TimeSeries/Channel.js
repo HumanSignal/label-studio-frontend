@@ -98,55 +98,7 @@ const Model = types
   .preProcessSnapshot(snapshot => {
     snapshot.interpolation = csMap[snapshot.interpolation];
     return snapshot;
-  })
-  .actions(self => ({
-    handleTrackerChanged(t) {
-      self.tracker = t;
-      self.parent.updateView();
-    },
-
-    updateValue(store) {
-      console.warn("CHANNEL UPDATE VALUE SMALL");
-      // self._value = runTemplate(self.value, store.task.dataObj, { raw: true });
-
-      console.log("UPD", self.value, store.task.dataObj);
-      console.log("UPD2", self._value, self.parent._value);
-
-      // self._simple = new TimeSeries({
-      //   columns: ["time", "sensor1"],
-      //   points: store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]).filter((_, i) => i < 100),
-      // });
-
-      // self._d3 = store.task.dataObj.time.map((t, i) => ({
-      //   date: new Date(t),
-      //   sensor1: store.task.dataObj.sensor1[i],
-      //   sensor2: store.task.dataObj.sensor2[i],
-      // }));
-
-      // console.log('SIMEPLE', self._simple, store.task.dataObj.time.map((t, i) => [t, store.task.dataObj.sensor1[i]]))
-      // console.log("DDDDDDD3333", self._d3);
-
-      // const points = [];
-
-      // for (let i = 0; i <= self.parent._value[0][i]; i++) {
-      //   points.push([self.parent._value[0][i], self._value[0][i]]);
-      // }
-
-      // const series = new TimeSeries({
-      //   columns: ["time", self.value],
-      //   points: points,
-      // });
-
-      // Some simple statistics for each channel
-      // self._avg = parseInt(series.avg(self.value), 10);
-      // self._max = parseInt(series.max(self.value), 10);
-      // self._min = parseInt(series.min(self.value), 10);
-      // self._series = series;
-
-      // self._minTime = series.begin();
-      // self._maxTime = series.end();
-    },
-  }));
+  });
 
 const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, TagAttrs, ObjectBase);
 
@@ -158,6 +110,7 @@ class ChannelD3 extends React.Component {
   gBrushes;
   id = String(Math.round(Math.random() * 100000));
 
+  // @todo describe
   optimizedSeries = null;
   needZoomOptimization = false;
   zoomStep = 10;
@@ -179,7 +132,6 @@ class ChannelD3 extends React.Component {
     ];
     const managerBrush = d3.brushX().extent(extent);
     const x = this.x;
-    console.log("RRR BBB", x.domain(), ranges);
 
     const brushSelection = this.gBrushes.selectAll(".brush").data(ranges, r => r.id);
 
@@ -197,7 +149,6 @@ class ChannelD3 extends React.Component {
           this.props.item.parent.updateView();
         });
       } else {
-        console.log("REALLY ENDED", this.id, moved, i);
         // clear d3 sourceEvent via async call
         clearD3Event(() => this.props.item.parent.regionChanged(moved, i));
       }
@@ -208,15 +159,11 @@ class ChannelD3 extends React.Component {
       .enter()
       .append("g")
       .attr("class", "brush")
-      .attr("id", r => {
-        console.log("I", r.id);
-        return `brush_${this.id}_${r.id}`;
-      })
+      .attr("id", r => `brush_${this.id}_${r.id}`)
       .each(function(r, i) {
         const brush = d3.brushX().extent(extent);
 
-        brush.on("brush", () => console.log("BRUSHED")).on("end", brushend(r.id));
-        console.log("ENTER THE BRUSH", r, r.id);
+        brush.on("end", brushend(r.id));
 
         const group = d3.select(this);
 
@@ -270,7 +217,6 @@ class ChannelD3 extends React.Component {
         const statesSelected = activeStates && activeStates.length;
         if (!d3.event.sourceEvent) return;
         if (!d3.event.selection) {
-          console.log("NOTHING SELECTED");
           if (statesSelected) {
             const x = d3.mouse(d3.event.sourceEvent.target)[0];
             const region = this.getRegion([x, x]);
@@ -283,7 +229,6 @@ class ChannelD3 extends React.Component {
         const region = this.getRegion(d3.event.selection);
         clearD3Event(() => brush.move(this.gCreator, null));
         if (!statesSelected) return;
-        console.log("CREATE BRUSH", region, this.props.ranges.length);
         clearD3Event(() => {
           parent.regionChanged(region, this.props.ranges.length);
         });
@@ -295,7 +240,6 @@ class ChannelD3 extends React.Component {
     const { item } = this.props;
     const { width } = item.parent;
     const height = +item.height;
-    console.log("X AXIS", this.x.domain());
     this.gx.attr("transform", `translate(0,${height})`).call(
       d3
         .axisBottom(this.x)
@@ -315,21 +259,8 @@ class ChannelD3 extends React.Component {
     if (this.needZoomOptimization) {
       this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
     }
-    // const series = times.map((t, i) => [t, values[i]]);
-    // series = series.slice(0, 1000);
-    // for (let j = 5; j--; ) {
-    //   const last = +series[series.length - 1].date;
-    //   for (let i = 0, l = series.length; i < l; i++) {
-    //     series[l + l - i - 1] = {...series[i], date: new Date(1000*(l - i) + last) };
-    //   }
-    // }
-    // console.log("SSSS", series);
-    // document.title = series.length;
-    // const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
     if (!this.ref.current) return;
-
-    console.log("CHCHCHC", range, times, values);
 
     const scale = format === "date" ? d3.scaleUtc() : d3.scaleLinear();
     const x = scale
@@ -353,8 +284,6 @@ class ChannelD3 extends React.Component {
     this.y = y;
     this.plotX = x.copy();
     this.stick = stick;
-    console.log("YYY", y(10));
-    console.log("YYY", y(0));
 
     this.line = d3
       .line()
@@ -495,15 +424,6 @@ class ChannelD3 extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log(
-      "UPD RANGES",
-      this.props.value,
-      this.props.ranges.length,
-      this.props.ranges,
-      prevProps.ranges,
-      this.props.ranges !== prevProps.ranges,
-    );
-    console.log("UPD RANGE", this.props.range, prevProps.range);
     this.setRangeWithScaling(this.props.range);
     this.renderBrushes(this.props.ranges);
   }
@@ -525,7 +445,6 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
   // if (channels) channels = channels.split(",");
   // if (channels && !channels.includes(item.value.substr(1))) return null;
 
-  console.log("RENDER CHANNEL", item);
   return (
     <ChannelD3Observed
       time={idFromValue(item.parent.value)}
