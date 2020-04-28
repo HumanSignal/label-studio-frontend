@@ -132,6 +132,7 @@ class ChannelD3 extends React.Component {
     ];
     const managerBrush = d3.brushX().extent(extent);
     const x = this.x;
+    const handleSize = 3;
 
     const brushSelection = this.gBrushes.selectAll(".brush").data(ranges, r => r.id);
 
@@ -174,12 +175,21 @@ class ChannelD3 extends React.Component {
           group.selectAll(".handle").style("pointer-events", "none");
         } else {
           group.selectAll(".selection").style("pointer-events", "none");
+
+          group
+            .append("rect")
+            .attr("class", "clicker")
+            .attr("y", 0)
+            .attr("height", height)
+            .attr("x", x(r.start) + handleSize)
+            .attr("width", x(r.end) - x(r.start) - handleSize * 2);
         }
         group.selectAll(".overlay").style("pointer-events", "none");
       })
       .merge(brushSelection)
       .each(function(r, i) {
-        const selection = d3.select(this).selectAll(".selection");
+        const group = d3.select(this);
+        const selection = group.selectAll(".selection");
         const color = getRegionColor(r);
         if (r.instant) {
           selection
@@ -196,6 +206,10 @@ class ChannelD3 extends React.Component {
             .attr("fill-opacity", r.selected || r.highlighted ? 0.6 : 0.3)
             .attr("stroke", color)
             .attr("fill", color);
+          group
+            .selectAll(".clicker")
+            .attr("x", x(r.start) + handleSize)
+            .attr("width", x(r.end) - x(r.start) - handleSize * 2);
           managerBrush.move(d3.select(this), [r.start, r.end].map(x));
         }
       });
