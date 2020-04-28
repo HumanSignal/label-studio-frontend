@@ -62,6 +62,24 @@ const TaskStore = types
       }
       return data;
     },
+
+    get dataSlices() {
+      // @todo it should make it `computed` automatically
+      if (self.slices) return self.slices;
+      // @todo change that from outside
+      const count = 10;
+      console.log("GETDATA SLICES", count);
+      const data = self.dataHash;
+      const slice = Math.floor(data.length / count);
+      const slices = [];
+
+      for (let i = 0; i < count - 1; i++) {
+        slices[i] = data.slice(slice * i, slice * i + slice + 1);
+      }
+      slices.push(data.slice(slice * (count - 1)));
+      self.slices = slices;
+      return slices;
+    },
   }));
 
 export default TaskStore;

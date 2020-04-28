@@ -249,7 +249,7 @@ class ChannelD3 extends React.Component {
   };
 
   componentDidMount() {
-    const { data, item, range, time, value } = this.props;
+    const { data, item, range, store, time, value } = this.props;
     const { format, margin, width } = item.parent;
     const height = +item.height;
     const times = data[time];
@@ -259,6 +259,7 @@ class ChannelD3 extends React.Component {
     if (this.needZoomOptimization) {
       this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
     }
+    this.slices = store.task.dataSlices;
 
     if (!this.ref.current) return;
 
@@ -287,7 +288,6 @@ class ChannelD3 extends React.Component {
 
     this.line = d3
       .line()
-      .defined(d => d[time])
       .y(d => this.y(d[value]))
       .x(d => this.plotX(d[time]));
 
@@ -316,12 +316,15 @@ class ChannelD3 extends React.Component {
       .attr("height", height)
       .attr("width", width);
 
-    this.path = main
-      .append("g")
-      .attr("clip-path", `url("#clip_${this.id}")`)
+    const pathContainer = main.append("g").attr("clip-path", `url("#clip_${this.id}")`);
+    this.path = pathContainer
       .append("path")
       .datum(this.needZoomOptimization ? this.optimizedSeries : series)
-      .attr("d", this.line)
+      .attr("d", this.line);
+    this.path2 = pathContainer.append("path");
+
+    pathContainer
+      .selectAll("path")
       .attr("vector-effect", "non-scaling-stroke")
       .attr("fill", "none")
       .attr("stroke", item.strokecolor || "steelblue");
@@ -401,13 +404,26 @@ class ChannelD3 extends React.Component {
     const current = this.x.range();
     const all = this.plotX.domain().map(this.x);
     const scale = (all[1] - all[0]) / (current[1] - current[0]);
+    const left = Math.max(0, Math.floor((this.zoomStep * (current[0] - all[0])) / (all[1] - all[0])));
+    const right = Math.max(0, Math.floor((this.zoomStep * (current[1] - all[0])) / (all[1] - all[0])));
     const translate = all[0] - current[0];
-    console.log("SOME MATH", range, this.plotX.domain(), current, all, scale, translate, this.needZoomOptimization);
+    console.log(
+      "SOME MATH",
+      left,
+      right,
+      [...range],
+      this.plotX.domain(),
+      current,
+      all,
+      scale,
+      translate,
+      this.needZoomOptimization,
+    );
 
     if (this.optimizedSeries && scale > this.zoomStep === this.needZoomOptimization) {
       this.needZoomOptimization = !this.needZoomOptimization;
-      this.path.datum(this.needZoomOptimization ? this.optimizedSeries : this.props.series);
       if (this.needZoomOptimization) {
+        this.path.datum(this.optimizedSeries);
         this.path.attr("d", this.line);
       } else {
         this.path.attr("transform", ``);
@@ -417,7 +433,18 @@ class ChannelD3 extends React.Component {
     if (this.needZoomOptimization) {
       this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
     } else {
-      this.path.attr("d", this.lineSlice);
+      if (this.optimizedSeries) {
+        this.path.datum(this.slices[left]);
+        this.path.attr("d", this.lineSlice);
+        if (left !== right) {
+          this.path2.datum(this.slices[right]);
+          this.path2.attr("d", this.lineSlice);
+        } else {
+          this.path2.attr("d", "");
+        }
+      } else {
+        this.path.attr("d", this.lineSlice);
+      }
     }
 
     this.renderAxis();
@@ -452,6 +479,7 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
       item={item}
       data={store.task.dataObj}
       series={store.task.dataHash}
+      store={store}
       // @todo initialBrush is out of store, but it triggers; change to brushRange
       range={item.parent.brushRange}
       ranges={item.parent.regions}
