@@ -32,6 +32,8 @@ const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
+  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+
   selectionenabled: types.optional(types.boolean, true),
 
   highlightcolor: types.maybeNull(types.string),
@@ -48,6 +50,7 @@ const Model = types
   .model("TextModel", {
     id: types.optional(types.identifier, guidGenerator),
     type: "text",
+    loaded: types.optional(types.boolean, false),
     regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
@@ -82,6 +85,29 @@ const Model = types
 
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
+
+      if (self.valuetype === "url") {
+        var request = new XMLHttpRequest();
+        request.open("GET", self._value, true);
+        request.send(null);
+        request.onreadystatechange = function() {
+          if (request.readyState === 4 && request.status === 200) {
+            self.loadedValue(request.responseText);
+          }
+        };
+      } else {
+        self.loadedValue(self._value);
+      }
+    },
+
+    loadedValue(val) {
+      self.loaded = true;
+      if (self.encoding === "base64") val = atob(val);
+      self._value = val;
+    },
+
+    afterCreate() {
+      console.log(self.valuetype);
     },
 
     createRegion(p) {
@@ -395,10 +421,9 @@ class TextPieceView extends Component {
   render() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
-    if (item.encoding === "base64") val = atob(val);
+    if (!item.loaded) return null;
 
-    val = val.split("\n").join("<br/>");
+    const val = item._value.split("\n").join("<br/>");
 
     return (
       <ObjectTag item={item}>
