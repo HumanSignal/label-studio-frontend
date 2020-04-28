@@ -11,7 +11,7 @@ export const idFromValue = value => value.substr(1);
 
 export const getOptimalWidth = () => ((window.screen && window.screen.width) || 1440) * (window.devicePixelRatio || 2);
 
-export const sparseValues = (values, max = 10e6) => {
+export const sparseValues = (values, max = 1e6) => {
   if (values.length <= max) return values;
   let next = 0;
   let step = (values.length - 1) / (max - 1);

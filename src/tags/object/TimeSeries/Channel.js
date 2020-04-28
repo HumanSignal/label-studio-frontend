@@ -162,6 +162,9 @@ class ChannelD3 extends React.Component {
   needZoomOptimization = false;
   zoomStep = 10;
 
+  line;
+  lineSlice;
+
   getRegion(selection, isInstant) {
     const [start, end] = selection.map(n => +this.stick(n)[0]);
     return { start, end: isInstant ? start : end };
@@ -301,20 +304,6 @@ class ChannelD3 extends React.Component {
     );
   };
 
-  drawPath = () => {
-    const { series, time, value } = this.props;
-    const data = this.needZoomOptimization ? this.optimizedSeries : series;
-    console.log("DRAWPATH", this.needZoomOptimization);
-    this.path.datum(data).attr(
-      "d",
-      d3
-        .line()
-        .y(d => this.y(d[value]))
-        .defined(d => d[time])
-        .x(d => this.plotX(d[time])),
-    );
-  };
-
   componentDidMount() {
     const { data, item, range, time, value } = this.props;
     const { format, margin, width } = item.parent;
@@ -367,6 +356,18 @@ class ChannelD3 extends React.Component {
     console.log("YYY", y(10));
     console.log("YYY", y(0));
 
+    this.line = d3
+      .line()
+      .defined(d => d[time])
+      .y(d => this.y(d[value]))
+      .x(d => this.plotX(d[time]));
+
+    this.lineSlice = d3
+      .line()
+      .defined(d => d[time] >= range[0] && d[time] <= range[1])
+      .y(d => this.y(d[value]))
+      .x(d => this.x(d[time]));
+
     //////////////////////////////////
     const main = d3
       .select(this.ref.current)
@@ -390,11 +391,13 @@ class ChannelD3 extends React.Component {
       .append("g")
       .attr("clip-path", `url("#clip_${this.id}")`)
       .append("path")
+      .datum(this.needZoomOptimization ? this.optimizedSeries : series)
+      .attr("d", this.line)
       .attr("vector-effect", "non-scaling-stroke")
       .attr("fill", "none")
       .attr("stroke", item.strokecolor || "steelblue");
 
-    this.drawPath();
+    // this.drawPath();
 
     const tracker = main.append("g");
     const trackerValue = tracker
@@ -462,27 +465,33 @@ class ChannelD3 extends React.Component {
   }
 
   setRangeWithScaling(range) {
+    const domain = this.x.domain();
+    if (+domain[0] === +range[0] && +domain[1] === +range[1]) return;
     // @todo check if range was really changed
     this.x.domain(range);
     const current = this.x.range();
     const all = this.plotX.domain().map(this.x);
     const scale = (all[1] - all[0]) / (current[1] - current[0]);
     const translate = all[0] - current[0];
-    console.log("SOME MATH", range, this.plotX.domain(), current, all, scale, translate);
+    console.log("SOME MATH", range, this.plotX.domain(), current, all, scale, translate, this.needZoomOptimization);
 
     if (this.optimizedSeries && scale > this.zoomStep === this.needZoomOptimization) {
       this.needZoomOptimization = !this.needZoomOptimization;
-      this.drawPath();
+      this.path.datum(this.needZoomOptimization ? this.optimizedSeries : this.props.series);
+      if (this.needZoomOptimization) {
+        this.path.attr("d", this.line);
+      } else {
+        this.path.attr("transform", ``);
+      }
     }
 
-    this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
-    this.renderAxis();
-  }
+    if (this.needZoomOptimization) {
+      this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
+    } else {
+      this.path.attr("d", this.lineSlice);
+    }
 
-  setRange(range) {
-    this.x.domain(range);
-    console.log("SOME MATH", range);
-    this.path.attr("d", line(this.x, this.y));
+    this.renderAxis();
   }
 
   componentDidUpdate(prevProps) {
