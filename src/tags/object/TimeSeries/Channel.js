@@ -252,14 +252,34 @@ class ChannelD3 extends React.Component {
 
   renderAxis = () => {
     const { item } = this.props;
-    const { width } = item.parent;
+    const { margin, width } = item.parent;
     const height = +item.height;
-    this.gx.attr("transform", `translate(0,${height})`).call(
-      d3
-        .axisBottom(this.x)
-        .ticks(width / 80)
-        .tickSizeOuter(0),
-    );
+    const tickSize = height + margin.top;
+    const shift = -margin.top;
+    this.gx
+      .attr("transform", `translate(0,${shift})`)
+      .call(
+        d3
+          .axisBottom(this.x)
+          .ticks(width / 80)
+          .tickSize(tickSize + 4),
+      )
+      .call(g => g.selectAll(".domain").remove())
+      // @todo `clone is not a function` wtf?
+      // .call(g => g.selectAll(".tick line").clone().attr("y1", 18).attr("y2", 22));
+      .call(g =>
+        g
+          .selectAll(".tick")
+          .attr("stroke-opacity", 0.2)
+          .selectAll(".bottom")
+          .data([0])
+          .enter()
+          .append("line")
+          .attr("class", "bottom")
+          .attr("stroke", "currentColor")
+          .attr("y1", tickSize + 16)
+          .attr("y2", tickSize + margin.bottom),
+      );
   };
 
   componentDidMount() {
@@ -274,6 +294,9 @@ class ChannelD3 extends React.Component {
       this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
     }
     this.slices = store.task.dataSlices;
+
+    const f = d3.format(item.unitsformat);
+    this.f = f;
 
     if (!this.ref.current) return;
 
@@ -330,6 +353,16 @@ class ChannelD3 extends React.Component {
       .attr("height", height)
       .attr("width", width);
 
+    main
+      .append("text")
+      .text(item.displayname)
+      .attr("dx", "1em")
+      .attr("dy", "1em")
+      .attr("font-weight", "bold")
+      .attr("font-size", "1.4em")
+      .attr("dy", "1em")
+      .attr("opacity", 0.1);
+
     const pathContainer = main.append("g").attr("clip-path", `url("#clip_${this.id}")`);
     this.path = pathContainer
       .append("path")
@@ -368,11 +401,14 @@ class ChannelD3 extends React.Component {
       .attr("stroke", "#666");
 
     function onHover() {
-      const [dataX, dataY] = stick(d3.mouse(this)[0]);
+      const screenX = d3.mouse(this)[0];
+      if (screenX < 0 || screenX > width) return;
+      const [dataX, dataY] = stick(screenX);
       tracker.attr("transform", `translate(${x(dataX) + 0.5},0)`);
       trackerTime.text(format === "date" && dataX ? formatTrackerTime(dataX) : dataX);
-      trackerValue.text(dataY);
+      trackerValue.text(f(dataY) + " " + item.units);
       trackerPoint.attr("cy", y(dataY));
+      tracker.attr("text-anchor", screenX > width - 100 ? "end" : "start");
 
       d3.event.preventDefault();
     }
@@ -380,20 +416,23 @@ class ChannelD3 extends React.Component {
     this.gx = main.append("g");
     main
       .append("g")
-      .call(d3.axisLeft(y).tickSize(3))
+      .call(
+        d3
+          .axisLeft(y)
+          .tickFormat(f)
+          .tickSize(3),
+      )
       .call(g => g.select(".domain").remove())
       .call(g =>
         g
-          .selectAll(".title")
-          .data([value])
           .append("text")
           .attr("class", "title")
           .attr("font-size", 8)
-          .attr("x", -margin.left)
-          .attr("y", 10)
+          .attr("x", -6)
+          .attr("y", 0)
           .attr("fill", "currentColor")
-          .attr("text-anchor", "start")
-          .text(value),
+          .attr("text-anchor", "end")
+          .text(item.units),
       );
 
     this.setRangeWithScaling(range);
