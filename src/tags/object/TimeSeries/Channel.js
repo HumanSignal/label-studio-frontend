@@ -106,6 +106,10 @@ const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, Ta
 const clearD3Event = f => setTimeout(f, 0);
 
 class ChannelD3 extends React.Component {
+  state = {
+    width: 840,
+  };
+
   ref = React.createRef();
   gBrushes;
   id = String(Math.round(Math.random() * 100000));
@@ -118,13 +122,23 @@ class ChannelD3 extends React.Component {
   line;
   lineSlice;
 
+  changeWidth = () => {
+    const offsetWidth = this.ref.current.offsetWidth;
+    console.log("WIDTH", offsetWidth);
+    const { margin } = this.props.item.parent;
+    if (offsetWidth) {
+      const width = offsetWidth - margin.left - margin.right;
+      this.setState({ width });
+    }
+  };
+
   getRegion(selection, isInstant) {
     const [start, end] = selection.map(n => +this.stick(n)[0]);
     return { start, end: isInstant ? start : end };
   }
 
-  renderBrushes(ranges) {
-    const { width } = this.props.item.parent;
+  renderBrushes(ranges, flush = false) {
+    const { width } = this.state;
     const height = +this.props.item.height;
     const extent = [
       [0, 0],
@@ -133,6 +147,10 @@ class ChannelD3 extends React.Component {
     const managerBrush = d3.brushX().extent(extent);
     const x = this.x;
     const handleSize = 3;
+
+    if (flush) {
+      this.gBrushes.selectAll(".brush").remove();
+    }
 
     const brushSelection = this.gBrushes.selectAll(".brush").data(ranges, r => r.id);
 
@@ -217,7 +235,13 @@ class ChannelD3 extends React.Component {
   }
 
   brushCreator() {
-    const { width } = this.props.item.parent;
+    if (this.gCreator) {
+      this.gCreator.selectAll("*").remove();
+    } else {
+      this.gCreator = this.main.append("g").attr("class", "new_brush");
+    }
+
+    const { width } = this.state;
     const height = +this.props.item.height;
     const brush = d3
       .brushX()
@@ -252,7 +276,8 @@ class ChannelD3 extends React.Component {
 
   renderAxis = () => {
     const { item } = this.props;
-    const { margin, width } = item.parent;
+    const { width } = this.state;
+    const { margin } = item.parent;
     const height = +item.height;
     const tickSize = height + margin.top;
     const shift = -margin.top;
@@ -284,7 +309,7 @@ class ChannelD3 extends React.Component {
 
   componentDidMount() {
     const { data, item, range, store, time, value } = this.props;
-    const { format, margin, width } = item.parent;
+    const { format, margin } = item.parent;
     const height = +item.height;
     const times = data[time];
     const values = data[value];
@@ -299,6 +324,12 @@ class ChannelD3 extends React.Component {
     this.f = f;
 
     if (!this.ref.current) return;
+
+    const offsetWidth = this.ref.current.offsetWidth;
+    const width = offsetWidth ? offsetWidth - margin.left - margin.right : this.state.width;
+    // intention direct assignment to avoid rerender and correct initialization
+    // eslint-disable-next-line react/no-direct-mutation-state
+    this.state.width = width;
 
     const scale = format === "date" ? d3.scaleUtc() : d3.scaleLinear();
     const x = scale
@@ -363,6 +394,8 @@ class ChannelD3 extends React.Component {
       .attr("dy", "1em")
       .attr("opacity", 0.1);
 
+    this.main = main;
+
     const pathContainer = main.append("g").attr("clip-path", `url("#clip_${this.id}")`);
     this.path = pathContainer
       .append("path")
@@ -400,8 +433,8 @@ class ChannelD3 extends React.Component {
       .attr("y2", 0)
       .attr("stroke", "#666");
 
-    function onHover() {
-      const screenX = d3.mouse(this)[0];
+    const updateTracker = screenX => {
+      const { width } = this.state;
       if (screenX < 0 || screenX > width) return;
       const [dataX, dataY] = stick(screenX);
       tracker.attr("transform", `translate(${x(dataX) + 0.5},0)`);
@@ -411,6 +444,10 @@ class ChannelD3 extends React.Component {
       tracker.attr("text-anchor", screenX > width - 100 ? "end" : "start");
 
       d3.event.preventDefault();
+    };
+
+    function onHover() {
+      updateTracker(d3.mouse(this)[0]);
     }
 
     this.gx = main.append("g");
@@ -437,7 +474,6 @@ class ChannelD3 extends React.Component {
 
     this.setRangeWithScaling(range);
 
-    this.gCreator = main.append("g").attr("class", "new_brush");
     this.brushCreator();
 
     // We initially generate a SVG group to keep our brushes' DOM elements in:
@@ -447,12 +483,15 @@ class ChannelD3 extends React.Component {
       .attr("clip-path", `url("#clip_${this.id}")`);
 
     this.renderBrushes(this.props.ranges);
+
+    window.addEventListener("resize", this.changeWidth);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.changeWidth);
   }
 
   setRangeWithScaling(range) {
-    const domain = this.x.domain();
-    if (+domain[0] === +range[0] && +domain[1] === +range[1]) return;
-    // @todo check if range was really changed
     this.x.domain(range);
     const current = this.x.range();
     const all = this.plotX.domain().map(this.x);
@@ -503,9 +542,37 @@ class ChannelD3 extends React.Component {
     this.renderAxis();
   }
 
-  componentDidUpdate(prevProps) {
-    this.setRangeWithScaling(this.props.range);
-    this.renderBrushes(this.props.ranges);
+  componentDidUpdate(prevProps, prevState) {
+    const { range } = this.props;
+    const { width } = this.state;
+    let flushBrushes = false;
+
+    if (width !== prevState.width) {
+      console.log("STATE CHANGED", this.state.width);
+      const { item, range } = this.props;
+      const { margin } = item.parent;
+      const height = +item.height;
+      const svg = d3.select(this.ref.current).selectAll("svg");
+
+      svg.attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom]);
+      this.x.range([0, width]);
+      this.gCreator.each(function() {
+        this.innerHTML = "";
+      });
+      this.brushCreator();
+      svg.selectAll("clipPath rect").attr("width", width);
+
+      this.setRangeWithScaling(range);
+      this.brushCreator();
+      flushBrushes = true;
+    } else {
+      const domain = this.x.domain();
+      if (+domain[0] !== +range[0] || +domain[1] !== +range[1]) {
+        this.setRangeWithScaling(range);
+      }
+    }
+
+    this.renderBrushes(this.props.ranges, flushBrushes);
   }
 
   render() {

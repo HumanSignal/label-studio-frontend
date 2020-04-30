@@ -178,12 +178,40 @@ const baselineStyles = {
   },
 };
 
+function useWidth() {
+  const [width, setWidth] = React.useState(840);
+  const [node, setNode] = React.useState(null);
+
+  const ref = React.useCallback(node => {
+    setNode(node);
+  }, []);
+
+  React.useLayoutEffect(() => {
+    if (node) {
+      const measure = () =>
+        // window.requestAnimationFrame(() =>
+        setWidth(node.offsetWidth);
+      // );
+      measure();
+
+      window.addEventListener("resize", measure);
+
+      return () => {
+        window.removeEventListener("resize", measure);
+      };
+    }
+  }, [node]);
+
+  return [ref, width, node];
+}
+
 // class TimeSeriesOverviewD3 extends React.Component {
 const Overview = ({ item, data, series, regions, forceUpdate }) => {
-  const ref = React.useRef();
+  const [ref, fullWidth, node] = useWidth();
 
   const focusHeight = 60;
-  const { margin, value, width } = item;
+  const { margin, value } = item;
+  const width = fullWidth - margin.left - margin.right;
   const idX = idFromValue(value);
   // const data = store.task.dataObj;
   const keys = item.overviewchannels ? item.overviewchannels.split(",") : Object.keys(data).filter(key => key !== idX);
@@ -276,8 +304,10 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
   };
 
   React.useEffect(() => {
+    if (!node) return;
+
     focus.current = d3
-      .select(ref.current)
+      .select(node)
       .append("svg")
       .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom])
       .style("display", "block")
@@ -296,10 +326,16 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
       .append("g")
       .call(brush)
       .call(brush.move, defaultSelection);
-  }, []);
+  }, [node]);
 
   React.useEffect(() => {
-    drawRegions(regions);
+    if (node) {
+      focus.current.attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
+    }
+  }, [width, node]);
+
+  React.useEffect(() => {
+    node && drawRegions(regions);
   });
 
   item.regions.map(r => fixMobxObserve(r.start, r.end, r.selected));
