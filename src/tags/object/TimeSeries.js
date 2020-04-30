@@ -272,6 +272,8 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
 
   const focus = React.useRef();
   const gRegions = React.useRef();
+  const gChannels = React.useRef();
+  const gAxis = React.useRef();
   const gb = React.useRef();
 
   const scale = item.isDate ? d3.scaleTime() : d3.scaleLinear();
@@ -313,9 +315,11 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
       .domain([d3.min(data[key]), d3.max(data[key])])
       .range([focusHeight - margin.max, margin.min]);
 
-    focus.current
+    gChannels.current.selectAll("path").remove();
+    gChannels.current
       .append("path")
       .datum(sparseValues(series, getOptimalWidth()))
+      .attr("class", "channel")
       .attr("fill", "none")
       .attr("stroke", color)
       .attr(
@@ -344,15 +348,12 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
   };
 
   const drawAxis = () => {
-    focus.current
-      .append("g")
-      .attr("transform", `translate(0,${focusHeight})`)
-      .call(
-        d3
-          .axisBottom(x)
-          .ticks(width / 80)
-          .tickSizeOuter(0),
-      );
+    gAxis.current.call(
+      d3
+        .axisBottom(x)
+        .ticks(width / 80)
+        .tickSizeOuter(0),
+    );
   };
 
   React.useEffect(() => {
@@ -365,6 +366,10 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
       .style("display", "block")
       .append("g")
       .attr("transform", "translate(" + margin.left + ",0)");
+
+    gAxis.current = focus.current.append("g").attr("transform", `translate(0,${focusHeight})`);
+
+    gChannels.current = focus.current.append("g").attr("class", "channels");
 
     for (let key of keys) drawPath(key);
 
@@ -382,7 +387,15 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
 
   React.useEffect(() => {
     if (node) {
-      focus.current.attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
+      d3.select(node)
+        .selectAll("svg")
+        .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
+
+      for (let key of keys) drawPath(key);
+
+      drawAxis();
+      // gb.current.selectAll("*").remove();
+      gb.current.call(brush).call(brush.move, item.brushRange.map(x));
     }
   }, [width, node]);
 

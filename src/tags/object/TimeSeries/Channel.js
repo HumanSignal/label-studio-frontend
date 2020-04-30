@@ -534,6 +534,7 @@ class ChannelD3 extends React.Component {
 
     if (this.needZoomOptimization) {
       this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
+      this.path2.attr("d", "");
     } else {
       if (this.optimizedSeries) {
         this.path.datum(this.slices[left]);
@@ -546,6 +547,7 @@ class ChannelD3 extends React.Component {
         }
       } else {
         this.path.attr("d", this.lineSlice);
+        this.path2.attr("d", "");
       }
     }
 
