@@ -44,42 +44,6 @@ const TaskStore = types
         return null;
       }
     },
-
-    get dataHash() {
-      const raw = self.dataObj;
-      if (!raw) return null;
-      const keys = Object.keys(raw);
-      const data = [];
-
-      for (let key of keys) {
-        for (let i = 0; i < raw[key].length; i++) {
-          if (!data[i]) {
-            data[i] = { [key]: raw[key][i] };
-          } else {
-            data[i][key] = raw[key][i];
-          }
-        }
-      }
-      return data;
-    },
-
-    get dataSlices() {
-      // @todo it should make it `computed` automatically
-      if (self.slices) return self.slices;
-      // @todo change that from outside
-      const count = 10;
-      console.log("GETDATA SLICES", count);
-      const data = self.dataHash;
-      const slice = Math.floor(data.length / count);
-      const slices = [];
-
-      for (let i = 0; i < count - 1; i++) {
-        slices[i] = data.slice(slice * i, slice * i + slice + 1);
-      }
-      slices.push(data.slice(slice * (count - 1)));
-      self.slices = slices;
-      return slices;
-    },
   }));
 
 export default TaskStore;

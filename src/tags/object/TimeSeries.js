@@ -15,6 +15,7 @@ import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
 import { idFromValue, getRegionColor, fixMobxObserve, sparseValues, getOptimalWidth } from "./TimeSeries/helpers";
+import { parse } from "date-fns";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -47,7 +48,8 @@ const Model = types
     margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
     brushRange: types.array(types.Date),
 
-    format: types.optional(types.enumeration(["date", ""]), ""),
+    inputformat: "",
+    format: "",
     overviewchannels: "", // comma-separated list of channels to show
 
     // _value: types.optional(types.string, ""),
@@ -66,6 +68,56 @@ const Model = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get isDate() {
+      return Boolean(self.inputformat) || (self.format && /[a-zA-Z]/.test(self.format[0]));
+    },
+
+    get dataObj() {
+      let data = self.store.task.dataObj;
+      if (self.inputformat) {
+        const D = new Date();
+        const key = idFromValue(self.value);
+        const timestamps = data[key].map(d => +parse(d, self.inputformat, D));
+        data = { ...data, [key]: timestamps };
+      }
+      return data;
+    },
+
+    get dataHash() {
+      const raw = self.dataObj;
+      if (!raw) return null;
+      const keys = Object.keys(raw);
+      const data = [];
+
+      for (let key of keys) {
+        for (let i = 0; i < raw[key].length; i++) {
+          if (!data[i]) {
+            data[i] = { [key]: raw[key][i] };
+          } else {
+            data[i][key] = raw[key][i];
+          }
+        }
+      }
+      return data;
+    },
+
+    get dataSlices() {
+      // @todo it should make it `computed` automatically
+      if (self.slices) return self.slices;
+      // @todo change that from outside
+      const count = 10;
+      const data = self.dataHash;
+      const slice = Math.floor(data.length / count);
+      const slices = [];
+
+      for (let i = 0; i < count - 1; i++) {
+        slices[i] = data.slice(slice * i, slice * i + slice + 1);
+      }
+      slices.push(data.slice(slice * (count - 1)));
+      self.slices = slices;
+      return slices;
     },
 
     states() {
@@ -154,7 +206,7 @@ const Model = types
     },
 
     updateValue(store) {
-      const times = store.task.dataObj[idFromValue(self.value)];
+      const times = self.dataObj[idFromValue(self.value)];
       self.initialRange = [times[0], times[times.length >> 2]];
       self.brushRange = [times[0], times[times.length >> 2]];
     },
@@ -222,7 +274,7 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
   const gRegions = React.useRef();
   const gb = React.useRef();
 
-  const scale = item.format === "date" ? d3.scaleUtc() : d3.scaleLinear();
+  const scale = item.isDate ? d3.scaleTime() : d3.scaleLinear();
   const x = scale.domain(d3.extent(data[idX])).range([0, width]);
 
   const upd = React.useCallback(throttle(300, item.updateTR));
@@ -348,8 +400,8 @@ const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
     <ObjectTag item={item}>
       {Tree.renderChildren(item)}
       <Overview
-        data={store.task.dataObj}
-        series={store.task.dataHash}
+        data={item.dataObj}
+        series={item.dataHash}
         item={item}
         regions={item.regions}
         forceUpdate={item._needsUpdate}

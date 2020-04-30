@@ -19,6 +19,7 @@ import {
   sparseValues,
   getOptimalWidth,
 } from "./helpers";
+import { format as formatFNS } from "date-fns";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -308,8 +309,8 @@ class ChannelD3 extends React.Component {
   };
 
   componentDidMount() {
-    const { data, item, range, store, time, value } = this.props;
-    const { format, margin } = item.parent;
+    const { data, item, range, time, value } = this.props;
+    const { isDate, format, margin } = item.parent;
     const height = +item.height;
     const times = data[time];
     const values = data[value];
@@ -318,10 +319,19 @@ class ChannelD3 extends React.Component {
     if (this.needZoomOptimization) {
       this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
     }
-    this.slices = store.task.dataSlices;
+    this.slices = item.parent.dataSlices;
 
-    const f = d3.format(item.unitsformat);
-    this.f = f;
+    const formatValue = d3.format(item.unitsformat);
+    let formatTime = String;
+    if (format === "date")
+      formatTime = v =>
+        new Date(v)
+          .toISOString()
+          .substr(0, 19)
+          .replace("T", " ");
+    else if (format) formatTime = isDate ? v => formatFNS(v, format) : d3.format(format);
+    this.formatValue = formatValue;
+    this.formatTime = formatTime;
 
     if (!this.ref.current) return;
 
@@ -331,7 +341,7 @@ class ChannelD3 extends React.Component {
     // eslint-disable-next-line react/no-direct-mutation-state
     this.state.width = width;
 
-    const scale = format === "date" ? d3.scaleUtc() : d3.scaleLinear();
+    const scale = isDate ? d3.scaleTime() : d3.scaleLinear();
     const x = scale
       // .clamp(true)
       .domain(d3.extent(times))
@@ -438,8 +448,8 @@ class ChannelD3 extends React.Component {
       if (screenX < 0 || screenX > width) return;
       const [dataX, dataY] = stick(screenX);
       tracker.attr("transform", `translate(${x(dataX) + 0.5},0)`);
-      trackerTime.text(format === "date" && dataX ? formatTrackerTime(dataX) : dataX);
-      trackerValue.text(f(dataY) + " " + item.units);
+      trackerTime.text(formatTime(dataX));
+      trackerValue.text(formatValue(dataY) + " " + item.units);
       trackerPoint.attr("cy", y(dataY));
       tracker.attr("text-anchor", screenX > width - 100 ? "end" : "start");
 
@@ -456,7 +466,7 @@ class ChannelD3 extends React.Component {
       .call(
         d3
           .axisLeft(y)
-          .tickFormat(f)
+          .tickFormat(formatValue)
           .tickSize(3),
       )
       .call(g => g.select(".domain").remove())
@@ -586,7 +596,7 @@ class ChannelD3 extends React.Component {
 const ChannelD3Observed = observer(ChannelD3);
 
 // const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
-const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
+const HtxTimeSeriesChannelViewD3 = ({ item }) => {
   // @todo maybe later for some other option
   // let channels = item.parent.overviewchannels;
   // if (channels) channels = channels.split(",");
@@ -597,9 +607,8 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
       time={idFromValue(item.parent.value)}
       value={idFromValue(item.value)}
       item={item}
-      data={store.task.dataObj}
-      series={store.task.dataHash}
-      store={store}
+      data={item.parent.dataObj}
+      series={item.parent.dataHash}
       // @todo initialBrush is out of store, but it triggers; change to brushRange
       range={item.parent.brushRange}
       ranges={item.parent.regions}
@@ -608,7 +617,7 @@ const HtxTimeSeriesChannelViewD3 = ({ store, item }) => {
   );
 };
 
-const HtxTimeSeriesChannel = inject("store")(observer(HtxTimeSeriesChannelViewD3));
+const HtxTimeSeriesChannel = observer(HtxTimeSeriesChannelViewD3);
 
 Registry.addTag("timeserieschannel", TimeSeriesChannelModel, HtxTimeSeriesChannel);
 
