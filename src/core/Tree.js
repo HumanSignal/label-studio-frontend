@@ -250,7 +250,7 @@ function renderItem(el, {} = {}) {
     throw new Error("No view for model:" + getType(el).name);
   }
 
-  return <View item={el} />;
+  return <View key={el.id} item={el} />;
 }
 
 /**
