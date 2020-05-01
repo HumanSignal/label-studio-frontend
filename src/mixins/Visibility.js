@@ -34,6 +34,8 @@ const VisibilityMixin = types
             if (choiceValue) {
               const choice = tag.findLabel(choiceValue);
               return choice && choice.selected ? true : false;
+            } else {
+              return tag.holdsState;
             }
 
             return true;
