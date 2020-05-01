@@ -32,7 +32,7 @@ const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
-  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+  valuetype: types.optional(types.enumeration(["text", "url"]), "url"),
 
   selectionenabled: types.optional(types.boolean, true),
 

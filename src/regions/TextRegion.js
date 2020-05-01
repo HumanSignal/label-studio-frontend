@@ -39,7 +39,7 @@ const Model = types
         value: {
           start: self.startOffset,
           end: self.endOffset,
-          text: self.text,
+          //text: self.text,
         },
       };
 
