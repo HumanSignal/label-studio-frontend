@@ -1,4 +1,3 @@
-import "moment-duration-format";
 import React from "react";
 import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
@@ -103,11 +102,14 @@ const Model = types
       return data;
     },
 
+    get slicesCount() {
+      return 10;
+    },
+
     get dataSlices() {
       // @todo it should make it `computed` automatically
       if (self.slices) return self.slices;
-      // @todo change that from outside
-      const count = 10;
+      const count = self.slicesCount;
       const data = self.dataHash;
       const slice = Math.floor(data.length / count);
       const slices = [];

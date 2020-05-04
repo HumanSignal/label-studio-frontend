@@ -33,6 +33,9 @@ export const getRegionColor = (region, alpha = 1) => {
 // so pass all the required primitives to this stub and they'll be observed
 export const fixMobxObserve = (...args) => {};
 
+// clear d3 sourceEvent via async call to prevent infinite loops
+export const clearD3Event = f => setTimeout(f, 0);
+
 const formatDateDiff = (start, end) => {
   const dates = [start.toISOString(), end.toISOString()];
   let ds = dates.map(d => d.substr(0, 10));
