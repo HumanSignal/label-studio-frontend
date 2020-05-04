@@ -14,6 +14,7 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Text tag shows an Text markup that can be labeled
@@ -33,6 +34,8 @@ const TagAttrs = types.model("TextModel", {
   value: types.maybeNull(types.string),
 
   valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
 
   selectionenabled: types.optional(types.boolean, true),
 
@@ -87,12 +90,18 @@ const Model = types
       self._value = runTemplate(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
+        const url = self._value;
         var request = new XMLHttpRequest();
-        request.open("GET", self._value, true);
+        request.open("GET", url, true);
         request.send(null);
         request.onreadystatechange = function() {
-          if (request.readyState === 4 && request.status === 200) {
-            self.loadedValue(request.responseText);
+          if (request.readyState === 4) {
+            if (request.status === 200) {
+              self.loadedValue(request.responseText);
+            } else {
+              InfoModal.error(`Loading URL (${url}) unsuccessful status: ${request.status}`);
+              self.loadedValue("");
+            }
           }
         };
       } else {
@@ -116,6 +125,14 @@ const Model = types
 
     afterCreate() {
       self._regionsCache = [];
+
+      // security measure, if valuetype is set to url then LS
+      // doesn't save the text into the result, otherwise it does
+      // can be aslo directly configured
+      if (self.savetextresult === "none") {
+        if (self.valuetype === "url") self.savetextresult = "false";
+        else if (self.valuetype === "text") self.savetextresult = "true";
+      }
     },
 
     createRegion(p) {
