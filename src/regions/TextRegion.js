@@ -34,6 +34,10 @@ const Model = types
       Utils.HTML.removeSpans(self._spans);
     },
 
+    setText(text) {
+      self.text = text;
+    },
+
     serialize(control, object) {
       let res = {
         value: {

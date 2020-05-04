@@ -32,7 +32,7 @@ const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
-  valuetype: types.optional(types.enumeration(["text", "url"]), "url"),
+  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
 
   selectionenabled: types.optional(types.boolean, true),
 
@@ -104,16 +104,29 @@ const Model = types
       self.loaded = true;
       if (self.encoding === "base64") val = atob(val);
       self._value = val;
+
+      self._regionsCache.forEach(({ region, completion }) => {
+        region.setText(self._value.substring(region.startOffset, region.endOffset));
+        self.regions.push(region);
+        completion.addRegion(region);
+      });
+
+      self._regionsCache = [];
     },
 
     afterCreate() {
-      console.log(self.valuetype);
+      self._regionsCache = [];
     },
 
     createRegion(p) {
       const r = TextRegionModel.create(p);
 
       r._range = p._range;
+
+      if (self.valuetype === "url" && self.loaded === false) {
+        self._regionsCache.push({ region: r, completion: self.completion });
+        return;
+      }
 
       self.regions.push(r);
       self.completion.addRegion(r);
