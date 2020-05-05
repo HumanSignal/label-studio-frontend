@@ -95,8 +95,6 @@ const Model = types
 
       const r = self.createRegion({ ...range, states: clonedStates });
 
-      states.forEach(s => s.unselectAll());
-
       return r;
     },
 

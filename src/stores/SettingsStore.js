@@ -23,6 +23,11 @@ const SettingsModel = types
 
     enableLabelTooltips: types.optional(types.boolean, true),
 
+    /**
+     * Keep label selected after creating a region
+     */
+    continuousLabeling: false,
+
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
@@ -79,6 +84,10 @@ const SettingsModel = types
       //   // TODO there is no showLables in the regions right now
       //   return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
       // });
+    },
+
+    toggleContinuousLabeling() {
+      self.continuousLabeling = !self.continuousLabeling;
     },
 
     toggleAutoSave() {
