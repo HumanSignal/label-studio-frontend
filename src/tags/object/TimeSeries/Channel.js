@@ -92,11 +92,7 @@ const Model = types
     get parent() {
       return Types.getParentOfTypeString(self, "TimeSeriesModel");
     },
-  }))
-  .preProcessSnapshot(snapshot => {
-    snapshot.interpolation = csMap[snapshot.interpolation];
-    return snapshot;
-  });
+  }));
 
 const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, TagAttrs, ObjectBase);
 
@@ -190,10 +186,11 @@ class ChannelD3 extends React.Component {
 
   renderBrushes(ranges, flush = false) {
     const { width } = this.state;
+    const height = this.height;
     const { item } = this.props;
     const extent = [
       [0, 0],
-      [width, this.height],
+      [width, height],
     ];
     const managerBrush = d3.brushX().extent(extent);
     const x = this.x;
@@ -232,7 +229,7 @@ class ChannelD3 extends React.Component {
             .append("rect")
             .attr("class", "clicker")
             .attr("y", 0)
-            .attr("height", this.height)
+            .attr("height", height)
             .attr("x", x(r.start) + handleSize)
             .attr("width", x(r.end) - x(r.start) - handleSize * 2);
         }

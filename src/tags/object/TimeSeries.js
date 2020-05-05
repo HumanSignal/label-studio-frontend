@@ -405,7 +405,7 @@ const Overview = ({ item, data, series, regions, forceUpdate }) => {
     node && drawRegions(regions);
   });
 
-  item.regions.map(r => fixMobxObserve(r.start, r.end, r.selected));
+  item.regions.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted));
 
   return <div ref={ref} />;
 };
