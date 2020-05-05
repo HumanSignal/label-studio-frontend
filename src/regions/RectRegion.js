@@ -70,6 +70,9 @@ const Model = types
     supportsTransform: true,
   })
   .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
     get parent() {
       return getParentOfType(self, ImageModel);
     },
@@ -106,7 +109,9 @@ const Model = types
       self.parent.setSelected(undefined);
       self.completion.setHighlightedNode(null);
 
-      self.completion.unloadRegionState(self);
+      if (!self.store.settings.continuousLabeling) {
+        self.completion.unloadRegionState(self);
+      }
     },
 
     coordsInside(x, y) {
