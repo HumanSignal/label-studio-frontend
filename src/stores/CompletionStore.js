@@ -13,10 +13,6 @@ import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 
-const MODE_EVENT = "event";
-const MODE_RESTORE = "restore";
-const MODE_IDLE = "";
-
 const Completion = types
   .model("Completion", {
     id: types.identifier,
@@ -65,8 +61,6 @@ const Completion = types
     }),
 
     highlightedNode: types.maybeNull(types.safeReference(AllRegionsType)),
-
-    regionsMode: types.optional(types.enumeration([MODE_EVENT, MODE_RESTORE, MODE_IDLE]), MODE_IDLE),
   })
   .views(self => ({
     get store() {
@@ -140,18 +134,13 @@ const Completion = types
     },
 
     addRegion(reg) {
-      // If there is deserialization in progress this is not an event
-      if (self.regionsMode === MODE_IDLE) self.regionsMode = MODE_EVENT;
-
       self.regionStore.addRegion(reg);
-      self.regionStore.unselectAll();
+      self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
         self.addRelation(reg);
         self.stopRelationMode();
       }
-
-      if (self.regionsMode === MODE_EVENT) self.regionsMode = MODE_IDLE;
     },
 
     loadRegionState(region) {
@@ -164,9 +153,6 @@ const Completion = types
     },
 
     unloadRegionState(region) {
-      // This settings should work only when regions was created by human
-      if (self.regionsMode === MODE_EVENT && self.store.settings.continuousLabeling) return;
-
       region.states &&
         region.states.forEach(s => {
           const mainViewTag = self.names.get(s.name);
@@ -372,8 +358,6 @@ const Completion = types
     deserializeCompletion(json) {
       let objCompletion = json;
 
-      self.regionsMode = MODE_RESTORE;
-
       if (typeof objCompletion !== "object") {
         objCompletion = JSON.parse(objCompletion);
       }
@@ -407,8 +391,6 @@ const Completion = types
       });
 
       self.regionStore.unselectAll();
-
-      self.regionsMode = MODE_IDLE;
     },
   }));
 

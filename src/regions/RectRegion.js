@@ -104,16 +104,6 @@ const Model = types
       // self.rotation = self.rotation + degree;
     },
 
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-
-      if (!self.store.settings.continuousLabeling) {
-        self.completion.unloadRegionState(self);
-      }
-    },
-
     coordsInside(x, y) {
       // check if x and y are inside the rectangle
       const rx = self.x;

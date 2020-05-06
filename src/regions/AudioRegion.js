@@ -100,17 +100,14 @@ const Model = types
     /**
      * Unselect audio region
      */
-    unselectRegion() {
+    afterUnselectRegion() {
       // debugger;
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
       if (self._ws_region.update) {
         self._ws_region.update({
           color: self.selectedregionbg,
           // border: "none"
         });
       }
-      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {
