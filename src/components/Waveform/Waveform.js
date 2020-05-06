@@ -356,8 +356,8 @@ export default class Waveform extends React.Component {
         <div id="timeline" />
 
         {this.props.zoom && (
-          <Row style={{ marginTop: "1em" }}>
-            <Col span={16} style={{ textAlign: "right", marginTop: "6px", marginRight: "1em" }}>
+          <Row gutter={16} style={{ marginTop: "1em" }}>
+            <Col flex={12} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
                   <a onClick={this.onZoomMinus} href="">
@@ -382,7 +382,7 @@ export default class Waveform extends React.Component {
                 </div>
               </div>
             </Col>
-            <Col span={4} style={{ marginRight: "1em" }}>
+            <Col flex={3}>
               {this.props.volume && (
                 <div style={{ display: "flex", marginTop: "6.5px" }}>
                   <div style={{ width: "100%" }}>
@@ -402,9 +402,14 @@ export default class Waveform extends React.Component {
                 </div>
               )}
             </Col>
-            <Col span={2} style={{ marginTop: "6px", minWidth: "90px" }}>
+            <Col flex={1} style={{ marginTop: "6px" }}>
               {this.props.speed && (
-                <Select defaultValue={this.state.speed} placeholder="Speed" onChange={self.onChangeSpeed}>
+                <Select
+                  placeholder="Speed"
+                  style={{ width: "100%" }}
+                  defaultValue={this.state.speed}
+                  onChange={self.onChangeSpeed}
+                >
                   {speeds.map(speed => (
                     <Select.Option value={+speed} key={speed}>
                       Speed {speed}
