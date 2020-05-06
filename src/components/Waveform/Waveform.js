@@ -6,8 +6,8 @@ import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js";
 import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
-import { Slider, InputNumber, Row, Col, Menu, Dropdown, Button, message, Tooltip } from "antd";
-import { SoundOutlined, DownOutlined, UserOutlined } from "@ant-design/icons";
+import { Slider, Row, Col, Select } from "antd";
+import { SoundOutlined } from "@ant-design/icons";
 import lodash from "../../utils/lodash";
 
 /**
@@ -347,27 +347,7 @@ export default class Waveform extends React.Component {
   render() {
     const self = this;
 
-    const keymap = {
-      "1": 0.5,
-      "2": 1.0,
-      "3": 1.25,
-      "4": 1.5,
-      "5": 2.0,
-    };
-
-    const menu = (
-      <Menu
-        onClick={({ item, key }) => {
-          self.onChangeSpeed(keymap[key]);
-        }}
-      >
-        <Menu.Item key="1">0.5</Menu.Item>
-        <Menu.Item key="2">1.0</Menu.Item>
-        <Menu.Item key="3">1.25</Menu.Item>
-        <Menu.Item key="4">1.5</Menu.Item>
-        <Menu.Item key="5">2.0</Menu.Item>
-      </Menu>
-    );
+    const speeds = ["0.5", "1.0", "1.25", "1.5", "2.0"];
 
     return (
       <div>
@@ -424,11 +404,13 @@ export default class Waveform extends React.Component {
             </Col>
             <Col span={2} style={{ marginTop: "6px", minWidth: "90px" }}>
               {this.props.speed && (
-                <Dropdown overlay={menu}>
-                  <Button>
-                    Speed <DownOutlined />
-                  </Button>
-                </Dropdown>
+                <Select defaultValue={this.state.speed} placeholder="Speed" onChange={self.onChangeSpeed}>
+                  {speeds.map(speed => (
+                    <Select.Option value={+speed} key={speed}>
+                      Speed {speed}
+                    </Select.Option>
+                  ))}
+                </Select>
               )}
             </Col>
           </Row>
