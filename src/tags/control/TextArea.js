@@ -230,7 +230,7 @@ const HtxTextArea = observer(({ item }) => {
             {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
             {showAddButton && (
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button style={{ marginTop: "10px" }} type="primary" htmlType="submit">
                   Add
                 </Button>
               </Form.Item>
