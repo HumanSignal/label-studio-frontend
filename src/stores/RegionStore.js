@@ -94,8 +94,11 @@ export default types
       Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");
     },
 
-    unselectAll() {
-      self.regions.forEach(r => r.unselectRegion());
+    /**
+     * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
+     */
+    unselectAll(tryToKeepStates = false) {
+      self.regions.forEach(r => r.unselectRegion(tryToKeepStates));
       getParent(self).setHighlightedNode(null);
     },
 

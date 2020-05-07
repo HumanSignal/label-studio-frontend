@@ -116,13 +116,10 @@ export default types
     },
 
     /**
-     * Unselect audio region
+     * Unselect text region
      */
-    unselectRegion() {
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
+    afterUnselectRegion() {
       self.updateSpansColor(null, 0.3);
-      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {

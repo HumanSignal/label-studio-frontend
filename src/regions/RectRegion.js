@@ -70,6 +70,9 @@ const Model = types
     supportsTransform: true,
   })
   .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
     get parent() {
       return getParentOfType(self, ImageModel);
     },
@@ -99,14 +102,6 @@ const Model = types
 
     rotate(degree) {
       // self.rotation = self.rotation + degree;
-    },
-
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-
-      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {

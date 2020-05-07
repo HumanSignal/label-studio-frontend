@@ -37,11 +37,7 @@ const ModelAttrs = types.model("BrushLabelsModel", {
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
-const Model = LabelMixin.props({ _type: "brushlabels" }).views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === "single";
-  },
-}));
+const Model = LabelMixin.props({ _type: "brushlabels" });
 
 const BrushLabelsModel = types.compose(
   "BrushLabelsModel",
