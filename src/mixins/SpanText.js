@@ -112,17 +112,21 @@ export default types
       self.updateSpansColor(null, 0.8);
       self.completion.loadRegionState(self);
 
-      if (self._spans[0]) self._spans[0].scrollIntoView({ block: "center", behavior: "smooth" });
+      const first = self._spans[0];
+      if (first) {
+        if (first.scrollIntoViewIfNeeded) {
+          first.scrollIntoViewIfNeeded();
+        } else {
+          first.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }
     },
 
     /**
-     * Unselect audio region
+     * Unselect text region
      */
-    unselectRegion() {
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
+    afterUnselectRegion() {
       self.updateSpansColor(null, 0.3);
-      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {

@@ -61,24 +61,18 @@ const Model = LabelMixin.props({ _type: "labels" })
   }))
   .actions(self => ({
     validate() {
-      let found = false;
       const regions = self.completion.regionStore.regions;
 
-      loop1: for (let r of regions) {
+      for (let r of regions) {
         for (let s of r.states) {
           if (s.name === self.name) {
-            found = true;
-            break loop1;
+            return true;
           }
         }
       }
 
-      if (found === false) {
-        InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-        return false;
-      }
-
-      return true;
+      InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
+      return false;
     },
   }));
 

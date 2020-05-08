@@ -103,8 +103,6 @@ const LabelOnPolygon = observer(({ item }) => {
           shadowBlur={0}
         />
       )}
-      {/* TODO this is a problem here, it takes states[0] but nothing
-       * guarantees that this state is a lable one */}
       <LabelOnBbox
         x={bbox[0][0]}
         y={bbox[1][0] + 2}
@@ -138,8 +136,6 @@ const LabelOnMask = observer(({ item }) => {
         strokeScaleEnabled={false}
         shadowBlur={0}
       />
-      {/* TODO this is a problem here, it takes states[0] but nothing
-       * guarantees that this state is a lable one */}
       <LabelOnBbox
         x={bbox[0][0]}
         y={bbox[1][0] + 2}

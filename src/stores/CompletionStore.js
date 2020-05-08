@@ -135,7 +135,7 @@ const Completion = types
 
     addRegion(reg) {
       self.regionStore.addRegion(reg);
-      self.regionStore.unselectAll();
+      self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
         self.addRelation(reg);
