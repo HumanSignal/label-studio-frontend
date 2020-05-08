@@ -35,8 +35,8 @@ const TagAttrs = types.model({
   name: types.string,
   toname: types.maybeNull(types.string),
   selectionstyle: types.maybeNull(types.string),
-  leftclass: types.optional(types.string, "left"),
-  rightclass: types.optional(types.string, "right"),
+  leftclass: types.maybeNull(types.string),
+  rightclass: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -110,18 +110,30 @@ const Model = types
     toStateJSON() {
       const store = getRoot(self);
       let choice = self.selected === "left" ? self.leftclass : self.selected === "right" ? self.rightclass : null;
+
+      console.log(self.rightclass);
+      console.log(self.selected);
+      console.log(choice);
+
+      console.log(self.rightclass);
+
       if (choice !== null) choice = [runTemplate(choice, store.task.dataObj)];
 
-      return {
+      const obj = {
         id: self.pid,
         from_name: self.name,
         to_name: self.name,
         type: "pairwise",
         value: {
           selected: self.selected,
-          pairwise: choice,
         },
       };
+
+      if (choice !== null) {
+        obj.value["pairwise"] = choice;
+      }
+
+      return obj;
     },
 
     fromStateJSON(obj, fromModel) {
