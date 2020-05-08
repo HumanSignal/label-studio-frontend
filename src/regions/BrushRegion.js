@@ -125,13 +125,6 @@ const Model = types
 
     afterAttach() {},
 
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
-    },
-
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);

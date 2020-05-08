@@ -21,6 +21,10 @@ const RegionsMixin = types
       return states && states.filter(s => s.perregion === true);
     },
 
+    get store() {
+      return getRoot(self);
+    },
+
     get parent() {
       return getParent(self);
     },
@@ -152,18 +156,33 @@ const RegionsMixin = types
       self.completion.loadRegionState(self);
     },
 
-    unselectRegion() {
+    /**
+     * Common logic for unselection; specific actions should be in `afterUnselectRegion`
+     * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
+     */
+    unselectRegion(tryToKeepStates = false) {
       const completion = self.completion;
+      const parent = self.parent;
+      const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
 
       if (completion.relationMode) {
         completion.stopRelationMode();
       }
+      if (parent.setSelected) {
+        parent.setSelected(undefined);
+      }
 
       self.selected = false;
-      self.completion.setHighlightedNode(null);
+      completion.setHighlightedNode(null);
 
-      self.completion.unloadRegionState(self);
+      self.afterUnselectRegion();
+
+      if (!keepStates) {
+        completion.unloadRegionState(self);
+      }
     },
+
+    afterUnselectRegion() {},
 
     onClickRegion() {
       const completion = self.completion;
@@ -175,7 +194,7 @@ const RegionsMixin = types
         completion.regionStore.unselectAll();
       } else {
         if (self.selected) {
-          self.unselectRegion();
+          self.unselectRegion(true);
         } else {
           completion.regionStore.unselectAll();
           self.selectRegion();

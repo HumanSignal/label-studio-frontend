@@ -54,7 +54,7 @@ const Model = types
       let value = self._value;
       const tch = self.toTag.tiedChildren;
 
-      if (value.length <= Number(self.minlength)) {
+      if (value.length < Number(self.minlength)) {
         tch.filter(ch => !ch.visible).forEach(ch => ch.setVisible(true));
         return;
       }

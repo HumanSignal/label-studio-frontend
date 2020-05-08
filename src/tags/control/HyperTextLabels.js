@@ -44,11 +44,7 @@ const ModelAttrs = types
     },
   }));
 
-const Model = LabelMixin.props({ _type: "htmllabels" }).views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === "single";
-  },
-}));
+const Model = LabelMixin.props({ _type: "htmllabels" });
 
 const Composition = types.compose(
   LabelsModel,

@@ -1,6 +1,6 @@
 {
   "name": "label-studio",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
   "homepage": "https://labelstud.io",
   "author": {
