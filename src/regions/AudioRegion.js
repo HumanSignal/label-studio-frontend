@@ -94,7 +94,13 @@ const Model = types
       self.completion.loadRegionState(self);
 
       const el = self.wsRegionElement(self._ws_region);
-      if (el) el.scrollIntoView();
+      if (el) {
+        const container = window.document.scrollingElement;
+        const top = container.scrollTop;
+        const left = container.scrollLeft;
+        el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
+        window.document.scrollingElement.scrollTo(left, top);
+      }
     },
 
     /**
