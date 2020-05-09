@@ -73,13 +73,14 @@ if (process.env.NODE_ENV === "production") {
         ...params,
         task: {
           ...params.task,
-          data: JSON.stringify(params.task.data),
+          // data: JSON.stringify(params.task.data),
         },
       };
 
       let app = AppStore.create(params, enviroment.configureApplication(params));
 
-      app.initializeStore({ completions: params.task.completions, predictions: params.task.predictions });
+      app.initializeStore({ completions: [params.completion], predictions: params.predictions });
+      window.Htx = app;
 
       ReactDOM.render(
         <Provider store={app}>

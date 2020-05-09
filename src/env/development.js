@@ -8,7 +8,8 @@ import { DialogueAnalysis } from "../examples/dialogue_analysis"; // eslint-disa
 import { NamedEntity } from "../examples/named_entity"; // eslint-disable-line no-unused-vars
 import { References } from "../examples/references"; // eslint-disable-line no-unused-vars
 import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
-import { Nested } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
+import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
+import { Nested as NestedSimple } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
 
 /**
  * Audio
@@ -42,7 +43,13 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = Nested;
+const example = Nested;
+
+const datatypes = {
+  ImageBbox,
+  Nested,
+  NestedSimple,
+};
 
 /**
  * Get current config
@@ -57,8 +64,8 @@ async function getConfig(pathToConfig) {
 /**
  * Get custom config
  */
-async function getExample() {
-  let datatype = data;
+async function getExample(data = example) {
+  let datatype = typeof data === "string" ? datatypes[data] : data;
 
   let config = await getConfig(datatype.config);
   let task = {
@@ -69,6 +76,8 @@ async function getExample() {
 
   return { config, task, completion, predictions };
 }
+
+window.getExample = getExample;
 
 /**
  * Function to return App element
