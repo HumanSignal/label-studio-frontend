@@ -27,6 +27,15 @@ const VisibilityMixin = types
           },
 
           "choice-selected": ({ tagName, choiceValue }) => {
+            if (!tagName) {
+              for (let choices of self.completion.names.values()) {
+                if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
+                  return true;
+                }
+              }
+              return false;
+            }
+
             const tag = self.completion.names.get(tagName);
 
             if (!tag) return false;

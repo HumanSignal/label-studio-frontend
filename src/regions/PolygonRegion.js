@@ -159,17 +159,12 @@ const Model = types
       destroy(self.points);
     },
 
-    unselectRegion() {
+    afterUnselectRegion() {
       if (self.selectedPoint) {
         self.selectedPoint.selected = false;
       }
 
       // self.points.forEach(p => p.computeOffset());
-
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
     },
 
     updateAppearenceFromState() {

@@ -78,6 +78,18 @@ export default observer(({ store }) => {
           {/* > */}
           {/*   Show scores inside the regions */}
           {/* </Checkbox> */}
+
+          <br />
+          <Checkbox
+            value="Keep label selected after creating a region"
+            defaultChecked={store.settings.continuousLabeling}
+            onChange={() => {
+              store.settings.toggleContinuousLabeling();
+            }}
+          >
+            Keep label selected after creating a region
+          </Checkbox>
+
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}
