@@ -91,19 +91,21 @@ const Model = types
 
       if (self.valuetype === "url") {
         const url = self._value;
-        var request = new XMLHttpRequest();
-        request.open("GET", url, true);
-        request.send(null);
-        request.onreadystatechange = function() {
-          if (request.readyState === 4) {
-            if (request.status === 200) {
-              self.loadedValue(request.responseText);
-            } else {
-              InfoModal.error(`Loading URL (${url}) unsuccessful status: ${request.status}`);
-              self.loadedValue("");
-            }
-          }
-        };
+        if (!/^https?:\/\//.test(url)) {
+          InfoModal.error(`URL (${url}) is not valid`);
+          self.loadedValue("");
+          return;
+        }
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            return res.text();
+          })
+          .then(self.loadedValue)
+          .catch(e => {
+            InfoModal.error(`Loading URL (${url}) unsuccessful: ${e}`);
+            self.loadedValue("");
+          });
       } else {
         self.loadedValue(self._value);
       }
@@ -130,8 +132,8 @@ const Model = types
       // doesn't save the text into the result, otherwise it does
       // can be aslo directly configured
       if (self.savetextresult === "none") {
-        if (self.valuetype === "url") self.savetextresult = "false";
-        else if (self.valuetype === "text") self.savetextresult = "true";
+        if (self.valuetype === "url") self.savetextresult = "no";
+        else if (self.valuetype === "text") self.savetextresult = "yes";
       }
     },
 
