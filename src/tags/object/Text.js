@@ -14,6 +14,7 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Text tag shows an Text markup that can be labeled
@@ -32,6 +33,10 @@ const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
+  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
+
   selectionenabled: types.optional(types.boolean, true),
 
   highlightcolor: types.maybeNull(types.string),
@@ -48,6 +53,7 @@ const Model = types
   .model("TextModel", {
     id: types.optional(types.identifier, guidGenerator),
     type: "text",
+    loaded: types.optional(types.boolean, false),
     regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
@@ -82,12 +88,64 @@ const Model = types
 
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
+
+      if (self.valuetype === "url") {
+        const url = self._value;
+        if (!/^https?:\/\//.test(url)) {
+          InfoModal.error(`URL (${url}) is not valid`);
+          self.loadedValue("");
+          return;
+        }
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            return res.text();
+          })
+          .then(self.loadedValue)
+          .catch(e => {
+            InfoModal.error(`Loading URL (${url}) unsuccessful: ${e}`);
+            self.loadedValue("");
+          });
+      } else {
+        self.loadedValue(self._value);
+      }
+    },
+
+    loadedValue(val) {
+      self.loaded = true;
+      if (self.encoding === "base64") val = atob(val);
+      self._value = val;
+
+      self._regionsCache.forEach(({ region, completion }) => {
+        region.setText(self._value.substring(region.startOffset, region.endOffset));
+        self.regions.push(region);
+        completion.addRegion(region);
+      });
+
+      self._regionsCache = [];
+    },
+
+    afterCreate() {
+      self._regionsCache = [];
+
+      // security measure, if valuetype is set to url then LS
+      // doesn't save the text into the result, otherwise it does
+      // can be aslo directly configured
+      if (self.savetextresult === "none") {
+        if (self.valuetype === "url") self.savetextresult = "no";
+        else if (self.valuetype === "text") self.savetextresult = "yes";
+      }
     },
 
     createRegion(p) {
       const r = TextRegionModel.create(p);
 
       r._range = p._range;
+
+      if (self.valuetype === "url" && self.loaded === false) {
+        self._regionsCache.push({ region: r, completion: self.completion });
+        return;
+      }
 
       self.regions.push(r);
       self.completion.addRegion(r);
@@ -393,10 +451,9 @@ class TextPieceView extends Component {
   render() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
-    if (item.encoding === "base64") val = atob(val);
+    if (!item.loaded) return null;
 
-    val = val.split("\n").join("<br/>");
+    const val = item._value.split("\n").join("<br/>");
 
     return (
       <ObjectTag item={item}>
