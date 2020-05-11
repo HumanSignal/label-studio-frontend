@@ -100,3 +100,43 @@ Scenario("check good nested Choice for Text", async function(I) {
   assert.deepEqual(result[0].value.labels, ["Person"]);
   assert.deepEqual(result[1].value.choices, ["Female"]);
 });
+
+Scenario("check required param", async function(I) {
+  I.amOnPage("/");
+  I.executeAsyncScript(init, "Required");
+
+  // Add new Completion to be able to submit it
+  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  I.click("Submit");
+  I.waitForText("OK");
+  I.see("Warning");
+  I.see('Checkbox "validation-label" is required');
+  I.seeElement(".ant-modal");
+  I.click("OK");
+  I.waitToHide(".ant-modal");
+
+  I.click("Me neither");
+  I.click("Submit");
+  I.waitForText("OK");
+  I.see("Warning");
+  I.see('Checkbox "validation-label" is required');
+  I.seeElement(".ant-modal");
+  I.click("OK");
+  I.waitToHide(".ant-modal");
+
+  I.click("Valid");
+  I.click("Submit");
+  // Completion is submitted, so now we can only update it
+  I.dontSee("Submit");
+  I.see("Update");
+
+  // Reload to check another combination
+  I.executeAsyncScript(init, "Required");
+  // Page is reloaded, there are no new completion from prev steps
+  I.dontSee("New completion");
+  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  I.click("Valid");
+  I.click("Submit");
+  I.see("Warning");
+  I.see('Checkbox "second" is required');
+});

@@ -50,6 +50,7 @@ const datatypes = {
   ImageBbox,
   Nested,
   NestedSimple,
+  Required,
 };
 
 /**
