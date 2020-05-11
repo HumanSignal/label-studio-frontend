@@ -65,7 +65,7 @@
     "test": "set CI=true react-scripts test",
     "test:coverage": "npm test -- --coverage",
     "test:e2e": "cd codecept && npx codeceptjs run --steps",
-    "test:e2e:headless": "HEADLESS=true cd codecept && npx codeceptjs run --steps",
+    "test:e2e:headless": "cd codecept && HEADLESS=true npx codeceptjs run --steps",
     "eject": "react-scripts eject",
     "size": "npm run only-build && size-limit",
     "prettier": "prettier --write src/**/*.js",
