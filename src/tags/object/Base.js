@@ -9,7 +9,13 @@ const ObjectBase = types
   })
   .views(self => ({
     findRegion(params) {
-      return self.regions.find(r => lodash.isMatch(r, params));
+      let obj = null;
+
+      if (self._regionsCache && self._regionsCache.length) {
+        obj = self._regionsCache.find(({ region }) => lodash.isMatch(region, params));
+      }
+
+      return obj || self.regions.find(r => lodash.isMatch(r, params));
     },
   }))
   .actions(self => ({
