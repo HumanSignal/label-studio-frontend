@@ -34,14 +34,21 @@ const Model = types
       Utils.HTML.removeSpans(self._spans);
     },
 
+    setText(text) {
+      self.text = text;
+    },
+
     serialize(control, object) {
       let res = {
         value: {
           start: self.startOffset,
           end: self.endOffset,
-          text: self.text,
         },
       };
+
+      if (object.savetextresult === "yes") {
+        res.value["text"] = self.text;
+      }
 
       res.value = Object.assign(res.value, control.serializableValue);
 
