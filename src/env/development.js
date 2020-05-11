@@ -7,6 +7,7 @@ import Messages from "../utils/messages";
 import { DialogueAnalysis } from "../examples/dialogue_analysis"; // eslint-disable-line no-unused-vars
 import { NamedEntity } from "../examples/named_entity"; // eslint-disable-line no-unused-vars
 import { References } from "../examples/references"; // eslint-disable-line no-unused-vars
+import { Required } from "../examples/required"; // eslint-disable-line no-unused-vars
 import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
 import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
 import { Nested as NestedSimple } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
