@@ -388,17 +388,19 @@ const Model = types
      * Transform JSON data (completions and predictions) to format
      */
     fromStateJSON(obj, fromModel) {
-      // if (obj.value.choices) {
-      //   self
-      //     .completion()
-      //     .names.get(obj.from_name)
-      //     .fromStateJSON(obj);
-      // }
+      const tools = self.getToolsManager().allTools();
 
-      self
-        .getToolsManager()
-        .allTools()
-        .forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
+      // when there is only the image classification and nothing else, we need to handle it here
+      if (tools.length === 0 && obj.value.choices) {
+        self
+          .completion()
+          .names.get(obj.from_name)
+          .fromStateJSON(obj);
+
+        return;
+      }
+
+      tools.forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
     },
   }));
 

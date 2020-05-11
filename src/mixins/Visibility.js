@@ -45,7 +45,7 @@ const VisibilityMixin = types
               return choice && choice.selected ? true : false;
             }
 
-            return tag.holdsState;
+            return tag.isSelected;
           },
 
           "no-region-selected": ({ tagName }) => self.completion.highlightedNode === null,

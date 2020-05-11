@@ -3,6 +3,7 @@ import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { AllRegionsType } from "../regions";
 import { RelationsModel } from "../tags/control/Relations";
+import { TRAVERSE_SKIP } from "../core/Tree";
 
 /**
  * Relation between two different nodes
@@ -38,7 +39,7 @@ const Relation = types
       c.traverseTree(function(node) {
         if (node.type === "relations") {
           relations = node;
-          return "break";
+          return TRAVERSE_SKIP;
         }
       });
 

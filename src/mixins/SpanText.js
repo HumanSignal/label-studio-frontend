@@ -48,7 +48,7 @@ export default types
     getLabelColor() {
       let labelColor = self.parent.highlightcolor;
       if (!labelColor) {
-        const ls = self.states.find(s => s._type === "labels");
+        const ls = self.states.find(s => s._type.indexOf("labels") !== -1);
         if (ls) labelColor = ls.getSelectedColor();
       }
 
@@ -61,7 +61,9 @@ export default types
 
     applyCSSClass(lastSpan) {
       const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(self.states.filter(s => s._type === "labels").map(s => s.selectedValues()));
+      const names = Utils.Checkers.flatten(
+        self.states.filter(s => s._type.indexOf("labels") !== -1).map(s => s.selectedValues()),
+      );
 
       const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
         labels: names,
