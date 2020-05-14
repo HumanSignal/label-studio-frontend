@@ -45,6 +45,6 @@ src/examples
 build/static/media/config.*.xml
 
 # codecept screenshots
-codecept/output
+e2e/output
 
 yarn.lock
