@@ -5,7 +5,18 @@ const assert = require("assert");
 Feature("smoke test");
 
 // load custom example
-const init = async (example, done) => {
+/**
+ *
+ * @param {object} data
+ * @param {string} data.congig
+ * @param {object} data.task
+ * @param {number=} data.task.id
+ * @param {object} data.task.data
+ * @param {object[]} data.task.completions
+ * @param {object[]} data.task.predictions
+ * @param {function} done
+ */
+const init = async (data, done) => {
   const interfaces = [
     "panel",
     "update",
@@ -16,8 +27,7 @@ const init = async (example, done) => {
     "completions:delete",
     "predictions:menu",
   ];
-  const params = await window.getExample(example);
-  new window.LabelStudio("label-studio", { interfaces, example, ...params });
+  new window.LabelStudio("label-studio", { interfaces, ...data });
   done();
 };
 
@@ -39,8 +49,49 @@ const clickRect = () => {
 const serialize = () => window.Htx.completionStore.selected.serializeCompletion();
 
 Scenario("check Rect region for Image", async function(I) {
+  const data = {
+    config: `
+      <View>
+        <Image name="img" value="$image"></Image>
+        <RectangleLabels name="tag" toName="img">
+          <Label value="Planet"></Label>
+          <Label value="Moonwalker" background="blue"></Label>
+        </RectangleLabels>
+      </View>`,
+    task: {
+      data: {
+        image:
+          "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
+      },
+      completions: [
+        {
+          id: "1001",
+          lead_time: 15.053,
+          result: [
+            {
+              from_name: "tag",
+              id: "Dx_aB91ISN",
+              source: "$image",
+              to_name: "img",
+              type: "rectanglelabels",
+              value: {
+                height: 10.458911419423693,
+                rectanglelabels: ["Moonwalker"],
+                rotation: 0,
+                width: 12.4,
+                x: 50.8,
+                y: 5.869797225186766,
+              },
+            },
+          ],
+        },
+      ],
+      predictions: [],
+    },
+  };
+
   I.amOnPage("/");
-  I.executeAsyncScript(init, "ImageBbox");
+  I.executeAsyncScript(init, data);
 
   I.waitForVisible("canvas");
   I.see("Regions (1)");
