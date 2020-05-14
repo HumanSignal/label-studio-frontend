@@ -80,6 +80,7 @@ if (process.env.NODE_ENV === "production") {
       let app = AppStore.create(params, enviroment.configureApplication(params));
 
       app.initializeStore({ completions: params.task.completions, predictions: params.task.predictions });
+      window.Htx = app;
 
       ReactDOM.render(
         <Provider store={app}>

@@ -2,12 +2,24 @@ const { setHeadlessWhen } = require("@codeceptjs/configure");
 
 const headless = process.env.HEADLESS;
 
+// codecept can make screenshot on every step and create html
+// with "gif" and annotations. possible usage:
+// GIF=true yarn e2e:test:headless e2e/present_feature_test.js
+const recordVideo = process.env.GIF
+  ? {
+      stepByStepReport: {
+        enabled: true,
+        deleteSuccessful: false,
+      },
+    }
+  : null;
+
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
 setHeadlessWhen(headless);
 
 exports.config = {
-  tests: "./*_test.js",
+  tests: "./**/*.test.js",
   output: "./output",
   helpers: {
     Puppeteer: {
@@ -30,9 +42,6 @@ exports.config = {
     screenshotOnFail: {
       enabled: true,
     },
-    // stepByStepReport: {
-    //   enabled: true,
-    //   deleteSuccessful: false
-    // }
+    ...recordVideo,
   },
 };
