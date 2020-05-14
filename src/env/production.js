@@ -2,16 +2,14 @@ import External from "../core/External";
 import Messages from "../utils/messages";
 
 function getData(task) {
-  let mstTask = task;
-
-  if (mstTask && mstTask.data) {
-    mstTask = {
-      ...mstTask,
-      data: JSON.stringify(mstTask.data),
+  if (task && task.data) {
+    return {
+      ...task,
+      data: JSON.stringify(task.data),
     };
   }
 
-  return mstTask;
+  return task;
 }
 
 function getState(task) {
