@@ -44,14 +44,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const example = Nested;
-
-const datatypes = {
-  ImageBbox,
-  Nested,
-  NestedSimple,
-  Required,
-};
+const data = NamedEntity;
 
 /**
  * Get current config
@@ -66,8 +59,8 @@ async function getConfig(pathToConfig) {
 /**
  * Get custom config
  */
-async function getExample(data = example) {
-  let datatype = typeof data === "string" ? datatypes[data] : data;
+async function getExample() {
+  let datatype = data;
 
   let config = await getConfig(datatype.config);
   let task = {
@@ -78,8 +71,6 @@ async function getExample(data = example) {
 
   return { config, task, completion, predictions };
 }
-
-window.getExample = getExample;
 
 /**
  * Function to return App element
