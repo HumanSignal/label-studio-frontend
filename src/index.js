@@ -6,13 +6,10 @@ import "./assets/styles/global.scss";
 import * as serviceWorker from "./serviceWorker";
 import App from "./components/App/App";
 import AppStore from "./stores/AppStore";
-import DevelopmentEnvironment from "./env/development";
 import ProductionEnvironment from "./env/production";
 
-let environment = DevelopmentEnvironment;
-
 if (process.env.NODE_ENV === "production") {
-  environment = ProductionEnvironment;
+  const environment = ProductionEnvironment;
 
   window.LabelStudio = (element, options) => {
     let params = options;
@@ -42,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
     return app;
   };
 } else {
-  environment = DevelopmentEnvironment;
+  const environment = require("./env/development");
 
   window.LabelStudio = (element, options) => {
     let params = options;
