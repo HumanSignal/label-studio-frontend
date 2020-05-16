@@ -18,4 +18,4 @@ jobs:
       with:
         node-version: 12
     - run: npm i
-    - run: npm run build-bundle
+    - run: CI=false npm run build-bundle
