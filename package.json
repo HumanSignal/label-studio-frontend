@@ -65,7 +65,7 @@
   "scripts": {
     "build-bundle": "npm run build:final",
     "build-notsourcemap": "GENERATE_SOURCEMAP=false npm run build",
-    "build:final": "BUILD_NO_CHUNKS=true BUILD_NO_HASH=true npm run build",
+    "build:final": "BUILD_NO_CHUNKS=true npm run build",
     "build": "react-app-rewired build",
     "copy-examples": "bash scripts/copy.sh",
     "eject": "react-scripts eject",
