@@ -1,4 +1,4 @@
-name: Build LSF
+name: E2E Test
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 jobs:
   e2e:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -17,4 +16,14 @@ jobs:
       with:
         node-version: 12
     - run: npm i
+    - run: npm run build-bundle
+    - run: npx serve -l tcp://localhost:3000 build &
     - run: npm run test:e2e:headless
+
+  # serve:
+  #   steps:
+  #   - run: npx serve -l tcp://localhost:3000 build
+
+  # e2e:
+  #   steps:
+  #   -run: npm run test:e2e:headless
