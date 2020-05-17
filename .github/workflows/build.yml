@@ -13,15 +13,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 12
-      uses: actions/setup-node@v1
+    - uses: actions/setup-node@v1
       with:
         node-version: 12
         registry-url: https://npm.pkg.github.com/
     - run: npm i
     - run: CI=false npm publish
       env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - uses: actions/upload-artifact@master
       with:
