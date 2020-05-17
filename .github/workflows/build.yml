@@ -18,9 +18,7 @@ jobs:
         node-version: 12
         registry-url: https://npm.pkg.github.com/
     - run: npm i
-    - run: CI=false npm publish --registry https://npm.pkg.github.com/
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - run: CI=false npm run build-bundle
     - uses: actions/upload-artifact@master
       with:
         name: webpack artifacts
