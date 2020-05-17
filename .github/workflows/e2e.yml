@@ -17,6 +17,8 @@ jobs:
         node-version: 12
     - run: npm i
     - run: npm run build-bundle
+      env:
+        CI: false
     - run: npx serve -l tcp://localhost:3000 build &
     - run: npm run test:e2e:headless
 
