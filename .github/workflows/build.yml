@@ -19,3 +19,7 @@ jobs:
         node-version: 12
     - run: npm i
     - run: CI=false npm run build-bundle
+    - uses: actions/upload-artifact@master
+      with:
+        name: webpack artifacts
+        path: build/
