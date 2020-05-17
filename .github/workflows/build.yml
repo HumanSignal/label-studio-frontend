@@ -18,11 +18,10 @@ jobs:
       with:
         node-version: 12
     - run: npm i
-    - run: CI=false npm run build-bundle
+    - run: CI=false npm publish
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - uses: actions/upload-artifact@master
       with:
         name: webpack artifacts
         path: build/
-    - run: npm publish
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
