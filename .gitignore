@@ -1,6 +1,9 @@
 *~
 __pycache__/
 
+#Build are not in git anymore, see GitHub Actions artifacts
+build/
+
 # Logs
 logs
 *.log
