@@ -17,6 +17,7 @@ jobs:
       with:
         node-version: 12
         registry-url: https://npm.pkg.github.com/
+    - run: echo ${{ toJson(github.event) }}
     - run: npm i
     - run: npm run build-bundle
       env:
