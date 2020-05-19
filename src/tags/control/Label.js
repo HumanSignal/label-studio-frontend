@@ -26,6 +26,7 @@ import { runTemplate } from "../../core/Template";
  * @name Label
  * @param {string} value                    - value of the label
  * @param {boolean} [selected=false]        - if this label should be preselected
+ * @param {number} [maxUsages]              - maximum available usages
  * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
  * @param {string} [alias]                  - label alias
  * @param {boolean} [showAlias=false]       - show alias inside label text
@@ -37,6 +38,7 @@ import { runTemplate } from "../../core/Template";
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   selected: types.optional(types.boolean, false),
+  maxUsages: types.maybeNull(types.number),
   alias: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
@@ -56,6 +58,19 @@ const Model = types
   .views(self => ({
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    usedAlready() {
+      const regions = self.completion.regionStore.regions;
+      // count all the usages among all the regions
+      const used = regions.reduce((s, r) => s + r.hasLabelState(self.value), 0);
+      return used;
+    },
+
+    canBeUsed() {
+      const maxUsages = self.maxUsages || self.parent.maxUsages;
+      if (!maxUsages) return true;
+      return self.usedAlready() < maxUsages;
     },
 
     get parent() {
@@ -83,6 +98,9 @@ const Model = types
 
       // one more check if that label can be selected
       if (!self.completion.editable) return;
+
+      // don't select if it can not be used
+      if (!self.selected && !self.canBeUsed()) return;
 
       const labels = self.parent;
 
