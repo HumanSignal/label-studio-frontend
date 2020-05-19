@@ -154,8 +154,12 @@ const Model = types
     },
 
     addRegion(range) {
+      self.states().forEach(s => s.checkMaxUsages());
       const states = self.activeStates();
-      if (states.length === 0) return;
+      if (states.length === 0) {
+        self.completion.regionStore.unselectAll(true);
+        return;
+      }
 
       const clonedStates = states.map(s => cloneNode(s));
 
@@ -385,8 +389,10 @@ class TextPieceView extends Component {
     ev.nativeEvent.doSelection = true;
 
     const htxRange = item.addRegion(selectedRanges[0]);
-    const spans = htxRange.createSpans();
-    htxRange.addEventsToSpans(spans);
+    if (htxRange) {
+      const spans = htxRange.createSpans();
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {
