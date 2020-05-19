@@ -38,7 +38,7 @@ import { runTemplate } from "../../core/Template";
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   selected: types.optional(types.boolean, false),
-  maxUsages: types.maybeNull(types.number),
+  maxusages: types.maybeNull(types.string),
   alias: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
@@ -68,7 +68,7 @@ const Model = types
     },
 
     canBeUsed() {
-      const maxUsages = self.maxUsages || self.parent.maxUsages;
+      const maxUsages = Number(self.maxusages || self.parent.maxusages);
       if (!maxUsages) return true;
       return self.usedAlready() < maxUsages;
     },

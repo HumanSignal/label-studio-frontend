@@ -37,7 +37,7 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
-  maxUsages: types.maybeNull(types.number),
+  maxusages: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, true),
 });
 
