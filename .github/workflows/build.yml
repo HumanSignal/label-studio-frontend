@@ -1,0 +1,38 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    # ci can be skipped with `[skip ci]` prefix in message
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+
+    # Cache npm deps; better to depend on lock-files but
+    # package-lock.json is outdated and yarn.lock is out of git
+    - name: Cache node modules
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: ~/.npm
+        key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+    - run: npm i
+    - run: npm run build-bundle
+      env:
+        CI: false # on true webpack breaks on warnings, and we have them a lot
+    - uses: actions/upload-artifact@master
+      with:
+        name: build ${{github.sha}}
+        path: build/
