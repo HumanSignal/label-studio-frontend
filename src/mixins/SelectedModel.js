@@ -50,7 +50,9 @@ const SelectedModelMixin = types
     },
 
     checkMaxUsages() {
-      self.tiedChildren.forEach(c => !c.canBeUsed() && c.setSelected(false));
+      const list = self.tiedChildren.filter(c => !c.canBeUsed());
+      if (list.length) list.forEach(c => c.setSelected(false));
+      return list;
     },
 
     selectFirstVisible() {

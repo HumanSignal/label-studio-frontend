@@ -12,6 +12,7 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Image tag shows an image on the page
@@ -343,9 +344,13 @@ const Model = types
     // check that maxUsages was not exceeded
     // and if it was - don't allow to create new region and unselect all regions
     checkLabels() {
-      self.states().forEach(s => s.checkMaxUsages());
+      const exceeded = self.states().reduce((list, s) => list.concat(s.checkMaxUsages()), []);
       const states = self.activeStates();
       if (states.length === 0) {
+        if (exceeded.length) {
+          const label = exceeded[0];
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+        }
         self.completion().regionStore.unselectAll(true);
         return false;
       }
