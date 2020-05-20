@@ -12,6 +12,7 @@ import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Label tag represents a single label
@@ -60,6 +61,10 @@ const Model = types
       return getRoot(self).completionStore.selected;
     },
 
+    get maxUsages() {
+      return Number(self.maxusages || self.parent.maxusages);
+    },
+
     usedAlready() {
       const regions = self.completion.regionStore.regions;
       // count all the usages among all the regions
@@ -68,9 +73,8 @@ const Model = types
     },
 
     canBeUsed() {
-      const maxUsages = Number(self.maxusages || self.parent.maxusages);
-      if (!maxUsages) return true;
-      return self.usedAlready() < maxUsages;
+      if (!self.maxUsages) return true;
+      return self.usedAlready() < self.maxUsages;
     },
 
     get parent() {
@@ -100,7 +104,10 @@ const Model = types
       if (!self.completion.editable) return;
 
       // don't select if it can not be used
-      if (!self.selected && !self.canBeUsed()) return;
+      if (!self.selected && !self.canBeUsed()) {
+        InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
+        return;
+      }
 
       const labels = self.parent;
 

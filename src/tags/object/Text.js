@@ -154,9 +154,13 @@ const Model = types
     },
 
     addRegion(range) {
-      self.states().forEach(s => s.checkMaxUsages());
+      const exceeded = self.states().reduce((list, s) => list.concat(s.checkMaxUsages()), []);
       const states = self.activeStates();
       if (states.length === 0) {
+        if (exceeded.length) {
+          const label = exceeded[0];
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+        }
         self.completion.regionStore.unselectAll(true);
         return;
       }
