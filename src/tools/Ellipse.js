@@ -48,6 +48,8 @@ const _Tool = types
     mousedownEv(ev, [x, y]) {
       if (self.control.type === "ellipselabels" && !self.control.isSelected) return;
 
+      if (!self.obj.checkLabels()) return;
+
       self.mode = "drawing";
 
       const sap = self.statesAndParams;

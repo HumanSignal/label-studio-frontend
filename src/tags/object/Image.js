@@ -175,6 +175,11 @@ const Model = types
       return self.completion().toNames.get(self.name);
     },
 
+    activeStates() {
+      const states = self.states();
+      return states && states.filter(s => s.isSelected && s._type.includes("labels"));
+    },
+
     controlButton() {
       const names = self.states();
       if (!names || names.length === 0) return;
@@ -333,6 +338,18 @@ const Model = types
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+    },
+
+    // check that maxUsages was not exceeded
+    // and if it was - don't allow to create new region and unselect all regions
+    checkLabels() {
+      self.states().forEach(s => s.checkMaxUsages());
+      const states = self.activeStates();
+      if (states.length === 0) {
+        self.completion().regionStore.unselectAll(true);
+        return false;
+      }
+      return true;
     },
 
     addShape(shape) {
