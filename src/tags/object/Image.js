@@ -344,7 +344,7 @@ const Model = types
     // check that maxUsages was not exceeded
     // and if it was - don't allow to create new region and unselect all regions
     checkLabels() {
-      const exceeded = self.states().reduce((list, s) => list.concat(s.checkMaxUsages()), []);
+      const exceeded = self.states().reduce((list, s) => (s.checkMaxUsages ? list.concat(s.checkMaxUsages()) : []), []);
       const states = self.activeStates();
       if (states.length === 0) {
         if (exceeded.length) {
