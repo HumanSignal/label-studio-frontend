@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
     return app;
   };
 } else {
-  const environment = require("./env/development");
+  const environment = require("./env/development").default;
 
   window.LabelStudio = (element, options) => {
     let params = options;
