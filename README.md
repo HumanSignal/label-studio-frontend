@@ -1,4 +1,4 @@
-# Label Studio Frontend &middot; ![GitHub](https://img.shields.io/github/license/heartexlabs/label-studio?logo=heartex) [![Build Status](https://travis-ci.com/heartexlabs/label-studio.svg?branch=master)](https://travis-ci.com/heartexlabs/label-studio) ![GitHub release](https://img.shields.io/github/v/release/heartexlabs/label-studio-frontend?include_prereleases) &middot; :sunny:
+# Label Studio Frontend &middot; ![GitHub](https://img.shields.io/github/license/heartexlabs/label-studio?logo=heartex) ![build](https://github.com/heartexlabs/label-studio-frontend/workflows/Build%20and%20Test/badge.svg) ![GitHub release](https://img.shields.io/github/v/release/heartexlabs/label-studio-frontend?include_prereleases) &middot; :sunny:
 
 [Website](https://labelstud.io/) • [Docs](https://labelstud.io/guide) • [Twitter](https://twitter.com/heartexlabs) • [Join Slack Community <img src="https://go.heartex.net/docs/images/slack-mini.png" width="18px"/>](https://docs.google.com/forms/d/e/1FAIpQLSdLHZx5EeT1J350JPwnY2xLanfmvplJi6VZk65C2R4XSsRBHg/viewform?usp=sf_link)
 
@@ -20,13 +20,13 @@ npm install label-studio
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->
-<link href="https://unpkg.com/label-studio@0.4.0/build/static/css/main.14acfaa5.css" rel="stylesheet">
+<link href="https://unpkg.com/label-studio@0.6.0/build/static/css/main.c830ba2e.css" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
 <div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/label-studio@0.4.0/build/static/js/main.0249ea16.js"></script>
+<script src="https://unpkg.com/label-studio@0.6.0/build/static/js/main.35f2860c.js"></script>
 
 <!-- Initialize Label Studio -->
 <script>
