@@ -51,10 +51,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
-
     afterCreate() {
       const poly = Tools.Polygon.create();
       const floodFill = Tools.FloodFill.create();

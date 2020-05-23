@@ -94,6 +94,21 @@ const Model = types
         if (sel.length === 1 && sel[0]._value === self._value) return;
       }
 
+      // if we are going to select label and it would be the first in this labels group
+      if (!labels.selectedLabels.length && !self.selected) {
+        // unselect labels from other groups of labels connected to this obj
+        self.completion.toNames
+          .get(labels.toname)
+          .forEach(tag => tag.name !== labels.name && tag.unselectAll && tag.unselectAll());
+
+        // unselect other tools if they exist and selected
+        const tool = Object.values(self.parent.tools || {})[0];
+        if (tool && tool.manager.findSelectedTool() !== tool) {
+          tool.manager.unselectAll();
+          tool.setSelected(true);
+        }
+      }
+
       /**
        * Multiple
        */

@@ -26,10 +26,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
-
     afterCreate() {
       const brush = Tools.Brush.create();
       const erase = Tools.Erase.create();
