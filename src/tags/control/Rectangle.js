@@ -46,10 +46,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
-
     afterCreate() {
       const rect = Tools.Rect.create({ activeShape: null });
       rect._control = self;
