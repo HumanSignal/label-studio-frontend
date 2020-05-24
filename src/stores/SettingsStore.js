@@ -47,27 +47,31 @@ const SettingsModel = types
   }))
   .actions(self => ({
     afterCreate() {
-      const { localStorage } = window;
-
-      if (localStorage) {
-        const lsKey = "labelStudio:settings";
-
-        // load settings from the browser store
-        const lss = localStorage.getItem(lsKey);
-        if (lss) {
-          const lsp = JSON.parse(lss);
-          typeof lsp === "object" &&
-            lsp !== null &&
-            Object.keys(lsp).forEach(k => {
-              if (k in self) self[k] = lsp[k];
-            });
-        }
-
-        // capture changes and save it
-        onSnapshot(self, ss => {
-          localStorage.setItem(lsKey, JSON.stringify(ss));
-        });
+      // sandboxed environment may break even on check of this property
+      try {
+        const { localStorage } = window;
+        if (!localStorage) return;
+      } catch (e) {
+        return;
       }
+
+      const lsKey = "labelStudio:settings";
+
+      // load settings from the browser store
+      const lss = localStorage.getItem(lsKey);
+      if (lss) {
+        const lsp = JSON.parse(lss);
+        typeof lsp === "object" &&
+          lsp !== null &&
+          Object.keys(lsp).forEach(k => {
+            if (k in self) self[k] = lsp[k];
+          });
+      }
+
+      // capture changes and save it
+      onSnapshot(self, ss => {
+        localStorage.setItem(lsKey, JSON.stringify(ss));
+      });
     },
 
     //   toggleShowScore() {
