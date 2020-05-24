@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import { Provider } from "mobx-react";
 
 import "./assets/styles/global.scss";
-import * as serviceWorker from "./serviceWorker";
 import App from "./components/App/App";
 import AppStore from "./stores/AppStore";
 import ProductionEnvironment from "./env/production";
@@ -90,8 +89,3 @@ if (process.env.NODE_ENV === "production") {
     }
   };
 }
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
