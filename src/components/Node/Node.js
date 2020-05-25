@@ -40,6 +40,16 @@ const NodeViews = {
     </Fragment>
   ),
 
+  DialogueRegionModel: (node, click) => (
+    <Fragment>
+      <span onClick={click} className={styles.node}>
+        <FontColorsOutlined style={pt} />
+        &nbsp; Dialogue &nbsp;
+        <span style={{ color: "#5a5a5a" }}>{node.text}</span>
+      </span>
+    </Fragment>
+  ),
+
   AudioRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
@@ -197,6 +207,14 @@ const NodeMinimal = ({ node }) => {
     return (
       <Fragment>
         <FontColorsOutlined /> &nbsp; HTML
+      </Fragment>
+    );
+  }
+
+  if (getType(node).name === "DialogueRegionModel") {
+    return (
+      <Fragment>
+        <FontColorsOutlined /> &nbsp; Dialogue
       </Fragment>
     );
   }
