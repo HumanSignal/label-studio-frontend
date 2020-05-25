@@ -9,7 +9,8 @@ import { NamedEntity } from "../examples/named_entity"; // eslint-disable-line n
 import { References } from "../examples/references"; // eslint-disable-line no-unused-vars
 import { Required } from "../examples/required"; // eslint-disable-line no-unused-vars
 import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
-import { Nested } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
+import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
+import { Nested as NestedSimple } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
 
 /**
  * Audio
@@ -43,7 +44,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = NamedEntity;
+const data = ImageBbox;
 
 /**
  * Get current config
