@@ -3,5 +3,5 @@
     <Label value="Important Stuff"></Label>
     <Label value="Random talk"></Label>
   </HyperTextLabels>
-  <Paragraphs name="text" value="$dialogue" layout="dialogue" />
+  <Paragraphs name="text" value="$dialogue" layout="dialogue" savetextresult="yes" />
 </View>

@@ -42,6 +42,8 @@ const TagAttrs = types.model("ParagraphsModel", {
 
   layout: types.optional(types.enumeration(["none", "dialogue"]), "none"),
 
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
+
   namekey: types.optional(types.string, "author"),
   textkey: types.optional(types.string, "text"),
 });
