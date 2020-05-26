@@ -17,7 +17,7 @@ import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
 
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
 
 const templateElement = element => {
   return (
@@ -41,13 +41,16 @@ const RenderStates = observer(({ node }) => {
     if (getType(s).name.indexOf("Labels") !== -1) {
       return templateElement(s);
     } else if (getType(s).name === "RatingModel") {
-      return <Text>Rating: {s.getSelectedString()}</Text>;
+      return <Paragraph>Rating: {s.getSelectedString()}</Paragraph>;
     } else if (getType(s).name === "TextAreaModel") {
       const text = s.regions.map(r => r._value).join("\n");
       return (
-        <Text>
-          Text: <Text mark>{text.substring(0, 26)}...</Text>
-        </Text>
+        <Paragraph className={styles.row}>
+          <Text>Text: </Text>
+          <Text mark className={styles.long}>
+            {text}
+          </Text>
+        </Paragraph>
       );
     }
 
