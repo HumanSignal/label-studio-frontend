@@ -117,10 +117,9 @@ const ToolMixin = types
         // states = [states];
       }
 
-      const params = self.paramsFromStates([states]);
-      const moreParams = self.moreRegionParams(obj);
-
       if (controlTagTypes.includes(obj.type)) {
+        const params = self.paramsFromStates([states]);
+        const moreParams = self.moreRegionParams(obj);
         const data = {
           pid: obj.id,
           score: obj.score,
