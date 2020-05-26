@@ -132,7 +132,7 @@ const ToolMixin = types
         };
 
         r = self.createRegion(data);
-      } else {
+      } else if (fm.perregion) {
         const m = restoreNewsnapshot(fromModel);
 
         // [TODO] this is a poor mans findRegion for the image
@@ -141,7 +141,7 @@ const ToolMixin = types
         // id, which might not be the case since it'd a good
         // practice to have unique ids
         const { regions } = self.obj;
-        let r = regions.find(r => r.pid == obj.id);
+        r = regions.find(r => r.pid == obj.id);
 
         // r = self.findRegion(obj.value);
 
