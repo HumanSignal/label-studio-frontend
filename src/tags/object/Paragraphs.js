@@ -188,13 +188,24 @@ class HtxParagraphsView extends Component {
   }
 
   captureDocumentSelection() {
+    const cls = this.props.item.layoutClasses;
+    const names = [...this.myRef.current.getElementsByClassName(cls.name)];
+    names.forEach(el => {
+      el.style.visibility = "hidden";
+    });
+
     var i,
       self = this,
       ranges = [],
       rangesToIgnore = [],
       selection = window.getSelection();
 
-    if (selection.isCollapsed) return [];
+    if (selection.isCollapsed) {
+      names.forEach(el => {
+        el.style.visibility = "unset";
+      });
+      return [];
+    }
 
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
@@ -219,6 +230,10 @@ class HtxParagraphsView extends Component {
         }
       } catch (err) {}
     }
+
+    names.forEach(el => {
+      el.style.visibility = "unset";
+    });
 
     // BrowserRange#normalize() modifies the DOM structure and deselects the
     // underlying text as a result. So here we remove the selected ranges and
