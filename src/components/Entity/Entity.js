@@ -52,6 +52,8 @@ const RenderStates = observer(({ node }) => {
           </Text>
         </Paragraph>
       );
+    } else if (getType(s).name === "ChoicesModel") {
+      return <Paragraph>Choices: {s.getSelectedString(", ")}</Paragraph>;
     }
 
     return null;
