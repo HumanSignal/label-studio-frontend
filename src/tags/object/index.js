@@ -3,6 +3,6 @@ import { AudioPlusModel } from "./AudioPlus";
 import { HyperTextModel } from "./HyperText";
 import { ImageModel } from "./Image";
 import { TextModel } from "./Text";
-import { DialogueModel } from "./Dialogue";
+import { ParagraphsModel } from "./Paragraphs";
 
-export { AudioModel, AudioPlusModel, HyperTextModel, ImageModel, TextModel, DialogueModel };
+export { AudioModel, AudioPlusModel, HyperTextModel, ImageModel, TextModel, ParagraphsModel };

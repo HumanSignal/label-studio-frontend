@@ -10,11 +10,11 @@ import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
-import { DialogueModel } from "../tags/object/Dialogue";
+import { ParagraphsModel } from "../tags/object/Paragraphs";
 import { guidGenerator } from "../core/Helpers";
 
 const Model = types
-  .model("DialogueRegionModel", {
+  .model("ParagraphsRegionModel", {
     type: "textrange",
 
     startOffset: types.integer,
@@ -27,7 +27,7 @@ const Model = types
   })
   .views(self => ({
     get parent() {
-      return getParentOfType(self, DialogueModel);
+      return getParentOfType(self, ParagraphsModel);
     },
   }))
   .actions(self => ({
@@ -35,7 +35,7 @@ const Model = types
       Utils.HTML.removeSpans(self._spans);
     },
 
-    setDialogue(text) {
+    setParagraphs(text) {
       self.text = text;
     },
 
@@ -65,8 +65,8 @@ const Model = types
     },
   }));
 
-const DialogueRegionModel = types.compose(
-  "DialogueRegionModel",
+const ParagraphsRegionModel = types.compose(
+  "ParagraphsRegionModel",
   WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
@@ -74,4 +74,4 @@ const DialogueRegionModel = types.compose(
   SpanTextMixin,
 );
 
-export { DialogueRegionModel };
+export { ParagraphsRegionModel };

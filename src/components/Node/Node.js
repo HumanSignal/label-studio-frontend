@@ -40,11 +40,11 @@ const NodeViews = {
     </Fragment>
   ),
 
-  DialogueRegionModel: (node, click) => (
+  ParagraphsRegionModel: (node, click) => (
     <Fragment>
       <span onClick={click} className={styles.node}>
         <FontColorsOutlined style={pt} />
-        &nbsp; Dialogue &nbsp;
+        &nbsp; Paragraphs &nbsp;
         <span style={{ color: "#5a5a5a" }}>{node.text}</span>
       </span>
     </Fragment>
@@ -211,10 +211,10 @@ const NodeMinimal = ({ node }) => {
     );
   }
 
-  if (getType(node).name === "DialogueRegionModel") {
+  if (getType(node).name === "ParagraphsRegionModel") {
     return (
       <Fragment>
-        <FontColorsOutlined /> &nbsp; Dialogue
+        <FontColorsOutlined /> &nbsp; Paragraphs
       </Fragment>
     );
   }

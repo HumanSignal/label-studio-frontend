@@ -10,19 +10,19 @@ import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { HyperTextModel, HtxHyperTextView } from "./HyperText";
-import { DialogueRegionModel } from "../../regions/DialogueRegion";
+import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
-import styles from "./Dialogue/Dialogue.module.scss";
+import styles from "./Paragraphs/Paragraphs.module.scss";
 import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
- * Dialogue tag shows an Dialogue markup that can be labeled
+ * Paragraphs tag shows an Paragraphs markup that can be labeled
  * @example
- * <Dialogue name="dialogue-1" value="$dialogue" granularity="symbol" highlightColor="#ff0000" />
- * @name Dialogue
+ * <Paragraphs name="dialogue-1" value="$dialogue" granularity="symbol" highlightColor="#ff0000" />
+ * @name Paragraphs
  * @param {string} name                      - name of the element
  * @param {string} value                     - value of the element
  * @param {boolean} [selectionEnabled=true]  - enable or disable selection
@@ -31,7 +31,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * @param {boolean} [showLabels=true]        - show labels next to the region
  * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
  */
-const TagAttrs = types.model("DialogueModel", {
+const TagAttrs = types.model("ParagraphsModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
@@ -41,13 +41,16 @@ const TagAttrs = types.model("DialogueModel", {
   encoding: types.optional(types.enumeration(["string", "base64"]), "string"),
 
   layout: types.optional(types.enumeration(["none", "dialogue"]), "none"),
+
+  namekey: types.optional(types.string, "author"),
+  textkey: types.optional(types.string, "text"),
 });
 
 const Model = types
-  .model("DialogueModel", {
+  .model("ParagraphsModel", {
     id: types.optional(types.identifier, guidGenerator),
-    type: "dialogue",
-    regions: types.array(DialogueRegionModel),
+    type: "paragraphs",
+    regions: types.array(ParagraphsRegionModel),
     //_value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -67,10 +70,11 @@ const Model = types
       return store.task.dataObj[val];
     },
 
-    layoutStyles({ name }) {
+    layoutStyles(data) {
       if (self.layout === "dialogue") {
+        const seed = data[self.namekey];
         return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: name })[0], 0.2) },
+          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: seed })[0], 0.1) },
         };
       }
 
@@ -105,7 +109,7 @@ const Model = types
     },
 
     createRegion(p) {
-      const r = DialogueRegionModel.create({
+      const r = ParagraphsRegionModel.create({
         pid: p.id,
         ...p,
       });
@@ -155,7 +159,7 @@ const Model = types
         start: startXpath,
         end: endXpath,
 
-        // TODO need a way to get the text
+        // [TODO|Andrew] need a way to get the text
         text: "",
         score: obj.score,
         readonly: obj.readonly,
@@ -171,16 +175,15 @@ const Model = types
     },
   }));
 
-const DialogueModel = types.compose("DialogueModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase);
 
-class HtxDialogueView extends Component {
+class HtxParagraphsView extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
   }
 
   getSelectionText(sel) {
-    console.log(sel.toString().split("\n"));
     return sel.toString();
   }
 
@@ -285,8 +288,8 @@ class HtxDialogueView extends Component {
 
       return (
         <div key={`${item.name}-${idx}`} className={styles.phrase} style={style.phrase}>
-          <span className={cls.name}>{v["name"]}</span>
-          <span className={cls.text}>{v["text"]}</span>
+          <span className={cls.name}>{v[item.namekey]}</span>
+          <span className={cls.text}>{v[item.textkey]}</span>
         </div>
       );
     });
@@ -307,8 +310,8 @@ class HtxDialogueView extends Component {
   }
 }
 
-const HtxDialogue = inject("store")(observer(HtxDialogueView));
+const HtxParagraphs = inject("store")(observer(HtxParagraphsView));
 
-Registry.addTag("dialogue", DialogueModel, HtxDialogue);
+Registry.addTag("paragraphs", ParagraphsModel, HtxParagraphs);
 
-export { DialogueModel, HtxDialogue };
+export { ParagraphsModel, HtxParagraphs };

@@ -10,6 +10,7 @@ import { References } from "../examples/references"; // eslint-disable-line no-u
 import { Required } from "../examples/required"; // eslint-disable-line no-unused-vars
 import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
 import { Nested } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
+import { Dialogue } from "../examples/phrases"; // eslint-disable-line no-unused-vars
 
 /**
  * Audio
@@ -43,7 +44,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = NamedEntity;
+const data = Dialogue;
 
 /**
  * Get current config
