@@ -6,8 +6,8 @@ import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js";
 import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
-import { Slider, InputNumber, Row, Col, Menu, Dropdown, Button, message, Tooltip } from "antd";
-import { SoundOutlined, DownOutlined, UserOutlined } from "@ant-design/icons";
+import { Slider, Row, Col, Select } from "antd";
+import { SoundOutlined } from "@ant-design/icons";
 import lodash from "../../utils/lodash";
 
 /**
@@ -347,27 +347,7 @@ export default class Waveform extends React.Component {
   render() {
     const self = this;
 
-    const keymap = {
-      "1": 0.5,
-      "2": 1.0,
-      "3": 1.25,
-      "4": 1.5,
-      "5": 2.0,
-    };
-
-    const menu = (
-      <Menu
-        onClick={({ item, key }) => {
-          self.onChangeSpeed(keymap[key]);
-        }}
-      >
-        <Menu.Item key="1">0.5</Menu.Item>
-        <Menu.Item key="2">1.0</Menu.Item>
-        <Menu.Item key="3">1.25</Menu.Item>
-        <Menu.Item key="4">1.5</Menu.Item>
-        <Menu.Item key="5">2.0</Menu.Item>
-      </Menu>
-    );
+    const speeds = ["0.5", "1.0", "1.25", "1.5", "2.0"];
 
     return (
       <div>
@@ -376,8 +356,8 @@ export default class Waveform extends React.Component {
         <div id="timeline" />
 
         {this.props.zoom && (
-          <Row style={{ marginTop: "1em" }}>
-            <Col span={16} style={{ textAlign: "right", marginTop: "6px", marginRight: "1em" }}>
+          <Row gutter={16} style={{ marginTop: "1em" }}>
+            <Col flex={12} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
                   <a onClick={this.onZoomMinus} href="">
@@ -402,7 +382,7 @@ export default class Waveform extends React.Component {
                 </div>
               </div>
             </Col>
-            <Col span={4} style={{ marginRight: "1em" }}>
+            <Col flex={3}>
               {this.props.volume && (
                 <div style={{ display: "flex", marginTop: "6.5px" }}>
                   <div style={{ width: "100%" }}>
@@ -422,13 +402,20 @@ export default class Waveform extends React.Component {
                 </div>
               )}
             </Col>
-            <Col span={2} style={{ marginTop: "6px", minWidth: "90px" }}>
+            <Col flex={1} style={{ marginTop: "6px" }}>
               {this.props.speed && (
-                <Dropdown overlay={menu}>
-                  <Button>
-                    Speed <DownOutlined />
-                  </Button>
-                </Dropdown>
+                <Select
+                  placeholder="Speed"
+                  style={{ width: "100%" }}
+                  defaultValue={this.state.speed}
+                  onChange={self.onChangeSpeed}
+                >
+                  {speeds.map(speed => (
+                    <Select.Option value={+speed} key={speed}>
+                      Speed {speed}
+                    </Select.Option>
+                  ))}
+                </Select>
               )}
             </Col>
           </Row>

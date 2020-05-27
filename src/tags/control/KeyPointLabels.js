@@ -49,11 +49,7 @@ const ModelAttrs = types
     },
   }));
 
-const Model = LabelMixin.props({ _type: "keypointlabels" }).views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === "single";
-  },
-}));
+const Model = LabelMixin.props({ _type: "keypointlabels" });
 
 const Composition = types.compose(
   LabelsModel,
@@ -65,7 +61,10 @@ const Composition = types.compose(
   ControlBase,
 );
 
-const KeyPointLabelsModel = types.compose("KeyPointLabelsModel", Composition);
+const KeyPointLabelsModel = types.compose(
+  "KeyPointLabelsModel",
+  Composition,
+);
 
 const HtxKeyPointLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;

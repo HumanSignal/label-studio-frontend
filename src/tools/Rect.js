@@ -80,13 +80,17 @@ const _Tool = types
         destroy(s);
         if (self.control.type === "rectanglelabels") self.control.unselectAll();
       } else {
-        self.obj.completion().highlightedNode.unselectRegion();
+        self.obj.completion().highlightedNode.unselectRegion(true);
       }
 
       self.mode = "viewing";
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, _Tool);
+const Rect = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Rect };

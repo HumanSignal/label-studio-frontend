@@ -344,6 +344,8 @@ const Model = types
     },
 
     getEvCoords(ev) {
+      if (!ev.evt) return [];
+
       const x = (ev.evt.offsetX - self.zoomingPositionX) / self.zoomScale;
       const y = (ev.evt.offsetY - self.zoomingPositionY) / self.zoomScale;
 
@@ -386,21 +388,29 @@ const Model = types
      * Transform JSON data (completions and predictions) to format
      */
     fromStateJSON(obj, fromModel) {
-      if (obj.value.choices) {
+      const tools = self.getToolsManager().allTools();
+
+      // when there is only the image classification and nothing else, we need to handle it here
+      if (tools.length === 0 && obj.value.choices) {
         self
           .completion()
           .names.get(obj.from_name)
           .fromStateJSON(obj);
+
+        return;
       }
 
-      self
-        .getToolsManager()
-        .allTools()
-        .forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
+      tools.forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose(
+  "ImageModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  ObjectBase,
+);
 
 const HtxImage = inject("store")(observer(ImageView));
 

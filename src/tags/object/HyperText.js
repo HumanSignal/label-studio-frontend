@@ -95,8 +95,6 @@ const Model = types
 
       const r = self.createRegion({ ...range, states: clonedStates });
 
-      states.forEach(s => s.unselectAll());
-
       return r;
     },
 
@@ -135,7 +133,13 @@ const Model = types
     },
   }));
 
-const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const HyperTextModel = types.compose(
+  "HyperTextModel",
+  RegionsMixin,
+  TagAttrs,
+  Model,
+  ObjectBase,
+);
 
 class HtxHyperTextView extends Component {
   render() {
@@ -195,14 +199,12 @@ class HyperTextPieceView extends Component {
   }
 
   onMouseUp(ev) {
-    var selectedRanges = this.captureDocumentSelection();
-
     const states = this.props.item.activeStates();
     if (!states || states.length === 0) return;
 
-    if (selectedRanges.length === 0) {
-      return;
-    }
+    var selectedRanges = this.captureDocumentSelection();
+
+    if (selectedRanges.length === 0) return;
 
     const htxRange = this.props.item.addRegion(selectedRanges[0]);
     const spans = htxRange.createSpans();

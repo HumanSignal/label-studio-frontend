@@ -22,10 +22,7 @@ function polytobbox(points) {
     maxlng = Math.max.apply(null, lngs);
 
   // create a bounding rectangle that can be used in leaflet
-  return [
-    [minlat, maxlat],
-    [minlng, maxlng],
-  ];
+  return [[minlat, maxlat], [minlng, maxlng]];
 }
 
 const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) => {
@@ -51,7 +48,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) =>
 };
 
 const LabelOnEllipse = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "labels");
+  const s = item.states.find(s => s.type === "ellipselabels");
   if (!s || !s.holdsState) return null;
 
   return (
@@ -67,7 +64,7 @@ const LabelOnEllipse = observer(({ item }) => {
 });
 
 const LabelOnRect = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "labels");
+  const s = item.states.find(s => s.type === "rectanglelabels");
   if (!s || !s.holdsState) return null;
 
   return (
@@ -83,7 +80,7 @@ const LabelOnRect = observer(({ item }) => {
 });
 
 const LabelOnPolygon = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "labels");
+  const s = item.states.find(s => s.type === "polygonlabels");
   if (!s || !s.holdsState) return null;
 
   const bbox = polytobbox(item.points);
@@ -103,8 +100,6 @@ const LabelOnPolygon = observer(({ item }) => {
           shadowBlur={0}
         />
       )}
-      {/* TODO this is a problem here, it takes states[0] but nothing
-       * guarantees that this state is a lable one */}
       <LabelOnBbox
         x={bbox[0][0]}
         y={bbox[1][0] + 2}
@@ -118,7 +113,7 @@ const LabelOnPolygon = observer(({ item }) => {
 });
 
 const LabelOnMask = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "labels");
+  const s = item.states.find(s => s.type === "brushlabels");
   if (!s || !s.holdsState) return null;
   if (item.touches.length === 0) return null;
 
@@ -138,8 +133,6 @@ const LabelOnMask = observer(({ item }) => {
         strokeScaleEnabled={false}
         shadowBlur={0}
       />
-      {/* TODO this is a problem here, it takes states[0] but nothing
-       * guarantees that this state is a lable one */}
       <LabelOnBbox
         x={bbox[0][0]}
         y={bbox[1][0] + 2}
@@ -153,7 +146,7 @@ const LabelOnMask = observer(({ item }) => {
 });
 
 const LabelOnKP = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "labels");
+  const s = item.states.find(s => s.type === "keypointlabels");
   if (!s || !s.holdsState) return null;
 
   return (

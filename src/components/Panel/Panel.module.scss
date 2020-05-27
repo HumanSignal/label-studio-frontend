@@ -11,20 +11,7 @@
 }
 
 .block {
-  max-width: 320px;
-
   &__controls {
-    width: 940px;
-    max-width: 940px;
-
-    @media screen and (max-width: 1400px) {
-      max-width: 800px;
-    }
-
-    @media screen and (max-width: 1280px) {
-      max-width: 750px;
-    }
-
     @include respond("phone") {
       width: 100%;
     }

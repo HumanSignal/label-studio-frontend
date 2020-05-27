@@ -100,14 +100,6 @@ const Model = types
       self.fillColor = stroke;
     },
 
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-
-      self.completion.unloadRegionState(self);
-    },
-
     coordsInside(x, y) {
       // check if x and y are inside the rectangle
       const a = self.radiusX;

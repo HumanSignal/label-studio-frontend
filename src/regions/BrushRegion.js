@@ -125,13 +125,6 @@ const Model = types
 
     afterAttach() {},
 
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
-    },
-
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
@@ -201,7 +194,13 @@ const Model = types
     },
   }));
 
-const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+const BrushRegionModel = types.compose(
+  "BrushRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
   let currentPoints = [];

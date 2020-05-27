@@ -43,11 +43,7 @@ const ModelAttrs = types.model("EllipseLabelsModel", {
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
-const Model = LabelMixin.props({ _type: "ellipselabels" }).views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === "single";
-  },
-}));
+const Model = LabelMixin.props({ _type: "ellipselabels" });
 
 const Composition = types.compose(
   LabelsModel,
@@ -59,7 +55,10 @@ const Composition = types.compose(
   ControlBase,
 );
 
-const EllipseLabelsModel = types.compose("EllipseLabelsModel", Composition);
+const EllipseLabelsModel = types.compose(
+  "EllipseLabelsModel",
+  Composition,
+);
 
 const HtxEllipseLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;

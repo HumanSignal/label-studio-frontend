@@ -44,4 +44,7 @@ src/examples
 # XML configs
 build/static/media/config.*.xml
 
+# codecept screenshots
+e2e/output
+
 yarn.lock

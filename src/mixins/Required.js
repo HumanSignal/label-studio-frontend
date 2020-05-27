@@ -17,7 +17,14 @@ const RequiredMixin = types
           const reg = objectTag.regions[i];
           const s = reg.states.find(s => s.type === self.type);
 
+          if (self.whenlabelvalue && !reg.hasLabelState(self.whenlabelvalue)) {
+            return true;
+          }
+
           if (!s || s.selectedValues().length === 0) {
+            // means that this element is not visible because its
+            // not matching the label value, means we don't need to validation
+
             self.completion.regionStore.unselectAll();
             reg.selectRegion();
             self.requiredModal();

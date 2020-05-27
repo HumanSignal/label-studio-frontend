@@ -27,9 +27,9 @@ import ControlBase from "./Base";
  * @param {string} name                      - name of the element
  * @param {string} toName                    - name of the element that you want to label
  * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
+ * @param {boolean} [required=false]   - validation if label is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
  * @param {boolean} [showInline=true]        - show items in the same visual line
- * @param {boolean} [required=false]         - validation if choice has been selected
- * @param {string} [requiredMessage]         - message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -61,24 +61,18 @@ const Model = LabelMixin.props({ _type: "labels" })
   }))
   .actions(self => ({
     validate() {
-      let found = false;
       const regions = self.completion.regionStore.regions;
 
-      loop1: for (let r of regions) {
+      for (let r of regions) {
         for (let s of r.states) {
           if (s.name === self.name) {
-            found = true;
-            break loop1;
+            return true;
           }
         }
       }
 
-      if (found === false) {
-        InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-        return false;
-      }
-
-      return true;
+      InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
+      return false;
     },
   }));
 

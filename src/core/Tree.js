@@ -5,6 +5,9 @@ import xml2js from "xml2js";
 import Registry from "./Registry";
 import { guidGenerator } from "./Helpers";
 
+export const TRAVERSE_SKIP = "skip";
+export const TRAVERSE_STOP = "stop";
+
 /**
  * Clone React Tree
  * @param {*} items
@@ -327,10 +330,14 @@ function traverseTree(root, cb) {
 
   visitNode = function(node) {
     const res = cb(node);
-    if (res === "break") return;
+    if (res === TRAVERSE_SKIP) return;
+    if (res === TRAVERSE_STOP) return TRAVERSE_STOP;
 
     if (node.children) {
-      node.children.forEach(chld => visitNode(chld));
+      for (let chld of node.children) {
+        const visit = visitNode(chld);
+        if (visit === TRAVERSE_STOP) return TRAVERSE_STOP;
+      }
     }
   };
 

@@ -70,6 +70,9 @@ const Model = types
     supportsTransform: true,
   })
   .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
     get parent() {
       return getParentOfType(self, ImageModel);
     },
@@ -99,14 +102,6 @@ const Model = types
 
     rotate(degree) {
       // self.rotation = self.rotation + degree;
-    },
-
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-
-      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {
@@ -191,7 +186,10 @@ const Model = types
     },
 
     serialize(control, object) {
-      let res = {
+      const value = control.serializableValue;
+      if (!value) return null;
+
+      return {
         original_width: object.naturalWidth,
         original_height: object.naturalHeight,
         value: {
@@ -200,12 +198,9 @@ const Model = types
           width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
           height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
           rotation: self.rotation,
+          ...value,
         },
       };
-
-      res.value = Object.assign(res.value, control.serializableValue);
-
-      return res;
     },
   }));
 

@@ -80,13 +80,17 @@ const _Tool = types
         destroy(s);
         if (self.control.type === "ellipselabels") self.control.unselectAll();
       } else {
-        self.obj.completion().highlightedNode.unselectRegion();
+        self.obj.completion().highlightedNode.unselectRegion(true);
       }
 
       self.mode = "viewing";
     },
   }));
 
-const Ellipse = types.compose(ToolMixin, BaseTool, _Tool);
+const Ellipse = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Ellipse };

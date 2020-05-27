@@ -31,12 +31,17 @@ const { TextArea } = Input;
  * @param {string=} [placeholder] placeholder text
  * @param {string=} [maxSubmissions] maximum number of submissions
  * @param {boolean=} [editable=false] editable textarea results
+ * @param {number} [rows] number of rows in the textarea
+ * @param {boolean} [required=false]   - validation if textarea is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {boolean=} [showSubmitButton] show submit button or hide it, it's shown by default when rows is more than one (i.e. textarea mode)
+ * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  allowSubmit: types.optional(types.boolean, true),
-  label: types.optional(types.string, ""),
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
+  allowsubmit: types.optional(types.boolean, true),
+  label: types.optional(types.string, ""),
   value: types.maybeNull(types.string),
   rows: types.optional(types.string, "1"),
   showsubmitbutton: types.optional(types.boolean, false),
@@ -74,6 +79,11 @@ const Model = types
       } else {
         return true;
       }
+    },
+
+    get serializableValue() {
+      if (!self.regions.length) return null;
+      return { text: self.selectedValues() };
     },
 
     selectedValues() {
@@ -127,6 +137,7 @@ const Model = types
     beforeSend() {
       if (self._value && self._value.length) {
         self.addText(self._value);
+        self._value = "";
       }
     },
 
@@ -165,12 +176,12 @@ const Model = types
 
 const TextAreaModel = types.compose(
   "TextAreaModel",
+  ControlBase,
   TagAttrs,
   Model,
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
-  ControlBase,
 );
 
 const HtxTextArea = observer(({ item }) => {
@@ -195,7 +206,7 @@ const HtxTextArea = observer(({ item }) => {
 
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
-  const showAddButton = item.completion.editable && (rows != 1 || item.showSubmitButton);
+  const showAddButton = (item.completion.editable && rows != 1) || item.showSubmitButton;
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
@@ -208,7 +219,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.showSubmit && (
         <Form
           onFinish={ev => {
-            if (item.allowSubmit) {
+            if (item.allowsubmit && item._value) {
               item.addText(item._value);
               item.setValue("");
             }
@@ -220,7 +231,7 @@ const HtxTextArea = observer(({ item }) => {
             {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
             {showAddButton && (
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button style={{ marginTop: "10px" }} type="primary" htmlType="submit">
                   Add
                 </Button>
               </Form.Item>

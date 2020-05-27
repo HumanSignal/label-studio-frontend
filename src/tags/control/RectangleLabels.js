@@ -43,11 +43,7 @@ const ModelAttrs = types.model("RectangleLabelsModel", {
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
-const Model = LabelMixin.props({ _type: "rectanglelabels" }).views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === "single";
-  },
-}));
+const Model = LabelMixin.props({ _type: "rectanglelabels" });
 
 const Composition = types.compose(
   LabelsModel,
@@ -59,7 +55,10 @@ const Composition = types.compose(
   ControlBase,
 );
 
-const RectangleLabelsModel = types.compose("RectangleLabelsModel", Composition);
+const RectangleLabelsModel = types.compose(
+  "RectangleLabelsModel",
+  Composition,
+);
 
 const HtxRectangleLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;

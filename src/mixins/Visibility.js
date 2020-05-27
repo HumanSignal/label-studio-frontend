@@ -16,6 +16,7 @@ const VisibilityMixin = types
         const fns = {
           "region-selected": ({ tagName, labelValue }) => {
             const reg = self.completion.highlightedNode;
+
             if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
               return false;
             }
@@ -26,6 +27,15 @@ const VisibilityMixin = types
           },
 
           "choice-selected": ({ tagName, choiceValue }) => {
+            if (!tagName) {
+              for (let choices of self.completion.names.values()) {
+                if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
+                  return true;
+                }
+              }
+              return false;
+            }
+
             const tag = self.completion.names.get(tagName);
 
             if (!tag) return false;
@@ -35,7 +45,7 @@ const VisibilityMixin = types
               return choice && choice.selected ? true : false;
             }
 
-            return true;
+            return tag.isSelected;
           },
 
           "no-region-selected": ({ tagName }) => self.completion.highlightedNode === null,

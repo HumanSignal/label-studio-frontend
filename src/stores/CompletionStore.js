@@ -7,7 +7,7 @@ import RegionStore from "./RegionStore";
 import Registry from "../core/Registry";
 import RelationStore from "./RelationStore";
 import TimeTraveller from "../core/TimeTraveller";
-import Tree from "../core/Tree";
+import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
@@ -135,7 +135,7 @@ const Completion = types
 
     addRegion(reg) {
       self.regionStore.addRegion(reg);
-      self.regionStore.unselectAll();
+      self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
         self.addRelation(reg);
@@ -177,7 +177,7 @@ const Completion = types
           ok = node.validate();
           if (ok === false) {
             ok = false;
-            return "break";
+            return TRAVERSE_STOP;
           }
         }
       });

@@ -28,11 +28,19 @@ const Model = types.model({
   underline: types.optional(types.boolean, false),
 });
 
-const HeaderModel = types.compose("HeaderModel", Model, ProcessAttrsMixin);
+const HeaderModel = types.compose(
+  "HeaderModel",
+  Model,
+  ProcessAttrsMixin,
+);
 
 const HtxHeader = observer(({ item }) => {
   const size = parseInt(item.size);
   const style = item.style ? Tree.cssConverter(item.style) : { margin: "10px 0" };
+
+  if (!style.fontSize && size > 4) {
+    style.fontSize = size === 5 ? "1.2em" : "1.1em";
+  }
 
   return (
     <Typography.Title underline={item.underline} level={size} style={style}>

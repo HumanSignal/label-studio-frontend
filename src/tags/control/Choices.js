@@ -33,13 +33,17 @@ import ControlBase from "./Base";
  * @param {boolean} [showInline=false] - show items in the same visual line
  * @param {boolean} [required=false]   - validation if choice has been selected
  * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] show the contents of a view when condition is true
+ * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {string} [whenLabelValue] narrow down visibility by label value
+ * @param {string} [whenChoiceValue] narrow down visibility by choice value
+ * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
   name: types.string,
   toname: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, false),
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
-  readonly: types.optional(types.boolean, false),
 });
 
 const Model = types
@@ -47,6 +51,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
+    readonly: types.optional(types.boolean, false),
     visible: types.optional(types.boolean, true),
 
     type: "choices",
@@ -64,6 +69,13 @@ const Model = types
 
     states() {
       return self.completion.toNames.get(self.name);
+    },
+
+    get serializableValue() {
+      const choices = self.selectedValues();
+      if (choices && choices.length) return { choices };
+
+      return null;
     },
 
     // perChoiceVisible() {
@@ -131,13 +143,13 @@ const Model = types
 
 const ChoicesModel = types.compose(
   "ChoicesModel",
-  Model,
+  ControlBase,
   TagAttrs,
+  Model,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
-  ControlBase,
 );
 
 const HtxChoices = observer(({ item }) => {

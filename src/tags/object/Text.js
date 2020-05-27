@@ -14,6 +14,7 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Text tag shows an Text markup that can be labeled
@@ -32,6 +33,10 @@ const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
+  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
+
   selectionenabled: types.optional(types.boolean, true),
 
   highlightcolor: types.maybeNull(types.string),
@@ -48,6 +53,7 @@ const Model = types
   .model("TextModel", {
     id: types.optional(types.identifier, guidGenerator),
     type: "text",
+    loaded: types.optional(types.boolean, false),
     regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
@@ -82,12 +88,64 @@ const Model = types
 
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
+
+      if (self.valuetype === "url") {
+        const url = self._value;
+        if (!/^https?:\/\//.test(url)) {
+          InfoModal.error(`URL (${url}) is not valid`);
+          self.loadedValue("");
+          return;
+        }
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            return res.text();
+          })
+          .then(self.loadedValue)
+          .catch(e => {
+            InfoModal.error(`Loading URL (${url}) unsuccessful: ${e}`);
+            self.loadedValue("");
+          });
+      } else {
+        self.loadedValue(self._value);
+      }
+    },
+
+    loadedValue(val) {
+      self.loaded = true;
+      if (self.encoding === "base64") val = atob(val);
+      self._value = val;
+
+      self._regionsCache.forEach(({ region, completion }) => {
+        region.setText(self._value.substring(region.startOffset, region.endOffset));
+        self.regions.push(region);
+        completion.addRegion(region);
+      });
+
+      self._regionsCache = [];
+    },
+
+    afterCreate() {
+      self._regionsCache = [];
+
+      // security measure, if valuetype is set to url then LS
+      // doesn't save the text into the result, otherwise it does
+      // can be aslo directly configured
+      if (self.savetextresult === "none") {
+        if (self.valuetype === "url") self.savetextresult = "no";
+        else if (self.valuetype === "text") self.savetextresult = "yes";
+      }
     },
 
     createRegion(p) {
       const r = TextRegionModel.create(p);
 
       r._range = p._range;
+
+      if (self.valuetype === "url" && self.loaded === false) {
+        self._regionsCache.push({ region: r, completion: self.completion });
+        return;
+      }
 
       self.regions.push(r);
       self.completion.addRegion(r);
@@ -103,8 +161,6 @@ const Model = types
 
       const r = self.createRegion({ ...range, states: clonedStates });
 
-      states.forEach(s => s.unselectAll());
-
       return r;
     },
 
@@ -117,25 +173,12 @@ const Model = types
       let r;
       let m;
 
-      const { start, end } = obj.value;
-
       const fm = self.completion.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
 
-      const tree = {
-        pid: obj.id,
-        startOffset: start,
-        endOffset: end,
-        start: "",
-        end: "",
-        score: obj.score,
-        readonly: obj.readonly,
-        text: self._value.substring(start, end),
-        normalization: obj.normalization,
-        // states: [states],
-      };
+      const { start, end } = obj.value;
 
       r = self.findRegion({ startOffset: obj.value.start, endOffset: obj.value.end });
 
@@ -145,8 +188,20 @@ const Model = types
 
         if (!r) {
           // tree.states = [m];
-          tree["states"] = [m];
-          r = self.createRegion(tree);
+          const data = {
+            pid: obj.id,
+            startOffset: start,
+            endOffset: end,
+            start: "",
+            end: "",
+            score: obj.score,
+            readonly: obj.readonly,
+            text: self._value.substring(start, end),
+            normalization: obj.normalization,
+            states: [m],
+          };
+
+          r = self.createRegion(data);
           // r = self.addRegion(tree);
         } else {
           r.states.push(m);
@@ -164,7 +219,13 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const TextModel = types.compose(
+  "TextModel",
+  RegionsMixin,
+  TagAttrs,
+  Model,
+  ObjectBase,
+);
 
 class HtxTextView extends Component {
   render() {
@@ -235,7 +296,7 @@ class TextPieceView extends Component {
 
       if (idx > 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
-        r2.setEnd(node, len - 1);
+        r2.setEnd(node, len > 0 ? len - 1 : 0);
       }
     }
 
@@ -286,7 +347,7 @@ class TextPieceView extends Component {
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = selection.toString();
+        normedRange.text = r.toString();
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
         const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
@@ -321,11 +382,13 @@ class TextPieceView extends Component {
 
     if (!item.selectionenabled) return;
 
-    var selectedRanges = this.captureDocumentSelection();
-
     const states = item.activeStates();
 
-    if (!states || states.length === 0 || selectedRanges.length === 0) return;
+    if (!states || states.length === 0) return;
+
+    var selectedRanges = this.captureDocumentSelection();
+
+    if (selectedRanges.length === 0) return;
 
     ev.nativeEvent.doSelection = true;
 
@@ -396,10 +459,9 @@ class TextPieceView extends Component {
   render() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
-    if (item.encoding === "base64") val = atob(val);
+    if (!item.loaded) return null;
 
-    val = val.split("\n").join("<br/>");
+    const val = item._value.split("\n").join("<br/>");
 
     return (
       <ObjectTag item={item}>

@@ -46,12 +46,16 @@ const _Tool = types
         ...sap,
       });
 
-      self.obj.completion().highlightedNode.unselectRegion();
+      self.obj.completion().highlightedNode.unselectRegion(true);
       // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));
 
-const KeyPoint = types.compose(ToolMixin, BaseTool, _Tool);
+const KeyPoint = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 // Registry.addTool("keypoint", KeyPoint);
 

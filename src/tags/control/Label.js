@@ -79,21 +79,18 @@ const Model = types
       // here we check if you click on label from labels group
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
-      const hn = self.completion.highlightedNode;
-      if (hn && hn.readonly === true && hn.parent.name === self.parent.toname) return;
+      const region = self.completion.highlightedNode;
+      if (region && region.readonly === true && region.parent.name === self.parent.toname) return;
 
       // one more check if that label can be selected
       if (!self.completion.editable) return;
 
-      const selectedLabel = self.selected;
       const labels = self.parent;
-
-      const reg = self.completion.highlightedNode;
 
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
       // not going to endup without the label(s) at all
-      if (reg) {
+      if (region) {
         const sel = labels.selectedLabels;
         if (sel.length === 1 && sel[0]._value === self._value) return;
       }
@@ -112,7 +109,7 @@ const Model = types
         /**
          * Current not selected
          */
-        if (!selectedLabel) {
+        if (!self.selected) {
           labels.unselectAll();
           self.setSelected(!self.selected);
         } else {
@@ -120,7 +117,7 @@ const Model = types
         }
       }
 
-      reg && reg.updateSingleState(labels);
+      region && region.updateSingleState(labels);
     },
 
     setVisible(val) {
@@ -153,7 +150,12 @@ const Model = types
     },
   }));
 
-const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
+const LabelModel = types.compose(
+  "LabelModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

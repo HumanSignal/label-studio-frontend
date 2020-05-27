@@ -54,7 +54,7 @@ const Model = types
       let value = self._value;
       const tch = self.toTag.tiedChildren;
 
-      if (value.length <= Number(self.minlength)) {
+      if (Number(self.minlength) > value.length) {
         tch.filter(ch => !ch.visible).forEach(ch => ch.setVisible(true));
         return;
       }
@@ -98,7 +98,12 @@ const Model = types
     },
   }));
 
-const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin);
+const FilterModel = types.compose(
+  "FilterModel",
+  Model,
+  TagAttrs,
+  ProcessAttrsMixin,
+);
 
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;

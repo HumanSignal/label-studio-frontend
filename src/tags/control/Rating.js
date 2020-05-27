@@ -27,6 +27,9 @@ import ControlBase from "./Base";
  * @param {string} [size=medium] One of: small, medium, large
  * @param {string} [icon=start] One of: star, heart, fire, smile
  * @param {string} hotkey HotKey for changing rating value
+ * @param {boolean} [required=false]   - validation if rating is required
+ * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
   name: types.maybeNull(types.string),
@@ -54,6 +57,12 @@ const Model = types
 
     selectedValues() {
       return self.holdsState ? self.rating : null;
+    },
+
+    get serializableValue() {
+      const rating = self.selectedValues();
+      if (!rating) return null;
+      return { rating };
     },
 
     get holdsState() {
@@ -120,7 +129,14 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose("RatingModel", TagAttrs, Model, RequiredMixin, PerRegionMixin, ControlBase);
+const RatingModel = types.compose(
+  "RatingModel",
+  ControlBase,
+  TagAttrs,
+  Model,
+  RequiredMixin,
+  PerRegionMixin,
+);
 
 const HtxRating = inject("store")(
   observer(({ item, store }) => {
