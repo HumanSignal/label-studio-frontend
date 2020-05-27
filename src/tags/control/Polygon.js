@@ -51,6 +51,8 @@ const Model = types
     },
   }))
   .actions(self => ({
+    fromStateJSON() {},
+
     afterCreate() {
       const poly = Tools.Polygon.create();
       const floodFill = Tools.FloodFill.create();
