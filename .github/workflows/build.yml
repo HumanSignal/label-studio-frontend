@@ -26,9 +26,11 @@ jobs:
         cache-name: cache-node-modules
       with:
         path: ~/.npm
-        key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
+        key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          npm-${{ runner.os }}-
 
-    - run: npm i
+    - run: npm ci
     - run: npm run build-bundle
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
