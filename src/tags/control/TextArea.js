@@ -82,6 +82,7 @@ const Model = types
     },
 
     get serializableValue() {
+      if (!self.regions.length) return null;
       return { text: self.selectedValues() };
     },
 
