@@ -59,9 +59,62 @@ const Model = types
         res.value["text"] = self.text;
       }
 
-      res.value = Object.assign(res.value, control.serializableValue);
+      // TODO
+      let val = control.serializableValue;
+      if ("hypertextlabels" in val) val = { paragraphs: val["hypertextlabels"] };
+
+      res.value = Object.assign(res.value, val);
 
       return res;
+    },
+
+    toStateJSON() {
+      const parent = self.parent;
+
+      // TODO
+
+      const buildTree = control => {
+        const type = control.type === "hypertextlabels" ? "paragraphs" : control.type;
+        const tree = {
+          id: self.pid,
+          from_name: control.name,
+          to_name: parent.name,
+          source: parent.value,
+          type: type,
+        };
+
+        if (self.normalization) tree["normalization"] = self.normalization;
+
+        return tree;
+      };
+
+      if (self.states && self.states.length) {
+        return self.states
+          .map(s => {
+            const ser = self.serialize(s, parent);
+            if (!ser) return;
+
+            const tree = {
+              ...buildTree(s),
+              ...ser,
+            };
+
+            // in case of labels it's gonna be, labels: ["label1", "label2"]
+
+            return tree;
+          })
+          .filter(tree => tree);
+      } else {
+        const obj = self.completion.toNames.get(parent.name);
+        const control = obj.length ? obj[0] : obj;
+
+        const tree = {
+          ...buildTree(control),
+          ...self.serialize(control, parent),
+        };
+
+        return tree;
+      }
     },
   }));
 
