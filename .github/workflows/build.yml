@@ -18,17 +18,18 @@ jobs:
       with:
         node-version: 12
 
-    # cache npm deps; better to depend on lock-files but
-    # package-lock.json is outdated and yarn.lock is out of git
+    # cache npm deps for faster runs
     - name: Cache node modules
       uses: actions/cache@v1
       env:
         cache-name: cache-node-modules
       with:
         path: ~/.npm
-        key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
+        key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          npm-${{ runner.os }}-
 
-    - run: npm i
+    - run: npm ci
     - run: npm run build-bundle
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
