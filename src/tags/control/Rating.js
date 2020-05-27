@@ -59,6 +59,12 @@ const Model = types
       return self.holdsState ? self.rating : null;
     },
 
+    get serializableValue() {
+      const rating = self.selectedValues();
+      if (!rating) return null;
+      return { rating };
+    },
+
     get holdsState() {
       return self.rating > 0;
     },
@@ -123,7 +129,7 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose("RatingModel", TagAttrs, Model, RequiredMixin, PerRegionMixin, ControlBase);
+const RatingModel = types.compose("RatingModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin);
 
 const HtxRating = inject("store")(
   observer(({ item, store }) => {

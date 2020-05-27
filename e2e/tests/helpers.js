@@ -8,6 +8,8 @@
  * @param {function} done
  */
 const initLabelStudio = async ({ config, data, completions = [{ result: [] }], predictions = [] }, done) => {
+  if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
+
   const interfaces = [
     "panel",
     "update",
