@@ -104,6 +104,10 @@ const ToolMixin = types
       const fm = self.completion.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
+      // workaround to prevent perregion textarea from duplicating
+      // during deserialisation
+      if (fm.perregion && fromModel.type === "textarea") return;
+
       if (!fm.perregion && fromModel.type.indexOf("labels") === -1) return;
 
       const { stateTypes, controlTagTypes } = self.tagTypes;

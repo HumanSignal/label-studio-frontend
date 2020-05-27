@@ -6,56 +6,53 @@ import "./assets/styles/global.scss";
 import * as serviceWorker from "./serviceWorker";
 import App from "./components/App/App";
 import AppStore from "./stores/AppStore";
-import DevelopmentEnvironment from "./env/development";
-import ProductionEnviroment from "./env/production";
-
-let enviroment = DevelopmentEnvironment;
+import ProductionEnvironment from "./env/production";
 
 if (process.env.NODE_ENV === "production") {
-  enviroment = ProductionEnviroment;
+  const environment = ProductionEnvironment;
 
   window.LabelStudio = (element, options) => {
     let params = options;
 
     if (params && params.task) {
-      params.task = enviroment.getData(params.task);
+      params.task = environment.getData(params.task);
     }
 
     /**
      * Configure Application
      */
-    const app = AppStore.create(params, enviroment.configureApplication(params));
+    const app = AppStore.create(params, environment.configureApplication(params));
 
     /**
      * Initialize store
      */
-    app.initializeStore(enviroment.getState(params.task));
+    app.initializeStore(environment.getState(params.task));
 
     ReactDOM.render(
       <Provider store={app}>
         <App />
       </Provider>,
-      enviroment.rootElement(element),
+      environment.rootElement(element),
     );
 
     window.Htx = app;
     return app;
   };
 } else {
-  enviroment = DevelopmentEnvironment;
+  const environment = require("./env/development").default;
 
   window.LabelStudio = (element, options) => {
     let params = options;
 
     // this is a way to initialize one of the examples from the src/examples section
     if (!options.config) {
-      enviroment.getExample().then(result => {
+      environment.getExample().then(result => {
         params = {
           ...params,
           ...result,
         };
 
-        let app = AppStore.create(params, enviroment.configureApplication(params));
+        let app = AppStore.create(params, environment.configureApplication(params));
 
         app.initializeStore({ completions: [params.completion], predictions: params.predictions });
         window.Htx = app;
@@ -64,7 +61,7 @@ if (process.env.NODE_ENV === "production") {
           <Provider store={app}>
             <App />
           </Provider>,
-          enviroment.rootElement(element),
+          environment.rootElement(element),
         );
       });
     } else {
@@ -77,15 +74,16 @@ if (process.env.NODE_ENV === "production") {
         },
       };
 
-      let app = AppStore.create(params, enviroment.configureApplication(params));
+      let app = AppStore.create(params, environment.configureApplication(params));
 
       app.initializeStore({ completions: params.task.completions, predictions: params.task.predictions });
+      window.Htx = app;
 
       ReactDOM.render(
         <Provider store={app}>
           <App />
         </Provider>,
-        enviroment.rootElement(element),
+        environment.rootElement(element),
       );
 
       return app;

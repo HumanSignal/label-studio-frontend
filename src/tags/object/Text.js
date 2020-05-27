@@ -290,7 +290,7 @@ class TextPieceView extends Component {
 
       if (idx > 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
-        r2.setEnd(node, len - 1);
+        r2.setEnd(node, len > 0 ? len - 1 : 0);
       }
     }
 
@@ -341,7 +341,7 @@ class TextPieceView extends Component {
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = selection.toString();
+        normedRange.text = r.toString();
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
         const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
@@ -376,11 +376,13 @@ class TextPieceView extends Component {
 
     if (!item.selectionenabled) return;
 
-    var selectedRanges = this.captureDocumentSelection();
-
     const states = item.activeStates();
 
-    if (!states || states.length === 0 || selectedRanges.length === 0) return;
+    if (!states || states.length === 0) return;
+
+    var selectedRanges = this.captureDocumentSelection();
+
+    if (selectedRanges.length === 0) return;
 
     ev.nativeEvent.doSelection = true;
 
