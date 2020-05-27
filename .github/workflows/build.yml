@@ -18,8 +18,7 @@ jobs:
       with:
         node-version: 12
 
-    # cache npm deps; better to depend on lock-files but
-    # package-lock.json is outdated and yarn.lock is out of git
+    # cache npm deps for faster runs
     - name: Cache node modules
       uses: actions/cache@v1
       env:
