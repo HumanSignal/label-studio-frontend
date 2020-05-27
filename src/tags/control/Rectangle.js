@@ -46,6 +46,8 @@ const Model = types
     },
   }))
   .actions(self => ({
+    fromStateJSON() {},
+
     afterCreate() {
       const rect = Tools.Rect.create({ activeShape: null });
       rect._control = self;
