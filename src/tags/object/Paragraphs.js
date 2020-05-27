@@ -150,8 +150,8 @@ const Model = types
 
       const states = restoreNewsnapshot(fromModel);
 
-      const startXpath = "/div[" + start + "]/span[2]/text()[1]";
-      const endXpath = "/div[" + end + "]/span[2]/text()[1]";
+      const startXpath = "/div[" + (+start + 1) + "]/span[2]/text()[1]";
+      const endXpath = "/div[" + (+end + 1) + "]/span[2]/text()[1]";
 
       const tree = {
         pid: obj.id,

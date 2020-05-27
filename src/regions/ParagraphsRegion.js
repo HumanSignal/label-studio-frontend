@@ -46,8 +46,8 @@ const Model = types
 
       let res = {
         value: {
-          start: start,
-          end: end,
+          start: start - 1,
+          end: end - 1,
           // [TODO]
           // text: self.text,
           startOffset: self.startOffset,
