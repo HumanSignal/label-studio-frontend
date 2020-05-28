@@ -12,6 +12,7 @@ import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * HyperText tag shows an HyperText markup that can be labeled
@@ -88,8 +89,16 @@ const Model = types
     },
 
     addRegion(range) {
+      const exceeded = self.states().reduce((list, s) => list.concat(s.checkMaxUsages()), []);
       const states = self.activeStates();
-      if (states.length === 0) return;
+      if (states.length === 0) {
+        if (exceeded.length) {
+          const label = exceeded[0];
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+        }
+        self.completion.regionStore.unselectAll(true);
+        return;
+      }
 
       const clonedStates = states.map(s => cloneNode(s));
 
@@ -133,7 +142,13 @@ const Model = types
     },
   }));
 
-const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const HyperTextModel = types.compose(
+  "HyperTextModel",
+  RegionsMixin,
+  TagAttrs,
+  Model,
+  ObjectBase,
+);
 
 class HtxHyperTextView extends Component {
   render() {
@@ -203,8 +218,10 @@ class HyperTextPieceView extends Component {
     }
 
     const htxRange = this.props.item.addRegion(selectedRanges[0]);
-    const spans = htxRange.createSpans();
-    htxRange.addEventsToSpans(spans);
+    if (htxRange) {
+      const spans = htxRange.createSpans();
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {
