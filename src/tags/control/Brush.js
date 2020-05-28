@@ -42,7 +42,12 @@ const Model = types
     },
   }));
 
-const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase);
+const BrushModel = types.compose(
+  "BrushModel",
+  TagAttrs,
+  Model,
+  ControlBase,
+);
 
 const HtxView = () => {
   return null;

@@ -48,6 +48,12 @@ const SelectedModelMixin = types
       self.tiedChildren.forEach(c => c.setSelected(false));
     },
 
+    checkMaxUsages() {
+      const list = self.tiedChildren.filter(c => !c.canBeUsed());
+      if (list.length) list.forEach(c => c.setSelected(false));
+      return list;
+    },
+
     selectFirstVisible() {
       const f = self.tiedChildren.find(c => c.visible);
       f && f.toggleSelected();
