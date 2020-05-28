@@ -26,10 +26,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
-
     afterCreate() {
       const brush = Tools.Brush.create();
       const erase = Tools.Erase.create();
@@ -46,7 +42,12 @@ const Model = types
     },
   }));
 
-const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase);
+const BrushModel = types.compose(
+  "BrushModel",
+  TagAttrs,
+  Model,
+  ControlBase,
+);
 
 const HtxView = () => {
   return null;

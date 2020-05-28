@@ -186,7 +186,10 @@ const Model = types
     },
 
     serialize(control, object) {
-      let res = {
+      const value = control.serializableValue;
+      if (!value) return null;
+
+      return {
         original_width: object.naturalWidth,
         original_height: object.naturalHeight,
         value: {
@@ -195,12 +198,9 @@ const Model = types
           width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
           height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
           rotation: self.rotation,
+          ...value,
         },
       };
-
-      res.value = Object.assign(res.value, control.serializableValue);
-
-      return res;
     },
   }));
 

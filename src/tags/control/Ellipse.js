@@ -51,10 +51,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
-
     afterCreate() {
       const ellipse = Tools.Ellipse.create({ activeShape: null });
       ellipse._control = self;
@@ -63,7 +59,12 @@ const Model = types
     },
   }));
 
-const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase);
+const EllipseModel = types.compose(
+  "EllipseModel",
+  TagAttrs,
+  Model,
+  ControlBase,
+);
 
 const HtxView = () => {
   return null;

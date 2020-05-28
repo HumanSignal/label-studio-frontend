@@ -71,6 +71,13 @@ const Model = types
       return self.completion.toNames.get(self.name);
     },
 
+    get serializableValue() {
+      const choices = self.selectedValues();
+      if (choices && choices.length) return { choices };
+
+      return null;
+    },
+
     // perChoiceVisible() {
     //     if (! self.whenchoicevalue) return true;
 
@@ -136,13 +143,13 @@ const Model = types
 
 const ChoicesModel = types.compose(
   "ChoicesModel",
-  Model,
+  ControlBase,
   TagAttrs,
+  Model,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
-  ControlBase,
 );
 
 const HtxChoices = observer(({ item }) => {

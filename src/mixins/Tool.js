@@ -99,14 +99,18 @@ const ToolMixin = types
 
     createFromJSON(obj, fromModel) {
       let r;
-      let states = null;
+      let states = [];
 
       const fm = self.completion.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
-      if (!fm.perregion && fromModel.type.indexOf("labels") === -1) return;
+      // workaround to prevent perregion textarea from duplicating
+      // during deserialisation
+      if (fm.perregion && fromModel.type === "textarea") return;
 
       const { stateTypes, controlTagTypes } = self.tagTypes;
+
+      if (!fm.perregion && !controlTagTypes.includes(fromModel.type)) return;
 
       if (obj.type === stateTypes) {
         states = restoreNewsnapshot(fromModel);
@@ -114,26 +118,25 @@ const ToolMixin = types
           states.fromStateJSON(obj);
         }
 
-        // states = [states];
+        states = [states];
       }
 
-      const params = self.paramsFromStates([states]);
-      const moreParams = self.moreRegionParams(obj);
-
       if (controlTagTypes.includes(obj.type)) {
+        const params = self.paramsFromStates(states);
+        const moreParams = self.moreRegionParams(obj);
         const data = {
           pid: obj.id,
           score: obj.score,
           readonly: obj.readonly,
           coordstype: "perc",
-          states: [states],
+          states,
           ...params,
           ...obj.value,
           ...moreParams,
         };
 
         r = self.createRegion(data);
-      } else {
+      } else if (fm.perregion) {
         const m = restoreNewsnapshot(fromModel);
 
         // [TODO] this is a poor mans findRegion for the image
@@ -142,7 +145,7 @@ const ToolMixin = types
         // id, which might not be the case since it'd a good
         // practice to have unique ids
         const { regions } = self.obj;
-        let r = regions.find(r => r.pid == obj.id);
+        r = regions.find(r => r.pid == obj.id);
 
         // r = self.findRegion(obj.value);
 
