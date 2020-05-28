@@ -208,8 +208,6 @@ const Model = types
 
   // actions for the tools
   .actions(self => {
-    // tools
-    let tools = {};
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
@@ -223,19 +221,11 @@ const Model = types
       if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
     }
 
-    function getTools() {
-      return Object.values(tools);
-    }
-
     function getToolsManager() {
       return toolsManager;
     }
 
-    function beforeDestroy() {
-      tools = null;
-    }
-
-    return { afterCreate, beforeDestroy, getTools, getToolsManager };
+    return { afterCreate, getToolsManager };
   })
 
   .actions(self => ({
@@ -426,7 +416,13 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose(
+  "ImageModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  ObjectBase,
+);
 
 const HtxImage = inject("store")(observer(ImageView));
 

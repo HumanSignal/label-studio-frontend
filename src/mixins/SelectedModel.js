@@ -32,8 +32,7 @@ const SelectedModelMixin = types
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
     },
 
-    getSelectedString(joinstr) {
-      joinstr = joinstr || " ";
+    getSelectedString(joinstr = " ") {
       return self.selectedValues().join(joinstr);
     },
 
