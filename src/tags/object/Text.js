@@ -154,8 +154,16 @@ const Model = types
     },
 
     addRegion(range) {
+      const exceeded = self.states().reduce((list, s) => list.concat(s.checkMaxUsages()), []);
       const states = self.activeStates();
-      if (states.length === 0) return;
+      if (states.length === 0) {
+        if (exceeded.length) {
+          const label = exceeded[0];
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+        }
+        self.completion.regionStore.unselectAll(true);
+        return;
+      }
 
       const clonedStates = states.map(s => cloneNode(s));
 
@@ -393,8 +401,10 @@ class TextPieceView extends Component {
     ev.nativeEvent.doSelection = true;
 
     const htxRange = item.addRegion(selectedRanges[0]);
-    const spans = htxRange.createSpans();
-    htxRange.addEventsToSpans(spans);
+    if (htxRange) {
+      const spans = htxRange.createSpans();
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {

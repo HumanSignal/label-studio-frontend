@@ -59,7 +59,12 @@ const Model = types
     },
   }));
 
-const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase);
+const EllipseModel = types.compose(
+  "EllipseModel",
+  TagAttrs,
+  Model,
+  ControlBase,
+);
 
 const HtxView = () => {
   return null;

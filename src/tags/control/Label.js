@@ -12,6 +12,7 @@ import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Label tag represents a single label
@@ -26,6 +27,7 @@ import { runTemplate } from "../../core/Template";
  * @name Label
  * @param {string} value                    - value of the label
  * @param {boolean} [selected=false]        - if this label should be preselected
+ * @param {number} [maxUsages]              - maximum available usages
  * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
  * @param {string} [alias]                  - label alias
  * @param {boolean} [showAlias=false]       - show alias inside label text
@@ -37,6 +39,7 @@ import { runTemplate } from "../../core/Template";
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   selected: types.optional(types.boolean, false),
+  maxusages: types.maybeNull(types.string),
   alias: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
@@ -56,6 +59,22 @@ const Model = types
   .views(self => ({
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get maxUsages() {
+      return Number(self.maxusages || self.parent.maxusages);
+    },
+
+    usedAlready() {
+      const regions = self.completion.regionStore.regions;
+      // count all the usages among all the regions
+      const used = regions.reduce((s, r) => s + r.hasLabelState(self.value), 0);
+      return used;
+    },
+
+    canBeUsed() {
+      if (!self.maxUsages) return true;
+      return self.usedAlready() < self.maxUsages;
     },
 
     get parent() {
@@ -83,6 +102,12 @@ const Model = types
 
       // one more check if that label can be selected
       if (!self.completion.editable) return;
+
+      // don't select if it can not be used
+      if (!self.selected && !self.canBeUsed()) {
+        InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
+        return;
+      }
 
       const labels = self.parent;
 
@@ -164,7 +189,12 @@ const Model = types
     },
   }));
 
-const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
+const LabelModel = types.compose(
+  "LabelModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

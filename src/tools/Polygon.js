@@ -76,6 +76,8 @@ const _Tool = types
     clickEv(ev, [x, y]) {
       if (self.control.type === "polygonlabels") if (!self.control.isSelected && self.getActivePolygon === null) return;
 
+      if (!self.getActivePolygon && !self.obj.checkLabels()) return;
+
       const sap = self.statesAndParams;
 
       // if there is a polygon in process of creation right now, but
@@ -99,7 +101,11 @@ const _Tool = types
     },
   }));
 
-const Polygon = types.compose(ToolMixin, BaseTool, _Tool);
+const Polygon = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Polygon };
 

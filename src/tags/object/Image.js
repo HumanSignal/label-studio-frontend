@@ -12,6 +12,7 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Image tag shows an image on the page
@@ -175,6 +176,11 @@ const Model = types
       return self.completion().toNames.get(self.name);
     },
 
+    activeStates() {
+      const states = self.states();
+      return states && states.filter(s => s.isSelected && s._type.includes("labels"));
+    },
+
     controlButton() {
       const names = self.states();
       if (!names || names.length === 0) return;
@@ -325,6 +331,22 @@ const Model = types
       });
     },
 
+    // check that maxUsages was not exceeded
+    // and if it was - don't allow to create new region and unselect all regions
+    checkLabels() {
+      const exceeded = self.states().reduce((list, s) => (s.checkMaxUsages ? list.concat(s.checkMaxUsages()) : []), []);
+      const states = self.activeStates();
+      if (states.length === 0) {
+        if (exceeded.length) {
+          const label = exceeded[0];
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+        }
+        self.completion().regionStore.unselectAll(true);
+        return false;
+      }
+      return true;
+    },
+
     addShape(shape) {
       self.regions.push(shape);
 
@@ -394,7 +416,13 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose(
+  "ImageModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  ObjectBase,
+);
 
 const HtxImage = inject("store")(observer(ImageView));
 
