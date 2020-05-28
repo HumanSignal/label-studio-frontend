@@ -176,15 +176,8 @@ const Model = types
         return find_r;
       }
 
-      const exceeded = self.states().reduce((list, s) => list.concat(s.checkMaxUsages()), []);
-      const allStates = self.activeStates();
-
+      const allStates = self.getAvailableStates();
       if (allStates.length === 0) {
-        if (exceeded.length) {
-          const label = exceeded[0];
-          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
-        }
-        self.completion.regionStore.unselectAll(true);
         ws_region.remove && ws_region.remove();
         return;
       }
