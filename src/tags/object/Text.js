@@ -154,7 +154,7 @@ const Model = types
     },
 
     addRegion(range) {
-      const states = self.activeStates();
+      const states = self.getAvailableStates();
       if (states.length === 0) return;
 
       const clonedStates = states.map(s => cloneNode(s));
@@ -219,7 +219,13 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const TextModel = types.compose(
+  "TextModel",
+  RegionsMixin,
+  TagAttrs,
+  Model,
+  ObjectBase,
+);
 
 class HtxTextView extends Component {
   render() {
@@ -387,8 +393,10 @@ class TextPieceView extends Component {
     ev.nativeEvent.doSelection = true;
 
     const htxRange = item.addRegion(selectedRanges[0]);
-    const spans = htxRange.createSpans();
-    htxRange.addEventsToSpans(spans);
+    if (htxRange) {
+      const spans = htxRange.createSpans();
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {

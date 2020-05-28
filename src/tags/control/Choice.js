@@ -54,6 +54,11 @@ const Model = types
     get parent() {
       return getParentOfType(self, ChoicesModel);
     },
+
+    // to conform Label's maxUsages check
+    canBeUsed() {
+      return true;
+    },
   }))
   .actions(self => ({
     toggleSelected() {

@@ -12,6 +12,7 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Image tag shows an image on the page
@@ -175,6 +176,11 @@ const Model = types
       return self.completion().toNames.get(self.name);
     },
 
+    activeStates() {
+      const states = self.states();
+      return states && states.filter(s => s.isSelected && s._type.includes("labels"));
+    },
+
     controlButton() {
       const names = self.states();
       if (!names || names.length === 0) return;
@@ -202,8 +208,6 @@ const Model = types
 
   // actions for the tools
   .actions(self => {
-    // tools
-    let tools = {};
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
@@ -217,19 +221,11 @@ const Model = types
       if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
     }
 
-    function getTools() {
-      return Object.values(tools);
-    }
-
     function getToolsManager() {
       return toolsManager;
     }
 
-    function beforeDestroy() {
-      tools = null;
-    }
-
-    return { afterCreate, beforeDestroy, getTools, getToolsManager };
+    return { afterCreate, getToolsManager };
   })
 
   .actions(self => ({
@@ -335,6 +331,11 @@ const Model = types
       });
     },
 
+    checkLabels() {
+      const states = self.getAvailableStates();
+      return states.length !== 0;
+    },
+
     addShape(shape) {
       self.regions.push(shape);
 
@@ -404,7 +405,13 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose(
+  "ImageModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  ObjectBase,
+);
 
 const HtxImage = inject("store")(observer(ImageView));
 

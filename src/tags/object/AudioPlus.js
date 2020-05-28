@@ -13,6 +13,7 @@ import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line n
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * AudioPlus tag plays audio and shows its wave
@@ -166,9 +167,6 @@ const Model = types
     },
 
     addRegion(ws_region) {
-      const allStates = self.activeStates();
-      const clonedStates = allStates.map(s => cloneNode(s));
-
       const find_r = self.findRegion({ start: ws_region.start, end: ws_region.end });
 
       if (find_r) {
@@ -178,12 +176,13 @@ const Model = types
         return find_r;
       }
 
-      if (clonedStates.length == 0) {
+      const allStates = self.getAvailableStates();
+      if (allStates.length === 0) {
         ws_region.remove && ws_region.remove();
         return;
       }
 
-      const r = self.createRegion(ws_region, clonedStates);
+      const r = self.createRegion(ws_region, allStates.map(s => cloneNode(s)));
       r.applyCSSClass(ws_region);
 
       return r;
@@ -220,7 +219,13 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const AudioPlusModel = types.compose(
+  "AudioPlusModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  ObjectBase,
+);
 
 const HtxAudioView = observer(({ store, item }) => {
   if (!item._value) return null;

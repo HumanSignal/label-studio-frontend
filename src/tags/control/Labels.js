@@ -27,8 +27,9 @@ import ControlBase from "./Base";
  * @param {string} name                      - name of the element
  * @param {string} toName                    - name of the element that you want to label
  * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {boolean} [required=false]   - validation if label is required
- * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {number} [maxUsages]               - maximum available usages
+ * @param {boolean} [required=false]         - validation if label is required
+ * @param {string} [requiredMessage]         - message to show if validation fails
  * @param {boolean} [showInline=true]        - show items in the same visual line
  */
 const TagAttrs = types.model({
@@ -36,6 +37,7 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
+  maxusages: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, true),
 });
 

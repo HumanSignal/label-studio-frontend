@@ -1,6 +1,7 @@
 import { types } from "mobx-state-tree";
 import lodash from "../../utils/lodash";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 const ObjectBase = types
   .model({
@@ -38,9 +39,29 @@ const ObjectBase = types
       return props;
     }
 
+    // @todo maybe not a best place for this method?
+    // check that maxUsages was not exceeded for labels
+    // and if it was - don't allow to create new region and unselect all regions
+    // unselect labels which was exceeded maxUsages
+    // return all states left untouched - available labels and others
+    function getAvailableStates() {
+      const checkAndCollect = (list, s) => (s.checkMaxUsages ? list.concat(s.checkMaxUsages()) : list);
+      const exceeded = self.states().reduce(checkAndCollect, []);
+      const states = self.activeStates();
+      if (states.length === 0) {
+        if (exceeded.length) {
+          const label = exceeded[0];
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+        }
+        self.completion.regionStore.unselectAll(true);
+      }
+      return states;
+    }
+
     return {
       addProp,
       getProps,
+      getAvailableStates,
     };
   });
 

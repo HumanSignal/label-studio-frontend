@@ -12,6 +12,7 @@ import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * HyperText tag shows an HyperText markup that can be labeled
@@ -88,7 +89,7 @@ const Model = types
     },
 
     addRegion(range) {
-      const states = self.activeStates();
+      const states = self.getAvailableStates();
       if (states.length === 0) return;
 
       const clonedStates = states.map(s => cloneNode(s));
@@ -133,7 +134,13 @@ const Model = types
     },
   }));
 
-const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const HyperTextModel = types.compose(
+  "HyperTextModel",
+  RegionsMixin,
+  TagAttrs,
+  Model,
+  ObjectBase,
+);
 
 class HtxHyperTextView extends Component {
   render() {
@@ -201,8 +208,10 @@ class HyperTextPieceView extends Component {
     if (selectedRanges.length === 0) return;
 
     const htxRange = this.props.item.addRegion(selectedRanges[0]);
-    const spans = htxRange.createSpans();
-    htxRange.addEventsToSpans(spans);
+    if (htxRange) {
+      const spans = htxRange.createSpans();
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {
