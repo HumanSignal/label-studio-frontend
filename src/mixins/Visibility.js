@@ -17,11 +17,11 @@ const VisibilityMixin = types
           "region-selected": ({ tagName, labelValue }) => {
             const reg = self.completion.highlightedNode;
 
-            if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
+            if (reg === null || reg === undefined || (tagName && reg.parent.name !== tagName)) {
               return false;
             }
 
-            if (labelValue) return reg.hasLabelState(labelValue);
+            if (labelValue) return labelValue.split(",").some(v => reg.hasLabelState(v));
 
             return true;
           },
@@ -41,8 +41,11 @@ const VisibilityMixin = types
             if (!tag) return false;
 
             if (choiceValue) {
-              const choice = tag.findLabel(choiceValue);
-              return choice && choice.selected ? true : false;
+              const choicesSelected = choiceValue
+                .split(",")
+                .map(v => tag.findLabel(v))
+                .some(c => c && c.selected);
+              return choicesSelected;
             }
 
             return tag.isSelected;
