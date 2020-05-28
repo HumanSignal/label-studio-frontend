@@ -16,6 +16,7 @@ const _Tool = types
 
       if (poly && poly.closed) return null;
       if (poly === undefined) return null;
+      if (poly.type !== "polygonregion") return null;
 
       return poly;
     },

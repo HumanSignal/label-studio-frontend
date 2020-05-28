@@ -11,6 +11,8 @@ export default class TransformerComponent extends Component {
   }
 
   checkNode() {
+    if (!this.transformer) return;
+
     // here we need to manually attach or detach Transformer node
     const stage = this.transformer.getStage();
     const { selectedShape } = this.props;
@@ -40,6 +42,8 @@ export default class TransformerComponent extends Component {
   }
 
   render() {
+    if (!this.props.selectedShape.supportsTransform) return null;
+
     return (
       <Transformer
         resizeEnabled={true}

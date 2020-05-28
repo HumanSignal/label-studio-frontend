@@ -52,10 +52,6 @@ const Model = types
   .actions(self => ({
     fromStateJSON(obj) {},
 
-    getTools() {
-      return Object.values(self.tools);
-    },
-
     afterCreate() {
       const kp = Tools.KeyPoint.create();
       kp._control = self;

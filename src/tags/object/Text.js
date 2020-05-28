@@ -219,7 +219,13 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const TextModel = types.compose(
+  "TextModel",
+  RegionsMixin,
+  TagAttrs,
+  Model,
+  ObjectBase,
+);
 
 class HtxTextView extends Component {
   render() {
