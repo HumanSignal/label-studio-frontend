@@ -5,7 +5,9 @@ const ControlBase = types
   .views(self => ({
     get serializableValue() {
       const obj = {};
-      obj[self.type] = self.selectedValues();
+      if (self.selectedValues) {
+        obj[self.type] = self.selectedValues();
+      }
 
       return obj;
     },
