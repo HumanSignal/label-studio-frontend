@@ -27,7 +27,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
  * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
  * @param {boolean} [showLabels=true]        - show labels next to the region
- * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
+ * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
@@ -46,7 +46,8 @@ const TagAttrs = types.model("TextModel", {
   showlabels: types.optional(types.boolean, true),
 
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
-  encoding: types.optional(types.string, "string"),
+
+  encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
 });
 
 const Model = types
@@ -114,6 +115,8 @@ const Model = types
     loadedValue(val) {
       self.loaded = true;
       if (self.encoding === "base64") val = atob(val);
+      if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
+
       self._value = val;
 
       self._regionsCache.forEach(({ region, completion }) => {
@@ -219,13 +222,7 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose(
-  "TextModel",
-  RegionsMixin,
-  TagAttrs,
-  Model,
-  ObjectBase,
-);
+const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
 
 class HtxTextView extends Component {
   render() {
@@ -248,6 +245,7 @@ class TextPieceView extends Component {
 
     let val = runTemplate(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
+    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     return val;
   }
