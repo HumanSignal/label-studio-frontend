@@ -117,6 +117,7 @@ export default observer(({ store, completion }) => {
           <Fragment>
             <Tooltip placement="topLeft" title="Create Relation: [r]">
               <Button
+                aria-label="Create Relation"
                 className={styles.button}
                 onClick={() => {
                   completion.startRelationMode(node);
