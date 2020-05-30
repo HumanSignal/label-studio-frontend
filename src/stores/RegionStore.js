@@ -7,16 +7,67 @@ export default types
   .model("RegionStore", {
     regions: types.array(types.safeReference(AllRegionsType)),
 
-    sort: types.optional(types.enumeration(["date", "score"]), "date"),
+    sort: types.optional(types.enumeration(["date", "score", "relation"]), "relation"),
     sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
 
     group: types.optional(types.enumeration(["type", "label"]), "type"),
   })
   .views(self => ({
+    get sortedByRelation() {
+      const { regions } = self;
+      const { relations } = getParent(self).relationStore;
+      const leafs = {};
+      const roots = {};
+      const bi = {};
+      const sorted = [];
+      const unsorted = {};
+      const types = {};
+
+      regions.forEach(r => (unsorted[r.pid] = true));
+
+      relations.forEach(r => {
+        const from = r.direction === "left" ? r.node2 : r.node1;
+        const to = r.direction === "left" ? r.node1 : r.node2;
+        if (r.direction === "bi") {
+          (bi[from.pid] = bi[from.pid] || []).push(to);
+          (bi[to.pid] = bi[to.pid] || []).push(from);
+        } else {
+          (leafs[to.pid] = leafs[to.pid] || []).push(from);
+          (roots[from.pid] = roots[from.pid] || []).push(to);
+        }
+      });
+
+      const findNext = i => regions.findIndex((r, j) => j >= i && !leafs[r.pid] && unsorted[r.pid]);
+
+      const addNode = (r, type) => {
+        sorted.push(r);
+        unsorted[r.pid] = false;
+      };
+
+      const addLeafs = pid =>
+        roots[pid] &&
+        roots[pid].forEach(r => {
+          if (!unsorted[r.pid]) return;
+          types[r.pid] = "leaf";
+          addNode(r, "leaf");
+          addLeafs(r.pid);
+        });
+
+      for (let i = findNext(0); i > -1 && i < regions.length; i = findNext(i + 1)) {
+        const { pid } = regions[i];
+        types[pid] = "root";
+        addNode(regions[i], roots[pid] ? "root" : "none");
+        addLeafs(pid);
+      }
+
+      return { sorted, types };
+    },
+
     get sortedRegions() {
       const sorts = {
         date: () => self.regions,
         score: () => self.regions.sort((a, b) => a.score - b.score),
+        relation: () => self.sortedByRelation.sorted,
       };
 
       return sorts[self.sort]();

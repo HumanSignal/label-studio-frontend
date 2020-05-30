@@ -16,120 +16,52 @@ import {
 
 import styles from "./Node.module.scss";
 
-const pt = { paddingTop: "4px" };
-
 const NodeViews = {
-  TextRegionModel: (node, click) => (
-    <Fragment>
-      <span onClick={click} className={styles.node}>
-        <FontColorsOutlined style={pt} />
-        &nbsp;
-        {node.text.substring(0, 23)}
-        {node.text.length > 26 && "..."}
-      </span>
-    </Fragment>
-  ),
+  TextRegionModel: [FontColorsOutlined, node => <span className={null}>{node.text.substring(0, 100)}</span>],
 
-  HyperTextRegionModel: (node, click) => (
-    <Fragment>
-      <span onClick={click} className={styles.node}>
-        <FontColorsOutlined style={pt} />
-        &nbsp; HTML &nbsp;
-        <span style={{ color: "#5a5a5a" }}>{node.text}</span>
-      </span>
-    </Fragment>
-  ),
+  HyperTextRegionModel: [FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
 
-  AudioRegionModel: (node, click) => (
-    <Fragment>
-      <span onClick={click} className={styles.node}>
-        <AudioOutlined style={pt} />
-        &nbsp; Audio {node.start.toFixed(2)} - {node.end.toFixed(2)}
-      </span>
-    </Fragment>
-  ),
+  AudioRegionModel: [AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
 
-  TextAreaRegionModel: (node, click) => (
-    <Fragment>
-      <MessageOutlined style={pt} />
-      <span onClick={click} className={styles.node}>
-        &nbsp; Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
-      </span>
-    </Fragment>
-  ),
-
-  RectRegionModel: (node, click) => {
-    const w = node.width * node.scaleX;
-    const y = node.height * node.scaleY;
-    return (
+  TextAreaRegionModel: [
+    MessageOutlined,
+    node => (
       <Fragment>
-        <BlockOutlined style={pt} />
-        <span onClick={click} className={styles.node}>
-          &nbsp; Rectangle {w.toFixed(2)} x {y.toFixed(2)}
-        </span>
+        Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
       </Fragment>
-    );
-  },
+    ),
+  ],
 
-  PolygonRegionModel: (node, click) => (
-    <Fragment>
-      <span onClick={click} className={styles.node}>
-        <GatewayOutlined style={pt} />
-        &nbsp; Polygon
-      </span>
-    </Fragment>
-  ),
+  RectRegionModel: [
+    BlockOutlined,
+    node => {
+      const w = node.width * node.scaleX;
+      const y = node.height * node.scaleY;
+      return `Rectangle ${w.toFixed(2)} x ${y.toFixed(2)}`;
+    },
+  ],
 
-  EllipseRegionModel: (node, click) => {
-    const radiusX = node.radiusX * node.scaleX;
-    const radiusY = node.radiusY * node.scaleY;
-    const rotation = node.rotation;
-    return (
-      <Fragment>
-        <span onClick={click} className={styles.node}>
-          <Loading3QuartersOutlined style={pt} />
-          &nbsp; Ellipse {radiusX.toFixed(2)} x {radiusY.toFixed(2)}, θ = {rotation.toFixed(2)}°, center = (
-          {node.x.toFixed(2)}, {node.y.toFixed(2)})
-        </span>
-      </Fragment>
-    );
-  },
+  PolygonRegionModel: [GatewayOutlined, () => `Polygon`],
 
-  KeyPointRegionModel: (node, click) => (
-    <Fragment>
-      <span onClick={click} className={styles.node}>
-        <EyeOutlined style={pt} />
-        &nbsp; KeyPoint
-      </span>
-    </Fragment>
-  ),
+  EllipseRegionModel: [
+    Loading3QuartersOutlined,
+    node => {
+      const radiusX = node.radiusX * node.scaleX;
+      const radiusY = node.radiusY * node.scaleY;
+      const rotation = node.rotation;
+      return `Ellipse ${radiusX.toFixed(2)} x ${radiusY.toFixed(2)}, θ = ${rotation.toFixed(2)}°,
+        center = (${node.x.toFixed(2)}, ${node.y.toFixed(2)})`;
+    },
+  ],
 
-  BrushRegionModel: (node, click) => (
-    <Fragment>
-      <span onClick={click} className={styles.node}>
-        <HighlightOutlined style={pt} />
-        &nbsp; Brush
-      </span>
-    </Fragment>
-  ),
+  // @todo add coords
+  KeyPointRegionModel: [EyeOutlined, () => `KeyPoint`],
 
-  ChoicesModel: (node, click) => (
-    <Fragment>
-      <ApartmentOutlined style={pt} />
-      <span onClick={click} className={styles.node}>
-        &nbsp; Classification
-      </span>
-    </Fragment>
-  ),
+  BrushRegionModel: [HighlightOutlined, () => `Brush`],
 
-  TextAreaModel: (node, click) => (
-    <Fragment>
-      <MessageOutlined style={pt} />
-      <span onClick={click} className={styles.node}>
-        &nbsp; Input
-      </span>
-    </Fragment>
-  ),
+  ChoicesModel: [ApartmentOutlined, () => `Classification`],
+
+  TextAreaModel: [MessageOutlined, () => `Input`],
 };
 
 const Node = observer(({ node, onClick }) => {
@@ -145,7 +77,14 @@ const Node = observer(({ node, onClick }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  return NodeViews[name](node, onClick || click);
+  const [Icon, getContent] = NodeViews[name];
+
+  return (
+    <span onClick={onClick || click} className={styles.node}>
+      <Icon />
+      {getContent(node)}
+    </span>
+  );
 });
 
 const NodeMinimal = ({ node }) => {

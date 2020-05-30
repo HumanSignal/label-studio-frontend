@@ -14,6 +14,8 @@ const RegionsMixin = types
 
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
+
+    relation: types.optional(types.enumeration(["none", "root", "bi", "leaf"]), "none"),
   })
   .views(self => ({
     get perRegionStates() {
