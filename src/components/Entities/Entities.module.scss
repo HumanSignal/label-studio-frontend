@@ -46,9 +46,21 @@
   &::before {
     content: "";
     position: absolute;
-    height: 16px;
-    border-left: 1px dashed grey;
+    height: 10px;
+    border-left: 1px dotted grey;
     top: -7px;
     left: 25px;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 5px;
+    border: 1px solid grey;
+    top: 1px;
+    transform: translate(-0.5px, 0) rotate(65deg) skewX(40deg);
+    left: 23px;
+    border-width: 0 1px 1px 0;
   }
 }
