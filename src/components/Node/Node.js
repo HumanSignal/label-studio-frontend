@@ -94,7 +94,7 @@ const NodeMinimal = observer(({ node }) => {
   const { sorted } = getRoot(node).completionStore.selected.regionStore.sortedByRelation;
   const index = sorted.indexOf(node);
   const name = getType(node).name;
-  if (index < 0 || !(name in NodeViews)) return null;
+  if (!(name in NodeViews)) return null;
 
   const oneColor = node.getOneColor();
   let badgeStyle = {};
@@ -114,7 +114,7 @@ const NodeMinimal = observer(({ node }) => {
   const [text, Icon] = NodeViews[name];
   return (
     <span className={styles.minimal}>
-      <Badge count={index + 1} style={badgeStyle} />
+      {index >= 0 && <Badge count={index + 1} style={badgeStyle} />}
       <Icon />
       {text}
     </span>
