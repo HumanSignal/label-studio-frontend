@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Popover, Select, Divider, List, Button, Dropdown, Menu } from "antd";
-import { isValidReference } from "mobx-state-tree";
+import { isValidReference, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
 
@@ -70,8 +70,12 @@ const Relation = observer(({ store, rl }) => {
 });
 
 const ListItem = observer(({ item }) => {
+  const node = getRoot(item).completionStore.selected.highlightedNode;
+  const isSelected = node === item.node1 || node === item.node2;
+
   return (
     <List.Item
+      className={isSelected && styles.selected}
       key={item.id}
       actions={[]}
       onMouseOver={() => {
@@ -81,7 +85,7 @@ const ListItem = observer(({ item }) => {
         item.toggleHighlight();
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className={styles.item}>
         <div>
           <Relation rl={item} />
         </div>
