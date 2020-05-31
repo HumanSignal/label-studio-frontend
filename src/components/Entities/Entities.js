@@ -29,11 +29,12 @@ const RenderSubState = observer(({ item, idx }) => {
 const EntityItem = observer(({ item, idx }) => {
   const { regionStore } = getRoot(item).completionStore.selected;
   const relTypes = regionStore.sortedByRelation.types;
+  const rel = relTypes[item.pid] || "root";
   const sortedByRelation = regionStore.sort === "relation";
 
   const classnames = [
     styles.lstitem,
-    sortedByRelation && styles[relTypes[item.pid] || "root"],
+    sortedByRelation && styles[rel],
     item.hidden === true && styles.hidden,
     item.selected && styles.selected,
   ].filter(Boolean);
@@ -68,6 +69,7 @@ const EntityItem = observer(({ item, idx }) => {
         item.toggleHighlight();
       }}
     >
+      {rel !== "root" && <div className={styles[`link-${rel}`]} />}
       <Badge count={idx + 1} style={badgeStyle} />
       <Node node={item} />
 

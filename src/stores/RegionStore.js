@@ -37,26 +37,36 @@ export default types
         }
       });
 
-      const findNext = i => regions.findIndex((r, j) => j >= i && !leafs[r.pid] && unsorted[r.pid]);
+      const findNext = i => {
+        let index = regions.findIndex(r => !leafs[r.pid] && unsorted[r.pid]);
+        if (index < 0) {
+          index = regions.findIndex(r => (roots[r.pid] || bi[r.pid]) && unsorted[r.pid]);
+        }
+        return index;
+      };
 
-      const addNode = (r, type) => {
+      const addNode = r => {
         sorted.push(r);
         unsorted[r.pid] = false;
       };
 
-      const addLeafs = pid =>
-        roots[pid] &&
-        roots[pid].forEach(r => {
+      const addType = (type, nodes) =>
+        nodes.forEach(r => {
           if (!unsorted[r.pid]) return;
-          types[r.pid] = "leaf";
-          addNode(r, "leaf");
+          types[r.pid] = type;
+          addNode(r);
           addLeafs(r.pid);
         });
+
+      const addLeafs = pid => {
+        roots[pid] && addType("leaf", roots[pid]);
+        bi[pid] && addType("bi", bi[pid]);
+      };
 
       for (let i = findNext(0); i > -1 && i < regions.length; i = findNext(i + 1)) {
         const { pid } = regions[i];
         types[pid] = "root";
-        addNode(regions[i], roots[pid] ? "root" : "none");
+        addNode(regions[i]);
         addLeafs(pid);
       }
 

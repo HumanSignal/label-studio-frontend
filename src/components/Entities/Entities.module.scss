@@ -42,25 +42,47 @@
   border-top: 1px solid #f0f0f0;
 }
 
-.leaf {
+@mixin link {
+  position: absolute;
+  left: 25px;
+  border-left: 1px dotted grey;
+}
+
+@mixin link-arrow {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 5px;
+  border: 1px solid grey;
+  transform: translate(-0.5px, 0) rotate(65deg) skewX(40deg);
+  left: -3px;
+  border-width: 0 1px 1px 0;
+}
+
+.link-leaf {
+  @include link();
+  top: -7px;
+  height: 10px;
+
+  &::after {
+    @include link-arrow();
+    top: 7px;
+  }
+}
+
+.link-bi {
+  @include link();
+  top: -3px;
+  height: 6px;
+
   &::before {
-    content: "";
-    position: absolute;
-    height: 10px;
-    border-left: 1px dotted grey;
-    top: -7px;
-    left: 25px;
+    @include link-arrow();
+    top: -2px;
+    border-width: 1px 0 0 1px;
   }
 
   &::after {
-    content: "";
-    position: absolute;
-    width: 6px;
-    height: 5px;
-    border: 1px solid grey;
-    top: 1px;
-    transform: translate(-0.5px, 0) rotate(65deg) skewX(40deg);
-    left: 23px;
-    border-width: 0 1px 1px 0;
+    @include link-arrow();
+    top: 3px;
   }
 }
