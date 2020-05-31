@@ -10,3 +10,11 @@
     color: #1890ff;
   }
 }
+
+.minimal {
+  display: flex;
+  align-items: center;
+  & > * {
+    margin-right: 6px;
+  }
+}

@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Icon } from "antd";
+import { Badge } from "antd";
 import { getType, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
@@ -17,13 +17,14 @@ import {
 import styles from "./Node.module.scss";
 
 const NodeViews = {
-  TextRegionModel: [FontColorsOutlined, node => <span className={null}>{node.text.substring(0, 100)}</span>],
+  TextRegionModel: ["Text", FontColorsOutlined, node => <span className={null}>{node.text.substring(0, 100)}</span>],
 
-  HyperTextRegionModel: [FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
+  HyperTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
 
-  AudioRegionModel: [AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
+  AudioRegionModel: ["Audio", AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
 
   TextAreaRegionModel: [
+    "Input",
     MessageOutlined,
     node => (
       <Fragment>
@@ -33,6 +34,7 @@ const NodeViews = {
   ],
 
   RectRegionModel: [
+    "Rect",
     BlockOutlined,
     node => {
       const w = node.width * node.scaleX;
@@ -41,9 +43,10 @@ const NodeViews = {
     },
   ],
 
-  PolygonRegionModel: [GatewayOutlined, () => `Polygon`],
+  PolygonRegionModel: ["Polygon", GatewayOutlined, () => `Polygon`],
 
   EllipseRegionModel: [
+    "Ellipse",
     Loading3QuartersOutlined,
     node => {
       const radiusX = node.radiusX * node.scaleX;
@@ -55,13 +58,13 @@ const NodeViews = {
   ],
 
   // @todo add coords
-  KeyPointRegionModel: [EyeOutlined, () => `KeyPoint`],
+  KeyPointRegionModel: ["KeyPoint", EyeOutlined, () => `KeyPoint`],
 
-  BrushRegionModel: [HighlightOutlined, () => `Brush`],
+  BrushRegionModel: ["Brush", HighlightOutlined, () => `Brush`],
 
-  ChoicesModel: [ApartmentOutlined, () => `Classification`],
+  ChoicesModel: ["Classification", ApartmentOutlined, () => `Classification`],
 
-  TextAreaModel: [MessageOutlined, () => `Input`],
+  TextAreaModel: ["Input", MessageOutlined, () => `Input`],
 };
 
 const Node = observer(({ node, onClick }) => {
@@ -77,7 +80,7 @@ const Node = observer(({ node, onClick }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  const [Icon, getContent] = NodeViews[name];
+  const [, Icon, getContent] = NodeViews[name];
 
   return (
     <span onClick={onClick || click} className={styles.node}>
@@ -87,85 +90,35 @@ const Node = observer(({ node, onClick }) => {
   );
 });
 
-const NodeMinimal = ({ node }) => {
-  if (getType(node).name === "TextRegionModel") {
-    return (
-      <Fragment>
-        <FontColorsOutlined /> &nbsp; Text
-      </Fragment>
-    );
+const NodeMinimal = observer(({ node }) => {
+  const { sorted } = getRoot(node).completionStore.selected.regionStore.sortedByRelation;
+  const index = sorted.indexOf(node);
+  const name = getType(node).name;
+  if (index < 0 || !(name in NodeViews)) return null;
+
+  const oneColor = node.getOneColor();
+  let badgeStyle = {};
+
+  if (oneColor) {
+    badgeStyle = {
+      backgroundColor: oneColor,
+    };
+  } else {
+    badgeStyle = {
+      backgroundColor: "#fff",
+      color: "#999",
+      boxShadow: "0 0 0 1px #d9d9d9 inset",
+    };
   }
 
-  if (getType(node).name === "RectRegionModel") {
-    return (
-      <Fragment>
-        <BlockOutlined />
-        &nbsp; Rect
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "EllipseRegionModel") {
-    return (
-      <Fragment>
-        <Loading3QuartersOutlined />
-        &nbsp; Ellipse
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "AudioRegionModel") {
-    return (
-      <Fragment>
-        <AudioOutlined />
-        &nbsp; Audio
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "TextAreaRegionModel") {
-    return (
-      <Fragment>
-        <MessageOutlined />
-        &nbsp; Input
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "HyperTextRegionModel") {
-    return (
-      <Fragment>
-        <FontColorsOutlined /> &nbsp; HTML
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "PolygonRegionModel") {
-    return (
-      <Fragment>
-        <GatewayOutlined />
-        &nbsp; Polygon
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "KeyPointRegionModel") {
-    return (
-      <Fragment>
-        <EyeOutlined />
-        &nbsp; KeyPoint
-      </Fragment>
-    );
-  }
-
-  if (getType(node).name === "BrushRegionModel") {
-    return (
-      <Fragment>
-        <HighlightOutlined />
-        &nbsp; Brush
-      </Fragment>
-    );
-  }
-};
+  const [text, Icon] = NodeViews[name];
+  return (
+    <span className={styles.minimal}>
+      <Badge count={index + 1} style={badgeStyle} />
+      <Icon />
+      {text}
+    </span>
+  );
+});
 
 export { Node, NodeMinimal };
