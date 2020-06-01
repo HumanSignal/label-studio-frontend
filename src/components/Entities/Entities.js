@@ -89,10 +89,10 @@ const RegionItem = observer(({ item, idx, flat }) => {
         item.selectRegion();
       }}
       onMouseOver={() => {
-        item.toggleHighlight();
+        item.setHighlight(true);
       }}
       onMouseOut={() => {
-        item.toggleHighlight();
+        item.setHighlight(false);
       }}
     >
       <SimpleBadge number={idx + 1} style={badgeStyle} />
@@ -268,7 +268,9 @@ const RegionsTree = observer(({ regionStore }) => {
         const dropReg = regionStore.findRegionID(dropKey);
         const dragReg = regionStore.findRegionID(dragKey);
 
-        if (treeDepth == 2 && dropToGap && dropPosition === -1) {
+        regionStore.unhighlightAll();
+
+        if (treeDepth === 2 && dropToGap && dropPosition === -1) {
           dragReg.setParentID("");
         } else if (dropPosition !== -1) {
           dragReg.setParentID(dropReg.pid);
