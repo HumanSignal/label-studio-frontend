@@ -35,6 +35,7 @@ import { SortAscendingOutlined, GroupOutlined, CalendarOutlined, ThunderboltOutl
 
 import Utils from "../../utils";
 import Hint from "../Hint/Hint";
+import "./Entities.scss";
 import styles from "./Entities.module.scss";
 import { Node } from "../Node/Node";
 import { Number } from "../Number/Number";
