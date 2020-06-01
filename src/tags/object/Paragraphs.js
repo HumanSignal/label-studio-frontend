@@ -248,8 +248,9 @@ class HtxParagraphsView extends Component {
   }
 
   onMouseUp(ev) {
+    const item = this.props.item;
     var selectedRanges = this.captureDocumentSelection();
-    const states = this.props.item.activeStates();
+    const states = item.activeStates();
 
     if (!states || states.length === 0) return;
 
@@ -257,7 +258,9 @@ class HtxParagraphsView extends Component {
       return;
     }
 
-    const htxRange = this.props.item.addRegion(selectedRanges[0]);
+    item._currentSpan = null;
+
+    const htxRange = item.addRegion(selectedRanges[0]);
 
     const spans = htxRange.createSpans();
     htxRange.addEventsToSpans(spans);
