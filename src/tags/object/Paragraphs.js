@@ -163,8 +163,7 @@ const Model = types
         start: startXpath,
         end: endXpath,
 
-        // [TODO|Andrew] need a way to get the text
-        text: "",
+        text,
         score: obj.score,
         readonly: obj.readonly,
         normalization: obj.normalization,
