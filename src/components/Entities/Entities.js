@@ -258,18 +258,19 @@ const RegionsTree = observer(({ regionStore }) => {
       defaultExpandAll={true}
       autoExpandParent={true}
       switcherIcon={<DownOutlined />}
-      onDrop={info => {
-        const dropKey = info.node.props.eventKey;
-        const dragKey = info.dragNode.props.eventKey;
-        const dropPos = info.node.props.pos.split("-");
-        const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+      onDrop={({ node, dragNode, dropPosition, dropToGap }) => {
+        const dropKey = node.props.eventKey;
+        const dragKey = dragNode.props.eventKey;
+        const dropPos = node.props.pos.split("-");
+        dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
+        const treeDepth = dropPos.length;
 
         const dropReg = regionStore.findRegionID(dropKey);
         const dragReg = regionStore.findRegionID(dragKey);
 
-        if (info.dropToGap && dropPosition === -1) {
+        if (treeDepth == 2 && dropToGap && dropPosition === -1) {
           dragReg.setParentID("");
-        } else {
+        } else if (dropPosition !== -1) {
           dragReg.setParentID(dropReg.pid);
         }
       }}

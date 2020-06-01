@@ -101,11 +101,7 @@ const _Tool = types
     },
   }));
 
-const Polygon = types.compose(
-  ToolMixin,
-  BaseTool,
-  _Tool,
-);
+const Polygon = types.compose(ToolMixin, BaseTool, _Tool);
 
 export { Polygon };
 
