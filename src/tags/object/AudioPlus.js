@@ -148,6 +148,7 @@ const Model = types
       const r = AudioRegionModel.create({
         id: wsRegion.id ? wsRegion.id : guidGenerator(),
         pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
+        parentID: wsRegion.parent_id === null ? "" : wsRegion.parent_id,
         start: wsRegion.start,
         end: wsRegion.end,
         score: wsRegion.score,
