@@ -86,6 +86,7 @@ const Model = types
         "KeyPointLabelsModel",
         "BrushLabelsModel",
         "HyperTextLabelsModel",
+        "ParagraphLabelsModel",
       ]);
     },
   }))
@@ -189,12 +190,7 @@ const Model = types
     },
   }));
 
-const LabelModel = types.compose(
-  "LabelModel",
-  TagAttrs,
-  Model,
-  ProcessAttrsMixin,
-);
+const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

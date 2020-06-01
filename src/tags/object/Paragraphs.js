@@ -102,7 +102,7 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return states && states.filter(s => s.isSelected && s._type === "htmllabels");
+      return states && states.filter(s => s.isSelected && s._type === "paragraphlabels");
     },
   }))
   .actions(self => ({
@@ -155,6 +155,8 @@ const Model = types
 
       const tree = {
         pid: obj.id,
+        parentID: obj.parent_id === null ? "" : obj.parent_id,
+
         startOffset: startOffset,
         endOffset: endOffset,
 

@@ -6,7 +6,7 @@ import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
 import { LabelsModel } from "../tags/control/Labels";
-import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
+import { ParagraphLabelsModel } from "../tags/control/ParagraphLabels";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
@@ -23,7 +23,7 @@ const Model = types
     end: types.string,
 
     text: types.string,
-    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
+    states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .views(self => ({
     get parent() {
