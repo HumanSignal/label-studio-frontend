@@ -2,45 +2,58 @@ import * as xpath from "xpath-range";
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
 import { types, getType, getRoot } from "mobx-state-tree";
+import ColorScheme from "pleasejs";
 
-import Utils from "../../utils";
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
-import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
+import Utils from "../../utils";
+import { HyperTextModel, HtxHyperTextView } from "./HyperText";
+import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
 import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
+import styles from "./Paragraphs/Paragraphs.module.scss";
 import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
- * HyperText tag shows an HyperText markup that can be labeled
+ * Paragraphs tag shows an Paragraphs markup that can be labeled
  * @example
- * <HyperText name="text-1" value="$text" />
- * @name HyperText
- * @param {string} name - name of the element
- * @param {string} value - value of the element
- * @param {boolean} [showLabels=false] - show labels next to the region
- * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
+ * <Paragraphs name="dialogue-1" value="$dialogue" granularity="symbol" highlightColor="#ff0000" />
+ * @name Paragraphs
+ * @param {string} name                      - name of the element
+ * @param {string} value                     - value of the element
+ * @param {boolean} [selectionEnabled=true]  - enable or disable selection
+ * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
+ * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
+ * @param {boolean} [showLabels=true]        - show labels next to the region
+ * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
  */
-const TagAttrs = types.model("HyperTextModel", {
+const TagAttrs = types.model("ParagraphsModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
   highlightcolor: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
 
-  encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
+  encoding: types.optional(types.enumeration(["string", "base64"]), "string"),
+
+  layout: types.optional(types.enumeration(["none", "dialogue"]), "none"),
+
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
+
+  namekey: types.optional(types.string, "author"),
+  textkey: types.optional(types.string, "text"),
 });
 
 const Model = types
-  .model("HyperTextModel", {
+  .model("ParagraphsModel", {
     id: types.optional(types.identifier, guidGenerator),
-    type: "hypertext",
-    regions: types.array(HyperTextRegionModel),
-    _value: types.optional(types.string, ""),
+    type: "paragraphs",
+    regions: types.array(ParagraphsRegionModel),
+    //_value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
@@ -53,17 +66,43 @@ const Model = types
       return getRoot(self).completionStore.selected;
     },
 
+    get _value() {
+      const store = getRoot(self);
+      const val = self.value.substr(1);
+      return store.task.dataObj[val];
+    },
+
+    layoutStyles(data) {
+      if (self.layout === "dialogue") {
+        const seed = data[self.namekey];
+        return {
+          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: seed })[0], 0.1) },
+        };
+      }
+
+      return {};
+    },
+
+    get layoutClasses() {
+      if (self.layout === "dialogue") {
+        return {
+          name: styles.dialoguename,
+          text: styles.dialoguetext,
+        };
+      }
+
+      return {
+        name: styles.name,
+      };
+    },
+
     states() {
       return self.completion.toNames.get(self.name);
     },
 
     activeStates() {
       const states = self.states();
-      return states
-        ? states.filter(
-            s => s.isSelected && (getType(s).name === "HyperTextLabelsModel" || getType(s).name === "RatingModel"),
-          )
-        : null;
+      return states && states.filter(s => s.isSelected && s._type === "paragraphlabels");
     },
   }))
   .actions(self => ({
@@ -71,12 +110,8 @@ const Model = types
       self._update = self._update + 1;
     },
 
-    updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
-    },
-
     createRegion(p) {
-      const r = HyperTextRegionModel.create({
+      const r = ParagraphsRegionModel.create({
         pid: p.id,
         ...p,
       });
@@ -90,7 +125,7 @@ const Model = types
     },
 
     addRegion(range) {
-      const states = self.getAvailableStates();
+      const states = self.activeStates();
       if (states.length === 0) return;
 
       const clonedStates = states.map(s => cloneNode(s));
@@ -114,14 +149,22 @@ const Model = types
       }
 
       const states = restoreNewsnapshot(fromModel);
+
+      const startXpath = "/div[" + (+start + 1) + "]/span[2]/text()[1]";
+      const endXpath = "/div[" + (+end + 1) + "]/span[2]/text()[1]";
+
       const tree = {
         pid: obj.id,
         parentID: obj.parent_id === null ? "" : obj.parent_id,
+
         startOffset: startOffset,
         endOffset: endOffset,
-        start: start,
-        end: end,
-        text: text,
+
+        start: startXpath,
+        end: endXpath,
+
+        // [TODO|Andrew] need a way to get the text
+        text: "",
         score: obj.score,
         readonly: obj.readonly,
         normalization: obj.normalization,
@@ -136,32 +179,37 @@ const Model = types
     },
   }));
 
-const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase);
 
-class HtxHyperTextView extends Component {
-  render() {
-    const { item, store } = this.props;
-
-    if (!item._value) return null;
-
-    return <HtxHyperTextPieceView store={store} item={item} />;
-  }
-}
-
-class HyperTextPieceView extends Component {
+class HtxParagraphsView extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
   }
 
+  getSelectionText(sel) {
+    return sel.toString();
+  }
+
   captureDocumentSelection() {
+    const cls = this.props.item.layoutClasses;
+    const names = [...this.myRef.current.getElementsByClassName(cls.name)];
+    names.forEach(el => {
+      el.style.visibility = "hidden";
+    });
+
     var i,
       self = this,
       ranges = [],
       rangesToIgnore = [],
       selection = window.getSelection();
 
-    if (selection.isCollapsed) return [];
+    if (selection.isCollapsed) {
+      names.forEach(el => {
+        el.style.visibility = "unset";
+      });
+      return [];
+    }
 
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
@@ -175,7 +223,7 @@ class HyperTextPieceView extends Component {
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = selection.toString();
+        normedRange.text = self.getSelectionText(selection);
 
         // If the new range falls fully outside our this.element, we should
         // add it back to the document but not return it from this method.
@@ -187,6 +235,10 @@ class HyperTextPieceView extends Component {
       } catch (err) {}
     }
 
+    names.forEach(el => {
+      el.style.visibility = "unset";
+    });
+
     // BrowserRange#normalize() modifies the DOM structure and deselects the
     // underlying text as a result. So here we remove the selected ranges and
     // reapply the new ones.
@@ -196,18 +248,19 @@ class HyperTextPieceView extends Component {
   }
 
   onMouseUp(ev) {
+    var selectedRanges = this.captureDocumentSelection();
     const states = this.props.item.activeStates();
+
     if (!states || states.length === 0) return;
 
-    var selectedRanges = this.captureDocumentSelection();
-
-    if (selectedRanges.length === 0) return;
+    if (selectedRanges.length === 0) {
+      return;
+    }
 
     const htxRange = this.props.item.addRegion(selectedRanges[0]);
-    if (htxRange) {
-      const spans = htxRange.createSpans();
-      htxRange.addEventsToSpans(spans);
-    }
+
+    const spans = htxRange.createSpans();
+    htxRange.addEventsToSpans(spans);
   }
 
   _handleUpdate() {
@@ -246,10 +299,19 @@ class HyperTextPieceView extends Component {
 
   render() {
     const { item, store } = this.props;
+    const cls = item.layoutClasses;
 
-    let val = runTemplate(item.value, store.task.dataObj);
-    if (item.encoding === "base64") val = atob(val);
-    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
+    const val = item._value.map((v, idx) => {
+      const val = v["text"].split("\n").join("<br/>");
+      const style = item.layoutStyles(v);
+
+      return (
+        <div key={`${item.name}-${idx}`} className={styles.phrase} style={style.phrase}>
+          <span className={cls.name}>{v[item.namekey]}</span>
+          <span className={cls.text}>{v[item.textkey]}</span>
+        </div>
+      );
+    });
 
     return (
       <ObjectTag item={item}>
@@ -258,16 +320,17 @@ class HyperTextPieceView extends Component {
           data-update={item._update}
           style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
+          // dangerouslySetInnerHTML={{ __html: val }}
+        >
+          {val}
+        </div>
       </ObjectTag>
     );
   }
 }
 
-const HtxHyperText = inject("store")(observer(HtxHyperTextView));
-const HtxHyperTextPieceView = inject("store")(observer(HyperTextPieceView));
+const HtxParagraphs = inject("store")(observer(HtxParagraphsView));
 
-Registry.addTag("hypertext", HyperTextModel, HtxHyperText);
+Registry.addTag("paragraphs", ParagraphsModel, HtxParagraphs);
 
-export { HyperTextModel, HtxHyperText, HtxHyperTextView };
+export { ParagraphsModel, HtxParagraphs };

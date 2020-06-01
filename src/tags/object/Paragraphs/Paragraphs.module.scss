@@ -1,0 +1,46 @@
+.phrase {
+  background: #e8ffd0;
+  padding: 0.5em;
+  border-radius: 5px;
+  margin-right: 5px;
+  margin-bottom: 10px;
+  display: table;
+}
+
+.name {
+  background: transparent !important;
+  margin-right: 5px;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently */
+}
+
+.name span {
+  background: transparent !important;
+  padding: 0px !important;
+}
+
+.dialoguename {
+  font-weight: bold;
+  background: white !important;
+  border-radius: 5px;
+  padding: 5px;
+  margin-right: 10px;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently */
+}
+
+.dialoguename span {
+  background: white !important;
+  padding: 0px !important;
+}
+
+.dialoguetext {
+}

@@ -73,6 +73,8 @@ const Model = types
       "label",
       "relations",
       "filter",
+      "paragraphs",
+      "paragraphlabels",
     ]),
   })
   .views(self => ({

@@ -183,7 +183,10 @@ const Model = types
         return;
       }
 
-      const r = self.createRegion(ws_region, allStates.map(s => cloneNode(s)));
+      const r = self.createRegion(
+        ws_region,
+        allStates.map(s => cloneNode(s)),
+      );
       r.applyCSSClass(ws_region);
 
       return r;
@@ -220,13 +223,7 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose(
-  "AudioPlusModel",
-  TagAttrs,
-  Model,
-  ProcessAttrsMixin,
-  ObjectBase,
-);
+const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
 
 const HtxAudioView = observer(({ store, item }) => {
   if (!item._value) return null;
