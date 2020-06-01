@@ -38,7 +38,7 @@ import Hint from "../Hint/Hint";
 import "./Entities.scss";
 import styles from "./Entities.module.scss";
 import { Node } from "../Node/Node";
-import { Number } from "../Number/Number";
+import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
 
 const { TabPane } = Tabs;
 const { TreeNode } = Tree;
@@ -95,7 +95,7 @@ const RegionItem = observer(({ item, idx, flat }) => {
         item.toggleHighlight();
       }}
     >
-      <Number number={idx + 1} style={badgeStyle} />
+      <SimpleBadge number={idx + 1} style={badgeStyle} />
       <Node node={item} onClick={() => {}} className={styles.node} />
 
       {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
