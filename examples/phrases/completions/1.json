@@ -2,7 +2,7 @@
     "completions": [
         {
             "result": [
-                {"id":"ryzr4QdL93","from_name":"ner","to_name":"text","source":"$dialogue","type":"hypertextlabels","value":{"start":"2","end":"4","startOffset":0,"endOffset":134,"htmllabels":["Important Stuff"]}}
+                {"id":"ryzr4QdL93","from_name":"ner","to_name":"text","source":"$dialogue","type":"paragraphlabels","value":{"start":"2","end":"4","startOffset":0,"endOffset":134,"paragraphlabels":["Important Stuff"]}}
             ]
         }
     ],

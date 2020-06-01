@@ -1,7 +1,7 @@
 <View>
-  <HyperTextLabels name="ner" toName="text">
+  <ParagraphLabels name="ner" toName="text">
     <Label value="Important Stuff"></Label>
     <Label value="Random talk"></Label>
-  </HyperTextLabels>
+  </ParagraphLabels>
   <Paragraphs name="text" value="$dialogue" layout="dialogue" savetextresult="yes" />
 </View>
