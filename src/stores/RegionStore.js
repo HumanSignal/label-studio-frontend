@@ -116,6 +116,10 @@ export default types
     deleteRegion(region) {
       const arr = self.regions;
 
+      // find regions that have that region as a parent
+      const children = self.filterByParentID(region.pid);
+      children && children.forEach(r => r.setParentID(region.parentID));
+
       for (let i = 0; i < arr.length; i++) {
         if (arr[i] === region) {
           arr.splice(i, 1);
@@ -132,6 +136,10 @@ export default types
 
     findRegion(pid) {
       return self.regions.find(r => r.pid === pid);
+    },
+
+    filterByParentID(id) {
+      return self.regions.filter(r => r.parentID === id);
     },
 
     afterCreate() {
