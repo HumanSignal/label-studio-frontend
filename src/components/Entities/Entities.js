@@ -58,6 +58,7 @@ const RenderSubState = observer(({ item, idx }) => {
 });
 
 const RegionItem = observer(({ item, idx, flat }) => {
+  const { regionStore } = getRoot(item).completionStore.selected;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,
@@ -85,13 +86,15 @@ const RegionItem = observer(({ item, idx, flat }) => {
       key={item.id}
       className={classnames.join(" ")}
       onClick={() => {
-        getRoot(item).completionStore.selected.regionStore.unselectAll();
+        regionStore.unselectAll();
         item.selectRegion();
       }}
       onMouseOver={() => {
+        regionStore.unhighlightAll();
         item.setHighlight(true);
       }}
       onMouseOut={() => {
+        regionStore.unhighlightAll();
         item.setHighlight(false);
       }}
     >
