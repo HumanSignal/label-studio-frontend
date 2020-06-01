@@ -16,16 +16,26 @@
 .lstitem {
   cursor: pointer;
   align-items: center;
+  justify-content: start;
   display: flex;
+  position: relative;
+
+  & > *:not(:last-child),
+  & [role="img"] {
+    margin-right: 6px;
+  }
+
+  &.hidden {
+    opacity: 0.3;
+  }
+
+  &.selected {
+    background: #f1f1f1;
+  }
 }
 
-.confbadge {
-  background: #efefef;
-  padding-left: 4px;
-  border-radius: 10px;
-  padding-right: 5px;
-  font-size: 12px;
-  margin-left: 2px;
+.list .lstitem {
+  border-bottom: none;
 }
 
 .ant-tree-switcher {

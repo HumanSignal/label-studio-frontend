@@ -3,6 +3,15 @@
   overflow-y: auto;
 }
 
+.item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.selected {
+  background: #f1f1f1;
+}
+
 .block {
   display: flex;
   align-items: center;
