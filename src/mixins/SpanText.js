@@ -79,10 +79,12 @@ export default types
 
     addEventsToSpans(spans) {
       const addEvent = s => {
-        s.onmouseover = function() {
+        s.onmouseover = function(ev) {
           if (self.completion.relationMode) {
             self.toggleHighlight();
             s.style.cursor = Constants.RELATION_MODE_CURSOR;
+            // only one span should be highlighted
+            ev.stopPropagation();
           } else {
             s.style.cursor = Constants.POINTER_CURSOR;
           }
@@ -90,16 +92,23 @@ export default types
 
         s.onmouseout = function() {
           self.setHighlight(false);
-          s.style.cursor = Constants.DEFAULT_CURSOR;
+        };
+
+        s.onmousedown = function(ev) {
+          // if we click to already selected span (=== this)
+          // skip it to allow another span to be selected
+          if (self.parent._currentSpan !== this) {
+            ev.stopPropagation();
+            self.parent._currentSpan = this;
+          }
         };
 
         s.onclick = function(ev) {
-          if (ev.doSelection) return;
+          // set above in `onmousedown`, can be nulled when new region created
+          if (self.parent._currentSpan !== this) return;
+          // reset for the case we just created new relation
+          s.style.cursor = Constants.POINTER_CURSOR;
           self.onClickRegion();
-        };
-
-        s.mouseover = function() {
-          this.style.cursor = "pointer";
         };
 
         return false;
