@@ -37,6 +37,7 @@ import Utils from "../../utils";
 import Hint from "../Hint/Hint";
 import styles from "./Entities.module.scss";
 import { Node } from "../Node/Node";
+import { Number } from "../Number/Number";
 
 const { TabPane } = Tabs;
 const { TreeNode } = Tree;
@@ -55,36 +56,33 @@ const RenderSubState = observer(({ item, idx }) => {
     ));
 });
 
-const RegionItem = observer(({ item, idx, showNumber }) => {
-  // const selected = item.selected ? "#f1f1f1" : "transparent";
-  const selected = item.selected ? "#bae7ff" : "transparent";
+const RegionItem = observer(({ item, idx, flat }) => {
+  const classnames = [
+    styles.lstitem,
+    flat && styles.flat,
+    item.hidden === true && styles.hidden,
+    item.selected && styles.selected,
+  ].filter(Boolean);
 
   const oneColor = item.getOneColor();
-
-  let opacity = 1.0;
-  let style = {};
+  let badgeStyle = {};
 
   if (oneColor) {
-    style = {
+    badgeStyle = {
       backgroundColor: oneColor,
     };
   } else {
-    style = {
+    badgeStyle = {
       backgroundColor: "#fff",
       color: "#999",
       boxShadow: "0 0 0 1px #d9d9d9 inset",
     };
   }
 
-  if (item.hidden === true) {
-    opacity = 0.3;
-  }
-
   return (
     <List.Item
       key={item.id}
-      className={styles.lstitem}
-      style={{ background: selected, opacity: opacity }}
+      className={classnames.join(" ")}
       onClick={() => {
         getRoot(item).completionStore.selected.regionStore.unselectAll();
         item.selectRegion();
@@ -96,25 +94,21 @@ const RegionItem = observer(({ item, idx, showNumber }) => {
         item.toggleHighlight();
       }}
     >
-      <span>
-        <Badge count={idx + 1} style={style} />
-        &nbsp; <Node node={item} />
-      </span>
+      <Number number={idx + 1} style={badgeStyle} />
+      <Node node={item} onClick={() => {}} className={styles.node} />
 
-      <div>
-        {item.readonly && <span className={styles.confbadge}>ro</span>}
+      {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
 
-        {item.score && (
-          <span
-            className={styles.confbadge}
-            style={{
-              color: Utils.Colors.getScaleGradient(item.score),
-            }}
-          >
-            {item.score.toFixed(2)}
-          </span>
-        )}
-      </div>
+      {item.score && (
+        <span
+          className={styles.confbadge}
+          style={{
+            color: Utils.Colors.getScaleGradient(item.score),
+          }}
+        >
+          {item.score.toFixed(2)}
+        </span>
+      )}
     </List.Item>
   );
 });
@@ -245,10 +239,11 @@ const LabelsList = observer(({ regionStore }) => {
 });
 
 const RegionsTree = observer(({ regionStore }) => {
+  const isFlat = !regionStore.sortedRegions.some(r => r.parentID !== "");
   const treeData = regionStore.asTree((item, idx) => {
     return {
       key: item.id,
-      title: <RegionItem item={item} idx={idx} />,
+      title: <RegionItem item={item} idx={idx} flat={isFlat} />,
     };
   });
 
@@ -318,19 +313,11 @@ export default observer(({ store, regionStore }) => {
           </Divider>
         </div>
         {regions.length > 0 && regionStore.view === "regions" && (
-          <div>
-            <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
-              <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                <SortAscendingOutlined /> Sort
-              </a>
-            </Dropdown>
-            &nbsp;&nbsp;&nbsp;
-            {/* <Dropdown overlay={groupMenu} placement="bottomLeft"> */}
-            {/*   <a className="ant-dropdown-link" onClick={e => e.preventDefault()}> */}
-            {/*     <GroupOutlined /> Group */}
-            {/*   </a> */}
-            {/* </Dropdown> */}
-          </div>
+          <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
+            <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+              <SortAscendingOutlined /> Sort
+            </a>
+          </Dropdown>
         )}
       </div>
       {!regions.length && <p>No Regions created yet</p>}
