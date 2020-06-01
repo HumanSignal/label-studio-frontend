@@ -1,6 +1,20 @@
 .node {
+  flex-basis: 100%;
   color: #262626;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
   &:hover {
     color: #1890ff;
+  }
+}
+
+.minimal {
+  display: flex;
+  align-items: center;
+  & > * {
+    margin-right: 6px;
   }
 }

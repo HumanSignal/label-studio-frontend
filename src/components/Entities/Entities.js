@@ -27,70 +27,56 @@ const RenderSubState = observer(({ item, idx }) => {
 });
 
 const EntityItem = observer(({ item, idx }) => {
-  const selected = item.selected ? "#f1f1f1" : "transparent";
-  // const selected = item.selected ? "1px dashed #00aeff" : "none";
-  const oneColor = item.getOneColor();
+  const classnames = [styles.lstitem, item.hidden === true && styles.hidden, item.selected && styles.selected].filter(
+    Boolean,
+  );
 
-  let opacity = 1.0;
-  let style = {};
+  const oneColor = item.getOneColor();
+  let badgeStyle = {};
 
   if (oneColor) {
-    style = {
+    badgeStyle = {
       backgroundColor: oneColor,
     };
   } else {
-    style = {
+    badgeStyle = {
       backgroundColor: "#fff",
       color: "#999",
       boxShadow: "0 0 0 1px #d9d9d9 inset",
     };
   }
 
-  if (item.hidden === true) {
-    opacity = 0.3;
-  }
-
   return (
-    <div>
-      <List.Item
-        key={item.id}
-        className={styles.lstitem}
-        style={{ background: selected, opacity: opacity }}
-        onClick={() => {
-          getRoot(item).completionStore.selected.regionStore.unselectAll();
-          item.selectRegion();
-        }}
-        onMouseOver={() => {
-          item.toggleHighlight();
-        }}
-        onMouseOut={() => {
-          item.toggleHighlight();
-        }}
-      >
-        <span>
-          <Badge count={idx + 1} style={style} />
-          &nbsp; <Node node={item} />
+    <List.Item
+      key={item.id}
+      className={classnames.join(" ")}
+      onClick={() => {
+        getRoot(item).completionStore.selected.regionStore.unselectAll();
+        item.selectRegion();
+      }}
+      onMouseOver={() => {
+        item.toggleHighlight();
+      }}
+      onMouseOut={() => {
+        item.toggleHighlight();
+      }}
+    >
+      <Badge count={idx + 1} style={badgeStyle} />
+      <Node node={item} />
+
+      {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
+
+      {item.score && (
+        <span
+          className={styles.confbadge}
+          style={{
+            color: Utils.Colors.getScaleGradient(item.score),
+          }}
+        >
+          {item.score.toFixed(2)}
         </span>
-
-        <div>
-          {item.readonly && <span className={styles.confbadge}>ro</span>}
-
-          {item.score && (
-            <span
-              className={styles.confbadge}
-              style={{
-                color: Utils.Colors.getScaleGradient(item.score),
-              }}
-            >
-              {item.score.toFixed(2)}
-            </span>
-          )}
-        </div>
-      </List.Item>
-      {/* <div style={{ paddingLeft: "23px", backgroundColor: "#f9f9f9" }}> */}
-      {/*   {item.selected && <RenderSubState item={item} />} */}
-      {/* </div> */}
-    </div>
+      )}
+    </List.Item>
   );
 });
 
@@ -233,19 +219,11 @@ export default observer(({ store, regionStore }) => {
           </Divider>
         </div>
         {regions.length > 0 && (
-          <div>
-            <Dropdown overlay={sortMenu} placement="bottomLeft">
-              <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                <SortAscendingOutlined /> Sort
-              </a>
-            </Dropdown>
-            &nbsp;&nbsp;&nbsp;
-            {/* <Dropdown overlay={groupMenu} placement="bottomLeft"> */}
-            {/*   <a className="ant-dropdown-link" onClick={e => e.preventDefault()}> */}
-            {/*     <GroupOutlined /> Group */}
-            {/*   </a> */}
-            {/* </Dropdown> */}
-          </div>
+          <Dropdown overlay={sortMenu} placement="bottomLeft">
+            <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+              <SortAscendingOutlined /> Sort
+            </a>
+          </Dropdown>
         )}
       </div>
       {!regions.length && <p>No Regions created yet</p>}
