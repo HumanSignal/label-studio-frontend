@@ -164,7 +164,7 @@ const Model = types
     /**
      * @return {object}
      */
-    completion() {
+    get completion() {
       // return Types.getParentOfTypeString(self, "Completion");
       return getRoot(self).completionStore.selected;
     },
@@ -173,7 +173,7 @@ const Model = types
      * @return {object}
      */
     states() {
-      return self.completion().toNames.get(self.name);
+      return self.completion.toNames.get(self.name);
     },
 
     activeStates() {
@@ -332,14 +332,16 @@ const Model = types
     },
 
     checkLabels() {
-      const states = self.getAvailableStates();
-      return states.length !== 0;
+      // there is should be at least one state selected for *labels object
+      const labelStates = (self.states() || []).filter(s => s.type.includes("labels"));
+      const selectedStates = self.getAvailableStates();
+      return selectedStates.length !== 0 || labelStates.length === 0;
     },
 
     addShape(shape) {
       self.regions.push(shape);
 
-      self.completion().addRegion(shape);
+      self.completion.addRegion(shape);
       self.setSelected(shape.id);
       shape.selectRegion();
     },
@@ -393,10 +395,7 @@ const Model = types
 
       // when there is only the image classification and nothing else, we need to handle it here
       if (tools.length === 0 && obj.value.choices) {
-        self
-          .completion()
-          .names.get(obj.from_name)
-          .fromStateJSON(obj);
+        self.completion.names.get(obj.from_name).fromStateJSON(obj);
 
         return;
       }
@@ -405,13 +404,7 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose(
-  "ImageModel",
-  TagAttrs,
-  Model,
-  ProcessAttrsMixin,
-  ObjectBase,
-);
+const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
 
 const HtxImage = inject("store")(observer(ImageView));
 

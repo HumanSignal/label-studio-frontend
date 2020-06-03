@@ -95,6 +95,7 @@ const Model = types
     },
 
     updateAppearenceFromState() {
+      if (!self.states.length) return;
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
       self.fillColor = stroke;
