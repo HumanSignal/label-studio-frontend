@@ -4,5 +4,7 @@
   margin-bottom: 0.5em;
   border-radius: 3px;
   padding: 20px 10px;
-  word-break: break-word;
+  overflow: auto;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
