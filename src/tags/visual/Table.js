@@ -1,7 +1,7 @@
 import React from "react";
 import { Table } from "antd";
 import { observer, inject } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
@@ -13,13 +13,23 @@ import Registry from "../../core/Registry";
  * @name Table
  * @param {string} value
  */
-const Model = types.model({
-  type: "table",
-  value: types.maybeNull(types.string),
-  _value: types.optional(types.string, ""),
-});
+const Model = types
+  .model({
+    type: "table",
+    value: types.maybeNull(types.string),
+    // _value: types.optional(types.string, ""),
+  })
+  .views(self => ({
+    get _value() {
+      if (!self.value) return;
 
-const TableModel = types.compose("TableModel", Model, ProcessAttrsMixin);
+      const store = getRoot(self);
+      const val = self.value.substr(1);
+      return store.task.dataObj[val];
+    },
+  }));
+
+const TableModel = types.compose("TableModel", Model);
 
 const HtxTable = inject("store")(
   observer(({ store, item }) => {
@@ -30,9 +40,13 @@ const HtxTable = inject("store")(
     }
 
     const columns = [
-      { title: "Type", dataIndex: "type" },
+      { title: "Name", dataIndex: "type" },
       { title: "Value", dataIndex: "value" },
     ];
+
+    console.log(item._value);
+    console.log(Object.keys(value));
+
     const dataSource = Object.keys(value).map(k => {
       let val = value[k];
 
@@ -41,7 +55,7 @@ const HtxTable = inject("store")(
       return { type: k, value: val };
     });
 
-    return <Table dataSource={dataSource} columns={columns} />;
+    return <Table bordered dataSource={dataSource} columns={columns} pagination={{ hideOnSinglePage: true }} />;
   }),
 );
 
