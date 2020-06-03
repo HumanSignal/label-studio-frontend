@@ -461,6 +461,12 @@ class TextPieceView extends Component {
 
     if (!item.loaded) return null;
 
+    const val = item._value.split("\n").reduce((res, s, i) => {
+      if (i) res.push(<br />);
+      res.push(s);
+      return res;
+    }, []);
+
     return (
       <ObjectTag item={item}>
         <div
@@ -472,7 +478,7 @@ class TextPieceView extends Component {
           data-update={item._update}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          {item._value}
+          {val}
         </div>
       </ObjectTag>
     );
