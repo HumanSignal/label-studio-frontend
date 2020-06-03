@@ -46,8 +46,9 @@ const ObjectBase = types
     // return all states left untouched - available labels and others
     function getAvailableStates() {
       const checkAndCollect = (list, s) => (s.checkMaxUsages ? list.concat(s.checkMaxUsages()) : list);
-      const exceeded = self.states().reduce(checkAndCollect, []);
-      const states = self.activeStates();
+      const allStates = self.states() || [];
+      const exceeded = allStates.reduce(checkAndCollect, []);
+      const states = self.activeStates() || [];
       if (states.length === 0) {
         if (exceeded.length) {
           const label = exceeded[0];
