@@ -457,11 +457,9 @@ class TextPieceView extends Component {
   }
 
   render() {
-    const { item, store } = this.props;
+    const { item } = this.props;
 
     if (!item.loaded) return null;
-
-    const val = item._value.split("\n").join("<br/>");
 
     return (
       <ObjectTag item={item}>
@@ -472,11 +470,10 @@ class TextPieceView extends Component {
           }}
           className={styles.block + " htx-text"}
           data-update={item._update}
-          style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
-          //onClick={this.onClick.bind(this)}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
+        >
+          {item._value}
+        </div>
       </ObjectTag>
     );
   }
