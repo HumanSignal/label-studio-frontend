@@ -11,16 +11,22 @@ import lodash from "../../utils/lodash";
 const { Search } = Input;
 
 /**
- * Filter tag, show filter
+ * Filter tag, show filter input to seek through classes
  * @example
- * <Filter name="text-1" value="$text" />
- * @example
- * <Filter name="text-1" value="Please select the class" />
+ * <View>
+ *  <Filter name="text-1" toName="labels" />
+ *  <Labels name="labels" toName="text">
+ *    <Label value="Hello" />
+ *    <Label value="World" />
+ *  </Labels>
+ *  <Text name="text" value="$text" />
+ * </View>
  * @name Filter
- * @param {string} value              - text of filter
- * @param {number} [size=4]           - size of filter
- * @param {string} [style]            - css style string
- * @param {boolean} [underline=false] - underline of filter
+ * @param {boolean} [casesensetive=false] - case sensetive or insensetive match
+ * @param {boolean} [cleanup=true]        - remove the search if you click Enter
+ * @param {string} placeholder            - placeholder for the empty filter
+ * @param {number} [minlength=3]          - length of string after which to initiate the search
+ * @param {string} hotkey                 - hotkey that activate the search
  */
 
 const TagAttrs = types.model({

@@ -20,16 +20,16 @@ import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Paragraphs tag shows an Paragraphs markup that can be labeled
+ * it expects an array of objects like that [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
  * @example
- * <Paragraphs name="dialogue-1" value="$dialogue" granularity="symbol" highlightColor="#ff0000" />
+ * <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
  * @name Paragraphs
- * @param {string} name                      - name of the element
- * @param {string} value                     - value of the element
- * @param {boolean} [selectionEnabled=true]  - enable or disable selection
- * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
- * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
- * @param {boolean} [showLabels=true]        - show labels next to the region
- * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
+ * @param {string} name                                   - name of the element
+ * @param {string} value                                  - value of the element
+ * @param {string} [layout=none|dialogue]                 - the styles layout to use
+ * @param {string} [nameKey=author]                       - name key to use
+ * @param {string} [textKey=text]                         - text key to use
+ * @param {string} [encoding=string|base64|base64unicode] - decode value from a plain or base64 encoded string
  */
 const TagAttrs = types.model("ParagraphsModel", {
   name: types.maybeNull(types.string),

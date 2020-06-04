@@ -12,14 +12,14 @@ import ControlBase from "./Base";
 
 /**
  * ParagraphLabels tag
- * ParagraphLabels tag creates labeled hyper text (HTML)
+ * ParagraphLabels tag creates labeled paragraph
  * @example
  * <View>
- *   <ParagraphLabels name="labels" toName="ht">
+ *   <ParagraphLabels name="labels" toName="prg">
  *     <Label value="Face" />
  *     <Label value="Nose" />
  *   </ParagraphLabels>
- *   <Paragraph name="ht" value="$dialogue" />
+ *   <Paragraph name="prg" value="$dialogue" layout="dialogue" />
  * </View>
  * @name ParagraphLabels
  * @param {string} name name of the element
@@ -35,7 +35,7 @@ const ModelAttrs = types
     id: types.identifier,
     pid: types.optional(types.string, guidGenerator),
     type: "paragraphlabels",
-    children: Types.unionArray(["label", "header", "view", "paragraph"]),
+    children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
