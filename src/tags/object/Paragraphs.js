@@ -217,6 +217,8 @@ class HtxParagraphsView extends Component {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef.current);
         splitBoundaries(r);
