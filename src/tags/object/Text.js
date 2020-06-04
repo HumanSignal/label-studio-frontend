@@ -340,6 +340,8 @@ class TextPieceView extends Component {
 
       r = this.alignRange(r);
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef);
 
@@ -456,11 +458,15 @@ class TextPieceView extends Component {
   }
 
   render() {
-    const { item, store } = this.props;
+    const { item } = this.props;
 
     if (!item.loaded) return null;
 
-    const val = item._value.split("\n").join("<br/>");
+    const val = item._value.split("\n").reduce((res, s, i) => {
+      if (i) res.push(<br />);
+      res.push(s);
+      return res;
+    }, []);
 
     return (
       <ObjectTag item={item}>
@@ -471,11 +477,10 @@ class TextPieceView extends Component {
           }}
           className={styles.block + " htx-text"}
           data-update={item._update}
-          style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
-          //onClick={this.onClick.bind(this)}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
+        >
+          {val}
+        </div>
       </ObjectTag>
     );
   }
