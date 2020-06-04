@@ -347,7 +347,13 @@ class TextPieceView extends Component {
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = r.toString();
+
+        // Range toString() uses only text nodes content
+        // so to extract original new lines made into <br>s we should get all the tags
+        const tags = Array.from(r.cloneContents().childNodes);
+        // and convert every <br> back to new line
+        const text = tags.reduce((str, node) => (str += node.tagName === "BR" ? "\n" : node.textContent), "");
+        normedRange.text = text;
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
         const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
