@@ -339,6 +339,8 @@ class TextPieceView extends Component {
 
       r = this.alignRange(r);
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef);
 
