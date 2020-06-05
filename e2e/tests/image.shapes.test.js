@@ -143,7 +143,8 @@ Scenario("Simple shapes on Image", async function(I) {
 
     for (let region of shape.regions) {
       // draw the shape using corresponding helper and params
-      await I.executeAsyncScript(shape.action, ...region.params);
+      const err = await I.executeAsyncScript(shape.action, ...region.params);
+      if (err) throw new Error(err);
     }
 
     const result = await I.executeScript(serialize);
