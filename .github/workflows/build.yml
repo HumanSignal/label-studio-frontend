@@ -38,7 +38,9 @@ jobs:
     # do this only for master branch (so only for push event)
     # because pr can contain unfinished job
     - run: npx serve -l tcp://localhost:3000 build &
+      if: github.event_name == 'push'
     - run: npm run test:e2e:headless
+      if: github.event_name == 'push'
 
     - uses: actions/upload-artifact@master
       if: ${{ failure() }}
