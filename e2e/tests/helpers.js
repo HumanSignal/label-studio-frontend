@@ -139,21 +139,29 @@ const clickMultipleKonva = async (points, done) => {
  * @param {function} done
  */
 const polygonKonva = async (points, done) => {
-  const delay = () => new Promise(resolve => setTimeout(resolve, 10));
-  const stage = window.Konva.stages[0];
-  const firstCoords = points[0];
-  for (let point of points) {
-    stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
-    await delay();
-  }
+  try {
+    const delay = () => new Promise(resolve => setTimeout(resolve, 10));
+    const stage = window.Konva.stages[0];
+    for (let point of points) {
+      stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
+      await delay();
+    }
 
-  // for closing the Polygon we should place cursor over the first point
-  const firstPoint = stage.getIntersection({ x: firstCoords[0], y: firstCoords[1] });
-  firstPoint.fire("mouseover");
-  await delay();
-  // and only after that we can click on it
-  firstPoint.fire("click");
-  done();
+    // this works in 50% runs for no reason; maybe some async lazy calculations
+    // const firstPoint = stage.getIntersection({ x, y });
+
+    // Circles (polygon points) redraw every new click so we can find it only after last click
+    const lastPoint = stage.find("Circle").slice(-1)[0];
+    const firstPoint = lastPoint.parent.find("Circle")[0];
+    // for closing the Polygon we should place cursor over the first point
+    firstPoint.fire("mouseover");
+    await delay();
+    // and only after that we can click on it
+    firstPoint.fire("click");
+    done();
+  } catch (e) {
+    done(String(e));
+  }
 };
 
 /**

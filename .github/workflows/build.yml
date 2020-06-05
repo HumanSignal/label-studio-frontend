@@ -42,6 +42,12 @@ jobs:
     - run: npm run test:e2e:headless
       if: github.event_name == 'push'
 
+    - uses: actions/upload-artifact@master
+      if: ${{ failure() }}
+      with:
+        name: e2e output
+        path: e2e/output/
+
     # upload this build as artifact to current Action
     - uses: actions/upload-artifact@master
       with:
