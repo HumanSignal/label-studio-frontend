@@ -142,20 +142,18 @@ const polygonKonva = async (points, done) => {
   try {
     const delay = () => new Promise(resolve => setTimeout(resolve, 10));
     const stage = window.Konva.stages[0];
-    const firstCoords = points[0];
     for (let point of points) {
       stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
       await delay();
     }
 
+    // this works in 50% runs for no reason; maybe some async lazy calculations
+    // const firstPoint = stage.getIntersection({ x, y });
+
+    // Circles (polygon points) redraw every new click so we can find it only after last click
+    const lastPoint = stage.find("Circle").slice(-1)[0];
+    const firstPoint = lastPoint.parent.find("Circle")[0];
     // for closing the Polygon we should place cursor over the first point
-    const [x, y] = firstCoords;
-    const firstPoint = stage.getIntersection({ x, y });
-    if (!firstPoint) {
-      const getInfo = t => [t.className, t.x(), t.y()].join(" ");
-      const allPoints = window.Konva.stages[0].find("Circle").map(getInfo);
-      return done(`First point [${x}, ${y}] was not found (${allPoints})`);
-    }
     firstPoint.fire("mouseover");
     await delay();
     // and only after that we can click on it
