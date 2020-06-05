@@ -149,8 +149,13 @@ const polygonKonva = async (points, done) => {
     }
 
     // for closing the Polygon we should place cursor over the first point
-    const firstPoint = stage.getIntersection({ x: firstCoords[0], y: firstCoords[1] });
-    if (!firstPoint) return done("First point was not found");
+    const [x, y] = firstCoords;
+    const firstPoint = stage.getIntersection({ x, y });
+    if (!firstPoint) {
+      const getInfo = t => [t.className, t.x(), t.y()].join(" ");
+      const allPoints = window.Konva.stages[0].find("Circle").map(getInfo);
+      return done(`First point [${x}, ${y}] was not found (${allPoints})`);
+    }
     firstPoint.fire("mouseover");
     await delay();
     // and only after that we can click on it
