@@ -342,6 +342,7 @@ const Model = types
       self.regions.push(shape);
 
       self.completion.addRegion(shape);
+
       self.setSelected(shape.id);
       shape.selectRegion();
     },

@@ -40,7 +40,7 @@ const _Tool = types
 
       const sap = self.statesAndParams;
 
-      self.createRegion({
+      const kp = self.createRegion({
         x: x,
         y: y,
         width: Number(c.strokewidth),
@@ -49,6 +49,9 @@ const _Tool = types
       });
 
       self.obj.completion.highlightedNode.unselectRegion(true);
+
+      // TODO test this out on keypoints
+      kp.afterRegionCreated();
       // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));

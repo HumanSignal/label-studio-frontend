@@ -47,6 +47,7 @@ const TagAttrs = types.model({
   size: types.optional(types.string, "medium"),
   background: types.optional(types.string, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(types.string, "white"),
+  selectnext: types.optional(types.string, ""),
 });
 
 const Model = types
@@ -189,12 +190,7 @@ const Model = types
     },
   }));
 
-const LabelModel = types.compose(
-  "LabelModel",
-  TagAttrs,
-  Model,
-  ProcessAttrsMixin,
-);
+const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

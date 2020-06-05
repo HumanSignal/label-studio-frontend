@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { types, getParent, getRoot } from "mobx-state-tree";
 
 import RequiredMixin from "../../mixins/Required";
 import InfoModal from "../../components/Infomodal/Infomodal";
@@ -60,8 +60,24 @@ const Model = LabelMixin.props({ _type: "labels" })
     get shouldBeUnselected() {
       return self.choice === "single";
     },
+
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
   }))
   .actions(self => ({
+    // called after a new region was created using this set of labels
+    afterRegionCreated() {
+      const enable = self.selectedLabels
+        .filter(l => l.selectnext !== "")
+        .map(l => self.completion.names.get(self.name).findLabel(l.selectnext));
+
+      enable.length &&
+        enable.forEach(l => {
+          l.setSelected(true);
+        });
+    },
+
     validate() {
       const regions = self.completion.regionStore.regions;
 

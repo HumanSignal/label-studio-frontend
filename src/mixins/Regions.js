@@ -65,6 +65,11 @@ const RegionsMixin = types
     sizeTop(size) {},
     sizeBottom(size) {},
 
+    afterRegionCreated() {
+      const labels = self.labelsState;
+      if (labels) labels.afterRegionCreated();
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
