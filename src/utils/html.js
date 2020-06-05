@@ -188,11 +188,14 @@ function highlightRange(normedRange, cssClass, cssStyle) {
 
   var nodes = textNodes; // normedRange.textNodes(),
 
+  let start = 0;
+  if (normedRange._range.startOffset === nodes[start].length) start++;
+
   let nlen = nodes.length;
   if (nlen > 1 && nodes[nodes.length - 1].length !== normedRange._range.endOffset) nlen = nlen - 1;
 
   const results = [];
-  for (var i = 0, len = nlen; i < len; i++) {
+  for (var i = start, len = nlen; i < len; i++) {
     var node = nodes[i];
     if (!white.test(node.nodeValue)) {
       var hl = window.document.createElement("span");

@@ -339,13 +339,21 @@ class TextPieceView extends Component {
 
       r = this.alignRange(r);
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef);
 
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = r.toString();
+
+        // Range toString() uses only text nodes content
+        // so to extract original new lines made into <br>s we should get all the tags
+        const tags = Array.from(r.cloneContents().childNodes);
+        // and convert every <br> back to new line
+        const text = tags.reduce((str, node) => (str += node.tagName === "BR" ? "\n" : node.textContent), "");
+        normedRange.text = text;
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
         const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
@@ -457,11 +465,15 @@ class TextPieceView extends Component {
   }
 
   render() {
-    const { item, store } = this.props;
+    const { item } = this.props;
 
     if (!item.loaded) return null;
 
-    const val = item._value.split("\n").join("<br/>");
+    const val = item._value.split("\n").reduce((res, s, i) => {
+      if (i) res.push(<br />);
+      res.push(s);
+      return res;
+    }, []);
 
     return (
       <ObjectTag item={item}>
@@ -472,11 +484,10 @@ class TextPieceView extends Component {
           }}
           className={styles.block + " htx-text"}
           data-update={item._update}
-          style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
-          //onClick={this.onClick.bind(this)}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
+        >
+          {val}
+        </div>
       </ObjectTag>
     );
   }
