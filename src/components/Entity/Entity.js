@@ -67,7 +67,7 @@ export default observer(({ store, completion }) => {
 
   return (
     <Fragment>
-      <p>
+      <p className={styles.row}>
         <NodeMinimal node={node} /> (id: {node.id}){" "}
         {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
       </p>
