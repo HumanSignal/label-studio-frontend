@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
 import { observer } from "mobx-react";
-import { StarOutlined, DeleteOutlined, PlusCircleOutlined, WindowsOutlined, PlusOutlined } from "@ant-design/icons";
+import { StarOutlined, DeleteOutlined, WindowsOutlined, PlusOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";

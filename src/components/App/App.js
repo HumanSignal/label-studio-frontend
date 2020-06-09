@@ -5,7 +5,6 @@ import React, { Component } from "react";
 import { Result, Spin } from "antd";
 import { getEnv } from "mobx-state-tree";
 import { observer, inject, Provider } from "mobx-react";
-import { PushpinOutlined } from "@ant-design/icons";
 
 /**
  * Core

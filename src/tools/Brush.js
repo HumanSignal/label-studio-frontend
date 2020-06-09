@@ -7,7 +7,6 @@ import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import { BrushRegionModel } from "../regions/BrushRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 import Canvas from "../utils/canvas";
 
 const ToolView = observer(({ item }) => {

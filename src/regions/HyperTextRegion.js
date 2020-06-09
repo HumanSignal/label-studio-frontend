@@ -1,4 +1,4 @@
-import { types, getRoot, getParentOfType } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -8,7 +8,6 @@ import WithStatesMixin from "../mixins/WithStates";
 import { ChoicesModel } from "../tags/control/Choices";
 import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
 import { HyperTextModel } from "../tags/object/HyperText";
-import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";

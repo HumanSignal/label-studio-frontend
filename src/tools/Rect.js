@@ -4,7 +4,6 @@ import Utils from "../utils";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { RectRegionModel } from "../regions/RectRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 const minSize = { w: 3, h: 3 };
 

@@ -1,16 +1,8 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { getType } from "mobx-state-tree";
-import { Form, Input, Icon, Button, Tag, Tooltip, Badge } from "antd";
-import {
-  DeleteOutlined,
-  LinkOutlined,
-  PlusOutlined,
-  FullscreenOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  CompressOutlined,
-} from "@ant-design/icons";
+import { Form, Input, Button, Tag, Tooltip, Badge } from "antd";
+import { DeleteOutlined, LinkOutlined, PlusOutlined, CompressOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";

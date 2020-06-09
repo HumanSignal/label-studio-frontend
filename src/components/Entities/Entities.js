@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+// @todo there is lot of unused code which is till useful; deal with it!
 import React from "react";
 import { Radio, Tabs, Button, Popconfirm, List, Typography, Divider, Badge, Menu, Dropdown, Tree, Switch } from "antd";
 import { getRoot } from "mobx-state-tree";
@@ -8,6 +10,7 @@ import { SortAscendingOutlined, GroupOutlined, CalendarOutlined, ThunderboltOutl
 import Utils from "../../utils";
 import Hint from "../Hint/Hint";
 import styles from "./Entities.module.scss";
+import globalStyles from "../../styles/global.module.scss";
 import { Node } from "../Node/Node";
 
 const { TabPane } = Tabs;
@@ -82,16 +85,8 @@ const EntityItem = observer(({ item, idx }) => {
 
 const groupMenu = (
   <Menu>
-    <Menu.Item>
-      <a target="_blank" rel="noopener noreferrer" href="">
-        By Type
-      </a>
-    </Menu.Item>
-    <Menu.Item>
-      <a target="_blank" rel="noopener noreferrer" href="">
-        By Label
-      </a>
-    </Menu.Item>
+    <Menu.Item className={globalStyles.link}>By Type</Menu.Item>
+    <Menu.Item className={globalStyles.link}>By Label</Menu.Item>
   </Menu>
 );
 
@@ -220,9 +215,9 @@ export default observer(({ store, regionStore }) => {
         </div>
         {regions.length > 0 && (
           <Dropdown overlay={sortMenu} placement="bottomLeft">
-            <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+            <span className={globalStyles.link} onClick={e => e.preventDefault()}>
               <SortAscendingOutlined /> Sort
-            </a>
+            </span>
           </Dropdown>
         )}
       </div>
