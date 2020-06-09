@@ -470,7 +470,7 @@ class TextPieceView extends Component {
     if (!item.loaded) return null;
 
     const val = item._value.split("\n").reduce((res, s, i) => {
-      if (i) res.push(<br />);
+      if (i) res.push(<br key={i} />);
       res.push(s);
       return res;
     }, []);
