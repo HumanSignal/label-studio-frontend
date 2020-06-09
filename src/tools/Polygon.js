@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { PolygonRegionModel } from "../regions/PolygonRegion";
-import { restoreNewsnapshot } from "../core/Helpers";
 
 const _Tool = types
   .model({
@@ -101,11 +100,7 @@ const _Tool = types
     },
   }));
 
-const Polygon = types.compose(
-  ToolMixin,
-  BaseTool,
-  _Tool,
-);
+const Polygon = types.compose(ToolMixin, BaseTool, _Tool);
 
 export { Polygon };
 

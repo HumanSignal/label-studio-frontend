@@ -94,7 +94,7 @@ const RegionsMixin = types
         return self.states
           .map(s => {
             const ser = self.serialize(s, parent);
-            if (!ser) return;
+            if (!ser) return null;
 
             const tree = {
               ...buildTree(s),
@@ -105,7 +105,7 @@ const RegionsMixin = types
 
             return tree;
           })
-          .filter(tree => tree);
+          .filter(Boolean);
       } else {
         const obj = self.completion.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;
