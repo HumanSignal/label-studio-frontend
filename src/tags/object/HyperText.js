@@ -195,14 +195,17 @@ class HyperTextPieceView extends Component {
   }
 
   onMouseUp(ev) {
-    const states = this.props.item.activeStates();
+    const item = this.props.item;
+    const states = item.activeStates();
     if (!states || states.length === 0) return;
 
     var selectedRanges = this.captureDocumentSelection();
 
     if (selectedRanges.length === 0) return;
 
-    const htxRange = this.props.item.addRegion(selectedRanges[0]);
+    item._currentSpan = null;
+
+    const htxRange = item.addRegion(selectedRanges[0]);
     if (htxRange) {
       const spans = htxRange.createSpans();
       htxRange.addEventsToSpans(spans);

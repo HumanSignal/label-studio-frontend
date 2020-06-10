@@ -385,18 +385,16 @@ class TextPieceView extends Component {
 
   onMouseUp(ev) {
     const item = this.props.item;
-
     if (!item.selectionenabled) return;
 
     const states = item.activeStates();
-
     if (!states || states.length === 0) return;
 
     var selectedRanges = this.captureDocumentSelection();
-
     if (selectedRanges.length === 0) return;
 
-    ev.nativeEvent.doSelection = true;
+    // prevent overlapping spans from being selected right after this
+    item._currentSpan = null;
 
     const htxRange = item.addRegion(selectedRanges[0]);
     if (htxRange) {
