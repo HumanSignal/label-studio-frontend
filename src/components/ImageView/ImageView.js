@@ -356,7 +356,7 @@ export default observer(
               {item.activeShape && Tree.renderItem(item.activeShape)}
 
               {item.selectedShape && item.selectedShape.editable && (
-                <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
+                <ImageTransformer item={item} rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
               )}
             </Layer>
           </Stage>

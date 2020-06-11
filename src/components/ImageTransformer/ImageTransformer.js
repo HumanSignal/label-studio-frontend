@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Transformer } from "react-konva";
+import { MIN_SIZE } from "../../tools/Base";
 
 export default class TransformerComponent extends Component {
   componentDidMount() {
@@ -41,6 +42,30 @@ export default class TransformerComponent extends Component {
     this.transformer.getLayer().batchDraw();
   }
 
+  constrainSizes = (oldBox, newBox) => {
+    let { x, y, width, height, rotation } = newBox;
+    let { stageHeight, stageWidth } = this.props.item;
+
+    width = Math.max(MIN_SIZE.X, newBox.width);
+    height = Math.max(MIN_SIZE.Y, newBox.height);
+
+    if (x < 0) {
+      width = width + x;
+      x = 0;
+    } else if (x + width > stageWidth) {
+      width = stageWidth - x;
+    }
+
+    if (y < 0) {
+      height = height + y;
+      y = 0;
+    } else if (y + height > stageHeight) {
+      height = stageHeight - y;
+    }
+
+    return { x, y, width, height, rotation };
+  };
+
   render() {
     if (!this.props.selectedShape.supportsTransform) return null;
 
@@ -51,12 +76,7 @@ export default class TransformerComponent extends Component {
         keepRatio={false}
         rotateEnabled={this.props.rotateEnabled}
         borderDash={[3, 1]}
-        // borderStroke={"red"}
-        boundBoxFunc={(oldBox, newBox) => {
-          newBox.width = Math.max(3, newBox.width);
-          newBox.height = Math.max(3, newBox.height);
-          return newBox;
-        }}
+        boundBoxFunc={this.constrainSizes}
         anchorSize={8}
         ref={node => {
           this.transformer = node;
