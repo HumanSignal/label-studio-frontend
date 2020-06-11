@@ -11,11 +11,6 @@ import styles from "./ImageView.module.scss";
 
 export default observer(
   class ImageView extends Component {
-    constructor(props) {
-      super(props);
-
-      this.onResize = this.onResize.bind(this);
-    }
     /**
      * Handler of click on Image
      */
@@ -198,9 +193,9 @@ export default observer(
       );
     }
 
-    onResize() {
+    onResize = () => {
       this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
-    }
+    };
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
@@ -301,23 +296,19 @@ export default observer(
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
             {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-            {item.regions.map(shape => {
-              let brushShape;
-              if (shape.type === "brushregion") {
-                brushShape = (
-                  <Layer
-                    ref={ref => {
-                      shape.setLayerRef(ref);
-                    }}
-                    name={"brushLayer-" + shape.id}
-                    id={shape.id}
-                  >
-                    {Tree.renderItem(shape)}
-                  </Layer>
-                );
-              }
-              return brushShape;
-            })}
+            {item.regions
+              .filter(shape => shape.type === "brushregion")
+              .map(shape => (
+                <Layer
+                  ref={ref => {
+                    shape.setLayerRef(ref);
+                  }}
+                  name={"brushLayer-" + shape.id}
+                  id={shape.id}
+                >
+                  {Tree.renderItem(shape)}
+                </Layer>
+              ))}
             <Layer>
               {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
               {item.activeShape && Tree.renderItem(item.activeShape)}
