@@ -189,7 +189,9 @@ const Model = types
         m = restoreNewsnapshot(fromModel);
         // m.fromStateJSON(obj);
 
-        if (!r) {
+        if (r && fromModel.perregion) {
+          r.states.push(m);
+        } else {
           // tree.states = [m];
           const data = {
             pid: obj.id,
@@ -206,8 +208,6 @@ const Model = types
 
           r = self.createRegion(data);
           // r = self.addRegion(tree);
-        } else {
-          r.states.push(m);
         }
       }
 
