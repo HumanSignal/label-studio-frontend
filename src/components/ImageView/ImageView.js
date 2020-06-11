@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Stage, Layer, Group, Line } from "react-konva";
+import { Stage, Layer, Group, Line, Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot } from "mobx-state-tree";
 
@@ -11,19 +11,26 @@ import styles from "./ImageView.module.scss";
 
 export default observer(
   class ImageView extends Component {
-    /**
-     * Handler of click on Image
-     */
-    handleOnClick = ev => {
-      const { item } = this.props;
+    interceptorRef = React.createRef();
+    // stored position of cursor before draging
+    initialX;
+    initialY;
 
-      return item.onImageClick(ev);
+    /**
+     * Get coords out of Stage; interceptor coords show the shift, relative to initial coords
+     */
+    getDragCoords = () => {
+      const { x, y } = this.interceptorRef.current.attrs;
+      return [this.initialX + x, this.initialY + y];
     };
 
-    /**
-     * Handler for mouse down
-     */
-    handleStageMouseDown = e => {
+    handleOnClick = e => {
+      const { item } = this.props;
+
+      return item.event("click", e, e.evt.offsetX, e.evt.offsetY);
+    };
+
+    handleMouseDown = e => {
       const { item } = this.props;
 
       // item.freezeHistory();
@@ -32,34 +39,50 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       if (
+        e.target === this.interceptorRef.current ||
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {
-        return item.onMouseDown(e);
+        const { offsetX: x, offsetY: y } = e.evt;
+        // store the initial coords for further events
+        this.initialX = x;
+        this.initialY = y;
+        return item.event("mousedown", e, x, y);
       }
 
       return true;
     };
 
     /**
-     * Handler of mouse up
+     * Mouse up on Stage; when we click there is only mousedown and no interceptor drag events
      */
     handleMouseUp = e => {
       const { item } = this.props;
 
       item.freezeHistory();
 
-      return item.onMouseUp(e);
+      return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
     };
 
     /**
-     * Handler for mouse move
+     * Virtual drag ended (maybe out of stage or document), so return the interceptor back
      */
+    handleGlobalMouseUp = e => {
+      const { item } = this.props;
+      const interceptor = this.interceptorRef.current;
+      if (interceptor) {
+        interceptor.move({ x: -interceptor.attrs.x, y: -interceptor.attrs.y });
+        interceptor.getStage().draw();
+
+        item.freezeHistory();
+
+        return item.event("mouseup", e, ...this.getDragCoords());
+      }
+    };
+
     handleMouseMove = e => {
       const { item } = this.props;
-      /**
-       * Freeze this event
-       */
+
       item.freezeHistory();
 
       const stage = item.stageRef;
@@ -72,7 +95,7 @@ export default observer(
         stage.position(newPos);
         stage.batchDraw();
       } else {
-        return item.onMouseMove(e);
+        return item.event("mousemove", e, ...this.getDragCoords());
       }
     };
 
@@ -221,6 +244,33 @@ export default observer(
       );
     }
 
+    /**
+     * Transparent draggable event interceptor, covered all the canvas.
+     * It's goal to capture mouse events outside canvas and even document.
+     * This allow as to draw new shapes without lags and control their sizes.
+     * During drag mouse coords are captured; after drop interceptor goes back to (0, 0).
+     */
+    renderInterceptor() {
+      const { stageWidth, stageHeight } = this.props.item;
+
+      return (
+        <Rect
+          x={0}
+          y={0}
+          width={stageWidth}
+          height={stageHeight}
+          name="interceptor"
+          fill="transparent"
+          ref={this.interceptorRef}
+          draggable
+          onClick={this.handleOnClick}
+          onMouseDown={this.handleMouseDown}
+          onDragMove={this.handleMouseMove}
+          onDragEnd={this.handleGlobalMouseUp}
+        />
+      );
+    }
+
     render() {
       const { item, store } = this.props;
 
@@ -288,10 +338,6 @@ export default observer(
             height={item.stageHeight}
             scaleX={item.scale}
             scaleY={item.scale}
-            onDblClick={this.handleDblClick}
-            onClick={this.handleOnClick}
-            onMouseDown={this.handleStageMouseDown}
-            onMouseMove={this.handleMouseMove}
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
@@ -310,6 +356,8 @@ export default observer(
                 </Layer>
               ))}
             <Layer>
+              {this.renderInterceptor()}
+
               {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
               {item.activeShape && Tree.renderItem(item.activeShape)}
 

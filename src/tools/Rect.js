@@ -1,11 +1,10 @@
 import { types, destroy } from "mobx-state-tree";
 
-import Utils from "../utils";
 import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { RectRegionModel } from "../regions/RectRegion";
 import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
-import lodash from "../utils/lodash";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
   .model({
@@ -34,14 +33,6 @@ const _Tool = types
 
       return rect;
     },
-
-    updateDraw: lodash.throttle(function(x, y) {
-      const shape = self.getActiveShape;
-
-      const { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x: x, y: y });
-
-      shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
-    }, 48), // 4 frames, optimized enough and not laggy yet
 
     mousedownEv(ev, [x, y]) {
       if (self.control.type === "rectanglelabels" && !self.control.isSelected) return;
@@ -88,6 +79,6 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, _Tool);
+const Rect = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Rect };
