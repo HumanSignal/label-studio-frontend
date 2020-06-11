@@ -345,13 +345,7 @@ export default observer(
             {item.regions
               .filter(shape => shape.type === "brushregion")
               .map(shape => (
-                <Layer
-                  ref={ref => {
-                    shape.setLayerRef(ref);
-                  }}
-                  name={"brushLayer-" + shape.id}
-                  id={shape.id}
-                >
+                <Layer name={"brushLayer-" + shape.id} id={shape.id}>
                   {Tree.renderItem(shape)}
                 </Layer>
               ))}
