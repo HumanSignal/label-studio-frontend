@@ -47,6 +47,7 @@ export default class TransformerComponent extends Component {
     return (
       <Transformer
         resizeEnabled={true}
+        ignoreStroke={true}
         keepRatio={false}
         rotateEnabled={this.props.rotateEnabled}
         borderDash={[3, 1]}
