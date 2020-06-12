@@ -119,6 +119,27 @@ export default observer(({ store }) => {
           >
             Move sidepanel to the bottom
           </Checkbox>
+          <br />
+          <Checkbox
+            value="Show Completions panel"
+            defaultChecked={store.settings.showCompletionsPanel}
+            onChange={() => {
+              store.settings.toggleCompletionsPanel();
+            }}
+          >
+            Show Completions panel
+          </Checkbox>
+          <br />
+          <Checkbox
+            value="Show Predictions panel"
+            defaultChecked={store.settings.showPredictionsPanel}
+            onChange={() => {
+              store.settings.togglePredictionsPanel();
+            }}
+          >
+            Show Predictions panel
+          </Checkbox>
+
           {/* <br/> */}
           {/* <Checkbox */}
           {/*   value="Show image in fullsize" */}

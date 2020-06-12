@@ -38,6 +38,9 @@ const SettingsModel = types
 
     showLabels: types.optional(types.boolean, false),
 
+    showCompletionsPanel: types.optional(types.boolean, true),
+
+    showPredictionsPanel: types.optional(types.boolean, true),
     // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
@@ -135,6 +138,14 @@ const SettingsModel = types
 
     toggleLabelTooltips() {
       self.enableLabelTooltips = !self.enableLabelTooltips;
+    },
+
+    toggleCompletionsPanel() {
+      self.showCompletionsPanel = !self.showCompletionsPanel;
+    },
+
+    togglePredictionsPanel() {
+      self.showPredictionsPanel = !self.showPredictionsPanel;
     },
   }));
 

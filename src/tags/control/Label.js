@@ -47,6 +47,8 @@ const TagAttrs = types.model({
   size: types.optional(types.string, "medium"),
   background: types.optional(types.string, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(types.string, "white"),
+  groupcancontain: types.maybeNull(types.string),
+  // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
 });
 
 const Model = types
