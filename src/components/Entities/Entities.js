@@ -59,7 +59,6 @@ const RenderSubState = observer(({ item, idx }) => {
 
 const RegionItem = observer(({ item, idx, flat }) => {
   const cs = getRoot(item).completionStore;
-
   const classnames = [
     styles.lstitem,
     flat && styles.flat,
