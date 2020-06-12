@@ -14,7 +14,7 @@ import {
   Switch,
   Tag,
 } from "antd";
-import { getRoot } from "mobx-state-tree";
+import { getRoot, isRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
 import { DownOutlined } from "@ant-design/icons";
@@ -58,7 +58,7 @@ const RenderSubState = observer(({ item, idx }) => {
 });
 
 const RegionItem = observer(({ item, idx, flat }) => {
-  const { regionStore } = getRoot(item).completionStore.selected;
+  const cs = getRoot(item).completionStore;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,
@@ -86,15 +86,15 @@ const RegionItem = observer(({ item, idx, flat }) => {
       key={item.id}
       className={classnames.join(" ")}
       onClick={() => {
-        regionStore.unselectAll();
+        cs && cs.selected.regionStore.unselectAll();
         item.selectRegion();
       }}
       onMouseOver={() => {
-        regionStore.unhighlightAll();
+        cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(true);
       }}
       onMouseOut={() => {
-        regionStore.unhighlightAll();
+        cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(false);
       }}
     >
