@@ -48,7 +48,7 @@ const _Tool = types
         ...sap,
       });
 
-      self.obj.completion().highlightedNode.unselectRegion(true);
+      self.obj.completion.highlightedNode.unselectRegion(true);
       // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));

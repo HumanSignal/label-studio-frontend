@@ -2,6 +2,7 @@ import React from "react";
 import { observer, inject } from "mobx-react";
 import { types, getParent, getParentOfType, getRoot } from "mobx-state-tree";
 
+import { Typography } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
 import WithStatesMixin from "../mixins/WithStates";
@@ -13,6 +14,8 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
+
+const { Paragraph } = Typography;
 
 const Model = types
   .model("TextAreaRegionModel", {
@@ -94,9 +97,9 @@ const HtxTextAreaRegionView = ({ store, item }) => {
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
-      <p className={classes.join(" ")} {...params}>
+      <Paragraph className={classes.join(" ")} {...params}>
         {item._value}
-      </p>
+      </Paragraph>
       {parent.perregion && (
         <DeleteOutlined
           className={styles.delete}

@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
 import { types, getType, getRoot } from "mobx-state-tree";
 
+import Utils from "../../utils";
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
@@ -22,7 +23,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * @param {string} name - name of the element
  * @param {string} value - value of the element
  * @param {boolean} [showLabels=false] - show labels next to the region
- * @param {string} [encoding=string|base64] - provide the html as an escaped string or base64 encoded string
+ * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("HyperTextModel", {
   name: types.maybeNull(types.string),
@@ -31,7 +32,7 @@ const TagAttrs = types.model("HyperTextModel", {
   highlightcolor: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
 
-  encoding: types.optional(types.string, "string"),
+  encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
 });
 
 const Model = types
@@ -135,13 +136,7 @@ const Model = types
     },
   }));
 
-const HyperTextModel = types.compose(
-  "HyperTextModel",
-  RegionsMixin,
-  TagAttrs,
-  Model,
-  ObjectBase,
-);
+const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
 
 class HtxHyperTextView extends Component {
   render() {
@@ -201,14 +196,17 @@ class HyperTextPieceView extends Component {
   }
 
   onMouseUp(ev) {
-    const states = this.props.item.activeStates();
+    const item = this.props.item;
+    const states = item.activeStates();
     if (!states || states.length === 0) return;
 
     var selectedRanges = this.captureDocumentSelection();
 
     if (selectedRanges.length === 0) return;
 
-    const htxRange = this.props.item.addRegion(selectedRanges[0]);
+    item._currentSpan = null;
+
+    const htxRange = item.addRegion(selectedRanges[0]);
     if (htxRange) {
       const spans = htxRange.createSpans();
       htxRange.addEventsToSpans(spans);
@@ -254,6 +252,7 @@ class HyperTextPieceView extends Component {
 
     let val = runTemplate(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
+    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     return (
       <ObjectTag item={item}>

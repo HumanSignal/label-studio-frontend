@@ -27,7 +27,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
  * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
  * @param {boolean} [showLabels=true]        - show labels next to the region
- * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
+ * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
@@ -46,7 +46,8 @@ const TagAttrs = types.model("TextModel", {
   showlabels: types.optional(types.boolean, true),
 
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
-  encoding: types.optional(types.string, "string"),
+
+  encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
 });
 
 const Model = types
@@ -114,6 +115,8 @@ const Model = types
     loadedValue(val) {
       self.loaded = true;
       if (self.encoding === "base64") val = atob(val);
+      if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
+
       self._value = val;
 
       self._regionsCache.forEach(({ region, completion }) => {
@@ -186,7 +189,9 @@ const Model = types
         m = restoreNewsnapshot(fromModel);
         // m.fromStateJSON(obj);
 
-        if (!r) {
+        if (r && fromModel.perregion) {
+          r.states.push(m);
+        } else {
           // tree.states = [m];
           const data = {
             pid: obj.id,
@@ -204,8 +209,6 @@ const Model = types
 
           r = self.createRegion(data);
           // r = self.addRegion(tree);
-        } else {
-          r.states.push(m);
         }
       }
 
@@ -220,13 +223,7 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose(
-  "TextModel",
-  RegionsMixin,
-  TagAttrs,
-  Model,
-  ObjectBase,
-);
+const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
 
 class HtxTextView extends Component {
   render() {
@@ -249,6 +246,7 @@ class TextPieceView extends Component {
 
     let val = runTemplate(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
+    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     return val;
   }
@@ -342,13 +340,21 @@ class TextPieceView extends Component {
 
       r = this.alignRange(r);
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef);
 
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = r.toString();
+
+        // Range toString() uses only text nodes content
+        // so to extract original new lines made into <br>s we should get all the tags
+        const tags = Array.from(r.cloneContents().childNodes);
+        // and convert every <br> back to new line
+        const text = tags.reduce((str, node) => (str += node.tagName === "BR" ? "\n" : node.textContent), "");
+        normedRange.text = text;
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
         const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
@@ -458,11 +464,15 @@ class TextPieceView extends Component {
   }
 
   render() {
-    const { item, store } = this.props;
+    const { item } = this.props;
 
     if (!item.loaded) return null;
 
-    const val = item._value.split("\n").join("<br/>");
+    const val = item._value.split("\n").reduce((res, s, i) => {
+      if (i) res.push(<br />);
+      res.push(s);
+      return res;
+    }, []);
 
     return (
       <ObjectTag item={item}>
@@ -473,11 +483,10 @@ class TextPieceView extends Component {
           }}
           className={styles.block + " htx-text"}
           data-update={item._update}
-          style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
-          //onClick={this.onClick.bind(this)}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
+        >
+          {val}
+        </div>
       </ObjectTag>
     );
   }
