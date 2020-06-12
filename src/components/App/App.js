@@ -4,7 +4,7 @@
 import React, { Component } from "react";
 import { Result, Spin } from "antd";
 import { getEnv } from "mobx-state-tree";
-import { observer, inject, Provider } from "mobx-react";
+import { observer, Provider } from "mobx-react";
 
 /**
  * Core
@@ -159,8 +159,12 @@ class App extends Component {
                 ? this._renderUI(root, store, cs, settings)
                 : this.renderConfigValidationException()}
               <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("completions:menu") && <Completions store={store} />}
-                {store.hasInterface("predictions:menu") && <Predictions store={store} />}
+                {store.hasInterface("completions:menu") && store.settings.showCompletionsPanel && (
+                  <Completions store={store} />
+                )}
+                {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
+                  <Predictions store={store} />
+                )}
                 {store.hasInterface("side-column") && !cs.viewingAllCompletions && !cs.viewingAllPredictions && (
                   <SideColumn store={store} />
                 )}

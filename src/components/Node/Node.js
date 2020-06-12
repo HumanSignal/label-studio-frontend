@@ -82,7 +82,15 @@ const Node = observer(({ className, node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  const [, Icon, getContent] = NodeViews[name];
+  let [, Icon, getContent] = NodeViews[name];
+
+  if (node.labelsState) {
+    const aliases = node.labelsState.selectedAliases;
+    if (aliases.length)
+      Icon = function() {
+        return <span className={styles.alias}>{aliases.join(",")}</span>;
+      };
+  }
 
   return (
     <span className={[styles.node, className].filter(Boolean).join(" ")}>
