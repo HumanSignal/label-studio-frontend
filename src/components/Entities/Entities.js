@@ -227,6 +227,53 @@ const RegionsTree = observer(({ regionStore }) => {
         if (treeDepth === 2 && dropToGap && dropPosition === -1) {
           dragReg.setParentID("");
         } else if (dropPosition !== -1) {
+          // check if the dragReg can be a child of dropReg
+          const selDrop = dropReg.labelsState.selectedLabels;
+          const labelWithConstraint = selDrop.filter(l => l.groupcancontain);
+
+          if (labelWithConstraint.length) {
+            const go = true;
+            const selDrag = dragReg.labelsState.selectedLabels;
+
+            const set1 = Utils.Checkers.flatten(labelWithConstraint.map(l => l.groupcancontain.split(",")));
+            const set2 = Utils.Checkers.flatten(selDrag.map(l => (l.alias ? [l.alias, l.value] : [l.value])));
+
+            if (set1.filter(value => -1 !== set2.indexOf(value)).length === 0) return;
+          }
+
+          // check drop regions tree depth
+          if (dropReg.labelsState.groupdepth) {
+            const reached = false;
+            let maxDepth = Number(dropReg.labelsState.groupdepth);
+
+            // find the height of the tree formed by dragReg for
+            // example if we have a tree of A -> B -> C -> D and
+            // we're moving B -> C part somewhere then it'd have a
+            // height of 1
+            let treeHeight;
+            treeHeight = function(node) {
+              if (!node) return 0;
+
+              // TODO this can blow up if we have lots of stuff there
+              const childrenHeight = regionStore.filterByParentID(node.pid).map(c => treeHeight(c));
+
+              if (childrenHeight.length == 0) return 0;
+
+              return 1 + Math.max.apply(Math, childrenHeight);
+            };
+
+            if (maxDepth >= 0) {
+              maxDepth = maxDepth - treeHeight(dragReg);
+              let reg = dropReg;
+              while (reg) {
+                reg = regionStore.findRegion(reg.parentID);
+                maxDepth = maxDepth - 1;
+              }
+
+              if (maxDepth < 0) return;
+            }
+          }
+
           dragReg.setParentID(dropReg.pid);
         }
       }}
