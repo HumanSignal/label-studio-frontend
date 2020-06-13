@@ -1,5 +1,5 @@
 import React from "react";
-import { Form } from "antd";
+import { Form, Select } from "antd";
 import { observer } from "mobx-react";
 import { types, getRoot, getParent } from "mobx-state-tree";
 
@@ -14,6 +14,8 @@ import Types from "../../core/Types";
 import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+
+const { Option } = Select;
 
 /**
  * Choices tag, create a group of choices, radio, or checkboxes. Shall
@@ -44,6 +46,8 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, false),
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
+
+  layout: types.optional(types.enumeration(["select", "inline", "vertical"]), "vertical"),
 });
 
 const Model = types
@@ -95,6 +99,11 @@ const Model = types
     // }
   }))
   .actions(self => ({
+    afterCreate() {
+      // TODO depricate showInline
+      if (self.showinline === true) self.layout = "inline";
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
@@ -162,12 +171,14 @@ const HtxChoices = observer(({ item }) => {
     visibleStyle["display"] = "none";
   }
 
+  console.log("layout:", item.layout);
+
   return (
     <div style={{ ...style, ...visibleStyle }}>
-      {item.showinline ? (
-        <Form layout="inline">{Tree.renderChildren(item)}</Form>
+      {item.layout === "select" ? (
+        <Select style={{ width: "100%" }}>{Tree.renderChildren(item)}</Select>
       ) : (
-        <Form layout="vertical">{Tree.renderChildren(item)}</Form>
+        <Form layout={item.layout}>{Tree.renderChildren(item)}</Form>
       )}
     </div>
   );
