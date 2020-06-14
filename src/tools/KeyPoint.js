@@ -53,7 +53,11 @@ const _Tool = types
     },
   }));
 
-const KeyPoint = types.compose(ToolMixin, BaseTool, _Tool);
+const KeyPoint = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 // Registry.addTool("keypoint", KeyPoint);
 

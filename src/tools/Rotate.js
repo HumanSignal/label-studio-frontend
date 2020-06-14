@@ -34,7 +34,11 @@ const _Tool = types
     },
   }));
 
-const Rotate = types.compose(ToolMixin, BaseTool, _Tool);
+const Rotate = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Rotate };
 

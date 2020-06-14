@@ -47,6 +47,10 @@ const _Tool = types
     },
   }));
 
-const Contrast = types.compose(ToolMixin, BaseTool, _Tool);
+const Contrast = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Contrast };

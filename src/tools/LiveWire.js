@@ -40,6 +40,10 @@ const _Tool = types
     },
   }));
 
-const LiveWire = types.compose(ToolMixin, _Tool, BaseTool);
+const LiveWire = types.compose(
+  ToolMixin,
+  _Tool,
+  BaseTool,
+);
 
 export { LiveWire };

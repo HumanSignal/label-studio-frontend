@@ -159,7 +159,11 @@ const _Tool = types
     },
   }));
 
-const Zoom = types.compose(ToolMixin, BaseTool, _Tool);
+const Zoom = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 // Registry.addTool("zoom", Zoom);
 

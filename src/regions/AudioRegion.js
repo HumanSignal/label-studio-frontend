@@ -166,6 +166,12 @@ const Model = types
     },
   }));
 
-const AudioRegionModel = types.compose("AudioRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+const AudioRegionModel = types.compose(
+  "AudioRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 export { AudioRegionModel };

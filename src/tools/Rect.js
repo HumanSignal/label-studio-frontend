@@ -89,6 +89,10 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, _Tool);
+const Rect = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Rect };

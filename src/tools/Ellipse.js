@@ -89,6 +89,10 @@ const _Tool = types
     },
   }));
 
-const Ellipse = types.compose(ToolMixin, BaseTool, _Tool);
+const Ellipse = types.compose(
+  ToolMixin,
+  BaseTool,
+  _Tool,
+);
 
 export { Ellipse };

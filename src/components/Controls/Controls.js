@@ -86,7 +86,7 @@ export default inject("store")(
         );
       }
 
-      if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
+      if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate)) {
         confidenceSlider = (
           <div>
             <h4>Confidence Score Interval</h4>

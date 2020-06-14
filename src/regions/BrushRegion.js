@@ -194,7 +194,13 @@ const Model = types
     },
   }));
 
-const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+const BrushRegionModel = types.compose(
+  "BrushRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
   let currentPoints = [];

@@ -70,6 +70,10 @@ const _Tool = types
     },
   }));
 
-const Erase = types.compose(ToolMixin, _Tool, BaseTool);
+const Erase = types.compose(
+  ToolMixin,
+  _Tool,
+  BaseTool,
+);
 
 export { Erase };
