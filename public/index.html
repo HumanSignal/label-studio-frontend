@@ -64,19 +64,33 @@
       domReady(function () {
         var ls = new LabelStudio("label-studio", {
 
-          description: "Description",
+          config: `
+            <View>
+              <Image name="img" value="$image" zoom="true"></Image>
+              <RectangleLabels name="tag" toName="img">
+                <Label value="Hello"></Label>
+                <Label value="World"></Label>
+              </RectangleLabels>
+            </View>
+          `,
 
-            interfaces: [
-                "panel",
-                "update",
-                "controls",
-                "side-column",
-                "completions:menu",
-                "completions:add-new",
-                "completions:delete",
-                "predictions:menu",
-            ],
-            
+          interfaces: [
+            "panel",
+            "update",
+            "controls",
+            "side-column",
+            "completions:menu",
+            "completions:add-new",
+            "completions:delete",
+            "predictions:menu",
+          ],
+
+          user: {
+            pk: 1,
+            firstName: "James",
+            lastName: "Dean"
+          },
+
           task: {
             completions: [],
             predictions: [],
@@ -84,6 +98,13 @@
             data: {
               image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
             }
+          },
+
+          onLabelStudioLoad: function(LS) {
+            var c = LS.completionStore.addCompletion({
+              userGenerate: true
+            });
+            LS.completionStore.selectCompletion(c.id);
           }
         });
 

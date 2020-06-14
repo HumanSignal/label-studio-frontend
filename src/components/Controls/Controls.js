@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Tooltip } from "antd";
+import { Button, Tooltip, Slider } from "antd";
 import { observer, inject } from "mobx-react";
 import { RollbackOutlined, CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
@@ -40,6 +40,7 @@ export default inject("store")(
     let skipButton;
     let updateButton;
     let submitButton;
+    let confidenceSlider;
 
     /**
      * Check for Predict Menu
@@ -84,6 +85,15 @@ export default inject("store")(
           </Tooltip>
         );
       }
+
+      if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
+        confidenceSlider = (
+          <div>
+            <h4>Confidence Score Interval</h4>
+            <Slider range defaultValue={[0, 100]} style={{ width: "200px" }} onChange={store.updateVisibility} />
+          </div>
+        );
+      }
     }
 
     let content = (
@@ -94,6 +104,7 @@ export default inject("store")(
             {updateButton}
             {submitButton}
           </div>
+          {confidenceSlider}
           {taskInformation}
         </div>
       </div>

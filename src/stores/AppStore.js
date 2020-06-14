@@ -305,6 +305,14 @@ export default types
       completions && completions.forEach(c => addComp(c));
     }
 
+    /**
+     * Function to update regions(labels) visibility by the given score range
+     */
+    function updateVisibility(e) {
+      const currCompletion = self.completionStore.selected;
+      currCompletion.regionStore.labelVisible(e);
+    }
+
     return {
       setFlags,
       addInterface,
@@ -321,5 +329,7 @@ export default types
 
       toggleSettings,
       toggleDescription,
+
+      updateVisibility,
     };
   });
