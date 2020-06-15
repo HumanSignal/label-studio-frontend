@@ -44,7 +44,9 @@ const { Option } = Select;
 const TagAttrs = types.model({
   name: types.string,
   toname: types.maybeNull(types.string),
-  showinline: types.optional(types.boolean, false),
+
+  showinline: types.maybeNull(types.boolean),
+
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
 
   layout: types.optional(types.enumeration(["select", "inline", "vertical"]), "vertical"),
@@ -102,6 +104,7 @@ const Model = types
     afterCreate() {
       // TODO depricate showInline
       if (self.showinline === true) self.layout = "inline";
+      if (self.showinline === false) self.layout = "vertical";
     },
 
     requiredModal() {
@@ -171,12 +174,31 @@ const HtxChoices = observer(({ item }) => {
     visibleStyle["display"] = "none";
   }
 
-  console.log("layout:", item.layout);
-
   return (
     <div style={{ ...style, ...visibleStyle }}>
       {item.layout === "select" ? (
-        <Select style={{ width: "100%" }}>{Tree.renderChildren(item)}</Select>
+        <Select
+          style={{ width: "100%" }}
+          defaultValue={item.selectedLabels.map(l => l._value)}
+          mode={item.choice === "multiple" ? "multiple" : ""}
+          onChange={function(val, opt) {
+            if (Array.isArray(val)) {
+              item.unselectAll();
+              val.forEach(v => item.findLabel(v).setSelected(true));
+            } else {
+              const c = item.findLabel(val);
+              if (c) {
+                c.toggleSelected();
+              }
+            }
+          }}
+        >
+          {item.tiedChildren.map(i => (
+            <Option key={i._value} value={i._value}>
+              {i._value}
+            </Option>
+          ))}
+        </Select>
       ) : (
         <Form layout={item.layout}>{Tree.renderChildren(item)}</Form>
       )}

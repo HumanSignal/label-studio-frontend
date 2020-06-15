@@ -115,10 +115,6 @@ class HtxChoiceView extends Component {
       style["display"] = "none";
     }
 
-    if (item.isSelect) {
-      return <Option key={item._value}>{item._value}</Option>;
-    }
-
     if (item.isCheckbox) {
       const cStyle = Object.assign({ display: "flex", alignItems: "center", marginBottom: 0 }, style);
 
