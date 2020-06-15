@@ -1,4 +1,5 @@
-.list {
+.treelabels {
+  border: 1px solid #d9d9d9;
   max-height: 350px;
   overflow-y: auto;
 }
@@ -53,9 +54,4 @@
 
 .ant-tree-switcher {
   margin-top: 15px;
-}
-
-.treelabels {
-  border: 1px solid #d9d9d9;
-  borderradius: 2px;
 }

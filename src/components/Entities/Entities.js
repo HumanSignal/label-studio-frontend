@@ -332,16 +332,6 @@ export default observer(({ store, regionStore }) => {
       {regions.length > 0 && regionStore.view === "regions" && <RegionsTree regionStore={regionStore} />}
 
       {regions.length > 0 && regionStore.view === "labels" && <LabelsList regionStore={regionStore} />}
-
-      {/* {regions.length > 0 && ( */}
-      {/*   <List */}
-      {/*     size="small" */}
-      {/*     dataSource={regionStore.sortedRegions} */}
-      {/*     className={styles.list} */}
-      {/*     bordered */}
-      {/*     renderItem={(item, idx) => <EntityItem item={item} idx={idx} />} */}
-      {/*   /> */}
-      {/* )} */}
     </div>
   );
 });
