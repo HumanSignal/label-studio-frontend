@@ -231,6 +231,7 @@ const LabelsList = observer(({ regionStore }) => {
 
   return (
     <Tree
+      className={styles.treelabels}
       style={{ border: "1px solid #d9d9d9", borderRadius: "2px" }}
       treeData={treeData}
       showIcon={false}
