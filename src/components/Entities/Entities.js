@@ -231,6 +231,7 @@ const LabelsList = observer(({ regionStore }) => {
 
   return (
     <Tree
+      className={styles.treelabels}
       style={{ border: "1px solid #d9d9d9", borderRadius: "2px" }}
       treeData={treeData}
       showIcon={false}
@@ -379,16 +380,6 @@ export default observer(({ store, regionStore }) => {
       {regions.length > 0 && regionStore.view === "regions" && <RegionsTree regionStore={regionStore} />}
 
       {regions.length > 0 && regionStore.view === "labels" && <LabelsList regionStore={regionStore} />}
-
-      {/* {regions.length > 0 && ( */}
-      {/*   <List */}
-      {/*     size="small" */}
-      {/*     dataSource={regionStore.sortedRegions} */}
-      {/*     className={styles.list} */}
-      {/*     bordered */}
-      {/*     renderItem={(item, idx) => <EntityItem item={item} idx={idx} />} */}
-      {/*   /> */}
-      {/* )} */}
     </div>
   );
 });
