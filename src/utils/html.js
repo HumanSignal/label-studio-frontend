@@ -195,7 +195,10 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   if (nlen > 1 && nodes[nodes.length - 1].length !== normedRange._range.endOffset) nlen = nlen - 1;
 
   const results = [];
-  for (var i = start, len = nlen; i < len; i++) {
+  var i = 0,
+      len = nlen;
+  if (nlen > 1 && nodes[0].length <= normedRange._range.startOffset) i = 1;
+  for(i, len; i < len; i++) {
     var node = nodes[i];
     if (!white.test(node.nodeValue)) {
       var hl = window.document.createElement("span");
