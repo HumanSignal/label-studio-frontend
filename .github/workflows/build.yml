@@ -1,6 +1,10 @@
 name: Build and Test
 
-on: push
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   build:
@@ -9,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-    - run: echo ${{ github.event.pull_request.head.sha || github.sha }} && exit 2
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
@@ -52,5 +51,5 @@ jobs:
     # upload this build as artifact to current Action
     - uses: actions/upload-artifact@master
       with:
-        name: build ${{github.sha}}
+        name: build ${{ github.event.pull_request.head.sha || github.sha }}
         path: build/
