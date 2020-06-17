@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Tooltip } from "antd";
 import { observer, inject } from "mobx-react";
-import { RollbackOutlined, CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
 import styles from "./Controls.module.scss";

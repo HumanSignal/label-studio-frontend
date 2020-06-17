@@ -79,7 +79,7 @@ class Predictions extends Component {
       <Card title={title} size="small" bodyStyle={{ padding: "0" }}>
         <List>
           {predictions && predictions.length ? (
-            predictions.map(p => <Prediction key={p.pk} item={p} store={store} />)
+            predictions.map(p => <Prediction key={p.id} item={p} store={store} />)
           ) : (
             <List.Item>
               <div style={{ padding: "0 12px" }}>No predictions</div>

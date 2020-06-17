@@ -1,5 +1,5 @@
-const { setHeadlessWhen } = require("@codeceptjs/configure");
-
+// turn on headless mode when running with HEADLESS=true environment variable
+// HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
 
 // codecept can make screenshot on every step and create html
@@ -13,10 +13,6 @@ const recordVideo = process.env.GIF
       },
     }
   : null;
-
-// turn on headless mode when running with HEADLESS=true environment variable
-// HEADLESS=true npx codecept run
-setHeadlessWhen(headless);
 
 exports.config = {
   tests: "./**/*.test.js",
