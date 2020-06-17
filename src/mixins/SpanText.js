@@ -3,7 +3,6 @@ import { types, getRoot } from "mobx-state-tree";
 import Utils from "../utils";
 import Constants from "../core/Constants";
 import { highlightRange } from "../utils/html";
-import Canvas from "../utils/canvas";
 
 export default types
   .model()

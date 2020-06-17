@@ -233,7 +233,6 @@ export default observer(
       if (!store.task || !item._value) return null;
 
       const cb = item.controlButton();
-      const c = store.completionStore.selected;
 
       const divStyle = {
         overflow: "hidden",

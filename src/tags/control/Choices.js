@@ -1,7 +1,7 @@
 import React from "react";
 import { Form } from "antd";
 import { observer } from "mobx-react";
-import { types, getRoot, getParent } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
@@ -154,7 +154,6 @@ const ChoicesModel = types.compose(
 
 const HtxChoices = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
-  const region = item.completion.highlightedNode;
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
   if (item.isVisible === false) {

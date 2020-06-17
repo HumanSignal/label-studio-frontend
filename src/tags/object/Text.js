@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
-import { types, getType, getRoot } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -468,7 +468,7 @@ class TextPieceView extends Component {
     if (!item.loaded) return null;
 
     const val = item._value.split("\n").reduce((res, s, i) => {
-      if (i) res.push(<br />);
+      if (i) res.push(<br key={i} />);
       res.push(s);
       return res;
     }, []);

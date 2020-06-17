@@ -1,6 +1,5 @@
 import { types } from "mobx-state-tree";
-import lodash from "../../utils/lodash";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import isMatch from "lodash.ismatch";
 import InfoModal from "../../components/Infomodal/Infomodal";
 
 const ObjectBase = types
@@ -13,10 +12,10 @@ const ObjectBase = types
       let obj = null;
 
       if (self._regionsCache && self._regionsCache.length) {
-        obj = self._regionsCache.find(({ region }) => lodash.isMatch(region, params));
+        obj = self._regionsCache.find(({ region }) => isMatch(region, params));
       }
 
-      return obj || self.regions.find(r => lodash.isMatch(r, params));
+      return obj || self.regions.find(r => isMatch(r, params));
     },
   }))
   .actions(self => ({
