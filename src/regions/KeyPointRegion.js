@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";

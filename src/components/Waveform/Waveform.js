@@ -1,14 +1,15 @@
 import CursorPlugin from "wavesurfer.js/dist/plugin/wavesurfer.cursor";
 import React from "react";
 import ReactDOM from "react-dom";
+import throttle from "lodash.throttle";
 import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js";
 import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
+import globalStyles from "../../styles/global.module.scss";
 import { Slider, Row, Col, Select } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
-import lodash from "../../utils/lodash";
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
@@ -326,7 +327,7 @@ export default class Waveform extends React.Component {
     this.wavesurfer.on("ready", () => {
       self.props.onCreate(this.wavesurfer);
 
-      this.wavesurfer.container.onwheel = lodash.throttle(this.onWheel, 100);
+      this.wavesurfer.container.onwheel = throttle(this.onWheel, 100);
     });
 
     /**
@@ -360,9 +361,7 @@ export default class Waveform extends React.Component {
             <Col flex={12} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
-                  <a onClick={this.onZoomMinus} href="">
-                    <ZoomOutOutlined />
-                  </a>
+                  <ZoomOutOutlined onClick={this.onZoomMinus} className={globalStyles.link} />
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
@@ -376,9 +375,7 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <a href="" onClick={this.onZoomPlus}>
-                    <ZoomInOutlined />
-                  </a>
+                  <ZoomInOutlined onClick={this.onZoomPlus} className={globalStyles.link} />
                 </div>
               </div>
             </Col>

@@ -12,7 +12,6 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
-import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Image tag shows an image on the page
