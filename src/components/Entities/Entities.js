@@ -1,62 +1,16 @@
-import React, { useState } from "react";
-import {
-  Radio,
-  Tabs,
-  Button,
-  Popconfirm,
-  List,
-  Typography,
-  Divider,
-  Badge,
-  Menu,
-  Dropdown,
-  Tree,
-  Switch,
-  Tag,
-} from "antd";
-import { getRoot, isRoot } from "mobx-state-tree";
+import React from "react";
+import { List, Divider, Badge, Menu, Dropdown, Tree, Tag } from "antd";
+import { getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
-import { DownOutlined } from "@ant-design/icons";
-
-import {
-  FontColorsOutlined,
-  AudioOutlined,
-  MessageOutlined,
-  BlockOutlined,
-  GatewayOutlined,
-  Loading3QuartersOutlined,
-  EyeOutlined,
-  HighlightOutlined,
-  ApartmentOutlined,
-} from "@ant-design/icons";
-
-import { SortAscendingOutlined, GroupOutlined, CalendarOutlined, ThunderboltOutlined } from "@ant-design/icons";
+import { DownOutlined, SortAscendingOutlined, CalendarOutlined, ThunderboltOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
-import Hint from "../Hint/Hint";
 import "./Entities.scss";
 import styles from "./Entities.module.scss";
 import globalStyles from "../../styles/global.module.scss";
 import { Node } from "../Node/Node";
 import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
-
-const { TabPane } = Tabs;
-const { TreeNode } = Tree;
-
-const RenderSubState = observer(({ item, idx }) => {
-  const states = item.perRegionStates;
-  if (!states) return null;
-
-  return states
-    .filter(s => s.holdsState)
-    .map(s => (
-      <div key={s.id}>
-        <span style={{ marginRight: "16px" }}>•</span>
-        <Node node={s} onClick={() => {}} />
-      </div>
-    ));
-});
 
 const RegionItem = observer(({ item, idx, flat }) => {
   const cs = getRoot(item).completionStore;
@@ -133,13 +87,6 @@ const LabelItem = observer(({ item, idx }) => {
     </Tag>
   );
 });
-
-const groupMenu = (
-  <Menu>
-    <Menu.Item className={globalStyles.link}>By Type</Menu.Item>
-    <Menu.Item className={globalStyles.link}>By Label</Menu.Item>
-  </Menu>
-);
 
 const GroupMenu = ({ store, regionStore }) => {
   return (
@@ -281,16 +228,6 @@ const RegionsTree = observer(({ regionStore }) => {
 
 export default observer(({ store, regionStore }) => {
   const { regions } = regionStore;
-  const c = store.completionStore.selected;
-
-  const entname = <span>Regions ({regions.length})</span>;
-
-  const changeSortOrder = () => {
-    regionStore.toggleSortOrder();
-  };
-
-  // const groupMenuView = groupMenu();
-  // const sortMenuView = sortMenu(store, regionStore);
 
   return (
     <div>
@@ -306,10 +243,10 @@ export default observer(({ store, regionStore }) => {
         <div style={{ flex: 1 }}>
           <Divider dashed orientation="left">
             <Dropdown overlay={<GroupMenu regionStore={regionStore} />} placement="bottomLeft">
-              <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+              <span className={globalStyles.link} onClick={e => e.preventDefault()}>
                 {regionStore.view === "regions" ? <span>Regions ({regions.length})</span> : null}
                 {regionStore.view === "labels" ? "Labels" : null}
-              </a>
+              </span>
             </Dropdown>
           </Divider>
         </div>
