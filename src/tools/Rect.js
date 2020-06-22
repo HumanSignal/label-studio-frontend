@@ -3,7 +3,6 @@ import { types, destroy } from "mobx-state-tree";
 import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { RectRegionModel } from "../regions/RectRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types

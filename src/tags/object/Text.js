@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
-import { types, getType, getRoot } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -189,7 +189,9 @@ const Model = types
         m = restoreNewsnapshot(fromModel);
         // m.fromStateJSON(obj);
 
-        if (!r) {
+        if (r && fromModel.perregion) {
+          r.states.push(m);
+        } else {
           // tree.states = [m];
           const data = {
             pid: obj.id,
@@ -206,8 +208,6 @@ const Model = types
 
           r = self.createRegion(data);
           // r = self.addRegion(tree);
-        } else {
-          r.states.push(m);
         }
       }
 
@@ -468,7 +468,7 @@ class TextPieceView extends Component {
     if (!item.loaded) return null;
 
     const val = item._value.split("\n").reduce((res, s, i) => {
-      if (i) res.push(<br />);
+      if (i) res.push(<br key={i} />);
       res.push(s);
       return res;
     }, []);

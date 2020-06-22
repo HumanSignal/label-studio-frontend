@@ -1,14 +1,10 @@
 import React from "react";
-import { types, getRoot, getType } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
-import { Typography, Input } from "antd";
+import { Input } from "antd";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
-import lodash from "../../utils/lodash";
-
-const { Search } = Input;
 
 /**
  * Filter tag, show filter

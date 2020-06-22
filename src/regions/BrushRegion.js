@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";

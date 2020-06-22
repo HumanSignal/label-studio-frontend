@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Rect, Group, Text, Label } from "react-konva";
+import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
 
