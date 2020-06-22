@@ -1,10 +1,10 @@
 import { types } from "mobx-state-tree";
 
 import Utils from "../utils";
-import lodash from "../utils/lodash";
+import throttle from "lodash.throttle";
 
 const DrawingTool = types.model("DrawingTool").actions(self => ({
-  updateDraw: lodash.throttle(function(x, y) {
+  updateDraw: throttle(function(x, y) {
     const shape = self.getActiveShape;
     const { stageWidth, stageHeight } = self.obj;
 
@@ -16,7 +16,7 @@ const DrawingTool = types.model("DrawingTool").actions(self => ({
     y2 = Math.min(stageHeight, y2);
 
     shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
-  }, 48), // 4 frames, optimized enough and not laggy yet
+  }, 48), // 3 frames, optimized enough and not laggy yet
 }));
 
 export { DrawingTool };
