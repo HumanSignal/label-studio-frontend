@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
+import { types, getParentOfType, getParent } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -10,7 +10,6 @@ import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { EllipseLabelsModel } from "../tags/control/EllipseLabels";
 import { guidGenerator } from "../core/Helpers";

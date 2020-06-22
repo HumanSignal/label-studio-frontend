@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Popover, Select, Divider, List, Button, Dropdown, Menu } from "antd";
+import { Select, Divider, List, Button } from "antd";
 import { isValidReference, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";

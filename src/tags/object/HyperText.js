@@ -13,7 +13,6 @@ import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
-import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * HyperText tag shows an HyperText markup that can be labeled

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from "react";
-import { Button, Icon, Slider, Menu, Dropdown } from "antd";
+import { Button, Slider, Menu, Dropdown } from "antd";
 import { observer } from "mobx-react";
 import { ReloadOutlined } from "@ant-design/icons";
 
