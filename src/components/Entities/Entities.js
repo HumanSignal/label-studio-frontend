@@ -37,6 +37,7 @@ import Utils from "../../utils";
 import Hint from "../Hint/Hint";
 import "./Entities.scss";
 import styles from "./Entities.module.scss";
+import globalStyles from "../../styles/global.module.scss";
 import { Node } from "../Node/Node";
 import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
 
@@ -135,16 +136,8 @@ const LabelItem = observer(({ item, idx }) => {
 
 const groupMenu = (
   <Menu>
-    <Menu.Item>
-      <a target="_blank" rel="noopener noreferrer" href="">
-        By Type
-      </a>
-    </Menu.Item>
-    <Menu.Item>
-      <a target="_blank" rel="noopener noreferrer" href="">
-        By Label
-      </a>
-    </Menu.Item>
+    <Menu.Item className={globalStyles.link}>By Type</Menu.Item>
+    <Menu.Item className={globalStyles.link}>By Label</Menu.Item>
   </Menu>
 );
 
@@ -322,9 +315,9 @@ export default observer(({ store, regionStore }) => {
         </div>
         {regions.length > 0 && regionStore.view === "regions" && (
           <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
-            <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+            <span className={globalStyles.link} onClick={e => e.preventDefault()}>
               <SortAscendingOutlined /> Sort
-            </a>
+            </span>
           </Dropdown>
         )}
       </div>

@@ -1,12 +1,11 @@
 import React from "react";
 import { observer, inject } from "mobx-react";
-import { types, getParent, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import { Typography } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";

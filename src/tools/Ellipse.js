@@ -4,7 +4,6 @@ import Utils from "../utils";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { EllipseRegionModel } from "../regions/EllipseRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 const minSize = { rx: 3, ry: 3 };
 

@@ -16,7 +16,10 @@ import { guidGenerator } from "../core/Helpers";
 const Completion = types
   .model("Completion", {
     id: types.identifier,
-    pk: types.optional(types.string, guidGenerator(5)),
+    // @todo this value used `guidGenerator(5)` as default value before
+    // @todo but it calculates once, so all the completions have the same pk
+    // @todo why don't use only `id`?
+    pk: types.maybeNull(types.string),
 
     selected: types.optional(types.boolean, false),
     type: types.enumeration(["completion", "prediction"]),
