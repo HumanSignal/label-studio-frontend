@@ -107,13 +107,9 @@ Scenario("check good nested Choice for Text", async function(I) {
   I.see("Regions (1)");
   I.dontSee("Female");
 
-  // header without selected region
-  const regionsHeader = locate("div").withText("Regions (1)");
-  // the only element of regions list after this header
-  const regionInList = locate(".ant-list")
-    .after(regionsHeader)
-    .find("li");
-  // select it
+  // the only element of regions tree list
+  const regionInList = locate(".ant-tree").find(".ant-tree-treenode");
+  // select this region
   I.click(regionInList);
 
   I.see("Regions (1)");
