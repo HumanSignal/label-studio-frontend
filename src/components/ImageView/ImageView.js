@@ -246,8 +246,8 @@ export default observer(
 
     /**
      * Transparent draggable event interceptor, covered all the canvas.
-     * It's goal to capture mouse events outside canvas and even document.
-     * This allow as to draw new shapes without lags and control their sizes.
+     * Its goal to capture mouse events outside canvas and even document.
+     * This allow us to draw new shapes without lags and control their sizes.
      * During drag mouse coords are captured; after drop interceptor goes back to (0, 0).
      */
     renderInterceptor() {
