@@ -67,7 +67,7 @@ const NodeViews = {
   TextAreaModel: ["Input", MessageOutlined, () => `Input`],
 };
 
-const Node = observer(({ node, onClick }) => {
+const Node = observer(({ className, node, onClick }) => {
   const click = ev => {
     ev.preventDefault();
     getRoot(node).completionStore.selected.regionStore.unselectAll();
@@ -83,7 +83,7 @@ const Node = observer(({ node, onClick }) => {
   const [, Icon, getContent] = NodeViews[name];
 
   return (
-    <span onClick={onClick || click} className={styles.node}>
+    <span onClick={onClick || click} className={[styles.node, className].filter(Boolean).join(" ")}>
       <Icon />
       {getContent(node)}
     </span>
