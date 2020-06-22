@@ -351,12 +351,14 @@ export default observer(
             <Layer>
               {this.renderInterceptor()}
 
-              {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
-              {item.activeShape && Tree.renderItem(item.activeShape)}
+              <Group name="shapes">
+                {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
+                {item.activeShape && Tree.renderItem(item.activeShape)}
 
-              {item.selectedShape && item.selectedShape.editable && (
-                <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-              )}
+                {item.selectedShape && item.selectedShape.editable && (
+                  <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
+                )}
+              </Group>
             </Layer>
           </Stage>
 
