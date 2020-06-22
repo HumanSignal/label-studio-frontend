@@ -126,6 +126,7 @@ const ToolMixin = types
         const moreParams = self.moreRegionParams(obj);
         const data = {
           pid: obj.id,
+          parentID: obj.parent_id === null ? "" : obj.parent_id,
           score: obj.score,
           readonly: obj.readonly,
           coordstype: "perc",

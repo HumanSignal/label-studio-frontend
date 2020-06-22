@@ -115,6 +115,7 @@ const Model = types
       const states = restoreNewsnapshot(fromModel);
       const tree = {
         pid: obj.id,
+        parentID: obj.parent_id === null ? "" : obj.parent_id,
         startOffset: startOffset,
         endOffset: endOffset,
         start: start,
