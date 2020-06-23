@@ -63,8 +63,8 @@ const _Tool = types
       const stage = item.stageRef;
       const scale = stage.scaleX();
 
-      let posx = stage.x() + ev.evt.movementX;
-      let posy = stage.y() + ev.evt.movementY;
+      let posx = stage.x() + ev.movementX;
+      let posy = stage.y() + ev.movementY;
 
       if (posx > 0) posx = 0;
       if (posy > 0) posy = 0;
