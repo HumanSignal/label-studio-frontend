@@ -1,5 +1,5 @@
 import React from "react";
-import { Form } from "antd";
+import { Form, Select } from "antd";
 import { observer } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
@@ -14,6 +14,8 @@ import Types from "../../core/Types";
 import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+
+const { Option } = Select;
 
 /**
  * Choices tag, create a group of choices, radio, or checkboxes. Shall
@@ -42,8 +44,12 @@ import ControlBase from "./Base";
 const TagAttrs = types.model({
   name: types.string,
   toname: types.maybeNull(types.string),
-  showinline: types.optional(types.boolean, false),
+
+  showinline: types.maybeNull(types.boolean),
+
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
+
+  layout: types.optional(types.enumeration(["select", "inline", "vertical"]), "vertical"),
 });
 
 const Model = types
@@ -95,6 +101,12 @@ const Model = types
     // }
   }))
   .actions(self => ({
+    afterCreate() {
+      // TODO depricate showInline
+      if (self.showinline === true) self.layout = "inline";
+      if (self.showinline === false) self.layout = "vertical";
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
@@ -163,10 +175,31 @@ const HtxChoices = observer(({ item }) => {
 
   return (
     <div style={{ ...style, ...visibleStyle }}>
-      {item.showinline ? (
-        <Form layout="inline">{Tree.renderChildren(item)}</Form>
+      {item.layout === "select" ? (
+        <Select
+          style={{ width: "100%" }}
+          defaultValue={item.selectedLabels.map(l => l._value)}
+          mode={item.choice === "multiple" ? "multiple" : ""}
+          onChange={function(val, opt) {
+            if (Array.isArray(val)) {
+              item.unselectAll();
+              val.forEach(v => item.findLabel(v).setSelected(true));
+            } else {
+              const c = item.findLabel(val);
+              if (c) {
+                c.toggleSelected();
+              }
+            }
+          }}
+        >
+          {item.tiedChildren.map(i => (
+            <Option key={i._value} value={i._value}>
+              {i._value}
+            </Option>
+          ))}
+        </Select>
       ) : (
-        <Form layout="vertical">{Tree.renderChildren(item)}</Form>
+        <Form layout={item.layout}>{Tree.renderChildren(item)}</Form>
       )}
     </div>
   );
