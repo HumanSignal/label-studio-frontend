@@ -50,10 +50,10 @@ export default observer(
      * Mouse up outside the canvas
      */
     handleGlobalMouseUp = e => {
-      if (e.target && e.target.tagName === "CANVAS") return;
-
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
+
+      if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;
       const { clientX: x, clientY: y } = e;
