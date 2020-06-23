@@ -101,16 +101,9 @@ const emulateClick = source => {
   source.dispatchEvent(event);
 };
 
-/**
- * don't use these functions because they aren't in the inner browser's context
- * just copy their code as a snippet
- * const _getDrawingSurface = window.Konva.stages[0].findOne('.interceptor');
- * const _getShapesContainer = window.Konva.stages[0].findOne('.shapes');
- */
-
 // click the Rect on the Konva canvas
 const clickRect = () => {
-  const rect = window.Konva.stages[0].findOne(".shapes").findOne("Rect");
+  const rect = window.Konva.stages[0].findOne("Rect");
   rect.fire("click", { clientX: 10, clientY: 10 });
 };
 
@@ -121,7 +114,7 @@ const clickRect = () => {
  * @param {function} done
  */
 const clickKonva = (x, y, done) => {
-  const stage = window.Konva.stages[0].findOne(".interceptor");
+  const stage = window.Konva.stages[0];
   stage.fire("click", { clientX: x, clientY: y, evt: { offsetX: x, offsetY: y } });
   done();
 };
@@ -132,7 +125,7 @@ const clickKonva = (x, y, done) => {
  * @param {function} done
  */
 const clickMultipleKonva = async (points, done) => {
-  const stage = window.Konva.stages[0].findOne(".interceptor");
+  const stage = window.Konva.stages[0];
   for (let point of points) {
     stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
     // await delay(10);
@@ -148,7 +141,7 @@ const clickMultipleKonva = async (points, done) => {
 const polygonKonva = async (points, done) => {
   try {
     const delay = () => new Promise(resolve => setTimeout(resolve, 10));
-    const stage = window.Konva.stages[0].findOne(".interceptor");
+    const stage = window.Konva.stages[0];
     for (let point of points) {
       stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
       await delay();
@@ -158,10 +151,7 @@ const polygonKonva = async (points, done) => {
     // const firstPoint = stage.getIntersection({ x, y });
 
     // Circles (polygon points) redraw every new click so we can find it only after last click
-    const lastPoint = window.Konva.stages[0]
-      .findOne(".shapes")
-      .find("Circle")
-      .slice(-1)[0];
+    const lastPoint = stage.find("Circle").slice(-1)[0];
     const firstPoint = lastPoint.parent.find("Circle")[0];
     // for closing the Polygon we should place cursor over the first point
     firstPoint.fire("mouseover");
@@ -183,7 +173,7 @@ const polygonKonva = async (points, done) => {
  * @param {function} done
  */
 const dragKonva = async (x, y, shiftX, shiftY, done) => {
-  const stage = window.Konva.stages[0].findOne(".interceptor");
+  const stage = window.Konva.stages[0];
   stage.fire("mousedown", { evt: { offsetX: x, offsetY: y } });
   // await delay(10);
   stage.fire("mousemove", { evt: { offsetX: x + (shiftX >> 1), offsetY: y + (shiftY >> 1) } });
