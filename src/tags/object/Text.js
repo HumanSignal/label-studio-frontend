@@ -195,6 +195,7 @@ const Model = types
           // tree.states = [m];
           const data = {
             pid: obj.id,
+            parentID: obj.parent_id === null ? "" : obj.parent_id,
             startOffset: start,
             endOffset: end,
             start: "",
