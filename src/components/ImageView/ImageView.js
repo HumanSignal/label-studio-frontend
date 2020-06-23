@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Stage, Layer, Group, Line, Rect } from "react-konva";
+import { Stage, Layer, Group, Line } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot } from "mobx-state-tree";
 
@@ -11,18 +11,9 @@ import styles from "./ImageView.module.scss";
 
 export default observer(
   class ImageView extends Component {
-    interceptorRef = React.createRef();
-    // stored position of cursor before draging
-    initialX;
-    initialY;
-
-    /**
-     * Get coords out of Stage; interceptor coords show the shift, relative to initial coords
-     */
-    getDragCoords = () => {
-      const { x, y } = this.interceptorRef.current.attrs;
-      return [this.initialX + x, this.initialY + y];
-    };
+    // stored position of canvas before creating region
+    canvasX;
+    canvasY;
 
     handleOnClick = e => {
       const { item } = this.props;
@@ -39,14 +30,16 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       if (
-        e.target === this.interceptorRef.current ||
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {
+        window.addEventListener("mousemove", this.handleGlobalMouseMove);
+        window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
-        // store the initial coords for further events
-        this.initialX = x;
-        this.initialY = y;
+        // store the canvas coords for calculations in further events
+        const { left, top } = this.container.getBoundingClientRect();
+        this.canvasX = left;
+        this.canvasY = top;
         return item.event("mousedown", e, x, y);
       }
 
@@ -54,7 +47,33 @@ export default observer(
     };
 
     /**
-     * Mouse up on Stage; when we click there is only mousedown and no interceptor drag events
+     * Mouse up outside the canvas
+     */
+    handleGlobalMouseUp = e => {
+      if (e.target && e.target.tagName === "CANVAS") return;
+
+      window.removeEventListener("mousemove", this.handleGlobalMouseMove);
+      window.removeEventListener("mouseup", this.handleGlobalMouseUp);
+
+      const { item } = this.props;
+      const { clientX: x, clientY: y } = e;
+
+      item.freezeHistory();
+
+      return item.event("mouseup", e, x - this.canvasX, y - this.canvasY);
+    };
+
+    handleGlobalMouseMove = e => {
+      if (e.target && e.target.tagName === "CANVAS") return;
+
+      const { item } = this.props;
+      const { clientX: x, clientY: y } = e;
+
+      return item.event("mousemove", e, x - this.canvasX, y - this.canvasY);
+    };
+
+    /**
+     * Mouse up on Stage
      */
     handleMouseUp = e => {
       const { item } = this.props;
@@ -62,22 +81,6 @@ export default observer(
       item.freezeHistory();
 
       return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
-    };
-
-    /**
-     * Virtual drag ended (maybe out of stage or document), so return the interceptor back
-     */
-    handleGlobalMouseUp = e => {
-      const { item } = this.props;
-      const interceptor = this.interceptorRef.current;
-      if (interceptor) {
-        interceptor.move({ x: -interceptor.attrs.x, y: -interceptor.attrs.y });
-        interceptor.getStage().draw();
-
-        item.freezeHistory();
-
-        return item.event("mouseup", e, ...this.getDragCoords());
-      }
     };
 
     handleMouseMove = e => {
@@ -95,7 +98,7 @@ export default observer(
         stage.position(newPos);
         stage.batchDraw();
       } else {
-        return item.event("mousemove", e, ...this.getDragCoords());
+        return item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
       }
     };
 
@@ -244,33 +247,6 @@ export default observer(
       );
     }
 
-    /**
-     * Transparent draggable event interceptor, covered all the canvas.
-     * Its goal to capture mouse events outside canvas and even document.
-     * This allow us to draw new shapes without lags and control their sizes.
-     * During drag mouse coords are captured; after drop interceptor goes back to (0, 0).
-     */
-    renderInterceptor() {
-      const { stageWidth, stageHeight } = this.props.item;
-
-      return (
-        <Rect
-          x={0}
-          y={0}
-          width={stageWidth}
-          height={stageHeight}
-          name="interceptor"
-          fill="transparent"
-          ref={this.interceptorRef}
-          draggable
-          onClick={this.handleOnClick}
-          onMouseDown={this.handleMouseDown}
-          onDragMove={this.handleMouseMove}
-          onDragEnd={this.handleGlobalMouseUp}
-        />
-      );
-    }
-
     render() {
       const { item, store } = this.props;
 
@@ -337,6 +313,9 @@ export default observer(
             height={item.stageHeight}
             scaleX={item.scale}
             scaleY={item.scale}
+            onClick={this.handleOnClick}
+            onMouseDown={this.handleMouseDown}
+            onMouseMove={this.handleMouseMove}
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
@@ -348,17 +327,13 @@ export default observer(
                   {Tree.renderItem(shape)}
                 </Layer>
               ))}
-            <Layer>
-              {this.renderInterceptor()}
+            <Layer name="shapes">
+              {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
+              {item.activeShape && Tree.renderItem(item.activeShape)}
 
-              <Group name="shapes">
-                {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
-                {item.activeShape && Tree.renderItem(item.activeShape)}
-
-                {item.selectedShape && item.selectedShape.editable && (
-                  <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-                )}
-              </Group>
+              {item.selectedShape && item.selectedShape.editable && (
+                <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
+              )}
             </Layer>
           </Stage>
 
