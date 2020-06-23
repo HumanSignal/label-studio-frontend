@@ -174,6 +174,7 @@ const polygonKonva = async (points, done) => {
  */
 const dragKonva = async (x, y, shiftX, shiftY, done) => {
   const stage = window.Konva.stages[0];
+  const delay = () => new Promise(resolve => setTimeout(resolve, 10));
   stage.fire("mousedown", { evt: { offsetX: x, offsetY: y } });
   // await delay(10);
   stage.fire("mousemove", { evt: { offsetX: x + (shiftX >> 1), offsetY: y + (shiftY >> 1) } });
@@ -183,6 +184,8 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
   // await delay(10);
   // because some events work on mousemove and not on mouseup
   stage.fire("mouseup", { evt: { offsetX: x + shiftX, offsetY: y + shiftY } });
+  // looks like Konva needs some time to update image according to dpi
+  await delay(10);
   done();
 };
 
