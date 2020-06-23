@@ -14,6 +14,8 @@ const RegionsMixin = types
 
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
+
+    parentID: types.optional(types.string, ""),
   })
   .views(self => ({
     get perRegionStates() {
@@ -55,6 +57,10 @@ const RegionsMixin = types
     },
   }))
   .actions(self => ({
+    setParentID(id) {
+      self.parentID = id;
+    },
+
     moveTop(size) {},
     moveBottom(size) {},
     moveLeft(size) {},
@@ -83,6 +89,7 @@ const RegionsMixin = types
           to_name: parent.name,
           source: parent.value,
           type: control.type,
+          parent_id: self.parentID === "" ? null : self.parentID,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;
