@@ -363,7 +363,7 @@ const Model = types
     },
 
     event(name, ev, ...coords) {
-      self.getToolsManager().event(name, ev, ...self.fixZoomedCoords(coords));
+      self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
     },
 
     /**
