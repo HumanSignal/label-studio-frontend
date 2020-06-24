@@ -345,13 +345,8 @@ const Model = types
       shape.selectRegion();
     },
 
-    getEvCoords(ev) {
-      if (!ev.evt) return [];
-
-      const x = (ev.evt.offsetX - self.zoomingPositionX) / self.zoomScale;
-      const y = (ev.evt.offsetY - self.zoomingPositionY) / self.zoomScale;
-
-      return [x, y];
+    fixZoomedCoords([x, y]) {
+      return [(x - self.zoomingPositionX) / self.zoomScale, (y - self.zoomingPositionY) / self.zoomScale];
     },
 
     /**
@@ -367,23 +362,8 @@ const Model = types
       });
     },
 
-    onImageClick(ev) {
-      const coords = self.getEvCoords(ev);
-      self.getToolsManager().event("click", ev, ...coords);
-    },
-
-    onMouseDown(ev) {
-      const coords = self.getEvCoords(ev);
-      self.getToolsManager().event("mousedown", ev, ...coords);
-    },
-
-    onMouseMove(ev) {
-      const coords = self.getEvCoords(ev);
-      self.getToolsManager().event("mousemove", ev, ...coords);
-    },
-
-    onMouseUp(ev) {
-      self.getToolsManager().event("mouseup", ev);
+    event(name, ev, ...coords) {
+      self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
     },
 
     /**

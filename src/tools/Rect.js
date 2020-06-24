@@ -1,11 +1,9 @@
 import { types, destroy } from "mobx-state-tree";
 
-import Utils from "../utils";
-import BaseTool from "./Base";
+import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { RectRegionModel } from "../regions/RectRegion";
-
-const minSize = { w: 3, h: 3 };
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
   .model({
@@ -33,14 +31,6 @@ const _Tool = types
       self.obj.addShape(rect);
 
       return rect;
-    },
-
-    updateDraw(x, y) {
-      const shape = self.getActiveShape;
-
-      const { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x: x, y: y });
-
-      shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
     },
 
     mousedownEv(ev, [x, y]) {
@@ -77,7 +67,7 @@ const _Tool = types
 
       const s = self.getActiveShape;
 
-      if (s.width < minSize.w || s.height < minSize.h) {
+      if (s.width < MIN_SIZE.X || s.height < MIN_SIZE.Y) {
         destroy(s);
         if (self.control.type === "rectanglelabels") self.control.unselectAll();
       } else {
@@ -88,6 +78,6 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, _Tool);
+const Rect = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Rect };

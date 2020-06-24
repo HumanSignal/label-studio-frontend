@@ -1,11 +1,9 @@
 import { types, destroy } from "mobx-state-tree";
 
-import Utils from "../utils";
-import BaseTool from "./Base";
+import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { EllipseRegionModel } from "../regions/EllipseRegion";
-
-const minSize = { rx: 3, ry: 3 };
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
   .model({
@@ -34,14 +32,6 @@ const _Tool = types
       self.obj.addShape(ellipse);
 
       return ellipse;
-    },
-
-    updateDraw(x, y) {
-      const shape = self.getActiveShape;
-
-      const { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x: x, y: y });
-
-      shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
     },
 
     mousedownEv(ev, [x, y]) {
@@ -77,7 +67,7 @@ const _Tool = types
 
       const s = self.getActiveShape;
 
-      if (s.radiusX < minSize.rx || s.radiusY < minSize.ry) {
+      if (s.radiusX < MIN_SIZE.X || s.radiusY < MIN_SIZE.Y) {
         destroy(s);
         if (self.control.type === "ellipselabels") self.control.unselectAll();
       } else {
@@ -88,6 +78,6 @@ const _Tool = types
     },
   }));
 
-const Ellipse = types.compose(ToolMixin, BaseTool, _Tool);
+const Ellipse = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Ellipse };

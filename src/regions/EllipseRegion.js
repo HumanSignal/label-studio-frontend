@@ -277,22 +277,19 @@ const HtxEllipseView = ({ store, item }) => {
           let { x, y } = pos;
           let { stageHeight, stageWidth } = getParent(item, 2);
 
-          if (x <= 0) {
+          if (x < 0) {
             x = 0;
-          } else if (x + item.width >= stageWidth) {
-            x = stageWidth - item.width;
+          } else if (x > stageWidth) {
+            x = stageWidth;
           }
 
           if (y < 0) {
             y = 0;
-          } else if (y + item.height >= stageHeight) {
-            y = stageHeight - item.height;
+          } else if (y > stageHeight) {
+            y = stageHeight;
           }
 
-          return {
-            x: x,
-            y: y,
-          };
+          return { x, y };
         }}
         onMouseOver={e => {
           const stage = item.parent.stageRef;
