@@ -149,10 +149,6 @@ const Model = types
     //   self.eraserpoints = [...self.eraserpoints, x, y];
     // },
 
-    setLayerRef(ref) {
-      self.layerRef = ref;
-    },
-
     setScale(x, y) {
       self.scaleX = x;
       self.scaleY = y;
