@@ -21,7 +21,7 @@ class ObjectTagView extends React.Component {
 }
 
 ObjectTagView.propTypes = {
-  children: PropTypes.object.isRequired,
+  children: PropTypes.node.isRequired,
   item: PropTypes.object.isRequired,
 };
 

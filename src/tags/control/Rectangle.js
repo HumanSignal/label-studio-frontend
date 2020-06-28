@@ -26,7 +26,7 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(types.string, "0.6"),
-  fillcolor: types.maybeNull(types.string),
+  fillcolor: types.optional(types.string, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(types.string, "#f48a42"),
@@ -46,9 +46,7 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
+    fromStateJSON() {},
 
     afterCreate() {
       const rect = Tools.Rect.create({ activeShape: null });
@@ -58,7 +56,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose("RectangleModel", TagAttrs, Model, ControlBase);
+const RectangleModel = types.compose("RectangleModel", ControlBase, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

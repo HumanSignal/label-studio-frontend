@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
@@ -46,13 +46,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
-    },
-
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);

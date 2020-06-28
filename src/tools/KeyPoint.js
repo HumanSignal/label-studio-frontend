@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { KeyPointRegionModel } from "../regions/KeyPointRegion";
-import { guidGenerator, restoreNewsnapshot } from "../core/Helpers";
 
 const _Tool = types
   .model({
@@ -36,6 +35,8 @@ const _Tool = types
       const c = self.control;
       if (c.type === "keypointlabels" && !c.isSelected) return;
 
+      if (!self.obj.checkLabels()) return;
+
       const sap = self.statesAndParams;
 
       self.createRegion({
@@ -46,7 +47,7 @@ const _Tool = types
         ...sap,
       });
 
-      self.obj.completion().highlightedNode.unselectRegion();
+      self.obj.completion.highlightedNode.unselectRegion(true);
       // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));

@@ -32,8 +32,8 @@ class ToolsManager {
   addToolsFromControl(s) {
     const self = this;
 
-    if (s.getTools) {
-      const t = s.getTools();
+    if (s.tools) {
+      const t = s.tools;
 
       Object.keys(t).forEach(k => {
         self.addTool(k, t[k]);

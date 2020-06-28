@@ -4,6 +4,11 @@
 
 .wave {
   position: relative;
+
+  canvas {
+    // prevent reset.css from breaking waveforms
+    max-width: unset;
+  }
 }
 
 .menu {

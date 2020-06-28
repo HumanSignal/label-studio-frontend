@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import RequiredMixin from "../../mixins/Required";
 import InfoModal from "../../components/Infomodal/Infomodal";
@@ -27,8 +27,9 @@ import ControlBase from "./Base";
  * @param {string} name                      - name of the element
  * @param {string} toName                    - name of the element that you want to label
  * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {boolean} [required=false]   - validation if label is required
- * @param {string} [requiredMessage]   - message to show if validation fails
+ * @param {number} [maxUsages]               - maximum available usages
+ * @param {boolean} [required=false]         - validation if label is required
+ * @param {string} [requiredMessage]         - message to show if validation fails
  * @param {boolean} [showInline=true]        - show items in the same visual line
  */
 const TagAttrs = types.model({
@@ -36,6 +37,7 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
+  maxusages: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, true),
 });
 
@@ -61,24 +63,18 @@ const Model = LabelMixin.props({ _type: "labels" })
   }))
   .actions(self => ({
     validate() {
-      let found = false;
       const regions = self.completion.regionStore.regions;
 
-      loop1: for (let r of regions) {
+      for (let r of regions) {
         for (let s of r.states) {
           if (s.name === self.name) {
-            found = true;
-            break loop1;
+            return true;
           }
         }
       }
 
-      if (found === false) {
-        InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-        return false;
-      }
-
-      return true;
+      InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
+      return false;
     },
   }));
 

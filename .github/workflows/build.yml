@@ -1,0 +1,55 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    # ci can be skipped with `[skip ci]` prefix in message
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+
+    # cache npm deps for faster runs
+    - name: Cache node modules
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: ~/.npm
+        key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          npm-${{ runner.os }}-
+
+    - run: npm ci
+    - run: npm run build-bundle
+      env:
+        CI: false # on true webpack breaks on warnings, and we have them a lot
+
+    # run http-server with build in background (will be killed after job ends)
+    # do this only for master branch (so only for push event)
+    # because pr can contain unfinished job
+    - run: npx serve -l tcp://localhost:3000 build &
+      if: github.event_name == 'push'
+    - run: npm run test:e2e:headless
+      if: github.event_name == 'push'
+
+    - uses: actions/upload-artifact@master
+      if: ${{ failure() }}
+      with:
+        name: e2e output
+        path: e2e/output/
+
+    # upload this build as artifact to current Action
+    - uses: actions/upload-artifact@master
+      with:
+        name: build ${{ github.event.pull_request.head.sha || github.sha }}
+        path: build/

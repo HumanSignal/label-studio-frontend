@@ -147,6 +147,7 @@ const Model = types
       const r = AudioRegionModel.create({
         id: wsRegion.id ? wsRegion.id : guidGenerator(),
         pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
+        parentID: wsRegion.parent_id === null ? "" : wsRegion.parent_id,
         start: wsRegion.start,
         end: wsRegion.end,
         score: wsRegion.score,
@@ -166,9 +167,6 @@ const Model = types
     },
 
     addRegion(ws_region) {
-      const allStates = self.activeStates();
-      const clonedStates = allStates.map(s => cloneNode(s));
-
       const find_r = self.findRegion({ start: ws_region.start, end: ws_region.end });
 
       if (find_r) {
@@ -178,12 +176,16 @@ const Model = types
         return find_r;
       }
 
-      if (clonedStates.length == 0) {
+      const allStates = self.getAvailableStates();
+      if (allStates.length === 0) {
         ws_region.remove && ws_region.remove();
         return;
       }
 
-      const r = self.createRegion(ws_region, clonedStates);
+      const r = self.createRegion(
+        ws_region,
+        allStates.map(s => cloneNode(s)),
+      );
       r.applyCSSClass(ws_region);
 
       return r;

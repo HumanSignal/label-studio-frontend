@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Rect, Group, Text, Label } from "react-konva";
+import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
 
@@ -70,6 +70,9 @@ const Model = types
     supportsTransform: true,
   })
   .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
     get parent() {
       return getParentOfType(self, ImageModel);
     },
@@ -102,14 +105,6 @@ const Model = types
       if (degree === -90) p.y -= self.width;
       if (degree === 90) p.x -= self.height;
       self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
-    },
-
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-
-      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {
@@ -190,6 +185,9 @@ const Model = types
     },
 
     serialize(control, object) {
+      const value = control.serializableValue;
+      if (!value) return null;
+
       const degree = (360 - self.parent.rotation) % 360;
       let { x, y } = self.rotatePoint(self, degree, false);
       if (degree === 270) y -= self.width;
@@ -209,7 +207,7 @@ const Model = types
         degree,
       );
 
-      let res = {
+      return {
         original_width: natural.width,
         original_height: natural.height,
         image_rotation: self.parent.rotation,
@@ -219,12 +217,9 @@ const Model = types
           width,
           height,
           rotation: self.rotation,
+          ...value,
         },
       };
-
-      res.value = Object.assign(res.value, control.serializableValue);
-
-      return res;
     },
   }));
 

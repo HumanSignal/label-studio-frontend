@@ -82,6 +82,7 @@ const Model = types
     },
 
     get serializableValue() {
+      if (!self.regions.length) return null;
       return { text: self.selectedValues() };
     },
 
@@ -201,11 +202,9 @@ const HtxTextArea = observer(({ item }) => {
 
   if (!item.completion.editable) props["disabled"] = true;
 
-  const region = item.completion.highlightedNode;
-
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
-  const showAddButton = item.completion.editable && (rows != 1 || item.showSubmitButton);
+  const showAddButton = (item.completion.editable && rows !== 1) || item.showSubmitButton;
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
@@ -230,7 +229,7 @@ const HtxTextArea = observer(({ item }) => {
             {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
             {showAddButton && (
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button style={{ marginTop: "10px" }} type="primary" htmlType="submit">
                   Add
                 </Button>
               </Form.Item>

@@ -2,7 +2,7 @@ import Konva from "konva";
 import React from "react";
 import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getRoot, destroy, detach } from "mobx-state-tree";
+import { types, getParentOfType, destroy, detach } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
@@ -167,17 +167,12 @@ const Model = types
       destroy(self.points);
     },
 
-    unselectRegion() {
+    afterUnselectRegion() {
       if (self.selectedPoint) {
         self.selectedPoint.selected = false;
       }
 
       // self.points.forEach(p => p.computeOffset());
-
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
     },
 
     updateAppearenceFromState() {

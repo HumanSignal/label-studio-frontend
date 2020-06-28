@@ -1,4 +1,4 @@
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -10,7 +10,6 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
-import { guidGenerator } from "../core/Helpers";
 
 const Model = types
   .model("TextRegionModel", {
@@ -34,14 +33,21 @@ const Model = types
       Utils.HTML.removeSpans(self._spans);
     },
 
+    setText(text) {
+      self.text = text;
+    },
+
     serialize(control, object) {
       let res = {
         value: {
           start: self.startOffset,
           end: self.endOffset,
-          text: self.text,
         },
       };
+
+      if (object.savetextresult === "yes") {
+        res.value["text"] = self.text;
+      }
 
       res.value = Object.assign(res.value, control.serializableValue);
 

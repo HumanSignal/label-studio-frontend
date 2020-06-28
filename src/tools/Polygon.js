@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { PolygonRegionModel } from "../regions/PolygonRegion";
-import { restoreNewsnapshot } from "../core/Helpers";
 
 const _Tool = types
   .model({
@@ -16,6 +15,7 @@ const _Tool = types
 
       if (poly && poly.closed) return null;
       if (poly === undefined) return null;
+      if (poly.type !== "polygonregion") return null;
 
       return poly;
     },
@@ -74,6 +74,8 @@ const _Tool = types
 
     clickEv(ev, [x, y]) {
       if (self.control.type === "polygonlabels") if (!self.control.isSelected && self.getActivePolygon === null) return;
+
+      if (!self.getActivePolygon && !self.obj.checkLabels()) return;
 
       const sap = self.statesAndParams;
 

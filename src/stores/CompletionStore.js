@@ -7,7 +7,7 @@ import RegionStore from "./RegionStore";
 import Registry from "../core/Registry";
 import RelationStore from "./RelationStore";
 import TimeTraveller from "../core/TimeTraveller";
-import Tree from "../core/Tree";
+import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
@@ -16,6 +16,10 @@ import { guidGenerator } from "../core/Helpers";
 const Completion = types
   .model("Completion", {
     id: types.identifier,
+    // @todo this value used `guidGenerator(5)` as default value before
+    // @todo but it calculates once, so all the completions have the same pk
+    // @todo why don't use only `id`?
+    // @todo reverted back to wrong type; maybe it breaks all the deserialisation
     pk: types.optional(types.string, guidGenerator(5)),
 
     selected: types.optional(types.boolean, false),
@@ -135,7 +139,7 @@ const Completion = types
 
     addRegion(reg) {
       self.regionStore.addRegion(reg);
-      self.regionStore.unselectAll();
+      self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
         self.addRelation(reg);
@@ -177,7 +181,7 @@ const Completion = types
           ok = node.validate();
           if (ok === false) {
             ok = false;
-            return "break";
+            return TRAVERSE_STOP;
           }
         }
       });

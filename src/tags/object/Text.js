@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
-import { types, getType, getRoot } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -14,6 +14,7 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Text tag shows an Text markup that can be labeled
@@ -26,11 +27,15 @@ import styles from "./Text/Text.module.scss";
  * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
  * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
  * @param {boolean} [showLabels=true]        - show labels next to the region
- * @param {string} [encoding=string|base64]  - decode value from a plain or base64 encoded string
+ * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
+
+  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
 
   selectionenabled: types.optional(types.boolean, true),
 
@@ -41,13 +46,15 @@ const TagAttrs = types.model("TextModel", {
   showlabels: types.optional(types.boolean, true),
 
   granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
-  encoding: types.optional(types.string, "string"),
+
+  encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
 });
 
 const Model = types
   .model("TextModel", {
     id: types.optional(types.identifier, guidGenerator),
     type: "text",
+    loaded: types.optional(types.boolean, false),
     regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
@@ -82,12 +89,66 @@ const Model = types
 
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
+
+      if (self.valuetype === "url") {
+        const url = self._value;
+        if (!/^https?:\/\//.test(url)) {
+          InfoModal.error(`URL (${url}) is not valid`);
+          self.loadedValue("");
+          return;
+        }
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            return res.text();
+          })
+          .then(self.loadedValue)
+          .catch(e => {
+            InfoModal.error(`Loading URL (${url}) unsuccessful: ${e}`);
+            self.loadedValue("");
+          });
+      } else {
+        self.loadedValue(self._value);
+      }
+    },
+
+    loadedValue(val) {
+      self.loaded = true;
+      if (self.encoding === "base64") val = atob(val);
+      if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
+
+      self._value = val;
+
+      self._regionsCache.forEach(({ region, completion }) => {
+        region.setText(self._value.substring(region.startOffset, region.endOffset));
+        self.regions.push(region);
+        completion.addRegion(region);
+      });
+
+      self._regionsCache = [];
+    },
+
+    afterCreate() {
+      self._regionsCache = [];
+
+      // security measure, if valuetype is set to url then LS
+      // doesn't save the text into the result, otherwise it does
+      // can be aslo directly configured
+      if (self.savetextresult === "none") {
+        if (self.valuetype === "url") self.savetextresult = "no";
+        else if (self.valuetype === "text") self.savetextresult = "yes";
+      }
     },
 
     createRegion(p) {
       const r = TextRegionModel.create(p);
 
       r._range = p._range;
+
+      if (self.valuetype === "url" && self.loaded === false) {
+        self._regionsCache.push({ region: r, completion: self.completion });
+        return;
+      }
 
       self.regions.push(r);
       self.completion.addRegion(r);
@@ -96,14 +157,12 @@ const Model = types
     },
 
     addRegion(range) {
-      const states = self.activeStates();
+      const states = self.getAvailableStates();
       if (states.length === 0) return;
 
       const clonedStates = states.map(s => cloneNode(s));
 
       const r = self.createRegion({ ...range, states: clonedStates });
-
-      states.forEach(s => s.unselectAll());
 
       return r;
     },
@@ -117,25 +176,12 @@ const Model = types
       let r;
       let m;
 
-      const { start, end } = obj.value;
-
       const fm = self.completion.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
 
-      const tree = {
-        pid: obj.id,
-        startOffset: start,
-        endOffset: end,
-        start: "",
-        end: "",
-        score: obj.score,
-        readonly: obj.readonly,
-        text: self._value.substring(start, end),
-        normalization: obj.normalization,
-        // states: [states],
-      };
+      const { start, end } = obj.value;
 
       r = self.findRegion({ startOffset: obj.value.start, endOffset: obj.value.end });
 
@@ -143,13 +189,26 @@ const Model = types
         m = restoreNewsnapshot(fromModel);
         // m.fromStateJSON(obj);
 
-        if (!r) {
-          // tree.states = [m];
-          tree["states"] = [m];
-          r = self.createRegion(tree);
-          // r = self.addRegion(tree);
-        } else {
+        if (r && fromModel.perregion) {
           r.states.push(m);
+        } else {
+          // tree.states = [m];
+          const data = {
+            pid: obj.id,
+            parentID: obj.parent_id === null ? "" : obj.parent_id,
+            startOffset: start,
+            endOffset: end,
+            start: "",
+            end: "",
+            score: obj.score,
+            readonly: obj.readonly,
+            text: self._value.substring(start, end),
+            normalization: obj.normalization,
+            states: [m],
+          };
+
+          r = self.createRegion(data);
+          // r = self.addRegion(tree);
         }
       }
 
@@ -187,6 +246,7 @@ class TextPieceView extends Component {
 
     let val = runTemplate(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
+    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     return val;
   }
@@ -235,7 +295,7 @@ class TextPieceView extends Component {
 
       if (idx > 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
-        r2.setEnd(node, len - 1);
+        r2.setEnd(node, len > 0 ? len - 1 : 0);
       }
     }
 
@@ -280,13 +340,21 @@ class TextPieceView extends Component {
 
       r = this.alignRange(r);
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       try {
         var normedRange = xpath.fromRange(r, self.myRef);
 
         splitBoundaries(r);
 
         normedRange._range = r;
-        normedRange.text = selection.toString();
+
+        // Range toString() uses only text nodes content
+        // so to extract original new lines made into <br>s we should get all the tags
+        const tags = Array.from(r.cloneContents().childNodes);
+        // and convert every <br> back to new line
+        const text = tags.reduce((str, node) => (str += node.tagName === "BR" ? "\n" : node.textContent), "");
+        normedRange.text = text;
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
         const ee = Utils.HTML.toGlobalOffset(self.myRef, r.endContainer, r.endOffset);
@@ -318,20 +386,22 @@ class TextPieceView extends Component {
 
   onMouseUp(ev) {
     const item = this.props.item;
-
     if (!item.selectionenabled) return;
 
-    var selectedRanges = this.captureDocumentSelection();
-
     const states = item.activeStates();
+    if (!states || states.length === 0) return;
 
-    if (!states || states.length === 0 || selectedRanges.length === 0) return;
+    var selectedRanges = this.captureDocumentSelection();
+    if (selectedRanges.length === 0) return;
 
-    ev.nativeEvent.doSelection = true;
+    // prevent overlapping spans from being selected right after this
+    item._currentSpan = null;
 
     const htxRange = item.addRegion(selectedRanges[0]);
-    const spans = htxRange.createSpans();
-    htxRange.addEventsToSpans(spans);
+    if (htxRange) {
+      const spans = htxRange.createSpans();
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {
@@ -394,12 +464,15 @@ class TextPieceView extends Component {
   }
 
   render() {
-    const { item, store } = this.props;
+    const { item } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
-    if (item.encoding === "base64") val = atob(val);
+    if (!item.loaded) return null;
 
-    val = val.split("\n").join("<br/>");
+    const val = item._value.split("\n").reduce((res, s, i) => {
+      if (i) res.push(<br key={i} />);
+      res.push(s);
+      return res;
+    }, []);
 
     return (
       <ObjectTag item={item}>
@@ -410,11 +483,10 @@ class TextPieceView extends Component {
           }}
           className={styles.block + " htx-text"}
           data-update={item._update}
-          style={{ overflow: "auto" }}
           onMouseUp={this.onMouseUp.bind(this)}
-          //onClick={this.onClick.bind(this)}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
+        >
+          {val}
+        </div>
       </ObjectTag>
     );
   }

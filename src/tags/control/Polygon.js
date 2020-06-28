@@ -28,7 +28,7 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(types.string, "0.6"),
-  fillcolor: types.maybeNull(types.string),
+  fillcolor: types.optional(types.string, "#f48a42"),
 
   strokewidth: types.optional(types.string, "3"),
   strokecolor: types.optional(types.string, "#f48a42"),
@@ -51,9 +51,7 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getTools() {
-      return Object.values(self.tools);
-    },
+    fromStateJSON() {},
 
     afterCreate() {
       const poly = Tools.Polygon.create();
@@ -69,7 +67,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", TagAttrs, Model, ControlBase);
+const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Model);
 
 const HtxView = inject("store")(
   observer(({ store, item }) => {

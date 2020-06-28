@@ -12,6 +12,7 @@ import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 /**
  * Label tag represents a single label
@@ -26,6 +27,7 @@ import { runTemplate } from "../../core/Template";
  * @name Label
  * @param {string} value                    - value of the label
  * @param {boolean} [selected=false]        - if this label should be preselected
+ * @param {number} [maxUsages]              - maximum available usages
  * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
  * @param {string} [alias]                  - label alias
  * @param {boolean} [showAlias=false]       - show alias inside label text
@@ -37,6 +39,7 @@ import { runTemplate } from "../../core/Template";
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   selected: types.optional(types.boolean, false),
+  maxusages: types.maybeNull(types.string),
   alias: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
@@ -56,6 +59,22 @@ const Model = types
   .views(self => ({
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get maxUsages() {
+      return Number(self.maxusages || self.parent.maxusages);
+    },
+
+    usedAlready() {
+      const regions = self.completion.regionStore.regions;
+      // count all the usages among all the regions
+      const used = regions.reduce((s, r) => s + r.hasLabelState(self.value), 0);
+      return used;
+    },
+
+    canBeUsed() {
+      if (!self.maxUsages) return true;
+      return self.usedAlready() < self.maxUsages;
     },
 
     get parent() {
@@ -78,23 +97,41 @@ const Model = types
       // here we check if you click on label from labels group
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
-      const hn = self.completion.highlightedNode;
-      if (hn && hn.readonly === true && hn.parent.name === self.parent.toname) return;
+      const region = self.completion.highlightedNode;
+      if (region && region.readonly === true && region.parent.name === self.parent.toname) return;
 
       // one more check if that label can be selected
       if (!self.completion.editable) return;
 
-      const selectedLabel = self.selected;
-      const labels = self.parent;
+      // don't select if it can not be used
+      if (!self.selected && !self.canBeUsed()) {
+        InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
+        return;
+      }
 
-      const reg = self.completion.highlightedNode;
+      const labels = self.parent;
 
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
       // not going to endup without the label(s) at all
-      if (reg) {
+      if (region) {
         const sel = labels.selectedLabels;
         if (sel.length === 1 && sel[0]._value === self._value) return;
+      }
+
+      // if we are going to select label and it would be the first in this labels group
+      if (!labels.selectedLabels.length && !self.selected) {
+        // unselect labels from other groups of labels connected to this obj
+        self.completion.toNames
+          .get(labels.toname)
+          .forEach(tag => tag.name !== labels.name && tag.unselectAll && tag.unselectAll());
+
+        // unselect other tools if they exist and selected
+        const tool = Object.values(self.parent.tools || {})[0];
+        if (tool && tool.manager.findSelectedTool() !== tool) {
+          tool.manager.unselectAll();
+          tool.setSelected(true);
+        }
       }
 
       /**
@@ -111,7 +148,7 @@ const Model = types
         /**
          * Current not selected
          */
-        if (!selectedLabel) {
+        if (!self.selected) {
           labels.unselectAll();
           self.setSelected(!self.selected);
         } else {
@@ -119,7 +156,7 @@ const Model = types
         }
       }
 
-      reg && reg.updateSingleState(labels);
+      region && region.updateSingleState(labels);
     },
 
     setVisible(val) {
