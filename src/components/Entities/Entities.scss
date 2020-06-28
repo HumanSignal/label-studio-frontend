@@ -1,0 +1,19 @@
+.ant-tree-node-content-wrapper {
+  // official flex sizing fix; here is for text-overflow in the tree nodes
+  min-width: 0;
+}
+
+.ant-tree .ant-tree-treenode {
+  padding: 0;
+  align-items: center;
+}
+
+.ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected,
+.ant-tree .ant-tree-node-content-wrapper:hover {
+  background: none;
+}
+
+.ant-tree .ant-tree-switcher {
+  width: 16px;
+  text-align: right;
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Checkbox, Tabs, Table, InputNumber } from "antd";
+import { Modal, Checkbox, Tabs, Table } from "antd";
 import { observer } from "mobx-react";
 
 import Hotkey from "../../core/Hotkey";
@@ -78,6 +78,18 @@ export default observer(({ store }) => {
           {/* > */}
           {/*   Show scores inside the regions */}
           {/* </Checkbox> */}
+
+          <br />
+          <Checkbox
+            value="Keep label selected after creating a region"
+            defaultChecked={store.settings.continuousLabeling}
+            onChange={() => {
+              store.settings.toggleContinuousLabeling();
+            }}
+          >
+            Keep label selected after creating a region
+          </Checkbox>
+
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}

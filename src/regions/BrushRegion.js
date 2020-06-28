@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getParentOfType } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -125,13 +125,6 @@ const Model = types
 
     afterAttach() {},
 
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
-    },
-
     selectRegion() {
       self.selected = true;
       self.completion.setHighlightedNode(self);
@@ -155,10 +148,6 @@ const Model = types
     // addEraserPoints(x, y) {
     //   self.eraserpoints = [...self.eraserpoints, x, y];
     // },
-
-    setLayerRef(ref) {
-      self.layerRef = ref;
-    },
 
     setScale(x, y) {
       self.scaleX = x;

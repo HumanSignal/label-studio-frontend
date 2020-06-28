@@ -14,11 +14,17 @@ const RegionsMixin = types
 
     selected: types.optional(types.boolean, false),
     highlighted: types.optional(types.boolean, false),
+
+    parentID: types.optional(types.string, ""),
   })
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
       return states && states.filter(s => s.perregion === true);
+    },
+
+    get store() {
+      return getRoot(self);
     },
 
     get parent() {
@@ -51,6 +57,10 @@ const RegionsMixin = types
     },
   }))
   .actions(self => ({
+    setParentID(id) {
+      self.parentID = id;
+    },
+
     moveTop(size) {},
     moveBottom(size) {},
     moveLeft(size) {},
@@ -106,6 +116,7 @@ const RegionsMixin = types
           to_name: parent.name,
           source: parent.value,
           type: control.type,
+          parent_id: self.parentID === "" ? null : self.parentID,
         };
 
         if (self.normalization) tree["normalization"] = self.normalization;
@@ -117,7 +128,7 @@ const RegionsMixin = types
         return self.states
           .map(s => {
             const ser = self.serialize(s, parent);
-            if (!ser) return;
+            if (!ser) return null;
 
             const tree = {
               ...buildTree(s),
@@ -128,7 +139,7 @@ const RegionsMixin = types
 
             return tree;
           })
-          .filter(tree => tree);
+          .filter(Boolean);
       } else {
         const obj = self.completion.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;
@@ -179,18 +190,33 @@ const RegionsMixin = types
       self.completion.loadRegionState(self);
     },
 
-    unselectRegion() {
+    /**
+     * Common logic for unselection; specific actions should be in `afterUnselectRegion`
+     * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
+     */
+    unselectRegion(tryToKeepStates = false) {
       const completion = self.completion;
+      const parent = self.parent;
+      const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
 
       if (completion.relationMode) {
         completion.stopRelationMode();
       }
+      if (parent.setSelected) {
+        parent.setSelected(undefined);
+      }
 
       self.selected = false;
-      self.completion.setHighlightedNode(null);
+      completion.setHighlightedNode(null);
 
-      self.completion.unloadRegionState(self);
+      self.afterUnselectRegion();
+
+      if (!keepStates) {
+        completion.unloadRegionState(self);
+      }
     },
+
+    afterUnselectRegion() {},
 
     onClickRegion() {
       const completion = self.completion;
@@ -202,7 +228,7 @@ const RegionsMixin = types
         completion.regionStore.unselectAll();
       } else {
         if (self.selected) {
-          self.unselectRegion();
+          self.unselectRegion(true);
         } else {
           completion.regionStore.unselectAll();
           self.selectRegion();

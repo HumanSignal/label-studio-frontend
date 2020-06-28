@@ -163,7 +163,7 @@ const Model = types
     /**
      * @return {object}
      */
-    completion() {
+    get completion() {
       // return Types.getParentOfTypeString(self, "Completion");
       return getRoot(self).completionStore.selected;
     },
@@ -172,7 +172,12 @@ const Model = types
      * @return {object}
      */
     states() {
-      return self.completion().toNames.get(self.name);
+      return self.completion.toNames.get(self.name);
+    },
+
+    activeStates() {
+      const states = self.states();
+      return states && states.filter(s => s.isSelected && s._type.includes("labels"));
     },
 
     controlButton() {
@@ -202,8 +207,6 @@ const Model = types
 
   // actions for the tools
   .actions(self => {
-    // tools
-    let tools = {};
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
@@ -217,19 +220,11 @@ const Model = types
       if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
     }
 
-    function getTools() {
-      return Object.values(tools);
-    }
-
     function getToolsManager() {
       return toolsManager;
     }
 
-    function beforeDestroy() {
-      tools = null;
-    }
-
-    return { afterCreate, beforeDestroy, getTools, getToolsManager };
+    return { afterCreate, getToolsManager };
   })
 
   .actions(self => ({
@@ -362,21 +357,23 @@ const Model = types
       }
     },
 
+    checkLabels() {
+      // there is should be at least one state selected for *labels object
+      const labelStates = (self.states() || []).filter(s => s.type.includes("labels"));
+      const selectedStates = self.getAvailableStates();
+      return selectedStates.length !== 0 || labelStates.length === 0;
+    },
+
     addShape(shape) {
       self.regions.push(shape);
 
-      self.completion().addRegion(shape);
+      self.completion.addRegion(shape);
       self.setSelected(shape.id);
       shape.selectRegion();
     },
 
-    getEvCoords(ev) {
-      if (!ev.evt) return [];
-
-      const x = (ev.evt.offsetX - self.zoomingPositionX) / self.zoomScale;
-      const y = (ev.evt.offsetY - self.zoomingPositionY) / self.zoomScale;
-
-      return [x, y];
+    fixZoomedCoords([x, y]) {
+      return [(x - self.zoomingPositionX) / self.zoomScale, (y - self.zoomingPositionY) / self.zoomScale];
     },
 
     /**
@@ -388,40 +385,24 @@ const Model = types
       self._updateImageSize({ width, height, userResize });
     },
 
-    onImageClick(ev) {
-      const coords = self.getEvCoords(ev);
-      self.getToolsManager().event("click", ev, ...coords);
-    },
-
-    onMouseDown(ev) {
-      const coords = self.getEvCoords(ev);
-      self.getToolsManager().event("mousedown", ev, ...coords);
-    },
-
-    onMouseMove(ev) {
-      const coords = self.getEvCoords(ev);
-      self.getToolsManager().event("mousemove", ev, ...coords);
-    },
-
-    onMouseUp(ev) {
-      self.getToolsManager().event("mouseup", ev);
+    event(name, ev, ...coords) {
+      self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
     },
 
     /**
      * Transform JSON data (completions and predictions) to format
      */
     fromStateJSON(obj, fromModel) {
-      if (obj.value.choices) {
-        self
-          .completion()
-          .names.get(obj.from_name)
-          .fromStateJSON(obj);
+      const tools = self.getToolsManager().allTools();
+
+      // when there is only the image classification and nothing else, we need to handle it here
+      if (tools.length === 0 && obj.value.choices) {
+        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+
+        return;
       }
 
-      self
-        .getToolsManager()
-        .allTools()
-        .forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
+      tools.forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
     },
   }));
 

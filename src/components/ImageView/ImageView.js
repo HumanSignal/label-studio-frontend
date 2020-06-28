@@ -11,24 +11,17 @@ import styles from "./ImageView.module.scss";
 
 export default observer(
   class ImageView extends Component {
-    constructor(props) {
-      super(props);
+    // stored position of canvas before creating region
+    canvasX;
+    canvasY;
 
-      this.onResize = this.onResize.bind(this);
-    }
-    /**
-     * Handler of click on Image
-     */
-    handleOnClick = ev => {
+    handleOnClick = e => {
       const { item } = this.props;
 
-      return item.onImageClick(ev);
+      return item.event("click", e, e.evt.offsetX, e.evt.offsetY);
     };
 
-    /**
-     * Handler for mouse down
-     */
-    handleStageMouseDown = e => {
+    handleMouseDown = e => {
       const { item } = this.props;
 
       // item.freezeHistory();
@@ -40,31 +33,59 @@ export default observer(
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {
-        return item.onMouseDown(e);
+        window.addEventListener("mousemove", this.handleGlobalMouseMove);
+        window.addEventListener("mouseup", this.handleGlobalMouseUp);
+        const { offsetX: x, offsetY: y } = e.evt;
+        // store the canvas coords for calculations in further events
+        const { left, top } = this.container.getBoundingClientRect();
+        this.canvasX = left;
+        this.canvasY = top;
+        return item.event("mousedown", e, x, y);
       }
 
       return true;
     };
 
     /**
-     * Handler of mouse up
+     * Mouse up outside the canvas
+     */
+    handleGlobalMouseUp = e => {
+      window.removeEventListener("mousemove", this.handleGlobalMouseMove);
+      window.removeEventListener("mouseup", this.handleGlobalMouseUp);
+
+      if (e.target && e.target.tagName === "CANVAS") return;
+
+      const { item } = this.props;
+      const { clientX: x, clientY: y } = e;
+
+      item.freezeHistory();
+
+      return item.event("mouseup", e, x - this.canvasX, y - this.canvasY);
+    };
+
+    handleGlobalMouseMove = e => {
+      if (e.target && e.target.tagName === "CANVAS") return;
+
+      const { item } = this.props;
+      const { clientX: x, clientY: y } = e;
+
+      return item.event("mousemove", e, x - this.canvasX, y - this.canvasY);
+    };
+
+    /**
+     * Mouse up on Stage
      */
     handleMouseUp = e => {
       const { item } = this.props;
 
       item.freezeHistory();
 
-      return item.onMouseUp(e);
+      return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
     };
 
-    /**
-     * Handler for mouse move
-     */
     handleMouseMove = e => {
       const { item } = this.props;
-      /**
-       * Freeze this event
-       */
+
       item.freezeHistory();
 
       const stage = item.stageRef;
@@ -77,7 +98,7 @@ export default observer(
         stage.position(newPos);
         stage.batchDraw();
       } else {
-        return item.onMouseMove(e);
+        return item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
       }
     };
 
@@ -198,9 +219,9 @@ export default observer(
       );
     }
 
-    onResize() {
+    onResize = () => {
       this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
-    }
+    };
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
@@ -233,7 +254,6 @@ export default observer(
       if (!store.task || !item._value) return null;
 
       const cb = item.controlButton();
-      const c = store.completionStore.selected;
       let filler = null;
       let containerClassName = styles.container;
       const containerStyle = {};
@@ -317,32 +337,21 @@ export default observer(
             height={item.stageHeight}
             scaleX={item.scale}
             scaleY={item.scale}
-            onDblClick={this.handleDblClick}
             onClick={this.handleOnClick}
-            onMouseDown={this.handleStageMouseDown}
+            onMouseDown={this.handleMouseDown}
             onMouseMove={this.handleMouseMove}
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
             {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-            {item.regions.map(shape => {
-              let brushShape;
-              if (shape.type === "brushregion") {
-                brushShape = (
-                  <Layer
-                    ref={ref => {
-                      shape.setLayerRef(ref);
-                    }}
-                    name={"brushLayer-" + shape.id}
-                    id={shape.id}
-                  >
-                    {Tree.renderItem(shape)}
-                  </Layer>
-                );
-              }
-              return brushShape;
-            })}
-            <Layer>
+            {item.regions
+              .filter(shape => shape.type === "brushregion")
+              .map(shape => (
+                <Layer name={"brushLayer-" + shape.id} id={shape.id}>
+                  {Tree.renderItem(shape)}
+                </Layer>
+              ))}
+            <Layer name="shapes">
               {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
               {item.activeShape && Tree.renderItem(item.activeShape)}
 

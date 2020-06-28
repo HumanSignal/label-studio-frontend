@@ -10,7 +10,6 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { LabelsModel } from "../tags/control/Labels";
 import { guidGenerator } from "../core/Helpers";
-import Canvas from "../utils/canvas";
 import { RatingModel } from "../tags/control/Rating";
 
 const Model = types
@@ -94,23 +93,26 @@ const Model = types
       self.completion.loadRegionState(self);
 
       const el = self.wsRegionElement(self._ws_region);
-      if (el) el.scrollIntoView();
+      if (el) {
+        const container = window.document.scrollingElement;
+        const top = container.scrollTop;
+        const left = container.scrollLeft;
+        el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
+        window.document.scrollingElement.scrollTo(left, top);
+      }
     },
 
     /**
      * Unselect audio region
      */
-    unselectRegion() {
+    afterUnselectRegion() {
       // debugger;
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
       if (self._ws_region.update) {
         self._ws_region.update({
           color: self.selectedregionbg,
           // border: "none"
         });
       }
-      self.completion.unloadRegionState(self);
     },
 
     setHighlight(val) {

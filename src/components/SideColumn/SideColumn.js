@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Popconfirm, Card, Divider } from "antd";
+import { Button, Popconfirm, Card } from "antd";
 import { observer } from "mobx-react";
 import { DeleteOutlined } from "@ant-design/icons";
 

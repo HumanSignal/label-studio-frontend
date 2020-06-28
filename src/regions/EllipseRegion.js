@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
+import { types, getParentOfType, getParent } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -10,7 +10,6 @@ import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
-import { LabelsModel } from "../tags/control/Labels";
 import { RatingModel } from "../tags/control/Rating";
 import { EllipseLabelsModel } from "../tags/control/EllipseLabels";
 import { guidGenerator } from "../core/Helpers";
@@ -95,17 +94,10 @@ const Model = types
     },
 
     updateAppearenceFromState() {
+      if (!self.states.length) return;
       const stroke = self.states[0].getSelectedColor();
       self.strokeColor = stroke;
       self.fillColor = stroke;
-    },
-
-    unselectRegion() {
-      self.selected = false;
-      self.parent.setSelected(undefined);
-      self.completion.setHighlightedNode(null);
-
-      self.completion.unloadRegionState(self);
     },
 
     coordsInside(x, y) {
@@ -301,22 +293,19 @@ const HtxEllipseView = ({ store, item }) => {
           let { x, y } = pos;
           let { stageHeight, stageWidth } = getParent(item, 2);
 
-          if (x <= 0) {
+          if (x < 0) {
             x = 0;
-          } else if (x + item.width >= stageWidth) {
-            x = stageWidth - item.width;
+          } else if (x > stageWidth) {
+            x = stageWidth;
           }
 
           if (y < 0) {
             y = 0;
-          } else if (y + item.height >= stageHeight) {
-            y = stageHeight - item.height;
+          } else if (y > stageHeight) {
+            y = stageHeight;
           }
 
-          return {
-            x: x,
-            y: y,
-          };
+          return { x, y };
         }}
         onMouseOver={e => {
           const stage = item.parent.stageRef;

@@ -1,23 +1,15 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { getType } from "mobx-state-tree";
-import { Form, Input, Icon, Button, Tag, Tooltip, Badge } from "antd";
-import {
-  DeleteOutlined,
-  LinkOutlined,
-  PlusOutlined,
-  FullscreenOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  CompressOutlined,
-} from "@ant-design/icons";
+import { Form, Input, Button, Tag, Tooltip, Badge } from "antd";
+import { DeleteOutlined, LinkOutlined, PlusOutlined, CompressOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
 
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
 
 const templateElement = element => {
   return (
@@ -41,14 +33,19 @@ const RenderStates = observer(({ node }) => {
     if (getType(s).name.indexOf("Labels") !== -1) {
       return templateElement(s);
     } else if (getType(s).name === "RatingModel") {
-      return <Text>Rating: {s.getSelectedString()}</Text>;
+      return <Paragraph>Rating: {s.getSelectedString()}</Paragraph>;
     } else if (getType(s).name === "TextAreaModel") {
       const text = s.regions.map(r => r._value).join("\n");
       return (
-        <Text>
-          Text: <Text mark>{text.substring(0, 26)}...</Text>
-        </Text>
+        <Paragraph className={styles.row}>
+          <Text>Text: </Text>
+          <Text mark className={styles.long}>
+            {text}
+          </Text>
+        </Paragraph>
       );
+    } else if (getType(s).name === "ChoicesModel") {
+      return <Paragraph>Choices: {s.getSelectedString(", ")}</Paragraph>;
     }
 
     return null;
@@ -62,7 +59,7 @@ export default observer(({ store, completion }) => {
 
   return (
     <Fragment>
-      <p>
+      <p className={styles.row}>
         <NodeMinimal node={node} /> (id: {node.id}){" "}
         {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
       </p>
@@ -112,6 +109,7 @@ export default observer(({ store, completion }) => {
           <Fragment>
             <Tooltip placement="topLeft" title="Create Relation: [r]">
               <Button
+                aria-label="Create Relation"
                 className={styles.button}
                 onClick={() => {
                   completion.startRelationMode(node);

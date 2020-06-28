@@ -1,17 +1,18 @@
 import React from "react";
 import { observer, inject } from "mobx-react";
-import { types, getParent, getParentOfType, getRoot } from "mobx-state-tree";
-import { Alert, Typography, Button } from "antd";
+import { types, getParentOfType } from "mobx-state-tree";
 
+import { Typography } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
+
+import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
 
 const { Paragraph } = Typography;
 
@@ -44,34 +45,21 @@ const TextAreaRegionModel = types.compose(
 );
 
 const HtxTextAreaRegionView = ({ store, item }) => {
-  let markStyle = {
-    cursor: store.completionStore.selected.relationMode ? Constants.RELATION_MODE_CURSOR : Constants.POINTER_CURSOR,
-    display: "block",
-    marginBottom: "0.5em",
-
-    backgroundColor: "#f6ffed",
-    border: "1px solid #b7eb8f",
-
-    borderRadius: "5px",
-    padding: "0.4em",
-    paddingLeft: "1em",
-    paddingRight: "1em",
-  };
-
-  if (item.selected) {
-    markStyle = {
-      ...markStyle,
-      border: "1px solid red",
-    };
-  } else if (item.highlighted) {
-    markStyle = {
-      ...markStyle,
-      border: Constants.HIGHLIGHTED_CSS_BORDER,
-    };
-  }
-
+  const classes = [styles.mark];
   const params = {};
   const { parent } = item;
+  const { relationMode } = item.completion;
+
+  if (relationMode) {
+    classes.push(styles.relation);
+  }
+
+  if (item.selected) {
+    classes.push(styles.selected);
+  } else if (item.highlighted) {
+    classes.push(styles.highlighted);
+  }
+
   if (parent.editable) {
     params["editable"] = {
       onChange: str => {
@@ -79,7 +67,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
 
         // here we update the parent object's state
         if (parent.perregion) {
-          const reg = parent.completion.highlightedNode;
+          const reg = item.completion.highlightedNode;
           reg && reg.updateSingleState(parent);
 
           // self.regions = [];
@@ -89,17 +77,17 @@ const HtxTextAreaRegionView = ({ store, item }) => {
   }
 
   let divAttrs = {};
-  if (!item.parent.perregion) {
+  if (!parent.perregion) {
     divAttrs = {
       onClick: item.onClickRegion,
       onMouseOver: () => {
-        if (store.completionStore.selected.relationMode) {
+        if (relationMode) {
           item.setHighlight(true);
         }
       },
       onMouseOut: () => {
         /* range.setHighlight(false); */
-        if (store.completionStore.selected.relationMode) {
+        if (relationMode) {
           item.setHighlight(false);
         }
       },
@@ -107,32 +95,24 @@ const HtxTextAreaRegionView = ({ store, item }) => {
   }
 
   return (
-    <div {...divAttrs} style={{ display: "flex" }}>
-      <div>
-        <Paragraph style={markStyle} {...params}>
-          {item._value}
-        </Paragraph>
-      </div>
-      <div>
-        {item.parent.perregion && (
-          <div style={{ paddingTop: "0.5em", paddingLeft: "1em" }}>
-            <a
-              href=""
-              onClick={ev => {
-                const reg = item.completion.highlightedNode;
-                item.completion.deleteRegion(item);
+    <div {...divAttrs} className={styles.row} data-testid="textarea-region">
+      <Paragraph className={classes.join(" ")} {...params}>
+        {item._value}
+      </Paragraph>
+      {parent.perregion && (
+        <DeleteOutlined
+          className={styles.delete}
+          onClick={ev => {
+            const reg = item.completion.highlightedNode;
+            item.completion.deleteRegion(item);
 
-                reg && reg.updateSingleState(item.parent);
+            reg && reg.updateSingleState(parent);
 
-                ev.preventDefault();
-                return false;
-              }}
-            >
-              <DeleteOutlined />
-            </a>
-          </div>
-        )}
-      </div>
+            ev.preventDefault();
+            return false;
+          }}
+        />
+      )}
     </div>
   );
 };

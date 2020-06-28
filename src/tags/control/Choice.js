@@ -1,5 +1,5 @@
-import React from "react";
-import { Checkbox, Radio, Form } from "antd";
+import React, { Component } from "react";
+import { Checkbox, Radio, Form, Select } from "antd";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
@@ -8,6 +8,8 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import { ChoicesModel } from "./Choices";
+
+const { Option } = Select;
 
 /**
  * Choice tag represents a single choice
@@ -47,12 +49,22 @@ const Model = types
       return choice === "multiple" || choice === "single";
     },
 
+    get isSelect() {
+      console.log(self.parent.layout);
+      return self.parent.layout === "select";
+    },
+
     get completion() {
       return getRoot(self).completionStore.selected;
     },
 
     get parent() {
       return getParentOfType(self, ChoicesModel);
+    },
+
+    // to conform Label's maxUsages check
+    canBeUsed() {
+      return true;
     },
   }))
   .actions(self => ({
@@ -92,8 +104,9 @@ const Model = types
 
 const ChoiceModel = types.compose("ChoiceModel", TagAttrs, Model, ProcessAttrsMixin);
 
-const HtxChoice = inject("store")(
-  observer(({ item, store }) => {
+class HtxChoiceView extends Component {
+  render() {
+    const { item, store } = this.props;
     let style = {};
 
     if (item.style) style = Tree.cssConverter(item.style);
@@ -146,8 +159,10 @@ const HtxChoice = inject("store")(
         </div>
       );
     }
-  }),
-);
+  }
+}
+
+const HtxChoice = inject("store")(observer(HtxChoiceView));
 
 Registry.addTag("choice", ChoiceModel, HtxChoice);
 

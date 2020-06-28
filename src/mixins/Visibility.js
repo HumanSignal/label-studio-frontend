@@ -17,26 +17,38 @@ const VisibilityMixin = types
           "region-selected": ({ tagName, labelValue }) => {
             const reg = self.completion.highlightedNode;
 
-            if (reg === null || reg === undefined || (tagName && reg.parent.name != tagName)) {
+            if (reg === null || reg === undefined || (tagName && reg.parent.name !== tagName)) {
               return false;
             }
 
-            if (labelValue) return reg.hasLabelState(labelValue);
+            if (labelValue) return labelValue.split(",").some(v => reg.hasLabelState(v));
 
             return true;
           },
 
           "choice-selected": ({ tagName, choiceValue }) => {
+            if (!tagName) {
+              for (let choices of self.completion.names.values()) {
+                if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
+                  return true;
+                }
+              }
+              return false;
+            }
+
             const tag = self.completion.names.get(tagName);
 
             if (!tag) return false;
 
             if (choiceValue) {
-              const choice = tag.findLabel(choiceValue);
-              return choice && choice.selected ? true : false;
+              const choicesSelected = choiceValue
+                .split(",")
+                .map(v => tag.findLabel(v))
+                .some(c => c && c.selected);
+              return choicesSelected;
             }
 
-            return true;
+            return tag.isSelected;
           },
 
           "no-region-selected": ({ tagName }) => self.completion.highlightedNode === null,

@@ -42,21 +42,24 @@ const ModelAttrs = types
       const states = self.states();
       return states && states.length > 0;
     },
+
+    get serializableValue() {
+      const obj = {};
+      obj["htmllabels"] = self.selectedValues();
+
+      return obj;
+    },
   }));
 
-const Model = LabelMixin.props({ _type: "htmllabels" }).views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === "single";
-  },
-}));
+const Model = LabelMixin.props({ _type: "htmllabels" });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
-  ControlBase,
 );
 
 const HyperTextLabelsModel = types.compose("HyperTextLabelsModel", Composition);

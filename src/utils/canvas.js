@@ -138,7 +138,7 @@ function encodeSVG(data) {
   }
 
   data = addNameSpace(data);
-  var symbols = /[\r\n%#()<>?\[\\\]^`{|}]/g;
+  var symbols = /[\r\n%#()<>?[\\\]^`{|}]/g;
 
   // Use single quotes instead of double to avoid encoding.
   if (externalQuotesValue === "double") {

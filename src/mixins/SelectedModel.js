@@ -32,8 +32,7 @@ const SelectedModelMixin = types
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
     },
 
-    getSelectedString(joinstr) {
-      joinstr = joinstr || " ";
+    getSelectedString(joinstr = " ") {
       return self.selectedValues().join(joinstr);
     },
 
@@ -47,6 +46,12 @@ const SelectedModelMixin = types
      */
     unselectAll() {
       self.tiedChildren.forEach(c => c.setSelected(false));
+    },
+
+    checkMaxUsages() {
+      const list = self.tiedChildren.filter(c => !c.canBeUsed());
+      if (list.length) list.forEach(c => c.setSelected(false));
+      return list;
     },
 
     selectFirstVisible() {
