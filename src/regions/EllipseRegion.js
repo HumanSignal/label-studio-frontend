@@ -45,6 +45,7 @@ const Model = types
     radiusX: types.number,
     radiusY: types.number,
 
+    // @todo not used
     scaleX: types.optional(types.number, 1),
     scaleY: types.optional(types.number, 1),
 
@@ -100,6 +101,7 @@ const Model = types
       self.fillColor = stroke;
     },
 
+    // @todo not used
     coordsInside(x, y) {
       // check if x and y are inside the rectangle
       const a = self.radiusX;
