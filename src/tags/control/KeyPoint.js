@@ -60,12 +60,7 @@ const Model = types
     },
   }));
 
-const KeyPointModel = types.compose(
-  "KeyPointModel",
-  TagAttrs,
-  Model,
-  ControlBase,
-);
+const KeyPointModel = types.compose("KeyPointModel", TagAttrs, Model, ControlBase);
 
 const HtxView = () => {
   return null;
