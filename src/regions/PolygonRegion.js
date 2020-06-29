@@ -75,17 +75,15 @@ const Model = types
     },
 
     handleMouseMove({ e, flattenedPoints }) {
-      let { offsetX: cursorX, offsetY: cursorY } = e.evt;
-      let [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
+      const { offsetX, offsetY } = e.evt;
+      const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
+      const [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
       const group = e.currentTarget;
       const layer = e.currentTarget.getLayer();
       const zoom = self.parent.zoomScale;
 
-      // TODO add the hover point only when in a non-zoomed mode,
-      // reason is the coords in zoom mode act weird, need to put in
-      // some time to find out why
-      if (zoom === 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
+      moveHoverAnchor({ point: [x, y], group, layer, zoom });
     },
 
     handleMouseLeave({ e }) {
@@ -99,7 +97,8 @@ const Model = types
 
       removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
-      const { offsetX: cursorX, offsetY: cursorY } = e.evt;
+      const { offsetX, offsetY } = e.evt;
+      const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
       const point = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
       self.insertPoint(insertIdx, point[0], point[1]);
