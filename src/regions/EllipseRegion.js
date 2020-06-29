@@ -289,7 +289,7 @@ const HtxEllipseView = ({ store, item }) => {
           );
           item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
         }}
-        dragBoundFunc={(pos, e) => {
+        dragBoundFunc={item.parent.fixForZoom(pos => {
           let { x, y } = pos;
           let { stageHeight, stageWidth } = getParent(item, 2);
 
@@ -306,7 +306,7 @@ const HtxEllipseView = ({ store, item }) => {
           }
 
           return { x, y };
-        }}
+        })}
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 

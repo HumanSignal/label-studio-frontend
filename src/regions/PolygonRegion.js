@@ -450,7 +450,7 @@ const HtxPolygonView = ({ store, item }) => {
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
       }}
-      dragBoundFunc={function(pos) {
+      dragBoundFunc={item.parent.fixForZoom(pos => {
         let { x, y } = pos;
 
         const sw = item.parent.stageWidth;
@@ -462,7 +462,7 @@ const HtxPolygonView = ({ store, item }) => {
         if (maxX + x > sw) x = sw - maxX;
 
         return { x: x, y: y };
-      }}
+      })}
       onDragEnd={e => {
         const t = e.target;
 
@@ -508,7 +508,7 @@ const HtxPolygonView = ({ store, item }) => {
         item.setHighlight(false);
         item.onClickRegion();
       }}
-      draggable={item.editable && item.parent.zoomScale === 1}
+      draggable={item.editable}
     >
       {item.mouseOverStartPoint}
 

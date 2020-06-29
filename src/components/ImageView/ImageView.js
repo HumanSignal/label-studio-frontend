@@ -337,6 +337,8 @@ export default observer(
             height={item.stageHeight}
             scaleX={item.scale}
             scaleY={item.scale}
+            x={item.zoomingPositionX}
+            y={item.zoomingPositionY}
             onClick={this.handleOnClick}
             onMouseDown={this.handleMouseDown}
             onMouseMove={this.handleMouseMove}

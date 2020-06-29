@@ -372,8 +372,38 @@ const Model = types
       shape.selectRegion();
     },
 
+    // convert screen coords to image coords considering zoom
     fixZoomedCoords([x, y]) {
       return [(x - self.zoomingPositionX) / self.zoomScale, (y - self.zoomingPositionY) / self.zoomScale];
+      // good official way, but maybe a bit slower and with repeating cloning
+      // const p = self.stageRef.getAbsoluteTransform().copy().invert().point({ x, y });
+      // return [p.x, p.y];
+    },
+
+    // convert image coords to screen coords considering zoom
+    zoomOriginalCoords([x, y]) {
+      return [x * self.zoomScale + self.zoomingPositionX, y * self.zoomScale + self.zoomingPositionY];
+    },
+
+    /**
+     * @typedef {[number, number]|{ x: number, y: number }} Point
+     */
+
+    /**
+     * Wrap point operations to convert zoomed coords from screen to image and back
+     * Good for event handlers, receiving screen coords, but working with image coords
+     * Accepts both [x, y] and {x, y} points; preserves this format
+     * @param {(point: Point) => Point} fn wrapped function do some math with image coords
+     * @return {(point: Point) => Point} outer function do some math with screen coords
+     */
+    fixForZoom(fn) {
+      return p => {
+        const asArray = p.x === undefined;
+        const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
+        const modified = fn(asArray ? [x, y] : { x, y });
+        const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
+        return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
+      };
     },
 
     /**
