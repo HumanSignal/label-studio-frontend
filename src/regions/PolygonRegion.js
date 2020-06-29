@@ -58,6 +58,7 @@ const Model = types
   }))
   .actions(self => ({
     /**
+     * @todo excess method; better to handle click only on start point
      * Handler for mouse on start point of Polygon
      * @param {boolean} val
      */
@@ -65,6 +66,7 @@ const Model = types
       self.mouseOverStartPoint = value;
     },
 
+    // @todo not used
     setSelectedPoint(point) {
       if (self.selectedPoint) {
         self.selectedPoint.selected = false;
@@ -149,10 +151,10 @@ const Model = types
       if (self.points.length < 2) return false;
 
       const p1 = self.points[0];
-      const p2 = { x: x, y: y };
+      const p2 = { x, y };
 
       var r = 50;
-      var dist_points = (p1["x"] - p2["x"]) * (p1["x"] - p2["x"]) + (p1["y"] - p2["y"]) * (p2["y"] - p2["y"]);
+      var dist_points = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
 
       if (dist_points < r) {
         return true;

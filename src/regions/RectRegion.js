@@ -43,6 +43,7 @@ const Model = types
     width: types.number,
     height: types.number,
 
+    // @todo not used
     scaleX: types.optional(types.number, 1),
     scaleY: types.optional(types.number, 1),
 
@@ -107,6 +108,7 @@ const Model = types
       self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
     },
 
+    // @todo not used
     coordsInside(x, y) {
       // check if x and y are inside the rectangle
       const rx = self.x;
