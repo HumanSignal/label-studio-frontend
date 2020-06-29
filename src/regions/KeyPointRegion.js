@@ -181,7 +181,7 @@ const HtxKeyPointView = ({ store, item }) => {
           const t = e.target;
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
         }}
-        dragBoundFunc={function(pos) {
+        dragBoundFunc={item.parent.fixForZoom(pos => {
           const r = item.parent.stageWidth;
           const b = item.parent.stageHeight;
 
@@ -193,11 +193,8 @@ const HtxKeyPointView = ({ store, item }) => {
           if (x > r) x = r;
           if (y > b) y = b;
 
-          return {
-            x: x,
-            y: y,
-          };
-        }}
+          return { x, y };
+        })}
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 
