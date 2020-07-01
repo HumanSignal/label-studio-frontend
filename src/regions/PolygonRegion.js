@@ -58,6 +58,7 @@ const Model = types
   }))
   .actions(self => ({
     /**
+     * @todo excess method; better to handle click only on start point
      * Handler for mouse on start point of Polygon
      * @param {boolean} val
      */
@@ -65,6 +66,7 @@ const Model = types
       self.mouseOverStartPoint = value;
     },
 
+    // @todo not used
     setSelectedPoint(point) {
       if (self.selectedPoint) {
         self.selectedPoint.selected = false;
@@ -75,17 +77,15 @@ const Model = types
     },
 
     handleMouseMove({ e, flattenedPoints }) {
-      let { offsetX: cursorX, offsetY: cursorY } = e.evt;
-      let [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
+      const { offsetX, offsetY } = e.evt;
+      const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
+      const [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
       const group = e.currentTarget;
       const layer = e.currentTarget.getLayer();
       const zoom = self.parent.zoomScale;
 
-      // TODO add the hover point only when in a non-zoomed mode,
-      // reason is the coords in zoom mode act weird, need to put in
-      // some time to find out why
-      if (zoom === 1) moveHoverAnchor({ point: [x, y], group, layer, zoom });
+      moveHoverAnchor({ point: [x, y], group, layer, zoom });
     },
 
     handleMouseLeave({ e }) {
@@ -99,7 +99,8 @@ const Model = types
 
       removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
-      const { offsetX: cursorX, offsetY: cursorY } = e.evt;
+      const { offsetX, offsetY } = e.evt;
+      const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
       const point = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
       self.insertPoint(insertIdx, point[0], point[1]);
@@ -150,10 +151,10 @@ const Model = types
       if (self.points.length < 2) return false;
 
       const p1 = self.points[0];
-      const p2 = { x: x, y: y };
+      const p2 = { x, y };
 
       var r = 50;
-      var dist_points = (p1["x"] - p2["x"]) * (p1["x"] - p2["x"]) + (p1["y"] - p2["y"]) * (p2["y"] - p2["y"]);
+      var dist_points = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
 
       if (dist_points < r) {
         return true;
@@ -450,7 +451,7 @@ const HtxPolygonView = ({ store, item }) => {
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
       }}
-      dragBoundFunc={function(pos) {
+      dragBoundFunc={item.parent.fixForZoom(pos => {
         let { x, y } = pos;
 
         const sw = item.parent.stageWidth;
@@ -462,7 +463,7 @@ const HtxPolygonView = ({ store, item }) => {
         if (maxX + x > sw) x = sw - maxX;
 
         return { x: x, y: y };
-      }}
+      })}
       onDragEnd={e => {
         const t = e.target;
 
@@ -508,7 +509,7 @@ const HtxPolygonView = ({ store, item }) => {
         item.setHighlight(false);
         item.onClickRegion();
       }}
-      draggable={item.editable && item.parent.zoomScale === 1}
+      draggable={item.editable}
     >
       {item.mouseOverStartPoint}
 

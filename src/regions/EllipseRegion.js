@@ -45,6 +45,7 @@ const Model = types
     radiusX: types.number,
     radiusY: types.number,
 
+    // @todo not used
     scaleX: types.optional(types.number, 1),
     scaleY: types.optional(types.number, 1),
 
@@ -100,6 +101,7 @@ const Model = types
       self.fillColor = stroke;
     },
 
+    // @todo not used
     coordsInside(x, y) {
       // check if x and y are inside the rectangle
       const a = self.radiusX;
@@ -289,7 +291,7 @@ const HtxEllipseView = ({ store, item }) => {
           );
           item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
         }}
-        dragBoundFunc={(pos, e) => {
+        dragBoundFunc={item.parent.fixForZoom(pos => {
           let { x, y } = pos;
           let { stageHeight, stageWidth } = getParent(item, 2);
 
@@ -306,7 +308,7 @@ const HtxEllipseView = ({ store, item }) => {
           }
 
           return { x, y };
-        }}
+        })}
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 

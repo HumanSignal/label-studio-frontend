@@ -30,20 +30,21 @@ function polytobbox(points) {
 
 const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) => {
   const ss = showScore && score;
+  const scale = 1 / (zoomScale || 1);
 
   return (
-    <Group strokeScaleEnabled={false} scaleX={1 / (zoomScale || 1)} scaleY={1 / (zoomScale || 1)} opacity={0.8}>
+    <Group strokeScaleEnabled={false} opacity={0.8}>
       {ss && (
-        <Label x={x} y={y - 20}>
-          <Tag fill={Utils.Colors.getScaleGradient(score)} cornerRadius="2" />
-          <Text text={score.toFixed(2)} fontFamily="Calibri" fill="white" padding="2" />
+        <Label x={x} y={y - 20 * scale} scaleX={scale} scaleY={scale}>
+          <Tag fill={Utils.Colors.getScaleGradient(score)} cornerRadius={2} />
+          <Text text={score.toFixed(2)} fontFamily="Calibri" fill="white" padding={2} />
         </Label>
       )}
 
       {showLabels && (
-        <Label x={ss ? x + 34 : x} y={y - 20}>
-          <Tag fill={Constants.SHOW_LABEL_BACKGROUND} cornerRadius="2" />
-          <Text text={text} fontFamily="Calibri" fill={Constants.SHOW_LABEL_FILL} padding="2" />
+        <Label x={ss ? x + 34 * scale : x} y={y - 20 * scale} scaleX={scale} scaleY={scale}>
+          <Tag fill={Constants.SHOW_LABEL_BACKGROUND} cornerRadius={2} />
+          <Text text={text} fontFamily="Calibri" fill={Constants.SHOW_LABEL_FILL} padding={2} />
         </Label>
       )}
     </Group>
@@ -62,6 +63,7 @@ const LabelOnEllipse = observer(({ item }) => {
       score={item.score}
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showLabels}
+      zoomScale={item.parent.zoomScale}
     />
   );
 });
@@ -78,6 +80,7 @@ const LabelOnRect = observer(({ item }) => {
       score={item.score}
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showLabels}
+      zoomScale={item.parent.zoomScale}
     />
   );
 });
@@ -98,18 +101,19 @@ const LabelOnPolygon = observer(({ item }) => {
           width={bbox[0][1] - bbox[0][0]}
           height={bbox[1][1] - bbox[1][0]}
           stroke={item.strokeColor}
-          strokeWidth="1"
+          strokeWidth={1}
           strokeScaleEnabled={false}
           shadowBlur={0}
         />
       )}
       <LabelOnBbox
         x={bbox[0][0]}
-        y={bbox[1][0] + 2}
+        y={bbox[1][0] + 2 / item.parent.zoomScale}
         text={s.getSelectedString(",")}
         score={item.score}
         showLabels={settings && settings.showLabels}
         showScore={settings && settings.showScore}
+        zoomScale={item.parent.zoomScale}
       />
     </Fragment>
   );
@@ -132,17 +136,18 @@ const LabelOnMask = observer(({ item }) => {
         width={bbox[0][1] - bbox[0][0]}
         height={bbox[1][1] - bbox[1][0]}
         stroke={item.strokeColor}
-        strokeWidth="1"
+        strokeWidth={1}
         strokeScaleEnabled={false}
         shadowBlur={0}
       />
       <LabelOnBbox
         x={bbox[0][0]}
-        y={bbox[1][0] + 2}
+        y={bbox[1][0] + 2 / item.parent.zoomScale}
         text={s.getSelectedString(",")}
         score={item.score}
         showLabels={getRoot(item).settings.showLabels}
         showScore={settings && settings.showScore}
+        zoomScale={item.parent.zoomScale}
       />
     </Fragment>
   );
@@ -154,13 +159,14 @@ const LabelOnKP = observer(({ item }) => {
 
   return (
     <LabelOnBbox
-      x={item.x + item.width + 2}
-      y={item.y + item.width + 2}
+      // keypoints' width scaled back to stay always small, so scale it here too
+      x={item.x + (item.width + 2) / item.parent.zoomScale}
+      y={item.y + (item.width + 2) / item.parent.zoomScale}
       text={s.getSelectedString(",")}
       score={item.score}
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showScore}
-      /* zoomScale={item.parent.zoomScale} */
+      zoomScale={item.parent.zoomScale}
     />
   );
 });
