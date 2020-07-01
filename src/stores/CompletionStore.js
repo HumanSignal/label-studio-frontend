@@ -39,6 +39,7 @@ const Completion = types
     localUpdate: types.optional(types.boolean, false),
 
     honeypot: types.optional(types.boolean, false),
+    skipped: false,
 
     root: Types.allModelsTypes(),
     names: types.map(types.reference(Types.allModelsTypes())),

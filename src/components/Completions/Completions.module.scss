@@ -5,10 +5,20 @@
   align-items: center;
 }
 
+.skipped {
+  font-size: 1.4em;
+  min-width: 2em;
+}
+
 .completioncard {
   display: flex;
   width: 100%;
   justify-content: space-between;
+  align-items: center;
+
+  & > div:first-child {
+    flex-grow: 1;
+  }
 }
 
 .completion {
