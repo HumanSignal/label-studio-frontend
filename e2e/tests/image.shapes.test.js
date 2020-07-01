@@ -126,7 +126,7 @@ const shapes = [
   },
 ];
 
-Scenario("Simple shapes on Image", async function(I) {
+xScenario("Simple shapes on Image", async function(I) {
   for (let shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),

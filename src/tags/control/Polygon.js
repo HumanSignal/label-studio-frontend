@@ -67,12 +67,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose(
-  "PolygonModel",
-  ControlBase,
-  TagAttrs,
-  Model,
-);
+const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Model);
 
 const HtxView = inject("store")(
   observer(({ store, item }) => {

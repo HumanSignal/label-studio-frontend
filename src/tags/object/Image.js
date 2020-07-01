@@ -302,20 +302,32 @@ const Model = types
       self.selectedShape = shape;
     },
 
-    rotate(degree = 90) {
-      self.rotation = self.rotation + degree;
+    rotate(degree = -90) {
+      self.rotation = (self.rotation + degree + 360) % 360;
 
-      if (self.rotation === 360) {
-        self.rotation = 0;
-        degree = 0;
-      }
+      // 1. swap canvas sizes to correct relative calculations
+      const w = self.stageWidth;
+      self.stageWidth = self.stageHeight;
+      self.stageHeight = w;
+      const nw = self.naturalWidth;
+      self.naturalWidth = self.naturalHeight;
+      self.naturalHeight = nw;
 
+      const ratio = self.stageHeight / self.stageWidth;
+
+      // 2. rotate regions
       self.regions.forEach(s => s.rotate(degree));
+
+      // 3. scale to fit original width and resize all regions
+      self._updateImageSize({
+        width: w,
+        height: Math.round(ratio * w),
+        naturalWidth: self.naturalWidth,
+        naturalHeight: self.naturalHeight,
+      });
     },
 
-    updateImageSize(ev) {
-      const { width, height, naturalWidth, naturalHeight, userResize } = ev.target;
-
+    _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
       if (naturalWidth !== undefined) {
         self.naturalWidth = naturalWidth;
         self.naturalHeight = naturalHeight;
@@ -328,6 +340,21 @@ const Model = types
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+    },
+
+    updateImageSize(ev) {
+      const { width, height, naturalWidth, naturalHeight } = ev.target;
+      if ((self.rotation + 360) % 180 === 90) {
+        // swap sizes
+        self._updateImageSize({
+          width: height,
+          height: width,
+          naturalWidth: naturalHeight,
+          naturalHeight: naturalWidth,
+        });
+      } else {
+        self._updateImageSize({ width, height, naturalWidth, naturalHeight });
+      }
     },
 
     checkLabels() {
@@ -355,11 +382,7 @@ const Model = types
      * @param {*} height
      */
     onResize(width, height, userResize) {
-      self.stageHeight = height;
-      self.stageWidth = width;
-      self.updateImageSize({
-        target: { width: width, height: height, userResize: userResize },
-      });
+      self._updateImageSize({ width, height, userResize });
     },
 
     event(name, ev, ...coords) {

@@ -56,12 +56,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose(
-  "RectangleModel",
-  ControlBase,
-  TagAttrs,
-  Model,
-);
+const RectangleModel = types.compose("RectangleModel", ControlBase, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

@@ -133,6 +133,14 @@ const Model = types
       });
     },
 
+    // only px coordtype here
+    rotate(degree = -90) {
+      self.points.forEach(point => {
+        const p = self.rotatePoint(point, degree);
+        point._movePoint(p.x, p.y);
+      });
+    },
+
     closePoly() {
       self.closed = true;
       self.selectRegion();
@@ -228,16 +236,14 @@ const Model = types
 
     serialize(control, object) {
       const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
-
-      const perc_w = (stageWidth * 100) / naturalWidth;
-      const perc_h = (stageHeight * 100) / naturalHeight;
+      const degree = -self.parent.rotation;
+      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
+      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
 
       const perc_points = self.points.map(p => {
-        const orig_w = (p.x * 100) / perc_w;
-        const res_w = (orig_w * 100) / naturalWidth;
-
-        const orig_h = (p.y * 100) / perc_h;
-        const res_h = (orig_h * 100) / naturalHeight;
+        const normalized = self.rotatePoint(p, degree, false);
+        const res_w = (normalized.x * 100) / width;
+        const res_h = (normalized.y * 100) / height;
 
         return [res_w, res_h];
       });
@@ -246,8 +252,9 @@ const Model = types
         value: {
           points: perc_points,
         },
-        original_width: naturalWidth,
-        original_height: naturalHeight,
+        original_width: natural.width,
+        original_height: natural.height,
+        image_rotation: self.parent.rotation,
       };
 
       res.value = Object.assign(res.value, control.serializableValue);
