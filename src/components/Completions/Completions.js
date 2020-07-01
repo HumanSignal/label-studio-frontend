@@ -125,6 +125,7 @@ const Completion = observer(({ item, store }) => {
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
           {item.createdBy ? ` by ${item.createdBy}` : null}
         </div>
+        {/* platform uses was_cancelled so check both */}
         {store.hasInterface("skip") && (item.skipped || item.was_cancelled) && (
           <Tooltip placement="topLeft" title="Skipped completion">
             <ForwardOutlined className={styles.skipped} />
