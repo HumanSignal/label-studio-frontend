@@ -185,7 +185,7 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
   // because some events work on mousemove and not on mouseup
   stage.fire("mouseup", { evt: { offsetX: x + shiftX, offsetY: y + shiftY } });
   // looks like Konva needs some time to update image according to dpi
-  await delay(10);
+  await delay(32);
   done();
 };
 
