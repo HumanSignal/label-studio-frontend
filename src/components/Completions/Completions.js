@@ -1,13 +1,12 @@
 import React, { Component } from "react";
 import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
 import { observer } from "mobx-react";
-import { StarOutlined, DeleteOutlined, DisconnectOutlined, WindowsOutlined, PlusOutlined } from "@ant-design/icons";
+import { StarOutlined, DeleteOutlined, ForwardOutlined, WindowsOutlined, PlusOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
 
 const Completion = observer(({ item, store }) => {
-  // @todo remove honeypot/ground truth
   let removeHoney = () => (
     <Tooltip placement="topLeft" title="Unset this result as a ground truth">
       <Button
@@ -85,11 +84,8 @@ const Completion = observer(({ item, store }) => {
 
     return (
       <div className={styles.buttons}>
-        {store.hasInterface("skip") && item.skipped && (
-          <Tooltip placement="topLeft" title="Skipped completion">
-            <DisconnectOutlined className={styles.skipped} />
-          </Tooltip>
-        )}
+        {/* @todo check for honeypot/ground truth interface */}
+        {true && (item.honeypot ? removeHoney() : setHoney())}
         &nbsp;
         {store.hasInterface("completions:delete") && (
           <Tooltip placement="topLeft" title="Delete selected completion">
@@ -129,6 +125,11 @@ const Completion = observer(({ item, store }) => {
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
           {item.createdBy ? ` by ${item.createdBy}` : null}
         </div>
+        {store.hasInterface("skip") && (item.skipped || item.was_cancelled) && (
+          <Tooltip placement="topLeft" title="Skipped completion">
+            <ForwardOutlined className={styles.skipped} />
+          </Tooltip>
+        )}
         {item.selected && btnsView()}
       </div>
     </List.Item>
