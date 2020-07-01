@@ -124,7 +124,8 @@ const Model = types
         // unselect labels from other groups of labels connected to this obj
         self.completion.toNames
           .get(labels.toname)
-          .forEach(tag => tag.name !== labels.name && tag.unselectAll && tag.unselectAll());
+          .filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name)
+          .forEach(tag => tag.unselectAll && tag.unselectAll());
 
         // unselect other tools if they exist and selected
         const tool = Object.values(self.parent.tools || {})[0];
