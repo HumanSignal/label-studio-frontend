@@ -6,6 +6,8 @@ import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import Hint from "../Hint/Hint";
 import styles from "./Controls.module.scss";
 
+const TOOLTIP_DELAY = 0.8;
+
 export default inject("store")(
   observer(({ item, store }) => {
     /**
@@ -47,7 +49,7 @@ export default inject("store")(
     if (!store.completionStore.predictSelect || store.explore) {
       if (store.hasInterface("skip")) {
         skipButton = (
-          <Tooltip title="Skip task: [ Ctrl+Space ]">
+          <Tooltip title="Skip task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
               Skip {buttons.skip}
             </Button>
@@ -57,7 +59,7 @@ export default inject("store")(
 
       if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
         submitButton = (
-          <Tooltip title="Save results: [ Ctrl+Enter ]">
+          <Tooltip title="Save results: [ Ctrl+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               type="primary"
               icon={<CheckOutlined />}
@@ -72,7 +74,7 @@ export default inject("store")(
 
       if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
         updateButton = (
-          <Tooltip title="Update this task: [ Alt+Enter ]">
+          <Tooltip title="Update this task: [ Alt+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               type="primary"
               icon={<CheckCircleOutlined />}
