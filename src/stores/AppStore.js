@@ -249,6 +249,16 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
+    function submitDraft(c) {
+      // @todo what about non-valid completions? could they be restored?
+
+      return new Promise(resolve => {
+        const res = getEnv(self).onSubmitCompletion(self, c);
+        if (res && res.then) res.then(resolve);
+        else resolve();
+      });
+    }
+
     function submitCompletion() {
       const c = self.completionStore.selected;
       c.beforeSend();
@@ -256,6 +266,7 @@ export default types
       if (!c.validate()) return;
 
       c.sendUserGenerate();
+      c.dropDraft();
       getEnv(self).onSubmitCompletion(self, c);
     }
 
@@ -263,6 +274,7 @@ export default types
       const c = self.completionStore.selected;
       c.beforeSend();
 
+      c.dropDraft();
       getEnv(self).onUpdateCompletion(self, c);
     }
 
@@ -291,7 +303,7 @@ export default types
           const obj = self.completionStore[addFun](item);
 
           self.completionStore[selectFun](obj.id);
-          obj.deserializeCompletion(item.result);
+          obj.deserializeCompletion(item.draft || item.result);
           obj.reinitHistory();
 
           return obj;
@@ -316,6 +328,7 @@ export default types
       initializeStore,
 
       skipTask,
+      submitDraft,
       submitCompletion,
       updateCompletion,
 

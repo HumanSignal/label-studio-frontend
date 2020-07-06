@@ -124,6 +124,7 @@ const Completion = observer(({ item, store }) => {
           Created
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
           {item.createdBy ? ` by ${item.createdBy}` : null}
+          {item.draft && <div>draft {item.draftSaved && `saved ${Utils.UDate.prettyDate(item.draftSaved)}`}</div>}
         </div>
         {/* platform uses was_cancelled so check both */}
         {store.hasInterface("skip") && (item.skipped || item.was_cancelled) && (

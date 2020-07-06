@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -12,6 +12,7 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
+import throttle from "lodash.throttle";
 
 const Completion = types
   .model("Completion", {
@@ -32,7 +33,12 @@ const Completion = types
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
 
-    //
+    draft: false,
+    // @todo use types.Date
+    draftSaved: types.maybe(types.string),
+    edited: false,
+
+    // created by user during this session
     userGenerate: types.optional(types.boolean, true),
     update: types.optional(types.boolean, false),
     sentUserGenerate: types.optional(types.boolean, false),
@@ -247,6 +253,30 @@ const Completion = types
       });
     },
 
+    autosave: throttle(
+      snapshot => {
+        // if already submitted
+        if (!self.draft) return;
+        self.store.submitDraft(self).then(self.onDraftSaved);
+      },
+      5000,
+      { leading: false },
+    ),
+
+    onChanges(snapshot) {
+      self.draft = true;
+      self.autosave(snapshot);
+    },
+
+    onDraftSaved() {
+      self.draftSaved = Utils.UDate.currentISODate();
+    },
+
+    dropDraft() {
+      self.draft = false;
+      self.draftSaved = undefined;
+    },
+
     afterCreate() {
       //
       // debugger;
@@ -396,6 +426,10 @@ const Completion = types
       });
 
       self.regionStore.unselectAll();
+
+      // some async tasks should be performed after deserialization
+      // so start autosave on next tick
+      setTimeout(() => onSnapshot(self.root, self.onChanges), 0);
     },
   }));
 
@@ -526,6 +560,10 @@ export default types
         userGenerate: false,
 
         ...options,
+
+        // set draft flag if there is draft provided
+        // @todo do we need to show draftSaved time for just loaded draft?
+        draft: Boolean(options.draft),
       };
 
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
