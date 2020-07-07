@@ -13,6 +13,7 @@ import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import throttle from "lodash.throttle";
+import { delay } from "../utils/utilities";
 
 const Completion = types
   .model("Completion", {
@@ -253,18 +254,45 @@ const Completion = types
       });
     },
 
-    autosave: throttle(
-      snapshot => {
-        // if already submitted
-        if (!self.draft) return;
-        self.store.submitDraft(self).then(self.onDraftSaved);
-      },
-      5000,
-      { leading: false },
-    ),
+    async startAutosave() {
+      // some async tasks should be performed after deserialization
+      // so start autosave on next tick
+      await delay(0);
+
+      if (self.autosave) {
+        self.autosave.cancel();
+        self.autosave.paused = false;
+        return;
+      }
+
+      // mobx will modify methods, so add it directly to have cancel() method
+      self.autosave = throttle(
+        snapshot => {
+          // if already submitted
+          if (!self.draft || self.autosave.paused) return;
+          self.store.submitDraft(self).then(self.onDraftSaved);
+        },
+        5000,
+        { leading: false },
+      );
+
+      onSnapshot(self.root, self.onChanges);
+    },
+
+    pauseAutosave() {
+      if (!self.autosave) return;
+      self.autosave.paused = true;
+      self.autosave.cancel();
+    },
+
+    beforeDestroy() {
+      self.autosave && self.autosave.cancel && self.autosave.cancel();
+    },
 
     onChanges(snapshot) {
+      if (self.autosave.paused) return;
       self.draft = true;
+      self.versions.selected = "draft";
       self.autosave(snapshot);
     },
 
@@ -391,6 +419,8 @@ const Completion = types
      * Deserialize completion of models
      */
     deserializeCompletion(json) {
+      self.pauseAutosave();
+
       let objCompletion = json;
 
       if (typeof objCompletion !== "object") {
@@ -427,9 +457,32 @@ const Completion = types
 
       self.regionStore.unselectAll();
 
-      // some async tasks should be performed after deserialization
-      // so start autosave on next tick
-      setTimeout(() => onSnapshot(self.root, self.onChanges), 0);
+      self.startAutosave();
+    },
+
+    addVersions(versions) {
+      // @todo looks like `selected` field is excess, check it later
+      const selected = versions.draft ? "draft" : "result";
+      self.versions = { ...(self.versions || { selected }), ...versions };
+    },
+
+    toggleDraft() {
+      const isDraft = self.versions.selected === "draft";
+      if (!isDraft && !self.versions.draft) return;
+      self.pauseAutosave();
+      if (isDraft) self.versions.draft = self.serializeCompletion();
+      self.deleteAllRegions({ deleteReadOnly: true });
+      if (isDraft) {
+        self.deserializeCompletion(self.versions.result);
+        self.versions.selected = "result";
+        self.draft = false;
+      } else {
+        self.deserializeCompletion(self.versions.draft);
+        self.versions.selected = "draft";
+        self.draft = true;
+      }
+      self.traverseTree(node => node.needsUpdate && node.needsUpdate());
+      self.startAutosave();
     },
   }));
 
@@ -549,18 +602,14 @@ export default types
       //
       let root = modelClass.create(completionModel);
 
-      const id = options["id"];
-      delete options["id"];
-
       //
       let node = {
-        id: id || guidGenerator(5),
-        root: root,
-
         userGenerate: false,
 
         ...options,
 
+        root,
+        id: options.id || guidGenerator(5),
         // set draft flag if there is draft provided
         // @todo do we need to show draftSaved time for just loaded draft?
         draft: Boolean(options.draft),
@@ -586,14 +635,15 @@ export default types
       options.type = "completion";
 
       const item = addItem(options);
+      item.addVersions({ result: options.result, draft: options.draft });
       self.completions.unshift(item);
 
       return item;
     }
 
     function addCompletionFromPrediction(prediction) {
-      const c = self.addCompletion({ userGenerate: true });
       const s = prediction._initialCompletionObj;
+      const c = self.addCompletion({ userGenerate: true, result: s });
 
       // we need to iterate here and rename all ids, as those might
       // clash with the one in the prediction if used as a reference
