@@ -6,6 +6,17 @@ import { StarOutlined, DeleteOutlined, ForwardOutlined, WindowsOutlined, PlusOut
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
 
+const DraftPanel = observer(({ item }) => (
+  <div>
+    <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
+      <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
+        {item.draft ? "draft" : "submitted"}
+      </Button>
+    </Tooltip>
+    {item.draft && item.draftSaved && `saved ${Utils.UDate.prettyDate(item.draftSaved)}`}
+  </div>
+));
+
 const Completion = observer(({ item, store }) => {
   let removeHoney = () => (
     <Tooltip placement="topLeft" title="Unset this result as a ground truth">
@@ -124,7 +135,7 @@ const Completion = observer(({ item, store }) => {
           Created
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
           {item.createdBy ? ` by ${item.createdBy}` : null}
-          {item.draft && <div>draft {item.draftSaved && `saved ${Utils.UDate.prettyDate(item.draftSaved)}`}</div>}
+          {(item.autosave || item.draft) && <DraftPanel item={item} />}
         </div>
         {/* platform uses was_cancelled so check both */}
         {store.hasInterface("skip") && (item.skipped || item.was_cancelled) && (
