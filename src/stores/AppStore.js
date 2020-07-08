@@ -253,7 +253,9 @@ export default types
       // @todo what about non-valid completions? could they be restored?
 
       return new Promise(resolve => {
-        const res = getEnv(self).onSubmitCompletion(self, c);
+        const fn = getEnv(self).onSubmitDraft;
+        if (!fn) return resolve();
+        const res = fn(self, c);
         if (res && res.then) res.then(resolve);
         else resolve();
       });

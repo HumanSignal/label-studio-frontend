@@ -255,6 +255,7 @@ const Completion = types
     },
 
     async startAutosave() {
+      if (!getEnv(self).onSubmitDraft) return;
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
       await delay(0);
