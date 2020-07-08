@@ -140,6 +140,7 @@ const Completion = types
 
     addRegion(reg) {
       self.regionStore.addRegion(reg);
+      if (self.duringDeserialization) return;
       self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
@@ -361,6 +362,8 @@ const Completion = types
      * Deserialize completion of models
      */
     deserializeCompletion(json) {
+      self.duringDeserialization = true;
+
       let objCompletion = json;
 
       if (typeof objCompletion !== "object") {
@@ -396,6 +399,9 @@ const Completion = types
       });
 
       self.regionStore.unselectAll();
+      self.regionStore.initHotkeys();
+
+      self.duringDeserialization = false;
     },
   }));
 

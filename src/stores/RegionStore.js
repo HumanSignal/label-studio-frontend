@@ -15,6 +15,10 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
+    get completionStore() {
+      return getParent(self);
+    },
+
     get sortedRegions() {
       const sorts = {
         date: () => self.regions,
@@ -144,6 +148,7 @@ export default types
 
     afterCreate() {
       onPatch(self, patch => {
+        if (self.completionStore.duringDeserialization) return;
         if ((patch.op === "add" || patch.op === "delete") && patch.path.indexOf("/regions/") !== -1) {
           self.initHotkeys();
         }
