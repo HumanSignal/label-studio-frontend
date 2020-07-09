@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Checkbox, Radio, Form, Select } from "antd";
+import { Checkbox, Radio, Form } from "antd";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
@@ -8,8 +8,6 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import { ChoicesModel } from "./Choices";
-
-const { Option } = Select;
 
 /**
  * Choice tag represents a single choice
