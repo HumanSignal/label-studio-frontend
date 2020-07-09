@@ -3,7 +3,6 @@ import { Table } from "antd";
 import { observer, inject } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 
 /**
@@ -21,7 +20,7 @@ const Model = types
   })
   .views(self => ({
     get _value() {
-      if (!self.value) return;
+      if (!self.value) return undefined;
 
       const store = getRoot(self);
       const val = self.value.substr(1);
