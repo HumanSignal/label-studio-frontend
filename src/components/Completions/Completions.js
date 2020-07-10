@@ -6,16 +6,26 @@ import { StarOutlined, DeleteOutlined, ForwardOutlined, WindowsOutlined, PlusOut
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
 
-const DraftPanel = observer(({ item }) => (
-  <div>
-    <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
-      <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
-        {item.draft ? "draft" : "submitted"}
-      </Button>
-    </Tooltip>
-    {item.draft && item.draftSaved && `saved ${Utils.UDate.prettyDate(item.draftSaved)}`}
-  </div>
-));
+const DraftPanel = observer(({ item }) => {
+  if ((item.draft || item.versions.draft) && item.autosave)
+    return (
+      <div>
+        {item.versions.result && item.selected ? (
+          <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
+            <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
+              {item.draft ? "draft" : "submitted"}
+            </Button>
+          </Tooltip>
+        ) : item.draft ? (
+          "draft"
+        ) : (
+          "submitted"
+        )}
+        {item.draft && item.draftSaved && ` saved ${Utils.UDate.prettyDate(item.draftSaved)}`}
+      </div>
+    );
+  return null;
+});
 
 const Completion = observer(({ item, store }) => {
   let removeHoney = () => (
@@ -135,7 +145,7 @@ const Completion = observer(({ item, store }) => {
           Created
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
           {item.createdBy ? ` by ${item.createdBy}` : null}
-          {(item.autosave || item.draft) && <DraftPanel item={item} />}
+          <DraftPanel item={item} />
         </div>
         {/* platform uses was_cancelled so check both */}
         {store.hasInterface("skip") && (item.skipped || item.was_cancelled) && (

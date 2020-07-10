@@ -83,6 +83,9 @@ const Completion = types
       return getParent(self, 2);
     },
   }))
+  .volatile(self => ({
+    versions: {},
+  }))
   .actions(self => ({
     reinitHistory() {
       self.history = { targetPath: "../root" };
