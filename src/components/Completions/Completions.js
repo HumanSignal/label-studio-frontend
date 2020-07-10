@@ -176,9 +176,7 @@ class Completions extends Component {
                 size="small"
                 onClick={ev => {
                   ev.preventDefault();
-                  const c = store.completionStore.addCompletion({ userGenerate: true });
-                  store.completionStore.selectCompletion(c.id);
-                  // c.list.selectCompletion(c);
+                  store.completionStore.addNewCompletion();
                 }}
               >
                 <PlusOutlined />

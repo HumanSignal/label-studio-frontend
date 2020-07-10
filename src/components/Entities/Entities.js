@@ -45,12 +45,16 @@ const RegionItem = observer(({ item, idx, flat }) => {
         item.selectRegion();
       }}
       onMouseOver={() => {
+        cs && item.completion.pauseAutosave();
         cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(true);
+        cs && item.completion.startAutosave();
       }}
       onMouseOut={() => {
+        cs && item.completion.pauseAutosave();
         cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(false);
+        cs && item.completion.startAutosave();
       }}
     >
       <SimpleBadge number={idx + 1} style={badgeStyle} />

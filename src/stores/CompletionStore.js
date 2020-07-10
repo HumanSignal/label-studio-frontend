@@ -255,10 +255,14 @@ const Completion = types
           states && states.forEach(s => tools.addToolsFromControl(s));
         }
       });
+
+      self.startAutosave();
     },
 
     async startAutosave() {
       if (!getEnv(self).onSubmitDraft) return;
+      if (self.type !== "completion") return;
+
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
       await delay(0);
@@ -645,6 +649,12 @@ export default types
       return item;
     }
 
+    function addNewCompletion() {
+      const c = self.addCompletion({ userGenerate: true });
+      c.startAutosave();
+      self.selectCompletion(c.id);
+    }
+
     function addCompletionFromPrediction(prediction) {
       const s = prediction._initialCompletionObj;
       const c = self.addCompletion({ userGenerate: true, result: s });
@@ -668,6 +678,7 @@ export default types
 
       addPrediction,
       addCompletion,
+      addNewCompletion,
       addCompletionFromPrediction,
 
       selectCompletion,
