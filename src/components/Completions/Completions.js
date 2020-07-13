@@ -7,7 +7,7 @@ import Utils from "../../utils";
 import styles from "./Completions.module.scss";
 
 const DraftPanel = observer(({ item }) => {
-  if ((item.draft || item.versions.draft) && item.autosave)
+  if ((item.draftSaved || item.versions.draft) && item.autosave)
     return (
       <div>
         {item.versions.result && item.selected ? (

@@ -1,4 +1,5 @@
 import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot } from "mobx-state-tree";
+import equal from "fast-deep-equal";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -114,6 +115,7 @@ const Completion = types
 
     updatePersonalKey(value) {
       self.pk = value;
+      self.sentUserGenerate = true;
     },
 
     setNormalizationMode(val) {
@@ -280,6 +282,15 @@ const Completion = types
         snapshot => {
           // if already submitted
           if (!self.draft || self.autosave.paused) return;
+
+          const result = self.serializeCompletion();
+          if (self.versions.draft) {
+            // if we have previously saved draft and there are no updates - skip
+            if (equal(result, self.versions.draft)) return;
+            // only if we don't have saved draft but have submitted result - compare with it
+          } else if (self.versions.result && equal(result, self.versions.result)) return;
+          self.versions.draft = result;
+
           self.store.submitDraft(self).then(self.onDraftSaved);
           console.info("autosaved");
         },
