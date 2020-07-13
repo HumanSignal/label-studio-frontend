@@ -357,6 +357,14 @@ const Model = types
       }
     },
 
+    needsUpdate() {
+      const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self;
+
+      self.regions.forEach(shape => {
+        shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height);
+      });
+    },
+
     checkLabels() {
       // there is should be at least one state selected for *labels object
       const labelStates = (self.states() || []).filter(s => s.type.includes("labels"));
