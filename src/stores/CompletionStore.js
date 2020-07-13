@@ -273,12 +273,15 @@ const Completion = types
         return;
       }
 
+      console.info("autosave initialized");
+
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
         snapshot => {
           // if already submitted
           if (!self.draft || self.autosave.paused) return;
           self.store.submitDraft(self).then(self.onDraftSaved);
+          console.info("autosaved");
         },
         5000,
         { leading: false },
@@ -300,7 +303,6 @@ const Completion = types
     onChanges(snapshot) {
       if (self.autosave.paused) return;
       self.draft = true;
-      self.versions.selected = "draft";
       self.autosave(snapshot);
     },
 
@@ -469,24 +471,20 @@ const Completion = types
     },
 
     addVersions(versions) {
-      // @todo looks like `selected` field is excess, check it later
-      const selected = versions.draft ? "draft" : "result";
-      self.versions = { ...(self.versions || { selected }), ...versions };
+      self.versions = { ...self.versions, ...versions };
     },
 
     toggleDraft() {
-      const isDraft = self.versions.selected === "draft";
+      const isDraft = self.draft;
       if (!isDraft && !self.versions.draft) return;
       self.pauseAutosave();
       if (isDraft) self.versions.draft = self.serializeCompletion();
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
         self.deserializeCompletion(self.versions.result);
-        self.versions.selected = "result";
         self.draft = false;
       } else {
         self.deserializeCompletion(self.versions.draft);
-        self.versions.selected = "draft";
         self.draft = true;
       }
       self.traverseTree(node => node.needsUpdate && node.needsUpdate());
