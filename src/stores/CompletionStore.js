@@ -324,6 +324,7 @@ const Completion = types
     dropDraft() {
       self.draft = false;
       self.draftSaved = undefined;
+      self.versions.draft = undefined;
     },
 
     afterCreate() {
