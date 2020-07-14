@@ -7,24 +7,25 @@ import Utils from "../../utils";
 import styles from "./Completions.module.scss";
 
 const DraftPanel = observer(({ item }) => {
-  if ((item.draftSaved || item.versions.draft) && item.autosave)
-    return (
-      <div>
-        {item.versions.result && item.selected ? (
-          <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
-            <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
-              {item.draft ? "draft" : "submitted"}
-            </Button>
-          </Tooltip>
-        ) : item.draft ? (
-          "draft"
-        ) : (
-          "submitted"
-        )}
-        {item.draft && item.draftSaved && ` saved ${Utils.UDate.prettyDate(item.draftSaved)}`}
-      </div>
-    );
-  return null;
+  if (!item.draftSaved && !item.versions.draft) return null;
+  const saved = item.draft && item.draftSaved ? ` saved ${Utils.UDate.prettyDate(item.draftSaved)}` : "";
+  if (!item.selected) {
+    if (!item.draft) return null;
+    return <div>draft{saved}</div>;
+  }
+  if (!item.versions.result || !item.versions.result.length) {
+    return <div>{saved ? `draft${saved}` : "not submitted draft"}</div>;
+  }
+  return (
+    <div>
+      <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
+        <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
+          {item.draft ? "draft" : "submitted"}
+        </Button>
+      </Tooltip>
+      {saved}
+    </div>
+  );
 });
 
 const Completion = observer(({ item, store }) => {

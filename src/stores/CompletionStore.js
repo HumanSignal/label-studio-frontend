@@ -23,7 +23,7 @@ const Completion = types
     // @todo but it calculates once, so all the completions have the same pk
     // @todo why don't use only `id`?
     // @todo reverted back to wrong type; maybe it breaks all the deserialisation
-    pk: types.optional(types.string, guidGenerator(5)),
+    pk: types.optional(types.string, ""),
 
     selected: types.optional(types.boolean, false),
     type: types.enumeration(["completion", "prediction"]),
