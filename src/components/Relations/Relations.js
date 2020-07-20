@@ -128,7 +128,8 @@ export default observer(({ store }) => {
 
   return (
     <Fragment>
-      <Divider dashed orientation="left">
+      {/* override LS styles' height */}
+      <Divider dashed orientation="left" style={{ height: "auto" }}>
         Relations ({relations.length})
       </Divider>
       {!relations.length && <p>No Relations added yet</p>}
