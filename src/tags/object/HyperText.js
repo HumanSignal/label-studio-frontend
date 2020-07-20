@@ -28,6 +28,11 @@ const TagAttrs = types.model("HyperTextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
+  // @todo add `valueType=url` to HyperText and make autodetection of `savetextresult`
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
+    window.LS_SECURE_MODE ? "no" : "yes",
+  ),
+
   highlightcolor: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
 
