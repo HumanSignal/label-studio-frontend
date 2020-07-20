@@ -4,6 +4,7 @@
 import { Brush } from "./Brush";
 import { Erase } from "./Erase";
 import { KeyPoint } from "./KeyPoint";
+import { Graph } from "./Graph";
 import { Polygon } from "./Polygon";
 import { Rect } from "./Rect";
 import { Ellipse } from "./Ellipse";
@@ -13,4 +14,4 @@ import { Brightness } from "./Brightness";
 import { Contrast } from "./Contrast";
 import { FloodFill } from "./FloodFill";
 
-export { Brush, Erase, KeyPoint, Polygon, Rect, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill };
+export { Brush, Erase, KeyPoint, Graph, Polygon, Rect, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill };

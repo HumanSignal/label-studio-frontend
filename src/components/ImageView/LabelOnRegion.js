@@ -119,6 +119,39 @@ const LabelOnPolygon = observer(({ item }) => {
   );
 });
 
+const LabelOnGraph = observer(({ item }) => {
+  const s = item.states.find(s => s.type === "graphlabels");
+  if (!s || !s.holdsState) return null;
+
+  const bbox = polytobbox(item.vertices.filter(v => v.x != -1));
+  const settings = getRoot(item).settings;
+  return (
+    <Fragment>
+      {settings && (settings.showLabels || settings.showScore) && (
+        <Rect
+          x={bbox[0][0]}
+          y={bbox[1][0]}
+          fillEnabled={false}
+          width={bbox[0][1] - bbox[0][0]}
+          height={bbox[1][1] - bbox[1][0]}
+          stroke={item.strokeColor}
+          strokeWidth="1"
+          strokeScaleEnabled={false}
+          shadowBlur={0}
+        />
+      )}
+      <LabelOnBbox
+        x={bbox[0][0]}
+        y={bbox[1][0] + 2}
+        text={s.getSelectedString(",")}
+        score={item.score}
+        showLabels={settings && settings.showLabels}
+        showScore={settings && settings.showScore}
+      />
+    </Fragment>
+  );
+});
+
 const LabelOnMask = observer(({ item }) => {
   const s = item.states.find(s => s.type === "brushlabels");
   if (!s || !s.holdsState) return null;
@@ -171,4 +204,4 @@ const LabelOnKP = observer(({ item }) => {
   );
 });
 
-export { LabelOnBbox, LabelOnPolygon, LabelOnRect, LabelOnEllipse, LabelOnKP, LabelOnMask };
+export { LabelOnBbox, LabelOnPolygon, LabelOnGraph, LabelOnRect, LabelOnEllipse, LabelOnKP, LabelOnMask };
