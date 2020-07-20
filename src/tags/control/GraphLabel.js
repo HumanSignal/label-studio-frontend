@@ -21,11 +21,13 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * @example
  * <View>
  *   <Image name="image" value="$image" />
- *   <GraphLabel value="labels" toName="image">
- *     <Vertex value="Car" />
- *     <Vertex value="Sign" />
- *     <Edge value="Sign" v1="Car", v2="Sign" />
- *   </GraphLabel>
+ *   <GraphLabels>
+ *     <GraphLabel value="labels" toName="image">
+ *       <Vertex value="Car" />
+ *       <Vertex value="Sign" />
+ *       <Edge value="Sign" v1="Car", v2="Sign" />
+ *     </GraphLabel>
+ *   </GraphLabels>
  * </View>
  * @name GraphLabel
  * @param {string} value                            - name of tag

@@ -19,14 +19,16 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * Vertex is used to add edges to an image
  * @example
  * <View>
- *   <Graph value="my-graph" toName="img-1">
- *     <Vertex value="1" />
- *   </Graph>
+ *   <GraphLabels>
+ *     <GraphLabel value="my-graph" toName="img-1">
+ *       <Vertex value="1" />
+ *     </GraphLabel>
+ *   </GraphLabels>
  *   <Image name="img-1" value="$img" />
  * </View>
- * Label tag represents a single label
+ * Vertex tag represents a single vertex
  * @name Vertex
- * @param {string} value                    - value of the label
+ * @param {string} value                    - value of the vertex
  * @param {boolean} [selected=false]        - if this label should be preselected
  * @param {number} [maxUsages]              - maximum available usages
  * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated

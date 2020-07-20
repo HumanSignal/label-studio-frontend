@@ -18,16 +18,18 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * Edge is used to add edges to an image
  * @example
  * <View>
- *   <Graph value="my-graph" toName="img-1">
- *     <Vertex value="1" />
- *     <Vertex value="2" />
- *     <Edge value="e-1" v1="1" v2="2" />
- *   </Graph>
+ *   <GraphLabels>
+ *     <GraphLabel value="my-graph" toName="img-1">
+ *       <Vertex value="1" />
+ *       <Vertex value="2" />
+ *       <Edge value="e-1" v1="1" v2="2" />
+ *     </GraphLabel>
+ *   <GraphLabels>
  *   <Image name="img-1" value="$img" />
  * </View>
  * Edge tag represents a connection between two vertices
  * @name Edge
- * @param {string} value                    - value of the label
+ * @param {string} value                    - value of the edge
  * @param {string} v1                       - First vertex of the edge
  * @param {string} v2                       - Second vertex of the edge
  * @param {boolean} [selected=false]        - if this label should be preselected
