@@ -26,10 +26,12 @@ export default observer(
 
       // item.freezeHistory();
       const p = e.target.getParent();
+      console.log("MD", p, e.target);
 
       if (p && p.className === "Transformer") return;
 
       if (
+        1 ||
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {
@@ -345,7 +347,7 @@ export default observer(
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
-            {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+            {/* {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
             {item.regions
               .filter(shape => shape.type === "brushregion")
               .map(shape => (
@@ -360,7 +362,7 @@ export default observer(
               {item.selectedShape && item.selectedShape.editable && (
                 <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
               )}
-            </Layer>
+            </Layer> */}
           </Stage>
 
           {this.renderTools()}

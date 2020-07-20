@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, resolveIdentifier } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -12,6 +12,7 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
+import Region from "../regions/Region";
 
 const Completion = types
   .model("Completion", {
@@ -60,6 +61,8 @@ const Completion = types
     normalizationStore: types.optional(NormalizationStore, {
       normalizations: [],
     }),
+
+    regions: types.array(Region),
 
     regionStore: types.optional(RegionStore, {
       regions: [],
@@ -361,7 +364,14 @@ const Completion = types
      * Deserialize completion of models
      */
     deserializeCompletion(json) {
+      // return;
       let objCompletion = json;
+
+      self.regions = objCompletion;
+      console.log("REGIONS", self.regions);
+
+      // resolveIdentifier(undefined, self.root, name);
+      return;
 
       if (typeof objCompletion !== "object") {
         objCompletion = JSON.parse(objCompletion);
@@ -372,6 +382,7 @@ const Completion = types
       objCompletion.forEach(obj => {
         if (obj["type"] !== "relation") {
           const names = obj.to_name.split(",");
+          if (names.length > 1) throw new Error("Pairwise is not supported now");
           names.forEach(name => {
             const toModel = self.names.get(name);
             if (!toModel) throw new Error("No model found for " + obj.to_name);

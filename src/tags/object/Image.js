@@ -12,6 +12,7 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
+import { guidGenerator } from "../../core/Helpers";
 
 /**
  * Image tag shows an image on the page
@@ -41,7 +42,8 @@ import { EllipseRegionModel } from "../../regions/EllipseRegion";
  * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  // name: types.string,
+  name: types.identifier,
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
@@ -80,7 +82,8 @@ const IMAGE_CONSTANTS = {
 
 const Model = types
   .model({
-    id: types.identifier,
+    // id: types.optional(types.string, guidGenerator),
+    // id: types.identifier,
     type: "image",
     _value: types.optional(types.string, ""),
 
@@ -167,6 +170,10 @@ const Model = types
       // return Types.getParentOfTypeString(self, "Completion");
       return getRoot(self).completionStore.selected;
     },
+
+    // get regions() {
+    //   return self.completion.regionStore.regions.filter(r => r.to_name === self.name);
+    // },
 
     /**
      * @return {object}
@@ -441,5 +448,6 @@ const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixi
 const HtxImage = inject("store")(observer(ImageView));
 
 Registry.addTag("image", ImageModel, HtxImage);
+Registry.addObjectType(ImageModel);
 
 export { ImageModel, HtxImage };

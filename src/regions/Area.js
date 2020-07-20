@@ -1,23 +1,57 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
+import Registry from "../core/Registry";
 
-const RegionsMixin = types
+const ImageArea = types.model({
+  // "type": "rectanglelabels",
+  original_width: types.number,
+  original_height: types.number,
+  image_rotation: types.number,
+
+  x: types.number,
+  y: types.number,
+  width: types.number,
+  height: types.number,
+  rotation: types.number,
+});
+
+const AudioArea = types.model({
+  // "type": "labels",
+  original_length: types.number,
+
+  start: types.number,
+  end: types.number,
+});
+
+const RegionMixin = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
-    pid: types.optional(types.string, guidGenerator),
+    // pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
-    readonly: types.optional(types.boolean, false),
+    // @todo to readonly mixin
+    // readonly: types.optional(types.boolean, false),
 
-    hidden: types.optional(types.boolean, false),
+    // @why?
+    // hidden: types.optional(types.boolean, false),
 
-    parentID: types.optional(types.string, ""),
+    // @todo to mixins
+    // selected: types.optional(types.boolean, false),
+    // highlighted: types.optional(types.boolean, false),
+
+    // @todo pid?
+    // parentID: types.optional(types.string, ""),
+
+    // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
+    area: types.reference(types.union(Registry.regionTypes())),
+    from_name: types.reference(types.union(Registry.regionTypes())),
+    // object
+    to_name: types.reference(types.union(Registry.objectTypes())),
+    type: "",
+    // info about object and region
+    // meta: types.frozen(),
   })
-  .volatile(self => ({
-    selected: false,
-    highlighted: false,
-  }))
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
@@ -60,43 +94,6 @@ const RegionsMixin = types
   .actions(self => ({
     setParentID(id) {
       self.parentID = id;
-    },
-
-    moveTop(size) {},
-    moveBottom(size) {},
-    moveLeft(size) {},
-    moveRight(size) {},
-
-    sizeRight(size) {},
-    sizeLeft(size) {},
-    sizeTop(size) {},
-    sizeBottom(size) {},
-
-    // "web" degree is opposite to mathematical, -90 is 90 actually
-    // swapSizes = true when canvas is already rotated at this moment
-    rotatePoint(point, degree, swapSizes = true) {
-      const { x, y } = point;
-      if (!degree) return { x, y };
-
-      degree = (360 + degree) % 360;
-      // transform origin is (w/2, w/2) for ccw rotation
-      // (h/2, h/2) for cw rotation
-      const w = self.parent.stageWidth;
-      const h = self.parent.stageHeight;
-      // actions: translate to fit origin, rotate, translate back
-      //   const shift = size / 2;
-      //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
-      //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
-      // for ortogonal degrees it's simple:
-      if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
-      if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
-      if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
-      return { x, y };
-    },
-
-    rotateDimensions({ width, height }, degree) {
-      if ((degree + 360) % 180 === 0) return { width, height };
-      return { width: height, height: width };
     },
 
     // update region appearence based on it's current states, for
@@ -269,4 +266,4 @@ const RegionsMixin = types
     },
   }));
 
-export default RegionsMixin;
+export default RegionMixin;
