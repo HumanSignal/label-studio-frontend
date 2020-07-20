@@ -39,11 +39,14 @@ const Model = types
         value: {
           start: self.start,
           end: self.end,
-          text: self.text,
           startOffset: self.startOffset,
           endOffset: self.endOffset,
         },
       };
+
+      if (object.savetextresult === "yes") {
+        res.value["text"] = self.text;
+      }
 
       res.value = Object.assign(res.value, control.serializableValue);
 
