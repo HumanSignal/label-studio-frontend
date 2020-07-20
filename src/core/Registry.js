@@ -6,6 +6,8 @@ class _Registry {
     this.tags = [];
     this.models = {};
     this.views = {};
+    this.regions = [];
+    this.objects = [];
 
     this.views_models = {};
 
@@ -17,6 +19,22 @@ class _Registry {
     this.models[tag] = model;
     this.views[tag] = view;
     this.views_models[model.name] = view;
+  }
+
+  addRegionType(type) {
+    this.regions.push(type);
+  }
+
+  regionTypes() {
+    return this.regions;
+  }
+
+  addObjectType(type) {
+    this.objects.push(type);
+  }
+
+  objectTypes() {
+    return this.objects;
   }
 
   modelsArr() {

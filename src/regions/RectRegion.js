@@ -31,6 +31,9 @@ const Model = types
     x: types.number,
     y: types.number,
 
+    width: types.number,
+    height: types.number,
+
     relativeX: types.optional(types.number, 0),
     relativeY: types.optional(types.number, 0),
 
@@ -39,9 +42,6 @@ const Model = types
 
     startX: types.optional(types.number, 0),
     startY: types.optional(types.number, 0),
-
-    width: types.number,
-    height: types.number,
 
     // @todo not used
     scaleX: types.optional(types.number, 1),
@@ -333,7 +333,7 @@ const HtxRectangleView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.editable}
+        draggable={item.editable && item.selected}
       />
       <LabelOnRect item={item} />
     </Fragment>

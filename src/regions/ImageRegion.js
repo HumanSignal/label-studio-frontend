@@ -2,7 +2,7 @@ import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 
-const RegionsMixin = types
+const RegionMixin = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
@@ -12,12 +12,11 @@ const RegionsMixin = types
 
     hidden: types.optional(types.boolean, false),
 
+    selected: types.optional(types.boolean, false),
+    highlighted: types.optional(types.boolean, false),
+
     parentID: types.optional(types.string, ""),
   })
-  .volatile(self => ({
-    selected: false,
-    highlighted: false,
-  }))
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
@@ -269,4 +268,4 @@ const RegionsMixin = types
     },
   }));
 
-export default RegionsMixin;
+export default RegionMixin;
