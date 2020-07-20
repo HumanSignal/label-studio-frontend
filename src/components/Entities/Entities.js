@@ -241,7 +241,8 @@ export default observer(({ store, regionStore }) => {
         }}
       >
         <div style={{ flex: 1 }}>
-          <Divider dashed orientation="left">
+          {/* override LS styles' height */}
+          <Divider dashed orientation="left" style={{ height: "auto" }}>
             <Dropdown overlay={<GroupMenu regionStore={regionStore} />} placement="bottomLeft">
               <span className={globalStyles.link} onClick={e => e.preventDefault()}>
                 {regionStore.view === "regions" ? <span>Regions ({regions.length})</span> : null}
