@@ -95,7 +95,12 @@ const Model = types
       if (self.valuetype === "url") {
         const url = self._value;
         if (!/^https?:\/\//.test(url)) {
-          InfoModal.error(`URL (${url}) is not valid`);
+          const message = [
+            `You should not put text directly in your task data if you use valuetype=url.`,
+            `URL (${url}) is not valid.`,
+          ];
+          if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
+          InfoModal.error(message.map(t => <p>{t}</p>));
           self.loadedValue("");
           return;
         }
