@@ -33,7 +33,7 @@ function allModelsTypes() {
   const args = [
     {
       dispatcher: sn => {
-        if (Registry.tags.find(val => sn.type === val)) {
+        if (Registry.tags.includes(sn.type)) {
           return Registry.getModelByTag(sn.type);
         } else {
           throw Error("Not expecting tag: " + sn.type);

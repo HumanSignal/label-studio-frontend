@@ -3,30 +3,77 @@ import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 
-const ImageArea = types.model({
-  // "type": "rectanglelabels",
-  original_width: types.number,
-  original_height: types.number,
-  image_rotation: types.number,
+const ImageArea = types
+  .model("ImageArea", {
+    original_width: types.maybe(types.number),
+    original_height: types.maybe(types.number),
+    image_rotation: 0,
 
-  x: types.number,
-  y: types.number,
-  width: types.number,
-  height: types.number,
-  rotation: types.number,
-});
+    x: types.number,
+    y: types.number,
+    width: types.number,
+    height: types.number,
+    rotation: types.number,
+  })
+  .actions(self => ({
+    serialize() {
+      const { original_width, original_height, image_rotation, x, y, width, height, rotation } = self;
+      return {
+        original_width,
+        original_height,
+        image_rotation,
+        value: { x, y, width, height, rotation },
+      };
+    },
+  }));
 
-const AudioArea = types.model({
-  // "type": "labels",
-  original_length: types.number,
+const serializeDataWithLength = self => () => {
+  const { original_length, ...value } = self;
+  return { original_length, value };
+};
 
-  start: types.number,
-  end: types.number,
-});
+const AudioArea = types
+  .model("AudioArea", {
+    original_length: types.number,
 
-const RegionMixin = types
-  .model({
-    id: types.optional(types.identifier, guidGenerator),
+    start: types.number,
+    end: types.number,
+  })
+  .actions(self => ({
+    serialize: serializeDataWithLength(self),
+  }));
+
+const TextArea = types
+  .model("TextArea", {
+    original_length: types.number,
+
+    start: types.number,
+    end: types.number,
+    // don't store if savetextresult="no"
+    text: types.maybe(types.string),
+  })
+  .actions(self => ({
+    serialize: serializeDataWithLength(self),
+  }));
+
+const HyperTextArea = types
+  .model("HyperTextArea", {
+    original_length: types.number,
+
+    start: types.string,
+    end: types.string,
+    startOffset: types.number,
+    endOffset: types.number,
+    // @todo implement savetextresult for HyperText
+    text: types.string,
+  })
+  .actions(self => ({
+    serialize: serializeDataWithLength(self),
+  }));
+
+const Area = types
+  .model("Area", {
+    id: types.identifier,
     // pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
@@ -44,10 +91,7 @@ const RegionMixin = types
     // parentID: types.optional(types.string, ""),
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
-    area: types.reference(types.union(Registry.regionTypes())),
-    from_name: types.reference(types.union(Registry.regionTypes())),
-    // object
-    to_name: types.reference(types.union(Registry.objectTypes())),
+    data: types.union(ImageArea, AudioArea, TextArea, HyperTextArea),
     type: "",
     // info about object and region
     // meta: types.frozen(),
@@ -102,7 +146,7 @@ const RegionMixin = types
     updateAppearenceFromState() {},
 
     serialize() {
-      console.error("Region class needs to implement serialize");
+      return self.data.serialize();
     },
 
     toStateJSON() {
@@ -266,4 +310,4 @@ const RegionMixin = types
     },
   }));
 
-export default RegionMixin;
+export default Area;
