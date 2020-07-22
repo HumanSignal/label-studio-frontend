@@ -4,7 +4,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 
 const Region = types
-  .model({
+  .model("Region", {
     id: types.optional(types.identifier, guidGenerator),
     // pid: types.optional(types.string, guidGenerator),
 
@@ -25,8 +25,9 @@ const Region = types
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
     // optional for classifications
     area: types.maybe(types.reference(types.union(...Registry.regionTypes()))),
+    // labeling tag
     from_name: types.reference(types.union(...Registry.modelsArr())),
-    // object
+    // object tag
     to_name: types.reference(types.union(...Registry.objectTypes())),
     type: types.enumeration(["labels", "rectanglelabels"]),
     value: types.model({
@@ -35,6 +36,7 @@ const Region = types
       choices: types.maybe(types.array(types.string)),
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
+      rectanglelabels: types.maybe(types.array(types.string)),
     }),
     // info about object and region
     // meta: types.frozen(),
@@ -89,7 +91,9 @@ const Region = types
     updateAppearenceFromState() {},
 
     serialize() {
-      console.error("Region class needs to implement serialize");
+      const data = self.area.serialize();
+      Object.assign(data.value, self.value.toJSON());
+      return data;
     },
 
     toStateJSON() {

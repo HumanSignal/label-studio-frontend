@@ -13,6 +13,7 @@ import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import Region from "../regions/Region";
+import Area from "../regions/Area";
 
 const Completion = types
   .model("Completion", {
@@ -63,6 +64,8 @@ const Completion = types
     }),
 
     regions: types.array(Region),
+
+    areas: types.map(Area),
 
     regionStore: types.optional(RegionStore, {
       regions: [],
@@ -367,11 +370,11 @@ const Completion = types
       // return;
       let objCompletion = json;
 
-      self.regions = objCompletion;
+      // self.regions = objCompletion;
       console.log("REGIONS", self.regions);
 
       // resolveIdentifier(undefined, self.root, name);
-      return;
+      // return;
 
       if (typeof objCompletion !== "object") {
         objCompletion = JSON.parse(objCompletion);
@@ -381,17 +384,29 @@ const Completion = types
 
       objCompletion.forEach(obj => {
         if (obj["type"] !== "relation") {
-          const names = obj.to_name.split(",");
-          if (names.length > 1) throw new Error("Pairwise is not supported now");
-          names.forEach(name => {
-            const toModel = self.names.get(name);
-            if (!toModel) throw new Error("No model found for " + obj.to_name);
+          const { id, value, ...data } = obj;
+          const regionId = `${data.to_name}@${id}`;
 
-            const fromModel = self.names.get(obj.from_name);
-            if (!fromModel) throw new Error("No model found for " + obj.from_name);
+          let area = self.areas.get(id);
+          if (!area) {
+            console.log("NEW AREA", id, { ...data, ...value });
+            area = Area.create({ id, data: { ...data, ...value } });
+            self.areas.set(id, area);
+          }
 
-            toModel.fromStateJSON(obj, fromModel);
-          });
+          const region = Region.create({ ...data, id: regionId, value, area: id });
+          self.regions.push(region);
+          // const names = obj.to_name.split(",");
+          // if (names.length > 1) throw new Error("Pairwise is not supported now");
+          // names.forEach(name => {
+          //   const toModel = self.names.get(name);
+          //   if (!toModel) throw new Error("No model found for " + obj.to_name);
+
+          //   const fromModel = self.names.get(obj.from_name);
+          //   if (!fromModel) throw new Error("No model found for " + obj.from_name);
+
+          //   toModel.fromStateJSON(obj, fromModel);
+          // });
         }
       });
 
