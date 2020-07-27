@@ -43,11 +43,11 @@ const Completion = types
     honeypot: types.optional(types.boolean, false),
     skipped: false,
 
-    root: Types.allModelsTypes(),
+    // root: Types.allModelsTypes(),
     names: types.map(types.reference(Types.allModelsTypes())),
     toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
 
-    history: types.optional(TimeTraveller, { targetPath: "../root" }),
+    history: types.optional(TimeTraveller, { targetPath: "../regions" }),
 
     dragMode: types.optional(types.boolean, false),
 
@@ -81,10 +81,15 @@ const Completion = types
     get list() {
       return getParent(self, 2);
     },
+
+    get root() {
+      console.log("ROOT", self, getParent(self), self.store, self.list);
+      return self.list.root;
+    },
   }))
   .actions(self => ({
     reinitHistory() {
-      self.history = { targetPath: "../root" };
+      self.history = { targetPath: "../regions" };
     },
 
     setEdit(val) {
@@ -228,6 +233,21 @@ const Completion = types
     },
 
     afterAttach() {
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
+      self.traverseTree(node => {
+        if (node && node.name && node.id) self.names.set(node.name, node.id);
+
+        if (node && node.toname && node.id) {
+          const val = self.toNames.get(node.toname);
+          if (val) {
+            val.push(node.id);
+          } else {
+            self.toNames.set(node.toname, [node.id]);
+          }
+        }
+      });
+
       self.traverseTree(node => {
         if (node.updateValue) node.updateValue(self.store);
 
@@ -262,18 +282,18 @@ const Completion = types
 
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
-      self.traverseTree(node => {
-        if (node && node.name && node.id) self.names.set(node.name, node.id);
+      // self.traverseTree(node => {
+      //   if (node && node.name && node.id) self.names.set(node.name, node.id);
 
-        if (node && node.toname && node.id) {
-          const val = self.toNames.get(node.toname);
-          if (val) {
-            val.push(node.id);
-          } else {
-            self.toNames.set(node.toname, [node.id]);
-          }
-        }
-      });
+      //   if (node && node.toname && node.id) {
+      //     const val = self.toNames.get(node.toname);
+      //     if (val) {
+      //       val.push(node.id);
+      //     } else {
+      //       self.toNames.set(node.toname, [node.id]);
+      //     }
+      //   }
+      // });
     },
 
     setupHotKeys() {
@@ -341,26 +361,7 @@ const Completion = types
     },
 
     serializeCompletion() {
-      const arr = [];
-
-      self.traverseTree(node => {
-        if (node.toStateJSON && !node.perregion) {
-          const val = node.toStateJSON();
-
-          if (val) arr.push(val);
-        }
-      });
-
-      const relations = self.relationStore.serializeCompletion();
-      if (relations) arr.push(relations);
-
-      const flatten = arr => {
-        return arr.reduce(function(flat, toFlatten) {
-          return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
-        }, []);
-      };
-
-      return flatten(arr);
+      return self.regions.map(r => r.serialize());
     },
 
     /**
@@ -429,6 +430,8 @@ export default types
   .model("CompletionStore", {
     selected: types.maybeNull(types.reference(Completion)),
 
+    root: Types.allModelsTypes(),
+
     completions: types.array(Completion),
     predictions: types.array(Completion),
 
@@ -439,6 +442,9 @@ export default types
     get store() {
       return getRoot(self);
     },
+  }))
+  .volatile(self => ({
+    // root: null,
   }))
   .actions(self => {
     function toggleViewingAll() {
@@ -500,7 +506,7 @@ export default types
       const c = selectItem(id, self.completions);
 
       c.editable = true;
-      c.setupHotKeys();
+      // c.setupHotKeys();
 
       getEnv(self).onSelectCompletion(c, selected);
 
@@ -534,12 +540,14 @@ export default types
     function addItem(options) {
       const { user, config } = self.store;
 
-      // convert config to mst model
-      const completionModel = Tree.treeToModel(config);
-      const modelClass = Registry.getModelByTag(completionModel.type);
-
       //
-      let root = modelClass.create(completionModel);
+      if (!self.root) {
+        // convert config to mst model
+        const completionModel = Tree.treeToModel(config);
+        const modelClass = Registry.getModelByTag(completionModel.type);
+
+        self.root = modelClass.create(completionModel);
+      }
 
       const id = options["id"];
       delete options["id"];
@@ -547,7 +555,7 @@ export default types
       //
       let node = {
         id: id || guidGenerator(5),
-        root: root,
+        // root: self.root,
 
         userGenerate: false,
 

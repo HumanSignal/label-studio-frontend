@@ -168,6 +168,7 @@ const Model = types
      */
     get completion() {
       // return Types.getParentOfTypeString(self, "Completion");
+      console.log("IMAGE ROOT", getRoot(self));
       return getRoot(self).completionStore.selected;
     },
 

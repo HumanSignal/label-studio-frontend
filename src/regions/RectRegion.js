@@ -34,42 +34,37 @@ const Model = types
     width: types.number,
     height: types.number,
 
-    relativeX: types.optional(types.number, 0),
-    relativeY: types.optional(types.number, 0),
+    rotation: 0,
+  })
+  .volatile(self => ({
+    relativeX: 0,
+    relativeY: 0,
 
-    relativeWidth: types.optional(types.number, 0),
-    relativeHeight: types.optional(types.number, 0),
+    relativeWidth: 0,
+    relativeHeight: 0,
 
-    startX: types.optional(types.number, 0),
-    startY: types.optional(types.number, 0),
+    startX: 0,
+    startY: 0,
 
     // @todo not used
-    scaleX: types.optional(types.number, 1),
-    scaleY: types.optional(types.number, 1),
+    scaleX: 1,
+    scaleY: 1,
 
-    rotation: types.optional(types.number, 0),
+    opacity: 0.6,
 
-    opacity: types.number,
+    fill: true,
+    fillColor: Constants.FILL_COLOR,
+    fillOpacity: 0.6,
 
-    fill: types.optional(types.boolean, true),
-    fillColor: types.optional(types.string, Constants.FILL_COLOR),
-    fillOpacity: types.optional(types.number, 0.6),
+    strokeColor: Constants.STROKE_COLOR,
+    strokeWidth: Constants.STROKE_WIDTH,
 
-    strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
-    strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
+    states: [],
 
-    states: types.maybeNull(types.array(types.union(RectangleLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
-
-    wp: types.maybeNull(types.number),
-    hp: types.maybeNull(types.number),
-
-    sw: types.maybeNull(types.number),
-    sh: types.maybeNull(types.number),
-
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
+    coordstype: "px", // types.optional(types.enumeration(["px", "perc"]), "px"),
 
     supportsTransform: true,
-  })
+  }))
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -91,6 +86,8 @@ const Model = types
       }
 
       self.updateAppearenceFromState();
+
+      console.log("RECT", self);
     },
 
     updateAppearenceFromState() {
@@ -166,12 +163,6 @@ const Model = types
     },
 
     updateImageSize(wp, hp, sw, sh) {
-      self.wp = wp;
-      self.hp = hp;
-
-      self.sw = sw;
-      self.sh = sh;
-
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
@@ -219,7 +210,7 @@ const Model = types
           width,
           height,
           rotation: self.rotation,
-          ...value,
+          // ...value,
         },
       };
     },

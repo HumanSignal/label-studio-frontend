@@ -42,6 +42,8 @@ const _Tool = types
 
       const sap = self.statesAndParams;
 
+      console.log("RECT PARAMS", sap);
+
       const rect = self.createRegion({
         x: x,
         y: y,

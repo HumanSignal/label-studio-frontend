@@ -32,12 +32,12 @@ import ControlBase from "./Base";
  * @param {boolean} [canRotate=true] - show or hide rotation handle
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
 const ModelAttrs = types.model("RectangleLabelsModel", {
-  id: types.optional(types.identifier, guidGenerator),
+  // id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "rectanglelabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),

@@ -2,6 +2,7 @@ import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { RectRegionModel } from "./RectRegion";
 
 const ImageArea = types
   .model("ImageArea", {
@@ -71,6 +72,10 @@ const HyperTextArea = types
     serialize: serializeDataWithLength(self),
   }));
 
+const EmptyArea = types.model("EmptyArea", {}).actions(self => ({
+  serialize: () => ({}),
+}));
+
 const Area = types
   .model("Area", {
     id: types.identifier,
@@ -91,7 +96,7 @@ const Area = types
     // parentID: types.optional(types.string, ""),
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
-    data: types.union(ImageArea, AudioArea, TextArea, HyperTextArea),
+    data: types.union(RectRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea),
     type: "",
     // info about object and region
     // meta: types.frozen(),

@@ -33,6 +33,7 @@ function allModelsTypes() {
   const args = [
     {
       dispatcher: sn => {
+        if (!sn) return types.literal(undefined);
         if (Registry.tags.includes(sn.type)) {
           return Registry.getModelByTag(sn.type);
         } else {

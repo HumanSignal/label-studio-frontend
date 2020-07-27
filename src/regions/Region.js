@@ -2,6 +2,7 @@ import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import Area from "./Area";
 
 const Region = types
   .model("Region", {
@@ -24,12 +25,12 @@ const Region = types
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
     // optional for classifications
-    area: types.maybe(types.reference(types.union(...Registry.regionTypes()))),
+    area: types.maybe(types.reference(Area)),
     // labeling tag
     from_name: types.reference(types.union(...Registry.modelsArr())),
     // object tag
     to_name: types.reference(types.union(...Registry.objectTypes())),
-    type: types.enumeration(["labels", "rectanglelabels"]),
+    type: types.enumeration(["labels", "rectanglelabels", "choices"]),
     value: types.model({
       rating: types.maybe(types.number),
       text: types.maybe(types.array(types.string)),
@@ -91,7 +92,8 @@ const Region = types
     updateAppearenceFromState() {},
 
     serialize() {
-      const data = self.area.serialize();
+      const data = self.area ? self.area.serialize() : {};
+      if (!data.value) data.value = {};
       Object.assign(data.value, self.value.toJSON());
       return data;
     },
