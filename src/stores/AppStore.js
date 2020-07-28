@@ -257,7 +257,7 @@ export default types
         if (!fn) return resolve();
         const res = fn(self, c);
         if (res && res.then) res.then(resolve);
-        else resolve();
+        else resolve(res);
       });
     }
 
@@ -278,6 +278,7 @@ export default types
 
       c.dropDraft();
       getEnv(self).onUpdateCompletion(self, c);
+      !c.sentUserGenerate && c.sendUserGenerate();
     }
 
     function skipTask() {

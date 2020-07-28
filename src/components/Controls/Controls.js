@@ -81,7 +81,7 @@ export default inject("store")(
               onClick={store.updateCompletion}
               className="ls-update-btn"
             >
-              Update {buttons.update}
+              {sentUserGenerate ? "Update" : "Submit"} {buttons.update}
             </Button>
           </Tooltip>
         );

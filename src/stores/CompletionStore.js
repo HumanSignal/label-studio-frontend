@@ -115,7 +115,6 @@ const Completion = types
 
     updatePersonalKey(value) {
       self.pk = value;
-      self.sentUserGenerate = true;
     },
 
     setNormalizationMode(val) {
