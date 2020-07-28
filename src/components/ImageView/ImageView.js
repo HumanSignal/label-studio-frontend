@@ -347,6 +347,7 @@ export default observer(
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
+            <Layer name="shapes">{item.regs.map(r => Tree.renderItem(r.area.data))}</Layer>
             {/* {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
             {item.regions
               .filter(shape => shape.type === "brushregion")

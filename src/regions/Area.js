@@ -97,6 +97,7 @@ const Area = types
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
     data: types.union(RectRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea),
+    object: types.reference(types.union(...Registry.objectTypes())),
     type: "",
     // info about object and region
     // meta: types.frozen(),

@@ -172,6 +172,10 @@ const Model = types
       return getRoot(self).completionStore.selected;
     },
 
+    get regs() {
+      return self.completion.regions.filter(r => r.to_name === self);
+    },
+
     // get regions() {
     //   return self.completion.regionStore.regions.filter(r => r.to_name === self.name);
     // },
@@ -347,6 +351,9 @@ const Model = types
 
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
+      });
+      self.regs.forEach(shape => {
+        shape.area.data.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
     },
 

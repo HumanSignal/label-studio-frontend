@@ -4,6 +4,12 @@ import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { RectRegionModel } from "../regions/RectRegion";
 import { DrawingTool } from "../mixins/DrawingTool";
+import { guidGenerator } from "../core/Helpers";
+// import Area from "../regions/Area";
+// import Region from "../regions/Region";
+// import Registry from "../core/Registry";
+
+// console.log('TYPES', Registry.objectTypes());
 
 const _Tool = types
   .model({
@@ -28,7 +34,10 @@ const _Tool = types
         ...opts,
       });
 
-      self.obj.addShape(rect);
+      console.log("COMP", self.obj.completion);
+      self.obj.completion.createRegion(opts, c, self.obj);
+
+      // self.obj.addShape(rect);
 
       return rect;
     },

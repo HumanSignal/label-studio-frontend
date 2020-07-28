@@ -35,6 +35,8 @@ const Model = types
     height: types.number,
 
     rotation: 0,
+
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(self => ({
     relativeX: 0,
@@ -53,7 +55,7 @@ const Model = types
     opacity: 0.6,
 
     fill: true,
-    fillColor: Constants.FILL_COLOR,
+    fillColor: "#ff8800", // Constants.FILL_COLOR,
     fillOpacity: 0.6,
 
     strokeColor: Constants.STROKE_COLOR,
@@ -61,7 +63,7 @@ const Model = types
 
     states: [],
 
-    coordstype: "px", // types.optional(types.enumeration(["px", "perc"]), "px"),
+    // coordstype: "px", // types.optional(types.enumeration(["px", "perc"]), "px"),
 
     supportsTransform: true,
   }))
@@ -70,7 +72,8 @@ const Model = types
       return getRoot(self);
     },
     get parent() {
-      return getParentOfType(self, ImageModel);
+      // return getParentOfType(self, ImageModel);
+      return getParent(self).object;
     },
   }))
   .actions(self => ({
@@ -163,6 +166,7 @@ const Model = types
     },
 
     updateImageSize(wp, hp, sw, sh) {
+      console.log("IMG UPD", sw, sh);
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
@@ -226,6 +230,7 @@ const RectRegionModel = types.compose(
 );
 
 const HtxRectangleView = ({ store, item }) => {
+  console.log("RECT VIEW", item);
   let { strokeColor, strokeWidth } = item;
   if (item.highlighted) {
     strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
