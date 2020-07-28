@@ -33,7 +33,7 @@ import ControlBase from "./Base";
  * @param {boolean} [showInline=true]        - show items in the same visual line
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
@@ -47,7 +47,7 @@ const TagAttrs = types.model({
  * @param {string} pid
  */
 const ModelAttrs = types.model({
-  id: types.optional(types.identifier, guidGenerator),
+  // id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),

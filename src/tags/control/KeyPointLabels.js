@@ -30,15 +30,15 @@ import ControlBase from "./Base";
  * @param {number=} [strokeWidth=1]      - width of the stroke
  * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
  */
-const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
-  toname: types.maybeNull(types.string),
-});
+// const TagAttrs = types.model({
+//   name: types.maybeNull(types.string),
+//   toname: types.maybeNull(types.string),
+// });
 
 const ModelAttrs = types
   .model("KeyPointLabelesModel", {
-    id: types.identifier,
-    pid: types.optional(types.string, guidGenerator),
+    // id: types.identifier,
+    // pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
@@ -55,7 +55,7 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
-  TagAttrs,
+  // TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

@@ -15,6 +15,8 @@ import { guidGenerator } from "../core/Helpers";
 import Region from "../regions/Region";
 import Area from "../regions/Area";
 
+console.log("ALL TYPES", Types.allModelsTypes());
+
 const Completion = types
   .model("Completion", {
     id: types.identifier,
@@ -236,14 +238,14 @@ const Completion = types
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
       self.traverseTree(node => {
-        if (node && node.name && node.id) self.names.set(node.name, node.id);
+        if (node && node.name) self.names.put(node);
 
-        if (node && node.toname && node.id) {
+        if (node && node.toname) {
           const val = self.toNames.get(node.toname);
           if (val) {
-            val.push(node.id);
+            val.push(node.name);
           } else {
-            self.toNames.set(node.toname, [node.id]);
+            self.toNames.set(node.toname, [node.name]);
           }
         }
       });
@@ -360,6 +362,25 @@ const Completion = types
       Hotkey.setScope("__main__");
     },
 
+    createRegion(data, control, object) {
+      const area = Area.create({
+        id: guidGenerator(),
+        object: object,
+        data,
+      });
+
+      const region = Region.create({
+        area,
+        from_name: control.name,
+        to_name: object,
+        type: control.type,
+        value: {},
+      });
+
+      self.areas.put(area);
+      self.regions.push(region);
+    },
+
     serializeCompletion() {
       return self.regions.map(r => r.serialize());
     },
@@ -391,7 +412,7 @@ const Completion = types
           let area = self.areas.get(id);
           if (!area) {
             console.log("NEW AREA", id, { ...data, ...value });
-            area = Area.create({ id, data: { ...data, ...value } });
+            area = Area.create({ id, object: data.to_name, data: { ...data, ...value } });
             self.areas.set(id, area);
           }
 

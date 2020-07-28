@@ -30,6 +30,7 @@ function unionArray(arr) {
 }
 
 function allModelsTypes() {
+  console.log("MODELS", Registry.modelsArr());
   const args = [
     {
       dispatcher: sn => {
