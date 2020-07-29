@@ -54,7 +54,7 @@ const RegionItem = observer(({ item, idx, flat }) => {
       }}
     >
       <SimpleBadge number={idx + 1} style={badgeStyle} />
-      <Node node={item} onClick={() => {}} className={styles.node} />
+      <Node node={item.area} onClick={() => {}} className={styles.node} />
 
       {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
 
@@ -226,9 +226,7 @@ const RegionsTree = observer(({ regionStore }) => {
   );
 });
 
-export default observer(({ store, regionStore }) => {
-  const { regions } = regionStore;
-
+export default observer(({ store, regions, regionStore }) => {
   return (
     <div>
       <div

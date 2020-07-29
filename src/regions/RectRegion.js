@@ -17,6 +17,7 @@ import { RatingModel } from "../tags/control/Rating";
 import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
+import { AreaMixin } from "../mixins/AreaMixin";
 
 /**
  * Rectangle object for Bounding Box
@@ -72,8 +73,9 @@ const Model = types
       return getRoot(self);
     },
     get parent() {
+      console.log("PAERNT", getParent(self), getRoot(self));
       // return getParentOfType(self, ImageModel);
-      return getParent(self).object;
+      return self.object;
     },
   }))
   .actions(self => ({
@@ -226,15 +228,17 @@ const RectRegionModel = types.compose(
   RegionsMixin,
   NormalizationMixin,
   DisabledMixin,
+  AreaMixin,
   Model,
 );
 
 const HtxRectangleView = ({ store, item }) => {
   console.log("RECT VIEW", item);
-  let { strokeColor, strokeWidth } = item;
+  const style = item.style || item.tag;
+  let { strokecolor, strokewidth } = style;
   if (item.highlighted) {
-    strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
-    strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
+    strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
+    strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
 
   if (item.hidden) return null;
@@ -246,14 +250,14 @@ const HtxRectangleView = ({ store, item }) => {
         y={item.y}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillColor, item.fillOpacity) : null}
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
+        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
+        stroke={strokecolor}
+        strokeWidth={+strokewidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}
-        opacity={item.opacity}
+        opacity={+style.opacity}
         rotation={item.rotation}
         name={item.id}
         onTransformEnd={e => {

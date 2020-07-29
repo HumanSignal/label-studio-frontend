@@ -353,7 +353,7 @@ const Model = types
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
       self.regs.forEach(shape => {
-        shape.area.data.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
+        shape.area.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
     },
 

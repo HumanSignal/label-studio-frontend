@@ -3,80 +3,109 @@ import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { RectRegionModel } from "./RectRegion";
+import { AreaMixin } from "../mixins/AreaMixin";
 
-const ImageArea = types
-  .model("ImageArea", {
-    original_width: types.maybe(types.number),
-    original_height: types.maybe(types.number),
-    image_rotation: 0,
+const AreaBase = types.model({
+  // auto id for fresh areas
+  id: types.optional(types.identifier, guidGenerator),
+  object: types.reference(types.union(...Registry.objectTypes())),
+});
 
-    x: types.number,
-    y: types.number,
-    width: types.number,
-    height: types.number,
-    rotation: types.number,
-  })
-  .actions(self => ({
-    serialize() {
-      const { original_width, original_height, image_rotation, x, y, width, height, rotation } = self;
-      return {
-        original_width,
-        original_height,
-        image_rotation,
-        value: { x, y, width, height, rotation },
-      };
-    },
-  }));
+const ImageArea = types.compose(
+  "ImageArea",
+  AreaMixin,
+  types
+    .model("ImageArea", {
+      original_width: types.maybe(types.number),
+      original_height: types.maybe(types.number),
+      image_rotation: 0,
+
+      x: types.number,
+      y: types.number,
+      width: types.number,
+      height: types.number,
+      rotation: types.number,
+    })
+    .actions(self => ({
+      serialize() {
+        const { original_width, original_height, image_rotation, x, y, width, height, rotation } = self;
+        return {
+          original_width,
+          original_height,
+          image_rotation,
+          value: { x, y, width, height, rotation },
+        };
+      },
+    })),
+);
 
 const serializeDataWithLength = self => () => {
   const { original_length, ...value } = self;
   return { original_length, value };
 };
 
-const AudioArea = types
-  .model("AudioArea", {
-    original_length: types.number,
+const AudioArea = types.compose(
+  "ImageArea",
+  AreaMixin,
+  types
+    .model("AudioArea", {
+      original_length: types.number,
 
-    start: types.number,
-    end: types.number,
-  })
-  .actions(self => ({
-    serialize: serializeDataWithLength(self),
-  }));
+      start: types.number,
+      end: types.number,
+    })
+    .actions(self => ({
+      serialize: serializeDataWithLength(self),
+    })),
+);
 
-const TextArea = types
-  .model("TextArea", {
-    original_length: types.number,
+const TextArea = types.compose(
+  "ImageArea",
+  AreaMixin,
+  types
+    .model("TextArea", {
+      original_length: types.number,
 
-    start: types.number,
-    end: types.number,
-    // don't store if savetextresult="no"
-    text: types.maybe(types.string),
-  })
-  .actions(self => ({
-    serialize: serializeDataWithLength(self),
-  }));
+      start: types.number,
+      end: types.number,
+      // don't store if savetextresult="no"
+      text: types.maybe(types.string),
+    })
+    .actions(self => ({
+      serialize: serializeDataWithLength(self),
+    })),
+);
 
-const HyperTextArea = types
-  .model("HyperTextArea", {
-    original_length: types.number,
+const HyperTextArea = types.compose(
+  "ImageArea",
+  AreaMixin,
+  types
+    .model("HyperTextArea", {
+      original_length: types.number,
 
-    start: types.string,
-    end: types.string,
-    startOffset: types.number,
-    endOffset: types.number,
-    // @todo implement savetextresult for HyperText
-    text: types.string,
-  })
-  .actions(self => ({
-    serialize: serializeDataWithLength(self),
-  }));
+      start: types.string,
+      end: types.string,
+      startOffset: types.number,
+      endOffset: types.number,
+      // @todo implement savetextresult for HyperText
+      text: types.string,
+    })
+    .actions(self => ({
+      serialize: serializeDataWithLength(self),
+    })),
+);
 
-const EmptyArea = types.model("EmptyArea", {}).actions(self => ({
-  serialize: () => ({}),
-}));
+const EmptyArea = types.compose(
+  "ImageArea",
+  AreaMixin,
+  types.model("EmptyArea", {}).actions(self => ({
+    serialize: () => ({}),
+  })),
+);
 
-const Area = types
+const Area = types.union(RectRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea);
+
+const Area1 = types
   .model("Area", {
     id: types.identifier,
     // pid: types.optional(types.string, guidGenerator),

@@ -57,7 +57,7 @@ export default observer(({ store }) => {
 
       {!completion.highlightedNode && <p style={{ marginBottom: 0 }}>Nothing selected</p>}
 
-      <Entities store={store} regionStore={completion.regionStore} />
+      <Entities store={store} regionStore={completion.regionStore} regions={completion.regions} />
 
       <Relations store={store} item={completion} />
     </Card>

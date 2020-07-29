@@ -152,7 +152,7 @@ const Completion = types
     },
 
     addRegion(reg) {
-      self.regionStore.addRegion(reg);
+      // self.regionStore.addRegion(reg);
       self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
@@ -365,8 +365,8 @@ const Completion = types
     createRegion(data, control, object) {
       const area = Area.create({
         id: guidGenerator(),
-        object: object,
-        data,
+        // object: object,
+        ...data,
       });
 
       const region = Region.create({
@@ -374,7 +374,9 @@ const Completion = types
         from_name: control.name,
         to_name: object,
         type: control.type,
-        value: {},
+        value: {
+          [control._type]: control.selectedValues(),
+        },
       });
 
       self.areas.put(area);
@@ -407,16 +409,16 @@ const Completion = types
       objCompletion.forEach(obj => {
         if (obj["type"] !== "relation") {
           const { id, value, ...data } = obj;
-          const regionId = `${data.to_name}@${id}`;
+          const regionId = `${data.from_name}@${id}`;
 
           let area = self.areas.get(id);
           if (!area) {
             console.log("NEW AREA", id, { ...data, ...value });
-            area = Area.create({ id, object: data.to_name, data: { ...data, ...value } });
-            self.areas.set(id, area);
+            area = Area.create({ id, ...data, ...value });
+            self.areas.put(area);
           }
 
-          const region = Region.create({ ...data, id: regionId, value, area: id });
+          const region = Region.create({ ...data, id: regionId, value, area });
           self.regions.push(region);
           // const names = obj.to_name.split(",");
           // if (names.length > 1) throw new Error("Pairwise is not supported now");

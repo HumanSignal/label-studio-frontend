@@ -80,7 +80,7 @@ const ToolMixin = types
     get getActiveShape() {
       // active shape here is the last one that was added
       const obj = self.obj;
-      return obj.regs[obj.regs.length - 1].area.data;
+      return obj.regs[obj.regs.length - 1].area;
     },
 
     get getSelectedShape() {
