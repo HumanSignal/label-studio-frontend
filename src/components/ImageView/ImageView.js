@@ -31,7 +31,7 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       if (
-        1 ||
+        // 1 ||
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {
@@ -347,7 +347,7 @@ export default observer(
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
-            <Layer name="shapes">{item.regs.map(r => Tree.renderItem(r.area.data))}</Layer>
+            <Layer name="shapes">{item.regs.map(r => Tree.renderItem(r.area))}</Layer>
             {/* {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
             {item.regions
               .filter(shape => shape.type === "brushregion")

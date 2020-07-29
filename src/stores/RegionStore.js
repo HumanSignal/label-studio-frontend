@@ -5,7 +5,7 @@ import { AllRegionsType } from "../regions";
 
 export default types
   .model("RegionStore", {
-    regions: types.array(types.safeReference(AllRegionsType)),
+    // regions: types.array(types.safeReference(AllRegionsType)),
 
     sort: types.optional(types.enumeration(["date", "score"]), "date"),
     sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
@@ -15,7 +15,14 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
+    get regions() {
+      console.log("REGIONS", getParent(self).regions);
+      return getParent(self).regions;
+    },
+
     get sortedRegions() {
+      return getParent(self).regions;
+
       const sorts = {
         date: () => self.regions,
         score: () => self.regions.sort((a, b) => a.score - b.score),
@@ -45,7 +52,7 @@ export default types
 
       Object.keys(lookup).forEach(key => {
         const el = lookup[key];
-        if (el["item"].parentID !== "") {
+        if (el["item"].parentID) {
           lookup[el["item"].parentID]["children"].push(el);
         } else {
           tree.push(el);

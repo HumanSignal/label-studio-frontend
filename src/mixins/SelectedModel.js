@@ -19,6 +19,12 @@ const SelectedModelMixin = types
       return sel && sel.background;
     },
 
+    get selectedColor() {
+      // return first selected label color
+      const sel = self.tiedChildren.find(c => c.selected === true);
+      return sel && sel.background;
+    },
+
     get isSelected() {
       return self.selectedLabels.length > 0;
     },

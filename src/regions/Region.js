@@ -3,6 +3,7 @@ import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import Area from "./Area";
+import { flatten } from "../utils/utilities";
 
 const Region = types
   .model("Region", {
@@ -39,6 +40,7 @@ const Region = types
       labels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
     }),
+    score: 0,
     // info about object and region
     // meta: types.frozen(),
   })
@@ -58,6 +60,10 @@ const Region = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get onlyValue() {
+      return flatten(Object.values(self.value).filter(Boolean))[0];
     },
 
     get editable() {
@@ -80,8 +86,39 @@ const Region = types
 
       return true;
     },
+
+    getOneColor() {
+      return self.style && self.style.fillcolor;
+    },
+  }))
+  .volatile(self => ({
+    pid: "",
+    tag: null,
+    style: null,
   }))
   .actions(self => ({
+    setValue(tag) {
+      self.value[tag.parent._type] = tag.value;
+      const color = tag.selectedColor;
+      if (color) self.style = { color };
+    },
+
+    copyStyleByValue() {},
+
+    afterCreate() {
+      self.pid = self.id;
+    },
+
+    afterAttach() {
+      console.log("AFTER CREATE", self.from_name, self.onlyValue);
+      self.tag = self.from_name.findLabel(self.onlyValue);
+      if (!self.tag) return;
+      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+      const strokecolor = self.tag.background || self.tag.parent.strokecolor;
+      const { strokewidth, fillopacity, opacity } = self.tag.parent;
+      if (fillcolor) self.style = { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
+
     setParentID(id) {
       self.parentID = id;
     },
