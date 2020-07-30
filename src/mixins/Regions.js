@@ -229,10 +229,9 @@ const RegionsMixin = types
         completion.regionStore.unselectAll();
       } else {
         if (self.selected) {
-          self.unselectRegion(true);
+          completion.unselectArea(self);
         } else {
-          completion.regionStore.unselectAll();
-          self.selectRegion();
+          completion.selectArea(self);
         }
       }
     },
