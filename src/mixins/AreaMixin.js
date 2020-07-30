@@ -6,8 +6,12 @@ export const AreaMixin = types
     id: types.optional(types.identifier, guidGenerator),
   })
   .views(self => ({
+    get completion() {
+      return getParent(self, 2);
+    },
+
     get regions() {
-      return getParent(self, 2).regions.filter(r => r.area === self);
+      return self.completion.regions.filter(r => r.area === self);
     },
 
     get tag() {
@@ -22,5 +26,22 @@ export const AreaMixin = types
     get style() {
       const styled = self.regions.find(r => r.style);
       return styled && styled.style;
+    },
+
+    // @todo may be slow, consider to add some code to completion (un)select* methods
+    get selected() {
+      return self.completion.highlightedNode === self;
+    },
+
+    getOneColor() {
+      return self.style && self.style.fillcolor;
+    },
+  }))
+  .volatile(self => ({
+    // selected: false,
+  }))
+  .actions(self => ({
+    setSelected(value) {
+      self.selected = value;
     },
   }));

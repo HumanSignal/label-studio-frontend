@@ -260,11 +260,11 @@ const Area1 = types
       }
     },
 
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
+    setSelected(value) {
+      self.selected = value;
+      // self.completion.setHighlightedNode(self);
 
-      self.completion.loadRegionState(self);
+      // self.completion.loadRegionState(self);
     },
 
     /**

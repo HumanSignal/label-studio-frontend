@@ -40,7 +40,6 @@ const Region = types
       labels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
     }),
-    score: 0,
     // info about object and region
     // meta: types.frozen(),
   })
@@ -95,6 +94,8 @@ const Region = types
     pid: "",
     tag: null,
     style: null,
+    selected: false,
+    // highlighted: types.optional(types.boolean, false),
   }))
   .actions(self => ({
     setValue(tag) {
@@ -213,9 +214,10 @@ const Region = types
 
     selectRegion() {
       self.selected = true;
-      self.completion.setHighlightedNode(self);
+      self.area.selectRegion();
+      self.completion.setHighlightedNode(self.area);
 
-      self.completion.loadRegionState(self);
+      // self.completion.loadRegionState(self);
     },
 
     /**

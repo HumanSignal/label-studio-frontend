@@ -127,6 +127,23 @@ const Completion = types
       self.highlightedNode = node;
     },
 
+    selectArea(area) {
+      if (self.highlightedNode === area) return;
+      // if (current) current.setSelected(false);
+      self.highlightedNode = area;
+      // area.setSelected(true);
+    },
+
+    unselectArea(area) {
+      if (self.highlightedNode !== area) return;
+      // area.setSelected(false);
+      self.highlightedNode = null;
+    },
+
+    unselectAreas() {
+      self.highlightedNode = null;
+    },
+
     startRelationMode(node1) {
       self._relationObj = node1;
       self.relationMode = true;
@@ -445,7 +462,7 @@ const Completion = types
         }
       });
 
-      self.regionStore.unselectAll();
+      // self.regionStore.unselectAll();
     },
   }));
 

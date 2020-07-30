@@ -347,7 +347,6 @@ export default observer(
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
-            <Layer name="shapes">{item.regs.map(r => Tree.renderItem(r.area))}</Layer>
             {/* {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
             {item.regions
               .filter(shape => shape.type === "brushregion")
@@ -355,15 +354,15 @@ export default observer(
                 <Layer name={"brushLayer-" + shape.id} id={shape.id}>
                   {Tree.renderItem(shape)}
                 </Layer>
-              ))}
+              ))*/}
             <Layer name="shapes">
-              {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
-              {item.activeShape && Tree.renderItem(item.activeShape)}
-
+              {/* {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
+              {item.activeShape && Tree.renderItem(item.activeShape)}*/}
+              {item.regs.map(r => Tree.renderItem(r))}
               {item.selectedShape && item.selectedShape.editable && (
                 <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
               )}
-            </Layer> */}
+            </Layer>
           </Stage>
 
           {this.renderTools()}
