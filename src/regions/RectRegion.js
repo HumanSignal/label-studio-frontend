@@ -123,13 +123,13 @@ const Model = types
       return false;
     },
 
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
+    // selectRegion() {
+    //   self.selected = true;
+    //   // self.completion.setHighlightedNode(self);
+    //   self.parent.setSelected(self.id);
 
-      self.completion.loadRegionState(self);
-    },
+    //   // self.completion.loadRegionState(self);
+    // },
 
     /**
      * Boundg Box set position on canvas

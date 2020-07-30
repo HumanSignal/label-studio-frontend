@@ -145,9 +145,9 @@ const Model = types
      */
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
 
-    selectedShape: types.safeReference(
-      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
-    ),
+    // selectedShape: types.safeReference(
+    //   types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+    // ),
 
     regions: types.array(
       types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
@@ -173,7 +173,11 @@ const Model = types
     },
 
     get regs() {
-      return self.completion.regions.filter(r => r.to_name === self);
+      return self.completion.regionStore.regions.filter(r => r.object === self);
+    },
+
+    get selectedShape() {
+      return self.regs.find(r => r.selected);
     },
 
     // get regions() {
@@ -311,7 +315,7 @@ const Model = types
     },
 
     setSelected(shape) {
-      self.selectedShape = shape;
+      // self.selectedShape = shape;
     },
 
     rotate(degree = -90) {
@@ -353,7 +357,7 @@ const Model = types
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
       self.regs.forEach(shape => {
-        shape.area.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
+        shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
     },
 

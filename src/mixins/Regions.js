@@ -15,7 +15,7 @@ const RegionsMixin = types
     parentID: types.optional(types.string, ""),
   })
   .volatile(self => ({
-    selected: false,
+    // selected: false,
     highlighted: false,
   }))
   .views(self => ({
@@ -188,7 +188,7 @@ const RegionsMixin = types
       self.selected = true;
       self.completion.setHighlightedNode(self);
 
-      self.completion.loadRegionState(self);
+      // self.completion.loadRegionState(self);
     },
 
     /**
