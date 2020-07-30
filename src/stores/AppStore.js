@@ -177,7 +177,7 @@ export default types
       Hotkey.addKey("u", function() {
         const c = self.completionStore.selected;
         if (c && c.highlightedNode && !c.relationMode) {
-          c.regionStore.unselectAll();
+          c.unselectAll();
         }
       });
 

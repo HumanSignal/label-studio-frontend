@@ -139,7 +139,7 @@ export default observer(({ store, completion }) => {
             className={styles.button}
             type="dashed"
             onClick={() => {
-              completion.unselectAreas();
+              completion.unselectAll();
             }}
           >
             <CompressOutlined />

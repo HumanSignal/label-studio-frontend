@@ -140,7 +140,7 @@ const Completion = types
       self.highlightedNode = null;
     },
 
-    unselectAreas() {
+    unselectAll() {
       self.highlightedNode = null;
     },
 
