@@ -5,6 +5,7 @@ import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
 import styles from "./Controls.module.scss";
+import { DraftPanel } from "../Completions/Completions";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -42,6 +43,7 @@ export default inject("store")(
     let skipButton;
     let updateButton;
     let submitButton;
+    let draftMenu;
 
     /**
      * Check for Predict Menu
@@ -86,6 +88,10 @@ export default inject("store")(
           </Tooltip>
         );
       }
+
+      if (!store.hasInterface("completions:menu")) {
+        draftMenu = <DraftPanel item={item} />;
+      }
     }
 
     let content = (
@@ -95,6 +101,7 @@ export default inject("store")(
             {skipButton}
             {updateButton}
             {submitButton}
+            {draftMenu}
           </div>
           {taskInformation}
         </div>

@@ -6,7 +6,7 @@ import { StarOutlined, DeleteOutlined, ForwardOutlined, WindowsOutlined, PlusOut
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
 
-const DraftPanel = observer(({ item }) => {
+export const DraftPanel = observer(({ item }) => {
   if (!item.draftSaved && !item.versions.draft) return null;
   const saved = item.draft && item.draftSaved ? ` saved ${Utils.UDate.prettyDate(item.draftSaved)}` : "";
   if (!item.selected) {

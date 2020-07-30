@@ -10,6 +10,8 @@
 
 .container {
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 
   & > button {
     margin: 0 10px;
@@ -33,7 +35,6 @@
   }
 
   @include respond("phone") {
-    display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-flow: column;
