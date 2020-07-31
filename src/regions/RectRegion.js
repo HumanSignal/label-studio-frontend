@@ -183,10 +183,8 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
-      const value = control.serializableValue;
-      if (!value) return null;
-
+    serialize() {
+      const object = self.object;
       const degree = (360 - self.parent.rotation) % 360;
       let { x, y } = self.rotatePoint(self, degree, false);
       if (degree === 270) y -= self.width;
