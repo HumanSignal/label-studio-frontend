@@ -1,4 +1,4 @@
-import { types, getParent, getRoot } from "mobx-state-tree";
+import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
@@ -131,9 +131,14 @@ const Region = types
     updateAppearenceFromState() {},
 
     serialize() {
+      const { from_name, to_name, type, score, value } = getSnapshot(self);
       const data = self.area ? self.area.serialize() : {};
       if (!data.value) data.value = {};
-      Object.assign(data.value, self.value.toJSON());
+
+      Object.assign(data, { from_name, to_name, type });
+      Object.assign(data.value, { [type]: value[type] });
+      if (typeof score === "number") data.score = score;
+
       return data;
     },
 

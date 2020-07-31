@@ -64,7 +64,8 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
+    serialize() {
+      const object = self.object;
       const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
       const degree = -self.parent.rotation;
       const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
