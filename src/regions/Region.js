@@ -31,7 +31,7 @@ const Region = types
     from_name: types.reference(types.union(...Registry.modelsArr())),
     // object tag
     to_name: types.reference(types.union(...Registry.objectTypes())),
-    type: types.enumeration(["labels", "rectanglelabels", "choices"]),
+    type: types.enumeration(["labels", "rectanglelabels", "keypointlabels", "choices"]),
     value: types.model({
       rating: types.maybe(types.number),
       text: types.maybe(types.array(types.string)),
@@ -39,6 +39,7 @@ const Region = types
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
+      keypointlabels: types.maybe(types.array(types.string)),
     }),
     // info about object and region
     // meta: types.frozen(),

@@ -18,7 +18,6 @@ const _Tool = types
   }))
   .actions(self => ({
     createRegion(opts) {
-      const image = self.obj;
       const c = self.control;
 
       const kp = KeyPointRegionModel.create({
@@ -26,7 +25,7 @@ const _Tool = types
         ...opts,
       });
 
-      image.addShape(kp);
+      self.obj.completion.createRegion(opts, c, self.obj);
 
       return kp;
     },
@@ -47,7 +46,7 @@ const _Tool = types
         ...sap,
       });
 
-      self.obj.completion.highlightedNode.unselectRegion(true);
+      self.obj.completion.unselectAll();
       // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));
