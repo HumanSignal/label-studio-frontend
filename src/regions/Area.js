@@ -4,6 +4,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { RectRegionModel } from "./RectRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { KeyPointRegionModel } from "./KeyPointRegion";
 
 const AreaBase = types.model({
   // auto id for fresh areas
@@ -103,7 +104,7 @@ const EmptyArea = types.compose(
   })),
 );
 
-const Area = types.union(RectRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea);
+const Area = types.union(RectRegionModel, KeyPointRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea);
 
 const Area1 = types
   .model("Area", {

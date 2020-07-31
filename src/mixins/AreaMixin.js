@@ -23,6 +23,10 @@ export const AreaMixin = types
       return self.regions[0].to_name;
     },
 
+    get parent() {
+      return self.object;
+    },
+
     get style() {
       const styled = self.regions.find(r => r.style);
       return styled && styled.style;
