@@ -79,7 +79,7 @@ const _Tool = types
       const s = self.getActiveShape;
 
       if (s.width < MIN_SIZE.X || s.height < MIN_SIZE.Y) {
-        destroy(s);
+        self.completion.removeArea(s);
         if (self.control.type === "rectanglelabels") self.completion.unselectAll();
       } else {
         // self.obj.completion.highlightedNode.unselectRegion(true);

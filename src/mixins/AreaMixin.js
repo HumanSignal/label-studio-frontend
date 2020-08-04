@@ -1,4 +1,4 @@
-import { types, getParent } from "mobx-state-tree";
+import { types, getParent, destroy } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 
 export const AreaMixin = types
@@ -45,6 +45,10 @@ export const AreaMixin = types
     // selected: false,
   }))
   .actions(self => ({
+    beforeDestroy() {
+      self.regions.forEach(r => destroy(r));
+    },
+
     setSelected(value) {
       self.selected = value;
     },

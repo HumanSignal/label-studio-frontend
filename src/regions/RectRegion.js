@@ -1,9 +1,9 @@
 import React, { Fragment } from "react";
 import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
+import { types, getParentOfType, getParent, getRoot, isAlive } from "mobx-state-tree";
 
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -231,8 +231,10 @@ const RectRegionModel = types.compose(
 );
 
 const HtxRectangleView = ({ store, item }) => {
+  if (!isAlive(item)) return null;
+
   console.log("RECT VIEW", item);
-  const style = item.style || item.tag;
+  const style = item.style || item.tag || defaultStyle;
   let { strokecolor, strokewidth } = style;
   if (item.highlighted) {
     strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
