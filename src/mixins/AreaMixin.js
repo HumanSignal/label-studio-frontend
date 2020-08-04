@@ -48,4 +48,21 @@ export const AreaMixin = types
     setSelected(value) {
       self.selected = value;
     },
+
+    setValue(tag) {
+      const region = self.regions.find(r => r.from_name === tag);
+      if (region) {
+        region.setValue(tag.selectedValues());
+      } else {
+        self.completion.createJustRegion({
+          area: self,
+          from_name: tag,
+          to_name: self.object,
+          type: tag.type,
+          value: {
+            [tag.type]: tag.selectedValues(),
+          },
+        });
+      }
+    },
   }));

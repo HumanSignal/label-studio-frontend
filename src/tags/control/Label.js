@@ -115,8 +115,7 @@ const Model = types
       // is changing the label we need to make sure that region is
       // not going to endup without the label(s) at all
       if (region) {
-        const sel = labels.selectedLabels;
-        if (sel.length === 1 && sel[0]._value === self._value) return;
+        if (labels.selectedLabels.length === 1 && self.selected) return;
       }
 
       // if we are going to select label and it would be the first in this labels group
@@ -157,7 +156,7 @@ const Model = types
         }
       }
 
-      region && region.updateSingleState(labels);
+      region && region.setValue(self.parent);
     },
 
     setVisible(val) {

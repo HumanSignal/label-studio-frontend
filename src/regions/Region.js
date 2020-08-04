@@ -62,8 +62,12 @@ const Region = types
       return getRoot(self).completionStore.selected;
     },
 
+    get mainValue() {
+      return flatten(Object.values(self.value).filter(Boolean));
+    },
+
     get onlyValue() {
-      return flatten(Object.values(self.value).filter(Boolean))[0];
+      return self.mainValue[0];
     },
 
     get editable() {
@@ -99,13 +103,19 @@ const Region = types
     // highlighted: types.optional(types.boolean, false),
   }))
   .actions(self => ({
-    setValue(tag) {
-      self.value[tag.parent._type] = tag.value;
-      const color = tag.selectedColor;
-      if (color) self.style = { color };
+    setValue(value) {
+      self.value[self.from_name.type] = value;
+      self.tag = self.from_name.findLabel(value[0]);
+      self.copyStyleFromTag();
     },
 
-    copyStyleByValue() {},
+    copyStyleFromTag() {
+      if (!self.tag) return;
+      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+      const strokecolor = self.tag.background || self.tag.parent.strokecolor;
+      const { strokewidth, fillopacity, opacity } = self.tag.parent;
+      if (fillcolor) self.style = { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
 
     afterCreate() {
       self.pid = self.id;
@@ -114,11 +124,7 @@ const Region = types
     afterAttach() {
       console.log("AFTER CREATE", self.from_name, self.onlyValue);
       self.tag = self.from_name.findLabel(self.onlyValue);
-      if (!self.tag) return;
-      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
-      const strokecolor = self.tag.background || self.tag.parent.strokecolor;
-      const { strokewidth, fillopacity, opacity } = self.tag.parent;
-      if (fillcolor) self.style = { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+      self.copyStyleFromTag();
     },
 
     setParentID(id) {
