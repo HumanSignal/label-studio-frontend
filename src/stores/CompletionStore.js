@@ -141,9 +141,17 @@ const Completion = types
       self.unselectAll();
     },
 
-    unselectAll() {
+    unselectAreas() {
       self.highlightedNode = null;
+    },
+
+    unselectStates() {
       self.names.forEach(tag => tag.unselectAll && tag.unselectAll());
+    },
+
+    unselectAll() {
+      self.unselectAreas();
+      self.unselectStates();
     },
 
     startRelationMode(node1) {
@@ -410,6 +418,8 @@ const Completion = types
 
       self.areas.put(area);
       self.regions.push(region);
+
+      self.unselectStates();
     },
 
     serializeCompletion() {

@@ -62,7 +62,7 @@ const _Tool = types
         ...sap,
       });
 
-      // if (self.control.type === "rectanglelabels") self.control.unselectAll();
+      if (self.control.type === "rectanglelabels") self.completion.unselectAll();
 
       return rect;
     },
@@ -80,7 +80,7 @@ const _Tool = types
 
       if (s.width < MIN_SIZE.X || s.height < MIN_SIZE.Y) {
         destroy(s);
-        if (self.control.type === "rectanglelabels") self.control.unselectAll();
+        if (self.control.type === "rectanglelabels") self.completion.unselectAll();
       } else {
         // self.obj.completion.highlightedNode.unselectRegion(true);
       }

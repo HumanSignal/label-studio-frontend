@@ -228,9 +228,9 @@ const RegionsMixin = types
         completion.stopRelationMode();
         completion.regionStore.unselectAll();
       } else {
-        if (self.selected) {
-          completion.unselectArea(self);
-        } else {
+        const wasNotSelected = !self.selected;
+        completion.unselectAll();
+        if (wasNotSelected) {
           completion.selectArea(self);
         }
       }
