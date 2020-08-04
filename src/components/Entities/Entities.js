@@ -1,6 +1,6 @@
 import React from "react";
 import { List, Divider, Badge, Menu, Dropdown, Tree, Tag } from "antd";
-import { getRoot } from "mobx-state-tree";
+import { getRoot, isAlive } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
 import { DownOutlined, SortAscendingOutlined, CalendarOutlined, ThunderboltOutlined } from "@ant-design/icons";
@@ -13,6 +13,7 @@ import { Node } from "../Node/Node";
 import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
 
 const RegionItem = observer(({ item, idx, flat }) => {
+  if (!isAlive(item)) return null;
   const c = getRoot(item).completionStore.selected;
   const classnames = [
     styles.lstitem,

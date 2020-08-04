@@ -154,6 +154,10 @@ const Completion = types
       self.unselectStates();
     },
 
+    removeArea(area) {
+      destroy(area);
+    },
+
     startRelationMode(node1) {
       self._relationObj = node1;
       self.relationMode = true;
