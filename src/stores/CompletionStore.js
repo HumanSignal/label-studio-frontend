@@ -124,7 +124,7 @@ const Completion = types
     },
 
     setHighlightedNode(node) {
-      self.highlightedNode = node;
+      // moved to selectArea and others
     },
 
     selectArea(area) {
@@ -132,16 +132,18 @@ const Completion = types
       // if (current) current.setSelected(false);
       self.highlightedNode = area;
       // area.setSelected(true);
+      area.regions.forEach(r => r.mainValue.map(v => r.from_name.findLabel(v)).forEach(l => l.setSelected(true)));
     },
 
     unselectArea(area) {
       if (self.highlightedNode !== area) return;
       // area.setSelected(false);
-      self.highlightedNode = null;
+      self.unselectAll();
     },
 
     unselectAll() {
       self.highlightedNode = null;
+      self.names.forEach(tag => tag.unselectAll && tag.unselectAll());
     },
 
     startRelationMode(node1) {
@@ -379,7 +381,17 @@ const Completion = types
       Hotkey.setScope("__main__");
     },
 
-    createRegion(data, control, object) {
+    // @todo rename to addRegion after clean up
+    pushRegion(region) {
+      self.regions.push(region);
+    },
+
+    createJustRegion(data) {
+      const region = Region.create(data);
+      self.regions.push(region);
+    },
+
+    createRegion({ type, ...data }, control, object) {
       const area = Area.create({
         id: guidGenerator(),
         // object: object,
@@ -425,7 +437,7 @@ const Completion = types
 
       objCompletion.forEach(obj => {
         if (obj["type"] !== "relation") {
-          const { id, value, ...data } = obj;
+          const { id, value, type, ...data } = obj;
           const regionId = `${data.from_name}@${id}`;
 
           let area = self.areas.get(id);
@@ -435,7 +447,7 @@ const Completion = types
             self.areas.put(area);
           }
 
-          const region = Region.create({ ...data, id: regionId, value, area });
+          const region = Region.create({ ...data, id: regionId, type, value, area });
           self.regions.push(region);
           // const names = obj.to_name.split(",");
           // if (names.length > 1) throw new Error("Pairwise is not supported now");
