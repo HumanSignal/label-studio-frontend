@@ -63,7 +63,7 @@ const Region = types
     },
 
     get mainValue() {
-      return flatten(Object.values(self.value).filter(Boolean));
+      return self.value[self.type];
     },
 
     get onlyValue() {
