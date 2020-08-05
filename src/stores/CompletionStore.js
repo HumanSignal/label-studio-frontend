@@ -130,8 +130,12 @@ const Completion = types
     selectArea(area) {
       if (self.highlightedNode === area) return;
       // if (current) current.setSelected(false);
+      self.unselectAll();
       self.highlightedNode = area;
       // area.setSelected(true);
+      // @todo some backward compatibility, should be rewritten to state handling
+      // @todo but there are some actions should be performed like scroll to region
+      area.selectRegion && area.selectRegion();
       area.regions.forEach(r => r.mainValue.map(v => r.from_name.findLabel(v)).forEach(l => l.setSelected(true)));
     },
 
@@ -142,7 +146,10 @@ const Completion = types
     },
 
     unselectAreas() {
+      const node = self.highlightedNode;
+      const fn = node && node.afterUnselectRegion;
       self.highlightedNode = null;
+      fn && fn();
     },
 
     unselectStates() {
@@ -423,7 +430,9 @@ const Completion = types
       self.areas.put(area);
       self.regions.push(region);
 
-      self.unselectStates();
+      self.unselectAll();
+
+      return area;
     },
 
     serializeCompletion() {
