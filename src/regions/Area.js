@@ -3,8 +3,9 @@ import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { RectRegionModel } from "./RectRegion";
-import { AreaMixin } from "../mixins/AreaMixin";
 import { KeyPointRegionModel } from "./KeyPointRegion";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { TextRegionModel } from "./TextRegion";
 
 const AreaBase = types.model({
   // auto id for fresh areas
@@ -97,14 +98,22 @@ const HyperTextArea = types.compose(
 );
 
 const EmptyArea = types.compose(
-  "ImageArea",
+  "EmptyArea",
   AreaMixin,
-  types.model("EmptyArea", {}).actions(self => ({
+  types.model({}).actions(self => ({
     serialize: () => ({}),
   })),
 );
 
-const Area = types.union(RectRegionModel, KeyPointRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea);
+const Area = types.union(
+  RectRegionModel,
+  KeyPointRegionModel,
+  TextRegionModel,
+  // AudioArea,
+  // TextArea,
+  // HyperTextArea,
+  EmptyArea,
+);
 
 const Area1 = types
   .model("Area", {

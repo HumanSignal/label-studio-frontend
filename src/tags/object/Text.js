@@ -30,7 +30,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
  * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("TextModel", {
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
 
   valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
@@ -52,10 +52,10 @@ const TagAttrs = types.model("TextModel", {
 
 const Model = types
   .model("TextModel", {
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     type: "text",
     loaded: types.optional(types.boolean, false),
-    regions: types.array(TextRegionModel),
+    // regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -67,6 +67,10 @@ const Model = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get regs() {
+      return self.completion.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
@@ -157,14 +161,19 @@ const Model = types
     },
 
     addRegion(range) {
-      const states = self.getAvailableStates();
-      if (states.length === 0) return;
+      range.start = range.startOffset;
+      range.end = range.endOffset;
+      const area = self.completion.createRegion(range, self.activeStates()[0], self);
+      area._range = range._range;
+      return area;
+      // const states = self.getAvailableStates();
+      // if (states.length === 0) return;
 
-      const clonedStates = states.map(s => cloneNode(s));
+      // const clonedStates = states.map(s => cloneNode(s));
 
-      const r = self.createRegion({ ...range, states: clonedStates });
+      // const r = self.createRegion({ ...range, states: clonedStates });
 
-      return r;
+      // return r;
     },
 
     /**
@@ -408,7 +417,7 @@ class TextPieceView extends Component {
     const root = this.myRef;
     const { item } = this.props;
 
-    item.regions.forEach(function(r) {
+    item.regs.forEach(function(r) {
       const findNode = (el, pos) => {
         let left = pos;
         const traverse = node => {
@@ -436,8 +445,8 @@ class TextPieceView extends Component {
         return traverse(el);
       };
 
-      const ss = findNode(root, r.startOffset);
-      const ee = findNode(root, r.endOffset);
+      const ss = findNode(root, r.start);
+      const ee = findNode(root, r.end);
 
       // if (! ss || ! ee)
       //     return;
@@ -496,5 +505,6 @@ const HtxText = inject("store")(observer(HtxTextView));
 const HtxTextPieceView = inject("store")(observer(TextPieceView));
 
 Registry.addTag("text", TextModel, HtxText);
+Registry.addObjectType(TextModel);
 
 export { TextModel, HtxText };

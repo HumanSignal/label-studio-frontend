@@ -34,7 +34,7 @@ const Region = types
     type: types.enumeration(["labels", "rectanglelabels", "keypointlabels", "choices"]),
     value: types.model({
       rating: types.maybe(types.number),
-      text: types.maybe(types.array(types.string)),
+      text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.string)),
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),

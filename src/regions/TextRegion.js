@@ -10,23 +10,25 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
+import { AreaMixin } from "../mixins/AreaMixin";
 
 const Model = types
   .model("TextRegionModel", {
     type: "textrange",
 
-    startOffset: types.integer,
-    start: types.string,
-    endOffset: types.integer,
-    end: types.string,
+    start: types.number,
+    end: types.number,
 
     text: types.string,
-    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .views(self => ({
     get parent() {
-      return getParentOfType(self, TextModel);
+      return self.object;
     },
+  }))
+  .volatile(self => ({
+    // @todo remove, it should be at least a view or maybe even not required at all
+    states: [],
   }))
   .actions(self => ({
     beforeDestroy() {
@@ -49,7 +51,7 @@ const Model = types
         res.value["text"] = self.text;
       }
 
-      res.value = Object.assign(res.value, control.serializableValue);
+      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
@@ -59,6 +61,7 @@ const TextRegionModel = types.compose(
   "TextRegionModel",
   WithStatesMixin,
   RegionsMixin,
+  AreaMixin,
   NormalizationMixin,
   Model,
   SpanTextMixin,
