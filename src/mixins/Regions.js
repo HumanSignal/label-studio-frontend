@@ -4,7 +4,7 @@ import { guidGenerator } from "../core/Helpers";
 
 const RegionsMixin = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
@@ -185,9 +185,8 @@ const RegionsMixin = types
     },
 
     selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-
+      // self.selected = true;
+      // self.completion.setHighlightedNode(self);
       // self.completion.loadRegionState(self);
     },
 

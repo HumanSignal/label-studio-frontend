@@ -68,5 +68,6 @@ export const AreaMixin = types
           },
         });
       }
+      self.updateAppearenceFromState && self.updateAppearenceFromState();
     },
   }));

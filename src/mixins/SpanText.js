@@ -25,7 +25,7 @@ export default types
     updateAppearenceFromState() {
       const labelColor = self.getLabelColor();
 
-      self.updateSpansColor(labelColor);
+      self.updateSpansColor(labelColor, self.selected ? 0.8 : 0.3);
       self.applyCSSClass(self._lastSpan);
     },
 
@@ -45,11 +45,7 @@ export default types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor;
-      if (!labelColor) {
-        const ls = self.states.find(s => s._type && s._type.indexOf("labels") !== -1);
-        if (ls) labelColor = ls.getSelectedColor();
-      }
+      let labelColor = self.parent.highlightcolor || self.style.fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
@@ -117,10 +113,10 @@ export default types
     },
 
     selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
+      // self.selected = true;
+      // self.completion.setHighlightedNode(self);
       self.updateSpansColor(null, 0.8);
-      self.completion.loadRegionState(self);
+      // self.completion.loadRegionState(self);
 
       const first = self._spans[0];
       if (first) {
