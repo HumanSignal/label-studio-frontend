@@ -461,12 +461,14 @@ const Completion = types
       objCompletion.forEach(obj => {
         if (obj["type"] !== "relation") {
           const { id, value, type, ...data } = obj;
-          const regionId = `${data.from_name}@${id}`;
+          // avoid duplicates of the same areas in different completions/predictions
+          const areaId = `${id}#${self.id}`;
+          const regionId = `${data.from_name}@${areaId}`;
 
-          let area = self.areas.get(id);
+          let area = self.areas.get(areaId);
           if (!area) {
-            console.log("NEW AREA", id, { ...data, ...value });
-            area = Area.create({ id, ...data, ...value });
+            console.log("NEW AREA", areaId, { ...data, ...value });
+            area = Area.create({ id: areaId, ...data, ...value });
             self.areas.put(area);
           }
 
@@ -590,7 +592,7 @@ export default types
 
     function selectPrediction(id) {
       const p = selectItem(id, self.predictions);
-      p.regionStore.unselectAll();
+      // p.regionStore.unselectAll();
 
       return p;
     }
