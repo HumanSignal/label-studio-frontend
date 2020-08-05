@@ -39,15 +39,15 @@ const Model = types
       self.text = text;
     },
 
-    serialize(control, object) {
+    serialize() {
       let res = {
         value: {
-          start: self.startOffset,
-          end: self.endOffset,
+          start: self.start,
+          end: self.end,
         },
       };
 
-      if (object.savetextresult === "yes") {
+      if (self.object.savetextresult === "yes") {
         res.value["text"] = self.text;
       }
 
