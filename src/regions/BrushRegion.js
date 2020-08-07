@@ -320,7 +320,7 @@ const HtxBrushView = ({ store, item }) => {
         />
 
         {item.touches.map(p => (
-          <HtxBrushLayer store={store} item={item} points={p} />
+          <HtxBrushLayer key={p.id} store={store} item={item} points={p} />
         ))}
 
         <LabelOnMask item={item} />
