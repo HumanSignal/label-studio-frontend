@@ -346,6 +346,8 @@ const Model = types
 
     updateImageSize(ev) {
       const { width, height, naturalWidth, naturalHeight } = ev.target;
+      self.initialWidth = width;
+      self.initialHeight = height;
       if ((self.rotation + 360) % 180 === 90) {
         // swap sizes
         self._updateImageSize({
