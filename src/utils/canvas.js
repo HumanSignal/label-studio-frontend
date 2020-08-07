@@ -46,12 +46,17 @@ function Region2RLE(region, image, lineOpts) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
   }
+  // hide labels on regions and show them later
+  layer.find(".region-label").hide();
+  Konva.stages[0].drawScene();
   // resize to original size
   const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
   const ctx = canvas.getContext("2d");
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
+  layer.find(".region-label").show();
+  Konva.stages[0].drawScene();
   const rle = encode(data.data, data.data.length);
 
   return rle;
