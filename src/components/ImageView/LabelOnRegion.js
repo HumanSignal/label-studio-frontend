@@ -155,7 +155,7 @@ const LabelOnMask = observer(({ item }) => {
   const bbox = pointstobbox(flatten(item.touches.map(t => t.points)));
 
   return (
-    <Fragment>
+    <Group name="region-label">
       <Rect
         x={bbox[0][0]}
         y={bbox[1][0]}
@@ -176,7 +176,7 @@ const LabelOnMask = observer(({ item }) => {
         showScore={settings && settings.showScore}
         zoomScale={item.parent.zoomScale}
       />
-    </Fragment>
+    </Group>
   );
 });
 
