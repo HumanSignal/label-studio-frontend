@@ -294,6 +294,8 @@ const Model = types
 
     setStageRef(ref) {
       self.stageRef = ref;
+      // Konva updates ref repeatedly and this breaks brush scaling
+      if (self.initialWidth > 1) return;
       self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;
       self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },

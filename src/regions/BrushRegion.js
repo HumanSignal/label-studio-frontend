@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
+import { types, getParentOfType, getParent } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -34,14 +34,20 @@ const Points = types
      */
     strokeWidth: types.optional(types.number, 25),
   })
+  .views(self => ({
+    get parent() {
+      return getParent(self, 2);
+    },
+  }))
   .actions(self => ({
     setType(type) {
       self.type = type;
     },
 
     addPoints(x, y) {
-      self.points.push(x);
-      self.points.push(y);
+      // scale it back because it would be scaled on draw
+      self.points.push(x / self.parent.scaleX);
+      self.points.push(y / self.parent.scaleY);
     },
 
     // rescale points to the new width and height from the original
@@ -249,8 +255,6 @@ const HtxBrushView = ({ store, item }) => {
       <Group
         attrMy={item.needsUpdate}
         name="segmentation"
-        scaleX={item.scaleX}
-        scaleY={item.scaleY}
         // onClick={e => {
         //     e.cancelBubble = false;
         // }}
@@ -292,6 +296,8 @@ const HtxBrushView = ({ store, item }) => {
           item.onClickRegion();
         }}
       >
+        {/* @todo rewrite this to just an Konva.Image, much simplier */}
+        {/* @todo and this will allow to use scale on parent Group */}
         <Shape
           sceneFunc={(ctx, shape) => {
             if (item.parent.naturalWidth === 1) return null;
@@ -319,11 +325,13 @@ const HtxBrushView = ({ store, item }) => {
           {...highlight}
         />
 
-        {item.touches.map(p => (
-          <HtxBrushLayer key={p.id} store={store} item={item} points={p} />
-        ))}
+        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+          {item.touches.map(p => (
+            <HtxBrushLayer key={p.id} store={store} item={item} points={p} />
+          ))}
 
-        <LabelOnMask item={item} />
+          <LabelOnMask item={item} />
+        </Group>
       </Group>
     </Fragment>
   );
