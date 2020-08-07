@@ -41,55 +41,14 @@ function Region2RLE(region, image, lineOpts) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
-  var cnt = document.createElement("div");
-  cnt.style.display = "none";
-
-  document.body.appendChild(cnt);
-
-  cnt.id = "container-2";
-
-  const stage = new Konva.Stage({
-    container: "container-2",
-    width: nw,
-    height: nh,
-  });
-
-  const layer = new Konva.Layer();
-  const ctx = layer.getContext("2d");
-
-  // draw the original RLE first
-  if (region._img) ctx.drawImage(region._img, 0, 0);
-
-  // draw all the modifications
-  const lines = region.touches.map(p => {
-    const points = p.rescale(image.stageWidth, image.stageHeight, image.naturalWidth, image.naturalHeight);
-
-    const compOp = p.type === "add" ? "source-over" : "destination-out";
-
-    const l = {
-      points: points,
-      strokeWidth: p.scaledStrokeWidth(image.stageWidth, image.stageHeight, image.naturalWidth, image.naturalHeight),
-      globalCompositeOperation: compOp,
-      lineJoin: "round",
-      lineCap: "round",
-      opacity: 1,
-      ...lineOpts,
-
-      // stroke: 'red',
-      // strokeWidth: 15,
-      // lineCap: 'round',
-      // lineJoin: 'round'
-    };
-
-    // console.log(l);
-
-    return new Konva.Line(l);
-  });
-
-  lines.forEach(line => layer.add(line));
-
-  // add the layer to the stage
-  stage.add(layer);
+  const layer = Konva.stages[0].findOne(`#${region.id}`);
+  if (!layer) {
+    console.error(`Layer #${region.id} was not found on Stage`);
+    return [];
+  }
+  // resize to original size
+  const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
+  const ctx = canvas.getContext("2d");
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
