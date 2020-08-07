@@ -120,12 +120,15 @@ const LabelOnPolygon = observer(({ item }) => {
 });
 
 const LabelOnMask = observer(({ item }) => {
+  const settings = getRoot(item).settings;
+  if (settings && !settings.showLabels && !settings.showScore) return null;
+
   const s = item.states.find(s => s.type === "brushlabels");
   if (!s || !s.holdsState) return null;
   if (item.touches.length === 0) return null;
 
+  // @todo fix points from [0, 1, 2, 3] to [{x: 0, y: 1}, {x: 2, y: 3}]
   const bbox = polytobbox(item.touches);
-  const settings = getRoot(item).settings;
 
   return (
     <Fragment>
