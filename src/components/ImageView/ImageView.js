@@ -369,12 +369,3 @@ export default observer(
     }
   },
 );
-
-// <ImageControls
-//   item={item}
-//   handleZoom={this.handleZoom}
-//   updateBrightness={this.updateBrightness}
-//   updateGridSize={this.updateGridSize}
-//   updateBrushControl={this.updateBrushControl}
-//   updateBrushStrokeWidth={this.updateBrushStrokeWidth}
-// />
