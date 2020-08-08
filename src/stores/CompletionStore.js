@@ -515,17 +515,17 @@ export default types
       //
       let root = modelClass.create(completionModel);
 
-      const id = options["id"];
-      delete options["id"];
+      const pk = options.pk || options.id;
 
       //
       let node = {
-        id: id || guidGenerator(5),
-        root: root,
-
         userGenerate: false,
 
         ...options,
+
+        id: guidGenerator(5),
+        pk,
+        root,
       };
 
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
