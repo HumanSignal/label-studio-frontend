@@ -6,6 +6,7 @@ import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { TextRegionModel } from "./TextRegion";
+import { PolygonRegionModel } from "./PolygonRegion";
 
 const AreaBase = types.model({
   // auto id for fresh areas
@@ -108,6 +109,7 @@ const EmptyArea = types.compose(
 const Area = types.union(
   RectRegionModel,
   KeyPointRegionModel,
+  PolygonRegionModel,
   TextRegionModel,
   // AudioArea,
   // TextArea,

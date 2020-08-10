@@ -430,7 +430,7 @@ const Completion = types
       self.areas.put(area);
       self.regions.push(region);
 
-      self.unselectAll();
+      // self.unselectAll();
 
       return area;
     },
