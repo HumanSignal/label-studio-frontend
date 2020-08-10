@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
+import { types, getParentOfType, getParent } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -16,6 +16,14 @@ import { RatingModel } from "../tags/control/Rating";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
+const highlightOptions = {
+  shadowColor: "red",
+  shadowBlur: 1,
+  shadowOffsetY: 2,
+  shadowOffsetX: 2,
+  shadowOpacity: 1,
+};
+
 const Points = types
   .model("Points", {
     id: types.optional(types.identifier, guidGenerator),
@@ -26,14 +34,20 @@ const Points = types
      */
     strokeWidth: types.optional(types.number, 25),
   })
+  .views(self => ({
+    get parent() {
+      return getParent(self, 2);
+    },
+  }))
   .actions(self => ({
     setType(type) {
       self.type = type;
     },
 
     addPoints(x, y) {
-      self.points.push(x);
-      self.points.push(y);
+      // scale it back because it would be scaled on draw
+      self.points.push(x / self.parent.scaleX);
+      self.points.push(y / self.parent.scaleY);
     },
 
     // rescale points to the new width and height from the original
@@ -193,65 +207,34 @@ const Model = types
 const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
-  let currentPoints = [];
-  points.points.forEach(point => {
-    currentPoints.push(point);
-  });
-
-  return points.type === "add" ? (
-    <HtxBrushAddLine item={item} points={currentPoints} strokeWidth={points.strokeWidth} />
-  ) : (
-    <HtxBrushEraserLine item={item} points={currentPoints} strokeWidth={points.strokeWidth} />
-  );
-});
-
-const HtxBrushAddLine = observer(({ store, item, points, strokeWidth }) => {
-  let highlightOptions = {
-    shadowColor: "red",
-    shadowBlur: 1,
-    shadowOffsetY: 2,
-    shadowOffsetX: 2,
-    shadowOpacity: 1,
-  };
-
-  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
-  //        {...highlight}
+  const highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
+  const params =
+    points.type === "add"
+      ? {
+          ...highlight,
+          opacity: item.mode === "brush" ? item.opacity : 1,
+          globalCompositeOperation: "source-over",
+        }
+      : {
+          opacity: 1,
+          globalCompositeOperation: "destination-out",
+        };
 
   return (
     <Line
       onMouseDown={e => {
         e.cancelBubble = false;
       }}
-      strokeWidth={strokeWidth}
-      points={points}
+      points={[...points.points]}
       stroke={item.strokeColor}
-      opacity={item.mode === "brush" ? item.opacity : 1}
-      globalCompositeOperation={"source-over"}
-      tension={item.tension}
+      strokeWidth={points.strokeWidth}
       lineJoin={"round"}
       lineCap="round"
-      {...highlight}
+      tension={item.tension}
+      {...params}
     />
   );
 });
-
-const HtxBrushEraserLine = ({ store, item, points, strokeWidth }) => {
-  return (
-    <Line
-      onMouseDown={e => {
-        e.cancelBubble = false;
-      }}
-      strokeWidth={strokeWidth}
-      points={points}
-      tension={item.tension}
-      lineJoin={"round"}
-      lineCap="round"
-      stroke={item.strokeColor}
-      opacity={1}
-      globalCompositeOperation={"destination-out"}
-    />
-  );
-};
 
 const HtxBrushView = ({ store, item }) => {
   // if (item.parent.stageRef && item._rle) {
@@ -265,14 +248,6 @@ const HtxBrushView = ({ store, item }) => {
   //     ctx.putImageData(newdata, 0, 0);
   // }
 
-  let highlightOptions = {
-    shadowColor: "red",
-    shadowBlur: 1,
-    shadowOffsetY: 2,
-    shadowOffsetX: 2,
-    shadowOpacity: 1,
-  };
-
   let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   return (
@@ -280,8 +255,6 @@ const HtxBrushView = ({ store, item }) => {
       <Group
         attrMy={item.needsUpdate}
         name="segmentation"
-        scaleX={item.scaleX}
-        scaleY={item.scaleY}
         // onClick={e => {
         //     e.cancelBubble = false;
         // }}
@@ -323,6 +296,8 @@ const HtxBrushView = ({ store, item }) => {
           item.onClickRegion();
         }}
       >
+        {/* @todo rewrite this to just an Konva.Image, much simplier */}
+        {/* @todo and this will allow to use scale on parent Group */}
         <Shape
           sceneFunc={(ctx, shape) => {
             if (item.parent.naturalWidth === 1) return null;
@@ -350,11 +325,13 @@ const HtxBrushView = ({ store, item }) => {
           {...highlight}
         />
 
-        {item.touches.map(p => (
-          <HtxBrushLayer store={store} item={item} points={p} />
-        ))}
+        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+          {item.touches.map(p => (
+            <HtxBrushLayer key={p.id} store={store} item={item} points={p} />
+          ))}
 
-        <LabelOnMask item={item} />
+          <LabelOnMask item={item} />
+        </Group>
       </Group>
     </Fragment>
   );

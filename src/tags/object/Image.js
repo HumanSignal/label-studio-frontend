@@ -294,6 +294,8 @@ const Model = types
 
     setStageRef(ref) {
       self.stageRef = ref;
+      // Konva updates ref repeatedly and this breaks brush scaling
+      if (self.initialWidth > 1) return;
       self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;
       self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },
@@ -344,6 +346,8 @@ const Model = types
 
     updateImageSize(ev) {
       const { width, height, naturalWidth, naturalHeight } = ev.target;
+      self.initialWidth = width;
+      self.initialHeight = height;
       if ((self.rotation + 360) % 180 === 90) {
         // swap sizes
         self._updateImageSize({

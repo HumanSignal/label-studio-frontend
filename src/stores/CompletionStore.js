@@ -619,17 +619,17 @@ export default types
       //
       let root = modelClass.create(completionModel);
 
+      const pk = options.pk || options.id;
+
       //
       let node = {
         userGenerate: false,
 
         ...options,
 
+        id: guidGenerator(5),
+        pk,
         root,
-        id: options.id || guidGenerator(5),
-        // set draft flag if there is draft provided
-        // @todo do we need to show draftSaved time for just loaded draft?
-        draft: Boolean(options.draft),
       };
 
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;

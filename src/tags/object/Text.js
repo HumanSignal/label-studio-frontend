@@ -33,9 +33,11 @@ const TagAttrs = types.model("TextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
-  valuetype: types.optional(types.enumeration(["text", "url"]), "text"),
+  valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
 
-  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), "none"),
+  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
+    window.LS_SECURE_MODE ? "no" : "none",
+  ),
 
   selectionenabled: types.optional(types.boolean, true),
 
@@ -93,7 +95,12 @@ const Model = types
       if (self.valuetype === "url") {
         const url = self._value;
         if (!/^https?:\/\//.test(url)) {
-          InfoModal.error(`URL (${url}) is not valid`);
+          const message = [
+            `You should not put text directly in your task data if you use valuetype=url.`,
+            `URL (${url}) is not valid.`,
+          ];
+          if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
+          InfoModal.error(message.map(t => <p>{t}</p>));
           self.loadedValue("");
           return;
         }
