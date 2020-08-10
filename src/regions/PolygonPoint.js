@@ -22,8 +22,8 @@ const PolygonPoint = types
 
     selected: types.optional(types.boolean, false),
 
-    style: types.string,
-    size: types.string,
+    style: "circle",
+    size: "small",
   })
   .views(self => ({
     get parent() {
@@ -144,6 +144,8 @@ const PolygonPoint = types
   }));
 
 const PolygonPointView = observer(({ item, name }) => {
+  const style = item.parent.style;
+
   const sizes = {
     small: 4,
     medium: 8,
@@ -162,7 +164,7 @@ const PolygonPointView = observer(({ item, name }) => {
     item.index === 0
       ? {
           hitStrokeWidth: 12,
-          fill: item.parent.strokeColor ? item.parent.strokeColor : item.primary,
+          fill: style.strokecolor || item.primary,
           onMouseOver: item.handleMouseOverStartPoint,
           onMouseOut: item.handleMouseOutStartPoint,
           onClick: item.closeStartPoint,

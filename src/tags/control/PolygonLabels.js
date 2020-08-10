@@ -31,10 +31,10 @@ import ControlBase from "./Base";
  * @param {small|medium|large} [pointSize=medium]   - size of polygon handle points
  * @param {rectangle|circle} [pointStyle=rectangle] - style of points
  */
-// const TagAttrs = types.model({
-//   name: types.maybeNull(types.string),
-//   toname: types.maybeNull(types.string),
-// });
+const TagAttrs = types.model({
+  name: types.identifier,
+  toname: types.maybeNull(types.string),
+});
 
 const ModelAttrs = types.model("PolygonLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
@@ -49,7 +49,7 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   PolygonModel,
-  // TagAttrs,
+  TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

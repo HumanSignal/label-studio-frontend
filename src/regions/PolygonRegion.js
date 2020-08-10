@@ -18,6 +18,7 @@ import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 import { RatingModel } from "../tags/control/Rating";
 import { TextAreaModel } from "../tags/control/TextArea";
+import { AreaMixin } from "../mixins/AreaMixin";
 
 const Model = types
   .model({
@@ -25,38 +26,32 @@ const Model = types
     pid: types.optional(types.string, guidGenerator),
     type: "polygonregion",
 
-    opacity: types.number,
-    fillColor: types.maybeNull(types.string),
+    points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
 
-    strokeWidth: types.number,
-    strokeColor: types.string,
-
-    pointSize: types.string,
-    pointStyle: types.string,
-
-    closed: types.optional(types.boolean, false),
-
-    points: types.array(PolygonPoint, []),
-
-    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
-
-    mouseOverStartPoint: types.optional(types.boolean, false),
-
-    selectedPoint: types.maybeNull(types.safeReference(PolygonPoint)),
-
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
-
-    fromName: types.maybeNull(types.string),
-
-    wp: types.maybeNull(types.number),
-    hp: types.maybeNull(types.number),
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .views(self => ({
-    get parent() {
-      return getParentOfType(self, ImageModel);
-    },
+  .volatile(self => ({
+    closed: false,
+    mouseOverStartPoint: false,
+    selectedPoint: null,
+
+    // @todo remove, it should be at least a view or maybe even not required at all
+    states: [],
   }))
   .actions(self => ({
+    afterCreate() {
+      self.points = self.points.map(([x, y], index) => ({
+        id: guidGenerator(),
+        x: x,
+        y: y,
+        size: self.pointSize,
+        style: self.pointStyle,
+        index,
+      }));
+
+      if (self.points.length > 2) self.closed = true;
+    },
+
     /**
      * @todo excess method; better to handle click only on start point
      * Handler for mouse on start point of Polygon
@@ -176,36 +171,9 @@ const Model = types
       // self.points.forEach(p => p.computeOffset());
     },
 
-    updateAppearenceFromState() {
-      const stroke = self.states[0].getSelectedColor();
-      self.strokeColor = stroke;
-      self.fillColor = stroke;
-    },
-
-    selectRegion() {
-      if (self.parent.selected) {
-        self.parent.selected.closed = true;
-      }
-      // self.points.forEach(p => p.computeOffset());
-
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
-
-      self.completion.loadRegionState(self);
-    },
-
     setScale(x, y) {
       self.scaleX = x;
       self.scaleY = y;
-    },
-
-    addState(state) {
-      self.states.push(state);
-    },
-
-    setFill(color) {
-      self.fill = color;
     },
 
     updateOffset() {
@@ -213,9 +181,6 @@ const Model = types
     },
 
     updateImageSize(wp, hp, sw, sh) {
-      self.wp = wp;
-      self.hp = hp;
-
       if (self.coordstype === "px") {
         self.points.forEach(p => {
           const x = (sw * p.relativeX) / 100;
@@ -235,8 +200,8 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
+    serialize() {
+      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.object;
       const degree = -self.parent.rotation;
       const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
       const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
@@ -258,7 +223,7 @@ const Model = types
         image_rotation: self.parent.rotation,
       };
 
-      res.value = Object.assign(res.value, control.serializableValue);
+      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
@@ -268,6 +233,7 @@ const PolygonRegionModel = types.compose(
   "PolygonRegionModel",
   WithStatesMixin,
   RegionsMixin,
+  AreaMixin,
   NormalizationMixin,
   Model,
 );
@@ -340,16 +306,18 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ store, item }) => {
+  const style = item.style || item.tag;
+
   /**
    * Render line between 2 points
    */
   function renderLine({ points, idx1, idx2 }) {
     const name = `border_${idx1}_${idx2}`;
-    let { strokeColor, strokeWidth } = item;
+    let { strokecolor, strokewidth } = style;
 
     if (item.highlighted) {
-      strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
-      strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
+      strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
+      strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
     }
 
     if (!item.closed && idx2 === 0) return null;
@@ -370,10 +338,10 @@ const HtxPolygonView = ({ store, item }) => {
       >
         <Line
           points={flattenedPoints}
-          stroke={strokeColor}
-          opacity={item.opacity}
+          stroke={strokecolor}
+          opacity={+style.opacity}
           lineJoin="bevel"
-          strokeWidth={strokeWidth}
+          strokeWidth={+strokewidth}
           strokeScaleEnabled={false}
         />
       </Group>
@@ -400,7 +368,7 @@ const HtxPolygonView = ({ store, item }) => {
         <Line
           lineJoin="bevel"
           points={getFlattenedPoints(points)}
-          fill={item.strokeColor}
+          fill={style.strokecolor}
           closed={true}
           opacity={0.2}
         />

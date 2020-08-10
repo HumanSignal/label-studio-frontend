@@ -39,7 +39,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
+    // id: types.identifier,
     type: "polygon",
 
     // regions: types.array(RectRegionModel),

@@ -47,29 +47,14 @@ const _Tool = types
     },
 
     createRegion(opts) {
-      let newPolygon = self.getActivePolygon;
-      // self.freezeHistory();
-      const image = self.obj;
       const c = self.control;
+      const current = self.getActivePolygon;
 
-      delete opts["points"];
-
-      if (!newPolygon) {
-        newPolygon = PolygonRegionModel.create({
-          opacity: Number(c.opacity),
-          strokeWidth: Number(c.strokewidth),
-          fillOpacity: Number(c.fillopacity),
-          pointSize: c.pointsize,
-          pointStyle: c.pointstyle,
-          ...opts,
-        });
-
-        image.addShape(newPolygon);
+      if (current) {
+        current.addPoint(...opts.points[0]);
+      } else {
+        self.obj.completion.createRegion(opts, c, self.obj);
       }
-
-      newPolygon.addPoint(opts.x, opts.y);
-
-      return newPolygon;
     },
 
     clickEv(ev, [x, y]) {
@@ -89,13 +74,13 @@ const _Tool = types
       // }
 
       self.createRegion({
-        x: x,
-        y: y,
+        points: [[x, y]],
         width: 10,
         coordstype: "px",
         ...sap,
       });
 
+      // self.obj.completion.unselectAll();
       // if (self.control.type == "polygonlabels") self.control.unselectAll();
     },
   }));
