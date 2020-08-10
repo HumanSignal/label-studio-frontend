@@ -107,10 +107,10 @@ const EmptyArea = types.compose(
 );
 
 const Area = types.union(
+  TextRegionModel,
   RectRegionModel,
   KeyPointRegionModel,
   PolygonRegionModel,
-  TextRegionModel,
   // AudioArea,
   // TextArea,
   // HyperTextArea,
