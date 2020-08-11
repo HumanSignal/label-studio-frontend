@@ -110,6 +110,7 @@ const Model = types
     mode: types.optional(types.string, "brush"),
 
     needsUpdate: types.optional(types.number, 1),
+    hideable: true,
   })
   .views(self => ({
     get parent() {
@@ -237,6 +238,8 @@ const HtxBrushLayer = observer(({ store, item, points }) => {
 });
 
 const HtxBrushView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   // if (item.parent.stageRef && item._rle) {
   //     const sref = item.parent.stageRef;
   //     const ctx = sref.getLayers()[0].getContext("2d");
