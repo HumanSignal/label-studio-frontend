@@ -1,9 +1,16 @@
 import React from "react";
-import { List, Divider, Badge, Menu, Dropdown, Tree, Tag } from "antd";
+import { List, Divider, Badge, Menu, Dropdown, Tree, Tag, Button } from "antd";
 import { getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
-import { DownOutlined, SortAscendingOutlined, CalendarOutlined, ThunderboltOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  SortAscendingOutlined,
+  CalendarOutlined,
+  ThunderboltOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 
 import Utils from "../../utils";
 import "./Entities.scss";
@@ -57,6 +64,16 @@ const RegionItem = observer(({ item, idx, flat }) => {
       <Node node={item} onClick={() => {}} className={styles.node} />
 
       {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
+
+      {item.hideable && (
+        <Button
+          size="small"
+          type="text"
+          icon={item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          onClick={item.toggleHidden}
+          className={item.hidden ? styles.hidden : styles.visible}
+        />
+      )}
 
       {item.score && (
         <span

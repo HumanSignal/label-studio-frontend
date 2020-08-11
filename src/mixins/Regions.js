@@ -263,8 +263,9 @@ const RegionsMixin = types
       self.setHighlight(!self.highlighted);
     },
 
-    toggleHidden() {
+    toggleHidden(e) {
       self.hidden = !self.hidden;
+      e && e.stopPropagation();
     },
   }));
 
