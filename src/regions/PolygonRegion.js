@@ -50,6 +50,8 @@ const Model = types
 
     wp: types.maybeNull(types.number),
     hp: types.maybeNull(types.number),
+
+    hideable: true,
   })
   .views(self => ({
     get parent() {
@@ -340,6 +342,8 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   /**
    * Render line between 2 points
    */

@@ -71,6 +71,7 @@ const Model = types
     coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
 
     supportsTransform: true,
+    hideable: true,
   })
   .views(self => ({
     get parent() {
@@ -241,6 +242,8 @@ const EllipseRegionModel = types.compose(
 );
 
 const HtxEllipseView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   let { strokeColor, strokeWidth } = item;
 
   if (item.highlighted) {
