@@ -39,6 +39,7 @@ const Model = types
     sh: types.maybeNull(types.number),
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
+    hideable: true,
   })
   .views(self => ({
     get parent() {
@@ -147,6 +148,8 @@ const KeyPointRegionModel = types.compose(
 );
 
 const HtxKeyPointView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   const x = item.x;
   const y = item.y;
 
