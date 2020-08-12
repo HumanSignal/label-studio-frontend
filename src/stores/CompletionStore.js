@@ -557,11 +557,25 @@ export default types
       const c = self.addCompletion({ userGenerate: true });
       const s = prediction._initialCompletionObj;
 
+      const ids = {};
+
       // we need to iterate here and rename all ids, as those might
       // clash with the one in the prediction if used as a reference
       // somewhere
       s.forEach(r => {
-        if ("id" in r) r["id"] = guidGenerator();
+        if ("id" in r) {
+          const id = guidGenerator();
+          ids[r.id] = id;
+          r.id = id;
+        }
+      });
+
+      s.forEach(r => {
+        if (r.parent_id) {
+          if (ids[r.parent_id]) r.parent_id = ids[r.parent_id];
+          // impossible case but to not break the app better to reset it
+          else r.parent_id = null;
+        }
       });
 
       selectCompletion(c.id);
