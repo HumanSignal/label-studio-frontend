@@ -53,7 +53,7 @@ const _Tool = types
       if (current) {
         current.addPoint(...opts.points[0]);
       } else {
-        self.obj.completion.createRegion(opts, c, self.obj);
+        self.obj.completion.createResult(opts, c, self.obj);
       }
     },
 

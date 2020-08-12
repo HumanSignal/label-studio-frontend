@@ -10,17 +10,17 @@ export const AreaMixin = types
       return getParent(self, 2);
     },
 
-    get regions() {
-      return self.completion.regions.filter(r => r.area === self);
+    get results() {
+      return self.completion.results.filter(r => r.area === self);
     },
 
     get tag() {
-      const region = self.regions.find(r => r.type.endsWith("labels"));
-      return region && region.from_name;
+      const result = self.results.find(r => r.type.endsWith("labels"));
+      return result && result.from_name;
     },
 
     get object() {
-      return self.regions[0].to_name;
+      return self.results[0].to_name;
     },
 
     get parent() {
@@ -28,7 +28,7 @@ export const AreaMixin = types
     },
 
     get style() {
-      const styled = self.regions.find(r => r.style);
+      const styled = self.results.find(r => r.style);
       return styled && styled.style;
     },
 
@@ -46,7 +46,7 @@ export const AreaMixin = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      self.regions.forEach(r => destroy(r));
+      self.results.forEach(r => destroy(r));
     },
 
     setSelected(value) {
@@ -54,11 +54,11 @@ export const AreaMixin = types
     },
 
     setValue(tag) {
-      const region = self.regions.find(r => r.from_name === tag);
-      if (region) {
-        region.setValue(tag.selectedValues());
+      const result = self.results.find(r => r.from_name === tag);
+      if (result) {
+        result.setValue(tag.selectedValues());
       } else {
-        self.completion.createJustRegion({
+        self.completion.createJustResult({
           area: self,
           from_name: tag,
           to_name: self.object,

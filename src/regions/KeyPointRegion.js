@@ -32,9 +32,6 @@ const Model = types
   .volatile(self => ({
     relativeX: 0,
     relativeY: 0,
-
-    // @todo remove, it should be at least a view or maybe even not required at all
-    states: [],
   }))
   .actions(self => ({
     rotate(degree) {

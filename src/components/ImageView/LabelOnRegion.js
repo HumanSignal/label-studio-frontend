@@ -69,8 +69,9 @@ const LabelOnEllipse = observer(({ item }) => {
 });
 
 const LabelOnRect = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "rectanglelabels");
-  if (!s || !s.holdsState) return null;
+  // @todo get the most relevant result
+  const s = item.results[0];
+  if (!s) return null;
 
   return (
     <LabelOnBbox
@@ -86,8 +87,9 @@ const LabelOnRect = observer(({ item }) => {
 });
 
 const LabelOnPolygon = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "polygonlabels");
-  if (!s || !s.holdsState) return null;
+  // @todo get the most relevant result
+  const s = item.results[0];
+  if (!s) return null;
 
   const bbox = polytobbox(item.points);
   const settings = getRoot(item).settings;

@@ -55,21 +55,18 @@ export default types
     },
 
     applyCSSClass(lastSpan) {
-      const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(
-        self.states.filter(s => s._type && s._type.indexOf("labels") !== -1).map(s => s.selectedValues()),
-      );
-
-      const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
-        labels: names,
-        score: self.score,
-      });
-
-      const classes = ["htx-highlight", "htx-highlight-last", cssCls];
-
-      if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
-
-      lastSpan.className = classes.filter(c => c).join(" ");
+      // console.log('CSS', self.states)
+      // const settings = getRoot(self).settings;
+      // const names = Utils.Checkers.flatten(
+      //   self.states.filter(s => s._type && s._type.indexOf("labels") !== -1).map(s => s.selectedValues()),
+      // );
+      // const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
+      //   labels: names,
+      //   score: self.score,
+      // });
+      // const classes = ["htx-highlight", "htx-highlight-last", cssCls];
+      // if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
+      // lastSpan.className = classes.filter(c => c).join(" ");
     },
 
     addEventsToSpans(spans) {

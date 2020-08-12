@@ -25,7 +25,7 @@ const _Tool = types
         ...opts,
       });
 
-      self.obj.completion.createRegion(opts, c, self.obj);
+      self.obj.completion.createResult(opts, c, self.obj);
 
       return kp;
     },

@@ -35,7 +35,7 @@ const _Tool = types
       });
 
       console.log("COMP", self.obj.completion);
-      self.obj.completion.createRegion(opts, c, self.obj);
+      self.obj.completion.createResult(opts, c, self.obj);
 
       // self.obj.addShape(rect);
 

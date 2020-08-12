@@ -62,8 +62,6 @@ const Model = types
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
 
-    states: [],
-
     // coordstype: "px", // types.optional(types.enumeration(["px", "perc"]), "px"),
 
     supportsTransform: true,
@@ -96,11 +94,11 @@ const Model = types
     },
 
     updateAppearenceFromState() {
-      if (self.states && self.states.length) {
-        const stroke = self.states[0].getSelectedColor();
-        self.strokeColor = stroke;
-        self.fillColor = stroke;
-      }
+      // if (self.states && self.states.length) {
+      //   const stroke = self.states[0].getSelectedColor();
+      //   self.strokeColor = stroke;
+      //   self.fillColor = stroke;
+      // }
     },
 
     rotate(degree) {

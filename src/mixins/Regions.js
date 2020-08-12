@@ -155,33 +155,31 @@ const RegionsMixin = types
     },
 
     updateOrAddState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
-      if (foundIndex !== -1) {
-        self.states[foundIndex] = cloneNode(state);
-        self.updateAppearenceFromState();
-      } else {
-        self.states.push(cloneNode(state));
-      }
+      // var foundIndex = self.states.findIndex(s => s.name === state.name);
+      // if (foundIndex !== -1) {
+      //   self.states[foundIndex] = cloneNode(state);
+      //   self.updateAppearenceFromState();
+      // } else {
+      //   self.states.push(cloneNode(state));
+      // }
     },
 
     // given the specific state object (for example labels) it finds
     // that inside the region states objects and updates that, this
     // function is used to capture the state
     updateSingleState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
-      if (foundIndex !== -1) {
-        self.states[foundIndex] = cloneNode(state);
-
-        // user is updating the label of the region, there might
-        // be other states that depend on the value of the region,
-        // therefore we need to recheck here
-        if (state.type.indexOf("labels") !== -1) {
-          const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
-          states && states.forEach(s => self.states.remove(s));
-        }
-
-        self.updateAppearenceFromState();
-      }
+      // var foundIndex = self.states.findIndex(s => s.name === state.name);
+      // if (foundIndex !== -1) {
+      //   self.states[foundIndex] = cloneNode(state);
+      //   // user is updating the label of the region, there might
+      //   // be other states that depend on the value of the region,
+      //   // therefore we need to recheck here
+      //   if (state.type.indexOf("labels") !== -1) {
+      //     const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
+      //     states && states.forEach(s => self.states.remove(s));
+      //   }
+      //   self.updateAppearenceFromState();
+      // }
     },
 
     selectRegion() {

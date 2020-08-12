@@ -26,10 +26,6 @@ const Model = types
       return self.object;
     },
   }))
-  .volatile(self => ({
-    // @todo remove, it should be at least a view or maybe even not required at all
-    states: [],
-  }))
   .actions(self => ({
     beforeDestroy() {
       Utils.HTML.removeSpans(self._spans);
