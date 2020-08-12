@@ -34,9 +34,6 @@ const Model = types
     closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
-
-    // @todo remove, it should be at least a view or maybe even not required at all
-    states: [],
   }))
   .actions(self => ({
     afterCreate() {

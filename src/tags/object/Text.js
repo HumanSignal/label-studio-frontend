@@ -163,7 +163,7 @@ const Model = types
     addRegion(range) {
       range.start = range.startOffset;
       range.end = range.endOffset;
-      const area = self.completion.createRegion(range, self.activeStates()[0], self);
+      const area = self.completion.createResult(range, self.activeStates()[0], self);
       area._range = range._range;
       return area;
       // const states = self.getAvailableStates();

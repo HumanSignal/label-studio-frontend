@@ -12,7 +12,7 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
-import Region from "../regions/Region";
+import Result from "../regions/Result";
 import Area from "../regions/Area";
 
 console.log("ALL TYPES", Types.allModelsTypes());
@@ -49,7 +49,7 @@ const Completion = types
     names: types.map(types.reference(Types.allModelsTypes())),
     toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
 
-    history: types.optional(TimeTraveller, { targetPath: "../regions" }),
+    history: types.optional(TimeTraveller, { targetPath: "../results" }),
 
     dragMode: types.optional(types.boolean, false),
 
@@ -65,7 +65,7 @@ const Completion = types
       normalizations: [],
     }),
 
-    regions: types.array(Region),
+    results: types.array(Result),
 
     areas: types.map(Area),
 
@@ -91,7 +91,7 @@ const Completion = types
   }))
   .actions(self => ({
     reinitHistory() {
-      self.history = { targetPath: "../regions" };
+      self.history = { targetPath: "../results" };
     },
 
     setEdit(val) {
@@ -136,7 +136,7 @@ const Completion = types
       // @todo some backward compatibility, should be rewritten to state handling
       // @todo but there are some actions should be performed like scroll to region
       area.selectRegion && area.selectRegion();
-      area.regions.forEach(r => r.mainValue.map(v => r.from_name.findLabel(v)).forEach(l => l.setSelected(true)));
+      area.results.forEach(r => r.mainValue.map(v => r.from_name.findLabel(v)).forEach(l => l.setSelected(true)));
     },
 
     unselectArea(area) {
@@ -401,23 +401,23 @@ const Completion = types
     },
 
     // @todo rename to addRegion after clean up
-    pushRegion(region) {
-      self.regions.push(region);
+    pushResult(result) {
+      self.results.push(result);
     },
 
-    createJustRegion(data) {
-      const region = Region.create(data);
-      self.regions.push(region);
+    createJustResult(data) {
+      const result = Result.create(data);
+      self.results.push(result);
     },
 
-    createRegion({ type, ...data }, control, object) {
+    createResult({ type, ...data }, control, object) {
       const area = Area.create({
         id: guidGenerator(),
         // object: object,
         ...data,
       });
 
-      const region = Region.create({
+      const result = Result.create({
         area,
         from_name: control.name,
         to_name: object,
@@ -428,7 +428,7 @@ const Completion = types
       });
 
       self.areas.put(area);
-      self.regions.push(region);
+      self.results.push(result);
 
       // self.unselectAll();
 
@@ -436,7 +436,7 @@ const Completion = types
     },
 
     serializeCompletion() {
-      return self.regions.map(r => r.serialize());
+      return self.results.map(r => r.serialize());
     },
 
     /**
@@ -447,7 +447,7 @@ const Completion = types
       let objCompletion = json;
 
       // self.regions = objCompletion;
-      console.log("REGIONS", self.regions);
+      console.log("REGIONS", self.results);
 
       // resolveIdentifier(undefined, self.root, name);
       // return;
@@ -463,7 +463,7 @@ const Completion = types
           const { id, value, type, ...data } = obj;
           // avoid duplicates of the same areas in different completions/predictions
           const areaId = `${id}#${self.id}`;
-          const regionId = `${data.from_name}@${areaId}`;
+          const resultId = `${data.from_name}@${areaId}`;
 
           let area = self.areas.get(areaId);
           if (!area) {
@@ -472,8 +472,8 @@ const Completion = types
             self.areas.put(area);
           }
 
-          const region = Region.create({ ...data, id: regionId, type, value, area });
-          self.regions.push(region);
+          const result = Result.create({ ...data, id: resultId, type, value, area });
+          self.results.push(result);
           // const names = obj.to_name.split(",");
           // if (names.length > 1) throw new Error("Pairwise is not supported now");
           // names.forEach(name => {

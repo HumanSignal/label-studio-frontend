@@ -5,8 +5,8 @@ import Registry from "../core/Registry";
 import Area from "./Area";
 import { flatten } from "../utils/utilities";
 
-const Region = types
-  .model("Region", {
+const Result = types
+  .model("Result", {
     id: types.optional(types.identifier, guidGenerator),
     // pid: types.optional(types.string, guidGenerator),
 
@@ -77,6 +77,10 @@ const Region = types
 
     get labelsState() {
       return self.states.find(s => s.type.indexOf("labels") !== -1);
+    },
+
+    getSelectedString(joinstr = " ") {
+      return self.mainValue.join(joinstr);
     },
 
     hasLabelState(labelValue) {
@@ -313,4 +317,4 @@ const Region = types
     },
   }));
 
-export default Region;
+export default Result;

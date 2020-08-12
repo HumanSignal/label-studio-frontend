@@ -21,7 +21,7 @@ export default types
     },
 
     get sortedRegions() {
-      return getParent(self).regions;
+      return getParent(self).results;
 
       const sorts = {
         date: () => self.regions,
