@@ -2,8 +2,6 @@ import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
-import Area from "./Area";
-import { flatten } from "../utils/utilities";
 
 const Result = types
   .model("Result", {
@@ -26,11 +24,10 @@ const Result = types
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
     // optional for classifications
-    area: types.maybe(types.reference(Area)),
     // labeling tag
-    from_name: types.reference(types.union(...Registry.modelsArr())),
+    from_name: types.late(() => types.reference(types.union(...Registry.modelsArr()))),
     // object tag
-    to_name: types.reference(types.union(...Registry.objectTypes())),
+    to_name: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
     type: types.enumeration(["labels", "rectanglelabels", "keypointlabels", "polygonlabels", "choices"]),
     value: types.model({
       rating: types.maybe(types.number),
@@ -55,8 +52,8 @@ const Result = types
       return getRoot(self);
     },
 
-    get parent() {
-      return getParent(self);
+    get area() {
+      return getParent(self, 2);
     },
 
     get completion() {
