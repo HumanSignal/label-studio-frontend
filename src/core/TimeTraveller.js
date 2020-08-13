@@ -19,7 +19,7 @@ const TimeTraveller = types
     get canUndo() {
       // [TODO] since we initialize state a bit incorrectly we end up with 2 items in history
       // before even any action takes place. To protect those items we keep them in history forever
-      return self.undoIdx > 1;
+      return self.undoIdx > 0;
     },
     get canRedo() {
       return self.undoIdx < self.history.length - 1;
@@ -46,9 +46,9 @@ const TimeTraveller = types
           return;
         }
 
-        self.history.splice(self.undoIdx);
+        self.history.splice(self.undoIdx + 1);
         self.history.push(recorder);
-        self.undoIdx = self.history.length;
+        self.undoIdx = self.history.length - 1;
       },
 
       afterCreate() {
