@@ -238,17 +238,8 @@ const RegionsMixin = types
      */
     deleteRegion() {
       if (!self.completion.editable) return;
-
-      self.unselectRegion();
-
-      self.completion.relationStore.deleteNodeRelation(self);
-
-      if (self.type === "polygonregion") {
-        self.destroyRegion();
-      }
-
-      self.completion.regionStore.deleteRegion(self);
-
+      if (self.selected) self.completion.unselectAll();
+      if (self.destroyRegion) self.destroyRegion();
       self.completion.deleteRegion(self);
     },
 
