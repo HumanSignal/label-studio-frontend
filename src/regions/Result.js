@@ -96,27 +96,31 @@ const Result = types
     getOneColor() {
       return self.style && self.style.fillcolor;
     },
+
+    get tag() {
+      const value = self.value[self.type];
+      console.log("VVV", self.value);
+      if (!value) return null;
+      return self.from_name.findLabel(value[0]);
+    },
+
+    get style() {
+      if (!self.tag) return null;
+      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+      if (!fillcolor) return null;
+      const strokecolor = self.tag.background || self.tag.parent.strokecolor;
+      const { strokewidth, fillopacity, opacity } = self.tag.parent;
+      return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
   }))
   .volatile(self => ({
     pid: "",
-    tag: null,
-    style: null,
     selected: false,
     // highlighted: types.optional(types.boolean, false),
   }))
   .actions(self => ({
     setValue(value) {
       self.value[self.from_name.type] = value;
-      self.tag = self.from_name.findLabel(value[0]);
-      self.copyStyleFromTag();
-    },
-
-    copyStyleFromTag() {
-      if (!self.tag) return;
-      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
-      const strokecolor = self.tag.background || self.tag.parent.strokecolor;
-      const { strokewidth, fillopacity, opacity } = self.tag.parent;
-      if (fillcolor) self.style = { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
 
     afterCreate() {
@@ -125,8 +129,6 @@ const Result = types
 
     afterAttach() {
       console.log("AFTER CREATE", self.from_name, self.onlyValue);
-      self.tag = self.from_name.findLabel(self.onlyValue);
-      self.copyStyleFromTag();
     },
 
     setParentID(id) {
