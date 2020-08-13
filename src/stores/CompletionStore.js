@@ -575,7 +575,7 @@ export default types
       const c = selectItem(id, self.completions);
 
       c.editable = true;
-      // c.setupHotKeys();
+      c.setupHotKeys();
 
       getEnv(self).onSelectCompletion(c, selected);
 
