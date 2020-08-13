@@ -165,6 +165,7 @@ const Model = types
       range.end = range.endOffset;
       const area = self.completion.createResult(range, self.activeStates()[0], self);
       area._range = range._range;
+      self.completion.unselectAll();
       return area;
       // const states = self.getAvailableStates();
       // if (states.length === 0) return;

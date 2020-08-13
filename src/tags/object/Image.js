@@ -58,7 +58,7 @@ const TagAttrs = types.model({
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
-  showlabels: types.optional(types.boolean, false),
+  // showlabels: types.optional(types.boolean, false),
 
   zoomcontrol: types.optional(types.boolean, false),
   brightnesscontrol: types.optional(types.boolean, false),
