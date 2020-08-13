@@ -1,17 +1,15 @@
 import { types, getParent, destroy } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
+import Result from "../regions/Result";
 
 export const AreaMixin = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
+    results: types.array(Result),
   })
   .views(self => ({
     get completion() {
       return getParent(self, 2);
-    },
-
-    get results() {
-      return self.completion.results.filter(r => r.area === self);
     },
 
     get tag() {
@@ -53,12 +51,16 @@ export const AreaMixin = types
       self.selected = value;
     },
 
+    addResult(r) {
+      self.results.push(r);
+    },
+
     setValue(tag) {
       const result = self.results.find(r => r.from_name === tag);
       if (result) {
         result.setValue(tag.selectedValues());
       } else {
-        self.completion.createJustResult({
+        self.results.push({
           area: self,
           from_name: tag,
           to_name: self.object,

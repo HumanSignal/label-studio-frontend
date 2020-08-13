@@ -12,7 +12,6 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
-import Result from "../regions/Result";
 import Area from "../regions/Area";
 
 console.log("ALL TYPES", Types.allModelsTypes());
@@ -49,7 +48,7 @@ const Completion = types
     names: types.map(types.reference(Types.allModelsTypes())),
     toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
 
-    history: types.optional(TimeTraveller, { targetPath: "../results" }),
+    history: types.optional(TimeTraveller, { targetPath: "../areas" }),
 
     dragMode: types.optional(types.boolean, false),
 
@@ -64,8 +63,6 @@ const Completion = types
     normalizationStore: types.optional(NormalizationStore, {
       normalizations: [],
     }),
-
-    results: types.array(Result),
 
     areas: types.map(Area),
 
@@ -88,10 +85,16 @@ const Completion = types
       console.log("ROOT", self, getParent(self), self.store, self.list);
       return self.list.root;
     },
+
+    get results() {
+      const results = [];
+      self.areas.forEach(a => a.results.forEach(r => results.push(r)));
+      return results;
+    },
   }))
   .actions(self => ({
     reinitHistory() {
-      self.history = { targetPath: "../results" };
+      self.history = { targetPath: "../areas" };
     },
 
     setEdit(val) {
@@ -400,35 +403,25 @@ const Completion = types
       Hotkey.setScope("__main__");
     },
 
-    // @todo rename to addRegion after clean up
-    pushResult(result) {
-      self.results.push(result);
-    },
-
-    createJustResult(data) {
-      const result = Result.create(data);
-      self.results.push(result);
-    },
-
     createResult({ type, ...data }, control, object) {
-      const area = Area.create({
-        id: guidGenerator(),
-        // object: object,
-        ...data,
-      });
-
-      const result = Result.create({
-        area,
+      const result = {
         from_name: control.name,
+        // @todo should stick to area
         to_name: object,
         type: control.type,
         value: {
           [control._type]: control.selectedValues(),
         },
+      };
+
+      const area = Area.create({
+        id: guidGenerator(),
+        // object: object,
+        ...data,
+        results: [result],
       });
 
       self.areas.put(area);
-      self.results.push(result);
 
       // self.unselectAll();
 
@@ -472,8 +465,7 @@ const Completion = types
             self.areas.put(area);
           }
 
-          const result = Result.create({ ...data, id: resultId, type, value, area });
-          self.results.push(result);
+          area.addResult({ ...data, id: resultId, type, value });
           // const names = obj.to_name.split(",");
           // if (names.length > 1) throw new Error("Pairwise is not supported now");
           // names.forEach(name => {
