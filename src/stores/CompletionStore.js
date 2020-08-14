@@ -518,15 +518,13 @@ export default types
   .actions(self => {
     function toggleViewingAll() {
       if (self.viewingAllCompletions || self.viewingAllPredictions) {
-        self.completions.forEach(c => {
-          c.selected = false;
-          c.editable = false;
-          c.regionStore.unselectAll();
-        });
+        if (self.selected) {
+          self.selected.unselectAll();
+          self.selected.selected = false;
+        }
 
-        self.predictions.forEach(c => {
-          c.selected = false;
-          c.regionStore.unselectAll();
+        self.completions.forEach(c => {
+          c.editable = false;
         });
       } else {
         selectCompletion(self.completions[0].id);
