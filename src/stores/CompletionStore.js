@@ -283,6 +283,9 @@ const Completion = types
           if (!self.draft || self.autosave.paused) return;
 
           const result = self.serializeCompletion();
+          // if this is new completion and no regions added yet
+          if (!self.pk && !result.length) return;
+
           if (self.versions.draft) {
             // if we have previously saved draft and there are no updates - skip
             if (equal(result, self.versions.draft)) return;
