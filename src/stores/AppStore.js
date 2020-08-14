@@ -254,7 +254,8 @@ export default types
 
       return new Promise(resolve => {
         const fn = getEnv(self).onSubmitDraft;
-        if (!fn) return resolve();
+        if (!fn || !c.regionStore) return resolve();
+        if (!c.pk && !c.regionStore.regions.length) return resolve();
         const res = fn(self, c);
         if (res && res.then) res.then(resolve);
         else resolve(res);
