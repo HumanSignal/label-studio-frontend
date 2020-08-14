@@ -492,6 +492,12 @@ class TextPieceView extends Component {
 
   componentDidMount() {
     this._handleUpdate();
+
+    const ref = this.myRef;
+    const settings = this.props.store.settings;
+    if (ref && ref.classList && settings) {
+      ref.classList.toggle("htx-line-numbers", settings.showLineNumbers);
+    }
   }
 
   render() {

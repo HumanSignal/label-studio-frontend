@@ -49,6 +49,8 @@ const SettingsModel = types
 
     showLabels: types.optional(types.boolean, false),
 
+    showLineNumbers: false,
+
     // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
@@ -102,6 +104,14 @@ const SettingsModel = types
       //   // TODO there is no showLables in the regions right now
       //   return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
       // });
+    },
+
+    toggleShowLineNumbers() {
+      self.showLineNumbers = !self.showLineNumbers;
+
+      // hack to enable it from outside, because Text spawns spans on every rerender
+      // @todo it should be enabled inside Text
+      document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
     },
 
     toggleContinuousLabeling() {
