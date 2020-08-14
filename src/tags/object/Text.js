@@ -501,7 +501,7 @@ class TextPieceView extends Component {
 
     const val = item._value.split("\n").reduce((res, s, i) => {
       if (i) res.push(<br key={i} />);
-      res.push(s);
+      res.push(<span className={styles.line}>{s}</span>);
       return res;
     }, []);
 
