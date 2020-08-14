@@ -99,6 +99,11 @@ export default observer(({ store }) => {
             Select regions after creating
           </Checkbox>
 
+          <br />
+          <Checkbox checked={store.settings.showLineNumbers} onChange={store.settings.toggleShowLineNumbers}>
+            Show line numbers for Text
+          </Checkbox>
+
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}
