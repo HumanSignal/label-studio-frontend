@@ -7,6 +7,7 @@ import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import Types from "../../core/Types";
 import { ChoicesModel } from "./Choices";
 
 /**
@@ -40,6 +41,8 @@ const Model = types
     type: "choice",
     visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
+    // hierarchical Choices used for Taxonomy
+    children: Types.unionArray(["choice"]),
   })
   .views(self => ({
     get isCheckbox() {

@@ -33,6 +33,7 @@ import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-di
  * HTML
  */
 import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
+import { Taxonomy } from "../examples/taxonomy"; // eslint-disable-line no-unused-vars
 
 /**
  * Different
@@ -46,7 +47,7 @@ import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-u
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = TimeSeries;
+const data = Taxonomy;
 
 /**
  * Get current config

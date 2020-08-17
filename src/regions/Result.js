@@ -43,6 +43,7 @@ const Result = types
       "ellipselabels",
       "timeserieslabels",
       "choices",
+      "taxonomy",
       "textarea",
       "rating",
       "pairwise",
@@ -63,6 +64,7 @@ const Result = types
       ellipselabels: types.maybe(types.array(types.string)),
       brushlabels: types.maybe(types.array(types.string)),
       timeserieslabels: types.maybe(types.array(types.string)),
+      taxonomy: types.frozen(), // array of arrays of strings
     }),
     // info about object and region
     // meta: types.frozen(),
