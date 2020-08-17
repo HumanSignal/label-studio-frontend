@@ -34,6 +34,7 @@ import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unuse
  * Styles
  */
 import styles from "./App.module.scss";
+import { TreeValidation } from "../TreeValidation/TreeValidation";
 
 /**
  * App
@@ -55,6 +56,14 @@ const App = inject("store")(
 
       renderNoAccess() {
         return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
+      }
+
+      renderConfigValidationException() {
+        return (
+          <Segment>
+            <TreeValidation errors={this.props.store.completionStore.validation} />
+          </Segment>
+        );
       }
 
       renderLoader() {
@@ -98,6 +107,8 @@ const App = inject("store")(
 
         if (store.labeledSuccess) return self.renderSuccess();
 
+        if (cs.validation !== null) return self.renderConfigValidationException();
+
         if (!root) return self.renderNoCompletion();
 
         const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
@@ -123,6 +134,12 @@ const App = inject("store")(
                 {/* </div> */}
 
                 <div className={stCommon + " ls-common"}>
+                  {cs.validation !== null && (
+                    <Segment>
+                      <TreeValidation errors={cs.validation} />
+                    </Segment>
+                  )}
+
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
                     <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
                       {Tree.renderItem(root)}

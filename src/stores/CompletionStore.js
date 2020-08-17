@@ -12,6 +12,7 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
+import { ValidationError } from "../core/ConfigValidator";
 
 const Completion = types
   .model("Completion", {
@@ -408,6 +409,8 @@ export default types
 
     viewingAllCompletions: types.optional(types.boolean, false),
     viewingAllPredictions: types.optional(types.boolean, false),
+
+    validation: types.maybeNull(types.array(ValidationError)),
   })
   .views(self => ({
     get store() {
@@ -511,11 +514,12 @@ export default types
       // convert config to mst model
       const completionModel = Tree.treeToModel(config);
       const modelClass = Registry.getModelByTag(completionModel.type);
-
       //
       let root = modelClass.create(completionModel);
 
       const pk = options.pk || options.id;
+
+      self.validation = completionModel.validation;
 
       //
       let node = {

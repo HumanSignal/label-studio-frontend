@@ -36,6 +36,10 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types.model("RectangleLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
@@ -50,6 +54,7 @@ const Composition = types.compose(
   ModelAttrs,
   RectangleModel,
   TagAttrs,
+  Validation,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

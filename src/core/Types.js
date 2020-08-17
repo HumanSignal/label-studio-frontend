@@ -12,10 +12,10 @@ function _oneOf(lookup, err) {
   return function(arr) {
     return types.union({
       dispatcher: sn => {
-        if (arr.find(val => sn.type === val)) {
-          return lookup(sn.type);
+        if (arr.find(val => sn?.type === val)) {
+          return lookup(sn?.type);
         } else {
-          throw Error(err + sn.type);
+          throw Error(err + sn?.type);
         }
       },
     });
@@ -27,6 +27,10 @@ const tagsArray = _mixedArray(oneOfTags);
 
 function unionArray(arr) {
   return types.maybeNull(types.array(oneOfTags(arr)));
+}
+
+function unionTag(arr) {
+  return types.maybeNull(types.enumeration("unionTag", arr));
 }
 
 function allModelsTypes() {
@@ -75,4 +79,4 @@ function getParentOfTypeString(node, str) {
 const oneOfTools = _oneOf(Registry.getTool, "Not expecting tool: ");
 const toolsArray = _mixedArray(oneOfTools);
 
-export default { unionArray, allModelsTypes, isType, getParentOfTypeString, tagsArray, toolsArray };
+export default { unionArray, allModelsTypes, unionTag, isType, getParentOfTypeString, tagsArray, toolsArray };

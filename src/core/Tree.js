@@ -4,6 +4,7 @@ import xml2js from "xml2js";
 
 import Registry from "./Registry";
 import { guidGenerator } from "./Helpers";
+import { ConfigValidator } from "./ConfigValidator";
 
 export const TRAVERSE_SKIP = "skip";
 export const TRAVERSE_STOP = "stop";
@@ -204,6 +205,7 @@ function treeToModel(html) {
    */
   function buildData(node) {
     const data = attrsToProps(node.$);
+    const type = node["#name"].toLowerCase();
 
     /**
      * Generation id of node
@@ -213,7 +215,8 @@ function treeToModel(html) {
     /**
      * Build type name
      */
-    data["type"] = node["#name"].toLowerCase();
+    data["type"] = type;
+    data["tagName"] = node["#name"];
 
     return data;
   }
@@ -239,6 +242,8 @@ function treeToModel(html) {
   const root = buildData(Object.values(document)[0]);
   root.children = addNode(Object.values(document)[0]);
 
+  root.validation = ConfigValidator.validate(root);
+
   return root;
 }
 
@@ -247,10 +252,11 @@ function treeToModel(html) {
  * @param {*} el
  */
 function renderItem(el) {
-  const View = Registry.getViewByModel(getType(el).name);
+  const typeName = getType(el).name;
+  const View = Registry.getViewByModel(typeName);
 
   if (!View) {
-    throw new Error("No view for model:" + getType(el).name);
+    throw new Error(`No view for model: ${typeName}`);
   }
 
   return <View key={guidGenerator()} item={el} />;
