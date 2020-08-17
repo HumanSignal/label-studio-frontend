@@ -45,6 +45,7 @@ const Model = types
       "labels",
       "label",
       "table",
+      "taxonomy",
       "choices",
       "choice",
       "rating",
