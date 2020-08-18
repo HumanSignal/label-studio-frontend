@@ -414,14 +414,12 @@ const Completion = types
         },
       };
 
-      const area = Area.create({
+      const area = self.areas.put({
         id: guidGenerator(),
-        // object: object,
+        object,
         ...data,
         results: [result],
       });
-
-      self.areas.put(area);
 
       // self.unselectAll();
 
@@ -461,8 +459,12 @@ const Completion = types
           let area = self.areas.get(areaId);
           if (!area) {
             console.log("NEW AREA", areaId, { ...data, ...value });
-            area = Area.create({ id: areaId, ...data, ...value });
-            self.areas.put(area);
+            area = self.areas.put({
+              id: areaId,
+              object: data.to_name,
+              ...data,
+              ...value,
+            });
           }
 
           area.addResult({ ...data, id: resultId, type, value });

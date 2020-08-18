@@ -15,6 +15,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 const Model = types
   .model("TextRegionModel", {
     type: "textrange",
+    object: types.late(() => types.reference(TextModel)),
 
     start: types.number,
     end: types.number,
