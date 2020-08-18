@@ -1,14 +1,13 @@
-import { types, destroy } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { EllipseRegionModel } from "../regions/EllipseRegion";
 import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
   .model({
     default: true,
-    mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
+    mode: types.optional(types.enumeration(["drawing", "viewing"]), "viewing"),
   })
   .views(self => ({
     get tagTypes() {
@@ -20,40 +19,24 @@ const _Tool = types
   }))
   .actions(self => ({
     createRegion(opts) {
-      const control = self.control;
-
-      const ellipse = EllipseRegionModel.create({
-        opacity: parseFloat(control.opacity),
-        strokeWidth: Number(control.strokewidth),
-        fillOpacity: Number(control.fillopacity),
-        ...opts,
-      });
-
-      self.obj.addShape(ellipse);
-
-      return ellipse;
+      self.obj.completion.createResult(opts, self.control, self.obj);
     },
 
     mousedownEv(ev, [x, y]) {
-      if (self.control.type === "ellipselabels" && !self.control.isSelected) return;
-
+      if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
       if (!self.obj.checkLabels()) return;
 
       self.mode = "drawing";
 
-      const sap = self.statesAndParams;
-      const ellipse = self.createRegion({
+      self.createRegion({
         x: x,
         y: y,
         radiusX: 1,
         radiusY: 1,
         coordstype: "px",
-        ...sap,
       });
 
-      // if (self.control.type === "ellipselabels") self.control.unselectAll();
-
-      return ellipse;
+      if (self.tagTypes.stateTypes === self.control.type) self.completion.unselectAll();
     },
 
     mousemoveEv(ev, [x, y]) {
@@ -68,10 +51,10 @@ const _Tool = types
       const s = self.getActiveShape;
 
       if (s.radiusX < MIN_SIZE.X || s.radiusY < MIN_SIZE.Y) {
-        destroy(s);
-        if (self.control.type === "ellipselabels") self.control.unselectAll();
+        self.completion.removeArea(s);
+        if (self.control.type === "ellipselabels") self.completion.unselectAll();
       } else {
-        self.obj.completion.highlightedNode.unselectRegion(true);
+        // self.obj.completion.highlightedNode.unselectRegion(true);
       }
 
       self.mode = "viewing";

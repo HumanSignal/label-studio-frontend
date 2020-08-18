@@ -52,8 +52,9 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) =>
 };
 
 const LabelOnEllipse = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "ellipselabels");
-  if (!s || !s.holdsState) return null;
+  // @todo get the most relevant result
+  const s = item.results[0];
+  if (!s) return null;
 
   return (
     <LabelOnBbox

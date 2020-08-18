@@ -37,7 +37,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
+    // id: types.identifier,
     type: "ellipse",
   })
   .views(self => ({
