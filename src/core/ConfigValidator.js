@@ -13,6 +13,9 @@ const errorBuilder = {
     };
   },
 
+  /**
+   * Occurrs when tag is not in our Registry
+   */
   unknownTag(modelName, field, value) {
     return {
       modelName,
@@ -22,6 +25,9 @@ const errorBuilder = {
     };
   },
 
+  /**
+   * Occurrs when tag is not on the tree
+   */
   tagNotFound(modelName, field, value) {
     return {
       modelName,
@@ -31,6 +37,9 @@ const errorBuilder = {
     };
   },
 
+  /**
+   * Occurrs when referenced tag cannot be controlled by particular control tag
+   */
   tagUnsupported(modelName, field, value, validType) {
     return {
       modelName,
@@ -41,6 +50,9 @@ const errorBuilder = {
     };
   },
 
+  /**
+   * Occurrs when attribute value has wrong type
+   */
   badAttributeValueType(modelName, field, value, validType) {
     return {
       modelName,
