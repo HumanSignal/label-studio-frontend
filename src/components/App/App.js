@@ -107,8 +107,6 @@ const App = inject("store")(
 
         if (store.labeledSuccess) return self.renderSuccess();
 
-        if (cs.validation !== null) return self.renderConfigValidationException();
-
         if (!root) return self.renderNoCompletion();
 
         const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;

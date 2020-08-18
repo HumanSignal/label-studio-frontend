@@ -4,6 +4,8 @@ import { types, getRoot } from "mobx-state-tree";
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
+import { customTypes } from "../../core/CustomTypes";
+import Types from "../../core/Types";
 
 /**
  * Polygon tag
@@ -27,14 +29,18 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(types.string, "0.6"),
-  fillcolor: types.optional(types.string, "#f48a42"),
+  opacity: types.optional(customTypes.range(), "0.6"),
+  fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "3"),
-  strokecolor: types.optional(types.string, "#f48a42"),
+  strokecolor: types.optional(customTypes.color, "#f48a42"),
 
   pointsize: types.optional(types.string, "small"),
   pointstyle: types.optional(types.string, "circle"),
+});
+
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
 });
 
 const Model = types
@@ -67,7 +73,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Model);
+const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model);
 
 const HtxView = inject("store")(
   observer(({ store, item }) => {

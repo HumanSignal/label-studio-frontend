@@ -3,41 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
-
-const Fractional = types.custom({
-  name: "Fractional",
-  fromSnapshot(snapshot) {
-    return parseFloat(snapshot);
-  },
-  toSnapshot(value) {
-    return value.toString();
-  },
-  isTargetType(value) {
-    const floatValue = parseFloat(value);
-    return 0 <= floatValue && floatValue <= 1;
-  },
-  getValidationMessage(value) {
-    if (this.isTargetType(value)) return "";
-    return `Value ${value} is outside of fractional range.`;
-  },
-});
-
-const HexColor = types.custom({
-  name: "HexColor",
-  fromSnapshot(value) {
-    return String(value);
-  },
-  toSnapshot(value) {
-    return value.toString();
-  },
-  isTargetType(value) {
-    return /^#[0-9A-F]{3,6}$/i.test(value);
-  },
-  getValidationMessage(value) {
-    if (this.isTargetType(value)) return "";
-    return `Value ${value} doesn't appear to be a valid HEX color.`;
-  },
-});
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Rectangle
@@ -60,12 +26,12 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(Fractional, "0.6"),
-  fillcolor: types.optional(HexColor, "#f48a42"),
+  opacity: types.optional(customTypes.range(), "0.6"),
+  fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
-  strokecolor: types.optional(HexColor, "#f48a42"),
-  fillopacity: types.optional(Fractional, "0.6"),
+  strokecolor: types.optional(customTypes.color, "#f48a42"),
+  fillopacity: types.optional(customTypes.range(), "0.6"),
 
   canrotate: types.optional(types.boolean, true),
 });

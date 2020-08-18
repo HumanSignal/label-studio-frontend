@@ -4,6 +4,7 @@ import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import ControlBase from "./Base";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * KeyPoint tag
@@ -25,10 +26,10 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(types.string, "0.9"),
-  fillcolor: types.optional(types.string, "#8bad00"),
+  opacity: types.optional(customTypes.range(), "0.9"),
+  fillcolor: types.optional(customTypes.color, "#8bad00"),
 
-  strokecolor: types.optional(types.string, "#8bad00"),
+  strokecolor: types.optional(customTypes.color, "#8bad00"),
   strokewidth: types.optional(types.string, "1"),
 });
 

@@ -13,6 +13,7 @@ import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
 import { runTemplate } from "../../core/Template";
 import InfoModal from "../../components/Infomodal/Infomodal";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Label tag represents a single label
@@ -45,8 +46,8 @@ const TagAttrs = types.model({
   showalias: types.optional(types.boolean, false),
   aliasstyle: types.optional(types.string, "opacity: 0.6"),
   size: types.optional(types.string, "medium"),
-  background: types.optional(types.string, Constants.LABEL_BACKGROUND),
-  selectedcolor: types.optional(types.string, "white"),
+  background: types.optional(customTypes.color, Constants.LABEL_BACKGROUND),
+  selectedcolor: types.optional(customTypes.color, "#ffffff"),
 });
 
 const Model = types

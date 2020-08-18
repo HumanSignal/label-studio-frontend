@@ -49,11 +49,11 @@ const ListItemModel = types
  * @param {string=} lockAxis lock axis
  */
 const TagAttrs = types.model({
-  axis: types.optional(types.string, "y"),
-  lockaxis: types.maybeNull(types.string),
+  axis: types.optional(types.enumeration(["x", "y"]), "y"),
+  lockaxis: types.maybeNull(types.enumeration(["x", "y"])),
 
   elementvalue: types.maybeNull(types.string),
-  elementtag: types.optional(types.string, "Text"),
+  elementtag: types.optional(types.enumeration(["Text", "Image", "Audio"]), "Text"),
   // ranked: types.optional(types.string, "true"),
   // sortable: types.optional(types.string, "true"),
 

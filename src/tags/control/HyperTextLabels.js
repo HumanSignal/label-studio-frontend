@@ -30,6 +30,10 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["HyperText"]),
+});
+
 const ModelAttrs = types
   .model("HyperTextLabelesModel", {
     id: types.identifier,
@@ -58,6 +62,7 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   TagAttrs,
+  Validation,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
 );

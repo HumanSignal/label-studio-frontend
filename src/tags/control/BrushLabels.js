@@ -30,6 +30,10 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types.model("BrushLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
@@ -45,6 +49,7 @@ const BrushLabelsModel = types.compose(
   ModelAttrs,
   BrushModel,
   TagAttrs,
+  Validation,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
