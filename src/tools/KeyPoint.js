@@ -2,7 +2,6 @@ import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { KeyPointRegionModel } from "../regions/KeyPointRegion";
 
 const _Tool = types
   .model({
@@ -18,16 +17,7 @@ const _Tool = types
   }))
   .actions(self => ({
     createRegion(opts) {
-      const c = self.control;
-
-      const kp = KeyPointRegionModel.create({
-        opacity: parseFloat(c.opacity),
-        ...opts,
-      });
-
-      self.obj.completion.createResult(opts, c, self.obj);
-
-      return kp;
+      self.obj.completion.createResult(opts, self.control, self.obj);
     },
 
     clickEv(ev, [x, y]) {
@@ -36,18 +26,14 @@ const _Tool = types
 
       if (!self.obj.checkLabels()) return;
 
-      const sap = self.statesAndParams;
-
       self.createRegion({
         x: x,
         y: y,
         width: Number(c.strokewidth),
         coordstype: "px",
-        ...sap,
       });
 
       self.obj.completion.unselectAll();
-      // if (self.control.type === "keypointlabels") self.control.unselectAll();
     },
   }));
 

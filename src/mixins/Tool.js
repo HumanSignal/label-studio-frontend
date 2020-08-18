@@ -74,7 +74,7 @@ const ToolMixin = types
       const states = self.clonedStates;
       const params = self.paramsFromStates(states);
 
-      return { states: states, ...params };
+      return {};
     },
 
     get getActiveShape() {
