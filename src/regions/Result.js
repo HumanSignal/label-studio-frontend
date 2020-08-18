@@ -28,7 +28,14 @@ const Result = types
     from_name: types.late(() => types.reference(types.union(...Registry.modelsArr()))),
     // object tag
     to_name: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
-    type: types.enumeration(["labels", "rectanglelabels", "keypointlabels", "polygonlabels", "choices"]),
+    type: types.enumeration([
+      "labels",
+      "rectanglelabels",
+      "keypointlabels",
+      "polygonlabels",
+      "ellipselabels",
+      "choices",
+    ]),
     value: types.model({
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
@@ -38,6 +45,7 @@ const Result = types
       rectanglelabels: types.maybe(types.array(types.string)),
       keypointlabels: types.maybe(types.array(types.string)),
       polygonlabels: types.maybe(types.array(types.string)),
+      ellipselabels: types.maybe(types.array(types.string)),
     }),
     // info about object and region
     // meta: types.frozen(),

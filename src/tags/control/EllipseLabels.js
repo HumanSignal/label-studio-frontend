@@ -31,10 +31,10 @@ import ControlBase from "./Base";
  * @param {number=} [strokeWidth=1]   - width of stroke
  * @param {boolean=} [canRotate=true] - show or hide rotation handle
  */
-// const TagAttrs = types.model({
-//   name: types.maybeNull(types.string),
-//   toname: types.maybeNull(types.string),
-// });
+const TagAttrs = types.model({
+  name: types.identifier,
+  toname: types.maybeNull(types.string),
+});
 
 const ModelAttrs = types.model("EllipseLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
@@ -49,7 +49,7 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   EllipseModel,
-  // TagAttrs,
+  TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
