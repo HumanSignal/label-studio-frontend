@@ -146,11 +146,9 @@ const validateToNameTag = (element, model, flatTree) => {
   }
 
   if (controlledTags.validate(controlledTag.tagName).length > 0) {
-    console.log({ controlledTag });
-    return errorBuilder.tagUnsupported(model.name, "toname", controlledTag.tagName, controlledTagTypes);
+    return errorBuilder.tagUnsupported(model.name, "toname", controlledTag.tagName, controlledTags);
   }
 
-  console.log({ name, toname, controlledTags, connected: controlledTag });
   return null;
 };
 
@@ -164,7 +162,6 @@ const validateAttributes = (child, model, fieldsToSkip) => {
   const result = [];
   const properties = Object.keys(model.properties);
 
-  console.group(`Attributes validation for ${model.name}`, { child, properties });
   for (let key of properties) {
     if (!child.hasOwnProperty(key)) continue;
     if (key in fieldsToSkip) continue;
@@ -172,13 +169,10 @@ const validateAttributes = (child, model, fieldsToSkip) => {
     const modelProperty = model.properties[key.toLowerCase()];
     const mstValidationResult = modelProperty.validate(value, modelProperty);
 
-    console.log({ modelProperty, value, mstValidationResult });
-
     if (mstValidationResult.length === 0) continue;
 
     result.push(errorBuilder.badAttributeValueType(model.name, key, value, modelProperty));
   }
-  console.groupEnd(`Attributes validation for ${model.name}`);
 
   return result;
 };
@@ -190,25 +184,26 @@ const validateAttributes = (child, model, fieldsToSkip) => {
 const humanizeTypeName = type => {
   if (!type) return null;
 
-  const types = [].concat(type.getSubTypes());
+  try {
+    let types = [].concat(...(type.getSubTypes?.() ?? []).map(t => t.getSubTypes?.() ?? t));
 
-  return types.map(type => type.name);
+    return types.filter(type => type.name !== "null").map(type => JSON.parse(type.name));
+  } catch {
+    return type.name;
+  }
 };
 
 /**
  * Validate node attributes and compatibility with other nodes
  * @param {*} node
  */
-const validateTree = root => {
-  console.log("Validation start");
+export const validateConfigTree = root => {
   const flatTree = flattenTree(root);
   const fieldsToSkip = ["id", "children", "name", "toname", "controlledTags"];
   const validationResult = [];
 
   for (let child of flatTree) {
     const model = Registry.getModelByTag(child.type);
-    console.log(model);
-
     // Validate name attribute
     const nameValidation = validateNameTag(child, model);
     if (nameValidation !== null) validationResult.push(nameValidation);
@@ -219,8 +214,6 @@ const validateTree = root => {
 
     validationResult.push(...validateAttributes(child, model, fieldsToSkip));
   }
-  console.log({ validation: validationResult });
-  console.log("Validation end");
 
   if (validationResult.length) {
     return validationResult.map(error => {
@@ -236,9 +229,3 @@ const validateTree = root => {
 
   return null;
 };
-
-export class ConfigValidator {
-  static validate(tree) {
-    return validateTree(tree);
-  }
-}

@@ -21,10 +21,14 @@ const Range = (min = 0, max = 1) =>
     },
     getValidationMessage(value) {
       if (this.isTargetType(value)) return "";
-      return `Value ${value} is outside of fractional range.`;
+      return `Value ${value} is outside of range ${min}..${max}.`;
     },
   });
 
+/**
+ * Validates any string value againts CSS color rules.
+ * Color value might be named, HEX, HSL(A), RGB(A).
+ */
 const HexColor = types.custom({
   name: "CSSColor",
   fromSnapshot(value) {
