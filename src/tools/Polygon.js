@@ -2,12 +2,11 @@ import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { PolygonRegionModel } from "../regions/PolygonRegion";
 
 const _Tool = types
   .model({
     default: types.optional(types.boolean, true),
-    mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
+    mode: types.optional(types.enumeration(["drawing", "viewing"]), "viewing"),
   })
   .views(self => ({
     get getActivePolygon() {
@@ -35,34 +34,14 @@ const _Tool = types
     },
   }))
   .actions(self => ({
-    fromStateJSON(obj, controlTag) {
-      const poly = self.createFromJSON(obj, controlTag);
-      if (poly) {
-        for (var i = 1; i < obj.value.points.length; i++) {
-          poly.addPoint(obj.value.points[i][0], obj.value.points[i][1]);
-        }
-
-        poly.closePoly();
-      }
-    },
-
-    createRegion(opts) {
-      const c = self.control;
-      const current = self.getActivePolygon;
-
-      if (current) {
-        current.addPoint(...opts.points[0]);
-      } else {
-        self.obj.completion.createResult(opts, c, self.obj);
-      }
-    },
-
     clickEv(ev, [x, y]) {
-      if (self.control.type === "polygonlabels") if (!self.control.isSelected && self.getActivePolygon === null) return;
+      const control = self.control;
+      const current = self.getActivePolygon;
+      const withStates = self.tagTypes.stateTypes === control.type;
 
-      if (!self.getActivePolygon && !self.obj.checkLabels()) return;
+      if (withStates && !control.isSelected && current === null) return;
 
-      const sap = self.statesAndParams;
+      if (!current && !self.obj.checkLabels()) return;
 
       // if there is a polygon in process of creation right now, but
       // the user has clicked on the labels without first finishing
@@ -73,15 +52,18 @@ const _Tool = types
       //   self.getActivePolygon.closePoly();
       // }
 
-      self.createRegion({
-        points: [[x, y]],
-        width: 10,
-        coordstype: "px",
-        ...sap,
-      });
+      if (current) {
+        current.addPoint(x, y);
+      } else {
+        const opts = {
+          points: [[x, y]],
+          width: 10,
+          coordstype: "px",
+        };
 
-      // self.obj.completion.unselectAll();
-      // if (self.control.type == "polygonlabels") self.control.unselectAll();
+        self.obj.completion.createResult(opts, control, self.obj);
+        if (withStates) self.obj.completion.unselectAll();
+      }
     },
   }));
 
