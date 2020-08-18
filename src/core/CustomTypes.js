@@ -29,7 +29,7 @@ const Range = (min = 0, max = 1) =>
  * Validates any string value againts CSS color rules.
  * Color value might be named, HEX, HSL(A), RGB(A).
  */
-const HexColor = types.custom({
+const CSSColor = types.custom({
   name: "CSSColor",
   fromSnapshot(value) {
     return String(value);
@@ -50,5 +50,5 @@ const HexColor = types.custom({
 
 export const customTypes = {
   range: Range,
-  color: HexColor,
+  color: CSSColor,
 };
