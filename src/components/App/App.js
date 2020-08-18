@@ -84,6 +84,21 @@ const App = inject("store")(
         );
       }
 
+      _renderUI(root, store, cs, settings) {
+        return (
+          <>
+            {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
+              <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
+                {Tree.renderItem(root)}
+                {store.hasInterface("controls") && <Controls item={cs.selected} />}
+              </Segment>
+            )}
+            {cs.viewingAllCompletions && this.renderAllCompletions()}
+            {cs.viewingAllPredictions && this.renderAllPredictions()}
+          </>
+        );
+      }
+
       renderAllCompletions() {
         return this._renderAll(this.props.store.completionStore.completions);
       }
@@ -132,20 +147,9 @@ const App = inject("store")(
                 {/* </div> */}
 
                 <div className={stCommon + " ls-common"}>
-                  {cs.validation !== null && (
-                    <Segment>
-                      <TreeValidation errors={cs.validation} />
-                    </Segment>
-                  )}
-
-                  {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                    <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
-                      {Tree.renderItem(root)}
-                      {store.hasInterface("controls") && <Controls item={cs.selected} />}
-                    </Segment>
-                  )}
-                  {cs.viewingAllCompletions && this.renderAllCompletions()}
-                  {cs.viewingAllPredictions && this.renderAllPredictions()}
+                  {cs.validation === null
+                    ? this._renderUI(root, store, cs, settings)
+                    : this.renderConfigValidationException()}
 
                   <div className={stMenu + " ls-menu"}>
                     {store.hasInterface("completions:menu") && <Completions store={store} />}

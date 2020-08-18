@@ -18,7 +18,7 @@ export default {
   },
 
   ERR_TAG_UNSUPPORTED: ({ modelName, field, value, validType }) => {
-    return `Invalid attribute <b>${field}</b> for <b>${modelName}</b>: referenced tag has type <b>${value}</b>, but <b>${modelName}</b> can only control <b>${[]
+    return `Invalid attribute <b>${field}</b> for <b>${modelName}</b>: referenced tag is <b>${value}</b>, but <b>${modelName}</b> can only control <b>${[]
       .concat(validType)
       .join(", ")}</b>`;
   },
