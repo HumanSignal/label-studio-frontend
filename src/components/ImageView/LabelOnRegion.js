@@ -122,8 +122,10 @@ const LabelOnPolygon = observer(({ item }) => {
 });
 
 const LabelOnMask = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "brushlabels");
-  if (!s || !s.holdsState) return null;
+  // const s = item.states.find(s => s.type === "brushlabels");
+  // @todo get the most relevant result
+  const s = item.results[0];
+  if (!s) return null;
   if (item.touches.length === 0) return null;
 
   const bbox = polytobbox(item.touches);
@@ -156,8 +158,10 @@ const LabelOnMask = observer(({ item }) => {
 });
 
 const LabelOnKP = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "keypointlabels");
-  if (!s || !s.holdsState) return null;
+  // const s = item.states.find(s => s.type === "keypointlabels");
+  // @todo get the most relevant result
+  const s = item.results[0];
+  if (!s) return null;
 
   return (
     <LabelOnBbox

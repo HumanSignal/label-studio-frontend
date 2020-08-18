@@ -17,10 +17,6 @@ export const AreaMixin = types
       return result && result.from_name;
     },
 
-    get object() {
-      return self.results[0].to_name;
-    },
-
     get parent() {
       return self.object;
     },
