@@ -8,6 +8,8 @@ class _Registry {
     this.views = {};
     this.regions = [];
     this.objects = [];
+    // list of available areas per object type
+    this.areas = new Map();
 
     this.views_models = {};
 
@@ -21,8 +23,12 @@ class _Registry {
     this.views_models[model.name] = view;
   }
 
-  addRegionType(type) {
+  addRegionType(type, object, detector) {
     this.regions.push(type);
+    if (detector) type.detectByValue = detector;
+    const areas = this.areas.get(object);
+    if (areas) areas.push(type);
+    else this.areas.set(object, [type]);
   }
 
   regionTypes() {
@@ -51,6 +57,16 @@ class _Registry {
 
   getViewByTag(tag) {
     return this.views[tag];
+  }
+
+  getAvailableAreas(object, value) {
+    const available = this.areas.get(object);
+    if (value) {
+      for (let model of available) {
+        if (model.detectByValue && model.detectByValue(value)) return [model];
+      }
+    }
+    return available.filter(a => !a.detectByValue);
   }
 
   getTool(name) {

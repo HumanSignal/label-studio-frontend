@@ -189,5 +189,10 @@ const HtxKeyPointView = ({ store, item }) => {
 const HtxKeyPoint = inject("store")(observer(HtxKeyPointView));
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
+Registry.addRegionType(
+  KeyPointRegionModel,
+  "image",
+  value => "x" in value && "y" in value && "width" in value && !("height" in value),
+);
 
 export { KeyPointRegionModel, HtxKeyPoint };

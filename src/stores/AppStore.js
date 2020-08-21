@@ -134,6 +134,9 @@ export default types
      * Function
      */
     function afterCreate() {
+      // important thing to detect Area atomatically: it hasn't access to store, only via global
+      window.Htx = self;
+
       /**
        * Hotkey for submit
        */

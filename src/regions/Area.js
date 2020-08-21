@@ -99,15 +99,33 @@ const HyperTextArea = types.compose(
     })),
 );
 
-const EmptyArea = types.compose(
-  "EmptyArea",
+// general Area type for classification Results which doesn't belong to any real Area
+const ClassificationArea = types.compose(
+  "ClassificationArea",
   AreaMixin,
-  types.model({}).actions(self => ({
-    serialize: () => ({}),
-  })),
+  types
+    .model({
+      classification: true,
+    })
+    .actions(self => ({
+      serialize: () => ({}),
+    })),
 );
 
 const Area = types.union(
+  {
+    dispatcher(sn) {
+      if (Object.values(sn.value).length <= 1) return ClassificationArea;
+      // may be a tag itself or just its name
+      const objectName = sn.object.name || sn.object;
+      // we have to use current config to detect Object tag by name
+      const tag = window.Htx.completionStore.names.get(objectName);
+      // provide value to detect Area by data
+      const available = Registry.getAvailableAreas(tag.type, sn.value);
+      // union of all available Areas for this Object type
+      return types.union(...available);
+    },
+  },
   TextRegionModel,
   RectRegionModel,
   KeyPointRegionModel,
@@ -116,7 +134,7 @@ const Area = types.union(
   // AudioArea,
   // TextArea,
   // HyperTextArea,
-  EmptyArea,
+  ClassificationArea,
 );
 
 const Area1 = types
@@ -139,7 +157,7 @@ const Area1 = types
     // parentID: types.optional(types.string, ""),
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
-    data: types.union(RectRegionModel, AudioArea, TextArea, HyperTextArea, EmptyArea),
+    data: types.union(RectRegionModel, AudioArea, TextArea, HyperTextArea, ClassificationArea),
     object: types.reference(types.union(...Registry.objectTypes())),
     type: "",
     // info about object and region

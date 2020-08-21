@@ -342,5 +342,6 @@ const HtxRectangleView = ({ store, item }) => {
 const HtxRectangle = inject("store")(observer(HtxRectangleView));
 
 Registry.addTag("rectangleregion", RectRegionModel, HtxRectangle);
+Registry.addRegionType(RectRegionModel, "image");
 
 export { RectRegionModel, HtxRectangle };
