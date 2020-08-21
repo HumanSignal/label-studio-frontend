@@ -318,5 +318,6 @@ const HtxEllipseView = ({ store, item }) => {
 const HtxEllipse = inject("store")(observer(HtxEllipseView));
 
 Registry.addTag("ellipseregion", EllipseRegionModel, HtxEllipse);
+Registry.addRegionType(EllipseRegionModel, "image");
 
 export { EllipseRegionModel, HtxEllipse };

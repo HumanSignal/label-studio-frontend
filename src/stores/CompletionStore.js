@@ -407,7 +407,7 @@ const Completion = types
       Hotkey.setScope("__main__");
     },
 
-    createResult({ type, ...data }, control, object) {
+    createResult(value, control, object) {
       const result = {
         from_name: control.name,
         // @todo should stick to area
@@ -421,7 +421,10 @@ const Completion = types
       const area = self.areas.put({
         id: guidGenerator(),
         object,
-        ...data,
+        // data for Model instance
+        ...value,
+        // for Model detection
+        value,
         results: [result],
       });
 
@@ -468,6 +471,7 @@ const Completion = types
               object: data.to_name,
               ...data,
               ...value,
+              value,
             });
           }
 

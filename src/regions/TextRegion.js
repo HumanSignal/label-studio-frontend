@@ -11,6 +11,7 @@ import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
 import { AreaMixin } from "../mixins/AreaMixin";
+import Registry from "../core/Registry";
 
 const Model = types
   .model("TextRegionModel", {
@@ -63,5 +64,7 @@ const TextRegionModel = types.compose(
   Model,
   SpanTextMixin,
 );
+
+Registry.addRegionType(TextRegionModel, "text");
 
 export { TextRegionModel };

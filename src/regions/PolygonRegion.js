@@ -491,5 +491,6 @@ const HtxPolygonView = ({ store, item }) => {
 const HtxPolygon = inject("store")(observer(HtxPolygonView));
 
 Registry.addTag("polygonregion", PolygonRegionModel, HtxPolygon);
+Registry.addRegionType(PolygonRegionModel, "image", value => !!value.points);
 
 export { PolygonRegionModel, HtxPolygon };
