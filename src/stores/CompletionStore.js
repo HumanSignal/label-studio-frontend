@@ -44,10 +44,6 @@ const Completion = types
     honeypot: types.optional(types.boolean, false),
     skipped: false,
 
-    // root: Types.allModelsTypes(),
-    names: types.map(types.reference(Types.allModelsTypes())),
-    toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
-
     history: types.optional(TimeTraveller, { targetPath: "../areas" }),
 
     dragMode: types.optional(types.boolean, false),
@@ -84,6 +80,14 @@ const Completion = types
     get root() {
       console.log("ROOT", self, getParent(self), self.store, self.list);
       return self.list.root;
+    },
+
+    get names() {
+      return self.list.names;
+    },
+
+    get toNames() {
+      return self.list.toNames;
     },
 
     get results() {
@@ -278,18 +282,18 @@ const Completion = types
     afterAttach() {
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
-      self.traverseTree(node => {
-        if (node && node.name) self.names.put(node);
+      // self.traverseTree(node => {
+      //   if (node && node.name) self.names.put(node);
 
-        if (node && node.toname) {
-          const val = self.toNames.get(node.toname);
-          if (val) {
-            val.push(node.name);
-          } else {
-            self.toNames.set(node.toname, [node.name]);
-          }
-        }
-      });
+      //   if (node && node.toname) {
+      //     const val = self.toNames.get(node.toname);
+      //     if (val) {
+      //       val.push(node.name);
+      //     } else {
+      //       self.toNames.set(node.toname, [node.name]);
+      //     }
+      //   }
+      // });
 
       self.traverseTree(node => {
         if (node.updateValue) node.updateValue(self.store);
@@ -502,6 +506,8 @@ export default types
     selected: types.maybeNull(types.reference(Completion)),
 
     root: Types.allModelsTypes(),
+    names: types.map(types.reference(Types.allModelsTypes())),
+    toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
 
     completions: types.array(Completion),
     predictions: types.array(Completion),
@@ -606,17 +612,35 @@ export default types
       }
     }
 
+    function initRoot(config) {
+      // convert config to mst model
+      const rootModel = Tree.treeToModel(config);
+      const modelClass = Registry.getModelByTag(rootModel.type);
+
+      self.root = modelClass.create(rootModel);
+
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
+      Tree.traverseTree(self.root, node => {
+        if (node && node.name) self.names.put(node);
+
+        if (node && node.toname) {
+          const val = self.toNames.get(node.toname);
+          if (val) {
+            val.push(node.name);
+          } else {
+            self.toNames.set(node.toname, [node.name]);
+          }
+        }
+      });
+
+      return self.root;
+    }
+
     function addItem(options) {
       const { user, config } = self.store;
 
-      //
-      if (!self.root) {
-        // convert config to mst model
-        const completionModel = Tree.treeToModel(config);
-        const modelClass = Registry.getModelByTag(completionModel.type);
-
-        self.root = modelClass.create(completionModel);
-      }
+      if (!self.root) initRoot(config);
 
       const id = options["id"];
       delete options["id"];
