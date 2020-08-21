@@ -35,6 +35,7 @@ const Result = types
       "polygonlabels",
       "ellipselabels",
       "choices",
+      "textarea",
     ]),
     value: types.model({
       rating: types.maybe(types.number),
@@ -70,10 +71,6 @@ const Result = types
 
     get mainValue() {
       return self.value[self.type];
-    },
-
-    get onlyValue() {
-      return self.mainValue[0];
     },
 
     get editable() {
@@ -136,7 +133,10 @@ const Result = types
     },
 
     afterAttach() {
-      console.log("AFTER CREATE", self.from_name, self.onlyValue);
+      const tag = self.from_name;
+      // update state of classification tags
+      // @todo unify this with `selectArea`
+      if (tag.setResult) tag.setResult(self.mainValue);
     },
 
     setParentID(id) {

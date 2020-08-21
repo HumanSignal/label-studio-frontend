@@ -42,7 +42,7 @@ const { Option } = Select;
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  name: types.string,
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   showinline: types.maybeNull(types.boolean),
@@ -54,7 +54,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     readonly: types.optional(types.boolean, false),
@@ -82,6 +82,10 @@ const Model = types
       if (choices && choices.length) return { choices };
 
       return null;
+    },
+
+    get result() {
+      return self.completion.results.find(r => r.from_name === self);
     },
 
     // perChoiceVisible() {
@@ -114,6 +118,12 @@ const Model = types
     copyState(choices) {
       choices.selectedValues().forEach(l => {
         self.findLabel(l).setSelected(true);
+      });
+    },
+
+    setResult(values) {
+      values.forEach(v => {
+        self.findLabel(v).setSelected(true);
       });
     },
 

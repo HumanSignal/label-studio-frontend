@@ -17,7 +17,7 @@ export default types
   .views(self => ({
     get regions() {
       console.log("REGIONS", getParent(self).areas);
-      return Array.from(getParent(self).areas.values());
+      return Array.from(getParent(self).areas.values()).filter(area => !area.classification);
     },
 
     get sortedRegions() {

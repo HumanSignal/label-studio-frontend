@@ -38,7 +38,7 @@ const { TextArea } = Input;
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
   allowsubmit: types.optional(types.boolean, true),
   label: types.optional(types.string, ""),
@@ -52,7 +52,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     type: "textarea",
     regions: types.array(TextAreaRegionModel),
 
