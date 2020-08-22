@@ -332,7 +332,7 @@ class TextPieceView extends Component {
     }
   }
 
-  captureDocumentSelection() {
+  captureDocumentSelection(ev) {
     var i,
       self = this,
       ranges = [],
@@ -341,6 +341,8 @@ class TextPieceView extends Component {
 
     if (selection.isCollapsed) return [];
 
+    const granularityDisabled = ev.altKey;
+
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
 
@@ -348,7 +350,9 @@ class TextPieceView extends Component {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
 
-      r = this.alignRange(r);
+      if (!granularityDisabled) {
+        r = this.alignRange(r);
+      }
 
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
@@ -401,7 +405,7 @@ class TextPieceView extends Component {
     const states = item.activeStates();
     if (!states || states.length === 0) return;
 
-    var selectedRanges = this.captureDocumentSelection();
+    var selectedRanges = this.captureDocumentSelection(ev);
     if (selectedRanges.length === 0) return;
 
     // prevent overlapping spans from being selected right after this
