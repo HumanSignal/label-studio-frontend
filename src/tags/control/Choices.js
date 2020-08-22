@@ -62,7 +62,7 @@ const Model = types
 
     type: "choices",
     _type: "choices",
-    children: Types.unionArray(["choice", "view", "header", "hypertext"]),
+    children: Types.unionArray(["choice", "view", "header", "hypertext", "richtext"]),
   })
   .views(self => ({
     get shouldBeUnselected() {

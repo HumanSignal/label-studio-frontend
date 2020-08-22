@@ -63,8 +63,7 @@ function documentForward(node) {
 }
 
 function isTextNode(node) {
-  const TEXT_NODE = 3;
-  return node.nodeType === TEXT_NODE;
+  return node.nodeType === Node.TEXT_NODE;
 }
 
 function firstLeaf(node) {
@@ -121,6 +120,11 @@ function documentReverse(node) {
   return node.previousSibling;
 }
 
+/**
+ * Split text node into two nodes following each other
+ * @param {Text} node
+ * @param {number} offset
+ */
 function splitText(node, offset) {
   let tail = node.cloneNode(false);
   tail.deleteData(0, offset);
@@ -194,6 +198,8 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   let nlen = nodes.length;
   if (nlen > 1 && nodes[nodes.length - 1].length !== normedRange._range.endOffset) nlen = nlen - 1;
 
+  console.log({ normedRange, nodes });
+
   const results = [];
   for (var i = start, len = nlen; i < len; i++) {
     var node = nodes[i];
@@ -212,6 +218,10 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   return results;
 }
 
+/**
+ *
+ * @param {Range} range
+ */
 function splitBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
 

@@ -148,7 +148,7 @@ function treeToModel(html) {
   const hypertexts = (function() {
     let m;
     const res = [];
-    const re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
+    const re = /<(HyperText|RichText).*?>(.*?)<\/(HyperText|RichText)>/gi;
     do {
       m = re.exec(html);
       if (m) {
@@ -173,7 +173,7 @@ function treeToModel(html) {
 
     // if it's a hypertext process the children differently, that's
     // done for convenience. value attribute takes precedence if present
-    if (node["#name"].toLowerCase() === "hypertext") {
+    if (["hypertext", "richtext"].includes(node["#name"].toLowerCase())) {
       return node.$ && "value" in node.$ ? node.$["value"] : findHT(node);
     }
 

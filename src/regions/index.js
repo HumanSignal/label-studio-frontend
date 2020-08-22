@@ -13,6 +13,7 @@ import { RectRegionModel, HtxRectangle } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
 import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
 import { TextRegionModel } from "./TextRegion";
+import { RichTextRegionModel } from "./RichTextRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
@@ -24,6 +25,7 @@ const AllRegionsType = types.union(
   RectRegionModel,
   TextAreaRegionModel,
   TextRegionModel,
+  RichTextRegionModel,
 );
 
 export {
@@ -38,6 +40,7 @@ export {
   HtxRectangle,
   HtxTextAreaRegion,
   HyperTextRegionModel,
+  RichTextRegionModel,
   KeyPointRegionModel,
   PolygonPoint,
   PolygonPointView,

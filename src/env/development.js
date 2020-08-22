@@ -33,6 +33,7 @@ import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-di
  * HTML
  */
 import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
+import { RichTextDocument } from "../examples/rich_text"; // eslint-disable-line no-unused-vars
 
 /**
  * Different
@@ -44,7 +45,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = ImageBbox;
+const data = RichTextDocument;
 
 /**
  * Get current config

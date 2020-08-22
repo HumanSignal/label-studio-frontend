@@ -33,9 +33,11 @@ const TagAttrs = types.model("HyperTextModel", {
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
     window.LS_SECURE_MODE ? "no" : "yes",
   ),
+
   clickablelinks: false,
 
   highlightcolor: types.maybeNull(types.string),
+
   showlabels: types.optional(types.boolean, false),
 
   encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),

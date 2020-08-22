@@ -34,7 +34,7 @@ const ModelAttrs = types.model("BrushLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext", "richtext"]),
 });
 
 const Model = LabelMixin.props({ _type: "brushlabels" });

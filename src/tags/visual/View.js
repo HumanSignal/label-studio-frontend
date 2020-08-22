@@ -64,6 +64,7 @@ const Model = types
       "audio",
       "image",
       "hypertext",
+      "richtext",
       "audioplus",
       "list",
       "dialog",
