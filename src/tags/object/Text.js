@@ -311,21 +311,24 @@ class TextPieceView extends Component {
 
   alignRange(r) {
     const item = this.props.item;
+    // there is should be at least one selected label
+    const label = item.activeStates()[0].selectedLabels[0];
+    const granularity = label.granularity || item.granularity;
 
-    if (item.granularity === "symbol") return r;
+    if (granularity === "symbol") return r;
 
     const { start, end } = Utils.HTML.mainOffsets(this.myRef);
 
     // given gobal position and selection node find node
     // with correct position
-    if (item.granularity === "word") {
+    if (granularity === "word") {
       return this.alignWord(r, start, end);
     }
 
-    if (item.granularity === "sentence") {
+    if (granularity === "sentence") {
     }
 
-    if (item.granularity === "paragraph") {
+    if (granularity === "paragraph") {
     }
   }
 
