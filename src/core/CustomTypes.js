@@ -8,7 +8,7 @@ const { types } = require("mobx-state-tree");
  */
 const Range = (min = 0, max = 1) =>
   types.custom({
-    name: "Fractional",
+    name: `Range(${min}..${max})`,
     fromSnapshot(snapshot) {
       return parseFloat(snapshot);
     },

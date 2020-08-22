@@ -12,10 +12,10 @@ function _oneOf(lookup, err) {
   return function(arr) {
     return types.union({
       dispatcher: sn => {
-        if (arr.find(val => sn?.type === val)) {
-          return lookup(sn?.type);
+        if (arr.find(val => sn.type === val)) {
+          return lookup(sn.type);
         } else {
-          throw Error(err + sn?.type);
+          throw Error(err + sn.type);
         }
       },
     });

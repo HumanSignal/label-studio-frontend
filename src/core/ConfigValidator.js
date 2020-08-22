@@ -75,6 +75,27 @@ export const ValidationError = types.model({
 });
 
 /**
+ * Transforms MST `describe()` to a human-readable value
+ * @param {import("mobx-state-tree").IType} type
+ * @param {boolean} withNullType
+ */
+const getTypeDescription = (type, withNullType = true) => {
+  let description = type
+    .describe()
+    .match(/([a-z0-9?|]+)/gi)
+    .join("")
+    .split("|");
+
+  // Remove optional null
+  if (withNullType === false) {
+    const index = description.indexOf("null?");
+    if (index >= 0) description.splice(index, 1);
+  }
+
+  return description;
+};
+
+/**
  * Flatten config tree for faster iterations and searches
  * @param {object} tree
  * @param {string} parent
@@ -101,7 +122,7 @@ const flattenTree = (tree, parent = null) => {
 };
 
 /**
- * Validates precense and format of name attribute
+ * Validates presence and format of the name attribute
  * @param {Object} child
  * @param {Object} model
  */
@@ -133,10 +154,7 @@ const validateToNameTag = (element, model, flatTree) => {
   if (!controlledTags) return null;
 
   // Collect available tag names
-  const controlledTagTypes = controlledTags
-    .getSubTypes()[0]
-    .getSubTypes()
-    .map(stype => stype.value);
+  const controlledTagTypes = getTypeDescription(controlledTags, false);
 
   // Check if controlled tags are actually registered
   const notRegisteredTags = controlledTagTypes.reduce((res, value) => {
@@ -194,15 +212,7 @@ const validateAttributes = (child, model, fieldsToSkip) => {
  * @param {import("mobx-state-tree").IType} type
  */
 const humanizeTypeName = type => {
-  if (!type) return null;
-
-  try {
-    let types = [].concat(...(type.getSubTypes?.() ?? []).map(t => t.getSubTypes?.() ?? t));
-
-    return types.filter(type => type.name !== "null").map(type => JSON.parse(type.name));
-  } catch {
-    return type.name;
-  }
+  return type ? getTypeDescription(type, false) : null;
 };
 
 /**
@@ -211,7 +221,7 @@ const humanizeTypeName = type => {
  */
 export const validateConfigTree = root => {
   const flatTree = flattenTree(root);
-  const fieldsToSkip = ["id", "children", "name", "toname", "controlledTags"];
+  const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags"];
   const validationResult = [];
 
   for (let child of flatTree) {
@@ -224,7 +234,7 @@ export const validateConfigTree = root => {
     const toNameValidation = validateToNameTag(child, model, flatTree);
     if (toNameValidation !== null) validationResult.push(toNameValidation);
 
-    validationResult.push(...validateAttributes(child, model, fieldsToSkip));
+    validationResult.push(...validateAttributes(child, model, propertiesToSkip));
   }
 
   if (validationResult.length) {
