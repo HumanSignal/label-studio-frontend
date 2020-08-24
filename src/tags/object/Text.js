@@ -311,25 +311,28 @@ class TextPieceView extends Component {
 
   alignRange(r) {
     const item = this.props.item;
+    // there is should be at least one selected label
+    const label = item.activeStates()[0].selectedLabels[0];
+    const granularity = label.granularity || item.granularity;
 
-    if (item.granularity === "symbol") return r;
+    if (granularity === "symbol") return r;
 
     const { start, end } = Utils.HTML.mainOffsets(this.myRef);
 
     // given gobal position and selection node find node
     // with correct position
-    if (item.granularity === "word") {
+    if (granularity === "word") {
       return this.alignWord(r, start, end);
     }
 
-    if (item.granularity === "sentence") {
+    if (granularity === "sentence") {
     }
 
-    if (item.granularity === "paragraph") {
+    if (granularity === "paragraph") {
     }
   }
 
-  captureDocumentSelection() {
+  captureDocumentSelection(ev) {
     var i,
       self = this,
       ranges = [],
@@ -338,6 +341,8 @@ class TextPieceView extends Component {
 
     if (selection.isCollapsed) return [];
 
+    const granularityDisabled = ev.altKey;
+
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
 
@@ -345,7 +350,9 @@ class TextPieceView extends Component {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
 
-      r = this.alignRange(r);
+      if (!granularityDisabled) {
+        r = this.alignRange(r);
+      }
 
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
@@ -398,7 +405,7 @@ class TextPieceView extends Component {
     const states = item.activeStates();
     if (!states || states.length === 0) return;
 
-    var selectedRanges = this.captureDocumentSelection();
+    var selectedRanges = this.captureDocumentSelection(ev);
     if (selectedRanges.length === 0) return;
 
     // prevent overlapping spans from being selected right after this
