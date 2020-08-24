@@ -272,3 +272,40 @@ export const removeRange = spans => {
     });
   });
 };
+
+/**
+ * Find a startContainer and endContainer by text offsets
+ * @param {number} start
+ * @param {number} end
+ * @param {Node} root
+ */
+export const findRange = (start, end, root) => {
+  return {
+    startContainer: findOnPosition(root, start),
+    endContainer: findOnPosition(root, end),
+  };
+};
+
+/**
+ * Find a node by text offset
+ * @param {Node} root
+ * @param {number} position
+ */
+export const findOnPosition = (root, position) => {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+
+  let lastPosition = position;
+  let currentNode = walker.nextNode();
+
+  while (currentNode) {
+    if (currentNode.nodeName === "BR") {
+      lastPosition -= 1;
+    } else if (currentNode.length > lastPosition) {
+      return { node: currentNode, position: lastPosition };
+    } else {
+      lastPosition -= currentNode.length;
+    }
+
+    currentNode = walker.nextNode();
+  }
+};

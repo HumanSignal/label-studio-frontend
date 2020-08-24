@@ -5,7 +5,6 @@ import * as xpath from "xpath-range";
 import { observer, inject } from "mobx-react";
 import { runTemplate } from "../../../core/Template";
 import Utils from "../../../utils";
-import * as selectionTools from "../../../utils/selection-tools";
 
 class RichTextPieceView extends Component {
   constructor(props) {
@@ -24,7 +23,7 @@ class RichTextPieceView extends Component {
 
     this._selectionMode = true;
 
-    selectionTools.captureSelection(
+    Utils.Selection.captureSelection(
       ({ selectionText, range }) => {
         if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
           return;

@@ -1,7 +1,7 @@
 import React from "react";
 
 import RegionsMixin from "../../../mixins/Regions";
-import { types, getRoot, getType, walk } from "mobx-state-tree";
+import { types, getRoot, getType } from "mobx-state-tree";
 import { restoreNewsnapshot, guidGenerator, cloneNode } from "../../../core/Helpers";
 import ObjectBase from "../Base";
 import { runTemplate } from "../../../core/Template";
@@ -252,7 +252,7 @@ const Model = types
         const { start, startOffset, end, endOffset } = htxRange;
 
         if (isText) {
-          const { startContainer, endContainer } = findRange(startOffset, endOffset, self._rootNode);
+          const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, self._rootNode);
           const range = document.createRange();
           range.setStart(startContainer.node, startContainer.position);
           range.setEnd(endContainer.node, endContainer.position);
@@ -265,31 +265,5 @@ const Model = types
       }
     },
   }));
-
-const findRange = (start, end, root) => {
-  return {
-    startContainer: findOnPosition(root, start),
-    endContainer: findOnPosition(root, end),
-  };
-};
-
-const findOnPosition = (root, position) => {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
-
-  let lastPosition = position;
-  let currentNode = walker.nextNode();
-
-  while (currentNode) {
-    if (currentNode.nodeName === "BR") {
-      lastPosition -= 1;
-    } else if (currentNode.length > lastPosition) {
-      return { node: currentNode, position: lastPosition };
-    } else {
-      lastPosition -= currentNode.length;
-    }
-
-    currentNode = walker.nextNode();
-  }
-};
 
 export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, ObjectBase, Model);
