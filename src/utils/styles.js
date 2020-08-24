@@ -1,5 +1,3 @@
-import { contrastColor } from "./colors";
-
 /**
  * Parses a string of inline styles into a JavaScript object with casing for React
  *
