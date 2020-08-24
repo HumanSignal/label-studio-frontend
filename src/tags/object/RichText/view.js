@@ -14,12 +14,15 @@ class RichTextPieceView extends Component {
   }
 
   _onMouseUp = () => {
+    console.log("up");
     const { item } = this.props;
     const states = item.activeStates();
     const root = this.myRef.current;
 
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
+
+    this._selectionMode = true;
 
     selectionTools.captureSelection(
       ({ selectionText, range }) => {
@@ -60,6 +63,11 @@ class RichTextPieceView extends Component {
    * @param {MouseEvent} event
    */
   _onRegionClick = event => {
+    if (this._selectionMode) {
+      this._selectionMode = false;
+      return;
+    }
+
     if (!this.props.item.clickablelinks && matchesSelector(event.target, "a")) {
       event.preventDefault();
       return;
@@ -130,7 +138,7 @@ class RichTextPieceView extends Component {
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     const eventHandlers = {
-      onClick: this._onRegionClick,
+      onClickCapture: this._onRegionClick,
       onMouseUp: this._onMouseUp,
       onMouseOverCapture: this._onRegionMouseOver,
     };
