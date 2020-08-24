@@ -13,9 +13,9 @@ import * as xpath from "xpath-range";
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
 const WARNING_MESSAGES = {
-  dataTypeMistmatch: () => "You should not put text directly in your task data if you use datasource=url.",
+  dataTypeMistmatch: () => "You should not put text directly in your task data if you use valueSource=url.",
   badURL: url => `URL (${url}) is not valid.`,
-  secureMode: () => 'In SECURE MODE datasource set to "url" by default.',
+  secureMode: () => 'In SECURE MODE valuesource set to "url" by default.',
   loadingError: (url, error) => `Loading URL (${url}) unsuccessful: ${error}`,
 };
 
@@ -105,6 +105,7 @@ const Model = types
     },
 
     async updateValue(store) {
+      console.log("update");
       self._value = runTemplate(self.value, store.task.dataObj);
 
       if (self.valuesource === "url") {
@@ -115,27 +116,29 @@ const Model = types
           if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
 
           Infomodal.error(message.map(t => <p>{t}</p>));
-          self.loadedValue("");
+          self.setRemoteValue("");
           return;
         }
 
-        const { ok, status, statusText, ...response } = await fetch(url);
+        const response = await fetch(url);
+        const { ok, status, statusText } = response;
 
         if (!ok) throw new Error(`${status} ${statusText}`);
 
         try {
-          self.loadedValue(await response.text());
+          self.setRemoteValue(await response.text());
         } catch (error) {
           Infomodal.error(WARNING_MESSAGES.loadingError(url, error));
-          self.loadedValue("");
+          self.setRemoteValue("");
         }
       } else {
-        self.loadedValue(self._value);
+        self.setRemoteValue(self._value);
       }
     },
 
-    loadedValue(val) {
+    setRemoteValue(val) {
       self.loaded = true;
+
       if (self.encoding === "base64") val = atob(val);
       if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
@@ -157,8 +160,8 @@ const Model = types
       // doesn't save the text into the result, otherwise it does
       // can be aslo directly configured
       if (self.savetextresult === "none") {
-        if (self.datasource === "url") self.savetextresult = "no";
-        else if (self.datasource === "text") self.savetextresult = "yes";
+        if (self.valuesource === "url") self.savetextresult = "no";
+        else if (self.valuesource === "text") self.savetextresult = "yes";
       }
     },
 

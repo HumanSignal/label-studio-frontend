@@ -129,21 +129,16 @@ class RichTextPieceView extends Component {
   }
 
   render() {
-    const { item, store } = this.props;
+    const { item } = this.props;
 
     if (!item._value) return null;
-
-    let val = runTemplate(item.value, store.task.dataObj);
-    if (item.encoding === "base64") val = atob(val);
-    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
-
     const eventHandlers = {
       onClickCapture: this._onRegionClick,
       onMouseUp: this._onMouseUp,
       onMouseOverCapture: this._onRegionMouseOver,
     };
 
-    val = val.replace(/\n/g, "<br>");
+    const val = item._value.replace(/\n/g, "<br>");
     return (
       <ObjectTag item={item}>
         <div
