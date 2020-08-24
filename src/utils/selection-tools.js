@@ -6,7 +6,7 @@ const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
  */
 export const captureSelection = (
   callback,
-  { granularity } = {
+  { granularity, beforeCleanup } = {
     granularity: "symbol",
   },
 ) => {
@@ -23,6 +23,9 @@ export const captureSelection = (
     console.log({ range });
     callback({ selectionText, range });
   }
+
+  // eslint-disable-next-line no-unused-expressions
+  beforeCleanup?.();
 
   selection.removeAllRanges();
 };

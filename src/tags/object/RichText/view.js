@@ -21,8 +21,6 @@ class RichTextPieceView extends Component {
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
 
-    this._selectionMode = true;
-
     Utils.Selection.captureSelection(
       ({ selectionText, range }) => {
         if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -54,7 +52,10 @@ class RichTextPieceView extends Component {
 
         console.log(normedRange);
       },
-      { granularity: item.granularity },
+      {
+        granularity: item.granularity,
+        beforeCleanup: () => (this._selectionMode = true),
+      },
     );
   };
 
