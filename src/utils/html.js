@@ -352,6 +352,15 @@ function removeSpans(spans) {
   norm.forEach(n => n.normalize());
 }
 
+/**
+ * Checks if element of one of it's descendants match given selector
+ * @param {HTMLElement} element Element to match
+ * @param {string} selector CSS selector
+ */
+export const matchesSelector = (element, selector) => {
+  return element.matches(selector) || element.closest(selector) !== null;
+};
+
 export {
   toggleLabelsAndScores,
   labelWithCSS,

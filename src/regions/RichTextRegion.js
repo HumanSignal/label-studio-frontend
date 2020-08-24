@@ -12,6 +12,9 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 import { RichTextModel } from "../tags/object";
 
+import * as selectionTools from "../utils/selection-tools";
+import { HighlightMixin } from "../mixins/HighlightMixin";
+
 const Model = types
   .model("RichTextRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
@@ -31,7 +34,7 @@ const Model = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      Utils.HTML.removeSpans(self._spans);
+      self.removeHighlight();
     },
 
     serialize(control, object) {
@@ -60,7 +63,7 @@ const RichTextRegionModel = types.compose(
   RegionsMixin,
   NormalizationMixin,
   Model,
-  SpanTextMixin,
+  HighlightMixin,
 );
 
 export { RichTextRegionModel };

@@ -10,10 +10,10 @@
                     "to_name": "text",
                     "type": "htmllabels",
                     "value": {
-                        "startOffset": 343,
-                        "endOffset": 354,
-                        "start": "/text()[1]",
-                        "end": "/text()[1]",
+                        "endOffset": 97,
+                        "startOffset": 86,
+                        "start": "/text()[2]",
+                        "end": "/text()[2]",
                         "htmllabels": [
                             "Date"
                         ],

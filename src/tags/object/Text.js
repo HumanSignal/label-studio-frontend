@@ -85,10 +85,6 @@ const Model = types
       self._ref = ref;
     },
 
-    needsUpdate() {
-      self._update = self._update + 1;
-    },
-
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
 
@@ -166,6 +162,8 @@ const Model = types
     addRegion(range) {
       const states = self.getAvailableStates();
       if (states.length === 0) return;
+
+      console.log(states);
 
       const clonedStates = states.map(s => cloneNode(s));
 

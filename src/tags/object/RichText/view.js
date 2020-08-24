@@ -1,20 +1,11 @@
 import React, { Component } from "react";
-import { splitBoundaries } from "../../../utils/html";
+import { matchesSelector } from "../../../utils/html";
 import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { observer, inject } from "mobx-react";
 import { runTemplate } from "../../../core/Template";
 import utils from "../../../utils";
-
-class HtxRichTextView extends Component {
-  render() {
-    const { item, store } = this.props;
-
-    if (!item._value) return null;
-
-    return <HtxRichTextPieceView store={store} item={item} />;
-  }
-}
+import * as selectionTools from "../../../utils/selection-tools";
 
 class RichTextPieceView extends Component {
   constructor(props) {
@@ -22,118 +13,120 @@ class RichTextPieceView extends Component {
     this.myRef = React.createRef();
   }
 
-  captureDocumentSelection() {
-    const self = this;
-    const ranges = [];
-    const selection = window.getSelection();
-    const selectionText = selection.toString();
-
-    if (selection.isCollapsed) return [];
-
-    for (let i = 0; i < selection.rangeCount; i++) {
-      var range = selection.getRangeAt(i);
-      console.log("Initial", range.startContainer, range.endContainer);
-
-      let normedRange = xpath.fromRange(range, self.myRef.current);
-
-      if (normedRange) {
-        splitBoundaries(range);
-        console.log("Second update", range.startContainer, range.endContainer);
-
-        normedRange._range = range;
-        normedRange.text = selectionText;
-
-        ranges.push(normedRange);
-      }
-    }
-
-    // BrowserRange#normalize() modifies the DOM structure and deselects the
-    // underlying text as a result. So here we remove the selected ranges and
-    // reapply the new ones.
-    selection.removeAllRanges();
-
-    return ranges;
-  }
-
-  onMouseUp = () => {
+  _onMouseUp = () => {
     const item = this.props.item;
     const states = item.activeStates();
     if (!states || states.length === 0) return;
 
-    const selectedRanges = this.captureDocumentSelection();
+    selectionTools.captureSelection(({ selectionText, range }) => {
+      const normedRange = xpath.fromRange(range, this.myRef.current);
 
-    if (selectedRanges.length === 0) return;
+      if (!normedRange) return;
 
-    item._currentSpan = null;
+      normedRange._range = range;
+      normedRange.text = selectionText;
 
-    const htxRange = item.addRegion(selectedRanges[0]);
-    if (htxRange) {
-      const spans = htxRange.createSpans();
-      htxRange.addEventsToSpans(spans);
+      const richTextRegion = item.addRegion(normedRange);
+
+      if (!richTextRegion) return;
+
+      richTextRegion.applyHighlight();
+    });
+  };
+
+  /**
+   * @param {MouseEvent} event
+   */
+  _onRegionClick = event => {
+    if (!this.props.item.clickablelinks && matchesSelector(event.target, "a")) {
+      event.preventDefault();
+      return;
+    }
+
+    const region = this._detectRegion(event.target);
+
+    if (!region) return;
+
+    region && region.onClickRegion();
+    event.stopPropagation();
+  };
+
+  /**
+   * @param {MouseEvent} event
+   */
+  _onRegionMouseOver = event => {
+    const region = this._detectRegion(event.target);
+    this.props.item.regions.forEach(r => r.setHighlight(false));
+
+    if (!region) return;
+
+    if (region.completion.relationMode) {
+      region.setHighlight(true);
     }
   };
 
+  /**
+   * Handle initial rendering and all subsequent updates
+   */
   _handleUpdate() {
-    console.log("Updated");
-    const root = this.myRef.current;
-    const { item } = this.props;
-
-    item.regions.forEach(function(region) {
+    this.props.item.regions.forEach(richTextRegion => {
       try {
-        const range = xpath.toRange(region.start, region.startOffset, region.end, region.endOffset, root);
-
-        splitBoundaries(range);
-
-        region._range = range;
-        const spans = region.createSpans();
-        region.addEventsToSpans(spans);
-
-        console.log({ region, range, spans });
+        richTextRegion.applyHighlight();
       } catch (err) {
-        console.log({ region, err });
+        console.log({ region: richTextRegion, err });
       }
     });
+  }
 
-    if (!item.clickablelinks) {
-      root.addEventListener("click", e => {
-        if (e.target.tagName === "A" || e.target.closest("a") !== null) {
-          e.preventDefault();
-        }
-      });
+  /**
+   * Detects a RichTextRegion corresponding to a span
+   * @param {HTMLElement} element
+   */
+  _detectRegion(element) {
+    if (matchesSelector(element, ".htx-highlight")) {
+      const span = element.tagName === "SPAN" ? element : element.closest(".htx-highlight");
+      return this.props.item.regions.find(region => region.find(span));
     }
+  }
+
+  componentDidMount() {
+    this.props.item.setRoot(this.myRef.current);
+    this._handleUpdate();
   }
 
   componentDidUpdate() {
     this._handleUpdate();
   }
 
-  componentDidMount() {
-    this._handleUpdate();
-  }
-
   render() {
     const { item, store } = this.props;
+
+    if (!item._value) return null;
 
     let val = runTemplate(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = utils.Checkers.atobUnicode(val);
+
+    const eventHandlers = {
+      onClick: this._onRegionClick,
+      onMouseUp: this._onMouseUp,
+      onMouseOverCapture: this._onRegionMouseOver,
+    };
 
     val = val.replace(/\n/g, "<br>");
     return (
       <ObjectTag item={item}>
         <div
           ref={this.myRef}
-          data-update={item._update}
           style={{ overflow: "auto" }}
-          onMouseUp={this.onMouseUp}
+          data-update={item._update}
           className="htx-richtext"
           dangerouslySetInnerHTML={{ __html: val }}
+          {...eventHandlers}
         />
       </ObjectTag>
     );
   }
 }
 
-const HtxRichTextPieceView = inject("store")(observer(RichTextPieceView));
-
-export const HtxRichText = inject("store")(observer(HtxRichTextView));
+export const HtxRichText = inject("store")(observer(RichTextPieceView));

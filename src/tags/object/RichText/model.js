@@ -3,12 +3,12 @@ import React from "react";
 import RegionsMixin from "../../../mixins/Regions";
 import { types, getRoot, getType } from "mobx-state-tree";
 import { restoreNewsnapshot, guidGenerator, cloneNode } from "../../../core/Helpers";
-import { customTypes } from "../../../core/CustomTypes";
 import ObjectBase from "../Base";
 import { runTemplate } from "../../../core/Template";
 import { RichTextRegionModel } from "../../../regions";
 import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
+import * as xpath from "xpath-range";
 
 const SUPPORTED_STATES = ["HyperTextLabelsModel", "RatingModel"];
 
@@ -36,9 +36,9 @@ const TagAttrs = types.model("RichTextModel", {
 
   clickablelinks: false,
 
-  highlightcolor: types.maybeNull(customTypes.color),
+  highlightcolor: types.maybeNull(types.string),
 
-  showlabels: types.optional(types.boolean, false),
+  showlabels: types.optional(types.boolean, true),
 
   encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
 
@@ -74,7 +74,11 @@ const Model = types
   }))
   .actions(self => ({
     needsUpdate() {
-      self._update = self._update + 1;
+      // self._update = self._update + 1;
+    },
+
+    setRoot(root) {
+      self._rootNode = root;
     },
 
     async updateValue(store) {
@@ -136,17 +140,33 @@ const Model = types
     },
 
     createRegion(p) {
-      const r = RichTextRegionModel.create({
+      let regionData = p;
+
+      if (!p.states) {
+        const fromModel = self.states().get(0);
+        regionData = self._objectFromJSON(p, fromModel, { createRange: true });
+        regionData.states = regionData.states.map(s => cloneNode(s));
+      }
+
+      const region = RichTextRegionModel.create({
         pid: p.id,
-        ...p,
+        ...regionData,
       });
 
-      r._range = p._range;
+      region._getRange = () => {
+        if (region._cachedRegion === undefined) {
+          return (region._cachedRegion = p._range ?? self._createNativeRange(regionData));
+        }
 
-      self.regions.push(r);
-      self.completion.addRegion(r);
+        return region._cachedRegion;
+      };
 
-      return r;
+      self.regions.push(region);
+      self.completion.addRegion(region);
+
+      region.applyHighlight();
+
+      return region;
     },
 
     addRegion(range) {
@@ -161,12 +181,20 @@ const Model = types
     },
 
     fromStateJSON(obj, fromModel) {
-      const { start, startOffset, end, endOffset, text } = obj.value;
-
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
         self.completion.names.get(obj.from_name).fromStateJSON(obj);
         return;
       }
+
+      const tree = self._objectFromJSON(obj, fromModel);
+
+      self.createRegion(tree);
+
+      self.needsUpdate();
+    },
+
+    _objectFromJSON(obj, fromModel, { createRange } = {}) {
+      const { start, startOffset, end, endOffset, text } = obj.value;
 
       const states = restoreNewsnapshot(fromModel);
       const tree = {
@@ -185,9 +213,16 @@ const Model = types
 
       states.fromStateJSON(obj);
 
-      self.createRegion(tree);
+      return tree;
+    },
 
-      self.needsUpdate();
+    _createNativeRange(htxRange) {
+      try {
+        const { start, startOffset, end, endOffset } = htxRange;
+        return xpath.toRange(start, startOffset, end, endOffset, self._rootNode);
+      } catch (err) {
+        return undefined;
+      }
     },
   }));
 
