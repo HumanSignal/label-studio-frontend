@@ -1,7 +1,7 @@
 import React from "react";
 
 import RegionsMixin from "../../../mixins/Regions";
-import { types, getRoot, getType } from "mobx-state-tree";
+import { types, getRoot, getType, walk } from "mobx-state-tree";
 import { restoreNewsnapshot, guidGenerator, cloneNode } from "../../../core/Helpers";
 import ObjectBase from "../Base";
 import { runTemplate } from "../../../core/Template";
@@ -10,7 +10,7 @@ import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
 import * as xpath from "xpath-range";
 
-const SUPPORTED_STATES = ["HyperTextLabelsModel", "RatingModel"];
+const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
 const WARNING_MESSAGES = {
   dataTypeMistmatch: () => "You should not put text directly in your task data if you use datasource=url.",
@@ -24,14 +24,14 @@ const WARNING_MESSAGES = {
  * @example
  * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
  * @example
- * <RichText name="text-1" value="$url" dataSource="url" highlightColor="#ff0000" />
+ * <RichText name="text-1" value="$url" valueSource="url" highlightColor="#ff0000" />
  * @example
  * <RichText name="text-1" value="$text" valueType="html" highlightColor="#ff0000" />
  * @name Text
  * @param {string} name                                   - name of the element
  * @param {string} value                                  - value of the element
  * @param {html|text} [valueType=text|html]               – type of the content to show
- * @param {url|text} [dataSource=url|text]                – source of the data
+ * @param {url|text} [valueSource=url|text]                – source of the data
  * @param {boolean} [saveTextResult=true]                 – wether or not to save selected text to the serialized data
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
  * @param {boolan} [clickableLinks=false]                 – allow to open resources from links
@@ -48,7 +48,7 @@ const TagAttrs = types.model("RichTextModel", {
   valuetype: types.optional(types.enumeration(["text", "html"]), "html"),
 
   /** Defines the source of data */
-  datasource: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
+  valuesource: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
 
   /** Wether or not to save selected text to the serialized data */
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
@@ -70,8 +70,8 @@ const TagAttrs = types.model("RichTextModel", {
 
 const Model = types
   .model("RichTextModel", {
-    id: types.optional(types.identifier, guidGenerator),
     type: "richtext",
+    id: types.optional(types.identifier, guidGenerator),
     regions: types.array(RichTextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
@@ -107,7 +107,7 @@ const Model = types
     async updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
 
-      if (self.datasource === "url") {
+      if (self.valuesource === "url") {
         const url = self._value;
 
         if (!/^https?:\/\//.test(url)) {
@@ -178,7 +178,7 @@ const Model = types
 
       region._getRange = () => {
         if (region._cachedRegion === undefined) {
-          return (region._cachedRegion = p._range ?? self._createNativeRange(regionData));
+          return (region._cachedRegion = p._range ?? self._createNativeRange(regionData, region.isText));
         }
 
         return region._cachedRegion;
@@ -225,8 +225,8 @@ const Model = types
         parentID: obj.parent_id === null ? "" : obj.parent_id,
         startOffset: startOffset,
         endOffset: endOffset,
-        start: start,
-        end: end,
+        start: start ?? "",
+        end: end ?? "",
         text: text,
         score: obj.score,
         readonly: obj.readonly,
@@ -234,19 +234,62 @@ const Model = types
         states: [states],
       };
 
+      if (!startOffset && !endOffset) {
+        tree.startOffset = start;
+        tree.endOffset = end;
+        tree.start = "";
+        tree.end = "";
+        tree.isText = true;
+      }
+
       states.fromStateJSON(obj);
 
       return tree;
     },
 
-    _createNativeRange(htxRange) {
+    _createNativeRange(htxRange, isText) {
       try {
         const { start, startOffset, end, endOffset } = htxRange;
+
+        if (isText) {
+          const { startContainer, endContainer } = findRange(startOffset, endOffset, self._rootNode);
+          const range = document.createRange();
+          range.setStart(startContainer.node, startContainer.position);
+          range.setEnd(endContainer.node, endContainer.position);
+          return range;
+        }
+
         return xpath.toRange(start, startOffset, end, endOffset, self._rootNode);
       } catch (err) {
         return undefined;
       }
     },
   }));
+
+const findRange = (start, end, root) => {
+  return {
+    startContainer: findOnPosition(root, start),
+    endContainer: findOnPosition(root, end),
+  };
+};
+
+const findOnPosition = (root, position) => {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+
+  let lastPosition = position;
+  let currentNode = walker.nextNode();
+
+  while (currentNode) {
+    if (currentNode.nodeName === "BR") {
+      lastPosition -= 1;
+    } else if (currentNode.length > lastPosition) {
+      return { node: currentNode, position: lastPosition };
+    } else {
+      lastPosition -= currentNode.length;
+    }
+
+    currentNode = walker.nextNode();
+  }
+};
 
 export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, ObjectBase, Model);

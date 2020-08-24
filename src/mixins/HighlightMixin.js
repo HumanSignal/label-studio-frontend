@@ -251,6 +251,8 @@ export const HighlightMixin = types
      * @param {boolean} val
      */
     setHighlight(val) {
+      if (!self._stylesheet) return;
+
       self.highlighted = val;
 
       if (self.highlighted) {

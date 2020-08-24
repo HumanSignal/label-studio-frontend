@@ -361,6 +361,19 @@ export const matchesSelector = (element, selector) => {
   return element.matches(selector) || element.closest(selector) !== null;
 };
 
+/**
+ * Find a node by xpath
+ * @param {string} xpath
+ * @param {Node} root
+ */
+export const findByXpath = (xpath, root = document) => {
+  if (root !== document && xpath[0] !== ".") {
+    xpath = `.${xpath}`;
+  }
+
+  return document.evaluate(xpath, root, null, XPathResult.ANY_TYPE, null).iterateNext();
+};
+
 export {
   toggleLabelsAndScores,
   labelWithCSS,

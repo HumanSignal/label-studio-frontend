@@ -4,7 +4,7 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { observer, inject } from "mobx-react";
 import { runTemplate } from "../../../core/Template";
-import utils from "../../../utils";
+import Utils from "../../../utils";
 import * as selectionTools from "../../../utils/selection-tools";
 
 class RichTextPieceView extends Component {
@@ -17,6 +17,7 @@ class RichTextPieceView extends Component {
     const { item } = this.props;
     const states = item.activeStates();
     const root = this.myRef.current;
+
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
 
@@ -30,14 +31,26 @@ class RichTextPieceView extends Component {
 
         if (!normedRange) return;
 
+        const isText = item.valuetype === "text";
+        let globalStartOffset, globalEndOffset;
+
         normedRange._range = range;
         normedRange.text = selectionText;
+        normedRange.isText = isText;
 
-        const richTextRegion = item.addRegion(normedRange);
+        if (isText) {
+          const { startContainer, startOffset, endContainer, endOffset } = range;
+          globalStartOffset = Utils.HTML.toGlobalOffset(root, startContainer, startOffset);
+          globalEndOffset = Utils.HTML.toGlobalOffset(root, endContainer, endOffset);
+        }
 
-        if (!richTextRegion) return;
+        const region = item.addRegion(normedRange);
 
-        richTextRegion.applyHighlight();
+        if (globalStartOffset && globalEndOffset) {
+          region.updateOffsets(globalStartOffset, globalEndOffset);
+        }
+
+        console.log(normedRange);
       },
       { granularity: item.granularity },
     );
@@ -52,7 +65,7 @@ class RichTextPieceView extends Component {
       return;
     }
 
-    const region = this._detectRegion(event.target);
+    const region = this._determineRegion(event.target);
 
     if (!region) return;
 
@@ -64,7 +77,7 @@ class RichTextPieceView extends Component {
    * @param {MouseEvent} event
    */
   _onRegionMouseOver = event => {
-    const region = this._detectRegion(event.target);
+    const region = this._determineRegion(event.target);
     this.props.item.regions.forEach(r => r.setHighlight(false));
 
     if (!region) return;
@@ -91,7 +104,7 @@ class RichTextPieceView extends Component {
    * Detects a RichTextRegion corresponding to a span
    * @param {HTMLElement} element
    */
-  _detectRegion(element) {
+  _determineRegion(element) {
     if (matchesSelector(element, ".htx-highlight")) {
       const span = element.tagName === "SPAN" ? element : element.closest(".htx-highlight");
       return this.props.item.regions.find(region => region.find(span));
@@ -114,7 +127,7 @@ class RichTextPieceView extends Component {
 
     let val = runTemplate(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
-    if (item.encoding === "base64unicode") val = utils.Checkers.atobUnicode(val);
+    if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     const eventHandlers = {
       onClick: this._onRegionClick,

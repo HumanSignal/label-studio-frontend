@@ -11,6 +11,7 @@ import { guidGenerator } from "../core/Helpers";
 import { RichTextModel } from "../tags/object";
 
 import { HighlightMixin } from "../mixins/HighlightMixin";
+import { LabelsModel } from "../tags/control/Labels";
 
 const Model = types
   .model("RichTextRegionModel", {
@@ -22,7 +23,10 @@ const Model = types
     endOffset: types.integer,
     end: types.string,
     text: types.string,
-    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
+    states: types.maybeNull(
+      types.array(types.union(LabelsModel, HyperTextLabelsModel, TextAreaModel, ChoicesModel, RatingModel)),
+    ),
+    isText: types.optional(types.boolean, false),
   })
   .views(self => ({
     get parent() {
@@ -36,13 +40,22 @@ const Model = types
 
     serialize(control, object) {
       let res = {
-        value: {
+        value: {},
+      };
+
+      if (self.isText) {
+        Object.assign(res.value, {
+          start: self.startOffset,
+          end: self.endOffset,
+        });
+      } else {
+        Object.assign(res.value, {
           start: self.start,
           end: self.end,
           startOffset: self.startOffset,
           endOffset: self.endOffset,
-        },
-      };
+        });
+      }
 
       if (object.savetextresult === "yes") {
         res.value["text"] = self.text;
@@ -51,6 +64,10 @@ const Model = types
       res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
+    },
+
+    updateOffsets(startOffset, endOffset) {
+      Object.assign(self, { startOffset, endOffset });
     },
   }));
 
