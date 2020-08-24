@@ -14,24 +14,33 @@ class RichTextPieceView extends Component {
   }
 
   _onMouseUp = () => {
-    const item = this.props.item;
+    const { item } = this.props;
     const states = item.activeStates();
+    const root = this.myRef.current;
     if (!states || states.length === 0) return;
+    if (item.selectionenabled === false) return;
 
-    selectionTools.captureSelection(({ selectionText, range }) => {
-      const normedRange = xpath.fromRange(range, this.myRef.current);
+    selectionTools.captureSelection(
+      ({ selectionText, range }) => {
+        if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
+          return;
+        }
 
-      if (!normedRange) return;
+        const normedRange = xpath.fromRange(range, root);
 
-      normedRange._range = range;
-      normedRange.text = selectionText;
+        if (!normedRange) return;
 
-      const richTextRegion = item.addRegion(normedRange);
+        normedRange._range = range;
+        normedRange.text = selectionText;
 
-      if (!richTextRegion) return;
+        const richTextRegion = item.addRegion(normedRange);
 
-      richTextRegion.applyHighlight();
-    });
+        if (!richTextRegion) return;
+
+        richTextRegion.applyHighlight();
+      },
+      { granularity: item.granularity },
+    );
   };
 
   /**

@@ -19,15 +19,38 @@ const WARNING_MESSAGES = {
   loadingError: (url, error) => `Loading URL (${url}) unsuccessful: ${error}`,
 };
 
+/**
+ * RichText tag shows text or html and allows labeling
+ * @example
+ * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ * @example
+ * <RichText name="text-1" value="$url" dataSource="url" highlightColor="#ff0000" />
+ * @example
+ * <RichText name="text-1" value="$text" valueType="html" highlightColor="#ff0000" />
+ * @name Text
+ * @param {string} name                                   - name of the element
+ * @param {string} value                                  - value of the element
+ * @param {html|text} [valueType=text|html]               – type of the content to show
+ * @param {url|text} [dataSource=url|text]                – source of the data
+ * @param {boolean} [saveTextResult=true]                 – wether or not to save selected text to the serialized data
+ * @param {boolean} [selectionEnabled=true]               - enable or disable selection
+ * @param {boolan} [clickableLinks=false]                 – allow to open resources from links
+ * @param {string} [highlightColor]                       - hex string with highlight color, if not provided uses the labels color
+ * @param {boolean} [showLabels=true]                     - show labels next to the region
+ * @param {none|base64|base64unicode} [encoding]          - decode value from encoded string
+ * @param {symbol|word|sentence|paragrap} [granularity]   - control selection granularity
+ */
 const TagAttrs = types.model("RichTextModel", {
   name: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
 
+  /** Defines the type of data to be shown */
   valuetype: types.optional(types.enumeration(["text", "html"]), "html"),
 
+  /** Defines the source of data */
   datasource: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
 
-  // @todo add `datasource=url` to HyperText and make autodetection of `savetextresult`
+  /** Wether or not to save selected text to the serialized data */
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
     window.LS_SECURE_MODE ? "no" : "yes",
   ),

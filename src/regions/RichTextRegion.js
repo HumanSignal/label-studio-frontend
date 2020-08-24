@@ -2,8 +2,6 @@ import { types, getParentOfType } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
-import SpanTextMixin from "../mixins/SpanText";
-import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
 import { ChoicesModel } from "../tags/control/Choices";
 import { HyperTextLabelsModel } from "../tags/control/HyperTextLabels";
@@ -12,7 +10,6 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 import { RichTextModel } from "../tags/object";
 
-import * as selectionTools from "../utils/selection-tools";
 import { HighlightMixin } from "../mixins/HighlightMixin";
 
 const Model = types

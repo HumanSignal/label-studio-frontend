@@ -1,23 +1,77 @@
-const HIGHLIGHT_CLASS = "htx-highlight";
-
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 /**
  * Captures current selection
  * @param {(response: {selectionText: string, range: Range}) => void} callback
  */
-export const captureSelection = callback => {
+export const captureSelection = (
+  callback,
+  { granularity } = {
+    granularity: "symbol",
+  },
+) => {
   const selection = window.getSelection();
   const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
 
+  updateGranularity(selection, granularity);
+
   for (let i = 0; i < selection.rangeCount; i++) {
-    const range = selection.getRangeAt(i);
+    const range = fixRange(selection.getRangeAt(i));
+
+    console.log({ range });
     callback({ selectionText, range });
   }
 
   selection.removeAllRanges();
+};
+
+/**
+ * *Experimental feature. Might nor work in Gecko browsers.*
+ *
+ * Updates selection's granularity.
+ * @param {Selection} selection
+ * @param {string} granularity
+ */
+const updateGranularity = (selection, granularity) => {
+  if (!selection.modify || !granularity || granularity === "symbol") return;
+
+  try {
+    switch (granularity) {
+      case "word":
+      case "sentence":
+        selection.modify("move", "backward", "sentenceboundary");
+        selection.modify("extend", "forward", "sentenceboundary");
+        return;
+      case "paragraph":
+        selection.modify("move", "backward", "paragraphboundary");
+        selection.modify("extend", "forward", "paragraphboundary");
+        return;
+      case "charater":
+      case "symbol":
+      default:
+        return;
+    }
+  } catch {
+    console.warn("Probably, you're using browser that doesn't support granularity.");
+  }
+};
+
+/**
+ * Fix range if it contains non-text nodes
+ * @param {Range} range
+ */
+const fixRange = range => {
+  const { startContainer, endContainer } = range;
+
+  if (!isTextNode(startContainer)) {
+    range.setStart(endContainer, 0);
+  } else if (!isTextNode(endContainer)) {
+    range.setEnd(startContainer, startContainer.length);
+  }
+
+  return range;
 };
 
 /**
