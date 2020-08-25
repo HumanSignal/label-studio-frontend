@@ -520,10 +520,10 @@ export default types
       //
       let node = {
         userGenerate: false,
+        id: guidGenerator(5),
 
         ...options,
 
-        id: guidGenerator(5),
         pk,
         root,
       };
