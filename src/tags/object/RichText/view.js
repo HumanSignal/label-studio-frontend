@@ -3,7 +3,6 @@ import { matchesSelector } from "../../../utils/html";
 import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { observer, inject } from "mobx-react";
-import { runTemplate } from "../../../core/Template";
 import Utils from "../../../utils";
 
 class RichTextPieceView extends Component {
@@ -13,7 +12,6 @@ class RichTextPieceView extends Component {
   }
 
   _onMouseUp = () => {
-    console.log("up");
     const { item } = this.props;
     const states = item.activeStates();
     const root = this.myRef.current;

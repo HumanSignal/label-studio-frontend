@@ -19,8 +19,6 @@ export const captureSelection = (
 
   for (let i = 0; i < selection.rangeCount; i++) {
     const range = fixRange(selection.getRangeAt(i));
-
-    console.log({ range });
     callback({ selectionText, range });
   }
 

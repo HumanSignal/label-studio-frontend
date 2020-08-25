@@ -33,6 +33,10 @@ import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-di
  * HTML
  */
 import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
+
+/**
+ * RichText (HTML or plain text)
+ */
 import { RichTextHtml } from "../examples/rich_text_html"; // eslint-disable-line no-unused-vars
 import { RichTextPlain } from "../examples/rich_text_plain"; // eslint-disable-line no-unused-vars
 import { RichTextPlainRemote } from "../examples/rich_text_plain_remote"; // eslint-disable-line no-unused-vars
@@ -47,7 +51,7 @@ import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unuse
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = RichTextPlainRemote;
+const data = RichTextHtml;
 
 /**
  * Get current config
