@@ -4,7 +4,7 @@ import { observer, inject } from "mobx-react";
 import { types, getParentOfType } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -101,7 +101,7 @@ const KeyPointRegionModel = types.compose(
 const HtxKeyPointView = ({ store, item }) => {
   const x = item.x;
   const y = item.y;
-  const style = item.style || item.tag;
+  const style = item.style || item.tag || defaultStyle;
 
   const props = {};
 
