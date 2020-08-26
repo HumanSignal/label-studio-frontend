@@ -85,6 +85,12 @@ const Model = types
     },
 
     get result() {
+      if (self.perregion) {
+        const area = self.completion.highlightedNode;
+        if (!area) return null;
+
+        return self.completion.results.find(r => r.from_name === self && r.area === area);
+      }
       return self.completion.results.find(r => r.from_name === self);
     },
 

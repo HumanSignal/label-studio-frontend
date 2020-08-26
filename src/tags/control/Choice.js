@@ -90,7 +90,13 @@ const Model = types
       if (choices.result) {
         choices.result.area.setValue(choices);
       } else {
-        self.completion.createResult({ choices: choices.selectedValues() }, choices, choices.toname);
+        if (choices.perregion) {
+          const area = self.completion.highlightedNode;
+          if (!area) return null;
+          area.setValue(choices);
+        } else {
+          self.completion.createResult({ choices: choices.selectedValues() }, choices, choices.toname);
+        }
       }
     },
 
