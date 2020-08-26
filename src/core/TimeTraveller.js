@@ -30,6 +30,10 @@ const TimeTraveller = types
     let snapshotDisposer;
     let updateHandlers = new Set();
 
+    function triggerHandlers() {
+      updateHandlers.forEach(handler => handler());
+    }
+
     return {
       freeze() {
         self.isFrozen = true;
@@ -63,6 +67,7 @@ const TimeTraveller = types
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
         self.createdIdx = 0;
+        triggerHandlers();
       },
 
       afterCreate() {
@@ -106,7 +111,7 @@ const TimeTraveller = types
         self.undoIdx = idx;
         self.skipNextUndoState = true;
         applySnapshot(targetStore, self.history[idx]);
-        updateHandlers.forEach(handler => handler());
+        triggerHandlers();
       },
 
       reset() {

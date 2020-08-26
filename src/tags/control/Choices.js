@@ -111,6 +111,10 @@ const Model = types
       if (self.showinline === false) self.layout = "vertical";
     },
 
+    needsUpdate() {
+      self.result && self.setResult(self.result.mainValue);
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
