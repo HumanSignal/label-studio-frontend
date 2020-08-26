@@ -4,7 +4,7 @@ import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParentOfType, destroy, detach } from "mobx-state-tree";
 
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -304,7 +304,7 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ store, item }) => {
-  const style = item.style || item.tag;
+  const style = item.style || item.tag || defaultStyle;
 
   /**
    * Render line between 2 points
