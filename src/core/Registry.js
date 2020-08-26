@@ -61,6 +61,7 @@ class _Registry {
 
   getAvailableAreas(object, value) {
     const available = this.areas.get(object);
+    if (!available) return [];
     if (value) {
       for (let model of available) {
         if (model.detectByValue && model.detectByValue(value)) return [model];
