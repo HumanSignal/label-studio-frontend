@@ -515,15 +515,15 @@ export default types
       //
       let root = modelClass.create(completionModel);
 
-      const pk = options.pk || options.id;
+      const pk = String(options.pk || options.id);
 
       //
       let node = {
         userGenerate: false,
-        id: guidGenerator(5),
 
         ...options,
 
+        id: guidGenerator(5),
         pk,
         root,
       };
