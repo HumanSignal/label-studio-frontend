@@ -419,6 +419,8 @@ class TextPieceView extends Component {
     const { item } = this.props;
 
     item.regs.forEach(function(r) {
+      if (r._spans && r._spans.length) return;
+
       const findNode = (el, pos) => {
         let left = pos;
         const traverse = node => {
