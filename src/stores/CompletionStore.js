@@ -90,6 +90,10 @@ const Completion = types
       return self.list.toNames;
     },
 
+    get objects() {
+      return Array.from(self.names.values()).filter(tag => !tag.toname);
+    },
+
     get results() {
       const results = [];
       self.areas.forEach(a => a.results.forEach(r => results.push(r)));
@@ -98,7 +102,7 @@ const Completion = types
   }))
   .actions(self => ({
     reinitHistory() {
-      self.history = { targetPath: "../areas" };
+      self.history.reinit();
     },
 
     setEdit(val) {
@@ -279,6 +283,13 @@ const Completion = types
       destroy(region);
     },
 
+    // update some fragile parts after snapshot manipulations (undo/redo)
+    updateObjects() {
+      self.unselectAll();
+      self.names.forEach(obj => obj.needsUpdate && obj.needsUpdate());
+      self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
+    },
+
     afterAttach() {
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
@@ -318,6 +329,8 @@ const Completion = types
           states && states.forEach(s => tools.addToolsFromControl(s));
         }
       });
+
+      self.history.onUpdate(self.updateObjects);
     },
 
     afterCreate() {

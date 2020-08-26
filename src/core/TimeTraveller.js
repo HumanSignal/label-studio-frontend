@@ -5,20 +5,20 @@ import { types, resolvePath, getEnv, onSnapshot, getSnapshot, applySnapshot } fr
  */
 const TimeTraveller = types
   .model("TimeTraveller", {
-    history: types.array(types.frozen()),
-    undoIdx: -1,
+    undoIdx: 0,
     targetPath: "",
     skipNextUndoState: types.optional(types.boolean, false),
 
-    createdIdx: 1,
+    createdIdx: 0,
 
     isFrozen: types.optional(types.boolean, false),
     frozenIdx: -1,
   })
+  .volatile(self => ({
+    history: [],
+  }))
   .views(self => ({
     get canUndo() {
-      // [TODO] since we initialize state a bit incorrectly we end up with 2 items in history
-      // before even any action takes place. To protect those items we keep them in history forever
       return self.undoIdx > 0;
     },
     get canRedo() {
@@ -28,12 +28,20 @@ const TimeTraveller = types
   .actions(self => {
     let targetStore;
     let snapshotDisposer;
+    let updateHandlers = new Set();
 
     return {
       freeze() {
         self.isFrozen = true;
         self.skipNextUndoState = true;
         self.frozenIdx = self.undoIdx;
+      },
+
+      onUpdate(handler) {
+        updateHandlers.add(handler);
+        return () => {
+          updateHandlers.delete(handler);
+        };
       },
 
       addUndoState(recorder) {
@@ -49,6 +57,12 @@ const TimeTraveller = types
         self.history.splice(self.undoIdx + 1);
         self.history.push(recorder);
         self.undoIdx = self.history.length - 1;
+      },
+
+      reinit() {
+        self.history = [getSnapshot(targetStore)];
+        self.undoIdx = 0;
+        self.createdIdx = 0;
       },
 
       afterCreate() {
@@ -92,6 +106,7 @@ const TimeTraveller = types
         self.undoIdx = idx;
         self.skipNextUndoState = true;
         applySnapshot(targetStore, self.history[idx]);
+        updateHandlers.forEach(handler => handler());
       },
 
       reset() {
