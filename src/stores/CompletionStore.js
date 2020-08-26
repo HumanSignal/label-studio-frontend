@@ -286,7 +286,7 @@ const Completion = types
     // update some fragile parts after snapshot manipulations (undo/redo)
     updateObjects() {
       self.unselectAll();
-      self.names.forEach(obj => obj.needsUpdate && obj.needsUpdate());
+      self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
     },
 
