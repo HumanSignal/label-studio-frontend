@@ -34,10 +34,9 @@ const ModelAttrs = types.model("BrushLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
   // pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
+  _type: "brushlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "brushlabels" });
 
 const BrushLabelsModel = types.compose(
   "BrushLabelsModel",
@@ -45,7 +44,7 @@ const BrushLabelsModel = types.compose(
   ModelAttrs,
   BrushModel,
   // TagAttrs,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

@@ -127,7 +127,7 @@ const Result = types
   }))
   .actions(self => ({
     setValue(value) {
-      self.value[self.from_name.type] = value;
+      self.value[self.from_name._type] = value;
     },
 
     afterCreate() {

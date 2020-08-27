@@ -50,33 +50,32 @@ const ModelAttrs = types.model({
   // id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
+  _type: "labels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 
   visible: types.optional(types.boolean, true),
 });
 
-const Model = LabelMixin.props({ _type: "labels" })
-  .views(self => ({
-    get shouldBeUnselected() {
-      return self.choice === "single";
-    },
-  }))
-  .actions(self => ({
-    validate() {
-      const regions = self.completion.regionStore.regions;
+const Model = LabelMixin.views(self => ({
+  get shouldBeUnselected() {
+    return self.choice === "single";
+  },
+})).actions(self => ({
+  validate() {
+    const regions = self.completion.regionStore.regions;
 
-      for (let r of regions) {
-        for (let s of r.states) {
-          if (s.name === self.name) {
-            return true;
-          }
+    for (let r of regions) {
+      for (let s of r.states) {
+        if (s.name === self.name) {
+          return true;
         }
       }
+    }
 
-      InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-      return false;
-    },
-  }));
+    InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
+    return false;
+  },
+}));
 
 const LabelsModel = types.compose(
   "LabelsModel",

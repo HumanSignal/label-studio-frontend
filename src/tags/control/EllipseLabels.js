@@ -40,17 +40,16 @@ const ModelAttrs = types.model("EllipseLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
   // pid: types.optional(types.string, guidGenerator),
   type: "ellipselabels",
+  _type: "ellipselabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "ellipselabels" });
 
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   EllipseModel,
   TagAttrs,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

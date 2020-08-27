@@ -40,6 +40,7 @@ const ModelAttrs = types
     // id: types.identifier,
     // pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
+    _type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
@@ -49,14 +50,12 @@ const ModelAttrs = types
     },
   }));
 
-const Model = LabelMixin.props({ _type: "keypointlabels" });
-
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
   TagAttrs,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );
