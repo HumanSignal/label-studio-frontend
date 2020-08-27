@@ -105,7 +105,6 @@ const Model = types
     },
 
     async updateValue(store) {
-      console.log("update");
       self._value = runTemplate(self.value, store.task.dataObj);
 
       if (self.valuesource === "url") {

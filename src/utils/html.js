@@ -198,8 +198,6 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   let nlen = nodes.length;
   if (nlen > 1 && nodes[nodes.length - 1].length !== normedRange._range.endOffset) nlen = nlen - 1;
 
-  console.log({ normedRange, nodes });
-
   const results = [];
   for (var i = start, len = nlen; i < len; i++) {
     var node = nodes[i];

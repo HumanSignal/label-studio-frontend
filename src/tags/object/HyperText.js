@@ -234,8 +234,8 @@ class HyperTextPieceView extends Component {
         r._range = range;
         const spans = r.createSpans();
         r.addEventsToSpans(spans);
-      } catch (err) {
-        console.log(r);
+      } catch (e) {
+        console.log(e);
       }
     });
 

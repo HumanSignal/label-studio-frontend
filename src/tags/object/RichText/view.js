@@ -47,8 +47,6 @@ class RichTextPieceView extends Component {
         if (globalStartOffset && globalEndOffset) {
           region.updateOffsets(globalStartOffset, globalEndOffset);
         }
-
-        console.log(normedRange);
       },
       {
         granularity: item.granularity,
@@ -101,7 +99,7 @@ class RichTextPieceView extends Component {
       try {
         richTextRegion.applyHighlight();
       } catch (err) {
-        console.log({ region: richTextRegion, err });
+        console.log(err, { region: richTextRegion });
       }
     });
   }
