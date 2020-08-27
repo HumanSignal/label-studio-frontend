@@ -25,10 +25,10 @@ import ControlBase from "./Base";
  * @param {string} name name of the element
  * @param {string} toName name of the html element to label
  */
-// const TagAttrs = types.model({
-//   name: types.maybeNull(types.string),
-//   toname: types.maybeNull(types.string),
-// });
+const TagAttrs = types.model({
+  name: types.identifier,
+  toname: types.maybeNull(types.string),
+});
 
 const ModelAttrs = types
   .model("HyperTextLabelesModel", {
@@ -57,7 +57,7 @@ const Composition = types.compose(
   ControlBase,
   LabelsModel,
   ModelAttrs,
-  // TagAttrs,
+  TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
 );

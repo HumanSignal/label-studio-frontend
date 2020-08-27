@@ -11,22 +11,29 @@ import { HyperTextModel } from "../tags/object/HyperText";
 import { RatingModel } from "../tags/control/Rating";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
+import { AreaMixin } from "../mixins/AreaMixin";
+import Registry from "../core/Registry";
 
 const Model = types
   .model("HyperTextRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "hypertextregion",
+    object: types.late(() => types.reference(HyperTextModel)),
+
     startOffset: types.integer,
     start: types.string,
     endOffset: types.integer,
     end: types.string,
     text: types.string,
-    states: types.maybeNull(types.array(types.union(HyperTextLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
+  .volatile(self => ({
+    // @todo remove, it should be at least a view or maybe even not required at all
+    states: [],
+  }))
   .views(self => ({
     get parent() {
-      return getParentOfType(self, HyperTextModel);
+      return self.object;
     },
   }))
   .actions(self => ({
@@ -34,7 +41,7 @@ const Model = types
       Utils.HTML.removeSpans(self._spans);
     },
 
-    serialize(control, object) {
+    serialize() {
       let res = {
         value: {
           start: self.start,
@@ -45,7 +52,7 @@ const Model = types
         },
       };
 
-      res.value = Object.assign(res.value, control.serializableValue);
+      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
@@ -55,9 +62,12 @@ const HyperTextRegionModel = types.compose(
   "HyperTextRegionModel",
   WithStatesMixin,
   RegionsMixin,
+  AreaMixin,
   NormalizationMixin,
   Model,
   SpanTextMixin,
 );
+
+Registry.addRegionType(HyperTextRegionModel, "hypertext");
 
 export { HyperTextRegionModel };

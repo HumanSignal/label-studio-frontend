@@ -6,6 +6,7 @@ import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { TextRegionModel } from "./TextRegion";
+import { HyperTextRegionModel } from "./HyperTextRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
 
@@ -129,6 +130,7 @@ const Area = types.union(
     },
   },
   TextRegionModel,
+  HyperTextRegionModel,
   RectRegionModel,
   KeyPointRegionModel,
   EllipseRegionModel,
