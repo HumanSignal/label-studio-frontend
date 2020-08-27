@@ -30,6 +30,7 @@ const Result = types
     to_name: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
     type: types.enumeration([
       "labels",
+      "htmllabels",
       "rectanglelabels",
       "keypointlabels",
       "polygonlabels",
@@ -43,6 +44,7 @@ const Result = types
       choices: types.maybe(types.array(types.string)),
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
+      htmllabels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
       keypointlabels: types.maybe(types.array(types.string)),
       polygonlabels: types.maybe(types.array(types.string)),

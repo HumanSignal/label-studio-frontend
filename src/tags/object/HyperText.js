@@ -25,7 +25,7 @@ import { runTemplate } from "../../core/Template";
  * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("HyperTextModel", {
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
 
   highlightcolor: types.maybeNull(types.string),
@@ -36,9 +36,9 @@ const TagAttrs = types.model("HyperTextModel", {
 
 const Model = types
   .model("HyperTextModel", {
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     type: "hypertext",
-    regions: types.array(HyperTextRegionModel),
+    // regions: types.array(HyperTextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -50,6 +50,10 @@ const Model = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get regs() {
+      return self.completion.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
@@ -89,14 +93,19 @@ const Model = types
     },
 
     addRegion(range) {
-      const states = self.getAvailableStates();
-      if (states.length === 0) return;
+      const area = self.completion.createResult(range, self.activeStates()[0], self);
+      area._range = range._range;
+      self.completion.unselectAll();
+      return area;
 
-      const clonedStates = states.map(s => cloneNode(s));
+      // const states = self.getAvailableStates();
+      // if (states.length === 0) return;
 
-      const r = self.createRegion({ ...range, states: clonedStates });
+      // const clonedStates = states.map(s => cloneNode(s));
 
-      return r;
+      // const r = self.createRegion({ ...range, states: clonedStates });
+
+      // return r;
     },
 
     /**
@@ -216,7 +225,8 @@ class HyperTextPieceView extends Component {
     const root = this.myRef.current;
     const { item } = this.props;
 
-    item.regions.forEach(function(r) {
+    item.regs.forEach(function(r) {
+      if (r._spans && r._spans.length) return;
       try {
         const range = xpath.toRange(r.start, r.startOffset, r.end, r.endOffset, root);
 
@@ -271,5 +281,6 @@ const HtxHyperText = inject("store")(observer(HtxHyperTextView));
 const HtxHyperTextPieceView = inject("store")(observer(HyperTextPieceView));
 
 Registry.addTag("hypertext", HyperTextModel, HtxHyperText);
+Registry.addObjectType(HyperTextModel);
 
 export { HyperTextModel, HtxHyperText };
