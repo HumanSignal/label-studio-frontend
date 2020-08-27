@@ -274,7 +274,7 @@ const createSpanStylesheet = (identifier, color) => {
   };
 
   return {
-    className: className.split(".").filter(el => !!el),
+    className: className.substr(1),
     state: stateClass,
     setColor,
     setCursor,
