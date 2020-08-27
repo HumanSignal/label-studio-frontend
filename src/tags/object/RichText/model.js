@@ -96,10 +96,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    needsUpdate() {
-      // self._update = self._update + 1;
-    },
-
     setRoot(root) {
       self._rootNode = root;
     },
@@ -243,8 +239,6 @@ const Model = types
         tree.end = "";
         tree.isText = true;
       }
-
-      states.fromStateJSON(obj);
 
       return tree;
     },

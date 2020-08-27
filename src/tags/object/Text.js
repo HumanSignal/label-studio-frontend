@@ -85,6 +85,10 @@ const Model = types
       self._ref = ref;
     },
 
+    needsUpdate() {
+      self._update = self._update + 1;
+    },
+
     updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
 
