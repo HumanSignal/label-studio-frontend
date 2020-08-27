@@ -660,17 +660,19 @@ export default types
 
       if (!self.root) initRoot(config);
 
-      const id = options["id"];
-      delete options["id"];
+      const pk = options.pk || options.id;
 
       //
       let node = {
-        id: id || guidGenerator(5),
-        // root: self.root,
-
         userGenerate: false,
 
         ...options,
+
+        // id is internal so always new to prevent collisions
+        id: guidGenerator(5),
+        // pk and id may be missing, so undefined | string
+        pk: pk && String(pk),
+        root: self.root,
       };
 
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
