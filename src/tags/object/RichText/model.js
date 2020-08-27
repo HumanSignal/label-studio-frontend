@@ -118,9 +118,9 @@ const Model = types
         const response = await fetch(url);
         const { ok, status, statusText } = response;
 
-        if (!ok) throw new Error(`${status} ${statusText}`);
-
         try {
+          if (!ok) throw new Error(`${status} ${statusText}`);
+
           self.setRemoteValue(await response.text());
         } catch (error) {
           Infomodal.error(WARNING_MESSAGES.loadingError(url, error));
