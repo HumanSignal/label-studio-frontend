@@ -183,11 +183,17 @@ const PolygonPointView = observer(({ item, name }) => {
       item._movePoint(x, y);
     },
 
+    onDragStart: e => {
+      item.completion.history.freeze();
+    },
+
     onDragEnd: e => {
+      item.completion.history.unfreeze();
       e.cancelBubble = true;
     },
 
     onMouseOver: e => {
+      e.cancelBubble = true;
       const stage = item.parent.parent.stageRef;
       stage.container().style.cursor = "crosshair";
     },

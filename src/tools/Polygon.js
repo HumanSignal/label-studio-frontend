@@ -61,6 +61,7 @@ const _Tool = types
           coordstype: "px",
         };
 
+        self.obj.completion.history.freeze();
         self.obj.completion.createResult(opts, control, self.obj);
         if (withStates) self.obj.completion.unselectAll();
       }

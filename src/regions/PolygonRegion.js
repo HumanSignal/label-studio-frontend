@@ -38,14 +38,17 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      self.points = self.points.map(([x, y], index) => ({
-        id: guidGenerator(),
-        x: x,
-        y: y,
-        size: self.pointSize,
-        style: self.pointStyle,
-        index,
-      }));
+      if (!self.points.length) return;
+      if (!self.points[0].id) {
+        self.points = self.points.map(([x, y], index) => ({
+          id: guidGenerator(),
+          x: x,
+          y: y,
+          size: self.pointSize,
+          style: self.pointStyle,
+          index,
+        }));
+      }
 
       if (self.points.length > 2) self.closed = true;
     },
@@ -138,6 +141,7 @@ const Model = types
     closePoly() {
       self.closed = true;
       self.selectRegion();
+      self.completion.history.unfreeze();
     },
 
     canClose(x, y) {
@@ -436,7 +440,9 @@ const HtxPolygonView = ({ store, item }) => {
         item.completion.setDragMode(false);
         if (!item.closed) item.closePoly();
 
+        item.completion.history.freeze();
         item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
+        item.completion.history.unfreeze();
 
         t.setAttr("x", 0);
         t.setAttr("y", 0);
