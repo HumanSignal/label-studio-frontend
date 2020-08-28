@@ -10,12 +10,10 @@ const TimeTraveller = types
     skipNextUndoState: types.optional(types.boolean, false),
 
     createdIdx: 0,
-
-    isFrozen: types.optional(types.boolean, false),
-    frozenIdx: -1,
   })
   .volatile(self => ({
     history: [],
+    isFrozen: false,
   }))
   .views(self => ({
     get canUndo() {
@@ -37,8 +35,15 @@ const TimeTraveller = types
     return {
       freeze() {
         self.isFrozen = true;
-        self.skipNextUndoState = true;
-        self.frozenIdx = self.undoIdx;
+      },
+
+      unfreeze() {
+        self.isFrozen = false;
+        self.recordNow();
+      },
+
+      recordNow() {
+        self.addUndoState(getSnapshot(targetStore));
       },
 
       onUpdate(handler) {
@@ -49,6 +54,7 @@ const TimeTraveller = types
       },
 
       addUndoState(recorder) {
+        if (self.isFrozen) return;
         if (self.skipNextUndoState) {
           /**
            * Skip recording if this state was caused by undo / redo
@@ -77,13 +83,11 @@ const TimeTraveller = types
           throw new Error(
             "Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment",
           );
-        // TODO: check if targetStore doesn't contain self
-        // if (contains(targetStore, self)) throw new Error("TimeTraveller shouldn't be recording itself. Please specify a sibling as taret, not some parent")
         // start listening to changes
         snapshotDisposer = onSnapshot(targetStore, snapshot => this.addUndoState(snapshot));
         // record an initial state if no known
         if (self.history.length === 0) {
-          self.addUndoState(getSnapshot(targetStore));
+          self.recordNow();
         }
 
         self.createdIdx = self.undoIdx;
@@ -94,17 +98,11 @@ const TimeTraveller = types
       },
 
       undo() {
-        if (self.isFrozen && self.frozenIdx < self.undoIdx) return;
-
-        let newIdx = self.undoIdx - 1;
-
-        self.set(newIdx);
+        self.set(self.undoIdx - 1);
       },
 
       redo() {
-        let newIdx = self.undoIdx + 1;
-
-        self.set(newIdx);
+        self.set(self.undoIdx + 1);
       },
 
       set(idx) {

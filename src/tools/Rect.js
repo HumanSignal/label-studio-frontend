@@ -26,6 +26,8 @@ const _Tool = types
       if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
       if (!self.obj.checkLabels()) return;
 
+      self.completion.history.freeze();
+
       self.mode = "drawing";
 
       self.createRegion({
@@ -35,7 +37,6 @@ const _Tool = types
         width: 1,
         coordstype: "px",
       });
-
       if (self.tagTypes.stateTypes === self.control.type) self.completion.unselectAll();
     },
 
@@ -54,6 +55,7 @@ const _Tool = types
         self.completion.removeArea(s);
         if (self.control.type === "rectanglelabels") self.completion.unselectAll();
       } else {
+        self.completion.history.unfreeze();
         // self.obj.completion.highlightedNode.unselectRegion(true);
       }
 
