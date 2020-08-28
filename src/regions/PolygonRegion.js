@@ -203,6 +203,8 @@ const Model = types
     },
 
     serialize() {
+      if (self.points.length < 3) return null;
+
       const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.object;
       const degree = -self.parent.rotation;
       const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
