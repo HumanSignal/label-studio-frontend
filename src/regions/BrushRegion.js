@@ -175,12 +175,14 @@ const Model = types
         tension: self.tension,
       });
 
+      if (!rle || !rle.length) return null;
+
       const res = {
         original_width: object.naturalWidth,
         original_height: object.naturalHeight,
         value: {
           format: "rle",
-          rle: Array.prototype.slice.call(rle),
+          rle,
         },
       };
 
