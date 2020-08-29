@@ -9,17 +9,17 @@ export default types
   .views(self => ({}))
   .actions(self => ({
     updateSpansColor(bgcolor, opacity) {
-      if (!self._spans) return;
+      if (self._spans) {
+        self._spans.forEach(span => {
+          if (bgcolor) {
+            span.style.backgroundColor = bgcolor;
+          }
 
-      self._spans.forEach(span => {
-        if (bgcolor) {
-          span.style.backgroundColor = bgcolor;
-        }
-
-        if (opacity) {
-          span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, opacity);
-        }
-      });
+          if (opacity) {
+            span.style.backgroundColor = Utils.Colors.rgbaChangeAlpha(span.style.backgroundColor, opacity);
+          }
+        });
+      }
     },
 
     updateAppearenceFromState() {
