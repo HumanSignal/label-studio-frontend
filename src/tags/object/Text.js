@@ -167,8 +167,6 @@ const Model = types
       const states = self.getAvailableStates();
       if (states.length === 0) return;
 
-      console.log(states);
-
       const clonedStates = states.map(s => cloneNode(s));
 
       const r = self.createRegion({ ...range, states: clonedStates });
