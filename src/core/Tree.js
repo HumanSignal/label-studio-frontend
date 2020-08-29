@@ -148,7 +148,7 @@ function treeToModel(html) {
   const hypertexts = (function() {
     let m;
     const res = [];
-    const re = /<(HyperText|RichText).*?>(.*?)<\/(HyperText|RichText)>/gi;
+    const re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
     do {
       m = re.exec(html);
       if (m) {
