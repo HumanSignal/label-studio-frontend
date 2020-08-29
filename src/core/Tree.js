@@ -173,7 +173,7 @@ function treeToModel(html) {
 
     // if it's a hypertext process the children differently, that's
     // done for convenience. value attribute takes precedence if present
-    if (["hypertext", "richtext"].includes(node["#name"].toLowerCase())) {
+    if (node["#name"].toLowerCase() === "hypertext") {
       return node.$ && "value" in node.$ ? node.$["value"] : findHT(node);
     }
 

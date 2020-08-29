@@ -1,8 +1,8 @@
 <View>
-  <HyperTextLabels name="ner" toName="text">
+  <Labels name="ner" toName="text">
     <Label value="Person"></Label>
     <Label value="Organization"></Label>
     <Label value="Date"></Label>
-  </HyperTextLabels>
-  <RichText name="text" value="$url" valueSource="url"></RichText>
+  </Labels>
+  <Text name="text" value="$url" valueType="url"></Text>
 </View>

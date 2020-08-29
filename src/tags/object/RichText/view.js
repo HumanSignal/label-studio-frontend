@@ -29,7 +29,7 @@ class RichTextPieceView extends Component {
 
         if (!normedRange) return;
 
-        const isText = item.valuetype === "text";
+        const isText = item.type === "text";
         let globalStartOffset, globalEndOffset;
 
         normedRange._range = range;

@@ -40,7 +40,7 @@ const ModelAttrs = types.model("PolygonLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "polygonlabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext", "richtext"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "polygonlabels" });

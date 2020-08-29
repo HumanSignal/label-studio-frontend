@@ -40,7 +40,7 @@ const ModelAttrs = types.model("RectangleLabelsModel", {
   id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "rectanglelabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext", "richtext"]),
+  children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 
 const Model = LabelMixin.props({ _type: "rectanglelabels" });

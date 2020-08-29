@@ -4,5 +4,5 @@
     <Label value="Organization"></Label>
     <Label value="Date"></Label>
   </HyperTextLabels>
-  <RichText name="text" value="$text"></RichText>
+  <HyperText name="text" value="$text"></HyperText>
 </View>

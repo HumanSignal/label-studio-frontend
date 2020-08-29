@@ -281,6 +281,6 @@ class HyperTextPieceView extends Component {
 const HtxHyperText = inject("store")(observer(HtxHyperTextView));
 const HtxHyperTextPieceView = inject("store")(observer(HyperTextPieceView));
 
-Registry.addTag("hypertext", HyperTextModel, HtxHyperText);
+// Registry.addTag("hypertext", HyperTextModel, HtxHyperText);
 
 export { HyperTextModel, HtxHyperText };

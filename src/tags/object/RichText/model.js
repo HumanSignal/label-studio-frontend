@@ -13,9 +13,9 @@ import * as xpath from "xpath-range";
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
 const WARNING_MESSAGES = {
-  dataTypeMistmatch: () => "You should not put text directly in your task data if you use valueSource=url.",
+  dataTypeMistmatch: () => "You should not put text directly in your task data if you use valueType=url.",
   badURL: url => `URL (${url}) is not valid.`,
-  secureMode: () => 'In SECURE MODE valuesource set to "url" by default.',
+  secureMode: () => 'In SECURE MODE valueType set to "url" by default.',
   loadingError: (url, error) => `Loading URL (${url}) unsuccessful: ${error}`,
 };
 
@@ -24,14 +24,13 @@ const WARNING_MESSAGES = {
  * @example
  * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
  * @example
- * <RichText name="text-1" value="$url" valueSource="url" highlightColor="#ff0000" />
+ * <Text name="text-1" value="$url" valueType="url" highlightColor="#ff0000" />
  * @example
- * <RichText name="text-1" value="$text" valueType="html" highlightColor="#ff0000" />
+ * <HyperText name="text-1" value="$hmtl" highlightColor="#ff0000" />
  * @name Text
  * @param {string} name                                   - name of the element
  * @param {string} value                                  - value of the element
- * @param {html|text} [valueType=text|html]               – type of the content to show
- * @param {url|text} [valueSource=url|text]                – source of the data
+ * @param {url|text} [valueType=url|text]                – source of the data
  * @param {boolean} [saveTextResult=true]                 – wether or not to save selected text to the serialized data
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
  * @param {boolan} [clickableLinks=false]                 – allow to open resources from links
@@ -45,10 +44,7 @@ const TagAttrs = types.model("RichTextModel", {
   value: types.maybeNull(types.string),
 
   /** Defines the type of data to be shown */
-  valuetype: types.optional(types.enumeration(["text", "html"]), "html"),
-
-  /** Defines the source of data */
-  valuesource: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
+  valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
 
   /** Wether or not to save selected text to the serialized data */
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
@@ -103,7 +99,7 @@ const Model = types
     async updateValue(store) {
       self._value = runTemplate(self.value, store.task.dataObj);
 
-      if (self.valuesource === "url") {
+      if (self.valuetype === "url") {
         const url = self._value;
 
         if (!/^https?:\/\//.test(url)) {
@@ -155,8 +151,8 @@ const Model = types
       // doesn't save the text into the result, otherwise it does
       // can be aslo directly configured
       if (self.savetextresult === "none") {
-        if (self.valuesource === "url") self.savetextresult = "no";
-        else if (self.valuesource === "text") self.savetextresult = "yes";
+        if (self.valuetype === "url") self.savetextresult = "no";
+        else if (self.valuetype === "text") self.savetextresult = "yes";
       }
     },
 
@@ -172,6 +168,7 @@ const Model = types
       const region = RichTextRegionModel.create({
         pid: p.id,
         ...regionData,
+        isText: self.type === "text",
       });
 
       region._getRange = () => {
@@ -180,6 +177,10 @@ const Model = types
         }
 
         return region._cachedRegion;
+      };
+
+      region._getRootNode = () => {
+        return self._rootNode;
       };
 
       self.regions.push(region);
@@ -210,8 +211,6 @@ const Model = types
       const tree = self._objectFromJSON(obj, fromModel);
 
       self.createRegion(tree);
-
-      self.needsUpdate();
     },
 
     _objectFromJSON(obj, fromModel, { createRange } = {}) {
@@ -239,6 +238,8 @@ const Model = types
         tree.end = "";
         tree.isText = true;
       }
+
+      states.fromStateJSON(obj);
 
       return tree;
     },
