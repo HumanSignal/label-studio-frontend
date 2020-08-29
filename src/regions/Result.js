@@ -72,7 +72,7 @@ const Result = types
     },
 
     get mainValue() {
-      return self.value[self.type];
+      return self.value[self.from_name._type];
     },
 
     get editable() {
@@ -152,13 +152,14 @@ const Result = types
 
     serialize() {
       const { from_name, to_name, type, score, value } = getSnapshot(self);
+      const { _type } = self.from_name;
       const data = self.area ? self.area.serialize() : {};
       // cut off completion id
       const id = self.area.id.replace(/#.*/, "");
       if (!data.value) data.value = {};
 
       Object.assign(data, { id, from_name, to_name, type });
-      Object.assign(data.value, { [type]: value[type] });
+      Object.assign(data.value, { [_type]: value[_type] });
       if (typeof score === "number") data.score = score;
 
       return data;
