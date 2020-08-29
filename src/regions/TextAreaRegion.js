@@ -33,6 +33,7 @@ const Model = types
   .actions(self => ({
     setValue(val) {
       self._value = val;
+      self.parent.onChange();
     },
   }));
 
@@ -79,7 +80,6 @@ const HtxTextAreaRegionView = ({ store, item }) => {
   let divAttrs = {};
   if (!parent.perregion) {
     divAttrs = {
-      onClick: item.onClickRegion,
       onMouseOver: () => {
         if (relationMode) {
           item.setHighlight(true);

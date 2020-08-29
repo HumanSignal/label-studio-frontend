@@ -54,6 +54,7 @@ const Model = types
   .model({
     // id: types.optional(types.identifier, guidGenerator),
     type: "textarea",
+    _type: "text",
     regions: types.array(TextAreaRegionModel),
 
     _value: types.optional(types.string, ""),
@@ -89,6 +90,16 @@ const Model = types
     selectedValues() {
       return self.regions.map(r => r._value);
     },
+
+    get result() {
+      if (self.perregion) {
+        const area = self.completion.highlightedNode;
+        if (!area) return null;
+
+        return self.completion.results.find(r => r.from_name === self && r.area === area);
+      }
+      return self.completion.results.find(r => r.from_name === self);
+    },
   }))
   .actions(self => ({
     getSerializableValue() {
@@ -100,6 +111,11 @@ const Model = types
 
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
+
+    setResult(value) {
+      const values = Array.isArray(value) ? value : [value];
+      values.forEach(v => self.createRegion(v));
     },
 
     setValue(value) {
@@ -121,17 +137,23 @@ const Model = types
       return r;
     },
 
-    addText(text, pid) {
-      const r = self.createRegion(text, pid);
-
-      if (self.perregion) {
-        const reg = self.completion.highlightedNode;
-        reg && reg.updateOrAddState(self);
+    onChange() {
+      if (self.result) {
+        self.result.area.setValue(self);
       } else {
-        self.completion.addRegion(r);
+        if (self.perregion) {
+          const area = self.completion.highlightedNode;
+          if (!area) return null;
+          area.setValue(self);
+        } else {
+          self.completion.createResult({ text: self.selectedValues() }, self, self.toname);
+        }
       }
+    },
 
-      return r;
+    addText(text, pid) {
+      self.createRegion(text, pid);
+      self.onChange();
     },
 
     beforeSend() {
