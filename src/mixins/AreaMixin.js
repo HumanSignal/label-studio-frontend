@@ -17,6 +17,11 @@ export const AreaMixin = types
       return result && result.from_name;
     },
 
+    hasLabel(value) {
+      const label = self.results.find(r => r.type.endsWith("labels"));
+      return label.mainValue.includes(value);
+    },
+
     get perRegionTags() {
       return self.completion.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
     },

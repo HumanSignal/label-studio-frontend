@@ -41,7 +41,7 @@ const RegionsMixin = types
     },
 
     get labelsState() {
-      return self.states.find(s => s.type.indexOf("labels") !== -1);
+      // return self.states.find(s => s.type.indexOf("labels") !== -1);
     },
 
     hasLabelState(labelValue) {
