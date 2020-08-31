@@ -118,6 +118,11 @@ const Model = types
       values.forEach(v => self.createRegion(v));
     },
 
+    updateFromResult(value) {
+      self.regions = [];
+      value && self.setResult(value);
+    },
+
     setValue(value) {
       self._value = value;
     },

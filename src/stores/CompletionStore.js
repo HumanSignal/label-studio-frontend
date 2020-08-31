@@ -147,7 +147,8 @@ const Completion = types
       // @todo some backward compatibility, should be rewritten to state handling
       // @todo but there are some actions should be performed like scroll to region
       area.selectRegion && area.selectRegion();
-      area.results.forEach(r => r.mainValue.map(v => r.from_name.findLabel(v)).forEach(l => l.setSelected(true)));
+      area.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
+      area.results.forEach(r => r.from_name.updateFromResult?.(r.mainValue));
     },
 
     unselectArea(area) {
@@ -503,6 +504,8 @@ const Completion = types
           // });
         }
       });
+
+      self.results.filter(r => r.area.classification).forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
       objCompletion.forEach(obj => {
         if (obj["type"] === "relation") {

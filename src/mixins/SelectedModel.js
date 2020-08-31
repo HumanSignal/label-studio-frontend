@@ -66,6 +66,13 @@ const SelectedModelMixin = types
 
       return f;
     },
+
+    updateFromResult(value) {
+      self.unselectAll();
+      if (!value) return;
+      const values = Array.isArray(value) ? value : [value];
+      values.map(v => self.findLabel(v)).forEach(label => label.setSelected(true));
+    },
   }));
 
 export default SelectedModelMixin;
