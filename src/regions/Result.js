@@ -138,7 +138,6 @@ const Result = types
       const tag = self.from_name;
       // update state of classification tags
       // @todo unify this with `selectArea`
-      if (tag.setResult) tag.setResult(self.mainValue);
     },
 
     setParentID(id) {
