@@ -127,6 +127,13 @@ const Model = types
       self._value = value;
     },
 
+    remove(region) {
+      const index = self.regions.indexOf(region);
+      if (index < 0) return;
+      self.regions.splice(index, 1);
+      destroy(region);
+    },
+
     copyState(obj) {
       self.regions = obj.regions.map(r => cloneNode(r));
     },

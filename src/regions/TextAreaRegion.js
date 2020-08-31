@@ -99,20 +99,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
       <Paragraph className={classes.join(" ")} {...params}>
         {item._value}
       </Paragraph>
-      {parent.perregion && (
-        <DeleteOutlined
-          className={styles.delete}
-          onClick={ev => {
-            const reg = item.completion.highlightedNode;
-            item.completion.deleteRegion(item);
-
-            reg && reg.updateSingleState(parent);
-
-            ev.preventDefault();
-            return false;
-          }}
-        />
-      )}
+      {parent.perregion && <DeleteOutlined className={styles.delete} onClick={() => item.parent.remove(item)} />}
     </div>
   );
 };
