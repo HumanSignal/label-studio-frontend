@@ -55,10 +55,20 @@ export const AreaMixin = types
       self.results.push(r);
     },
 
+    removeResult(r) {
+      const index = self.results.indexOf(r);
+      if (index < 0) return;
+      self.results.splice(index, 1);
+      destroy(r);
+      if (!self.results.length) destroy(self);
+    },
+
     setValue(tag) {
       const result = self.results.find(r => r.from_name === tag);
       if (result) {
-        result.setValue(tag.selectedValues());
+        const values = tag.selectedValues();
+        if (values.length) result.setValue(values);
+        else self.removeResult(result);
       } else {
         self.results.push({
           area: self,

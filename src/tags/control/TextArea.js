@@ -132,6 +132,7 @@ const Model = types
       if (index < 0) return;
       self.regions.splice(index, 1);
       destroy(region);
+      self.onChange();
     },
 
     copyState(obj) {
