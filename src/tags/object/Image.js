@@ -374,6 +374,10 @@ const Model = types
       } else {
         self._updateImageSize({ width, height, naturalWidth, naturalHeight });
       }
+      // after regions' sizes adjustment we have to reset all saved history changes
+      // mobx do some batch update here, so we have to reset it asynchronously
+      // this happens only after initial load, so it's safe
+      setTimeout(self.completion.reinitHistory, 0);
     },
 
     checkLabels() {
