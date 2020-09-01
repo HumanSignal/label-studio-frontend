@@ -87,6 +87,11 @@ const Model = types
         self.relativeY = self.y;
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
+
+        const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self.parent;
+        if (width && height) {
+          self.updateImageSize(width / naturalWidth, height / naturalHeight, width, height);
+        }
       }
 
       self.updateAppearenceFromState();

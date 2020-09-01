@@ -173,7 +173,7 @@ const Model = types
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
     get selectedShape() {
