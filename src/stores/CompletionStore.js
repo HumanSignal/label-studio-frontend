@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach, resolveIdentifier } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, resolveIdentifier, onSnapshot } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -10,9 +10,11 @@ import TimeTraveller from "../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
+import { delay } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import Area from "../regions/Area";
+import throttle from "lodash.throttle";
 
 console.log("ALL TYPES", Types.allModelsTypes());
 
@@ -35,7 +37,11 @@ const Completion = types
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
 
-    //
+    draft: false,
+    // @todo use types.Date
+    draftSaved: types.maybe(types.string),
+
+    // created by user during this session
     userGenerate: types.optional(types.boolean, true),
     update: types.optional(types.boolean, false),
     sentUserGenerate: types.optional(types.boolean, false),
@@ -67,6 +73,10 @@ const Completion = types
     }),
 
     highlightedNode: types.maybeNull(types.safeReference(AllRegionsType)),
+  })
+  .preProcessSnapshot(sn => {
+    sn.draft = Boolean(sn.draft);
+    return sn;
   })
   .views(self => ({
     get store() {
@@ -100,9 +110,13 @@ const Completion = types
       return results;
     },
   }))
+  .volatile(self => ({
+    versions: {},
+  }))
   .actions(self => ({
     reinitHistory() {
       self.history.reinit();
+      self.autosave && self.autosave.cancel();
     },
 
     setEdit(val) {
@@ -291,6 +305,89 @@ const Completion = types
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
     },
 
+    addVersions(versions) {
+      self.versions = { ...self.versions, ...versions };
+    },
+
+    toggleDraft() {
+      const isDraft = self.draft;
+      if (!isDraft && !self.versions.draft) return;
+      self.autosave.flush();
+      self.pauseAutosave();
+      if (isDraft) self.versions.draft = self.serializeCompletion();
+      self.deleteAllRegions({ deleteReadOnly: true });
+      if (isDraft) {
+        self.deserializeCompletion(self.versions.result);
+        self.draft = false;
+      } else {
+        self.deserializeCompletion(self.versions.draft);
+        self.draft = true;
+      }
+      self.updateObjects();
+      self.startAutosave();
+    },
+
+    async startAutosave() {
+      if (!getEnv(self).onSubmitDraft) return;
+      if (self.type !== "completion") return;
+
+      // some async tasks should be performed after deserialization
+      // so start autosave on next tick
+      await delay(0);
+
+      if (self.autosave) {
+        self.autosave.cancel();
+        self.autosave.paused = false;
+        return;
+      }
+
+      console.info("autosave initialized");
+
+      // mobx will modify methods, so add it directly to have cancel() method
+      self.autosave = throttle(
+        snapshot => {
+          if (self.autosave.paused) return;
+
+          const result = self.serializeCompletion();
+          // if this is new completion and no regions added yet
+          if (!self.pk && !result.length) return;
+
+          self.setDraft(true);
+          self.versions.draft = result;
+
+          self.store.submitDraft(self).then(self.onDraftSaved);
+        },
+        5000,
+        { leading: false },
+      );
+
+      onSnapshot(self.areas, self.autosave);
+    },
+
+    pauseAutosave() {
+      if (!self.autosave) return;
+      self.autosave.paused = true;
+      self.autosave.cancel();
+    },
+
+    beforeDestroy() {
+      self.autosave && self.autosave.cancel && self.autosave.cancel();
+    },
+
+    setDraft(flag) {
+      self.draft = flag;
+    },
+
+    onDraftSaved() {
+      self.draftSaved = Utils.UDate.currentISODate();
+    },
+
+    dropDraft() {
+      self.draft = false;
+      self.draftSaved = undefined;
+      self.versions.draft = undefined;
+    },
+
     afterAttach() {
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
@@ -332,6 +429,7 @@ const Completion = types
       });
 
       self.history.onUpdate(self.updateObjects);
+      self.startAutosave();
     },
 
     afterCreate() {
@@ -698,14 +796,15 @@ export default types
       options.type = "completion";
 
       const item = addItem(options);
+      item.addVersions({ result: options.result, draft: options.draft });
       self.completions.unshift(item);
 
       return item;
     }
 
     function addCompletionFromPrediction(prediction) {
-      const c = self.addCompletion({ userGenerate: true });
       const s = prediction._initialCompletionObj;
+      const c = self.addCompletion({ userGenerate: true, result: s });
 
       // we need to iterate here and rename all ids, as those might
       // clash with the one in the prediction if used as a reference
