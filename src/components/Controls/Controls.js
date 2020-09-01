@@ -4,6 +4,7 @@ import { observer, inject } from "mobx-react";
 import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
+import { DraftPanel } from "../Completions/Completions";
 import styles from "./Controls.module.scss";
 
 const TOOLTIP_DELAY = 0.8;
@@ -42,6 +43,7 @@ export default inject("store")(
     let skipButton;
     let updateButton;
     let submitButton;
+    let draftMenu;
 
     /**
      * Check for Predict Menu
@@ -81,10 +83,14 @@ export default inject("store")(
               onClick={store.updateCompletion}
               className="ls-update-btn"
             >
-              Update {buttons.update}
+              {sentUserGenerate ? "Update" : "Submit"} {buttons.update}
             </Button>
           </Tooltip>
         );
+      }
+
+      if (!store.hasInterface("completions:menu")) {
+        draftMenu = <DraftPanel item={item} />;
       }
     }
 
@@ -95,6 +101,7 @@ export default inject("store")(
             {skipButton}
             {updateButton}
             {submitButton}
+            {draftMenu}
           </div>
           {taskInformation}
         </div>

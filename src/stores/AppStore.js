@@ -257,6 +257,16 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
+    function submitDraft(c) {
+      return new Promise(resolve => {
+        const fn = getEnv(self).onSubmitDraft;
+        if (!fn) return resolve();
+        const res = fn(self, c);
+        if (res && res.then) res.then(resolve);
+        else resolve(res);
+      });
+    }
+
     function submitCompletion() {
       const c = self.completionStore.selected;
       c.beforeSend();
@@ -264,6 +274,7 @@ export default types
       if (!c.validate()) return;
 
       c.sendUserGenerate();
+      c.dropDraft();
       getEnv(self).onSubmitCompletion(self, c);
     }
 
@@ -271,7 +282,9 @@ export default types
       const c = self.completionStore.selected;
       c.beforeSend();
 
+      c.dropDraft();
       getEnv(self).onUpdateCompletion(self, c);
+      !c.sentUserGenerate && c.sendUserGenerate();
     }
 
     function skipTask() {
@@ -302,7 +315,7 @@ export default types
       predictions?.forEach(p => cs.addPrediction(p).deserializeCompletion(p.result));
       completions?.forEach(c => {
         const obj = cs.addCompletion(c);
-        obj.deserializeCompletion(c.result);
+        obj.deserializeCompletion(c.draft || c.result);
         obj.reinitHistory();
       });
       /* eslint-enable no-unused-expressions */
@@ -321,6 +334,7 @@ export default types
       initializeStore,
 
       skipTask,
+      submitDraft,
       submitCompletion,
       updateCompletion,
 
