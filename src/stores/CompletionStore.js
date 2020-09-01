@@ -724,6 +724,8 @@ export default types
       toggleViewingAllCompletions,
       toggleViewingAllPredictions,
 
+      initRoot,
+
       addPrediction,
       addCompletion,
       addCompletionFromPrediction,

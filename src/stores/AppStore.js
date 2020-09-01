@@ -294,23 +294,20 @@ export default types
      * Given completions and predictions
      */
     function initializeStore({ completions, predictions }) {
-      const _init = (addFun, selectFun) => {
-        return item => {
-          const obj = self.completionStore[addFun](item);
+      const cs = self.completionStore;
+      cs.initRoot(self.config);
 
-          self.completionStore[selectFun](obj.id);
-          obj.deserializeCompletion(item.result);
-          obj.reinitHistory();
+      // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
+      /* eslint-disable no-unused-expressions */
+      predictions?.forEach(p => cs.addPrediction(p).deserializeCompletion(p.result));
+      completions?.forEach(c => {
+        const obj = cs.addCompletion(c);
+        obj.deserializeCompletion(c.result);
+        obj.reinitHistory();
+      });
+      /* eslint-enable no-unused-expressions */
 
-          return obj;
-        };
-      };
-
-      const addPred = _init("addPrediction", "selectPrediction");
-      const addComp = _init("addCompletion", "selectCompletion");
-
-      predictions && predictions.forEach(p => addPred(p));
-      completions && completions.forEach(c => addComp(c));
+      cs.selectCompletion(cs.completions[0].id);
     }
 
     return {
