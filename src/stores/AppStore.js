@@ -313,14 +313,13 @@ export default types
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
       predictions?.forEach(p => cs.addPrediction(p).deserializeCompletion(p.result));
-      completions?.forEach(c => {
+      completions?.forEach((c, i) => {
         const obj = cs.addCompletion(c);
+        cs.selectCompletion(obj.id);
         obj.deserializeCompletion(c.draft || c.result);
         obj.reinitHistory();
       });
       /* eslint-enable no-unused-expressions */
-
-      cs.completions.length && cs.selectCompletion(cs.completions[0].id);
     }
 
     return {
