@@ -7,6 +7,8 @@
 .segment {
   position: sticky;
   top: 1rem;
+  // hack for flex to prevent text block from glowing enormously
+  min-width: 0;
 }
 
 .editor {
