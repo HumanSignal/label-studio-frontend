@@ -282,7 +282,7 @@ const Completion = types
       });
 
       self.stopRelationMode();
-      self.regionStore.unselectAll();
+      self.unselectAll();
     },
 
     /**

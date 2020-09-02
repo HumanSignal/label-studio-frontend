@@ -253,6 +253,8 @@ const Result = types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectRegion(tryToKeepStates = false) {
+      console.log("UNSELECT RESULT");
+      return;
       const completion = self.completion;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
