@@ -243,10 +243,16 @@ export default types
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
-          [taskObject.data]: JSON.stringify(taskObject.data),
+          data: JSON.stringify(taskObject.data),
         };
       }
       self.task = Task.create(taskObject);
+    }
+
+    function assignConfig(config) {
+      const cs = self.completionStore;
+      self.config = config;
+      cs.initRoot(self.config);
     }
 
     /* eslint-disable no-unused-vars */
@@ -329,6 +335,7 @@ export default types
 
       afterCreate,
       assignTask,
+      assignConfig,
       resetState,
       initializeStore,
 
