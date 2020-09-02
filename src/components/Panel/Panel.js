@@ -68,6 +68,12 @@ export default observer(({ store }) => {
             Reset Prelabeling
           </Button>
         )}
+        {store.hasInterface("debug") && (
+          <span>
+            {history.undoIdx} / {history.history.length}
+            {history.isFrozen && " (frozen)"}
+          </span>
+        )}
       </div>
 
       <div className={styles.block}>
