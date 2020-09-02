@@ -27,9 +27,9 @@ export function msToHMS(ms) {
  * Helper function to pretty date
  */
 export function prettyDate(time) {
-  if (typeof time !== "string" && !checkISO(time)) return;
+  if (typeof time !== "string" && !time instanceof Date && !checkISO(time)) return;
 
-  let date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
+  let date = new Date(time),
     diff = (new Date().getTime() - date.getTime()) / 1000,
     day_diff = Math.floor(diff / 86400);
 
