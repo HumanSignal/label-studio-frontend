@@ -320,7 +320,7 @@ export default types
       });
       /* eslint-enable no-unused-expressions */
 
-      cs.selectCompletion(cs.completions[0].id);
+      cs.completions.length && cs.selectCompletion(cs.completions[0].id);
     }
 
     return {
