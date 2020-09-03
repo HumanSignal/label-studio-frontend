@@ -686,8 +686,10 @@ export default types
 
       // sad hack with pk while sdk are not using pk everywhere
       const c = list.find(c => c.id === id || c.pk === String(id));
+      if (!c) return list[0];
       c.selected = true;
       self.selected = c;
+      c.updateObjects();
 
       return c;
     }
