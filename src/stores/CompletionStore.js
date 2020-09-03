@@ -25,7 +25,7 @@ const Completion = types
     // @todo but it calculates once, so all the completions have the same pk
     // @todo why don't use only `id`?
     // @todo reverted back to wrong type; maybe it breaks all the deserialisation
-    pk: types.optional(types.string, guidGenerator(5)),
+    pk: types.maybeNull(types.string),
 
     selected: types.optional(types.boolean, false),
     type: types.enumeration(["completion", "prediction"]),
@@ -684,7 +684,8 @@ export default types
 
       if (self.selected) self.selected.selected = false;
 
-      const c = list.find(c => c.id === id);
+      // sad hack with pk while sdk are not using pk everywhere
+      const c = list.find(c => c.id === id || c.pk === String(id));
       c.selected = true;
       self.selected = c;
 
