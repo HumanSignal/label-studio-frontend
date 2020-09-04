@@ -383,6 +383,8 @@ const Completion = types
     },
 
     dropDraft() {
+      if (!self.autosave) return;
+      self.autosave.cancel();
       self.draft = false;
       self.draftSaved = undefined;
       self.versions.draft = undefined;
