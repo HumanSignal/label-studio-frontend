@@ -685,8 +685,8 @@ export default types
       if (self.selected) self.selected.selected = false;
 
       // sad hack with pk while sdk are not using pk everywhere
-      const c = list.find(c => c.id === id || c.pk === String(id));
-      if (!c) return list[0];
+      const c = list.find(c => c.id === id || c.pk === String(id)) || list[0];
+      if (!c) return null;
       c.selected = true;
       self.selected = c;
       c.updateObjects();
@@ -699,6 +699,8 @@ export default types
      * @param {*} id
      */
     function selectCompletion(id) {
+      if (!self.completions.length) return null;
+
       const { selected } = self;
       const c = selectItem(id, self.completions);
 

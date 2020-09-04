@@ -62,12 +62,12 @@ const App = inject("store")(
       }
 
       _renderAll(obj) {
-        if (obj.length === 1) return <Segment>{[Tree.renderItem(obj[0].root)]}</Segment>;
+        if (obj.length === 1) return <Segment completion={obj[0]}>{[Tree.renderItem(obj[0].root)]}</Segment>;
 
         return (
           <div className="ls-renderall">
             {obj.map(c => (
-              <div className="ls-fade">
+              <div className="ls-fade" completion={c}>
                 <Segment>{[Tree.renderItem(c.root)]}</Segment>
               </div>
             ))}
@@ -124,7 +124,10 @@ const App = inject("store")(
 
                 <div className={stCommon + " ls-common"}>
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                    <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
+                    <Segment
+                      completion={cs.selected}
+                      className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}
+                    >
                       {Tree.renderItem(root)}
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>
