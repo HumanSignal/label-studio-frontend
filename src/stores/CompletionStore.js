@@ -755,7 +755,7 @@ export default types
           }
         }
 
-        if (node.updateValue) node.updateValue(self.store);
+        if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
 
       return self.root;
