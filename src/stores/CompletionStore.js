@@ -405,7 +405,7 @@ const Completion = types
       // });
 
       self.traverseTree(node => {
-        if (node.updateValue) node.updateValue(self.store);
+        // if (node.updateValue) node.updateValue(self.store);
 
         // called when the completion is attached to the main store,
         // at this point the whole tree is available. This method
@@ -754,6 +754,8 @@ export default types
             self.toNames.set(node.toname, [node.name]);
           }
         }
+
+        if (node.updateValue) node.updateValue(self.store);
       });
 
       return self.root;
