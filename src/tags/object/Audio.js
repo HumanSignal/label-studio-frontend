@@ -1,13 +1,13 @@
 import React from "react";
 import { observer, inject } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectBase from "./Base";
+import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
-import { AudioHOCModel } from "./AudioHOC";
 
 /**
  * Audio tag plays a simple audio file
@@ -37,7 +37,7 @@ import { AudioHOCModel } from "./AudioHOC";
  */
 
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
   zoom: types.optional(types.boolean, false),
   volume: types.optional(types.boolean, false),
@@ -45,27 +45,47 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
 });
 
-const Model = AudioHOCModel.named("AudioModel").actions(self => ({
-  fromStateJSON(obj, fromModel) {
-    if (obj.value.choices) {
-      self.completion.names.get(obj.from_name).fromStateJSON(obj);
-    }
+const Model = types
+  .model({
+    type: "audio",
+    _value: types.optional(types.string, ""),
+    playing: types.optional(types.boolean, false),
+    height: types.optional(types.number, 20),
+  })
+  .views(self => ({
+    get completion() {
+      return getRoot(self).completionStore.selected;
+    },
+  }))
+  .actions(self => ({
+    fromStateJSON(obj, fromModel) {
+      if (obj.value.choices) {
+        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+      }
 
-    if (obj.value.text) {
-      self.completion.names.get(obj.from_name).fromStateJSON(obj);
-    }
-  },
+      if (obj.value.text) {
+        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+      }
+    },
 
-  onHotKey() {
-    return self._ws.playPause();
-  },
+    handlePlay() {
+      self.playing = !self.playing;
+    },
 
-  onLoad(ws) {
-    self._ws = ws;
-  },
-}));
+    onHotKey() {
+      return self._ws.playPause();
+    },
 
-const AudioModel = types.compose("AudioModel", Model, TagAttrs, ObjectBase);
+    onLoad(ws) {
+      self._ws = ws;
+    },
+
+    wsCreated(ws) {
+      self._ws = ws;
+    },
+  }));
+
+const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase);
 
 const HtxAudioView = observer(({ store, item }) => {
   if (!item._value) return null;
