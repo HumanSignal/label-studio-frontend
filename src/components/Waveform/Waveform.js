@@ -274,13 +274,14 @@ export default class Waveform extends React.Component {
 
       if (e.message && e.message.includes("fetch")) {
         // "Failed to fetch"
+        const urlCORS = "https://labelstud.io/guide/FAQ.html#Image-audio-resource-loading-error-while-labeling";
         /* eslint-disable react/jsx-no-target-blank */
         body = (
           <p>
             Failed to load audio. You can check exact error in Network panel of browser's devtools.
             <br />
             If this related to CORS, check out our{" "}
-            <a target="_blank" href="https://labelstud.io/guide/cors.html">
+            <a target="_blank" href={urlCORS}>
               CORS related doc page
             </a>
             .
