@@ -5,6 +5,7 @@ import Registry from "../core/Registry";
 import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { AudioRegionModel } from "./AudioRegion";
 import { TextRegionModel } from "./TextRegion";
 import { HyperTextRegionModel } from "./HyperTextRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
@@ -129,6 +130,7 @@ const Area = types.union(
       return types.union(...available, ClassificationArea);
     },
   },
+  AudioRegionModel,
   TextRegionModel,
   HyperTextRegionModel,
   RectRegionModel,
