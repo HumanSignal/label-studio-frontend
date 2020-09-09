@@ -41,7 +41,7 @@ const RegionsMixin = types
     },
 
     get labelsState() {
-      // return self.states.find(s => s.type.indexOf("labels") !== -1);
+      // return self.states && self.states.find(s => s.type.indexOf("labels") !== -1);
     },
 
     hasLabelState(labelValue) {
@@ -253,8 +253,9 @@ const RegionsMixin = types
       self.setHighlight(!self.highlighted);
     },
 
-    toggleHidden() {
+    toggleHidden(e) {
       self.hidden = !self.hidden;
+      e && e.stopPropagation();
     },
   }));
 

@@ -351,7 +351,7 @@ export default observer(
             {item.regions
               .filter(shape => shape.type === "brushregion")
               .map(shape => (
-                <Layer name={"brushLayer-" + shape.id} id={shape.id}>
+                <Layer key={shape.id} name={"brushLayer-" + shape.id} id={shape.id}>
                   {Tree.renderItem(shape)}
                 </Layer>
               ))*/}
@@ -371,12 +371,3 @@ export default observer(
     }
   },
 );
-
-// <ImageControls
-//   item={item}
-//   handleZoom={this.handleZoom}
-//   updateBrightness={this.updateBrightness}
-//   updateGridSize={this.updateGridSize}
-//   updateBrushControl={this.updateBrushControl}
-//   updateBrushStrokeWidth={this.updateBrushStrokeWidth}
-// />

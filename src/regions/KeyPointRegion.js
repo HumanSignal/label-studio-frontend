@@ -33,6 +33,7 @@ const Model = types
   .volatile(self => ({
     relativeX: 0,
     relativeY: 0,
+    hideable: true,
   }))
   .actions(self => ({
     rotate(degree) {
@@ -99,6 +100,8 @@ const KeyPointRegionModel = types.compose(
 );
 
 const HtxKeyPointView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   const x = item.x;
   const y = item.y;
   const style = item.style || item.tag || defaultStyle;

@@ -35,6 +35,7 @@ const Model = types
     closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
+    hideable: true,
   }))
   .actions(self => ({
     afterCreate() {
@@ -310,6 +311,8 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   const style = item.style || item.tag || defaultStyle;
 
   /**

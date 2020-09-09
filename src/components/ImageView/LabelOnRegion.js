@@ -5,7 +5,9 @@ import { getRoot } from "mobx-state-tree";
 
 import Utils from "../../utils";
 import Constants from "../../core/Constants";
+import { flatten } from "../../utils/utilities";
 
+// @todo rewrite this to update bbox on shape level while adding new point
 function polytobbox(points) {
   var lats = [];
   var lngs = [];
@@ -26,6 +28,28 @@ function polytobbox(points) {
     [minlat, maxlat],
     [minlng, maxlng],
   ];
+}
+
+// @todo rewrite this to update bbox on shape level while adding new point
+function pointstobbox(points) {
+  const len = points.length;
+  if (!len)
+    return [
+      [0, 0],
+      [0, 0],
+    ];
+
+  var x = [points[0], points[0]];
+  var y = [points[1], points[1]];
+
+  for (let i = 2; i < len; i += 2) {
+    if (points[i] < x[0]) x[0] = points[i];
+    else if (points[i] > x[1]) x[1] = points[i];
+    if (points[i + 1] < y[0]) y[0] = points[i + 1];
+    else if (points[i + 1] > y[1]) y[1] = points[i + 1];
+  }
+
+  return [x, y];
 }
 
 const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) => {
@@ -123,17 +147,20 @@ const LabelOnPolygon = observer(({ item }) => {
 });
 
 const LabelOnMask = observer(({ item }) => {
+  const settings = getRoot(item).settings;
+  if (settings && !settings.showLabels && !settings.showScore) return null;
+
   // const s = item.states.find(s => s.type === "brushlabels");
   // @todo get the most relevant result
   const s = item.results[0];
   if (!s) return null;
   if (item.touches.length === 0) return null;
 
-  const bbox = polytobbox(item.touches);
-  const settings = getRoot(item).settings;
+  // @todo fix points from [0, 1, 2, 3] to [{x: 0, y: 1}, {x: 2, y: 3}]
+  const bbox = pointstobbox(flatten(item.touches.map(t => t.points)));
 
   return (
-    <Fragment>
+    <Group name="region-label">
       <Rect
         x={bbox[0][0]}
         y={bbox[1][0]}
@@ -154,7 +181,7 @@ const LabelOnMask = observer(({ item }) => {
         showScore={settings && settings.showScore}
         zoomScale={item.parent.zoomScale}
       />
-    </Fragment>
+    </Group>
   );
 });
 

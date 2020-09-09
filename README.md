@@ -82,6 +82,7 @@ npm install label-studio
 1. Clone the repository
    ```bash
    git clone git@github.com:heartexlabs/label-studio-frontend.git
+   # or: git clone https://github.com/heartexlabs/label-studio-frontend.git
    cd label-studio-frontend
    ```
 

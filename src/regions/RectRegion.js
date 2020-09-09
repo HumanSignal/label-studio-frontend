@@ -66,6 +66,8 @@ const Model = types
     // coordstype: "px", // types.optional(types.enumeration(["px", "perc"]), "px"),
 
     supportsTransform: true,
+    // depends on region and object tag; they both should correctly handle the `hidden` flag
+    hideable: true,
   }))
   .views(self => ({
     get store() {
