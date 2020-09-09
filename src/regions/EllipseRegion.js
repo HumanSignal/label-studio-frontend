@@ -66,6 +66,7 @@ const Model = types
     strokeWidth: Constants.STROKE_WIDTH,
 
     supportsTransform: true,
+    hideable: true,
   }))
   .actions(self => ({
     afterCreate() {
@@ -210,6 +211,8 @@ const EllipseRegionModel = types.compose(
 );
 
 const HtxEllipseView = ({ store, item }) => {
+  if (item.hidden) return null;
+
   const style = item.style || item.tag || defaultStyle;
   let { strokecolor, strokewidth } = style;
 
