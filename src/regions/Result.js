@@ -153,6 +153,7 @@ const Result = types
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { _type } = self.from_name;
       const data = self.area ? self.area.serialize() : {};
+      if (!data) return null;
       // cut off completion id
       const id = self.area.id.replace(/#.*/, "");
       if (!data.value) data.value = {};

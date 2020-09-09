@@ -549,7 +549,7 @@ const Completion = types
     },
 
     serializeCompletion() {
-      return self.results.map(r => r.serialize());
+      return self.results.map(r => r.serialize()).filter(Boolean);
     },
 
     /**
