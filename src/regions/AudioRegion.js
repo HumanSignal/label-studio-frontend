@@ -11,23 +11,20 @@ import { ChoicesModel } from "../tags/control/Choices";
 import { LabelsModel } from "../tags/control/Labels";
 import { guidGenerator } from "../core/Helpers";
 import { RatingModel } from "../tags/control/Rating";
+import { AreaMixin } from "../mixins/AreaMixin";
+import Registry from "../core/Registry";
 
 const Model = types
   .model("AudioRegionModel", {
-    id: types.optional(types.identifier, guidGenerator),
-    pid: types.optional(types.string, guidGenerator),
     type: "audioregion",
+    object: types.late(() => types.reference(AudioPlusModel)),
+
     start: types.number,
     end: types.number,
 
-    states: types.maybeNull(types.array(types.union(LabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
-    get parent() {
-      return getParentOfType(self, AudioPlusModel);
-    },
-
     wsRegionElement(wsRegion) {
       const elID = wsRegion.id;
       let el = Array.from(document.querySelectorAll(`[data-id="${elID}"]`));
@@ -37,32 +34,40 @@ const Model = types
     },
   }))
   .actions(self => ({
-    serialize(control, object) {
+    serialize() {
       let res = {
-        original_length: object._ws.getDuration(),
+        original_length: self.object._ws.getDuration(),
         value: {
           start: self.start,
           end: self.end,
         },
       };
 
-      res.value = Object.assign(res.value, control.serializableValue);
+      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
 
-    updateAppearenceFromState() {
-      const s = self.labelsState;
-      if (!s) return;
+    updateColor(alpha = 1) {
+      const color = Utils.Colors.convertToRGBA(self.style?.fillcolor, alpha);
+      // eslint-disable-next-line no-unused-expressions
+      self._ws_region?.update({ color });
+    },
 
-      self.selectedregionbg = Utils.Colors.convertToRGBA(s.getSelectedColor(), 0.3);
-      if (self._ws_region.update) {
+    updateAppearenceFromState() {
+      // const s = self.labelsState;
+      // if (!s) return;
+
+      // self.selectedregionbg = Utils.Colors.convertToRGBA("rgb(255, 125, 0)", 0.3);
+      if (self._ws_region?.update) {
         self.applyCSSClass(self._ws_region);
-        self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
+        // self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
     },
 
     applyCSSClass(wsRegion) {
+      self.updateColor(0.3);
+      return;
       const el = self.wsRegionElement(wsRegion);
 
       const settings = getRoot(self).settings;
@@ -73,6 +78,7 @@ const Model = types
         score: self.score,
       });
 
+      // @todo show labels on audio regions
       const classes = [el.className, "htx-highlight", "htx-highlight-last", cssCls];
 
       if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
@@ -84,6 +90,14 @@ const Model = types
      * Select audio region
      */
     selectRegion() {
+      self.updateColor(0.8);
+
+      const el = self.wsRegionElement(self._ws_region);
+      if (el) {
+        el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
+      }
+
+      return;
       self.selected = true;
       self.completion.setHighlightedNode(self);
       self._ws_region.update({
@@ -92,37 +106,31 @@ const Model = types
       });
       self.completion.loadRegionState(self);
 
-      const el = self.wsRegionElement(self._ws_region);
-      if (el) {
-        const container = window.document.scrollingElement;
-        const top = container.scrollTop;
-        const left = container.scrollLeft;
-        el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
-        window.document.scrollingElement.scrollTo(left, top);
-      }
+      // const el = self.wsRegionElement(self._ws_region);
+      // if (el) {
+      //   const container = window.document.scrollingElement;
+      //   const top = container.scrollTop;
+      //   const left = container.scrollLeft;
+      //   el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
+      //   window.document.scrollingElement.scrollTo(left, top);
+      // }
     },
 
     /**
      * Unselect audio region
      */
     afterUnselectRegion() {
-      // debugger;
-      if (self._ws_region.update) {
-        self._ws_region.update({
-          color: self.selectedregionbg,
-          // border: "none"
-        });
-      }
+      self.updateColor(0.3);
     },
 
     setHighlight(val) {
       self.highlighted = val;
 
       if (val) {
-        self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
+        self.updateColor(0.8);
         self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
       } else {
-        self._ws_region.update({ color: self.selectedregionbg });
+        self.updateColor(0.3);
         self._ws_region.element.style.border = "none";
       }
     },
@@ -162,9 +170,19 @@ const Model = types
     onUpdateEnd(wavesurfer) {
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
+      self.updateColor(self.selected ? 0.8 : 0.3);
     },
   }));
 
-const AudioRegionModel = types.compose("AudioRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+const AudioRegionModel = types.compose(
+  "AudioRegionModel",
+  WithStatesMixin,
+  AreaMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  Model,
+);
+
+Registry.addRegionType(AudioRegionModel, "audioplus");
 
 export { AudioRegionModel };
