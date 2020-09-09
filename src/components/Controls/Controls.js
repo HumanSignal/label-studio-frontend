@@ -20,7 +20,7 @@ export default inject("store")(
       submit: "",
     };
 
-    const { userGenerate, sentUserGenerate } = item;
+    const { userGenerate, sentUserGenerate, versions } = item;
     const { enableHotkeys, enableTooltips } = store.settings;
 
     /**
@@ -83,7 +83,7 @@ export default inject("store")(
               onClick={store.updateCompletion}
               className="ls-update-btn"
             >
-              {sentUserGenerate ? "Update" : "Submit"} {buttons.update}
+              {sentUserGenerate || versions.result ? "Update" : "Submit"} {buttons.update}
             </Button>
           </Tooltip>
         );
