@@ -51,7 +51,9 @@ fetch(currentTagsUrl)
             .replace(/\*\*Kind\*\*.*?\n/, "### Parameters\n")
             .replace(/\*\*Example\*\*\s*\n/g, "### Example\n")
             // move comments from examples to description
-            .replace(/```html[\n\s]*<!-- (.*?) -->[\n\s]*/g, "\n$1\n\n```html\n");
+            .replace(/```html[\n\s]*<!-- (.*?) -->[\n\s]*/g, "\n$1\n\n```html\n")
+            // change example language if it looks like JSON
+            .replace(/```html[\n\s]*([[{])/g, "```json\n$1");
           fs.writeFileSync(path.resolve(outputDir, `${name}.md`), str);
         });
     }
