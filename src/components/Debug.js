@@ -22,7 +22,6 @@ class DebugComponent extends Component {
         <h2>Debug</h2>
         <div>
           <Button
-            basic
             onClick={ev => {
               this.setState({ res: JSON.stringify(store.completionStore.selected.toJSON()) });
             }}
@@ -31,7 +30,6 @@ class DebugComponent extends Component {
           </Button>
 
           <Button
-            basic
             onClick={ev => {
               this.setState({ res: JSON.stringify(store.completionStore.selected.serializeCompletion()) });
             }}
@@ -40,7 +38,6 @@ class DebugComponent extends Component {
           </Button>
 
           <Button
-            basic
             onClick={ev => {
               if (self.state.res) completion.deserializeCompletion(JSON.parse(self.state.res));
             }}
@@ -49,7 +46,6 @@ class DebugComponent extends Component {
           </Button>
 
           <Button
-            basic
             onClick={ev => {
               const c = store.completionStore.addInitialCompletion();
               store.completionStore.selectCompletion(c.id);
@@ -62,7 +58,6 @@ class DebugComponent extends Component {
           </Button>
 
           <Button
-            basic
             onClick={ev => {
               this.setState({ res: store.task.data });
             }}
@@ -71,7 +66,6 @@ class DebugComponent extends Component {
           </Button>
 
           <Button
-            basic
             onClick={ev => {
               // this.setState.res;
               const data = JSON.parse(self.state.res);
