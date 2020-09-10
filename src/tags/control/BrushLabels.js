@@ -25,10 +25,10 @@ import ControlBase from "./Base";
  * @param {string} name   - name of the element
  * @param {string} toName - name of the image to label
  */
-// const TagAttrs = types.model({
-//   name: types.maybeNull(types.string),
-//   toname: types.maybeNull(types.string),
-// });
+const TagAttrs = types.model({
+  name: types.identifier,
+  toname: types.maybeNull(types.string),
+});
 
 const ModelAttrs = types.model("BrushLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
@@ -43,7 +43,7 @@ const BrushLabelsModel = types.compose(
   LabelsModel,
   ModelAttrs,
   BrushModel,
-  // TagAttrs,
+  TagAttrs,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
