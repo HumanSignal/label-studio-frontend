@@ -34,6 +34,7 @@ const Result = types
       "rectanglelabels",
       "keypointlabels",
       "polygonlabels",
+      "brushlabels",
       "ellipselabels",
       "choices",
       "textarea",
@@ -49,6 +50,7 @@ const Result = types
       keypointlabels: types.maybe(types.array(types.string)),
       polygonlabels: types.maybe(types.array(types.string)),
       ellipselabels: types.maybe(types.array(types.string)),
+      brushlabels: types.maybe(types.array(types.string)),
     }),
     // info about object and region
     // meta: types.frozen(),

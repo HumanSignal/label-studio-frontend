@@ -89,11 +89,7 @@ const _Tool = types
     // },
 
     createRegion(opts) {
-      const brush = BrushRegionModel.create(opts);
-
-      self.obj.addShape(brush);
-
-      return brush;
+      return self.obj.completion.createResult(opts, self.control, self.obj);
     },
 
     updateCursor() {
@@ -138,14 +134,13 @@ const _Tool = types
         if (c.isSelected) {
           self.mode = "drawing";
 
-          const sap = self.statesAndParams;
-
           const brush = self.createRegion({
             x: x,
             y: y,
             coordstype: "px",
-            ...sap,
           });
+
+          self.obj.completion.selectArea(brush);
 
           const p = brush.addTouch({
             type: "add",
