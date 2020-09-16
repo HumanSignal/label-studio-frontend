@@ -298,6 +298,10 @@ const Completion = types
       destroy(region);
     },
 
+    deleteArea(area) {
+      destroy(area);
+    },
+
     // update some fragile parts after snapshot manipulations (undo/redo)
     updateObjects() {
       self.unselectAll();
