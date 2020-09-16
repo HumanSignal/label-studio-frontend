@@ -121,8 +121,8 @@ const RelationStore = types
     serializeCompletion() {
       return self.relations.map(r => {
         const s = {
-          from_id: r.node1.pid,
-          to_id: r.node2.pid,
+          from_id: r.node1.cleanId,
+          to_id: r.node2.cleanId,
           type: "relation",
           direction: r.direction,
         };
