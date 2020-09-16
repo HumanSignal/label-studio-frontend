@@ -38,6 +38,7 @@ const Result = types
       "ellipselabels",
       "choices",
       "textarea",
+      "rating",
     ]),
     value: types.model({
       rating: types.maybe(types.number),
