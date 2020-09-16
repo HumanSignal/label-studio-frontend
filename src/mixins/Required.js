@@ -20,7 +20,7 @@ const RequiredMixin = types
             return true;
           }
 
-          if (!s || !s.mainValue || !s.mainValue.length) {
+          if (!s?.hasValue) {
             self.completion.selectArea(reg);
             self.requiredModal();
 
@@ -29,7 +29,7 @@ const RequiredMixin = types
         }
       } else {
         // validation when its classifying the whole object
-        if (self.selectedValues().length === 0) {
+        if (!self.holdsState) {
           self.requiredModal();
           return false;
         }

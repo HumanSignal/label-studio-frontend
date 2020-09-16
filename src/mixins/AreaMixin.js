@@ -75,9 +75,9 @@ export const AreaMixin = types
 
     setValue(tag) {
       const result = self.results.find(r => r.from_name === tag);
+      const values = tag.selectedValues();
       if (result) {
-        const values = tag.selectedValues();
-        if (values.length) result.setValue(values);
+        if (tag.holdsState) result.setValue(values);
         else self.removeResult(result);
       } else {
         self.results.push({
@@ -86,7 +86,7 @@ export const AreaMixin = types
           to_name: self.object,
           type: tag.resultType,
           value: {
-            [tag.valueType]: tag.selectedValues(),
+            [tag.valueType]: values,
           },
         });
       }
