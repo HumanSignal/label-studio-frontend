@@ -77,6 +77,13 @@ const Result = types
       return self.value[self.from_name.valueType];
     },
 
+    get hasValue() {
+      const value = self.mainValue;
+      if (!value) return false;
+      if (Array.isArray(value)) return value.length > 0;
+      return true;
+    },
+
     get editable() {
       return self.readonly === false && self.completion.editable === true;
     },
