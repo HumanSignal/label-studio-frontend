@@ -8,6 +8,11 @@ export const AreaMixin = types
     results: types.array(Result),
   })
   .views(self => ({
+    // self id without completion id added to uniquiness across all the tree
+    get cleanId() {
+      return self.id.replace(/#.*/, "");
+    },
+
     get completion() {
       return getParent(self, 2);
     },

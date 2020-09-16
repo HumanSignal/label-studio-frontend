@@ -157,7 +157,7 @@ const Result = types
       const data = self.area ? self.area.serialize() : {};
       if (!data) return null;
       // cut off completion id
-      const id = self.area.id.replace(/#.*/, "");
+      const id = self.area.cleanId;
       if (!data.value) data.value = {};
 
       Object.assign(data, { id, from_name, to_name, type });

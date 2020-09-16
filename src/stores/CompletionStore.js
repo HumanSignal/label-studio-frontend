@@ -582,7 +582,7 @@ const Completion = types
         if (obj["type"] !== "relation") {
           const { id, value, type, ...data } = obj;
           // avoid duplicates of the same areas in different completions/predictions
-          const areaId = `${id}#${self.id}`;
+          const areaId = `${id || guidGenerator()}#${self.id}`;
           const resultId = `${data.from_name}@${areaId}`;
 
           let area = self.areas.get(areaId);
