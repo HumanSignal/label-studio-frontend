@@ -133,6 +133,10 @@ const Model = types
     // this is not labels, unselect affects result, so don't unselect on random reason
     unselectAll() {},
 
+    updateFromResult(value) {
+      self.setResult(Array.isArray(value) ? value : [value]);
+    },
+
     // unselect only during choice toggle
     resetSelected() {
       self.selectedLabels.forEach(c => c.setSelected(false));
