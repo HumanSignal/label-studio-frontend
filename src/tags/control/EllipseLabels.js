@@ -40,7 +40,6 @@ const ModelAttrs = types.model("EllipseLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
   // pid: types.optional(types.string, guidGenerator),
   type: "ellipselabels",
-  _type: "ellipselabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 

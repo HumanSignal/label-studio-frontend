@@ -40,7 +40,6 @@ const ModelAttrs = types
     // id: types.identifier,
     // pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
-    _type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({

@@ -40,7 +40,6 @@ const ModelAttrs = types.model("PolygonLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
   // pid: types.optional(types.string, guidGenerator),
   type: "polygonlabels",
-  _type: "polygonlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 

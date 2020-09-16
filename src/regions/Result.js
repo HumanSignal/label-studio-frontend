@@ -74,7 +74,7 @@ const Result = types
     },
 
     get mainValue() {
-      return self.value[self.from_name._type];
+      return self.value[self.from_name.valueType];
     },
 
     get editable() {
@@ -107,7 +107,7 @@ const Result = types
     },
 
     get tag() {
-      const value = self.value[self.type];
+      const value = self.mainValue;
       console.log("VVV", self.value);
       if (!value) return null;
       return self.from_name.findLabel(value[0]);
@@ -129,7 +129,7 @@ const Result = types
   }))
   .actions(self => ({
     setValue(value) {
-      self.value[self.from_name._type] = value;
+      self.value[self.from_name.valueType] = value;
     },
 
     afterCreate() {
@@ -153,7 +153,7 @@ const Result = types
 
     serialize() {
       const { from_name, to_name, type, score, value } = getSnapshot(self);
-      const { _type } = self.from_name;
+      const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize() : {};
       if (!data) return null;
       // cut off completion id
@@ -161,7 +161,7 @@ const Result = types
       if (!data.value) data.value = {};
 
       Object.assign(data, { id, from_name, to_name, type });
-      Object.assign(data.value, { [_type]: value[_type] });
+      Object.assign(data.value, { [valueType]: value[valueType] });
       if (typeof score === "number") data.score = score;
 
       return data;

@@ -526,10 +526,9 @@ const Completion = types
         from_name: control.name,
         // @todo should stick to area
         to_name: object,
-        type: control.type,
+        type: control.resultType,
         value: {
-          // type will be overwritten by Tree#buildData, so _type contains value type
-          [control._type]: control.selectedValues(),
+          [control.valueType]: control.selectedValues(),
         },
       };
 
