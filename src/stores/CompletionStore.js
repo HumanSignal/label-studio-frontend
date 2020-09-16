@@ -746,6 +746,8 @@ export default types
     }
 
     function initRoot(config) {
+      if (self.root) return;
+
       // convert config to mst model
       const rootModel = Tree.treeToModel(config);
       const modelClass = Registry.getModelByTag(rootModel.type);
