@@ -290,6 +290,7 @@ const Completion = types
      * @param {*} region
      */
     deleteRegion(region) {
+      self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
         detach(region);
         return;
@@ -552,7 +553,10 @@ const Completion = types
     },
 
     serializeCompletion() {
-      return self.results.map(r => r.serialize()).filter(Boolean);
+      return self.results
+        .map(r => r.serialize())
+        .filter(Boolean)
+        .concat(self.relationStore.serializeCompletion());
     },
 
     /**
@@ -613,8 +617,8 @@ const Completion = types
       objCompletion.forEach(obj => {
         if (obj["type"] === "relation") {
           self.relationStore.deserializeRelation(
-            self.regionStore.findRegion(obj.from_id),
-            self.regionStore.findRegion(obj.to_id),
+            `${obj.from_id}#${self.id}`,
+            `${obj.to_id}#${self.id}`,
             obj.direction,
             obj.labels,
           );

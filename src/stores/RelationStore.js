@@ -4,14 +4,15 @@ import { cloneNode } from "../core/Helpers";
 import { AllRegionsType } from "../regions";
 import { RelationsModel } from "../tags/control/Relations";
 import { TRAVERSE_SKIP } from "../core/Tree";
+import Area from "../regions/Area";
 
 /**
  * Relation between two different nodes
  */
 const Relation = types
   .model("Relation", {
-    node1: types.reference(AllRegionsType),
-    node2: types.reference(AllRegionsType),
+    node1: types.reference(Area),
+    node2: types.reference(Area),
     direction: types.optional(types.enumeration(["left", "right", "bi"]), "right"),
 
     // labels
@@ -78,14 +79,17 @@ const RelationStore = types
   })
   .actions(self => ({
     findRelations(node1, node2) {
-      if (!node2) {
+      const id1 = node1.id || node1;
+      const id2 = node2?.id || node2;
+
+      if (!id2) {
         return self.relations.filter(rl => {
-          return rl.node1.id === node1.id || rl.node2.id === node1.id;
+          return rl.node1.id === id1 || rl.node2.id === id1;
         });
       }
 
       return self.relations.filter(rl => {
-        return rl.node1.id === node1.id && rl.node2.id === node2.id;
+        return rl.node1.id === id1 && rl.node2.id === id2;
       });
     },
 
@@ -96,10 +100,7 @@ const RelationStore = types
     addRelation(node1, node2) {
       if (self.nodesRelated(node1, node2)) return;
 
-      const rl = Relation.create({
-        node1: node1,
-        node2: node2,
-      });
+      const rl = Relation.create({ node1, node2 });
 
       // self.relations.unshift(rl);
       self.relations.push(rl);
