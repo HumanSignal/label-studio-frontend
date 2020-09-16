@@ -130,10 +130,16 @@ const Model = types
       });
     },
 
+    // this is not labels, unselect affects result, so don't unselect on random reason
+    unselectAll() {},
+
+    // unselect only during choice toggle
+    resetSelected() {
+      self.selectedLabels.forEach(c => c.setSelected(false));
+    },
+
     setResult(values) {
-      values.forEach(v => {
-        self.findLabel(v).setSelected(true);
-      });
+      self.tiedChildren.forEach(choice => choice.setSelected(values.includes(choice.alias || choice._value)));
     },
 
     toStateJSON() {
@@ -176,11 +182,11 @@ const ChoicesModel = types.compose(
   "ChoicesModel",
   ControlBase,
   TagAttrs,
-  Model,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
+  Model,
 );
 
 const HtxChoices = observer(({ item }) => {

@@ -65,7 +65,7 @@ export const AreaMixin = types
       if (index < 0) return;
       self.results.splice(index, 1);
       destroy(r);
-      if (!self.results.length) destroy(self);
+      if (!self.results.length) self.completion.deleteArea(self);
     },
 
     setValue(tag) {
