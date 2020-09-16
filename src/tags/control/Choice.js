@@ -126,46 +126,38 @@ class HtxChoiceView extends Component {
       style["display"] = "none";
     }
 
+    const showHotkey =
+      (store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+      store.settings.enableHotkeys &&
+      item.hotkey;
+
+    const props = {
+      checked: item.selected,
+      disabled: item.parent.readonly,
+      onChange: ev => {
+        if (!item.completion.editable) return;
+        item.toggleSelected();
+        ev.nativeEvent.target.blur();
+      },
+    };
+
     if (item.isCheckbox) {
       const cStyle = Object.assign({ display: "flex", alignItems: "center", marginBottom: 0 }, style);
 
       return (
         <Form.Item style={cStyle}>
-          <Checkbox
-            disabled={item.parent.readonly}
-            name={item._value}
-            onChange={ev => {
-              if (!item.completion.editable) return;
-              item.toggleSelected();
-              ev.nativeEvent.target.blur();
-            }}
-            checked={item.selected}
-          >
+          <Checkbox name={item._value} {...props}>
             {item._value}
-            {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
-              <Hint>[{item.hotkey}]</Hint>
-            )}
+            {showHotkey && <Hint>[{item.hotkey}]</Hint>}
           </Checkbox>
         </Form.Item>
       );
     } else {
       return (
         <div style={style}>
-          <Radio
-            disabled={item.parent.readonly}
-            value={item._value}
-            style={{ display: "inline-block", marginBottom: "0.5em" }}
-            checked={item.selected}
-            onChange={ev => {
-              if (!item.completion.editable) return;
-              item.toggleSelected();
-              ev.nativeEvent.target.blur();
-            }}
-          >
+          <Radio value={item._value} style={{ display: "inline-block", marginBottom: "0.5em" }} {...props}>
             {item._value}
-            {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
-              store.settings.enableHotkeys &&
-              item.hotkey && <Hint>[{item.hotkey}]</Hint>}
+            {showHotkey && <Hint>[{item.hotkey}]</Hint>}
           </Radio>
         </div>
       );
