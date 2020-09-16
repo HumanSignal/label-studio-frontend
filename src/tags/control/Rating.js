@@ -6,6 +6,7 @@ import { StarOutlined } from "@ant-design/icons";
 
 import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
+import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
@@ -32,7 +33,7 @@ import ControlBase from "./Base";
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   maxrating: types.optional(types.string, "5"),
@@ -45,7 +46,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "rating",
     rating: types.maybeNull(types.number),
@@ -56,7 +57,7 @@ const Model = types
     },
 
     selectedValues() {
-      return self.holdsState ? self.rating : null;
+      return self.rating;
     },
 
     get serializableValue() {
@@ -68,6 +69,16 @@ const Model = types
     get holdsState() {
       return self.rating > 0;
     },
+
+    get result() {
+      if (self.perregion) {
+        const area = self.completion.highlightedNode;
+        if (!area) return null;
+
+        return self.completion.results.find(r => r.from_name === self && r.area === area);
+      }
+      return self.completion.results.find(r => r.from_name === self);
+    },
   }))
   .actions(self => ({
     getSelectedString() {
@@ -78,6 +89,10 @@ const Model = types
       self.setRating(obj.rating);
     },
 
+    needsUpdate() {
+      if (self.result) self.rating = self.result.mainValue;
+    },
+
     unselectAll() {
       self.rating = 0;
     },
@@ -85,10 +100,25 @@ const Model = types
     setRating(value) {
       self.rating = value;
 
-      if (self.perregion) {
-        const reg = self.completion.highlightedNode;
-        reg && reg.updateOrAddState(self);
+      if (self.result) {
+        self.result.area.setValue(self);
+      } else {
+        if (self.perregion) {
+          const area = self.completion.highlightedNode;
+          if (!area) return null;
+          area.setValue(self);
+        } else {
+          self.completion.createResult({ rating: value }, self, self.toname);
+        }
       }
+    },
+
+    updateFromResult(value) {
+      self.rating = value;
+    },
+
+    requiredModal() {
+      InfoModal.warning(self.requiredmessage || `Rating "${self.name}" is required.`);
     },
 
     increaseValue() {
