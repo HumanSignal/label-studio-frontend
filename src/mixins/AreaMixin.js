@@ -79,9 +79,9 @@ export const AreaMixin = types
           area: self,
           from_name: tag,
           to_name: self.object,
-          type: tag.type,
+          type: tag.resultType,
           value: {
-            [tag._type]: tag.selectedValues(),
+            [tag.valueType]: tag.selectedValues(),
           },
         });
       }

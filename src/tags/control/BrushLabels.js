@@ -34,7 +34,6 @@ const ModelAttrs = types.model("BrushLabelsModel", {
   // id: types.optional(types.identifier, guidGenerator),
   // pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
-  _type: "brushlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
 

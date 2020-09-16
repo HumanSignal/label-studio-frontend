@@ -35,7 +35,6 @@ const ModelAttrs = types
     //   id: types.identifier,
     //   pid: types.optional(types.string, guidGenerator),
     type: "htmllabels",
-    _type: "htmllabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
@@ -49,6 +48,14 @@ const ModelAttrs = types
       obj["htmllabels"] = self.selectedValues();
 
       return obj;
+    },
+
+    get resultType() {
+      return "htmllabels";
+    },
+
+    get valueType() {
+      return "htmllabels";
     },
   }));
 

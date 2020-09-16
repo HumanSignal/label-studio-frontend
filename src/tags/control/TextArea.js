@@ -54,13 +54,16 @@ const Model = types
   .model({
     // id: types.optional(types.identifier, guidGenerator),
     type: "textarea",
-    _type: "text",
     regions: types.array(TextAreaRegionModel),
 
     _value: types.optional(types.string, ""),
     children: Types.unionArray(["shortcut"]),
   })
   .views(self => ({
+    get valueType() {
+      return "text";
+    },
+
     get holdsState() {
       return self.regions.length > 0;
     },

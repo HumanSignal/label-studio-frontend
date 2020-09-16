@@ -81,7 +81,7 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return states && states.filter(s => s.isSelected && s._type === "labels");
+      return states && states.filter(s => s.isSelected && s.type === "labels");
     },
   }))
   .actions(self => ({

@@ -61,7 +61,6 @@ const Model = types
     visible: types.optional(types.boolean, true),
 
     type: "choices",
-    _type: "choices",
     children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
   .views(self => ({
