@@ -193,7 +193,8 @@ const Model = types
         original_height: object.naturalHeight,
         value: {
           format: "rle",
-          rle,
+          // UInt8Array serializes as object, not an array :(
+          rle: Array.from(rle),
         },
       };
 
