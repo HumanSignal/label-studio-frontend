@@ -349,6 +349,6 @@ const HtxBrushView = ({ store, item }) => {
 const HtxBrush = inject("store")(observer(HtxBrushView));
 
 Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
-Registry.addRegionType(BrushRegionModel, "image", value => value.rle);
+Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);
 
 export { BrushRegionModel, HtxBrush };
