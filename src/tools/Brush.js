@@ -135,8 +135,7 @@ const _Tool = types
           self.mode = "drawing";
 
           const brush = self.createRegion({
-            x: x,
-            y: y,
+            touches: [],
             coordstype: "px",
           });
 
