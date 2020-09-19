@@ -1,17 +1,23 @@
 import { debounce } from "../../utils/debounce";
-import { BBoxDetector } from "./BBoxDetector";
-import { BoundingBox } from "./BoundingBox";
+import { BoundingBox, getRegionBoundingBox } from "./BoundingBox";
 import { RelationShape } from "./RelationShape";
-import { DOMWatcher } from "./watchers/DOMWatcher";
+import { DOMWatcher, PolygonWatcher } from "./watchers";
 
 const obtainWatcher = node => {
-  return DOMWatcher;
+  switch (node.type) {
+    case "textregion":
+      return DOMWatcher;
+    case "rectangleregion":
+      return PolygonWatcher;
+    default:
+      return null;
+  }
 };
 
 const boundingBox = () => {
   return element =>
     new BoundingBox({
-      source: BBoxDetector.getBoundingBoxForRegionType(element),
+      source: getRegionBoundingBox(element),
       getX(s) {
         return s.x;
       },

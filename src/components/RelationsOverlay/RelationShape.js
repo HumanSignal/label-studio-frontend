@@ -7,12 +7,14 @@ export class RelationShape {
   constructor(params) {
     Object.assign(this.params, params);
 
-    this._watcher = new this.params.watcher(
-      this.params.root,
-      this.params.element,
-      this.params.getElement ?? (el => el),
-      this.onChanged,
-    );
+    if (this.params.watcher) {
+      this._watcher = new this.params.watcher(
+        this.params.root,
+        this.params.element,
+        this.params.getElement ?? (el => el),
+        this.onChanged,
+      );
+    }
   }
 
   boundingBox() {

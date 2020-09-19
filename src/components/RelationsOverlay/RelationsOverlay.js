@@ -20,7 +20,7 @@ const ArrowMarker = ({ id, color }) => {
 };
 
 const RelationItemRect = ({ x, y, width, height }) => {
-  return <rect x={x} y={y} width={width} height={height} fill="none" stroke="#f0f" />;
+  return <rect x={x} y={y} width={width} height={height} fill="none" />;
 };
 
 const RelationConnector = ({ id, command, color, direction }) => {
@@ -38,27 +38,46 @@ const RelationConnector = ({ id, command, color, direction }) => {
 
 const RelationLabel = ({ label, position, orientation }) => {
   const [x, y] = position;
+  const textRef = React.createRef();
+  const [background, setBackground] = useState({ width: 0, height: 0, x: 0, y: 0 });
 
   const groupAttributes = {
     transform: `translate(${x}, ${y})`,
   };
 
   const textAttributes = {
-    fill: "black",
+    fill: "white",
     style: { fontSize: 12, fontFamily: "arial" },
   };
 
   if (orientation === "vertical") {
     groupAttributes.textAnchor = "middle";
-    textAttributes.dy = "-0.3em";
+    textAttributes.dy = "-8px";
   } else {
     groupAttributes.dominantBaseline = "middle";
-    textAttributes.dx = "0.3em";
+    textAttributes.dx = "12px";
   }
+
+  useEffect(() => {
+    const textElement = textRef.current;
+    const bbox = textElement.getBBox();
+    setBackground({
+      x: bbox.x - 5,
+      y: bbox.y - 3,
+      width: bbox.width + 10,
+      height: bbox.height + 6,
+    });
+    console.log(background);
+  }, [label]);
+
+  console.log(background);
 
   return (
     <g {...groupAttributes}>
-      <text {...textAttributes}>{label}</text>
+      <rect {...background} fill="#a0a" rx="3" />
+      <text ref={textRef} {...textAttributes}>
+        {label}
+      </text>
     </g>
   );
 };
