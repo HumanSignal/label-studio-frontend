@@ -63,25 +63,16 @@ const RelationLabel = ({ label, position, orientation }) => {
   );
 };
 
-const RelationItem = ({ item, rootRef }) => {
+const RelationItem = ({ id, startNode, endNode, direction, rootRef }) => {
   const root = rootRef.current;
-  const relation = Dimensions.prepareRelation(item, root);
+  const relation = Dimensions.prepareRelation({ id, startNode, endNode, direction }, root);
   const [, forceUpdate] = useState();
-  const { start, end } = Dimensions.calculateDimensions({
-    root,
-    start: relation.start,
-    end: relation.end,
-  });
+  const { start, end } = Dimensions.calculateDimensions({ root, ...relation });
   const [path, textPosition, orientation] = Dimensions.calculatePath(start, end);
 
   useEffect(() => {
-    relation.start.onUpdate(() => forceUpdate({}));
-    relation.end.onUpdate(() => forceUpdate({}));
-
-    return () => {
-      relation.start.destroy();
-      relation.end.destroy();
-    };
+    relation.onChange(() => forceUpdate({}));
+    return () => relation.destroy();
   }, []);
 
   return (
@@ -100,8 +91,17 @@ const RelationItem = ({ item, rootRef }) => {
  * rootRef: React.RefObject<HTMLElement>
  * }}
  */
-const RelationItemObserver = observer(({ item, rootRef }) => {
-  return <RelationItem item={item} rootRef={rootRef} />;
+const RelationItemObserver = observer(({ relation, rootRef }) => {
+  console.log(relation);
+  return (
+    <RelationItem
+      id={relation.id}
+      startNode={relation.node1}
+      endNode={relation.node2}
+      direction={relation.direction}
+      rootRef={rootRef}
+    />
+  );
 });
 
 class RelationsOverlay extends PureComponent {
@@ -131,15 +131,14 @@ class RelationsOverlay extends PureComponent {
         {this.state.shouldRender ? (
           <>
             <defs>
-              {relations &&
-                relations.map(relation => {
-                  return <ArrowMarker key={relation.id} id={relation.id} color="#a0a" />;
-                })}
+              {relations.map(relation => (
+                <ArrowMarker key={relation.id} id={relation.id} color="#a0a" />
+              ))}
             </defs>
-            {relations &&
-              relations.map(relation => {
-                return <RelationItemObserver key={relation.id} item={relation} rootRef={this.rootNode} />;
-              })}
+
+            {relations.map(relation => (
+              <RelationItemObserver key={relation.id} relation={relation} rootRef={this.rootNode} />
+            ))}
           </>
         ) : null}
       </svg>

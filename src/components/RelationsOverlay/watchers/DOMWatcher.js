@@ -4,7 +4,6 @@ export class DOMWatcher {
     this.element = getElement(element);
     this.callback = callback;
 
-    this.handleResize();
     this.handleUpdate();
   }
 

@@ -1,3 +1,4 @@
+import { debounce } from "../../utils/debounce";
 import { BBoxDetector } from "./BBoxDetector";
 import { BoundingBox } from "./BoundingBox";
 import { RelationShape } from "./RelationShape";
@@ -43,8 +44,17 @@ const prepareRelation = (relation, root) => {
     label: "Rel 1 to 2",
     color: "#a0a",
     direction: relation.direction,
-    start: createShape(relation.node1, root),
-    end: createShape(relation.node2, root),
+    start: createShape(relation.startNode, root),
+    end: createShape(relation.endNode, root),
+    onChange(callback) {
+      const onChangedCallback = debounce(callback, 50);
+      this.start.onUpdate(onChangedCallback);
+      this.end.onUpdate(onChangedCallback);
+    },
+    destroy() {
+      this.start.destroy();
+      this.end.destroy();
+    },
   };
 };
 
