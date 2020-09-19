@@ -22,6 +22,7 @@ import Predictions from "../Predictions/Predictions";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
 import SideColumn from "../SideColumn/SideColumn";
+import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
 
 /**
  * Tags
@@ -125,7 +126,10 @@ const App = inject("store")(
                 <div className={stCommon + " ls-common"}>
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
                     <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
-                      {Tree.renderItem(root)}
+                      <div style={{ position: "relative" }}>
+                        {Tree.renderItem(root)}
+                        <RelationsOverlay relations={cs.selected.relationStore.relations} />
+                      </div>
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>
                   )}

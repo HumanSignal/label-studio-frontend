@@ -28,6 +28,10 @@ const Relation = types
       const r = self.relations;
       return r && r.children && r.children.length > 0;
     },
+
+    get id() {
+      return `${self.node1.id}-${self.node2.id}`;
+    },
   }))
   .actions(self => ({
     afterAttach() {

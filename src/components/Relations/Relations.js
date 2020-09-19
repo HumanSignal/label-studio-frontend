@@ -78,10 +78,10 @@ const ListItem = observer(({ item }) => {
       className={isSelected && styles.selected}
       key={item.id}
       actions={[]}
-      onMouseOver={() => {
+      onMouseEnter={() => {
         item.toggleHighlight();
       }}
-      onMouseOut={() => {
+      onMouseLeave={() => {
         item.toggleHighlight();
       }}
     >
