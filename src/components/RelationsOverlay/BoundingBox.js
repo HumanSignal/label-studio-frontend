@@ -44,12 +44,44 @@ export class BoundingBox {
 
 const DEFAULT_BBOX = { x: 0, y: 0, width: 0, height: 0 };
 
+const _getEllipseBBox = (x, y, rx, ry, angle) => {
+  const angleRad = ((angle + 360) % 360) * (Math.PI / 180);
+  const major = Math.max(rx, ry) * 2;
+  const minor = Math.min(rx, ry) * 2;
+
+  const getXLimits = () => {
+    const t = Math.atan(((-minor / 2) * Math.tan(angleRad)) / (major / 2));
+
+    return [t, t + Math.PI]
+      .map(t => {
+        return x + (major / 2) * Math.cos(t) * Math.cos(angleRad) - (minor / 2) * Math.sin(t) * Math.sin(angleRad);
+      })
+      .sort((a, b) => b - a);
+  };
+
+  const getYLimits = () => {
+    const t = Math.atan(((minor / 2) * 1.0) / Math.tan(angleRad) / (major / 2));
+    return [t, t + Math.PI]
+      .map(t => {
+        return y + (minor / 2) * Math.sin(t) * Math.cos(angleRad) + (major / 2) * Math.cos(t) * Math.sin(angleRad);
+      })
+      .sort((a, b) => b - a);
+  };
+
+  const [x1, x2] = getXLimits();
+  const [y1, y2] = getYLimits();
+  const width = x1 - x2;
+  const height = y1 - y2;
+
+  return { x: x2, y: y2, width, height };
+};
+
 const _detect = region => {
   switch (region.type) {
     default:
       console.warn(`Unknown region type: ${region.type}`);
       return { ...DEFAULT_BBOX };
-    case "textrange":
+    case "textrange": {
       const bbox = region._spans[0].getBoundingClientRect();
       return {
         x: bbox.x,
@@ -57,7 +89,8 @@ const _detect = region => {
         width: bbox.width,
         height: bbox.height,
       };
-    case "rectangleregion":
+    }
+    case "rectangleregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
       return {
         x: imageBbox.x + region.x,
@@ -65,6 +98,16 @@ const _detect = region => {
         width: region.width,
         height: region.height,
       };
+    }
+    case "ellipseregion": {
+      const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const bbox = _getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation);
+      return {
+        ...bbox,
+        x: imageBbox.x + bbox.x,
+        y: imageBbox.y + bbox.y,
+      };
+    }
   }
 };
 

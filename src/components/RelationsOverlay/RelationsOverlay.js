@@ -20,7 +20,7 @@ const ArrowMarker = ({ id, color }) => {
 };
 
 const RelationItemRect = ({ x, y, width, height }) => {
-  return <rect x={x} y={y} width={width} height={height} fill="none" />;
+  return <rect x={x} y={y} width={width} height={height} fill="none" stroke="#f0f" />;
 };
 
 const RelationConnector = ({ id, command, color, direction }) => {
@@ -67,10 +67,7 @@ const RelationLabel = ({ label, position, orientation }) => {
       width: bbox.width + 10,
       height: bbox.height + 6,
     });
-    console.log(background);
   }, [label]);
-
-  console.log(background);
 
   return (
     <g {...groupAttributes}>
@@ -111,7 +108,6 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef }) => {
  * }}
  */
 const RelationItemObserver = observer(({ relation, rootRef }) => {
-  console.log(relation);
   return (
     <RelationItem
       id={relation.id}

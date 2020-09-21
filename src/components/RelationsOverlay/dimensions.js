@@ -1,7 +1,7 @@
 import { debounce } from "../../utils/debounce";
 import { BoundingBox, getRegionBoundingBox } from "./BoundingBox";
 import { RelationShape } from "./RelationShape";
-import { DOMWatcher, PolygonWatcher } from "./watchers";
+import { DOMWatcher, EllipseWatcher, PolygonWatcher } from "./watchers";
 
 const obtainWatcher = node => {
   switch (node.type) {
@@ -9,6 +9,8 @@ const obtainWatcher = node => {
       return DOMWatcher;
     case "rectangleregion":
       return PolygonWatcher;
+    case "ellipseregion":
+      return EllipseWatcher;
     default:
       return null;
   }
@@ -34,7 +36,6 @@ const boundingBox = () => {
 };
 
 const createShape = (node, root) => {
-  console.log({ node, root });
   return new RelationShape({
     root: root,
     element: node,
