@@ -1,16 +1,16 @@
 import { debounce } from "../../utils/debounce";
 import { BoundingBox, getRegionBoundingBox } from "./BoundingBox";
 import { RelationShape } from "./RelationShape";
-import { DOMWatcher, EllipseWatcher, PolygonWatcher } from "./watchers";
+import { DOMWatcher, createPropertyWatcher } from "./watchers";
 
 const obtainWatcher = node => {
   switch (node.type) {
     case "textregion":
       return DOMWatcher;
     case "rectangleregion":
-      return PolygonWatcher;
+      return createPropertyWatcher(["x", "y", "width", "height"]);
     case "ellipseregion":
-      return EllipseWatcher;
+      return createPropertyWatcher(["x", "y", "radiusX", "radiusY", "rotation"]);
     default:
       return null;
   }

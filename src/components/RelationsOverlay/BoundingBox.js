@@ -44,8 +44,12 @@ export class BoundingBox {
 
 const DEFAULT_BBOX = { x: 0, y: 0, width: 0, height: 0 };
 
+const _normalizeAngle = angle => {
+  return ((angle + 360) % 360) * (Math.PI / 180);
+};
+
 const _getEllipseBBox = (x, y, rx, ry, angle) => {
-  const angleRad = ((angle + 360) % 360) * (Math.PI / 180);
+  const angleRad = _normalizeAngle(angle);
   const major = Math.max(rx, ry) * 2;
   const minor = Math.min(rx, ry) * 2;
 
@@ -76,12 +80,54 @@ const _getEllipseBBox = (x, y, rx, ry, angle) => {
   return { x: x2, y: y2, width, height };
 };
 
+const _getPointsBBox = points => {
+  const minmax = [null, null, null, null];
+  points.forEach((num, i) => {
+    const pos = Math.round(i / 2) * 2 - i;
+
+    if (pos === 0) {
+      // Calculate min and max X
+      if (minmax[0] === null || minmax[0] >= num) minmax[0] = num;
+      if (minmax[2] === null || minmax[2] <= num) minmax[2] = num;
+    } else if (pos === 1) {
+      // Calculate min and max Y
+      if (minmax[1] === null || minmax[1] >= num) minmax[1] = num;
+      if (minmax[3] === null || minmax[3] <= num) minmax[3] = num;
+    }
+  });
+
+  return minmax;
+};
+
+const _getRectBBox = (x, y, width, height, angle) => {
+  const angleRad = _normalizeAngle(angle);
+  const pivotX = x + width * 0.5;
+  const pivotY = y + height * 0.5;
+
+  const corners = [
+    [x, y],
+    [x + width, y],
+    [x + width, y + height],
+    [x, y + height],
+  ].map(([xc, yc]) => {
+    const diffX = xc - pivotX;
+    const diffY = yc - pivotY;
+    const dist = Math.sqrt(diffX ** 2 + diffY ** 2);
+    const angle = angleRad + Math.atan2(diffY, diffX);
+    const x2 = pivotX + dist * Math.cos(angle);
+    const y2 = pivotY + dist * Math.sin(angle);
+    return [x2, y2];
+  });
+
+  const [rx1, ry1, rx2, ry2] = _getPointsBBox([].concat(...corners));
+
+  return { x: rx1, y: ry1, width: rx2 - rx1, height: ry2 - ry1 };
+};
+
 const _detect = region => {
   switch (region.type) {
-    default:
-      console.warn(`Unknown region type: ${region.type}`);
-      return { ...DEFAULT_BBOX };
-    case "textrange": {
+    case "textrange":
+    case "hypertextregion": {
       const bbox = region._spans[0].getBoundingClientRect();
       return {
         x: bbox.x,
@@ -92,11 +138,11 @@ const _detect = region => {
     }
     case "rectangleregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const bbox = _getRectBBox(region.startX, region.startY, region.width, region.height, region.rotation);
       return {
-        x: imageBbox.x + region.x,
-        y: imageBbox.y + region.y,
-        width: region.width,
-        height: region.height,
+        ...bbox,
+        x: imageBbox.x + bbox.x,
+        y: imageBbox.y + bbox.y,
       };
     }
     case "ellipseregion": {
@@ -107,6 +153,10 @@ const _detect = region => {
         x: imageBbox.x + bbox.x,
         y: imageBbox.y + bbox.y,
       };
+    }
+    default: {
+      console.warn(`Unknown region type: ${region.type}`);
+      return { ...DEFAULT_BBOX };
     }
   }
 };
