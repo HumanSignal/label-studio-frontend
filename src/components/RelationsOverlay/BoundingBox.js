@@ -101,27 +101,31 @@ const _getPointsBBox = points => {
 
 const _getRectBBox = (x, y, width, height, angle) => {
   const angleRad = _normalizeAngle(angle);
-  const pivotX = x + width * 0.5;
-  const pivotY = y + height * 0.5;
 
-  const corners = [
-    [x, y],
-    [x + width, y],
-    [x + width, y + height],
-    [x, y + height],
-  ].map(([xc, yc]) => {
-    const diffX = xc - pivotX;
-    const diffY = yc - pivotY;
-    const dist = Math.sqrt(diffX ** 2 + diffY ** 2);
-    const angle = angleRad + Math.atan2(diffY, diffX);
-    const x2 = pivotX + dist * Math.cos(angle);
-    const y2 = pivotY + dist * Math.sin(angle);
-    return [x2, y2];
-  });
+  const rotate = (x1, y1) => [
+    (x1 - x) * Math.cos(angleRad) - (y1 - y) * Math.sin(angleRad) + x,
+    (x1 - x) * Math.sin(angleRad) + (y1 - y) * Math.cos(angleRad) + y,
+  ];
 
-  const [rx1, ry1, rx2, ry2] = _getPointsBBox([].concat(...corners));
+  const [rx1, ry1, rx2, ry2] = _getPointsBBox([
+    x,
+    y,
+    ...rotate(x + width, y),
+    ...rotate(x + width, y + height),
+    ...rotate(x, y + height),
+  ]);
 
   return { x: rx1, y: ry1, width: rx2 - rx1, height: ry2 - ry1 };
+};
+
+const _getPolygonBBox = points => {
+  const [x1, y1, x2, y2] = _getPointsBBox(
+    points.reduce((res, point) => {
+      return [...res, point.x, point.y];
+    }, []),
+  );
+
+  return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
 };
 
 const _detect = region => {
@@ -138,7 +142,7 @@ const _detect = region => {
     }
     case "rectangleregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _getRectBBox(region.startX, region.startY, region.width, region.height, region.rotation);
+      const bbox = _getRectBBox(region.x, region.y, region.width, region.height, region.rotation);
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,
@@ -148,6 +152,15 @@ const _detect = region => {
     case "ellipseregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
       const bbox = _getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation);
+      return {
+        ...bbox,
+        x: imageBbox.x + bbox.x,
+        y: imageBbox.y + bbox.y,
+      };
+    }
+    case "polygonregion": {
+      const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const bbox = _getPolygonBBox(region.points);
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,

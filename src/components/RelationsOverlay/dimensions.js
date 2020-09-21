@@ -11,6 +11,8 @@ const obtainWatcher = node => {
       return createPropertyWatcher(["x", "y", "width", "height"]);
     case "ellipseregion":
       return createPropertyWatcher(["x", "y", "radiusX", "radiusY", "rotation"]);
+    case "polygonregion":
+      return createPropertyWatcher([{ points: ["x", "y"] }]);
     default:
       return null;
   }
