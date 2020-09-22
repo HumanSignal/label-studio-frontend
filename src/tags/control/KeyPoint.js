@@ -22,7 +22,7 @@ import ControlBase from "./Base";
  * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(types.string, "0.9"),
