@@ -24,7 +24,7 @@ import ControlBase from "./Base";
  * @param {rectangle|circle} [pointStyle=circle]  - style of points
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(types.string, "0.6"),

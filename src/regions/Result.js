@@ -31,6 +31,11 @@ const Result = types
     type: types.enumeration([
       "labels",
       "htmllabels",
+      "rectangle",
+      "keypoint",
+      "polygon",
+      "brush",
+      "ellipse",
       "rectanglelabels",
       "keypointlabels",
       "polygonlabels",
@@ -94,7 +99,7 @@ const Result = types
     },
 
     getSelectedString(joinstr = " ") {
-      return self.mainValue.join(joinstr);
+      return self.mainValue?.join(joinstr) || "";
     },
 
     hasLabelState(labelValue) {
@@ -169,7 +174,7 @@ const Result = types
       if (!data.value) data.value = {};
 
       Object.assign(data, { id, from_name, to_name, type });
-      Object.assign(data.value, { [valueType]: value[valueType] });
+      value[valueType] && Object.assign(data.value, { [valueType]: value[valueType] });
       if (typeof score === "number") data.score = score;
 
       return data;
