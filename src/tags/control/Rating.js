@@ -108,7 +108,7 @@ const Model = types
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({ rating: value }, self, self.toname);
+          self.completion.createResult({}, { rating: value }, self, self.toname);
         }
       }
     },

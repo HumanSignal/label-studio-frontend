@@ -180,7 +180,9 @@ const Model = types
         return find_r;
       }
 
-      const r = self.completion.createResult(ws_region, self.activeStates()[0], self);
+      const control = self.activeStates()[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const r = self.completion.createResult(ws_region, labels, control, self);
       r._ws_region = ws_region;
       r.updateAppearenceFromState();
       return r;

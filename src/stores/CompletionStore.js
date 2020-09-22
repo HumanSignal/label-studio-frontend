@@ -526,24 +526,22 @@ const Completion = types
       Hotkey.setScope("__main__");
     },
 
-    createResult(value, control, object) {
+    createResult(areaValue, resultValue, control, object) {
       const result = {
         from_name: control.name,
         // @todo should stick to area
         to_name: object,
         type: control.resultType,
-        value: {
-          [control.valueType]: control.selectedValues(),
-        },
+        value: resultValue,
       };
 
       const area = self.areas.put({
         id: guidGenerator(),
         object,
         // data for Model instance
-        ...value,
+        ...areaValue,
         // for Model detection
-        value,
+        value: areaValue,
         results: [result],
       });
 

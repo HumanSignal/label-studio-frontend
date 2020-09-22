@@ -62,7 +62,8 @@ const _Tool = types
         };
 
         self.obj.completion.history.freeze();
-        self.obj.completion.createResult(opts, control, self.obj);
+        const labels = { [control.valueType]: control.selectedValues() };
+        self.obj.completion.createResult(opts, labels, control, self.obj);
         if (withStates) self.obj.completion.unselectAll();
       }
     },

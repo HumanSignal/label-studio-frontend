@@ -170,7 +170,10 @@ const Model = types
     addRegion(range) {
       range.start = range.startOffset;
       range.end = range.endOffset;
-      const area = self.completion.createResult(range, self.activeStates()[0], self);
+
+      const control = self.activeStates()[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const area = self.completion.createResult(range, labels, control, self);
       area._range = range._range;
       self.completion.unselectAll();
       return area;
