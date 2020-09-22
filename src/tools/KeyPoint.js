@@ -17,7 +17,9 @@ const _Tool = types
   }))
   .actions(self => ({
     createRegion(opts) {
-      self.obj.completion.createResult(opts, self.control, self.obj);
+      const control = self.control;
+      const labels = { [control.valueType]: control.selectedValues() };
+      self.obj.completion.createResult(opts, labels, control, self.obj);
     },
 
     clickEv(ev, [x, y]) {

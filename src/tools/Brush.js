@@ -89,7 +89,9 @@ const _Tool = types
     // },
 
     createRegion(opts) {
-      return self.obj.completion.createResult(opts, self.control, self.obj);
+      const control = self.control;
+      const labels = { [control.valueType]: control.selectedValues() };
+      return self.obj.completion.createResult(opts, labels, control, self.obj);
     },
 
     updateCursor() {

@@ -95,7 +95,7 @@ const Model = types
           if (!area) return null;
           area.setValue(choices);
         } else {
-          self.completion.createResult({ choices: choices.selectedValues() }, choices, choices.toname);
+          self.completion.createResult({}, { choices: choices.selectedValues() }, choices, choices.toname);
         }
       }
     },
