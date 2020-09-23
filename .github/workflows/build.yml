@@ -32,6 +32,14 @@ jobs:
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
 
+    # run http-server with build in background (will be killed after job ends)
+    # do this only for master branch (so only for push event)
+    # because pr can contain unfinished job
+    - run: npx serve -l tcp://localhost:3000 build &
+      if: github.event_name == 'push'
+    - run: npm run test:e2e:headless
+      if: github.event_name == 'push'
+
     - uses: actions/upload-artifact@master
       if: ${{ failure() }}
       with:
