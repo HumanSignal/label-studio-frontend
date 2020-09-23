@@ -289,6 +289,11 @@ const HtxBrushView = ({ store, item }) => {
           }
         }}
         onClick={e => {
+          if (store.completionStore.selected.relationMode) {
+            item.onClickRegion();
+            return;
+          }
+
           if (item.parent.getToolsManager().findSelectedTool()) return;
 
           const stage = item.parent.stageRef;

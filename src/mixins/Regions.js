@@ -219,6 +219,7 @@ const RegionsMixin = types
     afterUnselectRegion() {},
 
     onClickRegion() {
+      console.log("click region");
       const completion = self.completion;
       if (!completion.editable) return;
 

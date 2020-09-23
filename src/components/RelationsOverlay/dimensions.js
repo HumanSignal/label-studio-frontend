@@ -15,6 +15,8 @@ const obtainWatcher = node => {
       return createPropertyWatcher([{ points: ["x", "y"] }]);
     case "keypointregion":
       return createPropertyWatcher(["x", "y"]);
+    case "brushregion":
+      return createPropertyWatcher(["needsUpdate"]);
     default:
       return null;
   }

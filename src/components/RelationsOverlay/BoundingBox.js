@@ -124,6 +124,11 @@ const _getPolygonBBox = points => {
   return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
 };
 
+const _getBrushBBox = points => {
+  const [x1, y1, x2, y2] = _getPointsBBox(points);
+  return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+};
+
 const _detect = region => {
   switch (region.type) {
     case "textrange":
@@ -170,6 +175,15 @@ const _detect = region => {
         y: region.y + imageBbox.y - 2,
         width: 4,
         height: 4,
+      };
+    }
+    case "brushregion": {
+      const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const bbox = _getBrushBBox([].concat(...region.touches.filter(t => t.type === "add").map(t => t.points)));
+      return {
+        ...bbox,
+        x: imageBbox.x + bbox.x,
+        y: imageBbox.y + bbox.y,
       };
     }
     default: {
