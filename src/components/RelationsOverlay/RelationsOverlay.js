@@ -139,6 +139,7 @@ class RelationsOverlay extends PureComponent {
       height: "100%",
       position: "absolute",
       pointerEvents: "none",
+      zIndex: 100,
     };
 
     return (

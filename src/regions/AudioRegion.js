@@ -28,6 +28,10 @@ const Model = types
       return getParentOfType(self, AudioPlusModel);
     },
 
+    get regionElement() {
+      return self.wsRegionElement(self._ws_region);
+    },
+
     wsRegionElement(wsRegion) {
       const elID = wsRegion.id;
       let el = Array.from(document.querySelectorAll(`[data-id="${elID}"]`));

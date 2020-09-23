@@ -17,6 +17,8 @@ const obtainWatcher = node => {
       return createPropertyWatcher(["x", "y"]);
     case "brushregion":
       return createPropertyWatcher(["needsUpdate"]);
+    case "audioregion":
+      return createPropertyWatcher(["start", "end"]);
     default:
       return null;
   }

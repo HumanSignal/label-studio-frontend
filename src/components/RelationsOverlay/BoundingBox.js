@@ -186,6 +186,15 @@ const _detect = region => {
         y: imageBbox.y + bbox.y,
       };
     }
+    case "audioregion": {
+      const bbox = region.regionElement.getBoundingClientRect();
+      return {
+        x: bbox.x,
+        y: bbox.y,
+        width: bbox.width,
+        height: bbox.height,
+      };
+    }
     default: {
       console.warn(`Unknown region type: ${region.type}`);
       return { ...DEFAULT_BBOX };
