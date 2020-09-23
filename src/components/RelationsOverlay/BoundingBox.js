@@ -119,12 +119,8 @@ const _getRectBBox = (x, y, width, height, angle) => {
 };
 
 const _getPolygonBBox = points => {
-  const [x1, y1, x2, y2] = _getPointsBBox(
-    points.reduce((res, point) => {
-      return [...res, point.x, point.y];
-    }, []),
-  );
-
+  const coords = points.reduce((res, point) => [...res, point.x, point.y], []);
+  const [x1, y1, x2, y2] = _getPointsBBox(coords);
   return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
 };
 
@@ -165,6 +161,15 @@ const _detect = region => {
         ...bbox,
         x: imageBbox.x + bbox.x,
         y: imageBbox.y + bbox.y,
+      };
+    }
+    case "keypointregion": {
+      const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      return {
+        x: region.x + imageBbox.x - 2,
+        y: region.y + imageBbox.y - 2,
+        width: 4,
+        height: 4,
       };
     }
     default: {
