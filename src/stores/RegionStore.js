@@ -67,7 +67,7 @@ export default types
       const labels = {};
       const map = {};
       self.regions.forEach(r => {
-        const l = r.labelsState;
+        const l = r.labeling;
         if (l) {
           const selected = l.selectedLabels;
           selected &&
