@@ -136,7 +136,7 @@ export default observer(({ store }) => {
       <p>
         <Checkbox
           value="Show connection lines"
-          defaultChecked={relations.showConnections}
+          defaultChecked={completion.relationStore.showConnections}
           onChange={() => {
             completion.relationStore.toggleConnections();
           }}

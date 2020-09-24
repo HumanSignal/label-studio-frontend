@@ -139,6 +139,16 @@ const _getDOMBBox = domNode => {
   };
 };
 
+const _scaleBBox = (bbox, scale = 1) => {
+  return {
+    ...bbox,
+    x: bbox.x * scale,
+    y: bbox.y * scale,
+    width: bbox.width * scale,
+    height: bbox.height * scale,
+  };
+};
+
 const _detect = region => {
   switch (region.type) {
     case "textrange":
@@ -149,7 +159,10 @@ const _detect = region => {
     }
     case "rectangleregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _getRectBBox(region.x, region.y, region.width, region.height, region.rotation);
+      const bbox = _scaleBBox(
+        _getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
+        region.parent.zoomScale,
+      );
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,
@@ -158,7 +171,10 @@ const _detect = region => {
     }
     case "ellipseregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation);
+      const bbox = _scaleBBox(
+        _getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
+        region.parent.zoomScale,
+      );
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,
@@ -167,7 +183,7 @@ const _detect = region => {
     }
     case "polygonregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _getPolygonBBox(region.points);
+      const bbox = _scaleBBox(_getPolygonBBox(region.points), region.parent.zoomScale);
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,
@@ -176,16 +192,18 @@ const _detect = region => {
     }
     case "keypointregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const scale = region.parent.zoomScale;
       return {
-        x: region.x + imageBbox.x - 2,
-        y: region.y + imageBbox.y - 2,
+        x: region.x * scale + imageBbox.x - 2,
+        y: region.y * scale + imageBbox.y - 2,
         width: 4,
         height: 4,
       };
     }
     case "brushregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _getBrushBBox([].concat(...region.touches.filter(t => t.type === "add").map(t => t.points)));
+      const points = [].concat(...region.touches.filter(t => t.type === "add").map(t => t.points));
+      const bbox = _scaleBBox(_getBrushBBox(points), region.parent.zoomScale);
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,

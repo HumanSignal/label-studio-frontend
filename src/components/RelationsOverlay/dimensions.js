@@ -3,20 +3,24 @@ import { BoundingBox, getRegionBoundingBox } from "./BoundingBox";
 import { RelationShape } from "./RelationShape";
 import { DOMWatcher, createPropertyWatcher } from "./watchers";
 
+const parentImagePropsWatch = {
+  parent: ["zoomScale", "zoomingPositionX", "zoomingPositionY"],
+};
+
 const obtainWatcher = node => {
   switch (node.type) {
     case "textregion":
       return DOMWatcher;
     case "rectangleregion":
-      return createPropertyWatcher(["x", "y", "width", "height"]);
+      return createPropertyWatcher(["x", "y", "width", "height", parentImagePropsWatch]);
     case "ellipseregion":
-      return createPropertyWatcher(["x", "y", "radiusX", "radiusY", "rotation"]);
+      return createPropertyWatcher(["x", "y", "radiusX", "radiusY", "rotation", parentImagePropsWatch]);
     case "polygonregion":
-      return createPropertyWatcher([{ points: ["x", "y"] }]);
+      return createPropertyWatcher([{ points: ["x", "y"] }, parentImagePropsWatch]);
     case "keypointregion":
-      return createPropertyWatcher(["x", "y"]);
+      return createPropertyWatcher(["x", "y", parentImagePropsWatch]);
     case "brushregion":
-      return createPropertyWatcher(["needsUpdate"]);
+      return createPropertyWatcher(["needsUpdate", parentImagePropsWatch]);
     case "audioregion":
       return createPropertyWatcher(["start", "end"]);
     default:
