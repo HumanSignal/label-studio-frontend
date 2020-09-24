@@ -1,6 +1,6 @@
 import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
 
-import { cloneNode } from "../core/Helpers";
+import { cloneNode, guidGenerator } from "../core/Helpers";
 import { AllRegionsType } from "../regions";
 import { RelationsModel } from "../tags/control/Relations";
 import { TRAVERSE_SKIP } from "../core/Tree";
@@ -10,6 +10,7 @@ import { TRAVERSE_SKIP } from "../core/Tree";
  */
 const Relation = types
   .model("Relation", {
+    id: types.optional(types.identifier, guidGenerator),
     node1: types.reference(AllRegionsType),
     node2: types.reference(AllRegionsType),
     direction: types.optional(types.enumeration(["left", "right", "bi"]), "right"),
@@ -27,10 +28,6 @@ const Relation = types
     get hasRelations() {
       const r = self.relations;
       return r && r.children && r.children.length > 0;
-    },
-
-    get id() {
-      return `${self.node1.id}-${self.node2.id}`;
     },
   }))
   .actions(self => ({
@@ -74,12 +71,21 @@ const Relation = types
     toggleMeta() {
       self.showMeta = !self.showMeta;
     },
+
+    setSelfHighlight(highlighted = false) {
+      if (highlighted) {
+        self.parent.setHighlight(self);
+      } else {
+        self.parent.removeHighlight();
+      }
+    },
   }));
 
 const RelationStore = types
   .model("RelationStore", {
     relations: types.array(Relation),
     showConnections: types.optional(types.boolean, true),
+    highlighted: types.maybeNull(types.safeReference(Relation)),
   })
   .actions(self => ({
     findRelations(node1, node2) {
@@ -150,6 +156,14 @@ const RelationStore = types
 
     toggleConnections() {
       self.showConnections = !self.showConnections;
+    },
+
+    setHighlight(relation) {
+      self.highlighted = relation;
+    },
+
+    removeHighlight() {
+      self.highlighted = null;
     },
   }));
 

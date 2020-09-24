@@ -84,6 +84,12 @@ const App = inject("store")(
         return this._renderAll(this.props.store.completionStore.predictions);
       }
 
+      renderRelations() {
+        const store = this.props.store.completionStore.selected.relationStore;
+        console.log({ store });
+        return <RelationsOverlay store={store} />;
+      }
+
       render() {
         const self = this;
         const { store } = self.props;
@@ -128,10 +134,7 @@ const App = inject("store")(
                     <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
                       <div style={{ position: "relative" }}>
                         {Tree.renderItem(root)}
-                        <RelationsOverlay
-                          relations={cs.selected.relationStore.relations}
-                          visible={cs.selected.relationStore.showConnections}
-                        />
+                        {this.renderRelations()}
                       </div>
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>

@@ -20,10 +20,17 @@ const ArrowMarker = ({ id, color }) => {
 };
 
 const RelationItemRect = ({ x, y, width, height }) => {
-  return <rect x={x} y={y} width={width} height={height} fill="none" stroke="#f0f" />;
+  return <rect x={x} y={y} width={width} height={height} fill="none" />;
 };
 
-const RelationConnector = ({ id, command, color, direction }) => {
+const RelationConnector = ({ id, command, color, direction, highlight }) => {
+  const pathSettings = {
+    d: command,
+    stroke: color,
+    fill: "none",
+    strokeLinecap: "round",
+  };
+
   const markers = {};
 
   if (direction === "bi" || direction === "right") {
@@ -33,7 +40,12 @@ const RelationConnector = ({ id, command, color, direction }) => {
     markers.markerStart = `url(#arrow-${id})`;
   }
 
-  return <path d={command} stroke={color} strokeWidth={2} fill="none" strokeLinecap="round" {...markers} />;
+  return (
+    <>
+      {highlight && <path {...pathSettings} opacity={0.3} strokeWidth={6} />}
+      <path {...pathSettings} strokeWidth={2} {...markers} />
+    </>
+  );
 };
 
 const RelationLabel = ({ label, position, orientation }) => {
@@ -79,7 +91,7 @@ const RelationLabel = ({ label, position, orientation }) => {
   );
 };
 
-const RelationItem = ({ id, startNode, endNode, direction, rootRef }) => {
+const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm }) => {
   const root = rootRef.current;
   const relation = Dimensions.prepareRelation({ id, startNode, endNode, direction }, root);
   const [, forceUpdate] = useState();
@@ -92,10 +104,16 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef }) => {
   }, []);
 
   return (
-    <g>
+    <g opacity={dimm && !highlight ? 0.5 : 1}>
       <RelationItemRect {...start} />
       <RelationItemRect {...end} />
-      <RelationConnector id={relation.id} command={path} color={relation.color} direction={relation.direction} />
+      <RelationConnector
+        id={relation.id}
+        command={path}
+        color={relation.color}
+        direction={relation.direction}
+        highlight={highlight}
+      />
       <RelationLabel label={relation.label} position={textPosition} orientation={orientation} />
     </g>
   );
@@ -107,14 +125,15 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef }) => {
  * rootRef: React.RefObject<HTMLElement>
  * }}
  */
-const RelationItemObserver = observer(({ relation, rootRef }) => {
+const RelationItemObserver = observer(({ relation, ...rest }) => {
+  console.log(rest);
   return (
     <RelationItem
       id={relation.id}
       startNode={relation.node1}
       endNode={relation.node2}
       direction={relation.direction}
-      rootRef={rootRef}
+      {...rest}
     />
   );
 });
@@ -131,7 +150,10 @@ class RelationsOverlay extends PureComponent {
   }
 
   render() {
-    const { relations, visible } = this.props;
+    const { relations, visible, highlighted } = this.props;
+    const hasHighlight = !!highlighted;
+
+    console.log({ highlighted, hasHighlight });
     const style = {
       top: 0,
       left: 0,
@@ -154,7 +176,13 @@ class RelationsOverlay extends PureComponent {
             </defs>
 
             {relations.map(relation => (
-              <RelationItemObserver key={relation.id} relation={relation} rootRef={this.rootNode} />
+              <RelationItemObserver
+                key={relation.id}
+                relation={relation}
+                rootRef={this.rootNode}
+                dimm={hasHighlight && relation !== highlighted}
+                highlight={relation === highlighted}
+              />
             ))}
           </>
         ) : null}
@@ -163,8 +191,9 @@ class RelationsOverlay extends PureComponent {
   }
 }
 
-const RelationsOverlayObserver = observer(({ relations, visible }) => {
-  return <RelationsOverlay relations={Array.from(relations)} visible={visible} />;
+const RelationsOverlayObserver = observer(({ store }) => {
+  const { relations, showConnections, highlighted } = store;
+  return <RelationsOverlay relations={Array.from(relations)} visible={showConnections} highlighted={highlighted} />;
 });
 
 export { RelationsOverlayObserver as RelationsOverlay };

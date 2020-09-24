@@ -80,9 +80,11 @@ const ListItem = observer(({ item }) => {
       actions={[]}
       onMouseEnter={() => {
         item.toggleHighlight();
+        item.setSelfHighlight(true);
       }}
       onMouseLeave={() => {
         item.toggleHighlight();
+        item.setSelfHighlight(false);
       }}
     >
       <div className={styles.item}>
