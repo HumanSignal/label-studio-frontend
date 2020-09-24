@@ -28,6 +28,9 @@ const Model = types
     get parent() {
       return getParentOfType(self, HyperTextModel);
     },
+    get regionElement() {
+      return self._spans[0];
+    },
   }))
   .actions(self => ({
     beforeDestroy() {

@@ -129,17 +129,23 @@ const _getBrushBBox = points => {
   return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
 };
 
+const _getDOMBBox = domNode => {
+  const bbox = domNode.getBoundingClientRect();
+  return {
+    x: bbox.x,
+    y: bbox.y,
+    width: bbox.width,
+    height: bbox.height,
+  };
+};
+
 const _detect = region => {
   switch (region.type) {
     case "textrange":
-    case "hypertextregion": {
-      const bbox = region._spans[0].getBoundingClientRect();
-      return {
-        x: bbox.x,
-        y: bbox.y,
-        width: bbox.width,
-        height: bbox.height,
-      };
+    case "hypertextregion":
+    case "textarearegion":
+    case "audioregion": {
+      return _getDOMBBox(region.regionElement);
     }
     case "rectangleregion": {
       const imageBbox = region.parent.imageRef.getBoundingClientRect();
@@ -184,15 +190,6 @@ const _detect = region => {
         ...bbox,
         x: imageBbox.x + bbox.x,
         y: imageBbox.y + bbox.y,
-      };
-    }
-    case "audioregion": {
-      const bbox = region.regionElement.getBoundingClientRect();
-      return {
-        x: bbox.x,
-        y: bbox.y,
-        width: bbox.width,
-        height: bbox.height,
       };
     }
     default: {
