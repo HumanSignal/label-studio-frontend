@@ -79,6 +79,7 @@ const Relation = types
 const RelationStore = types
   .model("RelationStore", {
     relations: types.array(Relation),
+    showConnections: types.optional(types.boolean, true),
   })
   .actions(self => ({
     findRelations(node1, node2) {
@@ -145,6 +146,10 @@ const RelationStore = types
           const r = rl.relations.findRelation(l);
           if (r) r.setSelected(true);
         });
+    },
+
+    toggleConnections() {
+      self.showConnections = !self.showConnections;
     },
   }));
 

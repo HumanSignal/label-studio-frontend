@@ -131,7 +131,7 @@ class RelationsOverlay extends PureComponent {
   }
 
   render() {
-    const { relations } = this.props;
+    const { relations, visible } = this.props;
     const style = {
       top: 0,
       left: 0,
@@ -140,6 +140,7 @@ class RelationsOverlay extends PureComponent {
       position: "absolute",
       pointerEvents: "none",
       zIndex: 100,
+      visibility: visible ? "visible" : "hidden",
     };
 
     return (
@@ -162,8 +163,8 @@ class RelationsOverlay extends PureComponent {
   }
 }
 
-const RelationsOverlayObserver = observer(({ store, relations }) => {
-  return <RelationsOverlay relations={Array.from(relations)} />;
+const RelationsOverlayObserver = observer(({ relations, visible }) => {
+  return <RelationsOverlay relations={Array.from(relations)} visible={visible} />;
 });
 
 export { RelationsOverlayObserver as RelationsOverlay };

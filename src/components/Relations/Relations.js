@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Select, Divider, List, Button } from "antd";
+import { Select, Divider, List, Button, Checkbox } from "antd";
 import { isValidReference, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -132,6 +132,19 @@ export default observer(({ store }) => {
       <Divider dashed orientation="left" style={{ height: "auto" }}>
         Relations ({relations.length})
       </Divider>
+
+      <p>
+        <Checkbox
+          value="Show connection lines"
+          defaultChecked={relations.showConnections}
+          onChange={() => {
+            completion.relationStore.toggleConnections();
+          }}
+        >
+          Show connection lines
+        </Checkbox>
+      </p>
+
       {!relations.length && <p>No Relations added yet</p>}
 
       {relations.length > 0 && (

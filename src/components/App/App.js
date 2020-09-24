@@ -128,7 +128,10 @@ const App = inject("store")(
                     <Segment className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
                       <div style={{ position: "relative" }}>
                         {Tree.renderItem(root)}
-                        <RelationsOverlay relations={cs.selected.relationStore.relations} />
+                        <RelationsOverlay
+                          relations={cs.selected.relationStore.relations}
+                          visible={cs.selected.relationStore.showConnections}
+                        />
                       </div>
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>
