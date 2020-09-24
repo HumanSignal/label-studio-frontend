@@ -17,14 +17,16 @@ export const AreaMixin = types
       return getParent(self, 2);
     },
 
+    get labeling() {
+      return self.results.find(r => r.type.endsWith("labels"));
+    },
+
     get tag() {
-      const result = self.results.find(r => r.type.endsWith("labels"));
-      return result && result.from_name;
+      return self.labeling?.from_name;
     },
 
     hasLabel(value) {
-      const label = self.results.find(r => r.type.endsWith("labels"));
-      return label.mainValue.includes(value);
+      return self.labeling?.mainValue?.includes(value);
     },
 
     get perRegionTags() {

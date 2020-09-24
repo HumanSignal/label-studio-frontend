@@ -115,6 +115,10 @@ const Result = types
       return true;
     },
 
+    get selectedLabels() {
+      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
+    },
+
     getOneColor() {
       return self.style && self.style.fillcolor;
     },
