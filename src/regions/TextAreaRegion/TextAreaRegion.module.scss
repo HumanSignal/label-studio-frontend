@@ -8,6 +8,8 @@
   margin: 0;
   padding: 0.4em 1em;
 
+  white-space: pre-line;
+
   &.selected {
     border: 1px solid red;
   }
