@@ -93,6 +93,7 @@ const HtxAudioView = ({ store, item }) => {
   return (
     <ObjectTag item={item}>
       <Waveform
+        dataField={item.value}
         src={item._value}
         onCreate={item.wsCreated}
         onLoad={item.onLoad}

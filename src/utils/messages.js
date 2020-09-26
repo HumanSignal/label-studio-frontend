@@ -1,3 +1,9 @@
+/* eslint-disable react/jsx-no-target-blank */
+
+import React from "react";
+
+const URL_CORS_DOCS = "https://app.heartex.ai/docs/guide/FAQ.html#Image-audio-resource-loading-error-while-labeling";
+
 export default {
   DONE: "Done!",
   NO_COMP_LEFT: "No more completions",
@@ -30,4 +36,43 @@ export default {
   ERR_GENERAL: ({ value }) => {
     return `Internal error. See browser console for more info. Try again or contact developers.<br/>${value}`;
   },
+
+  // Object loading errors
+  URL_CORS_DOCS,
+
+  ERR_LOADING_AUDIO: ({ attr, url, error }) => (
+    <p>
+      Error while loading audio. Check <code>{attr}</code> field in task.
+      <br />
+      Technical description: {error}
+      <br />
+      URL: {url}
+    </p>
+  ),
+
+  ERR_LOADING_HTTP: ({ attr, url, error }) => (
+    <div>
+      <p>
+        There was an issue loading URL from <code>{attr}</code> value
+      </p>
+      <p>
+        Things to look out for:
+        <ul>
+          <li>URL is valid</li>
+          <li>URL scheme matches the service scheme, i.e. https and https</li>
+          <li>
+            The static server has wide-open CORS,{" "}
+            <a href={URL_CORS_DOCS} target="_blank">
+              more on that here
+            </a>
+          </li>
+        </ul>
+      </p>
+      <p>
+        Technical description: <code>{error}</code>
+        <br />
+        URL: <code>{url}</code>
+      </p>
+    </div>
+  ),
 };

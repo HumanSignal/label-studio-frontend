@@ -292,6 +292,7 @@ const Model = types
         await self.preloadValue(store);
       }
       const data = self.dataObj;
+      if (!data) return;
       if (!self.timevalue) {
         const message = "`timevalue` should be set to the name of column with times; use `column#0` for headless csv";
         InfoModal.error(message);

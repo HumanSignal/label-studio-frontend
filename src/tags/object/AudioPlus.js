@@ -235,6 +235,7 @@ const HtxAudioView = ({ store, item }) => {
     <ObjectTag item={item}>
       <Fragment>
         <Waveform
+          dataField={item.value}
           src={item._value}
           selectRegion={item.selectRegion}
           handlePlay={item.handlePlay}
