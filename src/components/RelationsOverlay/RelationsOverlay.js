@@ -42,7 +42,7 @@ const RelationConnector = ({ id, command, color, direction, highlight }) => {
 
   return (
     <>
-      {highlight && <path {...pathSettings} opacity={0.3} strokeWidth={6} />}
+      {highlight && <path {...pathSettings} opacity={0.1} strokeWidth={6} />}
       <path {...pathSettings} strokeWidth={2} {...markers} />
     </>
   );

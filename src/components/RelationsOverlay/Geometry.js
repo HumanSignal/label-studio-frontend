@@ -65,7 +65,7 @@ export class Geometry {
    * @returns {BBox} Dimensions of bounding box
    */
   static getEllipseBBox(x, y, rx, ry, angle) {
-    const angleRad = _normalizeAngle(angle);
+    const angleRad = this.normalizeAngle(angle);
     const major = Math.max(rx, ry) * 2;
     const minor = Math.min(rx, ry) * 2;
 
@@ -106,7 +106,7 @@ export class Geometry {
    * @returns {BBox} Dimensions of bounding box
    */
   static getRectBBox(x, y, width, height, angle) {
-    const angleRad = this._normalizeAngle(angle);
+    const angleRad = this.normalizeAngle(angle);
 
     const rotate = (x1, y1) => [
       (x1 - x) * Math.cos(angleRad) - (y1 - y) * Math.sin(angleRad) + x,
