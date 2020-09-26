@@ -49,8 +49,6 @@ const RelationConnector = ({ id, command, color, direction, highlight }) => {
 };
 
 const RelationLabel = ({ label, position }) => {
-  if (!label) return null;
-
   const [x, y] = position;
   const textRef = React.createRef();
   const [background, setBackground] = useState({ width: 0, height: 0, x: 0, y: 0 });
@@ -111,7 +109,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
         direction={relation.direction}
         highlight={highlight}
       />
-      <RelationLabel label={relation.label} position={textPosition} />
+      {relation.label && <RelationLabel label={relation.label} position={textPosition} />}
     </g>
   );
 };
