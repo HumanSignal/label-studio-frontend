@@ -60,7 +60,7 @@ const createShape = (node, root) => {
 const connect = (relation, root) => {
   return {
     id: relation.id,
-    label: "Rel 1 to 2",
+    label: [].concat(...(relation.labels ?? [])).join(", "),
     color: "#a0a",
     direction: relation.direction,
     start: createShape(relation.startNode, root),
@@ -235,7 +235,6 @@ const calculatePath = (start, end) => {
     w2,
   });
 
-  const direction = intersecting ? "horizontal" : "vertical";
   const coordinatesCalculator = intersecting ? calculateSidePath : calculateTopPath;
   const coordinates = coordinatesCalculator({
     x1,
@@ -249,9 +248,9 @@ const calculatePath = (start, end) => {
     limit,
   });
 
-  const pathCommand = buildPathCommand(coordinates, direction);
+  const pathCommand = buildPathCommand(coordinates, intersecting ? "horizontal" : "vertical");
 
-  return [...pathCommand, direction];
+  return pathCommand;
 };
 
 export default {

@@ -48,7 +48,9 @@ const RelationConnector = ({ id, command, color, direction, highlight }) => {
   );
 };
 
-const RelationLabel = ({ label, position, orientation }) => {
+const RelationLabel = ({ label, position }) => {
+  if (!label) return null;
+
   const [x, y] = position;
   const textRef = React.createRef();
   const [background, setBackground] = useState({ width: 0, height: 0, x: 0, y: 0 });
@@ -85,13 +87,13 @@ const RelationLabel = ({ label, position, orientation }) => {
   );
 };
 
-const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm }) => {
+const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm, labels }) => {
   const root = rootRef.current;
   const [, forceUpdate] = useState();
 
-  const relation = NodesConnector.connect({ id, startNode, endNode, direction }, root);
+  const relation = NodesConnector.connect({ id, startNode, endNode, direction, labels }, root);
   const { start, end } = NodesConnector.getNodesBBox({ root, ...relation });
-  const [path, textPosition, orientation] = NodesConnector.calculatePath(start, end);
+  const [path, textPosition] = NodesConnector.calculatePath(start, end);
 
   useEffect(() => {
     relation.onChange(() => forceUpdate({}));
@@ -109,7 +111,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
         direction={relation.direction}
         highlight={highlight}
       />
-      <RelationLabel label={relation.label} position={textPosition} orientation={orientation} />
+      <RelationLabel label={relation.label} position={textPosition} />
     </g>
   );
 };
@@ -121,7 +123,6 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * }}
  */
 const RelationItemObserver = observer(({ relation, ...rest }) => {
-  console.log(rest);
   return (
     <RelationItem
       id={relation.id}
@@ -182,6 +183,7 @@ class RelationsOverlay extends PureComponent {
         key={relation.id}
         relation={relation}
         rootRef={this.rootNode}
+        labels={relation.relations?.selectedValues()}
         dimm={hasHighlight && relation !== highlighted}
         highlight={relation === highlighted}
       />
