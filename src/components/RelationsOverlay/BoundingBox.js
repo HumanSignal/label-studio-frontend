@@ -1,3 +1,5 @@
+import { Geometry } from "./Geometry";
+
 /**
  * Provides an abstract boudnign box for any types of regions
  */
@@ -42,112 +44,10 @@ export class BoundingBox {
   }
 }
 
+/**
+ * @type {import("./Geometry").BBox}
+ */
 const DEFAULT_BBOX = { x: 0, y: 0, width: 0, height: 0 };
-
-const _normalizeAngle = angle => {
-  return ((angle + 360) % 360) * (Math.PI / 180);
-};
-
-const _getEllipseBBox = (x, y, rx, ry, angle) => {
-  const angleRad = _normalizeAngle(angle);
-  const major = Math.max(rx, ry) * 2;
-  const minor = Math.min(rx, ry) * 2;
-
-  const getXLimits = () => {
-    const t = Math.atan(((-minor / 2) * Math.tan(angleRad)) / (major / 2));
-
-    return [t, t + Math.PI]
-      .map(t => {
-        return x + (major / 2) * Math.cos(t) * Math.cos(angleRad) - (minor / 2) * Math.sin(t) * Math.sin(angleRad);
-      })
-      .sort((a, b) => b - a);
-  };
-
-  const getYLimits = () => {
-    const t = Math.atan(((minor / 2) * 1.0) / Math.tan(angleRad) / (major / 2));
-    return [t, t + Math.PI]
-      .map(t => {
-        return y + (minor / 2) * Math.sin(t) * Math.cos(angleRad) + (major / 2) * Math.cos(t) * Math.sin(angleRad);
-      })
-      .sort((a, b) => b - a);
-  };
-
-  const [x1, x2] = getXLimits();
-  const [y1, y2] = getYLimits();
-  const width = x1 - x2;
-  const height = y1 - y2;
-
-  return { x: x2, y: y2, width, height };
-};
-
-const _getPointsBBox = points => {
-  const minmax = [null, null, null, null];
-  points.forEach((num, i) => {
-    const pos = Math.round(i / 2) * 2 - i;
-
-    if (pos === 0) {
-      // Calculate min and max X
-      if (minmax[0] === null || minmax[0] >= num) minmax[0] = num;
-      if (minmax[2] === null || minmax[2] <= num) minmax[2] = num;
-    } else if (pos === 1) {
-      // Calculate min and max Y
-      if (minmax[1] === null || minmax[1] >= num) minmax[1] = num;
-      if (minmax[3] === null || minmax[3] <= num) minmax[3] = num;
-    }
-  });
-
-  return minmax;
-};
-
-const _getRectBBox = (x, y, width, height, angle) => {
-  const angleRad = _normalizeAngle(angle);
-
-  const rotate = (x1, y1) => [
-    (x1 - x) * Math.cos(angleRad) - (y1 - y) * Math.sin(angleRad) + x,
-    (x1 - x) * Math.sin(angleRad) + (y1 - y) * Math.cos(angleRad) + y,
-  ];
-
-  const [rx1, ry1, rx2, ry2] = _getPointsBBox([
-    x,
-    y,
-    ...rotate(x + width, y),
-    ...rotate(x + width, y + height),
-    ...rotate(x, y + height),
-  ]);
-
-  return { x: rx1, y: ry1, width: rx2 - rx1, height: ry2 - ry1 };
-};
-
-const _getPolygonBBox = points => {
-  const coords = points.reduce((res, point) => [...res, point.x, point.y], []);
-  const [x1, y1, x2, y2] = _getPointsBBox(coords);
-  return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
-};
-
-const _getBrushBBox = points => {
-  const [x1, y1, x2, y2] = _getPointsBBox(points);
-  return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
-};
-
-const _getDOMBBox = domNode => {
-  const bbox = domNode.getBoundingClientRect();
-  return {
-    x: bbox.x,
-    y: bbox.y,
-    width: bbox.width,
-    height: bbox.height,
-  };
-};
-
-const _scaleBBox = (bbox, scale = 1) => {
-  return {
-    ...bbox,
-    x: bbox.x * scale,
-    y: bbox.y * scale,
-    width: bbox.width * scale,
-    height: bbox.height * scale,
-  };
-};
 
 const _detect = region => {
   switch (region.type) {
@@ -155,12 +55,12 @@ const _detect = region => {
     case "hypertextregion":
     case "textarearegion":
     case "audioregion": {
-      return _getDOMBBox(region.regionElement);
+      return Geometry.getDOMBBox(region.regionElement);
     }
     case "rectangleregion": {
-      const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _scaleBBox(
-        _getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
+      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
+      const bbox = Geometry.scaleBBox(
+        Geometry.getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
         region.parent.zoomScale,
       );
       return {
@@ -170,9 +70,9 @@ const _detect = region => {
       };
     }
     case "ellipseregion": {
-      const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _scaleBBox(
-        _getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
+      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
+      const bbox = Geometry.scaleBBox(
+        Geometry.getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
         region.parent.zoomScale,
       );
       return {
@@ -182,8 +82,8 @@ const _detect = region => {
       };
     }
     case "polygonregion": {
-      const imageBbox = region.parent.imageRef.getBoundingClientRect();
-      const bbox = _scaleBBox(_getPolygonBBox(region.points), region.parent.zoomScale);
+      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
+      const bbox = Geometry.scaleBBox(Geometry.getPolygonBBox(region.points), region.parent.zoomScale);
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,
@@ -191,7 +91,7 @@ const _detect = region => {
       };
     }
     case "keypointregion": {
-      const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
       const scale = region.parent.zoomScale;
       return {
         x: region.x * scale + imageBbox.x - 2,
@@ -201,9 +101,9 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      const imageBbox = region.parent.imageRef.getBoundingClientRect();
+      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
       const points = [].concat(...region.touches.filter(t => t.type === "add").map(t => t.points));
-      const bbox = _scaleBBox(_getBrushBBox(points), region.parent.zoomScale);
+      const bbox = Geometry.scaleBBox(Geometry.getBrushBBox(points), region.parent.zoomScale);
       return {
         ...bbox,
         x: imageBbox.x + bbox.x,

@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";
-import Dimensions from "./dimensions";
+import NodesConnector from "./NodesConnector";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -55,20 +55,14 @@ const RelationLabel = ({ label, position, orientation }) => {
 
   const groupAttributes = {
     transform: `translate(${x}, ${y})`,
+    textAnchor: "middle",
+    dominantBaseline: "middle",
   };
 
   const textAttributes = {
     fill: "white",
     style: { fontSize: 12, fontFamily: "arial" },
   };
-
-  if (orientation === "vertical") {
-    groupAttributes.textAnchor = "middle";
-    textAttributes.dy = "-8px";
-  } else {
-    groupAttributes.dominantBaseline = "middle";
-    textAttributes.dx = "12px";
-  }
 
   useEffect(() => {
     const textElement = textRef.current;
@@ -83,7 +77,7 @@ const RelationLabel = ({ label, position, orientation }) => {
 
   return (
     <g {...groupAttributes}>
-      <rect {...background} fill="#a0a" rx="3" />
+      <rect {...background} stroke="#fff" strokeWidth={2} fill="#a0a" rx="3" />
       <text ref={textRef} {...textAttributes}>
         {label}
       </text>
@@ -93,10 +87,11 @@ const RelationLabel = ({ label, position, orientation }) => {
 
 const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm }) => {
   const root = rootRef.current;
-  const relation = Dimensions.prepareRelation({ id, startNode, endNode, direction }, root);
   const [, forceUpdate] = useState();
-  const { start, end } = Dimensions.calculateDimensions({ root, ...relation });
-  const [path, textPosition, orientation] = Dimensions.calculatePath(start, end);
+
+  const relation = NodesConnector.connect({ id, startNode, endNode, direction }, root);
+  const { start, end } = NodesConnector.getNodesBBox({ root, ...relation });
+  const [path, textPosition, orientation] = NodesConnector.calculatePath(start, end);
 
   useEffect(() => {
     relation.onChange(() => forceUpdate({}));
@@ -153,7 +148,6 @@ class RelationsOverlay extends PureComponent {
     const { relations, visible, highlighted } = this.props;
     const hasHighlight = !!highlighted;
 
-    console.log({ highlighted, hasHighlight });
     const style = {
       top: 0,
       left: 0,
@@ -175,19 +169,23 @@ class RelationsOverlay extends PureComponent {
               ))}
             </defs>
 
-            {relations.map(relation => (
-              <RelationItemObserver
-                key={relation.id}
-                relation={relation}
-                rootRef={this.rootNode}
-                dimm={hasHighlight && relation !== highlighted}
-                highlight={relation === highlighted}
-              />
-            ))}
+            {this.renderRelations(relations, hasHighlight, highlighted)}
           </>
         ) : null}
       </svg>
     );
+  }
+
+  renderRelations(relations, hasHighlight, highlighted) {
+    return relations.map(relation => (
+      <RelationItemObserver
+        key={relation.id}
+        relation={relation}
+        rootRef={this.rootNode}
+        dimm={hasHighlight && relation !== highlighted}
+        highlight={relation === highlighted}
+      />
+    ));
   }
 }
 

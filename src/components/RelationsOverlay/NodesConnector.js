@@ -57,7 +57,7 @@ const createShape = (node, root) => {
   });
 };
 
-const prepareRelation = (relation, root) => {
+const connect = (relation, root) => {
   return {
     id: relation.id,
     label: "Rel 1 to 2",
@@ -90,7 +90,7 @@ const calculateBBox = (shape, root) => {
   };
 };
 
-const calculateDimensions = ({ start, end, root }) => {
+const getNodesBBox = ({ start, end, root }) => {
   return {
     start: calculateBBox(start, root),
     end: calculateBBox(end, root),
@@ -258,7 +258,7 @@ export default {
   obtainWatcher,
   boundingBox,
   createShape,
-  prepareRelation,
-  calculateDimensions,
+  connect,
+  getNodesBBox,
   calculatePath,
 };
