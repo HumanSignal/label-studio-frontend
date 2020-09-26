@@ -151,7 +151,8 @@ export class Geometry {
    * @return {BBox}
    */
   static getDOMBBox(domNode) {
-    const bbox = domNode.getBoundingClientRect();
+    const clientRects = Array.from(domNode.getClientRects());
+    const bbox = clientRects[clientRects.length - 1];
     return {
       x: bbox.x,
       y: bbox.y,
