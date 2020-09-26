@@ -141,6 +141,12 @@ class RelationsOverlay extends PureComponent {
     if (this.rootNode.current) {
       this.setState({ shouldRender: true });
     }
+
+    window.addEventListener("resize", this.onResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.onResize);
   }
 
   render() {
@@ -187,6 +193,10 @@ class RelationsOverlay extends PureComponent {
       />
     ));
   }
+
+  onResize = () => {
+    this.forceUpdate();
+  };
 }
 
 const RelationsOverlayObserver = observer(({ store }) => {
