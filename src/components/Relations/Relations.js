@@ -22,8 +22,9 @@ const RelationMeta = observer(({ store, rl }) => {
         placeholder="Please select"
         defaultValue={selected}
         onChange={(val, option) => {
+          const values = [].concat(...[val]);
           r.unselectAll();
-          val.forEach(v => r.findRelation(v).setSelected(true));
+          values.forEach(v => r.findRelation(v).setSelected(true));
         }}
       >
         {r.children.map(c => (
