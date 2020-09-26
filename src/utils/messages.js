@@ -71,7 +71,12 @@ export default {
       <p>
         Technical description: <code>{error}</code>
         <br />
-        URL: <code>{url}</code>
+        URL:{" "}
+        <code>
+          <a href={url} target="_blank">
+            {url}
+          </a>
+        </code>
       </p>
     </div>
   ),
