@@ -1,3 +1,5 @@
+import { BoundingBox } from "./BoundingBox";
+
 /* eslint-disable no-unused-expressions */
 export class RelationShape {
   params = {};
@@ -8,17 +10,12 @@ export class RelationShape {
     Object.assign(this.params, params);
 
     if (this.params.watcher) {
-      this._watcher = new this.params.watcher(
-        this.params.root,
-        this.params.element,
-        this.params.getElement ?? (el => el),
-        this.onChanged,
-      );
+      this._watcher = new this.params.watcher(this.params.root, this.params.element, this.onChanged);
     }
   }
 
   boundingBox() {
-    return this.params.boundingBox(this.params.element);
+    return BoundingBox.bbox(this.params.element);
   }
 
   onUpdate(callback) {

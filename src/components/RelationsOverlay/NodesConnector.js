@@ -1,5 +1,6 @@
 import { debounce } from "../../utils/debounce";
-import { BoundingBox, getRegionBoundingBox } from "./BoundingBox";
+import { wrapArray } from "../../utils/utilities";
+import { Geometry } from "./Geometry";
 import { RelationShape } from "./RelationShape";
 import { DOMWatcher, createPropertyWatcher } from "./watchers";
 
@@ -10,6 +11,8 @@ const parentImagePropsWatch = {
 const obtainWatcher = node => {
   switch (node.type) {
     case "textregion":
+    case "hypertextregion":
+    case "audioregion":
       return DOMWatcher;
     case "rectangleregion":
       return createPropertyWatcher(["x", "y", "width", "height", parentImagePropsWatch]);
@@ -21,30 +24,9 @@ const obtainWatcher = node => {
       return createPropertyWatcher(["x", "y", parentImagePropsWatch]);
     case "brushregion":
       return createPropertyWatcher(["needsUpdate", parentImagePropsWatch]);
-    case "audioregion":
-      return createPropertyWatcher(["start", "end"]);
     default:
       return null;
   }
-};
-
-const boundingBox = () => {
-  return element =>
-    new BoundingBox({
-      source: getRegionBoundingBox(element),
-      getX(s) {
-        return s.x;
-      },
-      getY(s) {
-        return s.y;
-      },
-      getWidth(s) {
-        return s.width;
-      },
-      getHeight(s) {
-        return s.height;
-      },
-    });
 };
 
 const createShape = (node, root) => {
@@ -52,15 +34,13 @@ const createShape = (node, root) => {
     root: root,
     element: node,
     watcher: obtainWatcher(node),
-    boundingBox: boundingBox(),
-    getElement: el => (el._spans ? el._spans[0] : el),
   });
 };
 
 const connect = (relation, root) => {
   return {
     id: relation.id,
-    label: [].concat(...(relation.labels ?? [])).join(", "),
+    label: wrapArray(relation.labels ?? []).join(", "),
     color: "#a0a",
     direction: relation.direction,
     start: createShape(relation.startNode, root),
@@ -77,23 +57,33 @@ const connect = (relation, root) => {
   };
 };
 
+/**
+ * Calculate BBox for the shape
+ * @param {RelationShape} shape
+ * @param {HTMLElement} root
+ */
 const calculateBBox = (shape, root) => {
-  const { x, y } = root.getBoundingClientRect();
-  const bbox = shape.boundingBox();
-  const padding = 3;
+  const { x, y } = Geometry.getDOMBBox(root)[0];
+  const bboxList = shape.boundingBox();
 
-  return {
-    x: bbox.x - x - padding,
-    y: bbox.y - y - padding,
-    width: bbox.width + padding * 2,
-    height: bbox.height + padding * 2,
-  };
+  return bboxList.map(bbox => {
+    const padded = Geometry.padding(bbox, 3);
+    return {
+      ...padded,
+      x: padded.x - x,
+      y: padded.y - y,
+    };
+  });
 };
 
 const getNodesBBox = ({ start, end, root }) => {
+  const [startBBox, endBBox] = Geometry.closestRects(calculateBBox(start, root), calculateBBox(end, root));
+
+  console.log({ startBBox, endBBox });
+
   return {
-    start: calculateBBox(start, root),
-    end: calculateBBox(end, root),
+    start: startBBox,
+    end: endBBox,
   };
 };
 
@@ -255,7 +245,6 @@ const calculatePath = (start, end) => {
 
 export default {
   obtainWatcher,
-  boundingBox,
   createShape,
   connect,
   getNodesBBox,

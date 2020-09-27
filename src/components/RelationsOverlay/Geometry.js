@@ -4,6 +4,15 @@
  * @typedef {number[]} Points Represents (x,y) flat array, meaning
  * each two numbers represent x and y accordingly. Array always starts with x
  *
+ * @typedef {{
+ * x1: number,
+ * x2: number,
+ * x3: number,
+ * x4: number,
+ * y1: number,
+ * y2: number,
+ * y3: number,
+ * y4: number}} RectCoordinates Represents 4 corners coordinates of rectangle
  */
 
 export class Geometry {
@@ -40,6 +49,80 @@ export class Geometry {
   }
 
   /**
+   * Calculate distance between wo points
+   * @param {Points} point1
+   * @param {Points} point2
+   */
+  static distance(point1, point2) {
+    const [x1, y1] = point1;
+    const [x2, y2] = point2;
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  }
+
+  /**
+   * Convert standard bbox to a set of coordinates
+   * @param {BBox} bbox
+   * @returns {RectCoordinates}
+   */
+  static toRectCoordinates(bbox) {
+    const { x: x1, y: y1, width, height } = bbox;
+    const [x2, y2] = [x1 + width, y1];
+    const [x3, y3] = [x1 + width, y1 + height];
+    const [x4, y4] = [x1, y1 + height];
+    return { x1, x2, x3, x4, y1, y2, y3, y4 };
+  }
+
+  /**
+   * Convert RectCoordinates to BBox
+   * @param {RectCoordinates} rect
+   * @returns {BBox}
+   */
+  static convertToRectBBox(rect) {
+    return {
+      x: rect.x1,
+      y: rect.y1,
+      width: rect.x2 - rect.x1,
+      height: rect.y3 - rect.y1,
+    };
+  }
+
+  /**
+   * Find two closes BBoxes of two lists
+   * @param {BBox[]} rectsList1
+   * @param {BBox[]} rectsList2
+   */
+  static closestRects(rectsList1, rectsList2) {
+    console.log({ rectsList1, rectsList2 });
+
+    const result = rectsList1
+      .reduce((res, rect1) => {
+        const bbox1 = this.toRectCoordinates(rect1);
+
+        rectsList2.forEach(rect2 => {
+          const bbox2 = this.toRectCoordinates(rect2);
+
+          const avgDistance =
+            [
+              this.distance([bbox1.x1, bbox1.y1], [bbox2.x1, bbox1.y1]),
+              this.distance([bbox1.x2, bbox1.y2], [bbox2.x2, bbox1.y2]),
+              this.distance([bbox1.x3, bbox1.y3], [bbox2.x3, bbox1.y3]),
+              this.distance([bbox1.x4, bbox1.y4], [bbox2.x4, bbox2.y4]),
+            ].reduce((d1, d2) => d1 + d2) / 4;
+
+          res.push({
+            distance: avgDistance,
+            bbox: [this.convertToRectBBox(bbox1), this.convertToRectBBox(bbox2)],
+          });
+        });
+
+        return res;
+      }, [])
+      .sort((a, b) => a.distance - b.distance);
+
+    return result[0].bbox;
+  }
+
+  /**
    * Scale given BBox by a scale factor
    * @param {BBox} bbox Original BBox
    * @param {number} scale Scale factor
@@ -56,13 +139,28 @@ export class Geometry {
   }
 
   /**
+   * Add padding to BBox
+   * @param {BBox} bbox BBox to pad
+   * @param {number} padding Padding size
+   */
+  static padding(bbox, padding = 0) {
+    return {
+      ...bbox,
+      x: bbox.x - padding,
+      y: bbox.y - padding,
+      width: bbox.width + padding * 2,
+      height: bbox.height + padding * 2,
+    };
+  }
+
+  /**
    * Calculate ellipse BBox
    * @param {number} x Center X
    * @param {number} y Center Y
    * @param {number} rx Radius X
    * @param {number} ry Radius Y
    * @param {number} angle Angle in RAD
-   * @returns {BBox} Dimensions of bounding box
+   * @returns {BBox[]} Dimensions of bounding box
    */
   static getEllipseBBox(x, y, rx, ry, angle) {
     const angleRad = this.normalizeAngle(angle);
@@ -103,7 +201,7 @@ export class Geometry {
    * @param {number} width Width
    * @param {number} height Height
    * @param {number} angle Angle in RAD
-   * @returns {BBox} Dimensions of bounding box
+   * @returns {BBox[]} Dimensions of bounding box
    */
   static getRectBBox(x, y, width, height, angle) {
     const angleRad = this.normalizeAngle(angle);
@@ -127,7 +225,7 @@ export class Geometry {
   /**
    * Calculate BBox of polygon shape
    * @param {Points} points
-   * @return {BBox}
+   * @return {BBox[]}
    */
   static getPolygonBBox(points) {
     const coords = points.reduce((res, point) => [...res, point.x, point.y], []);
@@ -138,7 +236,7 @@ export class Geometry {
   /**
    * Calculate BBox of Brush region (a set of points)
    * @param {Points} points
-   * @return {BBox}
+   * @return {BBox[]}
    */
   static getBrushBBox(points) {
     const [x1, y1, x2, y2] = this.getPointsBBox(points);
@@ -148,16 +246,18 @@ export class Geometry {
   /**
    * Get BBox of any DOM node
    * @param {HTMLElement} domNode
-   * @return {BBox}
+   * @param {boolean} single Should return all possible BBoxes or not
+   * @return {BBox[]}
    */
-  static getDOMBBox(domNode) {
-    const clientRects = Array.from(domNode.getClientRects());
-    const bbox = clientRects[clientRects.length - 1];
-    return {
-      x: bbox.x,
-      y: bbox.y,
-      width: bbox.width,
-      height: bbox.height,
-    };
+  static getDOMBBox(domNode, single = false) {
+    const bboxes = domNode.getClientRects();
+    return single
+      ? bboxes[0]
+      : Array.from(domNode.getClientRects()).map(domRect => ({
+          x: domRect.x,
+          y: domRect.y,
+          width: domRect.width,
+          height: domRect.height,
+        }));
   }
 }

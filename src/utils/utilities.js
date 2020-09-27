@@ -94,3 +94,13 @@ export function atobUnicode(str) {
       .join(""),
   );
 }
+
+/**
+ * Convert any value to an array
+ * @template T
+ * @param {T} value
+ * @returns {T[]}
+ */
+export function wrapArray(value) {
+  return [].concat(...[value]);
+}

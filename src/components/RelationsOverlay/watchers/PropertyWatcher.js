@@ -3,7 +3,7 @@ import { debounce } from "../../../utils/debounce";
 
 export const createPropertyWatcher = props => {
   return class {
-    constructor(root, element, getElement, callback) {
+    constructor(root, element, callback) {
       this.root = root;
       this.element = element;
       this.callback = callback;

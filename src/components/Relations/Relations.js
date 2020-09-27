@@ -6,6 +6,7 @@ import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, Dele
 
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
+import { wrapArray } from "../../utils/utilities";
 
 const { Option } = Select;
 
@@ -22,7 +23,7 @@ const RelationMeta = observer(({ store, rl }) => {
         placeholder="Please select"
         defaultValue={selected}
         onChange={(val, option) => {
-          const values = [].concat(...[val]);
+          const values = wrapArray(val);
           r.unselectAll();
           values.forEach(v => r.findRelation(v).setSelected(true));
         }}

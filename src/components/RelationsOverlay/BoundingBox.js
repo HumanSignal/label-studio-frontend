@@ -1,10 +1,23 @@
+import { wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
+
+/**
+ * @type {import("./Geometry").BBox}
+ */
+const DEFAULT_BBOX = { x: 0, y: 0, width: 0, height: 0 };
 
 /**
  * Provides an abstract boudnign box for any types of regions
  */
 export class BoundingBox {
   options = {};
+
+  static bbox(region) {
+    const bbox = _detect(region);
+    console.log("BBox for %s", region.type, bbox);
+
+    return wrapArray(bbox).map(bbox => Object.assign({ ...DEFAULT_BBOX }, bbox));
+  }
 
   /**
    * Contructor
@@ -44,10 +57,15 @@ export class BoundingBox {
   }
 }
 
-/**
- * @type {import("./Geometry").BBox}
- */
-const DEFAULT_BBOX = { x: 0, y: 0, width: 0, height: 0 };
+const imageRelatedBBox = (region, bbox) => {
+  const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
+  const scaledBBox = Geometry.scaleBBox(bbox, region.parent.zoomScale);
+  return {
+    ...scaledBBox,
+    x: imageBbox.x + scaledBBox.x,
+    y: imageBbox.y + scaledBBox.y,
+  };
+};
 
 const _detect = region => {
   switch (region.type) {
@@ -58,40 +76,22 @@ const _detect = region => {
       return Geometry.getDOMBBox(region.regionElement);
     }
     case "rectangleregion": {
-      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
-      const bbox = Geometry.scaleBBox(
+      return imageRelatedBBox(
+        region,
         Geometry.getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
-        region.parent.zoomScale,
       );
-      return {
-        ...bbox,
-        x: imageBbox.x + bbox.x,
-        y: imageBbox.y + bbox.y,
-      };
     }
     case "ellipseregion": {
-      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
-      const bbox = Geometry.scaleBBox(
+      return imageRelatedBBox(
+        region,
         Geometry.getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
-        region.parent.zoomScale,
       );
-      return {
-        ...bbox,
-        x: imageBbox.x + bbox.x,
-        y: imageBbox.y + bbox.y,
-      };
     }
     case "polygonregion": {
-      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
-      const bbox = Geometry.scaleBBox(Geometry.getPolygonBBox(region.points), region.parent.zoomScale);
-      return {
-        ...bbox,
-        x: imageBbox.x + bbox.x,
-        y: imageBbox.y + bbox.y,
-      };
+      return imageRelatedBBox(region, Geometry.getPolygonBBox(region.points));
     }
     case "keypointregion": {
-      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
+      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
       const scale = region.parent.zoomScale;
       return {
         x: region.x * scale + imageBbox.x - 2,
@@ -101,24 +101,12 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      const imageBbox = Geometry.getDOMBBox(region.parent.imageRef);
-      const points = [].concat(...region.touches.filter(t => t.type === "add").map(t => t.points));
-      const bbox = Geometry.scaleBBox(Geometry.getBrushBBox(points), region.parent.zoomScale);
-      return {
-        ...bbox,
-        x: imageBbox.x + bbox.x,
-        y: imageBbox.y + bbox.y,
-      };
+      const points = wrapArray(region.touches.filter(t => t.type === "add").map(t => t.points));
+      return imageRelatedBBox(region, Geometry.getBrushBBox(points));
     }
     default: {
       console.warn(`Unknown region type: ${region.type}`);
       return { ...DEFAULT_BBOX };
     }
   }
-};
-
-export const getRegionBoundingBox = region => {
-  const result = _detect(region);
-
-  return Object.assign({ ...DEFAULT_BBOX }, result);
 };

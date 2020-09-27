@@ -20,7 +20,7 @@ const ArrowMarker = ({ id, color }) => {
 };
 
 const RelationItemRect = ({ x, y, width, height }) => {
-  return <rect x={x} y={y} width={width} height={height} fill="none" />;
+  return <rect x={x} y={y} width={width} height={height} fill="none" stroke="#0f0" />;
 };
 
 const RelationConnector = ({ id, command, color, direction, highlight }) => {
@@ -85,7 +85,7 @@ const RelationLabel = ({ label, position }) => {
   );
 };
 
-const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm, labels }) => {
+const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm, labels, visible }) => {
   const root = rootRef.current;
   const [, forceUpdate] = useState();
 
@@ -99,7 +99,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
   }, []);
 
   return (
-    <g opacity={dimm && !highlight ? 0.5 : 1}>
+    <g opacity={dimm && !highlight ? 0.5 : 1} visibility={visible ? "visible" : "hidden"}>
       <RelationItemRect {...start} />
       <RelationItemRect {...end} />
       <RelationConnector
@@ -161,7 +161,6 @@ class RelationsOverlay extends PureComponent {
       position: "absolute",
       pointerEvents: "none",
       zIndex: 100,
-      visibility: visible ? "visible" : "hidden",
     };
 
     return (
@@ -174,24 +173,28 @@ class RelationsOverlay extends PureComponent {
               ))}
             </defs>
 
-            {this.renderRelations(relations, hasHighlight, highlighted)}
+            {this.renderRelations(relations, visible, hasHighlight, highlighted)}
           </>
         ) : null}
       </svg>
     );
   }
 
-  renderRelations(relations, hasHighlight, highlighted) {
-    return relations.map(relation => (
-      <RelationItemObserver
-        key={relation.id}
-        relation={relation}
-        rootRef={this.rootNode}
-        labels={relation.relations?.selectedValues()}
-        dimm={hasHighlight && relation !== highlighted}
-        highlight={relation === highlighted}
-      />
-    ));
+  renderRelations(relations, visible, hasHighlight, highlightedRelation) {
+    return relations.map(relation => {
+      const highlighted = highlightedRelation === relation;
+      return (
+        <RelationItemObserver
+          key={relation.id}
+          relation={relation}
+          rootRef={this.rootNode}
+          labels={relation.relations?.selectedValues()}
+          dimm={hasHighlight && !highlighted}
+          highlight={highlighted}
+          visible={highlighted || visible}
+        />
+      );
+    });
   }
 
   onResize = () => {
