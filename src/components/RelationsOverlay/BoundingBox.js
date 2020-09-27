@@ -14,8 +14,6 @@ export class BoundingBox {
 
   static bbox(region) {
     const bbox = _detect(region);
-    console.log("BBox for %s", region.type, bbox);
-
     return wrapArray(bbox).map(bbox => Object.assign({ ...DEFAULT_BBOX }, bbox));
   }
 

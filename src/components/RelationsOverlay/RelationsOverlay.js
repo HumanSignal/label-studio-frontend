@@ -1,6 +1,7 @@
 import { observer } from "mobx-react";
 import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";
+import { Arrow } from "react-konva";
 import NodesConnector from "./NodesConnector";
 
 const ArrowMarker = ({ id, color }) => {
@@ -20,13 +21,14 @@ const ArrowMarker = ({ id, color }) => {
 };
 
 const RelationItemRect = ({ x, y, width, height }) => {
-  return <rect x={x} y={y} width={width} height={height} fill="none" stroke="#0f0" />;
+  return <rect x={x} y={y} width={width} height={height} fill="none" />;
 };
 
 const RelationConnector = ({ id, command, color, direction, highlight }) => {
+  const pathColor = highlight ? "#1890ff" : color;
   const pathSettings = {
     d: command,
-    stroke: color,
+    stroke: pathColor,
     fill: "none",
     strokeLinecap: "round",
   };
@@ -42,8 +44,11 @@ const RelationConnector = ({ id, command, color, direction, highlight }) => {
 
   return (
     <>
-      {highlight && <path {...pathSettings} opacity={0.1} strokeWidth={6} />}
-      <path {...pathSettings} strokeWidth={2} {...markers} />
+      <defs>
+        <ArrowMarker id={id} color={pathColor} />
+      </defs>
+      {highlight && <path {...pathSettings} stroke={color} opacity={0.1} strokeWidth={6} />}
+      <path {...pathSettings} opacity={highlight ? 1 : 0.6} strokeWidth={2} {...markers} />
     </>
   );
 };
@@ -167,11 +172,11 @@ class RelationsOverlay extends PureComponent {
       <svg ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
         {this.state.shouldRender ? (
           <>
-            <defs>
+            {/* <defs>
               {relations.map(relation => (
                 <ArrowMarker key={relation.id} id={relation.id} color="#a0a" />
               ))}
-            </defs>
+            </defs> */}
 
             {this.renderRelations(relations, visible, hasHighlight, highlighted)}
           </>

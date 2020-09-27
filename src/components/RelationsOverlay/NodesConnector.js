@@ -79,8 +79,6 @@ const calculateBBox = (shape, root) => {
 const getNodesBBox = ({ start, end, root }) => {
   const [startBBox, endBBox] = Geometry.closestRects(calculateBBox(start, root), calculateBBox(end, root));
 
-  console.log({ startBBox, endBBox });
-
   return {
     start: startBBox,
     end: endBBox,

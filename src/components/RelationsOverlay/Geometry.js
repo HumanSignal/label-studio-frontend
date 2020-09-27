@@ -92,8 +92,6 @@ export class Geometry {
    * @param {BBox[]} rectsList2
    */
   static closestRects(rectsList1, rectsList2) {
-    console.log({ rectsList1, rectsList2 });
-
     const result = rectsList1
       .reduce((res, rect1) => {
         const bbox1 = this.toRectCoordinates(rect1);
