@@ -13,6 +13,7 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
+import { HtxTextBox } from "../components/HtxTextBox/HtxTextBox";
 
 const { Paragraph } = Typography;
 
@@ -65,15 +66,15 @@ const HtxTextAreaRegionView = ({ item }) => {
   }
 
   if (parent.editable) {
-    params["editable"] = {
-      onChange: str => {
-        item.setValue(str);
-      },
+    params.onChange = str => {
+      item.setValue(str);
     };
   }
 
   let divAttrs = {};
-  if (!parent.perregion) {
+  if (parent.perregion) {
+    params.onDelete = () => item.parent.remove(item);
+  } else {
     divAttrs = {
       onMouseOver: () => {
         if (relationMode) {
@@ -91,10 +92,13 @@ const HtxTextAreaRegionView = ({ item }) => {
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
-      <Paragraph id={`TextAreaRegion-${item.id}`} className={classes.join(" ")} {...params}>
-        {item._value}
-      </Paragraph>
-      {parent.perregion && <DeleteOutlined className={styles.delete} onClick={() => item.parent.remove(item)} />}
+      <HtxTextBox
+        id={`TextAreaRegion-${item.id}`}
+        className={classes.join(" ")}
+        rows={parent.rows}
+        text={item._value}
+        {...params}
+      />
     </div>
   );
 };
