@@ -436,7 +436,10 @@ class TextPieceView extends Component {
     const { item } = this.props;
 
     item.regs.forEach(function(r) {
-      if (r._spans && r._spans.length) return;
+      // spans can be totally missed if this is app init or undo/redo
+      // or they can be disconnected from DOM on completions switching
+      // so we have to recreate them from regions data
+      if (r._spans?.[0]?.isConnected) return;
 
       const findNode = (el, pos) => {
         let left = pos;
