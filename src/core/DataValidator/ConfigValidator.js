@@ -1,4 +1,4 @@
-import Registry from "./Registry";
+import Registry from "../Registry";
 import { types } from "mobx-state-tree";
 
 const errorBuilder = {
@@ -215,39 +215,41 @@ const humanizeTypeName = type => {
   return type ? getTypeDescription(type, false) : null;
 };
 
-/**
- * Validate node attributes and compatibility with other nodes
- * @param {*} node
- */
-export const validateConfigTree = root => {
-  const flatTree = flattenTree(root);
-  const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags"];
-  const validationResult = [];
+export class ConfigValidator {
+  /**
+   * Validate node attributes and compatibility with other nodes
+   * @param {*} node
+   */
+  static validate(root) {
+    const flatTree = flattenTree(root);
+    const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags"];
+    const validationResult = [];
 
-  for (let child of flatTree) {
-    const model = Registry.getModelByTag(child.type);
-    // Validate name attribute
-    const nameValidation = validateNameTag(child, model);
-    if (nameValidation !== null) validationResult.push(nameValidation);
+    for (let child of flatTree) {
+      const model = Registry.getModelByTag(child.type);
+      // Validate name attribute
+      const nameValidation = validateNameTag(child, model);
+      if (nameValidation !== null) validationResult.push(nameValidation);
 
-    // Validate toName attribute
-    const toNameValidation = validateToNameTag(child, model, flatTree);
-    if (toNameValidation !== null) validationResult.push(toNameValidation);
+      // Validate toName attribute
+      const toNameValidation = validateToNameTag(child, model, flatTree);
+      if (toNameValidation !== null) validationResult.push(toNameValidation);
 
-    validationResult.push(...validateAttributes(child, model, propertiesToSkip));
+      validationResult.push(...validateAttributes(child, model, propertiesToSkip));
+    }
+
+    if (validationResult.length) {
+      return validationResult.map(error => {
+        const compiledError = { ...error, validType: humanizeTypeName(error.validType) };
+        try {
+          return ValidationError.create(compiledError);
+        } catch (err) {
+          console.log({ compiledError });
+          throw err;
+        }
+      });
+    }
+
+    return null;
   }
-
-  if (validationResult.length) {
-    return validationResult.map(error => {
-      const compiledError = { ...error, validType: humanizeTypeName(error.validType) };
-      try {
-        return ValidationError.create(compiledError);
-      } catch (err) {
-        console.log({ compiledError });
-        throw err;
-      }
-    });
-  }
-
-  return null;
-};
+}
