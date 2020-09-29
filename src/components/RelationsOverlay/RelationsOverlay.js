@@ -1,7 +1,6 @@
 import { observer } from "mobx-react";
 import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";
-import { Arrow } from "react-konva";
 import NodesConnector from "./NodesConnector";
 
 const ArrowMarker = ({ id, color }) => {
