@@ -12,7 +12,7 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
-import { ValidationError } from "../core/ConfigValidator";
+import { DataValidator, ValidationError } from "../core/DataValidator";
 
 const Completion = types
   .model("Completion", {
@@ -519,7 +519,7 @@ export default types
 
       const pk = options.pk || options.id;
 
-      self.validation = completionModel.validation;
+      self.validation = DataValidator.validate("config", completionModel);
 
       //
       let node = {
@@ -588,12 +588,47 @@ export default types
       return c;
     }
 
+    /** ERRORS HANDLING */
+    const handleErrors = errors => {
+      self.addErrors(errors);
+    };
+
+    const addErrors = errors => {
+      const ids = [];
+
+      const newErrors = [...self.validation, ...errors].reduce((res, error) => {
+        const id = error.identifier;
+
+        if (ids.indexOf(id) < 0) {
+          ids.push(id);
+          res.push(error);
+        }
+
+        return res;
+      });
+
+      self.validation = newErrors;
+    };
+
+    const afterCreate = () => {
+      self._validator = new DataValidator();
+      self._validator.addErrorCallback(handleErrors);
+    };
+
+    const beforeDestroy = () => {
+      self._validator.removeErrorCallback(handleErrors);
+    };
+
     return {
+      afterCreate,
+      beforeDestroy,
+
       toggleViewingAllCompletions,
       toggleViewingAllPredictions,
 
       addPrediction,
       addCompletion,
+      addErrors,
       addCompletionFromPrediction,
 
       selectCompletion,

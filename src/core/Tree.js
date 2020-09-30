@@ -4,7 +4,6 @@ import xml2js from "xml2js";
 
 import Registry from "./Registry";
 import { guidGenerator } from "./Helpers";
-import { validateConfigTree } from "./ConfigValidator";
 
 export const TRAVERSE_SKIP = "skip";
 export const TRAVERSE_STOP = "stop";
@@ -111,7 +110,7 @@ function attrsToProps(attrs) {
 
 /**
  *
- * @param {*} html
+ * @param {string} html
  */
 function treeToModel(html) {
   /**
@@ -241,7 +240,6 @@ function treeToModel(html) {
 
   const root = buildData(Object.values(document)[0]);
   root.children = addNode(Object.values(document)[0]);
-  root.validation = validateConfigTree(root);
 
   return root;
 }

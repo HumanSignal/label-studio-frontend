@@ -239,15 +239,10 @@ export class ConfigValidator {
     }
 
     if (validationResult.length) {
-      return validationResult.map(error => {
-        const compiledError = { ...error, validType: humanizeTypeName(error.validType) };
-        try {
-          return ValidationError.create(compiledError);
-        } catch (err) {
-          console.log({ compiledError });
-          throw err;
-        }
-      });
+      return validationResult.map(error => ({
+        ...error,
+        validType: humanizeTypeName(error.validType),
+      }));
     }
 
     return null;
