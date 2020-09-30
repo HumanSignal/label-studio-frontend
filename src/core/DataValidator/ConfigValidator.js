@@ -1,5 +1,4 @@
 import Registry from "../Registry";
-import { types } from "mobx-state-tree";
 
 const errorBuilder = {
   /**
@@ -63,16 +62,6 @@ const errorBuilder = {
     };
   },
 };
-
-const ValidType = types.union(types.string, types.array(types.string));
-
-export const ValidationError = types.model({
-  modelName: types.string,
-  field: types.string,
-  error: types.string,
-  value: types.maybeNull(types.string),
-  validType: types.maybeNull(ValidType),
-});
 
 /**
  * Transforms MST `describe()` to a human-readable value

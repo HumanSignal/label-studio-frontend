@@ -1,3 +1,4 @@
+import { types } from "mobx-state-tree";
 import { ConfigValidator } from "./ConfigValidator";
 
 const VALIDATORS = {
@@ -21,10 +22,10 @@ export const ValidationError = types
   })
   .views(self => ({
     get identifier() {
-      const id = [self.modelName, self.field, self.error, self.value]
+      return [self.modelName, self.field, self.error, self.value]
         .concat(...[self.validType])
-        .filter(el => el !== null);
-      return id.join("-");
+        .filter(el => el !== null)
+        .join("-");
     },
   }));
 
