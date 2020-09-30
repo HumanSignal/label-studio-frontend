@@ -519,7 +519,7 @@ export default types
 
       const pk = options.pk || options.id;
 
-      self.validation = DataValidator.validate("config", completionModel);
+      self.validate("config", completionModel);
 
       //
       let node = {
@@ -619,6 +619,10 @@ export default types
       self._validator.removeErrorCallback(handleErrors);
     };
 
+    const validate = (validationType, data) => {
+      this._validator.validate(validationType, data);
+    };
+
     return {
       afterCreate,
       beforeDestroy,
@@ -628,8 +632,10 @@ export default types
 
       addPrediction,
       addCompletion,
-      addErrors,
       addCompletionFromPrediction,
+
+      addErrors,
+      validate,
 
       selectCompletion,
       selectPrediction,
