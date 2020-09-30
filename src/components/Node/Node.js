@@ -43,6 +43,8 @@ const NodeViews = {
     },
   ],
 
+  GraphRegionModel: ["Graph", GatewayOutlined, () => "Graph"],
+
   PolygonRegionModel: ["Polygon", GatewayOutlined, () => `Polygon`],
 
   EllipseRegionModel: [

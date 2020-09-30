@@ -7,6 +7,7 @@ import { AudioRegionModel } from "./AudioRegion";
 import { BrushRegionModel, HtxBrush } from "./BrushRegion";
 import { HyperTextRegionModel } from "./HyperTextRegion";
 import { KeyPointRegionModel, HtxKeyPoint } from "./KeyPointRegion";
+import { GraphRegionModel, HtxGraph } from "./GraphRegion";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
 import { RectRegionModel, HtxRectangle } from "./RectRegion";
@@ -20,6 +21,7 @@ const AllRegionsType = types.union(
   EllipseRegionModel,
   HyperTextRegionModel,
   KeyPointRegionModel,
+  GraphRegionModel,
   PolygonRegionModel,
   RectRegionModel,
   TextAreaRegionModel,
@@ -34,11 +36,13 @@ export {
   HtxBrush,
   HtxEllipse,
   HtxKeyPoint,
+  HtxGraph,
   HtxPolygon,
   HtxRectangle,
   HtxTextAreaRegion,
   HyperTextRegionModel,
   KeyPointRegionModel,
+  GraphRegionModel,
   PolygonPoint,
   PolygonPointView,
   PolygonRegionModel,

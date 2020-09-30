@@ -56,6 +56,8 @@ const Model = types
       "brush",
       "rectanglelabels",
       "ellipselabels",
+      "graphlabel",
+      "graphlabels",
       "polygonlabels",
       "keypointlabels",
       "brushlabels",

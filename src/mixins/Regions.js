@@ -246,7 +246,7 @@ const RegionsMixin = types
 
       self.completion.relationStore.deleteNodeRelation(self);
 
-      if (self.type === "polygonregion") {
+      if (self.type === "polygonregion" || self.type === "graphregion") {
         self.destroyRegion();
       }
 

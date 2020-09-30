@@ -9,6 +9,7 @@ import Registry from "../../core/Registry";
 import ToolsManager from "../../tools/Manager";
 import { BrushRegionModel } from "../../regions/BrushRegion";
 import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
+import { GraphRegionModel } from "../../regions/GraphRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
@@ -72,6 +73,9 @@ const IMAGE_CONSTANTS = {
   brushLabelsModel: "BrushLabelsModel",
   rectanglelabels: "rectanglelabels",
   keypointlabels: "keypointlabels",
+  vertexModel: "vertex",
+  edgeModel: "edge",
+  graphlabels: "graphlabels",
   polygonlabels: "polygonlabels",
   brushlabels: "brushlabels",
   brushModel: "BrushModel",
@@ -143,11 +147,25 @@ const Model = types
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
 
     selectedShape: types.safeReference(
-      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      types.union(
+        BrushRegionModel,
+        RectRegionModel,
+        EllipseRegionModel,
+        GraphRegionModel,
+        PolygonRegionModel,
+        KeyPointRegionModel,
+      ),
     ),
 
     regions: types.array(
-      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      types.union(
+        BrushRegionModel,
+        RectRegionModel,
+        EllipseRegionModel,
+        GraphRegionModel,
+        PolygonRegionModel,
+        KeyPointRegionModel,
+      ),
       [],
     ),
   })
