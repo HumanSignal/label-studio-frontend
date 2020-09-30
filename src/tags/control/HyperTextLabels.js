@@ -11,7 +11,6 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * HyperTextLabels tag
  * HyperTextLabels tag creates labeled hyper text (HTML)
  * @example
  * <View>
