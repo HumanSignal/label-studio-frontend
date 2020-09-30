@@ -6,8 +6,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 
 /**
- * Polygon tag
- * Polygon is used to add polygons to an image
+ * Polygon is used to add polygons to an image without label selection. It's useful when you have only one label.
  * @example
  * <View>
  *   <Polygon name="rect-1" toName="img-1" />

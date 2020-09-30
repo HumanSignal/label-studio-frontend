@@ -7,16 +7,23 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 
 /**
- * Filter tag, show filter
+ * Filter search for large amount of labels
  * @example
- * <Filter name="text-1" value="$text" />
- * @example
- * <Filter name="text-1" value="Please select the class" />
+ * <View>
+ *   <Filter name="filter" toName="ner"
+ *           hotkey="shift+f" minlength="0"
+ *           placeholder="Filter" />
+ *   <Labels name="ner" toName="text" showInline="false">
+ *     <Label value="Person" />
+ *     <Label value="Organization" />
+ *   </Labels>
+ *   <Text name="text" value="$text" />
+ * </View>
  * @name Filter
- * @param {string} value              - text of filter
- * @param {number} [size=4]           - size of filter
+ * @param {string} [placeholder]      - placeholder text of filter
+ * @param {number} [minlength=4]      - size of filter
  * @param {string} [style]            - css style string
- * @param {boolean} [underline=false] - underline of filter
+ * @param {string} [hotkey]           - hotkey to focus on filter text area
  */
 
 const TagAttrs = types.model({
