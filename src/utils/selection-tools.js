@@ -41,6 +41,9 @@ const updateGranularity = (selection, granularity) => {
   try {
     switch (granularity) {
       case "word":
+        selection.modify("move", "backward", "word");
+        selection.modify("extend", "forward", "word");
+        return;
       case "sentence":
         selection.modify("move", "backward", "sentenceboundary");
         selection.modify("extend", "forward", "sentenceboundary");
