@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Transformer } from "react-konva";
+import { MIN_SIZE } from "../../tools/Base";
+import { fixRectToFit, getBoundingBoxAfterChanges } from "../../utils/image";
 
 export default class TransformerComponent extends Component {
   componentDidMount() {
@@ -41,6 +43,33 @@ export default class TransformerComponent extends Component {
     this.transformer.getLayer().batchDraw();
   }
 
+  constrainSizes = (oldBox, newBox) => {
+    // it's important to compare against `undefined` because it can be missed (not rotated box?)
+    const rotation = newBox.rotation !== undefined ? newBox.rotation : oldBox.rotation;
+    const isRotated = rotation !== oldBox.rotation;
+
+    const stage = this.transformer.getStage();
+
+    if (newBox.width < MIN_SIZE) newBox.width = MIN_SIZE;
+    if (newBox.height < MIN_SIZE) newBox.height = MIN_SIZE;
+
+    // it's harder to fix sizes for rotated box, so just block changes out of stage
+    if (rotation || isRotated) {
+      const { x, y, width, height } = newBox;
+      const selfRect = { x: 0, y: 0, width, height };
+
+      // bounding box, got by applying current shift and rotation to normalized box
+      const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
+      const fixed = fixRectToFit(clientRect, stage.width(), stage.height());
+
+      // if bounding box is out of stage — do nothing
+      if (["x", "y", "width", "height"].some(key => fixed[key] !== clientRect[key])) return oldBox;
+      return newBox;
+    } else {
+      return fixRectToFit(newBox, stage.width(), stage.height());
+    }
+  };
+
   render() {
     if (!this.props.selectedShape.supportsTransform) return null;
 
@@ -52,11 +81,7 @@ export default class TransformerComponent extends Component {
         rotateEnabled={this.props.rotateEnabled}
         borderDash={[3, 1]}
         // borderStroke={"red"}
-        boundBoxFunc={(oldBox, newBox) => {
-          newBox.width = Math.max(3, newBox.width);
-          newBox.height = Math.max(3, newBox.height);
-          return newBox;
-        }}
+        boundBoxFunc={this.constrainSizes}
         anchorSize={8}
         ref={node => {
           this.transformer = node;

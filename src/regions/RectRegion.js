@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParent, getRoot, isAlive } from "mobx-state-tree";
+import { types, getRoot, isAlive } from "mobx-state-tree";
 
 import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -14,6 +14,7 @@ import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 
 /**
  * Rectangle object for Bounding Box
@@ -265,18 +266,18 @@ const HtxRectangleView = ({ store, item }) => {
         }}
         dragBoundFunc={item.parent.fixForZoom(pos => {
           let { x, y } = pos;
-          let { stageHeight, stageWidth } = getParent(item, 2);
+          const { width, height, rotation } = item;
+          const { stageHeight, stageWidth } = item.parent;
+          const selfRect = { x: 0, y: 0, width, height };
+          const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
+          const fixed = fixRectToFit(box, stageWidth, stageHeight);
 
-          if (x <= 0) {
-            x = 0;
-          } else if (x + item.width >= stageWidth) {
-            x = stageWidth - item.width;
+          if (fixed.width !== box.width) {
+            x += (fixed.width - box.width) * (fixed.x !== box.x ? -1 : 1);
           }
 
-          if (y < 0) {
-            y = 0;
-          } else if (y + item.height >= stageHeight) {
-            y = stageHeight - item.height;
+          if (fixed.height !== box.height) {
+            y += (fixed.height - box.height) * (fixed.y !== box.y ? -1 : 1);
           }
 
           return { x, y };
