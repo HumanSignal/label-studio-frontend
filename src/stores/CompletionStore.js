@@ -12,7 +12,7 @@ import Types from "../core/Types";
 import Utils from "../utils";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
-import { DataValidator, ValidationError } from "../core/DataValidator";
+import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
 
 const Completion = types
   .model("Completion", {
@@ -519,7 +519,7 @@ export default types
 
       const pk = options.pk || options.id;
 
-      self.validate("config", completionModel);
+      self.validate(VALIDATORS.CONFIG, completionModel);
 
       //
       let node = {
@@ -619,8 +619,8 @@ export default types
       self._validator.removeErrorCallback(handleErrors);
     };
 
-    const validate = (validationType, data) => {
-      this._validator.validate(validationType, data);
+    const validate = (validatorName, data) => {
+      this._validator.validate(validatorName, data);
     };
 
     return {

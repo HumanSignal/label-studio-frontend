@@ -183,7 +183,7 @@ const validateAttributes = (child, model, fieldsToSkip) => {
 
   for (let key of properties) {
     if (!child.hasOwnProperty(key)) continue;
-    if (key in fieldsToSkip) continue;
+    if (fieldsToSkip.includes(key)) continue;
     const value = child[key];
     const modelProperty = model.properties[key.toLowerCase()];
     const mstValidationResult = modelProperty.validate(value, modelProperty);

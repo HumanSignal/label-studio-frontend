@@ -1,14 +1,17 @@
 import { types } from "mobx-state-tree";
 import { ConfigValidator } from "./ConfigValidator";
 
-const VALIDATORS = {
-  config: ConfigValidator,
-  result: {
-    validare() {
+const DATA_VALIDATORS = {
+  CONFIG: ConfigValidator,
+  RESULT: {
+    validate() {
       return [];
     },
   },
 };
+
+/** @type {{[key: string]: keyof typeof DATA_VALIDATORS}} */
+export const VALIDATORS = Object.keys(DATA_VALIDATORS).reduce((res, k) => ({ ...res, [k]: k }), {});
 
 const ValidType = types.union(types.string, types.array(types.string));
 
@@ -50,11 +53,11 @@ export class DataValidator {
 
   /**
    * Perform validation and return errors in a form of an array
-   * @param {keyof typeof VALIDATORS} validatorName
+   * @param {keyof typeof DATA_VALIDATORS} validatorName
    * @param {Object} data
    */
   validate(validatorName, data) {
-    const validator = VALIDATORS[validatorName];
+    const validator = DATA_VALIDATORS[validatorName];
     let errors = [];
 
     if (validator) {
