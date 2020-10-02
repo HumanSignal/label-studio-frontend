@@ -16,7 +16,7 @@ import ControlBase from "./Base";
  *   <Text name="txt-2" value="Text 2" />
  * </View>
  * @example
- * You can also style the appearence using the View tag:
+ * <!-- You can also style the appearence using the View tag: -->
  * <View>
  *   <Pairwise name="pw" toName="txt-1,txt-2"></Pairwise>
  *   <View style="display: flex;">
