@@ -13,6 +13,7 @@ import ControlBase from "./Base";
  *     <Relation value="hello" />
  *     <Relation value="world" />
  *   </Relations>
+ *
  *   <Text name="txt-1" value="$text" />
  *   <Labels name="lbl-1" toName="txt-1">
  *     <Label value="Relevant" />

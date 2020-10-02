@@ -17,7 +17,9 @@ import { runTemplate } from "../../core/Template";
 /**
  * HyperText tag shows an HyperText markup that can be labeled
  * @example
- * <HyperText name="text-1" value="$text" />
+ * <View>
+ *   <HyperText name="text-1" value="$text" />
+ * </View>
  * @name HyperText
  * @param {string} name - name of the element
  * @param {string} value - value of the element

@@ -6,8 +6,7 @@ import Types from "../../core/Types";
 import ControlBase from "./Base";
 
 /**
- * KeyPoint tag
- * KeyPoint is used to add a keypoint to an image
+ * KeyPoint is used to add a keypoint to an image without label selection. It's useful when you have only one label.
  * @example
  * <View>
  *   <KeyPoint name="kp-1" toName="img-1" />
