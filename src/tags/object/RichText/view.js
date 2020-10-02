@@ -19,6 +19,9 @@ class RichTextPieceView extends Component {
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
 
+    console.log(states[0].selectedLabels);
+    const label = states[0]?.selectedLabels?.[0];
+
     Utils.Selection.captureSelection(
       ({ selectionText, range }) => {
         if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -49,7 +52,7 @@ class RichTextPieceView extends Component {
         }
       },
       {
-        granularity: item.granularity,
+        granularity: label?.granularity ?? item.granularity,
         beforeCleanup: () => (this._selectionMode = true),
       },
     );
