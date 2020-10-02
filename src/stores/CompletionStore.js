@@ -620,7 +620,7 @@ export default types
     };
 
     const validate = (validatorName, data) => {
-      this._validator.validate(validatorName, data);
+      self._validator.validate(validatorName, data);
     };
 
     return {

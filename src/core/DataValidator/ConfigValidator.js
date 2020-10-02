@@ -234,6 +234,6 @@ export class ConfigValidator {
       }));
     }
 
-    return null;
+    return [];
   }
 }

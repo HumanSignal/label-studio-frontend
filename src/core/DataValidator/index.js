@@ -61,7 +61,7 @@ export class DataValidator {
     let errors = [];
 
     if (validator) {
-      errors = validator.validate(data).map(compiledError => {
+      errors = (validator.validate(data) ?? []).map(compiledError => {
         try {
           return ValidationError.create(compiledError);
         } catch (err) {
