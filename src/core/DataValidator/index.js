@@ -1,6 +1,8 @@
 import { types } from "mobx-state-tree";
 import { ConfigValidator } from "./ConfigValidator";
 
+/**@typedef {(errors: any[]) => void} ErrorCallback */
+
 const DATA_VALIDATORS = {
   CONFIG: ConfigValidator,
   RESULT: {
@@ -33,6 +35,7 @@ export const ValidationError = types
   }));
 
 export class DataValidator {
+  /**@type {Set<ErrorCallback>} */
   callbacks = new Set();
 
   addErrorCallback(callback) {
@@ -75,7 +78,7 @@ export class DataValidator {
 
     setTimeout(() => {
       if (errors.length) {
-        for (let callback of this.callback) {
+        for (let callback of this.callbacks) {
           callback(errors);
         }
       }

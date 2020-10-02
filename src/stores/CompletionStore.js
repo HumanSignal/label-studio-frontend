@@ -596,7 +596,7 @@ export default types
     const addErrors = errors => {
       const ids = [];
 
-      const newErrors = [...self.validation, ...errors].reduce((res, error) => {
+      const newErrors = [...(self.validation ?? []), ...errors].reduce((res, error) => {
         const id = error.identifier;
 
         if (ids.indexOf(id) < 0) {
@@ -605,7 +605,7 @@ export default types
         }
 
         return res;
-      });
+      }, []);
 
       self.validation = newErrors;
     };

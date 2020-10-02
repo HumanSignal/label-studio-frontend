@@ -140,29 +140,14 @@ const validateToNameTag = (element, model, flatTree) => {
     return errorBuilder.required(model.name, "toname");
   }
 
-  if (!controlledTags) return null;
-
-  // Collect available tag names
-  const controlledTagTypes = getTypeDescription(controlledTags, false);
-
-  // Check if controlled tags are actually registered
-  const notRegisteredTags = controlledTagTypes.reduce((res, value) => {
-    try {
-      Registry.getModelByTag(value.toLowerCase());
-    } catch {
-      res.push(errorBuilder.unknownTag(model.name, "toname", value));
-    }
-    return res;
-  }, []);
-
-  if (notRegisteredTags.length) return notRegisteredTags[0];
-
   // Find referenced tag in the tree
   const controlledTag = flatTree.find(item => item.name === element.toname);
 
   if (controlledTag === undefined) {
     return errorBuilder.tagNotFound(model.name, "toname", element.toname);
   }
+
+  if (!controlledTags) return null;
 
   if (controlledTags.validate(controlledTag.tagName).length > 0) {
     return errorBuilder.tagUnsupported(model.name, "toname", controlledTag.tagName, controlledTags);
