@@ -1,5 +1,25 @@
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
+const boundarySelection = (selection, boundary) => {
+  const range = selection.getRangeAt(0);
+  const { startOffset, startContainer, endOffset, endContainer } = range;
+
+  const wordBoundary = boundary === "word";
+  const prevSymbol = startContainer.textContent[startOffset - 1];
+  const nextSymbol = endContainer.textContent[endOffset];
+
+  if (!wordBoundary || (prevSymbol && /[\w']/i.test(prevSymbol))) {
+    range.setEnd(startContainer, startOffset);
+    selection.modify("move", "backward", boundary);
+  }
+
+  if (!wordBoundary || (nextSymbol && /[\w']/i.test(nextSymbol))) {
+    const newRange = selection.getRangeAt(0);
+    newRange.setEnd(endContainer, endOffset);
+    selection.modify("extend", "forward", boundary);
+  }
+};
+
 /**
  * Captures current selection
  * @param {(response: {selectionText: string, range: Range}) => void} callback
@@ -41,16 +61,13 @@ const updateGranularity = (selection, granularity) => {
   try {
     switch (granularity) {
       case "word":
-        selection.modify("move", "backward", "word");
-        selection.modify("extend", "forward", "word");
+        boundarySelection(selection, "word");
         return;
       case "sentence":
-        selection.modify("move", "backward", "sentenceboundary");
-        selection.modify("extend", "forward", "sentenceboundary");
+        boundarySelection(selection, "sentenceboundary");
         return;
       case "paragraph":
-        selection.modify("move", "backward", "paragraphboundary");
-        selection.modify("extend", "forward", "paragraphboundary");
+        boundarySelection(selection, "paragraphboundary");
         return;
       case "charater":
       case "symbol":
