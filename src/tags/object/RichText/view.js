@@ -137,7 +137,7 @@ class RichTextPieceView extends Component {
       onMouseOverCapture: this._onRegionMouseOver,
     };
 
-    const val = item._value.replace(/([\n\r]+)/g, "<br>");
+    const val = item._value.replace(/\n|\r/g, "<br>");
     return (
       <ObjectTag item={item}>
         <div
