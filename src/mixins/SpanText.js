@@ -55,18 +55,21 @@ export default types
     },
 
     applyCSSClass(lastSpan) {
-      // console.log('CSS', self.states)
-      // const settings = getRoot(self).settings;
-      // const names = Utils.Checkers.flatten(
-      //   self.states.filter(s => s._type && s._type.indexOf("labels") !== -1).map(s => s.selectedValues()),
-      // );
-      // const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
-      //   labels: names,
-      //   score: self.score,
-      // });
-      // const classes = ["htx-highlight", "htx-highlight-last", cssCls];
-      // if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
-      // lastSpan.className = classes.filter(c => c).join(" ");
+      if (!lastSpan) return;
+      const classes = ["htx-highlight", "htx-highlight-last"];
+      const settings = getRoot(self).settings;
+      if (!self.parent.showlabels && !settings.showLabels) {
+        classes.push("htx-no-label");
+      } else {
+        // @todo multilabeling with different labels?
+        const names = self.labeling?.mainValue;
+        const cssCls = Utils.HTML.labelWithCSS(lastSpan, {
+          labels: names,
+          score: self.score,
+        });
+        classes.push(cssCls);
+      }
+      lastSpan.className = classes.filter(Boolean).join(" ");
     },
 
     addEventsToSpans(spans) {
