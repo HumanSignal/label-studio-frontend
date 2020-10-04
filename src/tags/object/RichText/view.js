@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { matchesSelector } from "../../../utils/html";
+import { htmlEscape, matchesSelector } from "../../../utils/html";
 import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { observer, inject } from "mobx-react";
@@ -128,7 +128,7 @@ class RichTextPieceView extends Component {
   }
 
   render() {
-    const { item } = this.props;
+    const { item, isText } = this.props;
 
     if (!item._value) return null;
     const eventHandlers = {
@@ -137,7 +137,7 @@ class RichTextPieceView extends Component {
       onMouseOverCapture: this._onRegionMouseOver,
     };
 
-    const val = item._value.replace(/\n|\r/g, "<br>");
+    const val = (isText ? htmlEscape(item._value) : item._value).replace(/\n|\r/g, "<br>");
     return (
       <ObjectTag item={item}>
         <div
@@ -153,4 +153,6 @@ class RichTextPieceView extends Component {
   }
 }
 
-export const HtxRichText = inject("store")(observer(RichTextPieceView));
+export const HtxRichText = ({ isText } = { isText: false }) => {
+  return inject("store")(observer(props => <RichTextPieceView {...props} isText={isText} />));
+};
