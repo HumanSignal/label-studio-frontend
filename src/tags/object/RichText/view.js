@@ -8,13 +8,13 @@ import Utils from "../../../utils";
 class RichTextPieceView extends Component {
   constructor(props) {
     super(props);
-    this.myRef = React.createRef();
+    this.rootNodeRef = React.createRef();
   }
 
   _onMouseUp = () => {
     const { item } = this.props;
     const states = item.activeStates();
-    const root = this.myRef.current;
+    const root = this.rootNodeRef.current;
 
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
@@ -119,7 +119,7 @@ class RichTextPieceView extends Component {
   }
 
   componentDidMount() {
-    this.props.item.setRoot(this.myRef.current);
+    this.props.item.setRoot(this.rootNodeRef.current);
     this._handleUpdate();
   }
 
@@ -138,10 +138,11 @@ class RichTextPieceView extends Component {
     };
 
     const val = (isText ? htmlEscape(item._value) : item._value).replace(/\n|\r/g, "<br>");
+
     return (
       <ObjectTag item={item}>
         <div
-          ref={this.myRef}
+          ref={this.rootNodeRef}
           style={{ overflow: "auto" }}
           data-update={item._update}
           className="htx-richtext"

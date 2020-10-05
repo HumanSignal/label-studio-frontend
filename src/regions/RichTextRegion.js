@@ -12,7 +12,6 @@ import { RichTextModel } from "../tags/object";
 
 import { HighlightMixin } from "../mixins/HighlightMixin";
 import { LabelsModel } from "../tags/control/Labels";
-import * as xpath from "xpath-range";
 
 const Model = types
   .model("RichTextRegionModel", {

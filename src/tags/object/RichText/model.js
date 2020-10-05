@@ -245,21 +245,27 @@ const Model = types
     },
 
     _createNativeRange(htxRange, isText) {
-      try {
-        const { start, startOffset, end, endOffset } = htxRange;
+      const rootNode = self._rootNode;
 
+      if (rootNode === undefined) return undefined;
+
+      const { start, startOffset, end, endOffset } = htxRange;
+
+      try {
         if (isText) {
-          const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, self._rootNode);
+          const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
           const range = document.createRange();
           range.setStart(startContainer.node, startContainer.position);
           range.setEnd(endContainer.node, endContainer.position);
           return range;
         }
 
-        return xpath.toRange(start, startOffset, end, endOffset, self._rootNode);
+        return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
-        return undefined;
+        if (rootNode) console.log(err);
       }
+
+      return undefined;
     },
   }));
 

@@ -1,19 +1,23 @@
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
+const isText = text => text && /[\w']/i.test(prevSymbol);
+
 const boundarySelection = (selection, boundary) => {
   const range = selection.getRangeAt(0);
   const { startOffset, startContainer, endOffset, endContainer } = range;
 
   const wordBoundary = boundary === "word";
+  const firstSymbol = startContainer.textContent[startOffset];
   const prevSymbol = startContainer.textContent[startOffset - 1];
+  const lastSymbol = endContainer.textContent[endOffset - 1];
   const nextSymbol = endContainer.textContent[endOffset];
 
-  if (!wordBoundary || (prevSymbol && /[\w']/i.test(prevSymbol))) {
+  if (!wordBoundary || !isText(firstSymbol) || isText(prevSymbol)) {
     range.setEnd(startContainer, startOffset);
     selection.modify("move", "backward", boundary);
   }
 
-  if (!wordBoundary || (nextSymbol && /[\w']/i.test(nextSymbol))) {
+  if (!wordBoundary || !isText(lastSymbol) || isText(nextSymbol)) {
     const newRange = selection.getRangeAt(0);
     newRange.setEnd(endContainer, endOffset);
     selection.modify("extend", "forward", boundary);
@@ -319,12 +323,14 @@ export const findOnPosition = (root, position) => {
   let currentNode = walker.nextNode();
 
   while (currentNode) {
-    if (currentNode.nodeName === "BR") {
-      lastPosition -= 1;
-    } else if (currentNode.length > lastPosition) {
-      return { node: currentNode, position: lastPosition };
-    } else {
-      lastPosition -= currentNode.length;
+    if (currentNode.nodeType === Node.TEXT_NODE || currentNode.nodeName === "BR") {
+      const length = currentNode.length ?? 1;
+
+      if (length >= lastPosition) {
+        return { node: currentNode, position: lastPosition };
+      } else {
+        lastPosition -= length;
+      }
     }
 
     currentNode = walker.nextNode();
