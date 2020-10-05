@@ -19,7 +19,9 @@ import InfoModal from "../../components/Infomodal/Infomodal";
 /**
  * Text tag shows an Text markup that can be labeled
  * @example
- * <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ * <View>
+ *   <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ * </View>
  * @name Text
  * @param {string} name                      - name of the element
  * @param {string} value                     - value of the element

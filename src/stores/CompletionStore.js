@@ -515,7 +515,7 @@ export default types
       //
       let root = modelClass.create(completionModel);
 
-      const pk = options.pk || options.id;
+      const pk = String(options.pk || options.id);
 
       //
       let node = {

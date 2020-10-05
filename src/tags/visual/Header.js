@@ -10,9 +10,13 @@ import Tree from "../../core/Tree";
 /**
  * Header tag, show header
  * @example
- * <Header name="text-1" value="$text" />
+ * <View>
+ *   <Header name="text-1" value="$text" />
+ * </View>
  * @example
- * <Header name="text-1" value="Please select the class" />
+ * <View>
+ *   <Header name="text-1" value="Please select the class" />
+ * </View>
  * @name Header
  * @param {string} value              - text of header
  * @param {number} [size=4]           - size of header
