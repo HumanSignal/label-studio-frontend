@@ -76,8 +76,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) =>
 };
 
 const LabelOnEllipse = observer(({ item }) => {
-  // @todo get the most relevant result
-  const s = item.results[0];
+  const s = item.labeling;
   if (!s) return null;
 
   return (
@@ -94,8 +93,7 @@ const LabelOnEllipse = observer(({ item }) => {
 });
 
 const LabelOnRect = observer(({ item }) => {
-  // @todo get the most relevant result
-  const s = item.results[0];
+  const s = item.labeling;
   if (!s) return null;
 
   return (
@@ -112,8 +110,7 @@ const LabelOnRect = observer(({ item }) => {
 });
 
 const LabelOnPolygon = observer(({ item }) => {
-  // @todo get the most relevant result
-  const s = item.results[0];
+  const s = item.labeling;
   if (!s) return null;
 
   const bbox = polytobbox(item.points);
@@ -150,9 +147,7 @@ const LabelOnMask = observer(({ item }) => {
   const settings = getRoot(item).settings;
   if (settings && !settings.showLabels && !settings.showScore) return null;
 
-  // const s = item.states.find(s => s.type === "brushlabels");
-  // @todo get the most relevant result
-  const s = item.results[0];
+  const s = item.labeling;
   if (!s) return null;
   if (item.touches.length === 0) return null;
 
@@ -186,9 +181,7 @@ const LabelOnMask = observer(({ item }) => {
 });
 
 const LabelOnKP = observer(({ item }) => {
-  // const s = item.states.find(s => s.type === "keypointlabels");
-  // @todo get the most relevant result
-  const s = item.results[0];
+  const s = item.labeling;
   if (!s) return null;
 
   return (

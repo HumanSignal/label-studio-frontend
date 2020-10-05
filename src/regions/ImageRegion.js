@@ -2,6 +2,7 @@ import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 
+// @todo remove file
 const RegionMixin = types
   .model({
     id: types.optional(types.identifier, guidGenerator),

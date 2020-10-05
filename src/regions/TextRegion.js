@@ -1,14 +1,10 @@
-import { types, getParentOfType } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
-import { LabelsModel } from "../tags/control/Labels";
-import { TextAreaModel } from "../tags/control/TextArea";
-import { ChoicesModel } from "../tags/control/Choices";
-import { RatingModel } from "../tags/control/Rating";
 import { TextModel } from "../tags/object/Text";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
@@ -48,8 +44,6 @@ const Model = types
       if (self.object.savetextresult === "yes") {
         res.value["text"] = self.text;
       }
-
-      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },

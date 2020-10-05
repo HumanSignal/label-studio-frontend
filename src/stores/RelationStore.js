@@ -1,7 +1,6 @@
 import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
 
 import { cloneNode } from "../core/Helpers";
-import { AllRegionsType } from "../regions";
 import { RelationsModel } from "../tags/control/Relations";
 import { TRAVERSE_SKIP } from "../core/Tree";
 import Area from "../regions/Area";

@@ -11,7 +11,6 @@ import Utils from "../../utils";
 import Waveform from "../../components/Waveform/Waveform";
 import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
 import { AudioRegionModel } from "../../regions/AudioRegion";
-import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 
 /**
@@ -47,7 +46,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model("AudioPlusModel", {
-    // id: types.identifier,
     type: "audio",
     _value: types.optional(types.string, ""),
 
@@ -180,26 +178,18 @@ const Model = types
         return find_r;
       }
 
+      const states = self.getAvailableStates();
+      if (states.length === 0) {
+        ws_region.remove && ws_region.remove();
+        return;
+      }
+
       const control = self.activeStates()[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const r = self.completion.createResult(ws_region, labels, control, self);
       r._ws_region = ws_region;
       r.updateAppearenceFromState();
       return r;
-
-      // const allStates = self.getAvailableStates();
-      // if (allStates.length === 0) {
-      //   ws_region.remove && ws_region.remove();
-      //   return;
-      // }
-
-      // const r = self.createRegion(
-      //   ws_region,
-      //   allStates.map(s => cloneNode(s)),
-      // );
-      // r.applyCSSClass(ws_region);
-
-      // return r;
     },
 
     /**

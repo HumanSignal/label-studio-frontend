@@ -47,7 +47,6 @@ const TagAttrs = types.model({
  * @param {string} pid
  */
 const ModelAttrs = types.model({
-  // id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),

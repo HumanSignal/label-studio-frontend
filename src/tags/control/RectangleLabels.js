@@ -37,7 +37,6 @@ const TagAttrs = types.model({
 });
 
 const ModelAttrs = types.model("RectangleLabelsModel", {
-  // id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "rectanglelabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),

@@ -33,7 +33,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    // id: types.identifier,
     type: "keypoint",
 
     // tools: types.array(BaseTool)

@@ -1,4 +1,4 @@
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
@@ -6,11 +6,6 @@ import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
 import { AudioPlusModel } from "../tags/object/AudioPlus";
-import { TextAreaModel } from "../tags/control/TextArea";
-import { ChoicesModel } from "../tags/control/Choices";
-import { LabelsModel } from "../tags/control/Labels";
-import { guidGenerator } from "../core/Helpers";
-import { RatingModel } from "../tags/control/Rating";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
 
@@ -27,9 +22,8 @@ const Model = types
   .views(self => ({
     wsRegionElement(wsRegion) {
       const elID = wsRegion.id;
-      let el = Array.from(document.querySelectorAll(`[data-id="${elID}"]`));
+      let el = document.querySelector(`[data-id="${elID}"]`);
 
-      if (el && el.length) el = el[0];
       return el;
     },
   }))
@@ -43,8 +37,6 @@ const Model = types
         },
       };
 
-      // res.value = Object.assign(res.value, control.serializableValue);
-
       return res;
     },
 
@@ -55,35 +47,29 @@ const Model = types
     },
 
     updateAppearenceFromState() {
-      // const s = self.labelsState;
-      // if (!s) return;
-
-      // self.selectedregionbg = Utils.Colors.convertToRGBA("rgb(255, 125, 0)", 0.3);
       if (self._ws_region?.update) {
         self.applyCSSClass(self._ws_region);
-        // self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
     },
 
     applyCSSClass(wsRegion) {
       self.updateColor(0.3);
-      return;
-      const el = self.wsRegionElement(wsRegion);
 
       const settings = getRoot(self).settings;
-      const names = Utils.Checkers.flatten(self.states.filter(s => s._type === "labels").map(s => s.selectedValues()));
+      const el = self.wsRegionElement(wsRegion);
+      if (!el) return;
+      const classes = [el.className, "htx-highlight", "htx-highlight-last"];
 
-      const cssCls = Utils.HTML.labelWithCSS(el, {
-        labels: names,
-        score: self.score,
-      });
-
-      // @todo show labels on audio regions
-      const classes = [el.className, "htx-highlight", "htx-highlight-last", cssCls];
-
-      if (!self.parent.showlabels && !settings.showLabels) classes.push("htx-no-label");
-
-      el.className = classes.filter(c => c).join(" ");
+      if (!self.parent.showlabels && !settings.showLabels) {
+        classes.push("htx-no-label");
+      } else {
+        const cssCls = Utils.HTML.labelWithCSS(el, {
+          labels: self.labeling?.mainValue,
+          score: self.score,
+        });
+        classes.push(cssCls);
+      }
+      el.className = classes.filter(Boolean).join(" ");
     },
 
     /**
@@ -94,26 +80,13 @@ const Model = types
 
       const el = self.wsRegionElement(self._ws_region);
       if (el) {
+        // scroll object tag but don't scroll the document
+        const container = window.document.scrollingElement;
+        const top = container.scrollTop;
+        const left = container.scrollLeft;
         el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
+        window.document.scrollingElement.scrollTo(left, top);
       }
-
-      return;
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self._ws_region.update({
-        color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8),
-        // border: "1px dashed #00aeff"
-      });
-      self.completion.loadRegionState(self);
-
-      // const el = self.wsRegionElement(self._ws_region);
-      // if (el) {
-      //   const container = window.document.scrollingElement;
-      //   const top = container.scrollTop;
-      //   const left = container.scrollLeft;
-      //   el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
-      //   window.document.scrollingElement.scrollTo(left, top);
-      // }
     },
 
     /**
@@ -177,8 +150,8 @@ const Model = types
 const AudioRegionModel = types.compose(
   "AudioRegionModel",
   WithStatesMixin,
-  AreaMixin,
   RegionsMixin,
+  AreaMixin,
   NormalizationMixin,
   Model,
 );

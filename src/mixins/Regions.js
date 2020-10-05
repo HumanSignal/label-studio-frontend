@@ -1,5 +1,4 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
-import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 
 const RegionsMixin = types
@@ -38,23 +37,6 @@ const RegionsMixin = types
 
     get editable() {
       return self.readonly === false && self.completion.editable === true;
-    },
-
-    get labelsState() {
-      // return self.states && self.states.find(s => s.type.indexOf("labels") !== -1);
-    },
-
-    hasLabelState(labelValue) {
-      // first of all check if this region implements labels
-      // interface
-      const s = self.labelsState;
-      if (!s) return false;
-
-      // find that label and check if its selected
-      const l = s.findLabel(labelValue);
-      if (!l || !l.selected) return false;
-
-      return true;
     },
   }))
   .actions(self => ({
@@ -154,47 +136,16 @@ const RegionsMixin = types
       }
     },
 
-    updateOrAddState(state) {
-      // var foundIndex = self.states.findIndex(s => s.name === state.name);
-      // if (foundIndex !== -1) {
-      //   self.states[foundIndex] = cloneNode(state);
-      //   self.updateAppearenceFromState();
-      // } else {
-      //   self.states.push(cloneNode(state));
-      // }
-    },
-
-    // given the specific state object (for example labels) it finds
-    // that inside the region states objects and updates that, this
-    // function is used to capture the state
-    updateSingleState(state) {
-      // var foundIndex = self.states.findIndex(s => s.name === state.name);
-      // if (foundIndex !== -1) {
-      //   self.states[foundIndex] = cloneNode(state);
-      //   // user is updating the label of the region, there might
-      //   // be other states that depend on the value of the region,
-      //   // therefore we need to recheck here
-      //   if (state.type.indexOf("labels") !== -1) {
-      //     const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
-      //     states && states.forEach(s => self.states.remove(s));
-      //   }
-      //   self.updateAppearenceFromState();
-      // }
-    },
-
-    selectRegion() {
-      // self.selected = true;
-      // self.completion.setHighlightedNode(self);
-      // self.completion.loadRegionState(self);
-    },
+    selectRegion() {},
 
     /**
+     * @todo fix "keep selected" setting
      * Common logic for unselection; specific actions should be in `afterUnselectRegion`
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectRegion(tryToKeepStates = false) {
-      console.log("UNSELECT REGION");
-      return;
+      console.log("UNSELECT REGION", "you should not be here");
+      if (1) return;
       const completion = self.completion;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;

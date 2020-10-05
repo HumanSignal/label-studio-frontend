@@ -9,8 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
-import { cloneNode } from "../../core/Helpers";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 
@@ -45,9 +44,7 @@ const TagAttrs = types.model("HyperTextModel", {
 
 const Model = types
   .model("HyperTextModel", {
-    // id: types.optional(types.identifier, guidGenerator),
     type: "hypertext",
-    // regions: types.array(HyperTextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -102,21 +99,15 @@ const Model = types
     },
 
     addRegion(range) {
-      const control = self.activeStates()[0];
+      const states = self.getAvailableStates();
+      if (states.length === 0) return;
+
+      const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.completion.createResult(range, labels, control, self);
       area._range = range._range;
       self.completion.unselectAll();
       return area;
-
-      // const states = self.getAvailableStates();
-      // if (states.length === 0) return;
-
-      // const clonedStates = states.map(s => cloneNode(s));
-
-      // const r = self.createRegion({ ...range, states: clonedStates });
-
-      // return r;
     },
 
     /**

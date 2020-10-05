@@ -8,7 +8,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { KeyPointModel } from "./KeyPoint";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -37,8 +36,6 @@ const TagAttrs = types.model({
 
 const ModelAttrs = types
   .model("KeyPointLabelesModel", {
-    // id: types.identifier,
-    // pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })

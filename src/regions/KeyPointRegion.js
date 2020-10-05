@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants, { defaultStyle } from "../core/Constants";
@@ -9,12 +9,8 @@ import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { ImageModel } from "../tags/object/Image";
-import { KeyPointLabelsModel } from "../tags/control/KeyPointLabels";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
-import { ChoicesModel } from "../tags/control/Choices";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { AreaMixin } from "../mixins/AreaMixin";
 
 const Model = types
@@ -83,8 +79,6 @@ const Model = types
           width: (self.width * 100) / width, //  * (self.scaleX || 1)
         },
       };
-
-      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },

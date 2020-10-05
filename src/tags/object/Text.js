@@ -9,8 +9,7 @@ import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { TextRegionModel } from "../../regions/TextRegion";
-import { cloneNode } from "../../core/Helpers";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
@@ -56,10 +55,8 @@ const TagAttrs = types.model("TextModel", {
 
 const Model = types
   .model("TextModel", {
-    // id: types.optional(types.identifier, guidGenerator),
     type: "text",
     loaded: types.optional(types.boolean, false),
-    // regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -173,20 +170,15 @@ const Model = types
       range.start = range.startOffset;
       range.end = range.endOffset;
 
-      const control = self.activeStates()[0];
+      const states = self.getAvailableStates();
+      if (states.length === 0) return;
+
+      const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.completion.createResult(range, labels, control, self);
       area._range = range._range;
       self.completion.unselectAll();
       return area;
-      // const states = self.getAvailableStates();
-      // if (states.length === 0) return;
-
-      // const clonedStates = states.map(s => cloneNode(s));
-
-      // const r = self.createRegion({ ...range, states: clonedStates });
-
-      // return r;
     },
 
     /**

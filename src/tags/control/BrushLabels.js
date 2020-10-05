@@ -8,7 +8,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { BrushModel } from "./Brush";
 import { HtxLabels, LabelsModel } from "./Labels";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -31,8 +30,6 @@ const TagAttrs = types.model({
 });
 
 const ModelAttrs = types.model("BrushLabelsModel", {
-  // id: types.optional(types.identifier, guidGenerator),
-  // pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });

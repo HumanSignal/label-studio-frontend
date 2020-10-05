@@ -65,14 +65,6 @@ const HtxTextAreaRegionView = ({ store, item }) => {
     params["editable"] = {
       onChange: str => {
         item.setValue(str);
-
-        // here we update the parent object's state
-        if (parent.perregion) {
-          const reg = item.completion.highlightedNode;
-          reg && reg.updateSingleState(parent);
-
-          // self.regions = [];
-        }
       },
     };
   }

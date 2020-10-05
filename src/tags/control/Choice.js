@@ -73,20 +73,6 @@ const Model = types
 
       self.setSelected(!self.selected);
 
-      // const reg = self.completion.highlightedNode;
-
-      // if (reg) {
-      //     const sel = self.parent.selectedLabels;
-      //     if (sel.length === 1 && sel[0]._value === self._value) return;
-      // }
-
-      // choice is toggled, we need to check if we need to update
-      // the currently selected region
-      // if (reg && choices.perregion && reg.parent.name === choices.toname) {
-      //   reg.updateOrAddState(choices);
-      // }
-
-      // @todo delete results
       if (choices.result) {
         choices.result.area.setValue(choices);
       } else {

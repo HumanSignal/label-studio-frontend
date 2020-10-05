@@ -12,7 +12,6 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
-import { guidGenerator } from "../../core/Helpers";
 
 /**
  * Image tag shows an image on the page
@@ -42,7 +41,6 @@ import { guidGenerator } from "../../core/Helpers";
  * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
  */
 const TagAttrs = types.model({
-  // name: types.string,
   name: types.identifier,
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
@@ -58,7 +56,7 @@ const TagAttrs = types.model({
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
-  // showlabels: types.optional(types.boolean, false),
+  showlabels: types.optional(types.boolean, false),
 
   zoomcontrol: types.optional(types.boolean, false),
   brightnesscontrol: types.optional(types.boolean, false),
@@ -82,8 +80,6 @@ const IMAGE_CONSTANTS = {
 
 const Model = types
   .model({
-    // id: types.optional(types.string, guidGenerator),
-    // id: types.identifier,
     type: "image",
     _value: types.optional(types.string, ""),
 
@@ -145,10 +141,6 @@ const Model = types
      */
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
 
-    // selectedShape: types.safeReference(
-    //   types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
-    // ),
-
     regions: types.array(
       types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
       [],
@@ -168,7 +160,6 @@ const Model = types
      */
     get completion() {
       // return Types.getParentOfTypeString(self, "Completion");
-      console.log("IMAGE ROOT", getRoot(self));
       return getRoot(self).completionStore.selected;
     },
 
@@ -179,10 +170,6 @@ const Model = types
     get selectedShape() {
       return self.regs.find(r => r.selected);
     },
-
-    // get regions() {
-    //   return self.completion.regionStore.regions.filter(r => r.to_name === self.name);
-    // },
 
     /**
      * @return {object}
@@ -316,6 +303,7 @@ const Model = types
       self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },
 
+    // @todo remove
     setSelected(shape) {
       // self.selectedShape = shape;
     },

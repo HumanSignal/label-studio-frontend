@@ -11,7 +11,6 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
-import { guidGenerator } from "../../core/Helpers";
 import { cloneNode } from "../../core/Helpers";
 import ControlBase from "./Base";
 
@@ -52,7 +51,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    // id: types.optional(types.identifier, guidGenerator),
     type: "textarea",
     regions: types.array(TextAreaRegionModel),
 

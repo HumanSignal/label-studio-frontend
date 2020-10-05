@@ -8,7 +8,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { EllipseModel } from "./Ellipse";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -37,8 +36,6 @@ const TagAttrs = types.model({
 });
 
 const ModelAttrs = types.model("EllipseLabelsModel", {
-  // id: types.optional(types.identifier, guidGenerator),
-  // pid: types.optional(types.string, guidGenerator),
   type: "ellipselabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
