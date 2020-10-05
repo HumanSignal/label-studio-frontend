@@ -34,8 +34,6 @@ const _Tool = types
         width: Number(c.strokewidth),
         coordstype: "px",
       });
-
-      self.obj.completion.unselectAll();
     },
   }));
 
