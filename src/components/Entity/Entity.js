@@ -1,6 +1,5 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
-import { getType } from "mobx-state-tree";
 import { Form, Input, Button, Tag, Tooltip, Badge } from "antd";
 import { DeleteOutlined, LinkOutlined, PlusOutlined, CompressOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
@@ -15,13 +14,12 @@ const renderLabels = element => {
   return (
     <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
-      {element.mainValue.map(title => {
-        const label = element.from_name.findLabel(title);
+      {element.selectedLabels.map(label => {
         const bgColor = label.background || "#000000";
 
         return (
           <Tag key={label.id} color={bgColor} className={styles.tag}>
-            {title}
+            {label.value}
           </Tag>
         );
       })}

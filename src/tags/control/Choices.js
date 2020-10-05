@@ -54,7 +54,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    // id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     readonly: types.optional(types.boolean, false),

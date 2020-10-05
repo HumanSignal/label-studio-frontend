@@ -46,7 +46,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    // id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "rating",
     rating: types.maybeNull(types.number),

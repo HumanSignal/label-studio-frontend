@@ -26,12 +26,10 @@ export default observer(
 
       // item.freezeHistory();
       const p = e.target.getParent();
-      console.log("MD", p, e.target);
 
       if (p && p.className === "Transformer") return;
 
       if (
-        // 1 ||
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {
@@ -255,6 +253,8 @@ export default observer(
       // TODO fix me
       if (!store.task || !item._value) return null;
 
+      const selected = item.selectedShape;
+      const regions = item.regs.filter(r => r !== selected);
       const cb = item.controlButton();
       let filler = null;
       let containerClassName = styles.container;
@@ -347,19 +347,12 @@ export default observer(
             onMouseUp={this.handleMouseUp}
             onWheel={item.zoom ? this.handleZoom : () => {}}
           >
-            {/* {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-            {item.regions
-              .filter(shape => shape.type === "brushregion")
-              .map(shape => (
-                <Layer key={shape.id} name={"brushLayer-" + shape.id} id={shape.id}>
-                  {Tree.renderItem(shape)}
-                </Layer>
-              ))*/}
+            {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
             <Layer name="shapes">
-              {/* {item.regions.filter(s => s.type !== "brushregion").map(s => Tree.renderItem(s))}
-              {item.activeShape && Tree.renderItem(item.activeShape)}*/}
-              {item.regs.map(r => Tree.renderItem(r))}
-              {item.selectedShape && item.selectedShape.editable && (
+              {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
+              {regions.filter(s => s.type !== "brushregion").map(Tree.renderItem)}
+              {selected && Tree.renderItem(selected)}
+              {selected?.editable && (
                 <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
               )}
             </Layer>

@@ -1,19 +1,15 @@
 import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import WithStatesMixin from "../mixins/WithStates";
-import { BrushLabelsModel } from "../tags/control/BrushLabels";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 
@@ -135,19 +131,7 @@ const Model = types
 
     afterAttach() {},
 
-    // selectRegion() {
-    //   self.selected = true;
-    //   self.completion.setHighlightedNode(self);
-    //   self.parent.setSelected(self.id);
-    //   self.completion.loadRegionState(self);
-    // },
-
     convertPointsToMask() {},
-
-    updateAppearenceFromState() {
-      // const stroke = self.states[0].getSelectedColor();
-      // self.strokeColor = stroke;
-    },
 
     // addPoints(x, y, mode) {
     //   if (mode) self.mode = "eraser";
@@ -197,8 +181,6 @@ const Model = types
           rle: Array.from(rle),
         },
       };
-
-      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },

@@ -70,7 +70,7 @@ const Model = types
     usedAlready() {
       const regions = self.completion.regionStore.regions;
       // count all the usages among all the regions
-      const used = regions.reduce((s, r) => s + r.hasLabelState(self.value), 0);
+      const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
       return used;
     },
 

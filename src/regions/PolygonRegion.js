@@ -2,22 +2,18 @@ import Konva from "konva";
 import React from "react";
 import { Group, Line } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, destroy, detach } from "mobx-state-tree";
+import { types, destroy, detach } from "mobx-state-tree";
 
 import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import WithStatesMixin from "../mixins/WithStates";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnPolygon } from "../components/ImageView/LabelOnRegion";
-import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { AreaMixin } from "../mixins/AreaMixin";
 
 const Model = types
@@ -227,8 +223,6 @@ const Model = types
         original_height: natural.height,
         image_rotation: self.parent.rotation,
       };
-
-      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },

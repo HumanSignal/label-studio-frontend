@@ -67,6 +67,10 @@ const SelectedModelMixin = types
       return f;
     },
 
+    /**
+     * Change states of tags according to values from result
+     * @param {string|string[]} value
+     */
     updateFromResult(value) {
       self.unselectAll();
       if (!value) return;

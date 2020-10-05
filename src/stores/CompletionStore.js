@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach, resolveIdentifier, onSnapshot } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -15,8 +15,6 @@ import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
-
-console.log("ALL TYPES", Types.allModelsTypes());
 
 const Completion = types
   .model("Completion", {
@@ -88,7 +86,6 @@ const Completion = types
     },
 
     get root() {
-      console.log("ROOT", self, getParent(self), self.store, self.list);
       return self.list.root;
     },
 
@@ -216,7 +213,6 @@ const Completion = types
     },
 
     addRegion(reg) {
-      // self.regionStore.addRegion(reg);
       self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
@@ -396,24 +392,7 @@ const Completion = types
     },
 
     afterAttach() {
-      // initialize toName bindings [DOCS] name & toName are used to
-      // connect different components to each other
-      // self.traverseTree(node => {
-      //   if (node && node.name) self.names.put(node);
-
-      //   if (node && node.toname) {
-      //     const val = self.toNames.get(node.toname);
-      //     if (val) {
-      //       val.push(node.name);
-      //     } else {
-      //       self.toNames.set(node.toname, [node.name]);
-      //     }
-      //   }
-      // });
-
       self.traverseTree(node => {
-        // if (node.updateValue) node.updateValue(self.store);
-
         // called when the completion is attached to the main store,
         // at this point the whole tree is available. This method
         // may come handy when you have a tag that acts or depends
@@ -440,26 +419,9 @@ const Completion = types
     },
 
     afterCreate() {
-      //
-      // debugger;
       if (self.userGenerate && !self.sentUserGenerate) {
         self.loadedDate = new Date();
       }
-
-      // initialize toName bindings [DOCS] name & toName are used to
-      // connect different components to each other
-      // self.traverseTree(node => {
-      //   if (node && node.name && node.id) self.names.set(node.name, node.id);
-
-      //   if (node && node.toname && node.id) {
-      //     const val = self.toNames.get(node.toname);
-      //     if (val) {
-      //       val.push(node.id);
-      //     } else {
-      //       self.toNames.set(node.toname, [node.id]);
-      //     }
-      //   }
-      // });
     },
 
     setupHotKeys() {
@@ -545,8 +507,6 @@ const Completion = types
         results: [result],
       });
 
-      // self.unselectAll();
-
       return area;
     },
 
@@ -561,14 +521,7 @@ const Completion = types
      * Deserialize completion of models
      */
     deserializeCompletion(json) {
-      // return;
       let objCompletion = json;
-
-      // self.regions = objCompletion;
-      console.log("REGIONS", self.results);
-
-      // resolveIdentifier(undefined, self.root, name);
-      // return;
 
       if (typeof objCompletion !== "object") {
         objCompletion = JSON.parse(objCompletion);
@@ -585,7 +538,6 @@ const Completion = types
 
           let area = self.areas.get(areaId);
           if (!area) {
-            console.log("NEW AREA", areaId, { ...data, ...value });
             area = self.areas.put({
               id: areaId,
               object: data.to_name,
@@ -596,17 +548,6 @@ const Completion = types
           }
 
           area.addResult({ ...data, id: resultId, type, value });
-          // const names = obj.to_name.split(",");
-          // if (names.length > 1) throw new Error("Pairwise is not supported now");
-          // names.forEach(name => {
-          //   const toModel = self.names.get(name);
-          //   if (!toModel) throw new Error("No model found for " + obj.to_name);
-
-          //   const fromModel = self.names.get(obj.from_name);
-          //   if (!fromModel) throw new Error("No model found for " + obj.from_name);
-
-          //   toModel.fromStateJSON(obj, fromModel);
-          // });
         }
       });
 
@@ -622,8 +563,6 @@ const Completion = types
           );
         }
       });
-
-      // self.regionStore.unselectAll();
     },
   }));
 
@@ -645,9 +584,6 @@ export default types
     get store() {
       return getRoot(self);
     },
-  }))
-  .volatile(self => ({
-    // root: null,
   }))
   .actions(self => {
     function toggleViewingAll() {
@@ -721,7 +657,6 @@ export default types
 
     function selectPrediction(id) {
       const p = selectItem(id, self.predictions);
-      // p.regionStore.unselectAll();
 
       return p;
     }

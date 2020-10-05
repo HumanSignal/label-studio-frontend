@@ -49,16 +49,12 @@ const RegionItem = observer(({ item, idx, flat }) => {
       key={item.id}
       className={classnames.join(" ")}
       onClick={() => {
-        // cs && cs.selected.regionStore.unselectAll();
-        // item.selectRegion();
         c.selectArea(item);
       }}
       onMouseOver={() => {
-        // cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(true);
       }}
       onMouseOut={() => {
-        // cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(false);
       }}
     >
@@ -245,7 +241,9 @@ const RegionsTree = observer(({ regionStore }) => {
   );
 });
 
-export default observer(({ store, regions, regionStore }) => {
+export default observer(({ store, regionStore }) => {
+  const { regions } = regionStore;
+
   return (
     <div>
       <div

@@ -113,10 +113,7 @@ export default types
     },
 
     selectRegion() {
-      // self.selected = true;
-      // self.completion.setHighlightedNode(self);
       self.updateSpansColor(null, 0.8);
-      // self.completion.loadRegionState(self);
 
       const first = self._spans[0];
       if (first) {

@@ -67,8 +67,8 @@ const App = inject("store")(
         return (
           <div className="ls-renderall">
             {obj.map(c => (
-              <div className="ls-fade" completion={c}>
-                <Segment>{[Tree.renderItem(c.root)]}</Segment>
+              <div className="ls-fade">
+                <Segment completion={c}>{[Tree.renderItem(c.root)]}</Segment>
               </div>
             ))}
           </div>

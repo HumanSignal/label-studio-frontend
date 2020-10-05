@@ -7,7 +7,6 @@ import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -31,8 +30,6 @@ const TagAttrs = types.model({
 
 const ModelAttrs = types
   .model("HyperTextLabelesModel", {
-    //   id: types.identifier,
-    //   pid: types.optional(types.string, guidGenerator),
     type: "htmllabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })

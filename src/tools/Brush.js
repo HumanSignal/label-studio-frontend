@@ -6,7 +6,6 @@ import { HighlightOutlined } from "@ant-design/icons";
 import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
-import { BrushRegionModel } from "../regions/BrushRegion";
 import Canvas from "../utils/canvas";
 
 const ToolView = observer(({ item }) => {

@@ -1,5 +1,4 @@
 import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
-import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 
@@ -24,10 +23,11 @@ const Result = types
 
     // ImageRegion, TextRegion, HyperTextRegion, AudioRegion)),
     // optional for classifications
-    // labeling tag
+    // labeling/control tag
     from_name: types.late(() => types.reference(types.union(...Registry.modelsArr()))),
     // object tag
     to_name: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
+    // @todo some general type, maybe just a `string`
     type: types.enumeration([
       "labels",
       "htmllabels",
@@ -45,6 +45,7 @@ const Result = types
       "textarea",
       "rating",
     ]),
+    // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
@@ -94,25 +95,8 @@ const Result = types
       return self.readonly === false && self.completion.editable === true;
     },
 
-    get labelsState() {
-      return self.states.find(s => s.type.indexOf("labels") !== -1);
-    },
-
     getSelectedString(joinstr = " ") {
       return self.mainValue?.join(joinstr) || "";
-    },
-
-    hasLabelState(labelValue) {
-      // first of all check if this region implements labels
-      // interface
-      const s = self.labelsState;
-      if (!s) return false;
-
-      // find that label and check if its selected
-      const l = s.findLabel(labelValue);
-      if (!l || !l.selected) return false;
-
-      return true;
     },
 
     get selectedLabels() {
@@ -125,7 +109,6 @@ const Result = types
 
     get tag() {
       const value = self.mainValue;
-      console.log("VVV", self.value);
       if (!value) return null;
       return self.from_name.findLabel(value[0]);
     },
@@ -154,7 +137,7 @@ const Result = types
     },
 
     afterAttach() {
-      const tag = self.from_name;
+      // const tag = self.from_name;
       // update state of classification tags
       // @todo unify this with `selectArea`
     },
@@ -227,92 +210,6 @@ const Result = types
         };
 
         return tree;
-      }
-    },
-
-    updateOrAddState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
-      if (foundIndex !== -1) {
-        self.states[foundIndex] = cloneNode(state);
-        self.updateAppearenceFromState();
-      } else {
-        self.states.push(cloneNode(state));
-      }
-    },
-
-    // given the specific state object (for example labels) it finds
-    // that inside the region states objects and updates that, this
-    // function is used to capture the state
-    updateSingleState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
-      if (foundIndex !== -1) {
-        self.states[foundIndex] = cloneNode(state);
-
-        // user is updating the label of the region, there might
-        // be other states that depend on the value of the region,
-        // therefore we need to recheck here
-        if (state.type.indexOf("labels") !== -1) {
-          const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
-          states && states.forEach(s => self.states.remove(s));
-        }
-
-        self.updateAppearenceFromState();
-      }
-    },
-
-    selectRegion() {
-      self.selected = true;
-      self.area.selectRegion();
-      self.completion.setHighlightedNode(self.area);
-
-      // self.completion.loadRegionState(self);
-    },
-
-    /**
-     * Common logic for unselection; specific actions should be in `afterUnselectRegion`
-     * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
-     */
-    unselectRegion(tryToKeepStates = false) {
-      console.log("UNSELECT RESULT");
-      return;
-      const completion = self.completion;
-      const parent = self.parent;
-      const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
-
-      if (completion.relationMode) {
-        completion.stopRelationMode();
-      }
-      if (parent.setSelected) {
-        parent.setSelected(undefined);
-      }
-
-      self.selected = false;
-      completion.setHighlightedNode(null);
-
-      self.afterUnselectRegion();
-
-      if (!keepStates) {
-        completion.unloadRegionState(self);
-      }
-    },
-
-    afterUnselectRegion() {},
-
-    onClickRegion() {
-      const completion = self.completion;
-      if (!completion.editable) return;
-
-      if (completion.relationMode) {
-        completion.addRelation(self);
-        completion.stopRelationMode();
-        completion.regionStore.unselectAll();
-      } else {
-        if (self.selected) {
-          self.unselectRegion(true);
-        } else {
-          completion.regionStore.unselectAll();
-          self.selectRegion();
-        }
       }
     },
 

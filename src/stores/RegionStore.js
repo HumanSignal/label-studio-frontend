@@ -1,12 +1,9 @@
 import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
-import { AllRegionsType } from "../regions";
 
 export default types
   .model("RegionStore", {
-    // regions: types.array(types.safeReference(AllRegionsType)),
-
     sort: types.optional(types.enumeration(["date", "score"]), "date"),
     sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
 
@@ -16,13 +13,10 @@ export default types
   })
   .views(self => ({
     get regions() {
-      console.log("REGIONS", getParent(self).areas);
       return Array.from(getParent(self).areas.values()).filter(area => !area.classification);
     },
 
     get sortedRegions() {
-      return getParent(self).results;
-
       const sorts = {
         date: () => self.regions,
         score: () => self.regions.sort((a, b) => a.score - b.score),

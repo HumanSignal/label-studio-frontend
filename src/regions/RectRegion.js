@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent, getRoot, isAlive } from "mobx-state-tree";
+import { types, getParent, getRoot, isAlive } from "mobx-state-tree";
 
 import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -10,12 +10,8 @@ import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
-import { RatingModel } from "../tags/control/Rating";
-import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 
@@ -63,8 +59,6 @@ const Model = types
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
 
-    // coordstype: "px", // types.optional(types.enumeration(["px", "perc"]), "px"),
-
     supportsTransform: true,
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
@@ -74,8 +68,6 @@ const Model = types
       return getRoot(self);
     },
     get parent() {
-      console.log("PAERNT", getParent(self), getRoot(self));
-      // return getParentOfType(self, ImageModel);
       return self.object;
     },
   }))
@@ -97,16 +89,6 @@ const Model = types
       }
 
       self.updateAppearenceFromState();
-
-      console.log("RECT", self);
-    },
-
-    updateAppearenceFromState() {
-      // if (self.states && self.states.length) {
-      //   const stroke = self.states[0].getSelectedColor();
-      //   self.strokeColor = stroke;
-      //   self.fillColor = stroke;
-      // }
     },
 
     rotate(degree) {
@@ -128,14 +110,6 @@ const Model = types
 
       return false;
     },
-
-    // selectRegion() {
-    //   self.selected = true;
-    //   // self.completion.setHighlightedNode(self);
-    //   self.parent.setSelected(self.id);
-
-    //   // self.completion.loadRegionState(self);
-    // },
 
     /**
      * Boundg Box set position on canvas
@@ -174,7 +148,6 @@ const Model = types
     },
 
     updateImageSize(wp, hp, sw, sh) {
-      console.log("IMG UPD", sw, sh);
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
@@ -220,7 +193,6 @@ const Model = types
           width,
           height,
           rotation: self.rotation,
-          // ...value,
         },
       };
     },
@@ -239,7 +211,6 @@ const RectRegionModel = types.compose(
 const HtxRectangleView = ({ store, item }) => {
   if (!isAlive(item)) return null;
 
-  console.log("RECT VIEW", item);
   const style = item.style || item.tag || defaultStyle;
   let { strokecolor, strokewidth } = style;
   if (item.highlighted) {
