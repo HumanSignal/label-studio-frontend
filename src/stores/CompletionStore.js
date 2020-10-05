@@ -170,18 +170,24 @@ const Completion = types
 
     unselectAreas() {
       const node = self.highlightedNode;
-      const fn = node && node.afterUnselectRegion;
+      if (!node) return;
       self.highlightedNode = null;
-      fn && fn();
+      // eslint-disable-next-line no-unused-expressions
+      node.afterUnselectRegion?.();
     },
 
     unselectStates() {
       self.names.forEach(tag => tag.unselectAll && tag.unselectAll());
     },
 
-    unselectAll() {
+    /**
+     * @param {boolean} tryToKeepStates don't unselect labels if such setting is enabled
+     */
+    unselectAll(tryToKeepStates = false) {
+      const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
+
       self.unselectAreas();
-      self.unselectStates();
+      if (!keepStates) self.unselectStates();
     },
 
     removeArea(area) {
@@ -506,6 +512,9 @@ const Completion = types
         value: areaValue,
         results: [result],
       });
+
+      // unselect labels after use, but consider "keep labels selected" settings
+      if (control.type.includes("labels")) self.unselectAll(true);
 
       return area;
     },

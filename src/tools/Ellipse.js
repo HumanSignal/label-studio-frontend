@@ -39,8 +39,6 @@ const _Tool = types
         radiusY: 1,
         coordstype: "px",
       });
-
-      if (self.tagTypes.stateTypes === self.control.type) self.completion.unselectAll();
     },
 
     mousemoveEv(ev, [x, y]) {
@@ -56,7 +54,7 @@ const _Tool = types
 
       if (s.radiusX < MIN_SIZE.X || s.radiusY < MIN_SIZE.Y) {
         self.completion.removeArea(s);
-        if (self.control.type === "ellipselabels") self.completion.unselectAll();
+        if (self.control.type === "ellipselabels") self.completion.unselectAll(true);
       } else {
         self.completion.history.unfreeze();
         // self.obj.completion.highlightedNode.unselectRegion(true);

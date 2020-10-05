@@ -39,7 +39,6 @@ const _Tool = types
         width: 1,
         coordstype: "px",
       });
-      if (self.tagTypes.stateTypes === self.control.type) self.completion.unselectAll();
     },
 
     mousemoveEv(ev, [x, y]) {
@@ -55,7 +54,7 @@ const _Tool = types
 
       if (s.width < MIN_SIZE.X || s.height < MIN_SIZE.Y) {
         self.completion.removeArea(s);
-        if (self.control.type === "rectanglelabels") self.completion.unselectAll();
+        if (self.control.type === "rectanglelabels") self.completion.unselectAll(true);
       } else {
         self.completion.history.unfreeze();
         // self.obj.completion.highlightedNode.unselectRegion(true);

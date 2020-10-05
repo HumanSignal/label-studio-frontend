@@ -12,8 +12,12 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
+    get completion() {
+      return getParent(self);
+    },
+
     get regions() {
-      return Array.from(getParent(self).areas.values()).filter(area => !area.classification);
+      return Array.from(self.completion.areas.values()).filter(area => !area.classification);
     },
 
     get sortedRegions() {
@@ -175,8 +179,7 @@ export default types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectAll(tryToKeepStates = false) {
-      self.regions.forEach(r => r.unselectRegion(tryToKeepStates));
-      getParent(self).setHighlightedNode(null);
+      self.completion.unselectAll();
     },
 
     unhighlightAll() {

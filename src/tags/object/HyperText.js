@@ -106,7 +106,6 @@ const Model = types
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.completion.createResult(range, labels, control, self);
       area._range = range._range;
-      self.completion.unselectAll();
       return area;
     },
 
