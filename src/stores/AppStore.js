@@ -179,7 +179,7 @@ export default types
       // unselect region
       Hotkey.addKey("u", function() {
         const c = self.completionStore.selected;
-        if (c && c.highlightedNode && !c.relationMode) {
+        if (c && !c.relationMode) {
           c.unselectAll();
         }
       });
