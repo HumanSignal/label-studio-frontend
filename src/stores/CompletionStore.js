@@ -693,13 +693,27 @@ export default types
       // convert config to mst model
       const rootModel = Tree.treeToModel(config);
       const modelClass = Registry.getModelByTag(rootModel.type);
+      // hacky way to get all the available object tag names
+      const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
+      const objects = [];
 
       self.root = modelClass.create(rootModel);
+
+      Tree.traverseTree(self.root, node => {
+        if (node?.name) {
+          self.names.put(node);
+          if (objectTypes.includes(node.type)) objects.push(node.name);
+        }
+      });
 
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
       Tree.traverseTree(self.root, node => {
-        if (node && node.name) self.names.put(node);
+        const isControlTag = node.name && !objectTypes.includes(node.type);
+        // auto-infer missed toName if there is only one object tag in the config
+        if (isControlTag && !node.toname && objects.length === 1) {
+          node.toname = objects[0];
+        }
 
         if (node && node.toname) {
           const val = self.toNames.get(node.toname);
