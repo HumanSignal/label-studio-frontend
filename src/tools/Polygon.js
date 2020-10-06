@@ -64,7 +64,6 @@ const _Tool = types
         self.obj.completion.history.freeze();
         const labels = { [control.valueType]: control.selectedValues?.() };
         self.obj.completion.createResult(opts, labels, control, self.obj);
-        if (withStates) self.obj.completion.unselectAll();
       }
     },
   }));

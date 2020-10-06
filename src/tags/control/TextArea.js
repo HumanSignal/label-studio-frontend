@@ -160,7 +160,7 @@ const Model = types
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({ text: self.selectedValues() }, self, self.toname);
+          self.completion.createResult({}, { text: self.selectedValues() }, self, self.toname);
         }
       }
     },
