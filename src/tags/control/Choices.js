@@ -116,7 +116,8 @@ const Model = types
     },
 
     needsUpdate() {
-      self.result && self.setResult(self.result.mainValue);
+      if (self.result) self.setResult(self.result.mainValue);
+      else self.setResult([]);
     },
 
     requiredModal() {
