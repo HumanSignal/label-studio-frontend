@@ -67,23 +67,14 @@ const NodeViews = {
   TextAreaModel: ["Input", MessageOutlined, () => `Input`],
 };
 
-const Node = observer(({ className, node, onClick }) => {
-  const click = ev => {
-    ev.preventDefault();
-    getRoot(node).completionStore.selected.regionStore.unselectAll();
-
-    node.selectRegion();
-
-    return false;
-  };
-
+const Node = observer(({ className, node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
   const [, Icon, getContent] = NodeViews[name];
 
   return (
-    <span onClick={onClick || click} className={[styles.node, className].filter(Boolean).join(" ")}>
+    <span className={[styles.node, className].filter(Boolean).join(" ")}>
       <Icon />
       {getContent(node)}
     </span>
