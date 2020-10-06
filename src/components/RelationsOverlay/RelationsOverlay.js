@@ -139,7 +139,7 @@ const RelationItemObserver = observer(({ relation, ...rest }) => {
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
   rootNode = React.createRef();
-  state = { shouldRender: false };
+  state = { shouldRender: false, souldRenderConnections: Math.random() };
 
   componentDidMount() {
     if (this.rootNode.current) {
@@ -169,17 +169,7 @@ class RelationsOverlay extends PureComponent {
 
     return (
       <svg ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-        {this.state.shouldRender ? (
-          <>
-            {/* <defs>
-              {relations.map(relation => (
-                <ArrowMarker key={relation.id} id={relation.id} color="#a0a" />
-              ))}
-            </defs> */}
-
-            {this.renderRelations(relations, visible, hasHighlight, highlighted)}
-          </>
-        ) : null}
+        {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
       </svg>
     );
   }
@@ -196,13 +186,14 @@ class RelationsOverlay extends PureComponent {
           dimm={hasHighlight && !highlighted}
           highlight={highlighted}
           visible={highlighted || visible}
+          shouldUpdate={this.state.souldRenderConnections}
         />
       );
     });
   }
 
   onResize = () => {
-    this.forceUpdate();
+    this.setState({ souldRenderConnections: Math.random() });
   };
 }
 
