@@ -32,6 +32,21 @@ const Model = types
     hideable: true,
   }))
   .actions(self => ({
+    afterCreate() {
+      if (self.coordstype === "perc") {
+        // deserialization
+        self.relativeX = self.x;
+        self.relativeY = self.y;
+      } else {
+        // creation
+        const { stageWidth: width, stageHeight: height } = self.parent;
+        if (width && height) {
+          self.relativeX = (self.x / width) * 100;
+          self.relativeY = (self.y / height) * 100;
+        }
+      }
+    },
+
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       self.setPosition(p.x, p.y);
@@ -51,7 +66,7 @@ const Model = types
         self.y = (sh * self.relativeY) / 100;
       }
 
-      if (!self.completion.sentUserGenerate && self.coordstype === "perc") {
+      if (self.coordstype === "perc") {
         self.x = (sw * self.x) / 100;
         self.y = (sh * self.y) / 100;
         self.width = (sw * self.width) / 100;

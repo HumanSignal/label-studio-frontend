@@ -38,8 +38,8 @@ const NodeViews = {
     BlockOutlined,
     node => {
       const w = node.width * node.scaleX;
-      const y = node.height * node.scaleY;
-      return `Rectangle ${w.toFixed(2)} x ${y.toFixed(2)}`;
+      const h = node.height * node.scaleY;
+      return `Rectangle ${w.toFixed(2)} x ${h.toFixed(2)}`;
     },
   ],
 
@@ -58,7 +58,11 @@ const NodeViews = {
   ],
 
   // @todo add coords
-  KeyPointRegionModel: ["KeyPoint", EyeOutlined, () => `KeyPoint`],
+  KeyPointRegionModel: [
+    "KeyPoint",
+    EyeOutlined,
+    node => `KeyPoint ${node.relativeX.toFixed(2)}, ${node.relativeY.toFixed(2)}`,
+  ],
 
   BrushRegionModel: ["Brush", HighlightOutlined, () => `Brush`],
 
