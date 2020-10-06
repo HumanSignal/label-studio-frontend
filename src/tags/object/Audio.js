@@ -111,5 +111,6 @@ const HtxAudioView = observer(({ store, item }) => {
 const HtxAudio = inject("store")(observer(HtxAudioView));
 
 Registry.addTag("audio", AudioModel, HtxAudio);
+Registry.addObjectType(AudioModel);
 
 export { AudioModel, HtxAudio };
