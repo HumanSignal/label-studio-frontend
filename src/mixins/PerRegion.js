@@ -22,7 +22,7 @@ const PerRegionMixin = types
 
       // we may need to check for specific value
       if (self.whenlabelvalue !== null && self.whenlabelvalue !== undefined)
-        return region.hasLabelState(self.whenlabelvalue);
+        return region.hasLabel(self.whenlabelvalue);
 
       return true;
     },

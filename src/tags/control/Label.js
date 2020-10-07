@@ -70,7 +70,7 @@ const Model = types
     usedAlready() {
       const regions = self.completion.regionStore.regions;
       // count all the usages among all the regions
-      const used = regions.reduce((s, r) => s + r.hasLabelState(self.value), 0);
+      const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
       return used;
     },
 
@@ -100,7 +100,8 @@ const Model = types
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
       const region = self.completion.highlightedNode;
-      if (region && region.readonly === true && region.parent.name === self.parent.toname) return;
+      const sameObject = region && region.parent.name === self.parent.toname;
+      if (region && region.readonly === true && sameObject) return;
 
       // one more check if that label can be selected
       if (!self.completion.editable) return;
@@ -116,9 +117,8 @@ const Model = types
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
       // not going to endup without the label(s) at all
-      if (region) {
-        const sel = labels.selectedLabels;
-        if (sel.length === 1 && sel[0]._value === self._value) return;
+      if (region && sameObject) {
+        if (labels.selectedLabels.length === 1 && self.selected) return;
       }
 
       // if we are going to select label and it would be the first in this labels group
@@ -159,7 +159,7 @@ const Model = types
         }
       }
 
-      region && region.updateSingleState(labels);
+      region && sameObject && region.setValue(self.parent);
     },
 
     setVisible(val) {

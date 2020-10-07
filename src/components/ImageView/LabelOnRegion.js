@@ -76,8 +76,8 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale }) =>
 };
 
 const LabelOnEllipse = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "ellipselabels");
-  if (!s || !s.holdsState) return null;
+  const s = item.labeling;
+  if (!s) return null;
 
   return (
     <LabelOnBbox
@@ -93,8 +93,8 @@ const LabelOnEllipse = observer(({ item }) => {
 });
 
 const LabelOnRect = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "rectanglelabels");
-  if (!s || !s.holdsState) return null;
+  const s = item.labeling;
+  if (!s) return null;
 
   return (
     <LabelOnBbox
@@ -110,8 +110,8 @@ const LabelOnRect = observer(({ item }) => {
 });
 
 const LabelOnPolygon = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "polygonlabels");
-  if (!s || !s.holdsState) return null;
+  const s = item.labeling;
+  if (!s) return null;
 
   const bbox = polytobbox(item.points);
   const settings = getRoot(item).settings;
@@ -147,8 +147,8 @@ const LabelOnMask = observer(({ item }) => {
   const settings = getRoot(item).settings;
   if (settings && !settings.showLabels && !settings.showScore) return null;
 
-  const s = item.states.find(s => s.type === "brushlabels");
-  if (!s || !s.holdsState) return null;
+  const s = item.labeling;
+  if (!s) return null;
   if (item.touches.length === 0) return null;
 
   // @todo fix points from [0, 1, 2, 3] to [{x: 0, y: 1}, {x: 2, y: 3}]
@@ -181,8 +181,8 @@ const LabelOnMask = observer(({ item }) => {
 });
 
 const LabelOnKP = observer(({ item }) => {
-  const s = item.states.find(s => s.type === "keypointlabels");
-  if (!s || !s.holdsState) return null;
+  const s = item.labeling;
+  if (!s) return null;
 
   return (
     <LabelOnBbox

@@ -5,14 +5,13 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
   strokewidth: types.optional(types.string, "15"),
 });
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "brush",
   })
   .views(self => ({

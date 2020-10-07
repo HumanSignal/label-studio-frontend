@@ -11,7 +11,6 @@ import Utils from "../../utils";
 import Waveform from "../../components/Waveform/Waveform";
 import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
 import { AudioRegionModel } from "../../regions/AudioRegion";
-import { cloneNode } from "../../core/Helpers";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 
 /**
@@ -34,12 +33,11 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
  * @param {string} [hotkey] - hotkey used to play/pause audio
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
   zoom: types.optional(types.boolean, true),
   volume: types.optional(types.boolean, true),
   speed: types.optional(types.boolean, true),
-  regs: types.optional(types.boolean, true),
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
@@ -48,7 +46,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model("AudioPlusModel", {
-    id: types.identifier,
     type: "audio",
     _value: types.optional(types.string, ""),
 
@@ -63,6 +60,10 @@ const Model = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get regs() {
+      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
     states() {
@@ -167,7 +168,8 @@ const Model = types
     },
 
     addRegion(ws_region) {
-      const find_r = self.findRegion({ start: ws_region.start, end: ws_region.end });
+      // area id is assigned to WS region during deserealization
+      const find_r = self.completion.areas.get(ws_region.id);
 
       if (find_r) {
         find_r.applyCSSClass(ws_region);
@@ -176,18 +178,17 @@ const Model = types
         return find_r;
       }
 
-      const allStates = self.getAvailableStates();
-      if (allStates.length === 0) {
+      const states = self.getAvailableStates();
+      if (states.length === 0) {
         ws_region.remove && ws_region.remove();
         return;
       }
 
-      const r = self.createRegion(
-        ws_region,
-        allStates.map(s => cloneNode(s)),
-      );
-      r.applyCSSClass(ws_region);
-
+      const control = self.activeStates()[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const r = self.completion.createResult(ws_region, labels, control, self);
+      r._ws_region = ws_region;
+      r.updateAppearenceFromState();
       return r;
     },
 
@@ -201,19 +202,22 @@ const Model = types
     onLoad(ws) {
       self._ws = ws;
 
-      self.regions.forEach(obj => {
-        let opts = {};
-        if (obj.readonly)
-          opts = {
-            drag: false,
-            resize: false,
-          };
-
-        self._ws.addRegion({
+      self.regs.forEach(obj => {
+        const reg = {
+          id: obj.id,
           start: obj.start,
           end: obj.end,
-          ...opts,
-        });
+          color: "orange",
+        };
+
+        if (obj.readonly) {
+          reg.drag = false;
+          reg.resize = false;
+        }
+
+        const r = self._ws.addRegion(reg);
+        obj._ws_region = r;
+        obj.updateAppearenceFromState();
       });
     },
 
@@ -240,7 +244,7 @@ const HtxAudioView = observer(({ store, item }) => {
           speed={item.speed}
           zoom={item.zoom}
           volume={item.volume}
-          regions={item.regs}
+          regions={true}
           height={item.height}
         />
 
@@ -254,5 +258,6 @@ const HtxAudioView = observer(({ store, item }) => {
 const HtxAudioPlus = inject("store")(observer(HtxAudioView));
 
 Registry.addTag("audioplus", AudioPlusModel, HtxAudioPlus);
+Registry.addObjectType(AudioPlusModel);
 
 export { AudioRegionModel, AudioPlusModel, HtxAudioPlus };

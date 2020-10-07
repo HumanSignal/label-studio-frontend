@@ -4,7 +4,7 @@ const { initLabelStudio, serialize } = require("./helpers");
 
 const assert = require("assert");
 
-Feature("Nested Choices");
+Feature("NER");
 
 const configSimple = `
   <View>

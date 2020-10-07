@@ -40,7 +40,7 @@ const Model = types
   .model({
     type: "filter",
     _value: types.maybeNull(types.string),
-    name: types.maybeNull(types.string),
+    name: types.identifier,
     toname: types.maybeNull(types.string),
   })
   .views(self => ({

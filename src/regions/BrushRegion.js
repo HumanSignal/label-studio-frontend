@@ -1,20 +1,17 @@
 import React, { Fragment } from "react";
 import { Line, Shape, Group } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import WithStatesMixin from "../mixins/WithStates";
-import { BrushLabelsModel } from "../tags/control/BrushLabels";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
+import { AreaMixin } from "../mixins/AreaMixin";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -72,49 +69,43 @@ const Model = types
     pid: types.optional(types.string, guidGenerator),
 
     type: "brushregion",
+    object: types.late(() => types.reference(ImageModel)),
 
-    states: types.maybeNull(types.array(types.union(BrushLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
 
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
+    rle: types.frozen(),
+
+    touches: types.array(Points),
+    currentTouch: types.maybeNull(types.reference(Points)),
+  })
+  .volatile(self => ({
     /**
      * Higher values will result in a more curvy line. A value of 0 will result in no interpolation.
      */
-    tension: types.optional(types.number, 1.0),
+    tension: 1.0,
     /**
      * Stroke color
      */
-    strokeColor: types.optional(types.string, "red"),
+    // strokeColor: types.optional(types.string, "red"),
 
     /**
      * Determines node opacity. Can be any number between 0 and 1
      */
-    opacity: types.optional(types.number, 1),
-    /**
-     * Set scale x
-     */
-    scaleX: types.optional(types.number, 1),
-    /**
-     * Set scale y
-     */
-    scaleY: types.optional(types.number, 1),
-    /**
-     * Points array of brush
-     */
-
-    touches: types.array(Points),
-    currentTouch: types.maybeNull(types.reference(Points)),
+    opacity: 1,
+    scaleX: 1,
+    scaleY: 1,
 
     // points: types.array(types.array(types.number)),
     // eraserpoints: types.array(types.array(types.number)),
 
-    mode: types.optional(types.string, "brush"),
+    mode: "brush",
 
-    needsUpdate: types.optional(types.number, 1),
+    needsUpdate: 1,
     hideable: true,
-  })
+  }))
   .views(self => ({
     get parent() {
-      return getParentOfType(self, ImageModel);
+      return self.object;
     },
   }))
   .actions(self => ({
@@ -140,19 +131,7 @@ const Model = types
 
     afterAttach() {},
 
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
-      self.completion.loadRegionState(self);
-    },
-
     convertPointsToMask() {},
-
-    updateAppearenceFromState() {
-      const stroke = self.states[0].getSelectedColor();
-      self.strokeColor = stroke;
-    },
 
     // addPoints(x, y, mode) {
     //   if (mode) self.mode = "eraser";
@@ -184,7 +163,8 @@ const Model = types
       self.states.push(state);
     },
 
-    serialize(control, object) {
+    serialize() {
+      const object = self.object;
       const rle = Canvas.Region2RLE(self, object, {
         stroke: self.strokeColor,
         tension: self.tension,
@@ -197,17 +177,23 @@ const Model = types
         original_height: object.naturalHeight,
         value: {
           format: "rle",
-          rle,
+          // UInt8Array serializes as object, not an array :(
+          rle: Array.from(rle),
         },
       };
-
-      res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
   }));
 
-const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+const BrushRegionModel = types.compose(
+  "BrushRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  AreaMixin,
+  Model,
+);
 
 const HtxBrushLayer = observer(({ store, item, points }) => {
   const highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
@@ -229,7 +215,7 @@ const HtxBrushLayer = observer(({ store, item, points }) => {
         e.cancelBubble = false;
       }}
       points={[...points.points]}
-      stroke={item.strokeColor}
+      stroke={item.style.strokecolor}
       strokeWidth={points.strokeWidth}
       lineJoin={"round"}
       lineCap="round"
@@ -259,6 +245,7 @@ const HtxBrushView = ({ store, item }) => {
     <Fragment>
       <Group
         attrMy={item.needsUpdate}
+        id={item.id}
         name="segmentation"
         // onClick={e => {
         //     e.cancelBubble = false;
@@ -314,8 +301,8 @@ const HtxBrushView = ({ store, item }) => {
               return;
             }
 
-            if (item._rle) {
-              const img = Canvas.RLE2Region(item._rle, item.parent);
+            if (item.rle) {
+              const img = Canvas.RLE2Region(item.rle, item.parent);
               item._loadedOnce = true;
 
               img.onload = function() {
@@ -345,5 +332,6 @@ const HtxBrushView = ({ store, item }) => {
 const HtxBrush = inject("store")(observer(HtxBrushView));
 
 Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
+Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);
 
 export { BrushRegionModel, HtxBrush };

@@ -22,7 +22,7 @@ import ControlBase from "./Base";
  * @param {boolean} [canRotate=true]     - show or hide rotation handle
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(types.string, "0.6"),
@@ -37,7 +37,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "ellipse",
   })
   .views(self => ({

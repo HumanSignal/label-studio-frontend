@@ -71,7 +71,7 @@ function setScope(scope) {
  */
 function makeComb() {
   let prefix = null;
-  let st = "1234567890qwertasdfgzxcvbyuiophjklnm";
+  let st = "1234567890qwetasdfgzxcvbyiopjklnm";
   let combs = st.split("");
 
   for (var i = 0; i <= combs.length; i++) {

@@ -62,6 +62,7 @@ function configureApplication(params) {
     onUpdateCompletion: params.onUpdateCompletion ? ouCB : External.onUpdateCompletion,
     onDeleteCompletion: params.onDeleteCompletion ? odCB : External.onDeleteCompletion,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onSubmitDraft: params.onSubmitDraft || External.onSubmitDraft,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,

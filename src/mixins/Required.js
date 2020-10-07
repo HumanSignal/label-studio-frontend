@@ -13,20 +13,15 @@ const RequiredMixin = types
         // every bbox
         const objectTag = self.completion.names.get(self.toname);
 
-        for (var i = 0; i < objectTag.regions.length; i++) {
-          const reg = objectTag.regions[i];
-          const s = reg.states.find(s => s.type === self.type);
+        for (let reg of objectTag.regs) {
+          const s = reg.results.find(s => s.type === self.resultType);
 
-          if (self.whenlabelvalue && !reg.hasLabelState(self.whenlabelvalue)) {
+          if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
             return true;
           }
 
-          if (!s || s.selectedValues().length === 0) {
-            // means that this element is not visible because its
-            // not matching the label value, means we don't need to validation
-
-            self.completion.regionStore.unselectAll();
-            reg.selectRegion();
+          if (!s?.hasValue) {
+            self.completion.selectArea(reg);
             self.requiredModal();
 
             return false;
@@ -34,7 +29,7 @@ const RequiredMixin = types
         }
       } else {
         // validation when its classifying the whole object
-        if (self.selectedValues().length === 0) {
+        if (!self.holdsState) {
           self.requiredModal();
           return false;
         }
