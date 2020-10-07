@@ -137,7 +137,8 @@ class RichTextPieceView extends Component {
       onMouseOverCapture: this._onRegionMouseOver,
     };
 
-    const val = (isText ? htmlEscape(item._value) : item._value).replace(/\n|\r/g, "<br>");
+    const newLineReplacement = "<br/>";
+    const val = (isText ? htmlEscape(item._value) : item._value).replace(/\n|\r/g, newLineReplacement);
 
     return (
       <ObjectTag item={item}>

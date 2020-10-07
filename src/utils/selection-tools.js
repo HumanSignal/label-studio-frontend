@@ -1,6 +1,6 @@
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
-const isText = text => text && /[\w']/i.test(prevSymbol);
+const isText = text => text && /[\w']/i.test(text);
 
 const boundarySelection = (selection, boundary) => {
   const range = selection.getRangeAt(0);
@@ -39,7 +39,7 @@ export const captureSelection = (
 
   if (selection.isCollapsed) return;
 
-  updateGranularity(selection, granularity);
+  applyTextGranularity(selection, granularity);
 
   for (let i = 0; i < selection.rangeCount; i++) {
     const range = fixRange(selection.getRangeAt(i));
@@ -59,7 +59,7 @@ export const captureSelection = (
  * @param {Selection} selection
  * @param {string} granularity
  */
-const updateGranularity = (selection, granularity) => {
+const applyTextGranularity = (selection, granularity) => {
   if (!selection.modify || !granularity || granularity === "symbol") return;
 
   try {
@@ -84,16 +84,39 @@ const updateGranularity = (selection, granularity) => {
 };
 
 /**
+ * Lookup closest text node
+ * @param {HTMLElement} node
+ * @param {number} offset
+ */
+const textNodeLookup = (node, offset, direction) => {
+  const startNode = node === commonContainer ? findOnPosition(node, offset, true).node : node;
+
+  if (isTextNode(startNode)) return startNode;
+
+  let textNode = startNode;
+
+  while (!isTextNode(textNode)) {
+    textNode = direction === "forward" ? textNode.nextSibling : textNode.previousSibling;
+  }
+
+  return textNode;
+};
+
+/**
  * Fix range if it contains non-text nodes
  * @param {Range} range
  */
 const fixRange = range => {
-  const { startContainer, endContainer } = range;
+  let { startContainer, endContainer, startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
 
   if (!isTextNode(startContainer)) {
-    range.setStart(endContainer, 0);
-  } else if (!isTextNode(endContainer)) {
-    range.setEnd(startContainer, startContainer.length);
+    startContainer = textNodeLookup(startContainer, startOffset, "forward");
+    range.setStart(startContainer, 0);
+  }
+
+  if (!isTextNode(endContainer)) {
+    endContainer = textNodeLookup(endContainer, endOffset, "backward");
+    range.setEnd(endContainer, endContainer.length);
   }
 
   return range;
@@ -316,7 +339,7 @@ export const findRange = (start, end, root) => {
  * @param {Node} root
  * @param {number} position
  */
-export const findOnPosition = (root, position) => {
+export const findOnPosition = (root, position, byNode = false) => {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   let lastPosition = position;
@@ -324,7 +347,7 @@ export const findOnPosition = (root, position) => {
 
   while (currentNode) {
     if (currentNode.nodeType === Node.TEXT_NODE || currentNode.nodeName === "BR") {
-      const length = currentNode.length ?? 1;
+      const length = byNode ? 1 : currentNode.length ?? 1;
 
       if (length >= lastPosition) {
         return { node: currentNode, position: lastPosition };
