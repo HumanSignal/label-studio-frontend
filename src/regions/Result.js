@@ -107,6 +107,35 @@ const Result = types
       return self.style && self.style.fillcolor;
     },
 
+    /**
+     * Checks perRegion and Visibility params
+     */
+    get isSubmitable() {
+      const control = self.from_name;
+
+      if (control.perregion) {
+        const label = control.whenlabelvalue;
+        if (label && !self.area.hasLabel(label)) return false;
+      }
+
+      if (control.visiblewhen === "choice-selected") {
+        const tagName = control.whentagname;
+        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
+        const results = self.completion.results.filter(r => r.type === "choices" && r !== self);
+        if (tagName) {
+          const result = results.find(r => r.from_name.name === tagName);
+          if (!result) return false;
+          if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
+        } else {
+          if (!results.length) return false;
+          // if no given choice value is selected in any choice result
+          if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
+        }
+      }
+
+      return true;
+    },
+
     get tag() {
       const value = self.mainValue;
       if (!value) return null;
@@ -156,6 +185,7 @@ const Result = types
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize() : {};
       if (!data) return null;
+      if (!self.isSubmitable) return null;
       // cut off completion id
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
