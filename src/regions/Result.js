@@ -103,10 +103,6 @@ const Result = types
       return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
     },
 
-    getOneColor() {
-      return self.style && self.style.fillcolor;
-    },
-
     /**
      * Checks perRegion and Visibility params
      */
@@ -139,6 +135,7 @@ const Result = types
     get tag() {
       const value = self.mainValue;
       if (!value) return null;
+      if (!self.from_name.findLabel) return null;
       return self.from_name.findLabel(value[0]);
     },
 
