@@ -5,21 +5,19 @@ import { types, resolvePath, getEnv, onSnapshot, getSnapshot, applySnapshot } fr
  */
 const TimeTraveller = types
   .model("TimeTraveller", {
-    history: types.array(types.frozen()),
-    undoIdx: -1,
+    undoIdx: 0,
     targetPath: "",
     skipNextUndoState: types.optional(types.boolean, false),
 
-    createdIdx: 1,
-
-    isFrozen: types.optional(types.boolean, false),
-    frozenIdx: -1,
+    createdIdx: 0,
   })
+  .volatile(self => ({
+    history: [],
+    isFrozen: false,
+  }))
   .views(self => ({
     get canUndo() {
-      // [TODO] since we initialize state a bit incorrectly we end up with 2 items in history
-      // before even any action takes place. To protect those items we keep them in history forever
-      return self.undoIdx > 1;
+      return self.undoIdx > 0;
     },
     get canRedo() {
       return self.undoIdx < self.history.length - 1;
@@ -28,15 +26,35 @@ const TimeTraveller = types
   .actions(self => {
     let targetStore;
     let snapshotDisposer;
+    let updateHandlers = new Set();
+
+    function triggerHandlers() {
+      updateHandlers.forEach(handler => handler());
+    }
 
     return {
       freeze() {
         self.isFrozen = true;
-        self.skipNextUndoState = true;
-        self.frozenIdx = self.undoIdx;
+      },
+
+      unfreeze() {
+        self.isFrozen = false;
+        self.recordNow();
+      },
+
+      recordNow() {
+        self.addUndoState(getSnapshot(targetStore));
+      },
+
+      onUpdate(handler) {
+        updateHandlers.add(handler);
+        return () => {
+          updateHandlers.delete(handler);
+        };
       },
 
       addUndoState(recorder) {
+        if (self.isFrozen) return;
         if (self.skipNextUndoState) {
           /**
            * Skip recording if this state was caused by undo / redo
@@ -46,9 +64,16 @@ const TimeTraveller = types
           return;
         }
 
-        self.history.splice(self.undoIdx);
+        self.history.splice(self.undoIdx + 1);
         self.history.push(recorder);
-        self.undoIdx = self.history.length;
+        self.undoIdx = self.history.length - 1;
+      },
+
+      reinit() {
+        self.history = [getSnapshot(targetStore)];
+        self.undoIdx = 0;
+        self.createdIdx = 0;
+        triggerHandlers();
       },
 
       afterCreate() {
@@ -58,13 +83,11 @@ const TimeTraveller = types
           throw new Error(
             "Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment",
           );
-        // TODO: check if targetStore doesn't contain self
-        // if (contains(targetStore, self)) throw new Error("TimeTraveller shouldn't be recording itself. Please specify a sibling as taret, not some parent")
         // start listening to changes
         snapshotDisposer = onSnapshot(targetStore, snapshot => this.addUndoState(snapshot));
         // record an initial state if no known
         if (self.history.length === 0) {
-          self.addUndoState(getSnapshot(targetStore));
+          self.recordNow();
         }
 
         self.createdIdx = self.undoIdx;
@@ -75,23 +98,18 @@ const TimeTraveller = types
       },
 
       undo() {
-        if (self.isFrozen && self.frozenIdx < self.undoIdx) return;
-
-        let newIdx = self.undoIdx - 1;
-
-        self.set(newIdx);
+        self.set(self.undoIdx - 1);
       },
 
       redo() {
-        let newIdx = self.undoIdx + 1;
-
-        self.set(newIdx);
+        self.set(self.undoIdx + 1);
       },
 
       set(idx) {
         self.undoIdx = idx;
         self.skipNextUndoState = true;
         applySnapshot(targetStore, self.history[idx]);
+        triggerHandlers();
       },
 
       reset() {

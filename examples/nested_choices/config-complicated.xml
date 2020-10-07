@@ -18,20 +18,20 @@
     <Choice value="Negative"/>
     <Choice value="Neutral"/>
   </Choices>
-  <Textarea name="sentiment2" toName="my_text" perRegion="true"
+  <Textarea name="description" toName="my_text" perRegion="true"
              choice="single" showInLine="true" whenLabelValue="Person">
     </Textarea>
-  <Choices name="sentiment" toName="my_text" perRegion="true"
+  <Choices name="gender" toName="my_text" perRegion="true"
              choice="single" showInLine="true" whenLabelValue="Person">
       <Choice value="Female"/>
       <Choice value="Male"/>
     </Choices>
-  <Choices name="sentiment2" toName="my_text" perRegion="true"
+  <Choices name="currency" toName="my_text" perRegion="true"
              choice="single" showInLine="true" whenLabelValue="Money">
       <Choice value="USD"/>
       <Choice value="EUR"/>
     </Choices>
-  <Choices name="sentiment3" toName="my_text" 
+  <Choices name="sentiment2" toName="my_text"
              choice="single" showInLine="true" perRegion="true">
       <Choice value="Positive"/>
       <Choice value="Negative"/>

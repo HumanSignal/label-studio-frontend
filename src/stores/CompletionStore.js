@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -10,8 +10,11 @@ import TimeTraveller from "../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
+import { delay } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
+import Area from "../regions/Area";
+import throttle from "lodash.throttle";
 
 const Completion = types
   .model("Completion", {
@@ -20,7 +23,7 @@ const Completion = types
     // @todo but it calculates once, so all the completions have the same pk
     // @todo why don't use only `id`?
     // @todo reverted back to wrong type; maybe it breaks all the deserialisation
-    pk: types.optional(types.string, guidGenerator(5)),
+    pk: types.maybeNull(types.string),
 
     selected: types.optional(types.boolean, false),
     type: types.enumeration(["completion", "prediction"]),
@@ -32,7 +35,11 @@ const Completion = types
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
 
-    //
+    draft: false,
+    // @todo use types.Date
+    draftSaved: types.maybe(types.string),
+
+    // created by user during this session
     userGenerate: types.optional(types.boolean, true),
     update: types.optional(types.boolean, false),
     sentUserGenerate: types.optional(types.boolean, false),
@@ -41,11 +48,7 @@ const Completion = types
     honeypot: types.optional(types.boolean, false),
     skipped: false,
 
-    root: Types.allModelsTypes(),
-    names: types.map(types.reference(Types.allModelsTypes())),
-    toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
-
-    history: types.optional(TimeTraveller, { targetPath: "../root" }),
+    history: types.optional(TimeTraveller, { targetPath: "../areas" }),
 
     dragMode: types.optional(types.boolean, false),
 
@@ -61,11 +64,17 @@ const Completion = types
       normalizations: [],
     }),
 
+    areas: types.map(Area),
+
     regionStore: types.optional(RegionStore, {
       regions: [],
     }),
 
     highlightedNode: types.maybeNull(types.safeReference(AllRegionsType)),
+  })
+  .preProcessSnapshot(sn => {
+    sn.draft = Boolean(sn.draft);
+    return sn;
   })
   .views(self => ({
     get store() {
@@ -75,10 +84,36 @@ const Completion = types
     get list() {
       return getParent(self, 2);
     },
+
+    get root() {
+      return self.list.root;
+    },
+
+    get names() {
+      return self.list.names;
+    },
+
+    get toNames() {
+      return self.list.toNames;
+    },
+
+    get objects() {
+      return Array.from(self.names.values()).filter(tag => !tag.toname);
+    },
+
+    get results() {
+      const results = [];
+      self.areas.forEach(a => a.results.forEach(r => results.push(r)));
+      return results;
+    },
+  }))
+  .volatile(self => ({
+    versions: {},
   }))
   .actions(self => ({
     reinitHistory() {
-      self.history = { targetPath: "../root" };
+      self.history.reinit();
+      self.autosave && self.autosave.cancel();
     },
 
     setEdit(val) {
@@ -111,7 +146,52 @@ const Completion = types
     },
 
     setHighlightedNode(node) {
-      self.highlightedNode = node;
+      // moved to selectArea and others
+    },
+
+    selectArea(area) {
+      if (self.highlightedNode === area) return;
+      // if (current) current.setSelected(false);
+      self.unselectAll();
+      self.highlightedNode = area;
+      // area.setSelected(true);
+      // @todo some backward compatibility, should be rewritten to state handling
+      // @todo but there are some actions should be performed like scroll to region
+      area.selectRegion && area.selectRegion();
+      area.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
+      area.results.forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+    },
+
+    unselectArea(area) {
+      if (self.highlightedNode !== area) return;
+      // area.setSelected(false);
+      self.unselectAll();
+    },
+
+    unselectAreas() {
+      const node = self.highlightedNode;
+      if (!node) return;
+      self.highlightedNode = null;
+      // eslint-disable-next-line no-unused-expressions
+      node.afterUnselectRegion?.();
+    },
+
+    unselectStates() {
+      self.names.forEach(tag => tag.unselectAll && tag.unselectAll());
+    },
+
+    /**
+     * @param {boolean} tryToKeepStates don't unselect labels if such setting is enabled
+     */
+    unselectAll(tryToKeepStates = false) {
+      const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
+
+      self.unselectAreas();
+      if (!keepStates) self.unselectStates();
+    },
+
+    removeArea(area) {
+      destroy(area);
     },
 
     startRelationMode(node1) {
@@ -139,7 +219,6 @@ const Completion = types
     },
 
     addRegion(reg) {
-      self.regionStore.addRegion(reg);
       self.regionStore.unselectAll(true);
 
       if (self.relationMode) {
@@ -205,7 +284,7 @@ const Completion = types
       });
 
       self.stopRelationMode();
-      self.regionStore.unselectAll();
+      self.unselectAll();
     },
 
     /**
@@ -213,6 +292,7 @@ const Completion = types
      * @param {*} region
      */
     deleteRegion(region) {
+      self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
         detach(region);
         return;
@@ -221,10 +301,104 @@ const Completion = types
       destroy(region);
     },
 
+    deleteArea(area) {
+      destroy(area);
+    },
+
+    // update some fragile parts after snapshot manipulations (undo/redo)
+    updateObjects() {
+      self.unselectAll();
+      self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
+      self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
+    },
+
+    addVersions(versions) {
+      self.versions = { ...self.versions, ...versions };
+    },
+
+    toggleDraft() {
+      const isDraft = self.draft;
+      if (!isDraft && !self.versions.draft) return;
+      self.autosave.flush();
+      self.pauseAutosave();
+      if (isDraft) self.versions.draft = self.serializeCompletion();
+      self.deleteAllRegions({ deleteReadOnly: true });
+      if (isDraft) {
+        self.deserializeCompletion(self.versions.result);
+        self.draft = false;
+      } else {
+        self.deserializeCompletion(self.versions.draft);
+        self.draft = true;
+      }
+      self.updateObjects();
+      self.startAutosave();
+    },
+
+    async startAutosave() {
+      if (!getEnv(self).onSubmitDraft) return;
+      if (self.type !== "completion") return;
+
+      // some async tasks should be performed after deserialization
+      // so start autosave on next tick
+      await delay(0);
+
+      if (self.autosave) {
+        self.autosave.cancel();
+        self.autosave.paused = false;
+        return;
+      }
+
+      console.info("autosave initialized");
+
+      // mobx will modify methods, so add it directly to have cancel() method
+      self.autosave = throttle(
+        snapshot => {
+          if (self.autosave.paused) return;
+
+          const result = self.serializeCompletion();
+          // if this is new completion and no regions added yet
+          if (!self.pk && !result.length) return;
+
+          self.setDraft(true);
+          self.versions.draft = result;
+
+          self.store.submitDraft(self).then(self.onDraftSaved);
+        },
+        5000,
+        { leading: false },
+      );
+
+      onSnapshot(self.areas, self.autosave);
+    },
+
+    pauseAutosave() {
+      if (!self.autosave) return;
+      self.autosave.paused = true;
+      self.autosave.cancel();
+    },
+
+    beforeDestroy() {
+      self.autosave && self.autosave.cancel && self.autosave.cancel();
+    },
+
+    setDraft(flag) {
+      self.draft = flag;
+    },
+
+    onDraftSaved() {
+      self.draftSaved = Utils.UDate.currentISODate();
+    },
+
+    dropDraft() {
+      if (!self.autosave) return;
+      self.autosave.cancel();
+      self.draft = false;
+      self.draftSaved = undefined;
+      self.versions.draft = undefined;
+    },
+
     afterAttach() {
       self.traverseTree(node => {
-        if (node.updateValue) node.updateValue(self.store);
-
         // called when the completion is attached to the main store,
         // at this point the whole tree is available. This method
         // may come handy when you have a tag that acts or depends
@@ -245,29 +419,15 @@ const Completion = types
           states && states.forEach(s => tools.addToolsFromControl(s));
         }
       });
+
+      self.history.onUpdate(self.updateObjects);
+      self.startAutosave();
     },
 
     afterCreate() {
-      //
-      // debugger;
       if (self.userGenerate && !self.sentUserGenerate) {
         self.loadedDate = new Date();
       }
-
-      // initialize toName bindings [DOCS] name & toName are used to
-      // connect different components to each other
-      self.traverseTree(node => {
-        if (node && node.name && node.id) self.names.set(node.name, node.id);
-
-        if (node && node.toname && node.id) {
-          const val = self.toNames.get(node.toname);
-          if (val) {
-            val.push(node.id);
-          } else {
-            self.toNames.set(node.toname, [node.id]);
-          }
-        }
-      });
     },
 
     setupHotKeys() {
@@ -334,27 +494,36 @@ const Completion = types
       Hotkey.setScope("__main__");
     },
 
-    serializeCompletion() {
-      const arr = [];
-
-      self.traverseTree(node => {
-        if (node.toStateJSON && !node.perregion) {
-          const val = node.toStateJSON();
-
-          if (val) arr.push(val);
-        }
-      });
-
-      const relations = self.relationStore.serializeCompletion();
-      if (relations) arr.push(relations);
-
-      const flatten = arr => {
-        return arr.reduce(function(flat, toFlatten) {
-          return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
-        }, []);
+    createResult(areaValue, resultValue, control, object) {
+      const result = {
+        from_name: control.name,
+        // @todo should stick to area
+        to_name: object,
+        type: control.resultType,
+        value: resultValue,
       };
 
-      return flatten(arr);
+      const area = self.areas.put({
+        id: guidGenerator(),
+        object,
+        // data for Model instance
+        ...areaValue,
+        // for Model detection
+        value: areaValue,
+        results: [result],
+      });
+
+      // unselect labels after use, but consider "keep labels selected" settings
+      if (control.type.includes("labels")) self.unselectAll(true);
+
+      return area;
+    },
+
+    serializeCompletion() {
+      return self.results
+        .map(r => r.serialize())
+        .filter(Boolean)
+        .concat(self.relationStore.serializeCompletion());
     },
 
     /**
@@ -371,37 +540,48 @@ const Completion = types
 
       objCompletion.forEach(obj => {
         if (obj["type"] !== "relation") {
-          const names = obj.to_name.split(",");
-          names.forEach(name => {
-            const toModel = self.names.get(name);
-            if (!toModel) throw new Error("No model found for " + obj.to_name);
+          const { id, value, type, ...data } = obj;
+          // avoid duplicates of the same areas in different completions/predictions
+          const areaId = `${id || guidGenerator()}#${self.id}`;
+          const resultId = `${data.from_name}@${areaId}`;
 
-            const fromModel = self.names.get(obj.from_name);
-            if (!fromModel) throw new Error("No model found for " + obj.from_name);
+          let area = self.areas.get(areaId);
+          if (!area) {
+            area = self.areas.put({
+              id: areaId,
+              object: data.to_name,
+              ...data,
+              ...value,
+              value,
+            });
+          }
 
-            toModel.fromStateJSON(obj, fromModel);
-          });
+          area.addResult({ ...data, id: resultId, type, value });
         }
       });
+
+      self.results.filter(r => r.area.classification).forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
       objCompletion.forEach(obj => {
         if (obj["type"] === "relation") {
           self.relationStore.deserializeRelation(
-            self.regionStore.findRegion(obj.from_id),
-            self.regionStore.findRegion(obj.to_id),
+            `${obj.from_id}#${self.id}`,
+            `${obj.to_id}#${self.id}`,
             obj.direction,
             obj.labels,
           );
         }
       });
-
-      self.regionStore.unselectAll();
     },
   }));
 
 export default types
   .model("CompletionStore", {
     selected: types.maybeNull(types.reference(Completion)),
+
+    root: Types.allModelsTypes(),
+    names: types.map(types.reference(Types.allModelsTypes())),
+    toNames: types.map(types.array(types.reference(Types.allModelsTypes()))),
 
     completions: types.array(Completion),
     predictions: types.array(Completion),
@@ -417,15 +597,13 @@ export default types
   .actions(self => {
     function toggleViewingAll() {
       if (self.viewingAllCompletions || self.viewingAllPredictions) {
-        self.completions.forEach(c => {
-          c.selected = false;
-          c.editable = false;
-          c.regionStore.unselectAll();
-        });
+        if (self.selected) {
+          self.selected.unselectAll();
+          self.selected.selected = false;
+        }
 
-        self.predictions.forEach(c => {
-          c.selected = false;
-          c.regionStore.unselectAll();
+        self.completions.forEach(c => {
+          c.editable = false;
         });
       } else {
         selectCompletion(self.completions[0].id);
@@ -458,9 +636,12 @@ export default types
 
       if (self.selected) self.selected.selected = false;
 
-      const c = list.find(c => c.id === id);
+      // sad hack with pk while sdk are not using pk everywhere
+      const c = list.find(c => c.id === id || c.pk === String(id)) || list[0];
+      if (!c) return null;
       c.selected = true;
       self.selected = c;
+      c.updateObjects();
 
       return c;
     }
@@ -470,6 +651,8 @@ export default types
      * @param {*} id
      */
     function selectCompletion(id) {
+      if (!self.completions.length) return null;
+
       const { selected } = self;
       const c = selectItem(id, self.completions);
 
@@ -483,7 +666,6 @@ export default types
 
     function selectPrediction(id) {
       const p = selectItem(id, self.predictions);
-      p.regionStore.unselectAll();
 
       return p;
     }
@@ -505,17 +687,55 @@ export default types
       }
     }
 
+    function initRoot(config) {
+      if (self.root) return;
+
+      // convert config to mst model
+      const rootModel = Tree.treeToModel(config);
+      const modelClass = Registry.getModelByTag(rootModel.type);
+      // hacky way to get all the available object tag names
+      const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
+      const objects = [];
+
+      self.root = modelClass.create(rootModel);
+
+      Tree.traverseTree(self.root, node => {
+        if (node?.name) {
+          self.names.put(node);
+          if (objectTypes.includes(node.type)) objects.push(node.name);
+        }
+      });
+
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
+      Tree.traverseTree(self.root, node => {
+        const isControlTag = node.name && !objectTypes.includes(node.type);
+        // auto-infer missed toName if there is only one object tag in the config
+        if (isControlTag && !node.toname && objects.length === 1) {
+          node.toname = objects[0];
+        }
+
+        if (node && node.toname) {
+          const val = self.toNames.get(node.toname);
+          if (val) {
+            val.push(node.name);
+          } else {
+            self.toNames.set(node.toname, [node.name]);
+          }
+        }
+
+        if (self.store.task && node.updateValue) node.updateValue(self.store);
+      });
+
+      return self.root;
+    }
+
     function addItem(options) {
       const { user, config } = self.store;
 
-      // convert config to mst model
-      const completionModel = Tree.treeToModel(config);
-      const modelClass = Registry.getModelByTag(completionModel.type);
+      if (!self.root) initRoot(config);
 
-      //
-      let root = modelClass.create(completionModel);
-
-      const pk = String(options.pk || options.id);
+      const pk = options.pk || options.id;
 
       //
       let node = {
@@ -523,9 +743,11 @@ export default types
 
         ...options,
 
+        // id is internal so always new to prevent collisions
         id: guidGenerator(5),
-        pk,
-        root,
+        // pk and id may be missing, so undefined | string
+        pk: pk && String(pk),
+        root: self.root,
       };
 
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
@@ -548,14 +770,15 @@ export default types
       options.type = "completion";
 
       const item = addItem(options);
+      item.addVersions({ result: options.result, draft: options.draft });
       self.completions.unshift(item);
 
       return item;
     }
 
     function addCompletionFromPrediction(prediction) {
-      const c = self.addCompletion({ userGenerate: true });
       const s = prediction._initialCompletionObj;
+      const c = self.addCompletion({ userGenerate: true, result: s });
 
       const ids = {};
 
@@ -587,6 +810,8 @@ export default types
     return {
       toggleViewingAllCompletions,
       toggleViewingAllPredictions,
+
+      initRoot,
 
       addPrediction,
       addCompletion,

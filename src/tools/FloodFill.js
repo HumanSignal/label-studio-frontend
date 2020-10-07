@@ -53,7 +53,7 @@ const _Tool = types
     },
 
     createPolygonRegion(points) {
-      const { states, strokecolor } = self.statesAndParams;
+      const { states, strokecolor } = {};
       const c = self.control;
 
       const p = PolygonRegionModel.create({

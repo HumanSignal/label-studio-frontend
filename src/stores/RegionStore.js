@@ -1,12 +1,9 @@
 import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
-import { AllRegionsType } from "../regions";
 
 export default types
   .model("RegionStore", {
-    regions: types.array(types.safeReference(AllRegionsType)),
-
     sort: types.optional(types.enumeration(["date", "score"]), "date"),
     sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
 
@@ -15,6 +12,14 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
+    get completion() {
+      return getParent(self);
+    },
+
+    get regions() {
+      return Array.from(self.completion.areas.values()).filter(area => !area.classification);
+    },
+
     get sortedRegions() {
       const sorts = {
         date: () => self.regions,
@@ -45,7 +50,7 @@ export default types
 
       Object.keys(lookup).forEach(key => {
         const el = lookup[key];
-        if (el["item"].parentID !== "") {
+        if (el["item"].parentID) {
           lookup[el["item"].parentID]["children"].push(el);
         } else {
           tree.push(el);
@@ -60,7 +65,7 @@ export default types
       const labels = {};
       const map = {};
       self.regions.forEach(r => {
-        const l = r.labelsState;
+        const l = r.labeling;
         if (l) {
           const selected = l.selectedLabels;
           selected &&
@@ -174,8 +179,7 @@ export default types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectAll(tryToKeepStates = false) {
-      self.regions.forEach(r => r.unselectRegion(tryToKeepStates));
-      getParent(self).setHighlightedNode(null);
+      self.completion.unselectAll();
     },
 
     unhighlightAll() {

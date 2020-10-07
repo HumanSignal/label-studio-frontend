@@ -6,7 +6,6 @@ import { HighlightOutlined } from "@ant-design/icons";
 import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
-import { BrushRegionModel } from "../regions/BrushRegion";
 import Canvas from "../utils/canvas";
 
 const ToolView = observer(({ item }) => {
@@ -89,11 +88,9 @@ const _Tool = types
     // },
 
     createRegion(opts) {
-      const brush = BrushRegionModel.create(opts);
-
-      self.obj.addShape(brush);
-
-      return brush;
+      const control = self.control;
+      const labels = { [control.valueType]: control.selectedValues?.() };
+      return self.obj.completion.createResult(opts, labels, control, self.obj);
     },
 
     updateCursor() {
@@ -138,14 +135,12 @@ const _Tool = types
         if (c.isSelected) {
           self.mode = "drawing";
 
-          const sap = self.statesAndParams;
-
           const brush = self.createRegion({
-            x: x,
-            y: y,
+            touches: [],
             coordstype: "px",
-            ...sap,
           });
+
+          self.obj.completion.selectArea(brush);
 
           const p = brush.addTouch({
             type: "add",
