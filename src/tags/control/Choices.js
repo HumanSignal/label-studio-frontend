@@ -42,7 +42,7 @@ const { Option } = Select;
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
-  name: types.string,
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   showinline: types.maybeNull(types.boolean),
@@ -54,14 +54,12 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     readonly: types.optional(types.boolean, false),
     visible: types.optional(types.boolean, true),
 
     type: "choices",
-    _type: "choices",
     children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
   .views(self => ({
@@ -82,6 +80,16 @@ const Model = types
       if (choices && choices.length) return { choices };
 
       return null;
+    },
+
+    get result() {
+      if (self.perregion) {
+        const area = self.completion.highlightedNode;
+        if (!area) return null;
+
+        return self.completion.results.find(r => r.from_name === self && r.area === area);
+      }
+      return self.completion.results.find(r => r.from_name === self);
     },
 
     // perChoiceVisible() {
@@ -107,6 +115,11 @@ const Model = types
       if (self.showinline === false) self.layout = "vertical";
     },
 
+    needsUpdate() {
+      if (self.result) self.setResult(self.result.mainValue);
+      else self.setResult([]);
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
@@ -115,6 +128,22 @@ const Model = types
       choices.selectedValues().forEach(l => {
         self.findLabel(l).setSelected(true);
       });
+    },
+
+    // this is not labels, unselect affects result, so don't unselect on random reason
+    unselectAll() {},
+
+    updateFromResult(value) {
+      self.setResult(Array.isArray(value) ? value : [value]);
+    },
+
+    // unselect only during choice toggle
+    resetSelected() {
+      self.selectedLabels.forEach(c => c.setSelected(false));
+    },
+
+    setResult(values) {
+      self.tiedChildren.forEach(choice => choice.setSelected(values.includes(choice.alias || choice._value)));
     },
 
     toStateJSON() {
@@ -157,11 +186,11 @@ const ChoicesModel = types.compose(
   "ChoicesModel",
   ControlBase,
   TagAttrs,
-  Model,
   SelectedModelMixin.props({ _child: "ChoiceModel" }),
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
+  Model,
 );
 
 const HtxChoices = observer(({ item }) => {

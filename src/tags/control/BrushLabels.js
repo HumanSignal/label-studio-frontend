@@ -8,7 +8,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { BrushModel } from "./Brush";
 import { HtxLabels, LabelsModel } from "./Labels";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -26,7 +25,7 @@ import ControlBase from "./Base";
  * @param {string} toName - name of the image to label
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
@@ -35,13 +34,9 @@ const Validation = types.model({
 });
 
 const ModelAttrs = types.model("BrushLabelsModel", {
-  id: types.optional(types.identifier, guidGenerator),
-  pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "brushlabels" });
 
 const BrushLabelsModel = types.compose(
   "BrushLabelsModel",
@@ -50,7 +45,7 @@ const BrushLabelsModel = types.compose(
   BrushModel,
   TagAttrs,
   Validation,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

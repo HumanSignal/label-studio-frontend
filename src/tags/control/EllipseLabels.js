@@ -8,7 +8,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { EllipseModel } from "./Ellipse";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -32,25 +31,21 @@ import ControlBase from "./Base";
  * @param {boolean=} [canRotate=true] - show or hide rotation handle
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
 const ModelAttrs = types.model("EllipseLabelsModel", {
-  id: types.optional(types.identifier, guidGenerator),
-  pid: types.optional(types.string, guidGenerator),
   type: "ellipselabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "ellipselabels" });
 
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   EllipseModel,
   TagAttrs,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

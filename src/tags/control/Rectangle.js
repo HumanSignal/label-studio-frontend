@@ -6,8 +6,8 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Rectangle
- * Rectangle is used to add rectangle (Bounding Box) to an image
+ * Rectangle is used to add rectangle (Bounding Box) to an image without label selection. It's useful when you have
+ * only one label.
  * @example
  * <View>
  *   <Rectangle name="rect-1" toName="img-1" />
@@ -23,7 +23,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {boolean=} [canRotate=true]     - show or hide rotation handle
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(customTypes.range(), "0.6"),
@@ -38,7 +38,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "rectangle",
   })
   .views(self => ({

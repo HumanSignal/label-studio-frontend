@@ -7,11 +7,9 @@ import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * HyperTextLabels tag
  * HyperTextLabels tag creates labeled hyper text (HTML)
  * @example
  * <View>
@@ -26,7 +24,7 @@ import ControlBase from "./Base";
  * @param {string} toName name of the html element to label
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
@@ -36,8 +34,6 @@ const Validation = types.model({
 
 const ModelAttrs = types
   .model("HyperTextLabelesModel", {
-    id: types.identifier,
-    pid: types.optional(types.string, guidGenerator),
     type: "htmllabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
@@ -53,9 +49,15 @@ const ModelAttrs = types
 
       return obj;
     },
-  }));
 
-const Model = LabelMixin.props({ _type: "htmllabels" });
+    get resultType() {
+      return "htmllabels";
+    },
+
+    get valueType() {
+      return "htmllabels";
+    },
+  }));
 
 const Composition = types.compose(
   ControlBase,
@@ -63,7 +65,7 @@ const Composition = types.compose(
   ModelAttrs,
   TagAttrs,
   Validation,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
 );
 

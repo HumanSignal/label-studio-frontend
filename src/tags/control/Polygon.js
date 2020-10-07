@@ -8,8 +8,7 @@ import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
 
 /**
- * Polygon tag
- * Polygon is used to add polygons to an image
+ * Polygon is used to add polygons to an image without label selection. It's useful when you have only one label.
  * @example
  * <View>
  *   <Polygon name="rect-1" toName="img-1" />
@@ -26,7 +25,7 @@ import Types from "../../core/Types";
  * @param {rectangle|circle} [pointStyle=circle]  - style of points
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(customTypes.range(), "0.6"),
@@ -45,7 +44,6 @@ const Validation = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "polygon",
 
     // regions: types.array(RectRegionModel),

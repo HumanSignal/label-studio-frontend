@@ -42,7 +42,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
@@ -81,7 +81,6 @@ const IMAGE_CONSTANTS = {
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "image",
     _value: types.optional(types.string, ""),
 
@@ -143,10 +142,6 @@ const Model = types
      */
     mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
 
-    selectedShape: types.safeReference(
-      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
-    ),
-
     regions: types.array(
       types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
       [],
@@ -169,6 +164,14 @@ const Model = types
       return getRoot(self).completionStore.selected;
     },
 
+    get regs() {
+      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
+    },
+
+    get selectedShape() {
+      return self.regs.find(r => r.selected);
+    },
+
     /**
      * @return {object}
      */
@@ -178,7 +181,7 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return states && states.filter(s => s.isSelected && s._type.includes("labels"));
+      return states && states.filter(s => s.isSelected && s.type.includes("labels"));
     },
 
     controlButton() {
@@ -301,8 +304,9 @@ const Model = types
       self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },
 
+    // @todo remove
     setSelected(shape) {
-      self.selectedShape = shape;
+      // self.selectedShape = shape;
     },
 
     rotate(degree = -90) {
@@ -343,6 +347,9 @@ const Model = types
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+      self.regs.forEach(shape => {
+        shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
+      });
     },
 
     updateImageSize(ev) {
@@ -360,6 +367,10 @@ const Model = types
       } else {
         self._updateImageSize({ width, height, naturalWidth, naturalHeight });
       }
+      // after regions' sizes adjustment we have to reset all saved history changes
+      // mobx do some batch update here, so we have to reset it asynchronously
+      // this happens only after initial load, so it's safe
+      setTimeout(self.completion.reinitHistory, 0);
     },
 
     checkLabels() {
@@ -446,5 +457,6 @@ const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixi
 const HtxImage = inject("store")(observer(ImageView));
 
 Registry.addTag("image", ImageModel, HtxImage);
+Registry.addObjectType(ImageModel);
 
 export { ImageModel, HtxImage };

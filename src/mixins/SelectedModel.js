@@ -19,6 +19,12 @@ const SelectedModelMixin = types
       return sel && sel.background;
     },
 
+    get selectedColor() {
+      // return first selected label color
+      const sel = self.tiedChildren.find(c => c.selected === true);
+      return sel && sel.background;
+    },
+
     get isSelected() {
       return self.selectedLabels.length > 0;
     },
@@ -59,6 +65,17 @@ const SelectedModelMixin = types
       f && f.toggleSelected();
 
       return f;
+    },
+
+    /**
+     * Change states of tags according to values from result
+     * @param {string|string[]} value
+     */
+    updateFromResult(value) {
+      self.unselectAll();
+      if (!value) return;
+      const values = Array.isArray(value) ? value : [value];
+      values.map(v => self.findLabel(v)).forEach(label => label.setSelected(true));
     },
   }));
 

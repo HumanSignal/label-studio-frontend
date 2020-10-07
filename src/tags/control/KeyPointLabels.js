@@ -8,7 +8,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { HtxLabels, LabelsModel } from "./Labels";
 import { KeyPointModel } from "./KeyPoint";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
@@ -31,7 +30,7 @@ import ControlBase from "./Base";
  * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
@@ -41,8 +40,6 @@ const Validation = types.model({
 
 const ModelAttrs = types
   .model("KeyPointLabelesModel", {
-    id: types.identifier,
-    pid: types.optional(types.string, guidGenerator),
     type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
@@ -53,15 +50,13 @@ const ModelAttrs = types
     },
   }));
 
-const Model = LabelMixin.props({ _type: "keypointlabels" });
-
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
   TagAttrs,
   Validation,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

@@ -9,8 +9,7 @@ import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { TextRegionModel } from "../../regions/TextRegion";
-import { cloneNode } from "../../core/Helpers";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
@@ -20,7 +19,9 @@ import { customTypes } from "../../core/CustomTypes";
 /**
  * Text tag shows an Text markup that can be labeled
  * @example
- * <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ * <View>
+ *   <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ * </View>
  * @name Text
  * @param {string} name                      - name of the element
  * @param {string} value                     - value of the element
@@ -31,7 +32,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  */
 const TagAttrs = types.model("TextModel", {
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
 
   valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
@@ -55,10 +56,8 @@ const TagAttrs = types.model("TextModel", {
 
 const Model = types
   .model("TextModel", {
-    id: types.optional(types.identifier, guidGenerator),
     type: "text",
     loaded: types.optional(types.boolean, false),
-    regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -72,13 +71,17 @@ const Model = types
       return getRoot(self).completionStore.selected;
     },
 
+    get regs() {
+      return self.completion.regionStore.regions.filter(r => r.object === self);
+    },
+
     states() {
       return self.completion.toNames.get(self.name);
     },
 
     activeStates() {
       const states = self.states();
-      return states && states.filter(s => s.isSelected && s._type === "labels");
+      return states && states.filter(s => s.isSelected && s.type === "labels");
     },
   }))
   .actions(self => ({
@@ -165,14 +168,17 @@ const Model = types
     },
 
     addRegion(range) {
+      range.start = range.startOffset;
+      range.end = range.endOffset;
+
       const states = self.getAvailableStates();
       if (states.length === 0) return;
 
-      const clonedStates = states.map(s => cloneNode(s));
-
-      const r = self.createRegion({ ...range, states: clonedStates });
-
-      return r;
+      const control = states[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const area = self.completion.createResult(range, labels, control, self);
+      area._range = range._range;
+      return area;
     },
 
     /**
@@ -423,7 +429,12 @@ class TextPieceView extends Component {
     const root = this.myRef;
     const { item } = this.props;
 
-    item.regions.forEach(function(r) {
+    item.regs.forEach(function(r) {
+      // spans can be totally missed if this is app init or undo/redo
+      // or they can be disconnected from DOM on completions switching
+      // so we have to recreate them from regions data
+      if (r._spans?.[0]?.isConnected) return;
+
       const findNode = (el, pos) => {
         let left = pos;
         const traverse = node => {
@@ -451,8 +462,8 @@ class TextPieceView extends Component {
         return traverse(el);
       };
 
-      const ss = findNode(root, r.startOffset);
-      const ee = findNode(root, r.endOffset);
+      const ss = findNode(root, r.start);
+      const ee = findNode(root, r.end);
 
       // if (! ss || ! ee)
       //     return;
@@ -511,5 +522,6 @@ const HtxText = inject("store")(observer(HtxTextView));
 const HtxTextPieceView = inject("store")(observer(TextPieceView));
 
 Registry.addTag("text", TextModel, HtxText);
+Registry.addObjectType(TextModel);
 
 export { TextModel, HtxText };

@@ -7,8 +7,7 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * KeyPoint tag
- * KeyPoint is used to add a keypoint to an image
+ * KeyPoint is used to add a keypoint to an image without label selection. It's useful when you have only one label.
  * @example
  * <View>
  *   <KeyPoint name="kp-1" toName="img-1" />
@@ -23,7 +22,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(customTypes.range(), "0.9"),
@@ -35,7 +34,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "keypoint",
 
     // tools: types.array(BaseTool)

@@ -1,22 +1,19 @@
 import React, { Fragment } from "react";
 import { Rect } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getParent, getRoot } from "mobx-state-tree";
+import { types, getParent, getRoot, isAlive } from "mobx-state-tree";
 
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
-import { RatingModel } from "../tags/control/Rating";
-import { RectangleLabelsModel } from "../tags/control/RectangleLabels";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
+import { AreaMixin } from "../mixins/AreaMixin";
 
 /**
  * Rectangle object for Bounding Box
@@ -27,57 +24,51 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "rectangleregion",
+    object: types.late(() => types.reference(ImageModel)),
 
     x: types.number,
     y: types.number,
 
-    relativeX: types.optional(types.number, 0),
-    relativeY: types.optional(types.number, 0),
-
-    relativeWidth: types.optional(types.number, 0),
-    relativeHeight: types.optional(types.number, 0),
-
-    startX: types.optional(types.number, 0),
-    startY: types.optional(types.number, 0),
-
     width: types.number,
     height: types.number,
 
+    rotation: 0,
+
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
+  })
+  .volatile(self => ({
+    relativeX: 0,
+    relativeY: 0,
+
+    relativeWidth: 0,
+    relativeHeight: 0,
+
+    startX: 0,
+    startY: 0,
+
     // @todo not used
-    scaleX: types.optional(types.number, 1),
-    scaleY: types.optional(types.number, 1),
+    scaleX: 1,
+    scaleY: 1,
 
-    rotation: types.optional(types.number, 0),
+    opacity: 0.6,
 
-    opacity: types.number,
+    fill: true,
+    fillColor: "#ff8800", // Constants.FILL_COLOR,
+    fillOpacity: 0.6,
 
-    fill: types.optional(types.boolean, true),
-    fillColor: types.optional(types.string, Constants.FILL_COLOR),
-    fillOpacity: types.optional(types.number, 0.6),
-
-    strokeColor: types.optional(types.string, Constants.STROKE_COLOR),
-    strokeWidth: types.optional(types.number, Constants.STROKE_WIDTH),
-
-    states: types.maybeNull(types.array(types.union(RectangleLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
-
-    wp: types.maybeNull(types.number),
-    hp: types.maybeNull(types.number),
-
-    sw: types.maybeNull(types.number),
-    sh: types.maybeNull(types.number),
-
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
+    strokeColor: Constants.STROKE_COLOR,
+    strokeWidth: Constants.STROKE_WIDTH,
 
     supportsTransform: true,
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
-  })
+  }))
   .views(self => ({
     get store() {
       return getRoot(self);
     },
     get parent() {
-      return getParentOfType(self, ImageModel);
+      return self.object;
     },
   }))
   .actions(self => ({
@@ -90,17 +81,14 @@ const Model = types
         self.relativeY = self.y;
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
+
+        const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self.parent;
+        if (width && height) {
+          self.updateImageSize(width / naturalWidth, height / naturalHeight, width, height);
+        }
       }
 
       self.updateAppearenceFromState();
-    },
-
-    updateAppearenceFromState() {
-      if (self.states && self.states.length) {
-        const stroke = self.states[0].getSelectedColor();
-        self.strokeColor = stroke;
-        self.fillColor = stroke;
-      }
     },
 
     rotate(degree) {
@@ -121,14 +109,6 @@ const Model = types
       if (x > rx && x < rx + rw && y > ry && y < ry + rh) return true;
 
       return false;
-    },
-
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
-
-      self.completion.loadRegionState(self);
     },
 
     /**
@@ -168,12 +148,6 @@ const Model = types
     },
 
     updateImageSize(wp, hp, sw, sh) {
-      self.wp = wp;
-      self.hp = hp;
-
-      self.sw = sw;
-      self.sh = sh;
-
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
@@ -188,10 +162,8 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
-      const value = control.serializableValue;
-      if (!value) return null;
-
+    serialize() {
+      const object = self.object;
       const degree = (360 - self.parent.rotation) % 360;
       let { x, y } = self.rotatePoint(self, degree, false);
       if (degree === 270) y -= self.width;
@@ -221,7 +193,6 @@ const Model = types
           width,
           height,
           rotation: self.rotation,
-          ...value,
         },
       };
     },
@@ -233,14 +204,18 @@ const RectRegionModel = types.compose(
   RegionsMixin,
   NormalizationMixin,
   DisabledMixin,
+  AreaMixin,
   Model,
 );
 
 const HtxRectangleView = ({ store, item }) => {
-  let { strokeColor, strokeWidth } = item;
+  if (!isAlive(item)) return null;
+
+  const style = item.style || item.tag || defaultStyle;
+  let { strokecolor, strokewidth } = style;
   if (item.highlighted) {
-    strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
-    strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
+    strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
+    strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
 
   if (item.hidden) return null;
@@ -252,14 +227,14 @@ const HtxRectangleView = ({ store, item }) => {
         y={item.y}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(item.fillColor, item.fillOpacity) : null}
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
+        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
+        stroke={strokecolor}
+        strokeWidth={+strokewidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}
-        opacity={item.opacity}
+        opacity={+style.opacity}
         rotation={item.rotation}
         name={item.id}
         onTransformEnd={e => {
@@ -335,7 +310,7 @@ const HtxRectangleView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.editable}
+        draggable={item.editable && item.selected}
       />
       <LabelOnRect item={item} />
     </Fragment>
@@ -345,5 +320,6 @@ const HtxRectangleView = ({ store, item }) => {
 const HtxRectangle = inject("store")(observer(HtxRectangleView));
 
 Registry.addTag("rectangleregion", RectRegionModel, HtxRectangle);
+Registry.addRegionType(RectRegionModel, "image");
 
 export { RectRegionModel, HtxRectangle };

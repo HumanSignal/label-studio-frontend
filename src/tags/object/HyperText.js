@@ -9,8 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
-import { cloneNode } from "../../core/Helpers";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { restoreNewsnapshot, guidGenerator } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import { customTypes } from "../../core/CustomTypes";
@@ -18,7 +17,9 @@ import { customTypes } from "../../core/CustomTypes";
 /**
  * HyperText tag shows an HyperText markup that can be labeled
  * @example
- * <HyperText name="text-1" value="$text" />
+ * <View>
+ *   <HyperText name="text-1" value="$text" />
+ * </View>
  * @name HyperText
  * @param {string} name - name of the element
  * @param {string} value - value of the element
@@ -27,7 +28,8 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {boolean} [clickableLinks=false] - allow to open resources from links
  */
 const TagAttrs = types.model("HyperTextModel", {
-  name: types.maybeNull(types.string),
+  // opional for cases with inline html: <HyperText><hr/></HyperText>
+  name: types.optional(types.identifier, guidGenerator(5)),
   value: types.maybeNull(types.string),
 
   // @todo add `valueType=url` to HyperText and make autodetection of `savetextresult`
@@ -44,9 +46,7 @@ const TagAttrs = types.model("HyperTextModel", {
 
 const Model = types
   .model("HyperTextModel", {
-    id: types.optional(types.identifier, guidGenerator),
     type: "hypertext",
-    regions: types.array(HyperTextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -58,6 +58,10 @@ const Model = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get regs() {
+      return self.completion.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
@@ -100,11 +104,11 @@ const Model = types
       const states = self.getAvailableStates();
       if (states.length === 0) return;
 
-      const clonedStates = states.map(s => cloneNode(s));
-
-      const r = self.createRegion({ ...range, states: clonedStates });
-
-      return r;
+      const control = states[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const area = self.completion.createResult(range, labels, control, self);
+      area._range = range._range;
+      return area;
     },
 
     /**
@@ -224,7 +228,12 @@ class HyperTextPieceView extends Component {
     const root = this.myRef.current;
     const { item } = this.props;
 
-    item.regions.forEach(function(r) {
+    item.regs.forEach(function(r) {
+      // spans can be totally missed if this is app init or undo/redo
+      // or they can be disconnected from DOM on completions switching
+      // so we have to recreate them from regions data
+      if (r._spans?.[0]?.isConnected) return;
+
       try {
         const range = xpath.toRange(r.start, r.startOffset, r.end, r.endOffset, root);
 
@@ -281,5 +290,6 @@ const HtxHyperText = inject("store")(observer(HtxHyperTextView));
 const HtxHyperTextPieceView = inject("store")(observer(HyperTextPieceView));
 
 Registry.addTag("hypertext", HyperTextModel, HtxHyperText);
+Registry.addObjectType(HyperTextModel);
 
 export { HyperTextModel, HtxHyperText };
