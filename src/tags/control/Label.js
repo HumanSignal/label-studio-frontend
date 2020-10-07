@@ -100,7 +100,8 @@ const Model = types
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
       const region = self.completion.highlightedNode;
-      if (region && region.readonly === true && region.parent.name === self.parent.toname) return;
+      const sameObject = region && region.parent.name === self.parent.toname;
+      if (region && region.readonly === true && sameObject) return;
 
       // one more check if that label can be selected
       if (!self.completion.editable) return;
@@ -116,7 +117,7 @@ const Model = types
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
       // not going to endup without the label(s) at all
-      if (region) {
+      if (region && sameObject) {
         if (labels.selectedLabels.length === 1 && self.selected) return;
       }
 
@@ -158,7 +159,7 @@ const Model = types
         }
       }
 
-      region && region.setValue(self.parent);
+      region && sameObject && region.setValue(self.parent);
     },
 
     setVisible(val) {
