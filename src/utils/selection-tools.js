@@ -85,10 +85,11 @@ const applyTextGranularity = (selection, granularity) => {
 
 /**
  * Lookup closest text node
+ * @param {HTMLElement} commonContainer
  * @param {HTMLElement} node
  * @param {number} offset
  */
-const textNodeLookup = (node, offset, direction) => {
+const textNodeLookup = (commonContainer, node, offset, direction) => {
   const startNode = node === commonContainer ? findOnPosition(node, offset, true).node : node;
 
   if (isTextNode(startNode)) return startNode;
@@ -107,15 +108,15 @@ const textNodeLookup = (node, offset, direction) => {
  * @param {Range} range
  */
 const fixRange = range => {
-  let { startContainer, endContainer, startOffset, endOffset } = range;
+  let { startContainer, endContainer, startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
 
   if (!isTextNode(startContainer)) {
-    startContainer = textNodeLookup(startContainer, startOffset, "forward");
+    startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
     range.setStart(startContainer, 0);
   }
 
   if (!isTextNode(endContainer)) {
-    endContainer = textNodeLookup(endContainer, endOffset, "backward");
+    endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward");
     range.setEnd(endContainer, endContainer.length);
   }
 
