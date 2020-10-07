@@ -9,7 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
-import { restoreNewsnapshot } from "../../core/Helpers";
+import { restoreNewsnapshot, guidGenerator } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 
@@ -27,7 +27,8 @@ import { runTemplate } from "../../core/Template";
  * @param {boolean} [clickableLinks=false] - allow to open resources from links
  */
 const TagAttrs = types.model("HyperTextModel", {
-  name: types.identifier,
+  // opional for cases with inline html: <HyperText><hr/></HyperText>
+  name: types.optional(types.identifier, guidGenerator(5)),
   value: types.maybeNull(types.string),
 
   // @todo add `valueType=url` to HyperText and make autodetection of `savetextresult`
