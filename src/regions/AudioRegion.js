@@ -41,7 +41,7 @@ const Model = types
     },
 
     updateColor(alpha = 1) {
-      const color = Utils.Colors.convertToRGBA(self.style?.fillcolor, alpha);
+      const color = Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
       // eslint-disable-next-line no-unused-expressions
       self._ws_region?.update({ color });
     },

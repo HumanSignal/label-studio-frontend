@@ -48,7 +48,7 @@ export const AreaMixin = types
     },
 
     getOneColor() {
-      return self.style && self.style.fillcolor;
+      return self.style?.fillcolor || "#ccc";
     },
   }))
   .volatile(self => ({

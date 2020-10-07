@@ -222,7 +222,7 @@ const HtxEllipseView = ({ store, item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, style.fillopacity) : null}
+        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
         stroke={strokecolor}
         strokeWidth={+strokewidth}
         strokeScaleEnabled={false}
