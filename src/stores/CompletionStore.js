@@ -777,17 +777,16 @@ export default types
     }
 
     function addCompletionFromPrediction(prediction) {
-      const s = prediction._initialCompletionObj;
+      // immutable work, because we'll change ids soon
+      const s = prediction._initialCompletionObj.map(r => ({ ...r }));
       const c = self.addCompletion({ userGenerate: true, result: s });
 
       const ids = {};
 
-      // we need to iterate here and rename all ids, as those might
-      // clash with the one in the prediction if used as a reference
-      // somewhere
+      // Area id is <uniq-id>#<completion-id> to be uniq across all tree
       s.forEach(r => {
         if ("id" in r) {
-          const id = guidGenerator();
+          const id = r.id.replace(/#.*$/, `#${c.id}`);
           ids[r.id] = id;
           r.id = id;
         }
