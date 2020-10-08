@@ -110,7 +110,7 @@ function attrsToProps(attrs) {
 
 /**
  *
- * @param {*} html
+ * @param {string} html
  */
 function treeToModel(html) {
   /**
@@ -204,6 +204,7 @@ function treeToModel(html) {
    */
   function buildData(node) {
     const data = attrsToProps(node.$);
+    const type = node["#name"].toLowerCase();
 
     /**
      * Generation id of node
@@ -213,7 +214,8 @@ function treeToModel(html) {
     /**
      * Build type name
      */
-    data["type"] = node["#name"].toLowerCase();
+    data["type"] = type;
+    data["tagName"] = node["#name"];
 
     return data;
   }
@@ -247,10 +249,11 @@ function treeToModel(html) {
  * @param {*} el
  */
 function renderItem(el) {
-  const View = Registry.getViewByModel(getType(el).name);
+  const typeName = getType(el).name;
+  const View = Registry.getViewByModel(typeName);
 
   if (!View) {
-    throw new Error("No view for model:" + getType(el).name);
+    throw new Error(`No view for model: ${typeName}`);
   }
 
   return <View key={guidGenerator()} item={el} />;

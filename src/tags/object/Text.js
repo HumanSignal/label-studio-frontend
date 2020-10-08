@@ -14,6 +14,7 @@ import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
 import InfoModal from "../../components/Infomodal/Infomodal";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Text tag shows an Text markup that can be labeled
@@ -42,7 +43,7 @@ const TagAttrs = types.model("TextModel", {
 
   selectionenabled: types.optional(types.boolean, true),
 
-  highlightcolor: types.maybeNull(types.string),
+  highlightcolor: types.maybeNull(customTypes.color),
   // matchlabel: types.optional(types.boolean, false),
 
   // [TODO]

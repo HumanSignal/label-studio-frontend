@@ -35,6 +35,7 @@ import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unuse
  * Styles
  */
 import styles from "./App.module.scss";
+import { TreeValidation } from "../TreeValidation/TreeValidation";
 
 /**
  * App
@@ -58,6 +59,14 @@ const App = inject("store")(
         return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
       }
 
+      renderConfigValidationException() {
+        return (
+          <Segment>
+            <TreeValidation errors={this.props.store.completionStore.validation} />
+          </Segment>
+        );
+      }
+
       renderLoader() {
         return <Result icon={<Spin size="large" />} />;
       }
@@ -73,6 +82,27 @@ const App = inject("store")(
               </div>
             ))}
           </div>
+        );
+      }
+
+      _renderUI(root, store, cs, settings) {
+        return (
+          <>
+            {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
+              <Segment
+                completion={cs.selected}
+                className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}
+              >
+                   <div style={{ position: "relative" }}>
+                        {Tree.renderItem(root)}
+                        {this.renderRelations()}
+                      </div>
+                {store.hasInterface("controls") && <Controls item={cs.selected} />}
+              </Segment>
+            )}
+            {cs.viewingAllCompletions && this.renderAllCompletions()}
+            {cs.viewingAllPredictions && this.renderAllPredictions()}
+          </>
         );
       }
 
@@ -130,18 +160,9 @@ const App = inject("store")(
                 {/* </div> */}
 
                 <div className={stCommon + " ls-common"}>
-                  {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                    <Segment completion={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
-                      <div style={{ position: "relative" }}>
-                        {Tree.renderItem(root)}
-                        {this.renderRelations()}
-                      </div>
-                      {store.hasInterface("controls") && <Controls item={cs.selected} />}
-                    </Segment>
-                  )}
-                  {cs.viewingAllCompletions && this.renderAllCompletions()}
-                  {cs.viewingAllPredictions && this.renderAllPredictions()}
-
+                  {cs.validation === null
+                    ? this._renderUI(root, store, cs, settings)
+                    : this.renderConfigValidationException()}
                   <div className={stMenu + " ls-menu"}>
                     {store.hasInterface("completions:menu") && <Completions store={store} />}
                     {store.hasInterface("predictions:menu") && <Predictions store={store} />}

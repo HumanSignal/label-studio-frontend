@@ -86,7 +86,8 @@ class _Registry {
 
   /**
    * Get model
-   * @param {*} tag
+   * @param {string} tag
+   * @return {import("mobx-state-tree").IModelType}
    */
   getModelByTag(tag) {
     const model = this.models[tag];

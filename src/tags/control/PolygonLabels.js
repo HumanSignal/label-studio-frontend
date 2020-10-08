@@ -35,6 +35,10 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types.model("PolygonLabelsModel", {
   type: "polygonlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
@@ -45,6 +49,7 @@ const Composition = types.compose(
   ModelAttrs,
   PolygonModel,
   TagAttrs,
+  Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

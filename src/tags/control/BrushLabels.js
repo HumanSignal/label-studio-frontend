@@ -29,6 +29,10 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types.model("BrushLabelsModel", {
   type: "brushlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
@@ -40,6 +44,7 @@ const BrushLabelsModel = types.compose(
   ModelAttrs,
   BrushModel,
   TagAttrs,
+  Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
