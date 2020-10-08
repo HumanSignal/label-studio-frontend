@@ -14,8 +14,10 @@ import { delay } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
+import { errorBuilder } from "../core/DataValidator/ConfigValidator";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
+import { ViewModel } from "../tags/visual";
 
 const Completion = types
   .model("Completion", {
@@ -531,48 +533,53 @@ const Completion = types
      * Deserialize completion of models
      */
     deserializeCompletion(json) {
-      let objCompletion = json;
+      try {
+        let objCompletion = json;
 
-      if (typeof objCompletion !== "object") {
-        objCompletion = JSON.parse(objCompletion);
-      }
+        if (typeof objCompletion !== "object") {
+          objCompletion = JSON.parse(objCompletion);
+        }
 
-      self._initialCompletionObj = objCompletion;
+        self._initialCompletionObj = objCompletion;
 
-      objCompletion.forEach(obj => {
-        if (obj["type"] !== "relation") {
-          const { id, value, type, ...data } = obj;
-          // avoid duplicates of the same areas in different completions/predictions
-          const areaId = `${id || guidGenerator()}#${self.id}`;
-          const resultId = `${data.from_name}@${areaId}`;
+        objCompletion.forEach(obj => {
+          if (obj["type"] !== "relation") {
+            const { id, value, type, ...data } = obj;
+            // avoid duplicates of the same areas in different completions/predictions
+            const areaId = `${id || guidGenerator()}#${self.id}`;
+            const resultId = `${data.from_name}@${areaId}`;
 
-          let area = self.areas.get(areaId);
-          if (!area) {
-            area = self.areas.put({
-              id: areaId,
-              object: data.to_name,
-              ...data,
-              ...value,
-              value,
-            });
+            let area = self.areas.get(areaId);
+            if (!area) {
+              area = self.areas.put({
+                id: areaId,
+                object: data.to_name,
+                ...data,
+                ...value,
+                value,
+              });
+            }
+
+            area.addResult({ ...data, id: resultId, type, value });
           }
+        });
 
-          area.addResult({ ...data, id: resultId, type, value });
-        }
-      });
+        self.results.filter(r => r.area.classification).forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
-      self.results.filter(r => r.area.classification).forEach(r => r.from_name.updateFromResult?.(r.mainValue));
-
-      objCompletion.forEach(obj => {
-        if (obj["type"] === "relation") {
-          self.relationStore.deserializeRelation(
-            `${obj.from_id}#${self.id}`,
-            `${obj.to_id}#${self.id}`,
-            obj.direction,
-            obj.labels,
-          );
-        }
-      });
+        objCompletion.forEach(obj => {
+          if (obj["type"] === "relation") {
+            self.relationStore.deserializeRelation(
+              `${obj.from_id}#${self.id}`,
+              `${obj.to_id}#${self.id}`,
+              obj.direction,
+              obj.labels,
+            );
+          }
+        });
+      } catch (e) {
+        console.error(e);
+        self.list.addErrors([errorBuilder.generalError(e)]);
+      }
     },
   }));
 
@@ -700,7 +707,14 @@ export default types
       const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
       const objects = [];
 
-      self.root = modelClass.create(rootModel);
+      try {
+        self.root = modelClass.create(rootModel);
+      } catch (e) {
+        console.error(e);
+        self.addErrors([errorBuilder.generalError(e)]);
+        // we have to return at least empty View to display interface
+        return (self.root = ViewModel.create({ id: "error" }));
+      }
 
       Tree.traverseTree(self.root, node => {
         if (node?.name) {

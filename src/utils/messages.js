@@ -26,4 +26,8 @@ export default {
   ERR_BAD_TYPE: ({ modelName, field, validType }) => {
     return `Attribute <b>${field}</b> of tag <b>${modelName}</b> has invalid type. Valid types are: <b>${validType}</b>.`;
   },
+
+  ERR_GENERAL: ({ value }) => {
+    return `Internal error. See browser console for more info. Try again or contact developers.<br/>${value}`;
+  },
 };

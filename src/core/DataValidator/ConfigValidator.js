@@ -1,6 +1,6 @@
 import Registry from "../Registry";
 
-const errorBuilder = {
+export const errorBuilder = {
   /**
    * Occurrs when attribute is not provided at all
    */
@@ -59,6 +59,15 @@ const errorBuilder = {
       value,
       validType,
       error: "ERR_BAD_TYPE",
+    };
+  },
+
+  generalError(error) {
+    return {
+      error: "ERR_GENERAL",
+      value: String(error).substr(0, 1000),
+      field: String(error.code),
+      modelName: "",
     };
   },
 };
