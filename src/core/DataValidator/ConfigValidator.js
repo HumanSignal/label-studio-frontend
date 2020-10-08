@@ -127,7 +127,8 @@ const flattenTree = (tree, parent = null) => {
 const validateNameTag = (child, model) => {
   const { name } = model.properties;
 
-  if (name && child.name === undefined) {
+  // HyperText can be used for mark-up, without name, so name is optional type there
+  if (name && !name.optionalValues && child.name === undefined) {
     return errorBuilder.required(model.name, "name");
   }
 
