@@ -298,7 +298,6 @@ const Completion = types
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
         detach(region);
-        return;
       }
 
       destroy(region);

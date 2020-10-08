@@ -311,7 +311,7 @@ const HtxRectangleView = ({ store, item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.editable && item.selected}
+        draggable={item.editable}
       />
       <LabelOnRect item={item} />
     </Fragment>
