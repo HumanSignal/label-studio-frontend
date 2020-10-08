@@ -134,6 +134,9 @@ export default types
      * Function
      */
     function afterCreate() {
+      // important thing to detect Area atomatically: it hasn't access to store, only via global
+      window.Htx = self;
+
       /**
        * Hotkey for submit
        */
@@ -176,8 +179,8 @@ export default types
       // unselect region
       Hotkey.addKey("u", function() {
         const c = self.completionStore.selected;
-        if (c && c.highlightedNode && !c.relationMode) {
-          c.regionStore.unselectAll();
+        if (c && !c.relationMode) {
+          c.unselectAll();
         }
       });
 
@@ -191,6 +194,11 @@ export default types
       Hotkey.addKey("ctrl+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canUndo && history.undo();
+      });
+
+      Hotkey.addKey("ctrl+shift+z", function() {
+        const { history } = self.completionStore.selected;
+        history && history.canRedo && history.redo();
       });
 
       Hotkey.addKey(
@@ -235,10 +243,16 @@ export default types
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
-          [taskObject.data]: JSON.stringify(taskObject.data),
+          data: JSON.stringify(taskObject.data),
         };
       }
       self.task = Task.create(taskObject);
+    }
+
+    function assignConfig(config) {
+      const cs = self.completionStore;
+      self.config = config;
+      cs.initRoot(self.config);
     }
 
     /* eslint-disable no-unused-vars */
@@ -249,6 +263,16 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
+    function submitDraft(c) {
+      return new Promise(resolve => {
+        const fn = getEnv(self).onSubmitDraft;
+        if (!fn) return resolve();
+        const res = fn(self, c);
+        if (res && res.then) res.then(resolve);
+        else resolve(res);
+      });
+    }
+
     function submitCompletion() {
       const c = self.completionStore.selected;
       c.beforeSend();
@@ -256,6 +280,7 @@ export default types
       if (!c.validate()) return;
 
       c.sendUserGenerate();
+      c.dropDraft();
       getEnv(self).onSubmitCompletion(self, c);
     }
 
@@ -263,7 +288,11 @@ export default types
       const c = self.completionStore.selected;
       c.beforeSend();
 
+      if (!c.validate()) return;
+
+      c.dropDraft();
       getEnv(self).onUpdateCompletion(self, c);
+      !c.sentUserGenerate && c.sendUserGenerate();
     }
 
     function skipTask() {
@@ -286,23 +315,19 @@ export default types
      * Given completions and predictions
      */
     function initializeStore({ completions, predictions }) {
-      const _init = (addFun, selectFun) => {
-        return item => {
-          const obj = self.completionStore[addFun](item);
+      const cs = self.completionStore;
+      cs.initRoot(self.config);
 
-          self.completionStore[selectFun](obj.id);
-          obj.deserializeCompletion(item.result);
-          obj.reinitHistory();
-
-          return obj;
-        };
-      };
-
-      const addPred = _init("addPrediction", "selectPrediction");
-      const addComp = _init("addCompletion", "selectCompletion");
-
-      predictions && predictions.forEach(p => addPred(p));
-      completions && completions.forEach(c => addComp(c));
+      // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
+      /* eslint-disable no-unused-expressions */
+      predictions?.forEach(p => cs.addPrediction(p).deserializeCompletion(p.result));
+      completions?.forEach((c, i) => {
+        const obj = cs.addCompletion(c);
+        cs.selectCompletion(obj.id);
+        obj.deserializeCompletion(c.draft || c.result);
+        obj.reinitHistory();
+      });
+      /* eslint-enable no-unused-expressions */
     }
 
     return {
@@ -312,10 +337,12 @@ export default types
 
       afterCreate,
       assignTask,
+      assignConfig,
       resetState,
       initializeStore,
 
       skipTask,
+      submitDraft,
       submitCompletion,
       updateCompletion,
 

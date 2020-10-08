@@ -1,17 +1,20 @@
 import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
 
-import { cloneNode } from "../core/Helpers";
-import { AllRegionsType } from "../regions";
+import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";
 import { TRAVERSE_SKIP } from "../core/Tree";
+import Area from "../regions/Area";
 
 /**
  * Relation between two different nodes
  */
 const Relation = types
   .model("Relation", {
-    node1: types.reference(AllRegionsType),
-    node2: types.reference(AllRegionsType),
+    id: types.optional(types.identifier, guidGenerator),
+
+    node1: types.reference(Area),
+    node2: types.reference(Area),
+
     direction: types.optional(types.enumeration(["left", "right", "bi"]), "right"),
 
     // labels
@@ -70,22 +73,35 @@ const Relation = types
     toggleMeta() {
       self.showMeta = !self.showMeta;
     },
+
+    setSelfHighlight(highlighted = false) {
+      if (highlighted) {
+        self.parent.setHighlight(self);
+      } else {
+        self.parent.removeHighlight();
+      }
+    },
   }));
 
 const RelationStore = types
   .model("RelationStore", {
     relations: types.array(Relation),
+    showConnections: types.optional(types.boolean, true),
+    highlighted: types.maybeNull(types.safeReference(Relation)),
   })
   .actions(self => ({
     findRelations(node1, node2) {
-      if (!node2) {
+      const id1 = node1.id || node1;
+      const id2 = node2?.id || node2;
+
+      if (!id2) {
         return self.relations.filter(rl => {
-          return rl.node1.id === node1.id || rl.node2.id === node1.id;
+          return rl.node1.id === id1 || rl.node2.id === id1;
         });
       }
 
       return self.relations.filter(rl => {
-        return rl.node1.id === node1.id && rl.node2.id === node2.id;
+        return rl.node1.id === id1 && rl.node2.id === id2;
       });
     },
 
@@ -96,10 +112,7 @@ const RelationStore = types
     addRelation(node1, node2) {
       if (self.nodesRelated(node1, node2)) return;
 
-      const rl = Relation.create({
-        node1: node1,
-        node2: node2,
-      });
+      const rl = Relation.create({ node1, node2 });
 
       // self.relations.unshift(rl);
       self.relations.push(rl);
@@ -120,8 +133,8 @@ const RelationStore = types
     serializeCompletion() {
       return self.relations.map(r => {
         const s = {
-          from_id: r.node1.pid,
-          to_id: r.node2.pid,
+          from_id: r.node1.cleanId,
+          to_id: r.node2.cleanId,
           type: "relation",
           direction: r.direction,
         };
@@ -141,6 +154,18 @@ const RelationStore = types
           const r = rl.relations.findRelation(l);
           if (r) r.setSelected(true);
         });
+    },
+
+    toggleConnections() {
+      self.showConnections = !self.showConnections;
+    },
+
+    setHighlight(relation) {
+      self.highlighted = relation;
+    },
+
+    removeHighlight() {
+      self.highlighted = null;
     },
   }));
 

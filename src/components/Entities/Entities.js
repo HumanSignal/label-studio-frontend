@@ -1,6 +1,6 @@
 import React from "react";
 import { List, Divider, Badge, Menu, Dropdown, Tree, Tag, Button } from "antd";
-import { getRoot } from "mobx-state-tree";
+import { getRoot, isAlive } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
 import {
@@ -20,7 +20,8 @@ import { Node } from "../Node/Node";
 import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
 
 const RegionItem = observer(({ item, idx, flat }) => {
-  const cs = getRoot(item).completionStore;
+  if (!isAlive(item)) return null;
+  const c = getRoot(item).completionStore.selected;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,
@@ -48,20 +49,17 @@ const RegionItem = observer(({ item, idx, flat }) => {
       key={item.id}
       className={classnames.join(" ")}
       onClick={() => {
-        cs && cs.selected.regionStore.unselectAll();
-        item.selectRegion();
+        c.selectArea(item);
       }}
       onMouseOver={() => {
-        cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(true);
       }}
       onMouseOut={() => {
-        cs && cs.selected.regionStore.unhighlightAll();
         item.setHighlight(false);
       }}
     >
       <SimpleBadge number={idx + 1} style={badgeStyle} />
-      <Node node={item} onClick={() => {}} className={styles.node} />
+      <Node node={item} className={styles.node} />
 
       {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
 

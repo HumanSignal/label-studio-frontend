@@ -29,11 +29,16 @@ function unionArray(arr) {
   return types.maybeNull(types.array(oneOfTags(arr)));
 }
 
+function unionTag(arr) {
+  return types.maybeNull(types.enumeration("unionTag", arr));
+}
+
 function allModelsTypes() {
   const args = [
     {
       dispatcher: sn => {
-        if (Registry.tags.find(val => sn.type === val)) {
+        if (!sn) return types.literal(undefined);
+        if (Registry.tags.includes(sn.type)) {
           return Registry.getModelByTag(sn.type);
         } else {
           throw Error("Not expecting tag: " + sn.type);
@@ -75,4 +80,4 @@ function getParentOfTypeString(node, str) {
 const oneOfTools = _oneOf(Registry.getTool, "Not expecting tool: ");
 const toolsArray = _mixedArray(oneOfTools);
 
-export default { unionArray, allModelsTypes, isType, getParentOfTypeString, tagsArray, toolsArray };
+export default { unionArray, allModelsTypes, unionTag, isType, getParentOfTypeString, tagsArray, toolsArray };

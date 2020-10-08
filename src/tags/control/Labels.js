@@ -33,7 +33,7 @@ import ControlBase from "./Base";
  * @param {boolean} [showInline=true]        - show items in the same visual line
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
@@ -47,7 +47,6 @@ const TagAttrs = types.model({
  * @param {string} pid
  */
 const ModelAttrs = types.model({
-  id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
@@ -55,28 +54,26 @@ const ModelAttrs = types.model({
   visible: types.optional(types.boolean, true),
 });
 
-const Model = LabelMixin.props({ _type: "labels" })
-  .views(self => ({
-    get shouldBeUnselected() {
-      return self.choice === "single";
-    },
-  }))
-  .actions(self => ({
-    validate() {
-      const regions = self.completion.regionStore.regions;
+const Model = LabelMixin.views(self => ({
+  get shouldBeUnselected() {
+    return self.choice === "single";
+  },
+})).actions(self => ({
+  validate() {
+    const regions = self.completion.regionStore.regions;
 
-      for (let r of regions) {
-        for (let s of r.states) {
-          if (s.name === self.name) {
-            return true;
-          }
+    for (let r of regions) {
+      for (let s of r.states) {
+        if (s.name === self.name) {
+          return true;
         }
       }
+    }
 
-      InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-      return false;
-    },
-  }));
+    InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
+    return false;
+  },
+}));
 
 const LabelsModel = types.compose(
   "LabelsModel",

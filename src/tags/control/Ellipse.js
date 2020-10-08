@@ -3,6 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Ellipse
@@ -22,22 +23,21 @@ import ControlBase from "./Base";
  * @param {boolean} [canRotate=true]     - show or hide rotation handle
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(types.string, "0.6"),
-  fillcolor: types.optional(types.string, "#f48a42"),
+  opacity: types.optional(customTypes.range(), "0.6"),
+  fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
-  strokecolor: types.optional(types.string, "#f48a42"),
-  fillopacity: types.optional(types.string, "0.6"),
+  strokecolor: types.optional(customTypes.color, "#f48a42"),
+  fillopacity: types.optional(customTypes.range(), "0.6"),
 
   canrotate: types.optional(types.boolean, true),
 });
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "ellipse",
   })
   .views(self => ({

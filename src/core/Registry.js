@@ -6,6 +6,10 @@ class _Registry {
     this.tags = [];
     this.models = {};
     this.views = {};
+    this.regions = [];
+    this.objects = [];
+    // list of available areas per object type
+    this.areas = new Map();
 
     this.views_models = {};
 
@@ -17,6 +21,26 @@ class _Registry {
     this.models[tag] = model;
     this.views[tag] = view;
     this.views_models[model.name] = view;
+  }
+
+  addRegionType(type, object, detector) {
+    this.regions.push(type);
+    if (detector) type.detectByValue = detector;
+    const areas = this.areas.get(object);
+    if (areas) areas.push(type);
+    else this.areas.set(object, [type]);
+  }
+
+  regionTypes() {
+    return this.regions;
+  }
+
+  addObjectType(type) {
+    this.objects.push(type);
+  }
+
+  objectTypes() {
+    return this.objects;
   }
 
   modelsArr() {
@@ -35,6 +59,17 @@ class _Registry {
     return this.views[tag];
   }
 
+  getAvailableAreas(object, value) {
+    const available = this.areas.get(object);
+    if (!available) return [];
+    if (value) {
+      for (let model of available) {
+        if (model.detectByValue && model.detectByValue(value)) return [model];
+      }
+    }
+    return available.filter(a => !a.detectByValue);
+  }
+
   getTool(name) {
     const model = this.tools[name];
     if (!model) {
@@ -51,7 +86,8 @@ class _Registry {
 
   /**
    * Get model
-   * @param {*} tag
+   * @param {string} tag
+   * @return {import("mobx-state-tree").IModelType}
    */
   getModelByTag(tag) {
     const model = this.models[tag];

@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, clickRect, serialize } = require("./helpers");
+const { initLabelStudio, clickRect, serialize, waitForImage } = require("./helpers");
 
 const assert = require("assert");
 
@@ -68,6 +68,7 @@ Scenario("Check Rect region for Image", async function(I) {
   I.executeAsyncScript(initLabelStudio, params);
 
   I.waitForVisible("canvas");
+  I.executeAsyncScript(waitForImage);
   I.see("Regions (1)");
   // select first and only region
   I.click(locate("li").withText("Rectangle"));
@@ -90,6 +91,7 @@ Scenario("Image with perRegion tags", async function(I) {
   I.executeAsyncScript(initLabelStudio, params);
 
   I.waitForVisible("canvas");
+  I.executeAsyncScript(waitForImage);
   I.see("Regions (1)");
   // select first and only region
   I.click(locate("li").withText("Rectangle"));

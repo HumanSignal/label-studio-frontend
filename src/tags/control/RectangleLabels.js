@@ -32,25 +32,27 @@ import ControlBase from "./Base";
  * @param {boolean} [canRotate=true] - show or hide rotation handle
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types.model("RectangleLabelsModel", {
-  id: types.optional(types.identifier, guidGenerator),
   pid: types.optional(types.string, guidGenerator),
   type: "rectanglelabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "rectanglelabels" });
 
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   RectangleModel,
   TagAttrs,
-  Model,
+  Validation,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

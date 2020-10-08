@@ -42,45 +42,13 @@ const ToolMixin = types
       return activeStates ? activeStates.map(s => cloneNode(s)) : null;
     },
 
-    //
+    // @todo remove
     moreRegionParams(obj) {},
-
-    // given states try to find a state that can provide a color
-    // params for the region
-    paramsFromStates(states) {
-      const c = self.control;
-      let fillcolor = c.fillcolor;
-      let strokecolor = c.strokecolor;
-
-      if (states && states.length) {
-        const stateProvidesColor = states.find(s => s && s.hasOwnProperty("getSelectedColor"));
-        if (stateProvidesColor) {
-          const color = stateProvidesColor.getSelectedColor();
-          fillcolor = color;
-          strokecolor = color;
-        }
-      }
-
-      return {
-        fillColor: fillcolor,
-        strokeColor: strokecolor,
-      };
-    },
-
-    // clones the current state, dervies params from it (like colors)
-    // and returns that as an object. This method is used to
-    // reconstruct the region and it's labels.
-    get statesAndParams() {
-      const states = self.clonedStates;
-      const params = self.paramsFromStates(states);
-
-      return { states: states, ...params };
-    },
 
     get getActiveShape() {
       // active shape here is the last one that was added
       const obj = self.obj;
-      return obj.regions[obj.regions.length - 1];
+      return obj.regs[obj.regs.length - 1];
     },
 
     get getSelectedShape() {
@@ -122,7 +90,7 @@ const ToolMixin = types
       }
 
       if (controlTagTypes.includes(obj.type)) {
-        const params = self.paramsFromStates(states);
+        const params = {};
         const moreParams = self.moreRegionParams(obj);
         const data = {
           pid: obj.id,

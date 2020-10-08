@@ -1,10 +1,9 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
-import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 
 const RegionsMixin = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
+    // id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
@@ -12,11 +11,12 @@ const RegionsMixin = types
 
     hidden: types.optional(types.boolean, false),
 
-    selected: types.optional(types.boolean, false),
-    highlighted: types.optional(types.boolean, false),
-
     parentID: types.optional(types.string, ""),
   })
+  .volatile(self => ({
+    // selected: false,
+    highlighted: false,
+  }))
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
@@ -37,23 +37,6 @@ const RegionsMixin = types
 
     get editable() {
       return self.readonly === false && self.completion.editable === true;
-    },
-
-    get labelsState() {
-      return self.states && self.states.find(s => s.type.indexOf("labels") !== -1);
-    },
-
-    hasLabelState(labelValue) {
-      // first of all check if this region implements labels
-      // interface
-      const s = self.labelsState;
-      if (!s) return false;
-
-      // find that label and check if its selected
-      const l = s.findLabel(labelValue);
-      if (!l || !l.selected) return false;
-
-      return true;
     },
   }))
   .actions(self => ({
@@ -153,48 +136,16 @@ const RegionsMixin = types
       }
     },
 
-    updateOrAddState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
-      if (foundIndex !== -1) {
-        self.states[foundIndex] = cloneNode(state);
-        self.updateAppearenceFromState();
-      } else {
-        self.states.push(cloneNode(state));
-      }
-    },
-
-    // given the specific state object (for example labels) it finds
-    // that inside the region states objects and updates that, this
-    // function is used to capture the state
-    updateSingleState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
-      if (foundIndex !== -1) {
-        self.states[foundIndex] = cloneNode(state);
-
-        // user is updating the label of the region, there might
-        // be other states that depend on the value of the region,
-        // therefore we need to recheck here
-        if (state.type.indexOf("labels") !== -1) {
-          const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
-          states && states.forEach(s => self.states.remove(s));
-        }
-
-        self.updateAppearenceFromState();
-      }
-    },
-
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-
-      self.completion.loadRegionState(self);
-    },
+    selectRegion() {},
 
     /**
+     * @todo fix "keep selected" setting
      * Common logic for unselection; specific actions should be in `afterUnselectRegion`
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectRegion(tryToKeepStates = false) {
+      console.log("UNSELECT REGION", "you should not be here");
+      if (1) return;
       const completion = self.completion;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
@@ -227,11 +178,10 @@ const RegionsMixin = types
         completion.stopRelationMode();
         completion.regionStore.unselectAll();
       } else {
-        if (self.selected) {
-          self.unselectRegion(true);
-        } else {
-          completion.regionStore.unselectAll();
-          self.selectRegion();
+        const wasNotSelected = !self.selected;
+        completion.unselectAll();
+        if (wasNotSelected) {
+          completion.selectArea(self);
         }
       }
     },
@@ -241,17 +191,8 @@ const RegionsMixin = types
      */
     deleteRegion() {
       if (!self.completion.editable) return;
-
-      self.unselectRegion();
-
-      self.completion.relationStore.deleteNodeRelation(self);
-
-      if (self.type === "polygonregion") {
-        self.destroyRegion();
-      }
-
-      self.completion.regionStore.deleteRegion(self);
-
+      if (self.selected) self.completion.unselectAll();
+      if (self.destroyRegion) self.destroyRegion();
       self.completion.deleteRegion(self);
     },
 
