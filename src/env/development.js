@@ -100,6 +100,7 @@ function configureApplication(params) {
     onUpdateCompletion: params.onUpdateCompletion ? params.onUpdateCompletion : External.onUpdateCompletion,
     onDeleteCompletion: params.onDeleteCompletion ? params.onDeleteCompletion : External.onDeleteCompletion,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onSubmitDraft: params.onSubmitDraft || External.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,

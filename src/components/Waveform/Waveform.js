@@ -10,6 +10,7 @@ import styles from "./Waveform.module.scss";
 import globalStyles from "../../styles/global.module.scss";
 import { Slider, Row, Col, Select } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
+import InfoModal from "../Infomodal/Infomodal";
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
@@ -262,6 +263,38 @@ export default class Waveform extends React.Component {
     }
 
     this.wavesurfer = WaveSurfer.create(wavesurferConfigure);
+
+    this.wavesurfer.on("error", e => {
+      // just general error message
+      let body = (
+        <p>
+          Error while loading audio. Check the <code>data</code> field in task
+        </p>
+      );
+
+      if (e.message && e.message.includes("fetch")) {
+        // "Failed to fetch"
+        const urlCORS = "https://labelstud.io/guide/FAQ.html#Image-audio-resource-loading-error-while-labeling";
+        /* eslint-disable react/jsx-no-target-blank */
+        body = (
+          <p>
+            Failed to load audio. You can check exact error in Network panel of browser's devtools.
+            <br />
+            If this related to CORS, check out our{" "}
+            <a target="_blank" href={urlCORS}>
+              CORS related doc page
+            </a>
+            .
+          </p>
+        );
+        /* eslint-enable react/jsx-no-target-blank */
+      } else if (typeof e === "string" && e.includes("media element")) {
+        // "Error loading media element"
+        body = "Error while processing audio. Check media format and availability.";
+      }
+
+      InfoModal.error(body, e.message || e);
+    });
 
     /**
      * Load data

@@ -36,6 +36,7 @@ const Model = types
   .actions(self => ({
     setValue(val) {
       self._value = val;
+      self.parent.onChange();
     },
   }));
 
@@ -67,14 +68,6 @@ const HtxTextAreaRegionView = ({ store, item }) => {
     params["editable"] = {
       onChange: str => {
         item.setValue(str);
-
-        // here we update the parent object's state
-        if (parent.perregion) {
-          const reg = item.completion.highlightedNode;
-          reg && reg.updateSingleState(parent);
-
-          // self.regions = [];
-        }
       },
     };
   }
@@ -82,7 +75,6 @@ const HtxTextAreaRegionView = ({ store, item }) => {
   let divAttrs = {};
   if (!parent.perregion) {
     divAttrs = {
-      onClick: item.onClickRegion,
       onMouseOver: () => {
         if (relationMode) {
           item.setHighlight(true);
@@ -102,20 +94,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
       <Paragraph id={`TextAreaRegion-${item.id}`} className={classes.join(" ")} {...params}>
         {item._value}
       </Paragraph>
-      {parent.perregion && (
-        <DeleteOutlined
-          className={styles.delete}
-          onClick={ev => {
-            const reg = item.completion.highlightedNode;
-            item.completion.deleteRegion(item);
-
-            reg && reg.updateSingleState(parent);
-
-            ev.preventDefault();
-            return false;
-          }}
-        />
-      )}
+      {parent.perregion && <DeleteOutlined className={styles.delete} onClick={() => item.parent.remove(item)} />}
     </div>
   );
 };

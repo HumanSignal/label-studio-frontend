@@ -6,8 +6,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 
 /**
- * Polygon tag
- * Polygon is used to add polygons to an image
+ * Polygon is used to add polygons to an image without label selection. It's useful when you have only one label.
  * @example
  * <View>
  *   <Polygon name="rect-1" toName="img-1" />
@@ -24,7 +23,7 @@ import ControlBase from "./Base";
  * @param {rectangle|circle} [pointStyle=circle]  - style of points
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(types.string, "0.6"),
@@ -39,7 +38,6 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "polygon",
 
     // regions: types.array(RectRegionModel),

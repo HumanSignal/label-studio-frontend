@@ -44,6 +44,7 @@ const ObjectBase = types
     // unselect labels which was exceeded maxUsages
     // return all states left untouched - available labels and others
     function getAvailableStates() {
+      // `checkMaxUsages` may unselect labels with already reached `maxUsages`
       const checkAndCollect = (list, s) => (s.checkMaxUsages ? list.concat(s.checkMaxUsages()) : list);
       const allStates = self.states() || [];
       const exceeded = allStates.reduce(checkAndCollect, []);
@@ -53,7 +54,7 @@ const ObjectBase = types
           const label = exceeded[0];
           InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
         }
-        self.completion.regionStore.unselectAll(true);
+        self.completion.unselectAll();
       }
       return states;
     }

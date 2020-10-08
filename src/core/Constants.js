@@ -1,3 +1,11 @@
+export const defaultStyle = {
+  fillcolor: "orange",
+  fillopacity: 0.6,
+  strokecolor: "orange",
+  strokewidth: 5,
+  opacity: 0.6,
+};
+
 export default {
   FILL_COLOR: "",
   STROKE_COLOR: "",

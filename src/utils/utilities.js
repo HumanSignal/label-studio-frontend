@@ -104,3 +104,7 @@ export function atobUnicode(str) {
 export function wrapArray(value) {
   return [].concat(...[value]);
 }
+
+export function delay(ms = 0) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

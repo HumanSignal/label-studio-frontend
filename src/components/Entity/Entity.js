@@ -1,6 +1,5 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
-import { getType } from "mobx-state-tree";
 import { Form, Input, Button, Tag, Tooltip, Badge } from "antd";
 import { DeleteOutlined, LinkOutlined, PlusOutlined, CompressOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
@@ -11,16 +10,16 @@ import styles from "./Entity.module.scss";
 
 const { Paragraph, Text } = Typography;
 
-const templateElement = element => {
+const renderLabels = element => {
   return (
     <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
-      {element.selectedValues().map(title => {
-        let bgColor = element.findLabel(title).background ? element.findLabel(title).background : "#000000";
+      {element.selectedLabels.map(label => {
+        const bgColor = label.background || "#000000";
 
         return (
-          <Tag key={element.findLabel(title).id} color={bgColor} className={styles.tag}>
-            {title}
+          <Tag key={label.id} color={bgColor} className={styles.tag}>
+            {label.value}
           </Tag>
         );
       })}
@@ -28,31 +27,28 @@ const templateElement = element => {
   );
 };
 
-const RenderStates = observer(({ node }) => {
-  const _render = s => {
-    if (getType(s).name.indexOf("Labels") !== -1) {
-      return templateElement(s);
-    } else if (getType(s).name === "RatingModel") {
-      return <Paragraph>Rating: {s.getSelectedString()}</Paragraph>;
-    } else if (getType(s).name === "TextAreaModel") {
-      const text = s.regions.map(r => r._value).join("\n");
-      return (
-        <Paragraph className={styles.row}>
-          <Text>Text: </Text>
-          <Text mark className={styles.long}>
-            {text}
-          </Text>
-        </Paragraph>
-      );
-    } else if (getType(s).name === "ChoicesModel") {
-      return <Paragraph>Choices: {s.getSelectedString(", ")}</Paragraph>;
-    }
+const renderResult = result => {
+  if (result.type.endsWith("labels")) {
+    return renderLabels(result);
+  } else if (result.type === "rating") {
+    return <Paragraph>Rating: {result.mainValue}</Paragraph>;
+  } else if (result.type === "textarea") {
+    return (
+      <Paragraph className={styles.row}>
+        <Text>Text: </Text>
+        <Text mark className={styles.long}>
+          {result.mainValue.join("\n")}
+        </Text>
+      </Paragraph>
+    );
+  } else if (result.type === "choices") {
+    return <Paragraph>Choices: {result.mainValue.join(", ")}</Paragraph>;
+  }
 
-    return null;
-  };
+  return null;
+};
 
-  return <Fragment>{node.states.filter(s => s.holdsState).map(s => _render(s))}</Fragment>;
-});
+const Results = observer(({ node }) => <Fragment>{node.results.map(renderResult)}</Fragment>);
 
 export default observer(({ store, completion }) => {
   const node = completion.highlightedNode;
@@ -86,7 +82,7 @@ export default observer(({ store, completion }) => {
           </Text>
         )}
 
-        {node.states && <RenderStates node={node} />}
+        <Results node={node} />
       </div>
 
       <div className={styles.block + " ls-entity-buttons"}>
@@ -139,7 +135,7 @@ export default observer(({ store, completion }) => {
             className={styles.button}
             type="dashed"
             onClick={() => {
-              completion.highlightedNode.unselectRegion();
+              completion.unselectAll();
             }}
           >
             <CompressOutlined />
