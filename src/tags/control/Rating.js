@@ -90,11 +90,10 @@ const Model = types
 
     needsUpdate() {
       if (self.result) self.rating = self.result.mainValue;
+      else self.rating = null;
     },
 
-    unselectAll() {
-      self.rating = 0;
-    },
+    unselectAll() {},
 
     setRating(value) {
       self.rating = value;
