@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types, getRoot, getParentOfType } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
