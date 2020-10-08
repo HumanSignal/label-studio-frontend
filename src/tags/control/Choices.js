@@ -146,6 +146,21 @@ const Model = types
       self.tiedChildren.forEach(choice => choice.setSelected(values.includes(choice.alias || choice._value)));
     },
 
+    // update result in the store with current selected choices
+    updateResult() {
+      if (self.result) {
+        self.result.area.setValue(self);
+      } else {
+        if (self.perregion) {
+          const area = self.completion.highlightedNode;
+          if (!area) return null;
+          area.setValue(self);
+        } else {
+          self.completion.createResult({}, { choices: self.selectedValues() }, self, self.toname);
+        }
+      }
+    },
+
     toStateJSON() {
       const names = self.selectedValues();
 
@@ -198,7 +213,6 @@ const HtxChoices = observer(({ item }) => {
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
   if (item.isVisible === false) {
-    item.unselectAll();
     visibleStyle["display"] = "none";
   }
 
@@ -207,12 +221,13 @@ const HtxChoices = observer(({ item }) => {
       {item.layout === "select" ? (
         <Select
           style={{ width: "100%" }}
-          defaultValue={item.selectedLabels.map(l => l._value)}
+          value={item.selectedLabels.map(l => l._value)}
           mode={item.choice === "multiple" ? "multiple" : ""}
           onChange={function(val, opt) {
             if (Array.isArray(val)) {
-              item.unselectAll();
+              item.resetSelected();
               val.forEach(v => item.findLabel(v).setSelected(true));
+              item.updateResult();
             } else {
               const c = item.findLabel(val);
               if (c) {

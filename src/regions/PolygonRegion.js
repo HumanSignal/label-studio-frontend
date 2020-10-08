@@ -465,6 +465,9 @@ const HtxPolygonView = ({ store, item }) => {
         }
       }}
       onClick={e => {
+        // create regions over another regions with Cmd/Ctrl pressed
+        if (e.evt.metaKey || e.evt.ctrlKey) return;
+
         e.cancelBubble = true;
 
         // if (!item.editable) return;
@@ -482,13 +485,13 @@ const HtxPolygonView = ({ store, item }) => {
       }}
       draggable={item.editable}
     >
+      <LabelOnPolygon item={item} />
+
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? renderPoly(item.points) : null}
       {item.points ? renderLines(item.points) : null}
       {item.points ? renderCircles(item.points) : null}
-
-      <LabelOnPolygon item={item} />
     </Group>
   );
 };
