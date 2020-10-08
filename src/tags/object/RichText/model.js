@@ -8,7 +8,7 @@ import { runTemplate } from "../../../core/Template";
 import { RichTextRegionModel } from "../../../regions";
 import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
-import { customTypes } from "../../core/CustomTypes";
+import { customTypes } from "../../../core/CustomTypes";
 import * as xpath from "xpath-range";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
