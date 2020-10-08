@@ -1,11 +1,12 @@
 import React, { Fragment } from "react";
-import { Select, Divider, List, Button } from "antd";
+import { Select, Divider, List, Button, Checkbox } from "antd";
 import { isValidReference, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
 
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
+import { wrapArray } from "../../utils/utilities";
 
 const { Option } = Select;
 
@@ -22,8 +23,9 @@ const RelationMeta = observer(({ store, rl }) => {
         placeholder="Please select"
         defaultValue={selected}
         onChange={(val, option) => {
+          const values = wrapArray(val);
           r.unselectAll();
-          val.forEach(v => r.findRelation(v).setSelected(true));
+          values.forEach(v => r.findRelation(v).setSelected(true));
         }}
       >
         {r.children.map(c => (
@@ -78,11 +80,13 @@ const ListItem = observer(({ item }) => {
       className={isSelected && styles.selected}
       key={item.id}
       actions={[]}
-      onMouseOver={() => {
+      onMouseEnter={() => {
         item.toggleHighlight();
+        item.setSelfHighlight(true);
       }}
-      onMouseOut={() => {
+      onMouseLeave={() => {
         item.toggleHighlight();
+        item.setSelfHighlight(false);
       }}
     >
       <div className={styles.item}>
@@ -132,6 +136,19 @@ export default observer(({ store }) => {
       <Divider dashed orientation="left" style={{ height: "auto" }}>
         Relations ({relations.length})
       </Divider>
+
+      <p>
+        <Checkbox
+          value="Show connection lines"
+          defaultChecked={completion.relationStore.showConnections}
+          onChange={() => {
+            completion.relationStore.toggleConnections();
+          }}
+        >
+          Show connection lines
+        </Checkbox>
+      </p>
+
       {!relations.length && <p>No Relations added yet</p>}
 
       {relations.length > 0 && (
