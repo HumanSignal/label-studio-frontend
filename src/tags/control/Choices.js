@@ -198,7 +198,6 @@ const HtxChoices = observer(({ item }) => {
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
   if (item.isVisible === false) {
-    item.unselectAll();
     visibleStyle["display"] = "none";
   }
 
@@ -207,11 +206,11 @@ const HtxChoices = observer(({ item }) => {
       {item.layout === "select" ? (
         <Select
           style={{ width: "100%" }}
-          defaultValue={item.selectedLabels.map(l => l._value)}
+          value={item.selectedLabels.map(l => l._value)}
           mode={item.choice === "multiple" ? "multiple" : ""}
           onChange={function(val, opt) {
             if (Array.isArray(val)) {
-              item.unselectAll();
+              item.resetSelected();
               val.forEach(v => item.findLabel(v).setSelected(true));
             } else {
               const c = item.findLabel(val);
