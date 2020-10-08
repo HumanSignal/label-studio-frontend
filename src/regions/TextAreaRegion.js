@@ -29,6 +29,9 @@ const Model = types
     get parent() {
       return getParentOfType(self, TextAreaModel);
     },
+    get regionElement() {
+      return document.querySelector(`#TextAreaRegion-${self.id}`);
+    },
   }))
   .actions(self => ({
     setValue(val) {
@@ -88,7 +91,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
-      <Paragraph className={classes.join(" ")} {...params}>
+      <Paragraph id={`TextAreaRegion-${item.id}`} className={classes.join(" ")} {...params}>
         {item._value}
       </Paragraph>
       {parent.perregion && <DeleteOutlined className={styles.delete} onClick={() => item.parent.remove(item)} />}
