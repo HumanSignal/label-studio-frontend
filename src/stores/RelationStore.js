@@ -1,4 +1,4 @@
-import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, destroy, getParentOfType, getRoot, isValidReference } from "mobx-state-tree";
 
 import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";
@@ -85,10 +85,18 @@ const Relation = types
 
 const RelationStore = types
   .model("RelationStore", {
-    relations: types.array(Relation),
+    _relations: types.array(Relation),
     showConnections: types.optional(types.boolean, true),
     highlighted: types.maybeNull(types.safeReference(Relation)),
   })
+  .views(self => ({
+    get relations() {
+      // @todo fix undo/redo with relations
+      // currently undo/redo doesn't consider relations at all,
+      // so some relations can temporarily lose nodes they are connected to during undo/redo
+      return self._relations.filter(r => isValidReference(() => r.node1) && isValidReference(() => r.node2));
+    },
+  }))
   .actions(self => ({
     findRelations(node1, node2) {
       const id1 = node1.id || node1;
@@ -115,7 +123,7 @@ const RelationStore = types
       const rl = Relation.create({ node1, node2 });
 
       // self.relations.unshift(rl);
-      self.relations.push(rl);
+      self._relations.push(rl);
 
       return rl;
     },
