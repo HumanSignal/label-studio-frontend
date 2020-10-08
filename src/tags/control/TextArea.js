@@ -110,6 +110,10 @@ const Model = types
       return { text: texts };
     },
 
+    needsUpdate() {
+      self.updateFromResult(self.result?.mainValue);
+    },
+
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
     },
