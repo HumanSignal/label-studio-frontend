@@ -8,6 +8,7 @@ import ImageTransformer from "../ImageTransformer/ImageTransformer";
 import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
+import InfoModal from "../Infomodal/Infomodal";
 
 export default observer(
   class ImageView extends Component {
@@ -102,6 +103,10 @@ export default observer(
       } else {
         return item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
       }
+    };
+
+    handleError = () => {
+      InfoModal.error(`Cannot load image (${this.props.item._value}).\nCheck console/network panel for more info.`);
     };
 
     updateGridSize = range => {
@@ -327,6 +332,7 @@ export default observer(
               style={imgStyle}
               src={item._value}
               onLoad={item.updateImageSize}
+              onError={this.handleError}
               onClick={this.handleOnClick}
               alt="LS"
             />
