@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
 import { guidGenerator } from "../../core/Helpers";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Relation tag represents a single relation label
@@ -25,7 +26,7 @@ import { guidGenerator } from "../../core/Helpers";
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
-  background: types.optional(types.string, Constants.RELATION_BACKGROUND),
+  background: types.optional(customTypes.color, Constants.RELATION_BACKGROUND),
 });
 
 const Model = types

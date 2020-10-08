@@ -29,6 +29,10 @@ function unionArray(arr) {
   return types.maybeNull(types.array(oneOfTags(arr)));
 }
 
+function unionTag(arr) {
+  return types.maybeNull(types.enumeration("unionTag", arr));
+}
+
 function allModelsTypes() {
   const args = [
     {
@@ -76,4 +80,4 @@ function getParentOfTypeString(node, str) {
 const oneOfTools = _oneOf(Registry.getTool, "Not expecting tool: ");
 const toolsArray = _mixedArray(oneOfTools);
 
-export default { unionArray, allModelsTypes, isType, getParentOfTypeString, tagsArray, toolsArray };
+export default { unionArray, allModelsTypes, unionTag, isType, getParentOfTypeString, tagsArray, toolsArray };

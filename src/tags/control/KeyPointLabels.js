@@ -34,6 +34,10 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types
   .model("KeyPointLabelesModel", {
     type: "keypointlabels",
@@ -51,6 +55,7 @@ const Composition = types.compose(
   ModelAttrs,
   KeyPointModel,
   TagAttrs,
+  Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

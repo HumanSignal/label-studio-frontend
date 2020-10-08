@@ -12,6 +12,7 @@ import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
 import { restoreNewsnapshot, guidGenerator } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { runTemplate } from "../../core/Template";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * HyperText tag shows an HyperText markup that can be labeled
@@ -37,7 +38,7 @@ const TagAttrs = types.model("HyperTextModel", {
   ),
   clickablelinks: false,
 
-  highlightcolor: types.maybeNull(types.string),
+  highlightcolor: types.maybeNull(customTypes.color),
   showlabels: types.optional(types.boolean, false),
 
   encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),

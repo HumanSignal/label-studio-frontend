@@ -12,6 +12,7 @@ import { KeyPointRegionModel } from "../../regions/KeyPointRegion";
 import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Image tag shows an image on the page
@@ -50,7 +51,7 @@ const TagAttrs = types.model({
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
   gridSize: types.optional(types.number, 30),
-  gridColor: types.optional(types.string, "#EEEEF4"),
+  gridColor: types.optional(customTypes.color, "#EEEEF4"),
 
   zoom: types.optional(types.boolean, false),
   negativezoom: types.optional(types.boolean, false),

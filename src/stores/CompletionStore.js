@@ -13,6 +13,7 @@ import Utils from "../utils";
 import { delay } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
+import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 
@@ -588,6 +589,8 @@ export default types
 
     viewingAllCompletions: types.optional(types.boolean, false),
     viewingAllPredictions: types.optional(types.boolean, false),
+
+    validation: types.maybeNull(types.array(ValidationError)),
   })
   .views(self => ({
     get store() {
@@ -727,6 +730,8 @@ export default types
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
 
+      self.validate(VALIDATORS.CONFIG, rootModel);
+
       return self.root;
     }
 
@@ -806,7 +811,45 @@ export default types
       return c;
     }
 
+    /** ERRORS HANDLING */
+    const handleErrors = errors => {
+      self.addErrors(errors);
+    };
+
+    const addErrors = errors => {
+      const ids = [];
+
+      const newErrors = [...(self.validation ?? []), ...errors].reduce((res, error) => {
+        const id = error.identifier;
+
+        if (ids.indexOf(id) < 0) {
+          ids.push(id);
+          res.push(error);
+        }
+
+        return res;
+      }, []);
+
+      self.validation = newErrors;
+    };
+
+    const afterCreate = () => {
+      self._validator = new DataValidator();
+      self._validator.addErrorCallback(handleErrors);
+    };
+
+    const beforeDestroy = () => {
+      self._validator.removeErrorCallback(handleErrors);
+    };
+
+    const validate = (validatorName, data) => {
+      self._validator.validate(validatorName, data);
+    };
+
     return {
+      afterCreate,
+      beforeDestroy,
+
       toggleViewingAllCompletions,
       toggleViewingAllPredictions,
 
@@ -815,6 +858,9 @@ export default types
       addPrediction,
       addCompletion,
       addCompletionFromPrediction,
+
+      addErrors,
+      validate,
 
       selectCompletion,
       selectPrediction,
