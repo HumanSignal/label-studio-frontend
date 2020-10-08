@@ -20,6 +20,14 @@ const Model = types
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
+    get parent() {
+      return getParentOfType(self, AudioPlusModel);
+    },
+
+    get regionElement() {
+      return self.wsRegionElement(self._ws_region);
+    },
+
     wsRegionElement(wsRegion) {
       const elID = wsRegion.id;
       let el = document.querySelector(`[data-id="${elID}"]`);

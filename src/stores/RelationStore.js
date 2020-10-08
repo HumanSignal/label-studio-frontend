@@ -12,6 +12,7 @@ const Relation = types
   .model("Relation", {
     node1: types.reference(Area),
     node2: types.reference(Area),
+
     direction: types.optional(types.enumeration(["left", "right", "bi"]), "right"),
 
     // labels
@@ -70,11 +71,21 @@ const Relation = types
     toggleMeta() {
       self.showMeta = !self.showMeta;
     },
+
+    setSelfHighlight(highlighted = false) {
+      if (highlighted) {
+        self.parent.setHighlight(self);
+      } else {
+        self.parent.removeHighlight();
+      }
+    },
   }));
 
 const RelationStore = types
   .model("RelationStore", {
     relations: types.array(Relation),
+    showConnections: types.optional(types.boolean, true),
+    highlighted: types.maybeNull(types.safeReference(Relation)),
   })
   .actions(self => ({
     findRelations(node1, node2) {
@@ -141,6 +152,18 @@ const RelationStore = types
           const r = rl.relations.findRelation(l);
           if (r) r.setSelected(true);
         });
+    },
+
+    toggleConnections() {
+      self.showConnections = !self.showConnections;
+    },
+
+    setHighlight(relation) {
+      self.highlighted = relation;
+    },
+
+    removeHighlight() {
+      self.highlighted = null;
     },
   }));
 

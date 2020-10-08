@@ -22,6 +22,7 @@ import Predictions from "../Predictions/Predictions";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
 import SideColumn from "../SideColumn/SideColumn";
+import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
 
 /**
  * Tags
@@ -83,6 +84,12 @@ const App = inject("store")(
         return this._renderAll(this.props.store.completionStore.predictions);
       }
 
+      renderRelations() {
+        const store = this.props.store.completionStore.selected.relationStore;
+        console.log({ store });
+        return <RelationsOverlay store={store} />;
+      }
+
       render() {
         const self = this;
         const { store } = self.props;
@@ -124,11 +131,11 @@ const App = inject("store")(
 
                 <div className={stCommon + " ls-common"}>
                   {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                    <Segment
-                      completion={cs.selected}
-                      className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}
-                    >
-                      {Tree.renderItem(root)}
+                    <Segment completion={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
+                      <div style={{ position: "relative" }}>
+                        {Tree.renderItem(root)}
+                        {this.renderRelations()}
+                      </div>
                       {store.hasInterface("controls") && <Controls item={cs.selected} />}
                     </Segment>
                   )}
