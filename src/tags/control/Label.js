@@ -199,6 +199,8 @@ const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
     const bg = item.background;
     const labelStyle = {
+      borderLeftWidth: 3,
+      borderLeftColor: bg,
       backgroundColor: item.selected ? bg : "#e8e8e8",
       color: item.selected ? item.selectedcolor : "#333333",
       cursor: "pointer",
@@ -207,6 +209,12 @@ const HtxLabelView = inject("store")(
 
     if (!item.visible) {
       labelStyle["display"] = "none";
+    }
+
+    if (item.selected) {
+      labelStyle.borderTopColor = bg;
+      labelStyle.borderBottomColor = bg;
+      labelStyle.borderRightColor = bg;
     }
 
     return (
