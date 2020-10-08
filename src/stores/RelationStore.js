@@ -1,6 +1,6 @@
 import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
 
-import { cloneNode } from "../core/Helpers";
+import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";
 import { TRAVERSE_SKIP } from "../core/Tree";
 import Area from "../regions/Area";
@@ -10,6 +10,8 @@ import Area from "../regions/Area";
  */
 const Relation = types
   .model("Relation", {
+    id: types.optional(types.identifier, guidGenerator),
+
     node1: types.reference(Area),
     node2: types.reference(Area),
 
