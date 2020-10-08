@@ -30,6 +30,8 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       if (
+        // create regions over another regions with Cmd/Ctrl pressed
+        (e.evt && (e.evt.metaKey || e.evt.ctrlKey)) ||
         e.target === e.target.getStage() ||
         (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
       ) {

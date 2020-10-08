@@ -124,7 +124,7 @@ const LabelOnPolygon = observer(({ item }) => {
           fillEnabled={false}
           width={bbox[0][1] - bbox[0][0]}
           height={bbox[1][1] - bbox[1][0]}
-          stroke={item.strokeColor}
+          stroke={item.style?.strokecolor}
           strokeWidth={1}
           strokeScaleEnabled={false}
           shadowBlur={0}
@@ -162,7 +162,7 @@ const LabelOnMask = observer(({ item }) => {
         fillEnabled={false}
         width={bbox[0][1] - bbox[0][0]}
         height={bbox[1][1] - bbox[1][0]}
-        stroke={item.strokeColor}
+        stroke={item.style?.strokecolor}
         strokeWidth={1}
         strokeScaleEnabled={false}
         shadowBlur={0}
