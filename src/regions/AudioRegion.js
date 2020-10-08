@@ -1,4 +1,4 @@
-import { types, getRoot, getParentOfType } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants from "../core/Constants";
@@ -20,10 +20,6 @@ const Model = types
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
-    get parent() {
-      return getParentOfType(self, AudioPlusModel);
-    },
-
     get regionElement() {
       return self.wsRegionElement(self._ws_region);
     },
