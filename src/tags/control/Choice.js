@@ -73,17 +73,7 @@ const Model = types
 
       self.setSelected(!self.selected);
 
-      if (choices.result) {
-        choices.result.area.setValue(choices);
-      } else {
-        if (choices.perregion) {
-          const area = self.completion.highlightedNode;
-          if (!area) return null;
-          area.setValue(choices);
-        } else {
-          self.completion.createResult({}, { choices: choices.selectedValues() }, choices, choices.toname);
-        }
-      }
+      choices.updateResult();
     },
 
     setVisible(val) {
