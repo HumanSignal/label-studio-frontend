@@ -707,6 +707,8 @@ export default types
       const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
       const objects = [];
 
+      self.validate(VALIDATORS.CONFIG, rootModel);
+
       try {
         self.root = modelClass.create(rootModel);
       } catch (e) {
@@ -743,8 +745,6 @@ export default types
 
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
-
-      self.validate(VALIDATORS.CONFIG, rootModel);
 
       return self.root;
     }
