@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
 import { observer, inject } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -13,6 +13,7 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 
 /**
  * Ellipse object for Bounding Box
@@ -260,18 +261,18 @@ const HtxEllipseView = ({ store, item }) => {
         }}
         dragBoundFunc={item.parent.fixForZoom(pos => {
           let { x, y } = pos;
-          let { stageHeight, stageWidth } = getParent(item, 2);
+          const { radiusX, radiusY, rotation } = item;
+          const { stageHeight, stageWidth } = item.parent;
+          const selfRect = { x: -radiusX, y: -radiusY, width: radiusX * 2, height: radiusY * 2 };
+          const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
+          const fixed = fixRectToFit(box, stageWidth, stageHeight);
 
-          if (x < 0) {
-            x = 0;
-          } else if (x > stageWidth) {
-            x = stageWidth;
+          if (fixed.width !== box.width) {
+            x += (fixed.width - box.width) * (fixed.x !== box.x ? -1 : 1);
           }
 
-          if (y < 0) {
-            y = 0;
-          } else if (y > stageHeight) {
-            y = stageHeight;
+          if (fixed.height !== box.height) {
+            y += (fixed.height - box.height) * (fixed.y !== box.y ? -1 : 1);
           }
 
           return { x, y };

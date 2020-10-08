@@ -207,9 +207,11 @@ export default types
           const c = self.completionStore.selected;
           if (c && c.relationMode) {
             c.stopRelationMode();
+          } else if (c && c.highlightedNode) {
+            c.regionStore.unselectAll();
           }
         },
-        "Exit relation mode",
+        "Unselect region, exit relation mode",
       );
 
       Hotkey.addKey(

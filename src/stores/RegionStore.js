@@ -23,12 +23,11 @@ export default types
     get sortedRegions() {
       const sorts = {
         date: () => self.regions,
-        score: () => self.regions.sort((a, b) => a.score - b.score),
+        score: () => self.regions.sort((a, b) => b.score - a.score),
       };
 
-      return sorts[self.sort]();
-      // TODO
-      // return (self.sortOrder === 'asc') ? r.slice().reverse() : r;
+      const r = sorts[self.sort]();
+      return self.sortOrder === "asc" ? r.slice().reverse() : r;
     },
 
     asTree(enrich) {
@@ -38,7 +37,7 @@ export default types
       // [ { id: "1", parentID: "" }, { id: "2", parentID: "1" } ]
       // would create a tree of two elements
 
-      const arr = self.regions;
+      const arr = self.sortedRegions;
       const tree = [],
         lookup = {};
 
@@ -105,8 +104,12 @@ export default types
     },
 
     setSort(sort) {
-      self.sortOrder = "desc";
-      self.sort = sort;
+      if (self.sort === sort) {
+        self.toggleSortOrder();
+      } else {
+        self.sortOrder = "desc";
+        self.sort = sort;
+      }
       self.initHotkeys();
     },
 
