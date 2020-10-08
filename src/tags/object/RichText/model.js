@@ -8,6 +8,7 @@ import { runTemplate } from "../../../core/Template";
 import { RichTextRegionModel } from "../../../regions";
 import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
+import { customTypes } from "../../core/CustomTypes";
 import * as xpath from "xpath-range";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
@@ -55,7 +56,7 @@ const TagAttrs = types.model("RichTextModel", {
 
   clickablelinks: false,
 
-  highlightcolor: types.maybeNull(types.string),
+  highlightcolor: types.maybeNull(customTypes.color),
 
   showlabels: types.optional(types.boolean, true),
 
