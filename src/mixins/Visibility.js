@@ -17,7 +17,7 @@ const VisibilityMixin = types
           "region-selected": ({ tagName, labelValue }) => {
             const area = self.completion.highlightedNode;
 
-            if (!area || (tagName && area.object.name !== tagName)) {
+            if (!area || (tagName && area.labeling?.from_name.name !== tagName)) {
               return false;
             }
 
