@@ -7,6 +7,7 @@ import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, Dele
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
 import { wrapArray } from "../../utils/utilities";
+import globalStyles from "../../styles/global.module.scss";
 
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 
@@ -155,10 +156,10 @@ export default observer(({ store }) => {
           <div>
             <Button
               size="small"
-              type="text"
+              type="link"
               icon={relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => completion.relationStore.toggleConnections()}
-              className={relationsUIVisible ? styles.uihidden : styles.uivisible}
+              className={[relationsUIVisible ? styles.uihidden : styles.uivisible, globalStyles.link]}
             />
           </div>
         )}
