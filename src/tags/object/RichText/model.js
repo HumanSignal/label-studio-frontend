@@ -5,7 +5,7 @@ import { types, getRoot, getType } from "mobx-state-tree";
 import { restoreNewsnapshot, guidGenerator, cloneNode } from "../../../core/Helpers";
 import ObjectBase from "../Base";
 import { runTemplate } from "../../../core/Template";
-import { RichTextRegionModel } from "../../../regions";
+import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
 import { customTypes } from "../../../core/CustomTypes";
