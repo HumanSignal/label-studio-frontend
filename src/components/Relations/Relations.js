@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Select, Divider, List, Button, Checkbox } from "antd";
+import { Select, Divider, List, Button } from "antd";
 import { isValidReference, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -7,6 +7,8 @@ import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, Dele
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";
 import { wrapArray } from "../../utils/utilities";
+
+import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -129,29 +131,42 @@ const ListItem = observer(({ item }) => {
 export default observer(({ store }) => {
   const completion = store.completionStore.selected;
   const { relations } = completion.relationStore;
+  const hasRelations = relations.length > 0;
+  const relationsUIVisible = completion.relationStore.showConnections;
 
   return (
     <Fragment>
       {/* override LS styles' height */}
-      <Divider dashed orientation="left" style={{ height: "auto" }}>
-        Relations ({relations.length})
-      </Divider>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingLeft: "4px",
+          paddingRight: "4px",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ flex: 1, paddingRight: 10 }}>
+          <Divider dashed orientation="left" style={{ height: "auto" }}>
+            Relations ({relations.length})
+          </Divider>
+        </div>
+        {hasRelations && (
+          <div>
+            <Button
+              size="small"
+              type="text"
+              icon={relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              onClick={() => completion.relationStore.toggleConnections()}
+              className={relationsUIVisible ? styles.uihidden : styles.uivisible}
+            />
+          </div>
+        )}
+      </div>
 
-      <p>
-        <Checkbox
-          value="Show connection lines"
-          defaultChecked={completion.relationStore.showConnections}
-          onChange={() => {
-            completion.relationStore.toggleConnections();
-          }}
-        >
-          Show connection lines
-        </Checkbox>
-      </p>
+      {!hasRelations && <p>No Relations added yet</p>}
 
-      {!relations.length && <p>No Relations added yet</p>}
-
-      {relations.length > 0 && (
+      {hasRelations && (
         <List
           size="small"
           bordered

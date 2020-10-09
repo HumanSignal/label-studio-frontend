@@ -15,15 +15,15 @@ const obtainWatcher = node => {
     case "audioregion":
       return DOMWatcher;
     case "rectangleregion":
-      return createPropertyWatcher(["x", "y", "width", "height", parentImagePropsWatch]);
+      return createPropertyWatcher(["x", "y", "width", "height", "hidden", parentImagePropsWatch]);
     case "ellipseregion":
-      return createPropertyWatcher(["x", "y", "radiusX", "radiusY", "rotation", parentImagePropsWatch]);
+      return createPropertyWatcher(["x", "y", "radiusX", "radiusY", "rotation", "hidden", parentImagePropsWatch]);
     case "polygonregion":
-      return createPropertyWatcher([{ points: ["x", "y"] }, parentImagePropsWatch]);
+      return createPropertyWatcher(["hidden", { points: ["x", "y"] }, parentImagePropsWatch]);
     case "keypointregion":
-      return createPropertyWatcher(["x", "y", parentImagePropsWatch]);
+      return createPropertyWatcher(["x", "y", "hidden", parentImagePropsWatch]);
     case "brushregion":
-      return createPropertyWatcher(["needsUpdate", parentImagePropsWatch]);
+      return createPropertyWatcher(["needsUpdate", "hidden", parentImagePropsWatch]);
     default:
       return null;
   }
@@ -41,7 +41,7 @@ const connect = (relation, root) => {
   return {
     id: relation.id,
     label: wrapArray(relation.labels ?? []).join(", "),
-    color: "#a0a",
+    color: "#fa541c",
     direction: relation.direction,
     start: createShape(relation.startNode, root),
     end: createShape(relation.endNode, root),
