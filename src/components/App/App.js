@@ -36,6 +36,7 @@ import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unuse
  */
 import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
+import { guidGenerator } from "../../utils/unique";
 
 /**
  * App
@@ -93,10 +94,10 @@ const App = inject("store")(
                 completion={cs.selected}
                 className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}
               >
-                   <div style={{ position: "relative" }}>
-                        {Tree.renderItem(root)}
-                        {this.renderRelations()}
-                      </div>
+                <div style={{ position: "relative" }}>
+                  {Tree.renderItem(root)}
+                  {this.renderRelations(cs.selected)}
+                </div>
                 {store.hasInterface("controls") && <Controls item={cs.selected} />}
               </Segment>
             )}
@@ -114,10 +115,9 @@ const App = inject("store")(
         return this._renderAll(this.props.store.completionStore.predictions);
       }
 
-      renderRelations() {
-        const store = this.props.store.completionStore.selected.relationStore;
-        console.log({ store });
-        return <RelationsOverlay store={store} />;
+      renderRelations(selectedStore) {
+        const store = selectedStore.relationStore;
+        return <RelationsOverlay key={guidGenerator()} store={store} />;
       }
 
       render() {
