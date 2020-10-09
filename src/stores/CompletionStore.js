@@ -174,6 +174,10 @@ const Completion = types
     unselectAreas() {
       const node = self.highlightedNode;
       if (!node) return;
+
+      // eslint-disable-next-line no-unused-expressions
+      node.perRegionTags.forEach(tag => tag.submitChanges?.());
+
       self.highlightedNode = null;
       // eslint-disable-next-line no-unused-expressions
       node.afterUnselectRegion?.();
@@ -643,7 +647,10 @@ export default types
     function selectItem(id, list) {
       unselectViewingAll();
 
-      if (self.selected) self.selected.selected = false;
+      if (self.selected) {
+        self.selected.unselectAll();
+        self.selected.selected = false;
+      }
 
       // sad hack with pk while sdk are not using pk everywhere
       const c = list.find(c => c.id === id || c.pk === String(id)) || list[0];

@@ -181,6 +181,11 @@ const Model = types
       }
     },
 
+    // add unsubmitted text when user switches region
+    submitChanges() {
+      self.beforeSend();
+    },
+
     deleteText(text) {
       destroy(text);
     },
