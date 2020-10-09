@@ -337,34 +337,37 @@ export default observer(
               alt="LS"
             />
           </div>
-          <Stage
-            ref={ref => {
-              item.setStageRef(ref);
-            }}
-            style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
-            className={"image-element"}
-            width={item.stageWidth}
-            height={item.stageHeight}
-            scaleX={item.scale}
-            scaleY={item.scale}
-            x={item.zoomingPositionX}
-            y={item.zoomingPositionY}
-            onClick={this.handleOnClick}
-            onMouseDown={this.handleMouseDown}
-            onMouseMove={this.handleMouseMove}
-            onMouseUp={this.handleMouseUp}
-            onWheel={item.zoom ? this.handleZoom : () => {}}
-          >
-            {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-            <Layer name="shapes">
-              {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
-              {regions.filter(s => s.type !== "brushregion").map(Tree.renderItem)}
-              {selected && Tree.renderItem(selected)}
-              {selected?.editable && (
-                <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-              )}
-            </Layer>
-          </Stage>
+          {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
+          {item.stageWidth <= 1 ? null : (
+            <Stage
+              ref={ref => {
+                item.setStageRef(ref);
+              }}
+              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+              className={"image-element"}
+              width={item.stageWidth}
+              height={item.stageHeight}
+              scaleX={item.scale}
+              scaleY={item.scale}
+              x={item.zoomingPositionX}
+              y={item.zoomingPositionY}
+              onClick={this.handleOnClick}
+              onMouseDown={this.handleMouseDown}
+              onMouseMove={this.handleMouseMove}
+              onMouseUp={this.handleMouseUp}
+              onWheel={item.zoom ? this.handleZoom : () => {}}
+            >
+              {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+              <Layer name="shapes">
+                {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
+                {regions.filter(s => s.type !== "brushregion").map(Tree.renderItem)}
+                {selected && Tree.renderItem(selected)}
+                {selected?.editable && (
+                  <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
+                )}
+              </Layer>
+            </Stage>
+          )}
 
           {this.renderTools()}
         </ObjectTag>
