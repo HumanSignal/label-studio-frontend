@@ -26,7 +26,7 @@
   ],
   "devDependencies": {
     "@babel/runtime": "^7.10.2",
-    "antd": "^4.3.3",
+    "antd": "4.5.4",
     "array-move": "^1.0.0",
     "codeceptjs": "^2.6.3",
     "emoji-regex": "^7.0.3",
