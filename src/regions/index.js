@@ -5,26 +5,22 @@ import { types } from "mobx-state-tree";
 
 import { AudioRegionModel } from "./AudioRegion";
 import { BrushRegionModel, HtxBrush } from "./BrushRegion";
-import { HyperTextRegionModel } from "./HyperTextRegion";
 import { KeyPointRegionModel, HtxKeyPoint } from "./KeyPointRegion";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
 import { RectRegionModel, HtxRectangle } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
 import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
-import { TextRegionModel } from "./TextRegion";
 import { RichTextRegionModel } from "./RichTextRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
   BrushRegionModel,
   EllipseRegionModel,
-  HyperTextRegionModel,
   KeyPointRegionModel,
   PolygonRegionModel,
   RectRegionModel,
   TextAreaRegionModel,
-  TextRegionModel,
   RichTextRegionModel,
 );
 
@@ -39,7 +35,6 @@ export {
   HtxPolygon,
   HtxRectangle,
   HtxTextAreaRegion,
-  HyperTextRegionModel,
   RichTextRegionModel,
   KeyPointRegionModel,
   PolygonPoint,
@@ -47,5 +42,4 @@ export {
   PolygonRegionModel,
   RectRegionModel,
   TextAreaRegionModel,
-  TextRegionModel,
 };

@@ -68,8 +68,7 @@ const imageRelatedBBox = (region, bbox) => {
 const _detect = region => {
   switch (region.type) {
     case "textrange":
-    case "hypertextregion":
-    case "textarearegion":
+    case "richtextregion":
     case "audioregion": {
       return Geometry.getDOMBBox(region.regionElement);
     }

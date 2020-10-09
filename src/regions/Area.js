@@ -4,8 +4,6 @@ import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { AudioRegionModel } from "./AudioRegion";
-import { TextRegionModel } from "./TextRegion";
-import { HyperTextRegionModel } from "./HyperTextRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
 
@@ -33,14 +31,13 @@ const Area = types.union(
       const tag = window.Htx.completionStore.names.get(objectName);
       // provide value to detect Area by data
       const available = Registry.getAvailableAreas(tag.type, sn);
+      console.log(available);
       // union of all available Areas for this Object type
       if (!available.length) return ClassificationArea;
       return types.union(...available, ClassificationArea);
     },
   },
   AudioRegionModel,
-  TextRegionModel,
-  HyperTextRegionModel,
   RectRegionModel,
   KeyPointRegionModel,
   EllipseRegionModel,

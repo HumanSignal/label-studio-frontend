@@ -116,7 +116,6 @@ const App = inject("store")(
 
       renderRelations() {
         const store = this.props.store.completionStore.selected.relationStore;
-        console.log({ store });
         return <RelationsOverlay store={store} />;
       }
 

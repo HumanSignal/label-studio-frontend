@@ -47,8 +47,9 @@ export const HighlightMixin = types
 
       const lastSpan = self._spans[self._spans.length - 1];
 
+      console.log(self.parent);
       self._stylesheet.setColor(self.getLabelColor());
-      Utils.Selection.applySpanStyles(lastSpan, { label: self.getLabels() });
+      Utils.Selection.applySpanStyles(lastSpan, { label: "" });
     },
 
     /**
@@ -122,12 +123,7 @@ export const HighlightMixin = types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor;
-
-      if (!labelColor) {
-        const ls = self.states.find(s => s._type && s._type.indexOf("labels") !== -1);
-        if (ls) labelColor = ls.getSelectedColor();
-      }
+      let labelColor = self.parent.highlightcolor || self.style.fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);

@@ -41,7 +41,7 @@ const WARNING_MESSAGES = {
  * @param {symbol|word|sentence|paragrap} [granularity]   - control selection granularity
  */
 const TagAttrs = types.model("RichTextModel", {
-  name: types.maybeNull(types.string),
+  name: types.optional(types.identifier, guidGenerator(5)),
   value: types.maybeNull(types.string),
 
   /** Defines the type of data to be shown */
@@ -68,7 +68,6 @@ const TagAttrs = types.model("RichTextModel", {
 const Model = types
   .model("RichTextModel", {
     type: "richtext",
-    id: types.optional(types.identifier, guidGenerator),
     regions: types.array(RichTextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
@@ -157,24 +156,15 @@ const Model = types
       }
     },
 
-    createRegion(p) {
-      let regionData = p;
-
-      if (!p.states) {
-        const fromModel = self.states().get(0);
-        regionData = self._objectFromJSON(p, fromModel, { createRange: true });
-        regionData.states = regionData.states.map(s => cloneNode(s));
-      }
-
+    createRegion(regionData) {
       const region = RichTextRegionModel.create({
-        pid: p.id,
         ...regionData,
         isText: self.type === "text",
       });
 
       region._getRange = () => {
         if (region._cachedRegion === undefined) {
-          return (region._cachedRegion = p._range ?? self._createNativeRange(regionData, region.isText));
+          return (region._cachedRegion = regionData._range ?? self._createNativeRange(regionData, region.isText));
         }
 
         return region._cachedRegion;
@@ -196,11 +186,11 @@ const Model = types
       const states = self.getAvailableStates();
       if (states.length === 0) return;
 
-      const clonedStates = states.map(s => cloneNode(s));
-
-      const r = self.createRegion({ ...range, states: clonedStates });
-
-      return r;
+      const control = states[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const area = self.completion.createResult(range, labels, control, self);
+      area._range = range._range;
+      return area;
     },
 
     fromStateJSON(obj, fromModel) {
@@ -270,4 +260,4 @@ const Model = types
     },
   }));
 
-export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, ObjectBase, Model);
+export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);

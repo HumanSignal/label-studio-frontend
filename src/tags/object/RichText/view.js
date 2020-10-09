@@ -19,7 +19,6 @@ class RichTextPieceView extends Component {
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
 
-    console.log(states[0].selectedLabels);
     const label = states[0]?.selectedLabels?.[0];
 
     Utils.Selection.captureSelection(
