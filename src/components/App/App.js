@@ -36,6 +36,7 @@ import "../../tags/visual";
  */
 import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
+import { guidGenerator } from "../../utils/unique";
 
 /**
  * App
@@ -95,7 +96,7 @@ const App = inject("store")(
               >
                 <div style={{ position: "relative" }}>
                   {Tree.renderItem(root)}
-                  {this.renderRelations()}
+                  {this.renderRelations(cs.selected)}
                 </div>
                 {store.hasInterface("controls") && <Controls item={cs.selected} />}
               </Segment>
@@ -114,9 +115,9 @@ const App = inject("store")(
         return this._renderAll(this.props.store.completionStore.predictions);
       }
 
-      renderRelations() {
-        const store = this.props.store.completionStore.selected.relationStore;
-        return <RelationsOverlay store={store} />;
+      renderRelations(selectedStore) {
+        const store = selectedStore.relationStore;
+        return <RelationsOverlay key={guidGenerator()} store={store} />;
       }
 
       render() {

@@ -24,7 +24,7 @@ const RelationItemRect = ({ x, y, width, height }) => {
 };
 
 const RelationConnector = ({ id, command, color, direction, highlight }) => {
-  const pathColor = highlight ? "#1890ff" : color;
+  const pathColor = highlight ? "#fa541c" : color;
   const pathSettings = {
     d: command,
     stroke: pathColor,
@@ -91,6 +91,8 @@ const RelationLabel = ({ label, position }) => {
 
 const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, dimm, labels, visible }) => {
   const root = rootRef.current;
+  const nodesHidden = startNode.hidden === true || endNode.hidden === true;
+  const hideConnection = nodesHidden || !visible;
   const [, forceUpdate] = useState();
 
   const relation = NodesConnector.connect({ id, startNode, endNode, direction, labels }, root);
@@ -103,7 +105,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
   }, []);
 
   return (
-    <g opacity={dimm && !highlight ? 0.5 : 1} visibility={visible ? "visible" : "hidden"}>
+    <g opacity={dimm && !highlight ? 0.5 : 1} visibility={hideConnection ? "hidden" : "visible"}>
       <RelationItemRect {...start} />
       <RelationItemRect {...end} />
       <RelationConnector
