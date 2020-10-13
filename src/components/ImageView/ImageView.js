@@ -358,10 +358,11 @@ export default observer(
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+              {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
+              {selected && selected.type === "brushregion" && Tree.renderItem(selected)}
               <Layer name="shapes">
-                {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
                 {regions.filter(s => s.type !== "brushregion").map(Tree.renderItem)}
-                {selected && Tree.renderItem(selected)}
+                {selected && selected.type !== "brushregion" && Tree.renderItem(selected)}
                 {selected?.editable && (
                   <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
                 )}
