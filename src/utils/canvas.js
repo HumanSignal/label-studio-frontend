@@ -41,7 +41,7 @@ function Region2RLE(region, image, lineOpts) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
-  const layer = Konva.stages[0].findOne(`#${region.id}`);
+  const layer = Konva.stages[0].findOne(`#${region.cleanId}`);
   if (!layer) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
