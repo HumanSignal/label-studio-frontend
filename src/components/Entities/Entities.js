@@ -146,12 +146,10 @@ const SortMenu = observer(({ regionStore }) => {
           }}
           style={{ width: "135px", display: "flex", justifyContent: "space-between" }}
         >
-          <div>
+          <span>
             <CalendarOutlined /> Date
-          </div>
-          <div>
-            {/* regionStore.sort === "date" && <Switch onChange={changeSortOrder} size="small" checkedChildren="Asc" unCheckedChildren="Desc" /> */}
-          </div>
+          </span>
+          <span>{regionStore.sort === "date" && (regionStore.sortOrder === "asc" ? "↓" : "↑")}</span>
         </div>
       </Menu.Item>
       <Menu.Item key="score">
@@ -163,13 +161,10 @@ const SortMenu = observer(({ regionStore }) => {
           }}
           style={{ width: "135px", display: "flex", justifyContent: "space-between" }}
         >
-          <div>
+          <span>
             <ThunderboltOutlined /> Score
-          </div>
-          <div>
-            {/* regionStore.sort === "score" &&  */
-            /* <Switch onChange={changeSortOrder} size="small" checkedChildren="Asc" unCheckedChildren="Desc" /> */}
-          </div>
+          </span>
+          <span>{regionStore.sort === "score" && (regionStore.sortOrder === "asc" ? "↓" : "↑")}</span>
         </div>
       </Menu.Item>
     </Menu>
