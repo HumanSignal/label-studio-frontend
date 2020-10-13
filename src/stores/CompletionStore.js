@@ -509,7 +509,7 @@ const Completion = types
         value: resultValue,
       };
 
-      const area = self.areas.put({
+      const areaRaw = {
         id: guidGenerator(),
         object,
         // data for Model instance
@@ -517,7 +517,11 @@ const Completion = types
         // for Model detection
         value: areaValue,
         results: [result],
-      });
+      };
+
+      console.log({ areaRaw }, Registry.objectTypes());
+
+      const area = self.areas.put(areaRaw);
 
       // unselect labels after use, but consider "keep labels selected" settings
       if (control.type.includes("labels")) self.unselectAll(true);
@@ -547,12 +551,14 @@ const Completion = types
 
         objCompletion.forEach(obj => {
           if (obj["type"] !== "relation") {
+            console.log({ obj });
             const { id, value, type, ...data } = obj;
             // avoid duplicates of the same areas in different completions/predictions
             const areaId = `${id || guidGenerator()}#${self.id}`;
             const resultId = `${data.from_name}@${areaId}`;
 
             let area = self.areas.get(areaId);
+            console.log({ to_name: obj.to_name });
             if (!area) {
               area = self.areas.put({
                 id: areaId,
@@ -563,7 +569,9 @@ const Completion = types
               });
             }
 
-            area.addResult({ ...data, id: resultId, type, value });
+            const result = { ...data, id: resultId, type, value };
+            area.addResult(result);
+            console.log({ result });
           }
         });
 

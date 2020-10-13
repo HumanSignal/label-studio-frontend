@@ -78,6 +78,8 @@ const RichTextRegionModel = types.compose(
   HighlightMixin,
 );
 
+Registry.addRegionType(RichTextRegionModel, "text");
+Registry.addRegionType(RichTextRegionModel, "hypertext");
 Registry.addRegionType(RichTextRegionModel, "richtext");
 
 export { RichTextRegionModel };

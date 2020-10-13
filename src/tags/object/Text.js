@@ -521,6 +521,6 @@ class TextPieceView extends Component {
 const HtxText = inject("store")(observer(HtxTextView));
 const HtxTextPieceView = inject("store")(observer(TextPieceView));
 
-// Registry.addTag("text", TextModel, HtxText);
+Registry.addTag("text", TextModel, HtxText);
 
 export { TextModel, HtxText };

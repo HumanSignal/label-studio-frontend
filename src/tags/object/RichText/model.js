@@ -41,7 +41,7 @@ const WARNING_MESSAGES = {
  * @param {symbol|word|sentence|paragrap} [granularity]   - control selection granularity
  */
 const TagAttrs = types.model("RichTextModel", {
-  name: types.optional(types.identifier, guidGenerator(5)),
+  name: types.identifier,
   value: types.maybeNull(types.string),
 
   /** Defines the type of data to be shown */
@@ -80,6 +80,10 @@ const Model = types
 
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+
+    get regs() {
+      return self.completion.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
@@ -137,7 +141,6 @@ const Model = types
 
       self._regionsCache.forEach(({ region, completion }) => {
         region.setText(self._value.substring(region.startOffset, region.endOffset));
-        self.regions.push(region);
         completion.addRegion(region);
       });
 
@@ -174,7 +177,6 @@ const Model = types
         return self._rootNode;
       };
 
-      self.regions.push(region);
       self.completion.addRegion(region);
 
       region.applyHighlight();
