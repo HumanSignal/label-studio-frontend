@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Line, Shape, Group } from "react-konva";
+import { Line, Shape, Group, Layer } from "react-konva";
 import { observer, inject } from "mobx-react";
 import { types, getParent } from "mobx-state-tree";
 
@@ -242,10 +242,9 @@ const HtxBrushView = ({ store, item }) => {
   let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   return (
-    <Fragment>
+    <Layer id={item.cleanId}>
       <Group
         attrMy={item.needsUpdate}
-        id={item.id}
         name="segmentation"
         // onClick={e => {
         //     e.cancelBubble = false;
@@ -330,7 +329,7 @@ const HtxBrushView = ({ store, item }) => {
           <LabelOnMask item={item} />
         </Group>
       </Group>
-    </Fragment>
+    </Layer>
   );
 };
 
