@@ -150,17 +150,21 @@ const validateToNameTag = (element, model, flatTree) => {
     return errorBuilder.required(model.name, "toname");
   }
 
-  // Find referenced tag in the tree
-  const controlledTag = flatTree.find(item => item.name === element.toname);
+  if (!element.toname) return null;
 
-  if (controlledTag === undefined) {
-    return errorBuilder.tagNotFound(model.name, "toname", element.toname);
-  }
+  const names = element.toname.split(","); // for pairwise
 
-  if (!controlledTags) return null;
+  for (let name of names) {
+    // Find referenced tag in the tree
+    const controlledTag = flatTree.find(item => item.name === name);
 
-  if (controlledTags.validate(controlledTag.tagName).length > 0) {
-    return errorBuilder.tagUnsupported(model.name, "toname", controlledTag.tagName, controlledTags);
+    if (controlledTag === undefined) {
+      return errorBuilder.tagNotFound(model.name, "toname", name);
+    }
+
+    if (controlledTags && controlledTags.validate(controlledTag.tagName).length) {
+      return errorBuilder.tagUnsupported(model.name, "toname", controlledTag.tagName, controlledTags);
+    }
   }
 
   return null;

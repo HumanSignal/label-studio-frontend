@@ -44,12 +44,15 @@ const Result = types
       "choices",
       "textarea",
       "rating",
+      "pairwise",
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.string)),
+      // pairwise
+      selected: types.maybe(types.enumeration(["left", "right"])),
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
       htmllabels: types.maybe(types.array(types.string)),
