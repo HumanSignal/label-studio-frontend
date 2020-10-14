@@ -67,7 +67,7 @@ Scenario("Check Rect region for Image", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  I.waitForVisible("canvas");
+  I.waitForVisible("canvas", 3);
   I.executeAsyncScript(waitForImage);
   I.see("Regions (1)");
   // select first and only region
@@ -90,7 +90,7 @@ Scenario("Image with perRegion tags", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  I.waitForVisible("canvas");
+  I.waitForVisible("canvas", 3);
   I.executeAsyncScript(waitForImage);
   I.see("Regions (1)");
   // select first and only region
