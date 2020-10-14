@@ -551,14 +551,13 @@ const Completion = types
 
         objCompletion.forEach(obj => {
           if (obj["type"] !== "relation") {
-            console.log({ obj });
             const { id, value, type, ...data } = obj;
             // avoid duplicates of the same areas in different completions/predictions
             const areaId = `${id || guidGenerator()}#${self.id}`;
             const resultId = `${data.from_name}@${areaId}`;
 
             let area = self.areas.get(areaId);
-            console.log({ to_name: obj.to_name });
+
             if (!area) {
               area = self.areas.put({
                 id: areaId,
@@ -569,9 +568,8 @@ const Completion = types
               });
             }
 
-            const result = { ...data, id: resultId, type, value };
-            area.addResult(result);
-            console.log({ result });
+            area.addResult({ ...data, id: resultId, type, value });
+            console.log({ obj, area });
           }
         });
 

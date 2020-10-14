@@ -141,6 +141,7 @@ const Model = types
 
       self._regionsCache.forEach(({ region, completion }) => {
         region.setText(self._value.substring(region.startOffset, region.endOffset));
+        self.regions.push(region);
         completion.addRegion(region);
       });
 
@@ -177,6 +178,12 @@ const Model = types
         return self._rootNode;
       };
 
+      if (self.valuetype === "url" && self.loaded === false) {
+        self._regionsCache.push({ region, completion: self.completion });
+        return;
+      }
+
+      self.regions.push(region);
       self.completion.addRegion(region);
 
       region.applyHighlight();
@@ -203,6 +210,7 @@ const Model = types
 
       const tree = self._objectFromJSON(obj, fromModel);
 
+      console.log({ tree });
       self.createRegion(tree);
     },
 

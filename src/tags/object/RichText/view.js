@@ -84,7 +84,9 @@ class RichTextPieceView extends Component {
    */
   _onRegionMouseOver = event => {
     const region = this._determineRegion(event.target);
-    this.props.item.regions.forEach(r => r.setHighlight(false));
+    const { item } = this.props;
+
+    item.regs.forEach(r => r.setHighlight(false));
 
     if (!region) return;
 
@@ -97,7 +99,11 @@ class RichTextPieceView extends Component {
    * Handle initial rendering and all subsequent updates
    */
   _handleUpdate() {
-    this.props.item.regions.forEach(richTextRegion => {
+    const { item } = this.props;
+
+    console.log(item.regs);
+
+    item.regs.forEach(richTextRegion => {
       try {
         richTextRegion.applyHighlight();
       } catch (err) {
@@ -113,7 +119,9 @@ class RichTextPieceView extends Component {
   _determineRegion(element) {
     if (matchesSelector(element, ".htx-highlight")) {
       const span = element.tagName === "SPAN" ? element : element.closest(".htx-highlight");
-      return this.props.item.regions.find(region => region.find(span));
+      const { item } = this.props;
+
+      return item.regs.find(region => region.find(span));
     }
   }
 
