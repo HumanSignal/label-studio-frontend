@@ -9,6 +9,7 @@ import { RichTextModel } from "../tags/object/RichText/model";
 import { HighlightMixin } from "../mixins/HighlightMixin";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
+import Utils from "../utils";
 
 const Model = types
   .model("RichTextRegionModel", {
@@ -65,6 +66,42 @@ const Model = types
 
     updateOffsets(startOffset, endOffset) {
       Object.assign(self, { startOffset, endOffset });
+    },
+
+    _getRange() {
+      if (self._cachedRegion === undefined) {
+        return (self._cachedRegion = self._createNativeRange());
+      }
+
+      return self._cachedRegion;
+    },
+
+    _getRootNode() {
+      return self.parent._rootNode;
+    },
+
+    _createNativeRange() {
+      const rootNode = self._getRootNode();
+
+      if (rootNode === undefined) return undefined;
+
+      const { start, startOffset, end, endOffset } = self;
+
+      try {
+        if (self.isText) {
+          const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
+          const range = document.createRange();
+          range.setStart(startContainer.node, startContainer.position);
+          range.setEnd(endContainer.node, endContainer.position);
+          return range;
+        }
+
+        return xpath.toRange(start, startOffset, end, endOffset, rootNode);
+      } catch (err) {
+        if (rootNode) console.log(err);
+      }
+
+      return undefined;
     },
   }));
 

@@ -32,9 +32,11 @@ const Area = types.union(
       const tag = window.Htx.completionStore.names.get(objectName);
       // provide value to detect Area by data
       const available = Registry.getAvailableAreas(tag.type, sn);
+      console.log({ objectName, tag, available });
       // union of all available Areas for this Object type
-      if (!available.length) return ClassificationArea;
-      return types.union(...available, ClassificationArea);
+      const resultType = available.length ? types.union(...available, ClassificationArea) : ClassificationArea;
+      console.log({ resultType });
+      return resultType;
     },
   },
   AudioRegionModel,

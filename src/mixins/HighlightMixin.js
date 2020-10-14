@@ -47,7 +47,6 @@ export const HighlightMixin = types
 
       const lastSpan = self._spans[self._spans.length - 1];
 
-      console.log(self.parent);
       self._stylesheet.setColor(self.getLabelColor());
       Utils.Selection.applySpanStyles(lastSpan, { label: "" });
     },
@@ -56,7 +55,6 @@ export const HighlightMixin = types
      * Make current region selected
      */
     selectRegion() {
-      self.selected = true;
       self.completion.setHighlightedNode(self);
       self.completion.loadRegionState(self);
 
@@ -117,9 +115,7 @@ export const HighlightMixin = types
       const settings = getRoot(self).settings;
       if (!self.parent.showlabels && !settings.showLabels) return null;
 
-      return Utils.Checkers.flatten(
-        self.states.filter(s => s._type && s._type.indexOf("labels") !== -1).map(s => s.selectedValues()),
-      );
+      return self.labeling?.mainValue ?? [];
     },
 
     getLabelColor() {

@@ -68,7 +68,6 @@ const TagAttrs = types.model("RichTextModel", {
 const Model = types
   .model("RichTextModel", {
     type: "richtext",
-    regions: types.array(RichTextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
@@ -166,18 +165,6 @@ const Model = types
         isText: self.type === "text",
       });
 
-      region._getRange = () => {
-        if (region._cachedRegion === undefined) {
-          return (region._cachedRegion = regionData._range ?? self._createNativeRange(regionData, region.isText));
-        }
-
-        return region._cachedRegion;
-      };
-
-      region._getRootNode = () => {
-        return self._rootNode;
-      };
-
       if (self.valuetype === "url" && self.loaded === false) {
         self._regionsCache.push({ region, completion: self.completion });
         return;
@@ -192,6 +179,7 @@ const Model = types
     },
 
     addRegion(range) {
+      console.log(range);
       const states = self.getAvailableStates();
       if (states.length === 0) return;
 
@@ -243,30 +231,6 @@ const Model = types
       states.fromStateJSON(obj);
 
       return tree;
-    },
-
-    _createNativeRange(htxRange, isText) {
-      const rootNode = self._rootNode;
-
-      if (rootNode === undefined) return undefined;
-
-      const { start, startOffset, end, endOffset } = htxRange;
-
-      try {
-        if (isText) {
-          const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
-          const range = document.createRange();
-          range.setStart(startContainer.node, startContainer.position);
-          range.setEnd(endContainer.node, endContainer.position);
-          return range;
-        }
-
-        return xpath.toRange(start, startOffset, end, endOffset, rootNode);
-      } catch (err) {
-        if (rootNode) console.log(err);
-      }
-
-      return undefined;
     },
   }));
 
