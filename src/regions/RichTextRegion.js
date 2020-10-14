@@ -1,4 +1,5 @@
 import { types } from "mobx-state-tree";
+import * as xpath from "xpath-range";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -36,7 +37,7 @@ const Model = types
       self.removeHighlight();
     },
 
-    serialize(control, object) {
+    serialize() {
       let res = {
         value: {},
       };
@@ -55,11 +56,9 @@ const Model = types
         });
       }
 
-      if (object.savetextresult === "yes") {
+      if (self.object.savetextresult === "yes") {
         res.value["text"] = self.text;
       }
-
-      res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
