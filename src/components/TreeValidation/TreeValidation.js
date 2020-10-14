@@ -7,8 +7,6 @@ import styles from "./TreeValidation.module.scss";
 
 export const TreeValidation = inject("store")(
   observer(({ store, errors }) => {
-    console.log(styles);
-
     return (
       <div className="ls-errors">
         {errors.map((error, index) => {

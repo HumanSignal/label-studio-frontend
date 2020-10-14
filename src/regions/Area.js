@@ -6,7 +6,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { AudioRegionModel } from "./AudioRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
-import { RichTextRegionModel } from ".";
+import { RichTextRegionModel } from "./RichTextRegion";
 
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
@@ -32,11 +32,8 @@ const Area = types.union(
       const tag = window.Htx.completionStore.names.get(objectName);
       // provide value to detect Area by data
       const available = Registry.getAvailableAreas(tag.type, sn);
-      console.log({ objectName, tag, available });
       // union of all available Areas for this Object type
-      const resultType = available.length ? types.union(...available, ClassificationArea) : ClassificationArea;
-      console.log({ resultType });
-      return resultType;
+      return available.length ? types.union(...available, ClassificationArea) : ClassificationArea;
     },
   },
   AudioRegionModel,

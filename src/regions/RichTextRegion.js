@@ -17,8 +17,8 @@ const Model = types
     object: types.late(() => types.reference(RichTextModel)),
 
     startOffset: types.integer,
-    start: types.string,
     endOffset: types.integer,
+    start: types.string,
     end: types.string,
     text: types.string,
     isText: types.optional(types.boolean, false),
