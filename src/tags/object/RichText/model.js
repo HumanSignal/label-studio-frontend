@@ -179,7 +179,6 @@ const Model = types
     },
 
     addRegion(range) {
-      console.log(range);
       const states = self.getAvailableStates();
       if (states.length === 0) return;
 
@@ -187,6 +186,16 @@ const Model = types
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.completion.createResult(range, labels, control, self);
       area._range = range._range;
+
+      if (range.isText) {
+        const { startContainer, startOffset, endContainer, endOffset } = range._range;
+        const [soff, eoff] = [
+          Utils.HTML.toGlobalOffset(self._rootNode, startContainer, startOffset),
+          Utils.HTML.toGlobalOffset(self._rootNode, endContainer, endOffset),
+        ];
+
+        area.updateOffsets(soff, eoff);
+      }
 
       area.applyHighlight();
 

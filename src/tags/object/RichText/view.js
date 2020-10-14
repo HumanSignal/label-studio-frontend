@@ -31,24 +31,11 @@ class RichTextPieceView extends Component {
 
         if (!normedRange) return;
 
-        const isText = item.type === "text";
-        let globalStartOffset, globalEndOffset;
-
         normedRange._range = range;
         normedRange.text = selectionText;
-        normedRange.isText = isText;
+        normedRange.isText = item.type === "text";
 
-        if (isText) {
-          const { startContainer, startOffset, endContainer, endOffset } = range;
-          globalStartOffset = Utils.HTML.toGlobalOffset(root, startContainer, startOffset);
-          globalEndOffset = Utils.HTML.toGlobalOffset(root, endContainer, endOffset);
-        }
-
-        const region = item.addRegion(normedRange);
-
-        if (globalStartOffset && globalEndOffset) {
-          region.updateOffsets(globalStartOffset, globalEndOffset);
-        }
+        item.addRegion(normedRange);
       },
       {
         granularity: label?.granularity ?? item.granularity,
@@ -100,8 +87,6 @@ class RichTextPieceView extends Component {
    */
   _handleUpdate() {
     const { item } = this.props;
-
-    console.log(item.regs);
 
     item.regs.forEach(richTextRegion => {
       try {

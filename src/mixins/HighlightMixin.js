@@ -29,7 +29,6 @@ export const HighlightMixin = types
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(identifier, labelColor);
 
-      console.log(range);
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames: ["htx-highlight", stylesheet.className],
