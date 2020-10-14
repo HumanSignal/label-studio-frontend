@@ -39,12 +39,14 @@ import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line
  */
 import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unused-vars
 
+import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-unused-vars
+
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = NamedEntity;
+const data = TimeSeries;
 
 /**
  * Get current config

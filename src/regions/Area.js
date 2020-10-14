@@ -9,6 +9,7 @@ import { HyperTextRegionModel } from "./HyperTextRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
 import { BrushRegionModel } from "./BrushRegion";
+import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
 
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
@@ -42,6 +43,7 @@ const Area = types.union(
   AudioRegionModel,
   TextRegionModel,
   HyperTextRegionModel,
+  TimeSeriesRegionModel,
   RectRegionModel,
   KeyPointRegionModel,
   EllipseRegionModel,
