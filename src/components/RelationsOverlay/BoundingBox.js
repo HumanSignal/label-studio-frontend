@@ -1,4 +1,4 @@
-import { wrapArray } from "../../utils/utilities";
+import { flatten, wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
 
 /**
@@ -99,7 +99,7 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      const points = wrapArray(region.touches.filter(t => t.type === "add").map(t => t.points));
+      const points = flatten(wrapArray(region.touches.filter(t => t.type === "add").map(t => Array.from(t.points))));
       return imageRelatedBBox(region, Geometry.getBrushBBox(points));
     }
     default: {
