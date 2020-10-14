@@ -6,6 +6,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { AudioRegionModel } from "./AudioRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
+import { RichTextRegionModel } from ".";
 
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
@@ -38,6 +39,7 @@ const Area = types.union(
   },
   AudioRegionModel,
   RectRegionModel,
+  RichTextRegionModel,
   KeyPointRegionModel,
   EllipseRegionModel,
   PolygonRegionModel,
