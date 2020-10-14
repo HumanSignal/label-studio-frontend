@@ -13,16 +13,23 @@ export const HighlightMixin = types
      */
     applyHighlight() {
       // Avoid calling this method twice
-      if (self._spans) return;
+      if (self._hasSpans()) {
+        console.log("Spans already created");
+        return;
+      }
 
       const range = self._getRange();
       // Avoid rendering before view is ready
-      if (!range) return;
+      if (!range) {
+        console.log("No range found to highlight");
+        return;
+      }
 
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(identifier, labelColor);
 
+      console.log(range);
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames: ["htx-highlight", stylesheet.className],
@@ -150,6 +157,15 @@ export const HighlightMixin = types
       if (!classNames || !self._spans) return;
       const classList = [].concat(classNames); // convert any input to array
       self._spans.forEach(span => span.classList.remove(...classList));
+    },
+
+    _hasSpans() {
+      return (
+        self._spans &&
+        self._spans.reduce((res, span) => {
+          return res && !!span.parent;
+        }, true)
+      );
     },
   }));
 

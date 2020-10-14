@@ -68,7 +68,9 @@ const Model = types
     },
 
     _getRange() {
-      if (self._cachedRegion === undefined) {
+      const rootNode = self._getRootNode();
+
+      if (self._cachedRegion === undefined || !rootNode.contains(self._cachedRegion.commonAncestorContainer)) {
         return (self._cachedRegion = self._createNativeRange());
       }
 
@@ -81,6 +83,7 @@ const Model = types
 
     _createNativeRange() {
       const rootNode = self._getRootNode();
+      console.log(rootNode);
 
       if (rootNode === undefined) return undefined;
 
