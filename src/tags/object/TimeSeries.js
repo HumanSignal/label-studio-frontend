@@ -541,7 +541,7 @@ const Overview = ({ item, data, series, range, regions, forceUpdate }) => {
   return <div ref={ref} />;
 };
 
-const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
+const HtxTimeSeriesViewRTS = ({ store, item }) => {
   console.log("TS", item.brushRange, item);
   // the last thing updated during initialisation
   if (!item.brushRange.length) return null;
@@ -558,7 +558,7 @@ const HtxTimeSeriesViewRTS = observer(({ store, item }) => {
       />
     </ObjectTag>
   );
-});
+};
 
 const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, TagAttrs, Model);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));

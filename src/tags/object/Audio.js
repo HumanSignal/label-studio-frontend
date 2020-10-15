@@ -87,7 +87,7 @@ const Model = types
 
 const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase);
 
-const HtxAudioView = observer(({ store, item }) => {
+const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
 
   return (
@@ -106,7 +106,7 @@ const HtxAudioView = observer(({ store, item }) => {
       <AudioControls item={item} store={store} />
     </ObjectTag>
   );
-});
+};
 
 const HtxAudio = inject("store")(observer(HtxAudioView));
 
