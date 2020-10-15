@@ -454,7 +454,7 @@ const Model = types
 
 const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
 
-const HtxImage = inject("store")(observer(ImageView));
+const HtxImage = inject("store")(ImageView);
 
 Registry.addTag("image", ImageModel, HtxImage);
 Registry.addObjectType(ImageModel);

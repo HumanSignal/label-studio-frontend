@@ -216,7 +216,7 @@ const SortableList = SortableContainer(({ item, items }) => {
   );
 });
 
-const HtxRankerView = observer(({ store, item }) => {
+const HtxRankerView = ({ store, item }) => {
   const props = {};
   if (isMobileDevice()) {
     props["pressDelay"] = 100;
@@ -229,7 +229,7 @@ const HtxRankerView = observer(({ store, item }) => {
       <SortableList update={item.update} item={item} items={item.regions} onSortEnd={item.moveItems} {...props} />
     </div>
   );
-});
+};
 
 const HtxRanker = inject("store")(observer(HtxRankerView));
 
