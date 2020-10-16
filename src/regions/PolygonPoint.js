@@ -91,6 +91,8 @@ const PolygonPoint = types
     },
 
     handleMouseOverStartPoint(ev) {
+      ev.cancelBubble = true;
+
       const stage = self.parent.parent.stageRef;
 
       stage.container().style.cursor = "crosshair";
