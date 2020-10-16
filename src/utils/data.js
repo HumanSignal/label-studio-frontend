@@ -1,4 +1,4 @@
-import { isString } from "./utilities";
+import { isString, escapeHtml } from "./utilities";
 
 /**
  * Parse CSV
@@ -18,8 +18,10 @@ export const parseCSV = text => {
   if (lines.length > 1) {
     const candidates = lines[1].trim().match(/[^\d\-.]/g);
     if (!candidates.length) throw new Error("No separators found");
-    if (candidates.some(c => c !== candidates[0]))
-      throw new Error("More than one separator found: " + [...new Set(candidates)].join(""));
+    if (candidates.some(c => c !== candidates[0])) {
+      const list = escapeHtml([...new Set(candidates)].join(""));
+      throw new Error(`More than one separator found: ${list}`);
+    }
     separator = candidates[0];
     if (lines[0].split(separator).length !== lines[1].split(separator).length)
       throw new Error("Different amount of elements in rows");

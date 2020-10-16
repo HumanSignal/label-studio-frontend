@@ -1,4 +1,5 @@
 import Registry from "../Registry";
+import messages from "../../utils/messages";
 
 export const errorBuilder = {
   /**
@@ -62,11 +63,31 @@ export const errorBuilder = {
     };
   },
 
+  internalError(error) {
+    return {
+      error: "ERR_INTERNAL",
+      value: String(error).substr(0, 1000),
+      field: String(error.code),
+      modelName: "",
+    };
+  },
+
   generalError(error) {
     return {
       error: "ERR_GENERAL",
       value: String(error).substr(0, 1000),
       field: String(error.code),
+      modelName: "",
+    };
+  },
+
+  loadingError(error, url, attrWithUrl, cors = false) {
+    console.log("ERR", error, error.code);
+    const fn = cors ? messages.ERR_LOADING_CORS : messages.ERR_LOADING_HTTP;
+    return {
+      error: "ERR_GENERAL",
+      value: fn({ attr: attrWithUrl, error: String(error), url }),
+      field: attrWithUrl,
       modelName: "",
     };
   },
