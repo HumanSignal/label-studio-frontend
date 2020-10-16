@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { observer } from "mobx-react";
+import { types, getRoot } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -64,6 +64,11 @@ const Model = types
 
     supportsTransform: true,
     hideable: true,
+  }))
+  .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -205,8 +210,10 @@ const EllipseRegionModel = types.compose(
   Model,
 );
 
-const HtxEllipseView = ({ store, item }) => {
+const HtxEllipseView = ({ item }) => {
   if (item.hidden) return null;
+
+  const { store } = item;
 
   const style = item.style || item.tag || defaultStyle;
   let { strokecolor, strokewidth } = style;
@@ -313,7 +320,7 @@ const HtxEllipseView = ({ store, item }) => {
   );
 };
 
-const HtxEllipse = inject("store")(observer(HtxEllipseView));
+const HtxEllipse = observer(HtxEllipseView);
 
 Registry.addTag("ellipseregion", EllipseRegionModel, HtxEllipse);
 Registry.addRegionType(EllipseRegionModel, "image");

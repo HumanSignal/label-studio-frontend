@@ -1,4 +1,3 @@
-import { observer, inject } from "mobx-react";
 import { types, getRoot } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
@@ -73,11 +72,7 @@ const Model = types
 
 const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model);
 
-const HtxView = inject("store")(
-  observer(({ store, item }) => {
-    return null;
-  }),
-);
+const HtxView = () => null;
 
 Registry.addTag("polygon", PolygonModel, HtxView);
 
