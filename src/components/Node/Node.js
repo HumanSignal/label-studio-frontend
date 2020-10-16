@@ -27,7 +27,7 @@ const NodeViews = {
   TimeSeriesRegionModel: [
     "TimeSeries",
     LineChartOutlined,
-    node => `TS ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`,
+    node => `TS ${node.object.formatTime(node.start)} - ${node.object.formatTime(node.end)}`,
   ],
 
   TextAreaRegionModel: [

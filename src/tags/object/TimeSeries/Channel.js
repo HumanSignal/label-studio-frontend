@@ -159,9 +159,8 @@ class ChannelD3 extends React.Component {
     // click simulation - if selection didn't move
     const isJustClick = moved.start === r.start && moved.end === r.end;
     if (isJustClick) {
-      parent.completion.regionStore.unselectAll();
-      r.selectRegion();
-      parent.updateView();
+      parent.completion.unselectAreas();
+      r.onClickRegion();
     } else {
       parent.regionChanged(moved, i);
     }
@@ -210,8 +209,8 @@ class ChannelD3 extends React.Component {
       const regions = ranges.filter(r => r.start <= value && r.end >= value);
       const nextIndex = regions.findIndex(r => r.selected) + 1;
       const region = regions[nextIndex];
-      parent.completion.regionStore.unselectAll();
-      region && region.selectRegion();
+      parent.completion.unselectAreas();
+      region && region.onClickRegion();
 
       return;
     }
@@ -275,7 +274,7 @@ class ChannelD3 extends React.Component {
       .each(function(r, i) {
         const group = d3.select(this);
         const selection = group.selectAll(".selection");
-        const color = "orange"; // COLOR getRegionColor(r);
+        const color = getRegionColor(r);
         if (r.instant) {
           selection
             .attr("stroke-opacity", r.selected || r.highlighted ? 0.6 : 0.2)
@@ -452,7 +451,7 @@ class ChannelD3 extends React.Component {
     if (!this.ref.current) return;
 
     const { data, item, range, time, value } = this.props;
-    const { isDate, format, margin, slicesCount } = item.parent;
+    const { isDate, formatTime, margin, slicesCount } = item.parent;
     const height = this.height;
     this.zoomStep = slicesCount;
     const clipPathId = `clip_${item.id}`;
@@ -480,10 +479,6 @@ class ChannelD3 extends React.Component {
 
     const formatValue = d3.format(item.unitsformat);
     this.formatValue = formatValue;
-
-    let formatTime = String;
-    if (format === "date") formatTime = formatTrackerTime;
-    else if (format) formatTime = isDate ? v => formatFNS(v, format) : d3.format(format);
     this.formatTime = formatTime;
 
     const offsetWidth = this.ref.current.offsetWidth;
@@ -679,7 +674,7 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.style.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div ref={this.ref} />;
@@ -705,8 +700,6 @@ const HtxTimeSeriesChannelViewD3 = ({ item }) => {
       series={item.parent.dataHash}
       range={item.parent.brushRange}
       ranges={item.parent.regs}
-      // @todo the only thing left for force update - region colors
-      forceUpdate={item.parent._needsUpdate}
     />
   );
 };
