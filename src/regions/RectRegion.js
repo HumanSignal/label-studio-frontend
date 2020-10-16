@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Rect } from "react-konva";
-import { observer, inject } from "mobx-react";
+import { observer } from "mobx-react";
 import { types, getRoot, isAlive } from "mobx-state-tree";
 
 import Constants, { defaultStyle } from "../core/Constants";
@@ -209,8 +209,10 @@ const RectRegionModel = types.compose(
   Model,
 );
 
-const HtxRectangleView = ({ store, item }) => {
+const HtxRectangleView = ({ item }) => {
   if (!isAlive(item)) return null;
+
+  const { store } = item;
 
   const style = item.style || item.tag || defaultStyle;
   let { strokecolor, strokewidth } = style;
@@ -318,7 +320,7 @@ const HtxRectangleView = ({ store, item }) => {
   );
 };
 
-const HtxRectangle = inject("store")(observer(HtxRectangleView));
+const HtxRectangle = observer(HtxRectangleView);
 
 Registry.addTag("rectangleregion", RectRegionModel, HtxRectangle);
 Registry.addRegionType(RectRegionModel, "image");

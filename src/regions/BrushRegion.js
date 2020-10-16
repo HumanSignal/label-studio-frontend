@@ -1,7 +1,7 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { Line, Shape, Group, Layer } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { observer } from "mobx-react";
+import { types, getParent, getRoot } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -32,6 +32,9 @@ const Points = types
     strokeWidth: types.optional(types.number, 25),
   })
   .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
     get parent() {
       return getParent(self, 2);
     },
@@ -195,7 +198,7 @@ const BrushRegionModel = types.compose(
   Model,
 );
 
-const HtxBrushLayer = observer(({ store, item, points }) => {
+const HtxBrushLayer = observer(({ item, points }) => {
   const highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
   const params =
     points.type === "add"
@@ -225,8 +228,10 @@ const HtxBrushLayer = observer(({ store, item, points }) => {
   );
 });
 
-const HtxBrushView = ({ store, item }) => {
+const HtxBrushView = ({ item }) => {
   if (item.hidden) return null;
+
+  const { store } = item;
 
   // if (item.parent.stageRef && item._rle) {
   //     const sref = item.parent.stageRef;
@@ -333,7 +338,7 @@ const HtxBrushView = ({ store, item }) => {
   );
 };
 
-const HtxBrush = inject("store")(observer(HtxBrushView));
+const HtxBrush = observer(HtxBrushView);
 
 Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
 Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);
