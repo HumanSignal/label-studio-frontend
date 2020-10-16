@@ -18,6 +18,7 @@ import {
 } from "./helpers";
 import { format as formatFNS } from "date-fns";
 import InfoModal from "../../../components/Infomodal/Infomodal";
+import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 
 /**
  * TimeSeriesChannel tag can be used to label time series data
@@ -465,8 +466,8 @@ class ChannelD3 extends React.Component {
       const message = `\`${value}\` not found in data. Available columns: ${names.join(
         ", ",
       )}. For headless csv you can use \`column#0\``;
-      InfoModal.error(message);
-      throw new Error(message);
+      item.store.completionStore.addErrors([errorBuilder.generalError(message)]);
+      return;
     }
 
     // initially it checks do we even need this optimization
