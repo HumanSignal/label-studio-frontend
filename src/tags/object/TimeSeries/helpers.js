@@ -24,9 +24,8 @@ export const sparseValues = (values, max = 1e6) => {
 };
 
 export const getRegionColor = (region, alpha = 1) => {
-  const stateProvidesColor = region.states.find(s => s.hasOwnProperty("getSelectedColor"));
-  const color = Utils.Colors.convertToRGBA(stateProvidesColor.getSelectedColor(), alpha);
-  return color;
+  const color = region.style?.fillcolor || "grey";
+  return Utils.Colors.convertToRGBA(color, alpha);
 };
 
 // fixes `observe` - it watches only the changes of primitive props of observables count

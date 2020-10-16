@@ -47,9 +47,6 @@ const Model = types
     },
 
     selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-
       const one = 1000;
       const lots = one * 10;
 
@@ -62,21 +59,17 @@ const Model = types
       Hotkey.addKey("shift+right", () => self.growRight(lots));
       Hotkey.addKey("shift+alt+left", () => self.shrinkLeft(lots));
       Hotkey.addKey("shift+alt+right", () => self.shrinkRight(lots));
-
-      self.completion.loadRegionState(self);
     },
 
     updateAppearenceFromState() {
       const s = self.labelsState;
       if (!s) return;
 
+      // @todo remove
       self.parent.updateView();
     },
 
-    /**
-     * Unselect timeseries region
-     */
-    unselectRegion() {
+    afterUnselectRegion() {
       [
         "left",
         "right",
@@ -91,10 +84,6 @@ const Model = types
         "ctrl+down",
         "ctrl+shift+down",
       ].forEach(key => Hotkey.removeKey(key));
-
-      self.selected = false;
-      self.completion.setHighlightedNode(null);
-      self.completion.unloadRegionState(self);
 
       self.parent.updateView();
     },

@@ -19,10 +19,11 @@ import {
   idFromValue,
   getRegionColor,
   fixMobxObserve,
+  formatTrackerTime,
   sparseValues,
   getOptimalWidth,
 } from "./TimeSeries/helpers";
-import { parse } from "date-fns";
+import { parse, format as formatFNS } from "date-fns";
 import { parseCSV, tryToParseJSON } from "../../utils/data";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import messages from "../../utils/messages";
@@ -169,6 +170,13 @@ const Model = types
     activeStates() {
       const states = self.states();
       return states ? states.filter(s => s.isSelected && getType(s).name === "TimeSeriesLabelsModel") : null;
+    },
+
+    formatTime(time) {
+      const { format } = self;
+      if (format === "date") return formatTrackerTime(time);
+      if (format) return self.isDate ? formatFNS(time, format) : d3.format(format)(time);
+      return String(time);
     },
   }))
 
@@ -347,7 +355,8 @@ function useWidth() {
 }
 
 // class TimeSeriesOverviewD3 extends React.Component {
-const Overview = ({ item, data, series, range, regions, forceUpdate }) => {
+const Overview = observer(({ item, data, series, range, forceUpdate }) => {
+  const regions = item.regs;
   const [ref, fullWidth, node] = useWidth();
 
   const focusHeight = 60;
@@ -462,7 +471,7 @@ const Overview = ({ item, data, series, range, regions, forceUpdate }) => {
       .attr("height", focusHeight)
       .attr("x", r => x(r.start))
       .attr("width", r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
-      .attr("fill", r => "orange"); // COLOR getRegionColor(r, r.selected ? 0.8 : 0.3));
+      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3));
     rSelection.exit().remove();
   };
 
@@ -536,10 +545,10 @@ const Overview = ({ item, data, series, range, regions, forceUpdate }) => {
     node && drawRegions(regions);
   });
 
-  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted));
+  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style.fillcolor));
 
   return <div ref={ref} />;
-};
+});
 
 const HtxTimeSeriesViewRTS = ({ store, item }) => {
   console.log("TS", item.brushRange, item);
@@ -548,14 +557,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   return (
     <ObjectTag item={item}>
       {Tree.renderChildren(item)}
-      <Overview
-        data={item.dataObj}
-        series={item.dataHash}
-        item={item}
-        range={item.brushRange}
-        regions={item.regs}
-        forceUpdate={item._needsUpdate}
-      />
+      <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
     </ObjectTag>
   );
 };
