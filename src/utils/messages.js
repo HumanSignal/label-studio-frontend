@@ -33,8 +33,12 @@ export default {
     return `Attribute <b>${field}</b> of tag <b>${modelName}</b> has invalid type. Valid types are: <b>${validType}</b>.`;
   },
 
-  ERR_GENERAL: ({ value }) => {
+  ERR_INTERNAL: ({ value }) => {
     return `Internal error. See browser console for more info. Try again or contact developers.<br/>${value}`;
+  },
+
+  ERR_GENERAL: ({ value }) => {
+    return value;
   },
 
   // Object loading errors
@@ -50,10 +54,28 @@ export default {
     </p>
   ),
 
-  ERR_LOADING_HTTP: ({ attr, url, error }) => (
+  ERR_LOADING_CORS: ({ attr, url, error }) => `
     <div>
       <p>
-        There was an issue loading URL from <code>{attr}</code> value
+        There was an issue loading URL from <code>${attr}</code> value.
+        Most likely that's because static server has wide-open CORS.
+        <a href=${URL_CORS_DOCS} target="_blank">Read more on that here.</a>
+      </p>
+      <p>
+        Also check that:
+        <ul>
+          <li>URL is valid</li>
+          <li>Network is reachable</li>
+        </ul>
+      </p>
+      <p>URL: <code><a href=${url} target="_blank">${url}</a></code></p>
+    </div>
+  `,
+
+  ERR_LOADING_HTTP: ({ attr, url, error }) => `
+    <div>
+      <p>
+        There was an issue loading URL from <code>${attr}</code> value
       </p>
       <p>
         Things to look out for:
@@ -61,23 +83,16 @@ export default {
           <li>URL is valid</li>
           <li>URL scheme matches the service scheme, i.e. https and https</li>
           <li>
-            The static server has wide-open CORS,{" "}
-            <a href={URL_CORS_DOCS} target="_blank">
-              more on that here
-            </a>
+            The static server has wide-open CORS,
+            <a href=${URL_CORS_DOCS} target="_blank">more on that here</a>
           </li>
         </ul>
       </p>
       <p>
-        Technical description: <code>{error}</code>
+        Technical description: <code>${error}</code>
         <br />
-        URL:{" "}
-        <code>
-          <a href={url} target="_blank">
-            {url}
-          </a>
-        </code>
+        URL: <code><a href=${url} target="_blank">${url}</a></code>
       </p>
     </div>
-  ),
+  `,
 };
