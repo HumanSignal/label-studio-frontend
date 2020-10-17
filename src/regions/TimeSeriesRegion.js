@@ -28,6 +28,9 @@ const Model = types
     get completion() {
       return getRoot(self).completionStore.selected;
     },
+    get regionElement() {
+      return self._brushRefs[0];
+    },
   }))
   .actions(self => ({
     growRight(size) {

@@ -269,6 +269,7 @@ class ChannelD3 extends React.Component {
         }
         // all other space is taken by brushCreator
         group.selectAll(".overlay").style("pointer-events", "none");
+        r._brushRefs = [].concat(r._brushRefs ?? [], group.selectAll(".selection").nodes());
       })
       .merge(brushSelection)
       .each(function(r, i) {
@@ -677,7 +678,7 @@ class ChannelD3 extends React.Component {
     this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.style.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
-    return <div ref={this.ref} />;
+    return <div className="htx-timeseries-channel" ref={this.ref} />;
   }
 }
 

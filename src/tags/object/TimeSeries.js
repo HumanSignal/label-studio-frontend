@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import React from "react";
 import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
@@ -548,18 +550,29 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 
   item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style.fillcolor));
 
-  return <div ref={ref} />;
+  return <div className="htx-timeseries-overview" ref={ref} />;
 });
 
 const HtxTimeSeriesViewRTS = ({ store, item }) => {
   console.log("TS", item.brushRange, item);
+  const ref = React.createRef();
+
+  React.useEffect(() => {
+    if (item && item.brushRange.length) {
+      item._nodeReference = ref.current;
+    }
+  }, [item, ref]);
+
   // the last thing updated during initialisation
   if (!item.brushRange.length) return null;
+
   return (
-    <ObjectTag item={item}>
-      {Tree.renderChildren(item)}
-      <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
-    </ObjectTag>
+    <div ref={ref} className="htx-timeseries">
+      <ObjectTag item={item}>
+        {Tree.renderChildren(item)}
+        <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
+      </ObjectTag>
+    </div>
   );
 };
 
