@@ -35,24 +35,24 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
  * <!-- csv loaded by url in `value` with 3 columns: time, sensor1, sensor2 -->
  * <!-- key column `time` is a number actually -->
  * <View>
- *   <TimeSeries name="device" value="$timeseries" valueType="url" timeValue="$time">
- *      <TimeSeriesChannel value="$sensor1" />
- *      <TimeSeriesChannel value="$sensor2" />
+ *   <TimeSeries name="device" value="$timeseries" valueType="url" timeValue="#time">
+ *      <TimeSeriesChannel value="#sensor1" />
+ *      <TimeSeriesChannel value="#sensor2" />
  *   </TimeSeries>
  * </View>
  * @example
  * <!-- data stored directly in task -->
  * <!-- timeseries key (`time`) is date in `inputFormat` formatted as full date on plot -->
  * <View>
- *   <TimeSeries name="device" timeValue="$time" inputFormat="M/d/y hh:mm:ss.SSS">
- *      <TimeSeriesChannel value="$sensor1" />
- *      <TimeSeriesChannel value="$sensor2" />
+ *   <TimeSeries name="device" timeValue="#time" inputFormat="M/d/y hh:mm:ss.SSS">
+ *      <TimeSeriesChannel value="#sensor1" />
+ *      <TimeSeriesChannel value="#sensor2" />
  *   </TimeSeries>
  * </View>
  * @name TimeSeries
  * @param {string} name of the element
- * @param {string} [value] field with url (valuetype=url) or with whole data; all task is data if omitted
- * @param {string} [valueType] "url"
+ * @param {string} [value] field with url to CSV-like file (valuetype=url) or with whole json data; all task is data if omitted
+ * @param {string} [valueType] "url" | "json"
  * @param {string} timeValue value with times
  * @param {string} [inputFormat] value with times
  * @param {string} [format] format of time column: "date" | date format (as in date-fns) | number format
@@ -61,7 +61,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 const TagAttrs = types.model({
   name: types.identifier,
   value: types.maybeNull(types.string),
-  valuetype: types.maybeNull(types.enumeration(["url"])),
+  valuetype: types.maybeNull(types.enumeration(["url", "json"])),
   timevalue: "",
 
   inputformat: "",
