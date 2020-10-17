@@ -29,6 +29,7 @@ import { parse, format as formatFNS } from "date-fns";
 import { parseCSV, tryToParseJSON } from "../../utils/data";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import messages from "../../utils/messages";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -36,24 +37,24 @@ import messages from "../../utils/messages";
  * <!-- csv loaded by url in `value` with 3 columns: time, sensor1, sensor2 -->
  * <!-- key column `time` is a number actually -->
  * <View>
- *   <TimeSeries name="device" value="$timeseries" valueType="url" timeValue="$time">
- *      <TimeSeriesChannel value="$sensor1" />
- *      <TimeSeriesChannel value="$sensor2" />
+ *   <TimeSeries name="device" value="$timeseries" valueType="url" timeValue="#time">
+ *      <TimeSeriesChannel value="#sensor1" />
+ *      <TimeSeriesChannel value="#sensor2" />
  *   </TimeSeries>
  * </View>
  * @example
  * <!-- data stored directly in task -->
  * <!-- timeseries key (`time`) is date in `inputFormat` formatted as full date on plot -->
  * <View>
- *   <TimeSeries name="device" timeValue="$time" inputFormat="M/d/y hh:mm:ss.SSS">
- *      <TimeSeriesChannel value="$sensor1" />
- *      <TimeSeriesChannel value="$sensor2" />
+ *   <TimeSeries name="device" timeValue="#time" inputFormat="M/d/y hh:mm:ss.SSS">
+ *      <TimeSeriesChannel value="#sensor1" />
+ *      <TimeSeriesChannel value="#sensor2" />
  *   </TimeSeries>
  * </View>
  * @name TimeSeries
  * @param {string} name of the element
- * @param {string} [value] field with url (valuetype=url) or with whole data; all task is data if omitted
- * @param {string} [valueType] "url"
+ * @param {string} [value] field with url to CSV-like file (valuetype=url) or with whole json data; all task is data if omitted
+ * @param {string} [valueType] "url" | "json"
  * @param {string} timeValue value with times
  * @param {string} [inputFormat] value with times
  * @param {string} [format] format of time column: "date" | date format (as in date-fns) | number format
@@ -62,7 +63,7 @@ import messages from "../../utils/messages";
 const TagAttrs = types.model({
   name: types.identifier,
   value: types.maybeNull(types.string),
-  valuetype: types.maybeNull(types.enumeration(["url"])),
+  valuetype: types.maybeNull(types.enumeration(["url", "json"])),
   timevalue: "",
 
   inputformat: "",
@@ -255,7 +256,7 @@ const Model = types
       needUpdate && self.updateView();
     },
 
-    preloadValue(store) {
+    async preloadValue(store) {
       const dataObj = store.task.dataObj;
 
       if (self.valuetype !== "url") {
@@ -267,26 +268,50 @@ const Model = types
         return;
       }
 
-      if (!self.value) throw new Error("`value` should be provided if `valuetype` set to 'url'");
-      const url = store.task.dataObj[idFromValue(self.value)];
+      if (!self.value) {
+        const message = `Attribute <b>value</b> for <b>${self.name}</b> should be provided when <b>valuetype="url"</b>`;
+        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        return;
+      }
+      const url = dataObj[idFromValue(self.value)];
+      if (!url || typeof url !== "string") {
+        const message = `Cannot find url in <b>${idFromValue(self.value)}</b> field of your task`;
+        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        return;
+      }
+      let text = "";
+      let cors = false;
+      let res;
 
-      return fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-          return res.text();
-        })
-        .then(text => {
-          let data = tryToParseJSON(text);
-          if (!data) {
-            data = parseCSV(text);
+      try {
+        res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        text = await res.text();
+      } catch (e) {
+        let error = e;
+        if (!res) {
+          try {
+            res = await fetch(url, { mode: "no-cors" });
+            if (!res.ok && res.status === 0) cors = true;
+          } catch (e) {
+            error = e;
           }
-          self.setData(data);
-          self.updateValue(store);
-        })
-        .catch(e => {
-          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
-          InfoModal.error(message, "Wow!");
-        });
+        }
+        store.completionStore.addErrors([errorBuilder.loadingError(error, url, self.value, cors)]);
+        return;
+      }
+
+      try {
+        let data = tryToParseJSON(text);
+        if (!data) {
+          data = parseCSV(text);
+        }
+        self.setData(data);
+        self.updateValue(store);
+      } catch (e) {
+        const message = `Problems with parsing CSV: ${e?.message || e}<br>URL: ${url}`;
+        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+      }
     },
 
     async updateValue(store) {
@@ -296,17 +321,17 @@ const Model = types
       const data = self.dataObj;
       if (!data) return;
       if (!self.timevalue) {
-        const message = "`timevalue` should be set to the name of column with times; use `column#0` for headless csv";
-        InfoModal.error(message);
-        throw new Error(message);
+        const message = "`timevalue` should be set to the name of column with times; use `#column#0` for headless csv";
+        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        return;
       }
       const times = data[idFromValue(self.timevalue)];
       if (!times) {
-        const message = `\`${idFromValue(
+        const message = `<b>${idFromValue(
           self.timevalue,
-        )}\` not found in data. Use \`valuetype=url\` for data loading or \`column#0\` for headless csv`;
-        InfoModal.error(message);
-        throw new Error(message);
+        )}</b> not found in data. Use <b>valueType="url"</b> for data loading or <b>#column#0</b> for headless csv`;
+        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        return;
       }
       self.updateTR([times[0], times[times.length >> 2]]);
     },
