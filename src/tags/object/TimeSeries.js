@@ -82,7 +82,7 @@ const Model = types
 
     width: 840,
     margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
-    brushRange: types.array(types.Date),
+    brushRange: types.array(types.number),
 
     // _value: types.optional(types.string, ""),
     _needsUpdate: types.optional(types.number, 0),
@@ -392,7 +392,11 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const width = fullWidth - margin.left - margin.right;
   const idX = idFromValue(timevalue);
   // const data = store.task.dataObj;
-  const keys = item.overviewchannels ? item.overviewchannels.split(",") : Object.keys(data).filter(key => key !== idX);
+  let keys = Object.keys(data).filter(key => key !== idX);
+  if (item.overviewchannels) {
+    const channels = item.overviewchannels.split(",").filter(ch => keys.includes(ch));
+    if (channels.length) keys = channels;
+  }
   // const series = data[idX];
   const minRegionWidth = 2;
 
