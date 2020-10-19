@@ -70,7 +70,8 @@ const _detect = region => {
     case "textrange":
     case "hypertextregion":
     case "textarearegion":
-    case "audioregion": {
+    case "audioregion":
+    case "timeseriesregion": {
       return Geometry.getDOMBBox(region.regionElement);
     }
     case "rectangleregion": {

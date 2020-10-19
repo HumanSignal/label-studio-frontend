@@ -24,6 +24,8 @@ const obtainWatcher = node => {
       return createPropertyWatcher(["x", "y", "hidden", parentImagePropsWatch]);
     case "brushregion":
       return createPropertyWatcher(["needsUpdate", "hidden", parentImagePropsWatch]);
+    case "timeseriesregion":
+      return createPropertyWatcher(["start", "end", { parent: ["scale"] }]);
     default:
       return null;
   }

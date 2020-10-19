@@ -270,6 +270,7 @@ class ChannelD3 extends React.Component {
         }
         // all other space is taken by brushCreator
         group.selectAll(".overlay").style("pointer-events", "none");
+        r._brushRefs = [].concat(r._brushRefs ?? [], group.selectAll(".selection").nodes());
       })
       .merge(brushSelection)
       .each(function(r, i) {
@@ -427,16 +428,23 @@ class ChannelD3 extends React.Component {
   };
 
   initZoom() {
-    const { item } = this.props;
+    const { data, item, time } = this.props;
+    const times = data[time];
     const upd = item.parent.throttledRangeUpdate();
     const onZoom = () => {
       const e = d3.event;
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       const { range } = this.props;
+      const indices = range.map(r => d3.bisectRight(times, r));
+      const MAX_POINTS_ON_SCREEN = 10;
       const [x] = d3.mouse(d3.event.target);
       const width = this.x.range()[1];
+      // slow down zooming in
       const scale = Math.min(0.3, -e.deltaY / this.height);
+      // if there are too few points displayed, don't zoom in
+      if (indices[1] - indices[0] < MAX_POINTS_ON_SCREEN && scale > 0) return;
+
       const shift = range[1] - range[0];
       const zoomed = [
         Math.max(+this.extent[0], +range[0] + (shift * scale * x) / width),
@@ -598,18 +606,17 @@ class ChannelD3 extends React.Component {
     const left = Math.max(0, Math.floor((this.zoomStep * (current[0] - all[0])) / (all[1] - all[0])));
     const right = Math.max(0, Math.floor((this.zoomStep * (current[1] - all[0])) / (all[1] - all[0])));
     const translate = all[0] - current[0];
-    console.log(
-      "SOME MATH",
+    console.log("SOME MATH", {
       left,
       right,
-      [...range],
-      this.plotX.domain(),
-      current,
+      xDomain: [...range],
+      pDomain: this.plotX.domain(),
+      xRange: current,
       all,
       scale,
       translate,
-      this.useOptimizedData,
-    );
+      use: this.useOptimizedData,
+    });
 
     // zoomStep - zoom level when we need to switch between optimized and original data
     const haveToSwitchData = scale > this.zoomStep === this.useOptimizedData;
@@ -678,7 +685,7 @@ class ChannelD3 extends React.Component {
     this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.style.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
-    return <div ref={this.ref} />;
+    return <div className="htx-timeseries-channel" ref={this.ref} />;
   }
 }
 

@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import React from "react";
 import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
@@ -81,7 +83,7 @@ const Model = types
 
     width: 840,
     margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
-    brushRange: types.array(types.Date),
+    brushRange: types.array(types.number),
 
     // _value: types.optional(types.string, ""),
     _needsUpdate: types.optional(types.number, 0),
@@ -391,7 +393,11 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const width = fullWidth - margin.left - margin.right;
   const idX = idFromValue(timevalue);
   // const data = store.task.dataObj;
-  const keys = item.overviewchannels ? item.overviewchannels.split(",") : Object.keys(data).filter(key => key !== idX);
+  let keys = Object.keys(data).filter(key => key !== idX);
+  if (item.overviewchannels) {
+    const channels = item.overviewchannels.split(",").filter(ch => keys.includes(ch));
+    if (channels.length) keys = channels;
+  }
   // const series = data[idX];
   const minRegionWidth = 2;
 
@@ -470,7 +476,6 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
       .domain([d3.min(data[key]), d3.max(data[key])])
       .range([focusHeight - margin.max, margin.min]);
 
-    gChannels.current.selectAll("path").remove();
     gChannels.current
       .append("path")
       .datum(sparseValues(series, getOptimalWidth()))
@@ -526,10 +531,6 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 
     gChannels.current = focus.current.append("g").attr("class", "channels");
 
-    for (let key of keys) drawPath(key);
-
-    drawAxis();
-
     gRegions.current = focus.current.append("g").attr("class", "regions");
 
     gb.current = focus.current
@@ -547,6 +548,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
         .selectAll("svg")
         .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
 
+      gChannels.current.selectAll("path").remove();
       for (let key of keys) drawPath(key);
 
       drawAxis();
@@ -574,18 +576,29 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 
   item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style.fillcolor));
 
-  return <div ref={ref} />;
+  return <div className="htx-timeseries-overview" ref={ref} />;
 });
 
 const HtxTimeSeriesViewRTS = ({ store, item }) => {
   console.log("TS", item.brushRange, item);
+  const ref = React.createRef();
+
+  React.useEffect(() => {
+    if (item && item.brushRange.length) {
+      item._nodeReference = ref.current;
+    }
+  }, [item, ref]);
+
   // the last thing updated during initialisation
   if (!item.brushRange.length) return null;
+
   return (
-    <ObjectTag item={item}>
-      {Tree.renderChildren(item)}
-      <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
-    </ObjectTag>
+    <div ref={ref} className="htx-timeseries">
+      <ObjectTag item={item}>
+        {Tree.renderChildren(item)}
+        <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
+      </ObjectTag>
+    </div>
   );
 };
 
