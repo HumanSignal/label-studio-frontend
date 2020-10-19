@@ -402,15 +402,21 @@ const Model = types
     },
 
     /**
-     * @typedef {[number, number]|{ x: number, y: number }} Point
+     * @typedef {number[]|{ x: number, y: number }} Point
+     */
+
+    /**
+     * @callback PointFn
+     * @param {Point} point
+     * @returns Point
      */
 
     /**
      * Wrap point operations to convert zoomed coords from screen to image and back
      * Good for event handlers, receiving screen coords, but working with image coords
      * Accepts both [x, y] and {x, y} points; preserves this format
-     * @param {(point: Point) => Point} fn wrapped function do some math with image coords
-     * @return {(point: Point) => Point} outer function do some math with screen coords
+     * @param {PointFn} fn wrapped function do some math with image coords
+     * @return {PointFn} outer function do some math with screen coords
      */
     fixForZoom(fn) {
       return p => {
