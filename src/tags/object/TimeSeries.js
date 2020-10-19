@@ -30,7 +30,8 @@ import messages from "../../utils/messages";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
- * TimeSeries tag can be used to label time series data
+ * TimeSeries tag can be used to label time series data.
+ * Read more about Time Series Labeling on [template page](../templates/time_series.html).
  * @example
  * <!-- csv loaded by url in `value` with 3 columns: time, sensor1, sensor2 -->
  * <!-- key column `time` is a number actually -->
