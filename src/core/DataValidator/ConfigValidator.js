@@ -81,12 +81,11 @@ export const errorBuilder = {
     };
   },
 
-  loadingError(error, url, attrWithUrl, cors = false) {
+  loadingError(error, url, attrWithUrl, message = messages.ERR_LOADING_HTTP) {
     console.log("ERR", error, error.code);
-    const fn = cors ? messages.ERR_LOADING_CORS : messages.ERR_LOADING_HTTP;
     return {
       error: "ERR_GENERAL",
-      value: fn({ attr: attrWithUrl, error: String(error), url }),
+      value: message({ attr: attrWithUrl, error: String(error), url }),
       field: attrWithUrl,
       modelName: "",
     };

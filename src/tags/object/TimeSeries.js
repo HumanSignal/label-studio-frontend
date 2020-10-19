@@ -285,7 +285,15 @@ const Model = types
 
       try {
         res = await fetch(url);
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        if (!res.ok) {
+          if (res.status === 400) {
+            store.completionStore.addErrors([
+              errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, messages.ERR_LOADING_S3),
+            ]);
+            return;
+          }
+          throw new Error(`${res.status} ${res.statusText}`);
+        }
         text = await res.text();
       } catch (e) {
         let error = e;
@@ -297,7 +305,9 @@ const Model = types
             error = e;
           }
         }
-        store.completionStore.addErrors([errorBuilder.loadingError(error, url, self.value, cors)]);
+        store.completionStore.addErrors([
+          errorBuilder.loadingError(error, url, self.value, cors ? messages.ERR_LOADING_CORS : undefined),
+        ]);
         return;
       }
 
