@@ -471,7 +471,6 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
       .domain([d3.min(data[key]), d3.max(data[key])])
       .range([focusHeight - margin.max, margin.min]);
 
-    gChannels.current.selectAll("path").remove();
     gChannels.current
       .append("path")
       .datum(sparseValues(series, getOptimalWidth()))
@@ -527,10 +526,6 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 
     gChannels.current = focus.current.append("g").attr("class", "channels");
 
-    for (let key of keys) drawPath(key);
-
-    drawAxis();
-
     gRegions.current = focus.current.append("g").attr("class", "regions");
 
     gb.current = focus.current
@@ -548,6 +543,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
         .selectAll("svg")
         .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
 
+      gChannels.current.selectAll("path").remove();
       for (let key of keys) drawPath(key);
 
       drawAxis();
