@@ -29,7 +29,7 @@ const Model = types
       return getRoot(self).completionStore.selected;
     },
     get regionElement() {
-      return self._brushRefs[0];
+      return self._brushRef;
     },
   }))
   .actions(self => ({

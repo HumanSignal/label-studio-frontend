@@ -270,9 +270,10 @@ class ChannelD3 extends React.Component {
         }
         // all other space is taken by brushCreator
         group.selectAll(".overlay").style("pointer-events", "none");
-        r._brushRefs = r._brushRefs ?? [];
-        if (r._brushRefs.length === item.parent.children.length) r._brushRefs = [];
-        r._brushRefs.push(...group.selectAll(".selection").nodes());
+
+        if (r._brushRef === undefined || !r._brushRef.isConnected) {
+          r._brushRef = group.select(".selection").node();
+        }
       })
       .merge(brushSelection)
       .each(function(r, i) {
