@@ -62,6 +62,8 @@ const Model = types
       Hotkey.addKey("shift+right", () => self.growRight(lots));
       Hotkey.addKey("shift+alt+left", () => self.shrinkLeft(lots));
       Hotkey.addKey("shift+alt+right", () => self.shrinkRight(lots));
+
+      self.parent.scrollToRegion(self);
     },
 
     updateAppearenceFromState() {
