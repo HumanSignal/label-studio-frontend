@@ -119,6 +119,14 @@ export default observer(({ store }) => {
           >
             Move sidepanel to the bottom
           </Checkbox>
+          <br />
+          <Checkbox
+            value="Display Labels by default in Results panel"
+            defaultChecked={store.settings.displayLabelsByDefault}
+            onChange={store.settings.toggleSidepanelModel}
+          >
+            Display Labels by default in Results panel
+          </Checkbox>
           {/* <br/> */}
           {/* <Checkbox */}
           {/*   value="Show image in fullsize" */}
