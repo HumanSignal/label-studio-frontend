@@ -31,6 +31,9 @@ const SettingsModel = types
      */
     continuousLabeling: false,
 
+    // select regions after creating them
+    selectAfterCreate: false,
+
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
@@ -103,6 +106,10 @@ const SettingsModel = types
 
     toggleContinuousLabeling() {
       self.continuousLabeling = !self.continuousLabeling;
+    },
+
+    toggleSelectAfterCreate() {
+      self.selectAfterCreate = !self.selectAfterCreate;
     },
 
     toggleSidepanelModel() {
