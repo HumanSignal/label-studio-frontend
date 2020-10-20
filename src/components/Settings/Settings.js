@@ -90,6 +90,15 @@ export default observer(({ store }) => {
             Keep label selected after creating a region
           </Checkbox>
 
+          <br />
+          <Checkbox
+            value="Select regions after creating"
+            defaultChecked={store.settings.selectAfterCreate}
+            onChange={store.settings.toggleSelectAfterCreate}
+          >
+            Select regions after creating
+          </Checkbox>
+
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}
