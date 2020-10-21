@@ -388,6 +388,8 @@ const Model = types
         store.completionStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
+      // if current view already restored by PersistentState
+      if (self.brushRange.length) return;
       self.updateTR([times[0], times[times.length >> 2]]);
     },
 
@@ -644,7 +646,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   }, [item, ref]);
 
   // the last thing updated during initialisation
-  if (!item.brushRange.length) return null;
+  if (!item.brushRange.length || !item.data) return null;
 
   return (
     <div ref={ref} className="htx-timeseries">
