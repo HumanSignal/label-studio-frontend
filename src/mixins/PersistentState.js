@@ -22,14 +22,14 @@ const PersistentStateMixin = types
 
     storeValues() {
       const key = self.persistentValuesKey;
-      const obj = { task: getRoot(self).task.id, values: self.persistentValues };
+      const obj = { task: getRoot(self).task?.id, values: self.persistentValues };
 
       localStorage.setItem(key, JSON.stringify(obj));
     },
 
     restoreValues() {
       const stored = JSON.parse(localStorage.getItem(self.persistentValuesKey) || "{}");
-      if (!stored || stored.task !== getRoot(self).task.id) return;
+      if (!stored || stored.task !== getRoot(self).task?.id) return;
       const values = stored.values || {};
       for (let key of Object.keys(values)) {
         self[key] = values[key];
