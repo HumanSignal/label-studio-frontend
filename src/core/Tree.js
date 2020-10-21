@@ -256,7 +256,7 @@ function renderItem(el) {
     throw new Error(`No view for model: ${typeName}`);
   }
 
-  return <View key={guidGenerator()} item={el} />;
+  return <View item={el} />;
 }
 
 /**
