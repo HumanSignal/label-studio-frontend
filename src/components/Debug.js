@@ -129,11 +129,12 @@ class DebugComponent extends Component {
               const completions = JSON.parse(this.state.completions || `[{ "result": [] }]`);
               const data = JSON.parse(this.state.data);
 
-              store.assignTask({ data });
-              store.completionStore.selected.traverseTree(node => node.updateValue?.(store));
               store.resetState();
               store.assignConfig(config);
+              store.assignTask({ data });
               store.initializeStore({ completions, predictions: [] });
+              const cs = store.completionStore;
+              if (cs.completions.length) cs.selectCompletion(cs.completions[0].id);
             }}
           >
             Apply
