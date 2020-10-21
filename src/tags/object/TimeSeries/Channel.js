@@ -32,7 +32,14 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  * @name TimeSeriesChannel
  * @param {string} displayName name of the channel
  * @param {string} units units name
- * @param {string} unitsFormat format string for the units
+ * @param {string} unitsFormat?? format values with d3-format; most useful format:
+ *        [,][.precision][f|%]
+ *        , - group thousands with separator (from locale): , (12345.6 -> 12,345.6) ,.2f (12345.6 -> 12,345.60)
+ *        .precision - precision for `f|%` type, significant digits for empty type:
+ *                     .3f (12.3456 -> 12.345, 1000 -> 1000.000)
+ *                     .3 (12.3456 -> 12.3, 1.2345 -> 1.23, 12345 -> 1.23e+4)
+ *        f - treat as float, default precision is .6: f (12 -> 12.000000) .2f (12 -> 12.00) .0f (12.34 -> 12)
+ *        % - treat as percents and format accordingly: %.0 (0.128 -> 13%) %.1 (1.2345 -> 123.4%)
  * @param {string} caption show channel caption view, like channel name, etc
  * @param {string} interpolation line interpolation mode
  * @param {string} showGrid show grid on the plot
