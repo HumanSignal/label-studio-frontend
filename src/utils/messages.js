@@ -54,6 +54,17 @@ export default {
     </p>
   ),
 
+  ERR_LOADING_S3: ({ attr, url, error }) => `
+    <div>
+      <p>
+        There was an issue loading URL from <code>${attr}</code> value.
+        The request parameters are invalid.
+        If you are using S3, make sure you’ve specified the right bucket region name.
+      </p>
+      <p>URL: <code><a href=${url} target="_blank">${url}</a></code></p>
+    </div>
+  `,
+
   ERR_LOADING_CORS: ({ attr, url, error }) => `
     <div>
       <p>

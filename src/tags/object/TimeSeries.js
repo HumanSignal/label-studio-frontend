@@ -167,6 +167,13 @@ const Model = types
       return slices;
     },
 
+    // range of times or numerical indices
+    get keysRange() {
+      const keys = self.dataObj?.[idFromValue(self.timevalue)];
+      if (!keys) return [];
+      return [keys[0], keys[keys.length - 1]];
+    },
+
     states() {
       return self.completion.toNames.get(self.name);
     },
@@ -200,6 +207,34 @@ const Model = types
 
     updateView() {
       self._needsUpdate = self._needsUpdate + 1;
+    },
+
+    scrollToRegion(r) {
+      const range = [...self.brushRange];
+      if (r.start >= range[0] && r.end <= range[1]) return;
+      const currentSize = range[1] - range[0];
+      const regionSize = r.end - r.start;
+      const desiredSize = regionSize * 1.5;
+      const gap = (desiredSize - regionSize) / 2;
+      if (currentSize < desiredSize) {
+        const extend = (desiredSize - currentSize) / 2;
+        range[0] -= extend;
+        range[1] += extend;
+      }
+      // just move without resize
+      if (r.start < range[0]) {
+        range[1] -= range[0] - (r.start - gap);
+        range[0] = r.start - gap;
+      }
+      if (r.end > range[1]) {
+        range[0] += r.end + gap - range[1];
+        range[1] = r.end + gap;
+      }
+      // constrain to domain
+      range[0] = Math.max(self.keysRange[0], range[0]);
+      range[1] = Math.min(self.keysRange[1], range[1]);
+      // @todo dirty hack to trigger rerender, rewrite
+      self.updateTR(range, self.scale + 0.0001);
     },
 
     updateTR(tr, scale = 1) {
@@ -286,7 +321,15 @@ const Model = types
 
       try {
         res = await fetch(url);
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        if (!res.ok) {
+          if (res.status === 400) {
+            store.completionStore.addErrors([
+              errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, messages.ERR_LOADING_S3),
+            ]);
+            return;
+          }
+          throw new Error(`${res.status} ${res.statusText}`);
+        }
         text = await res.text();
       } catch (e) {
         let error = e;
@@ -298,7 +341,9 @@ const Model = types
             error = e;
           }
         }
-        store.completionStore.addErrors([errorBuilder.loadingError(error, url, self.value, cors)]);
+        store.completionStore.addErrors([
+          errorBuilder.loadingError(error, url, self.value, cors ? messages.ERR_LOADING_CORS : undefined),
+        ]);
         return;
       }
 
