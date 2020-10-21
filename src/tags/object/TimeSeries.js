@@ -30,6 +30,7 @@ import { parseCSV, tryToParseJSON } from "../../utils/data";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import messages from "../../utils/messages";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import PersistentStateMixin from "../../mixins/PersistentState";
 
 /**
  * TimeSeries tag can be used to label time series data
@@ -171,6 +172,15 @@ const Model = types
       const keys = self.dataObj?.[idFromValue(self.timevalue)];
       if (!keys) return [];
       return [keys[0], keys[keys.length - 1]];
+    },
+
+    get persistentValues() {
+      return {
+        brushRange: self.brushRange,
+        initialRange: self.initialRange,
+        // @todo as usual for rerender
+        scale: self.scale + 0.0001,
+      };
     },
 
     states() {
@@ -646,7 +656,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, TagAttrs, Model);
+const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);
