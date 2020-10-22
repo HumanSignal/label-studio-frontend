@@ -57,7 +57,7 @@ import PersistentStateMixin from "../../mixins/PersistentState";
  * @param {string} name of the element
  * @param {string} [value] field with url to CSV-like file (valuetype=url) or with whole json data; all task is data if omitted
  * @param {string} [valueType] "url" | "json"
- * @param {string} timeValue value with times
+ * @param {string} [timeValue] value with times
  * @param {string} [inputFormat] value with times
  * @param {string} [format] format of time column: "date" | date format (as in date-fns) | number format
  * @param {string} [separator] custom separator for csv (usual values: , ; tab space)
@@ -120,20 +120,29 @@ const Model = types
       return Boolean(self.inputformat) || (self.format && /[a-zA-Z]/.test(self.format[0]));
     },
 
+    get keyColumn() {
+      // for virtual column use just an uniq random name to not overlap with other column names
+      return self.timevalue ? idFromValue(self.timevalue) : "#@$";
+    },
+
     get dataObj() {
       if (!self.valueLoaded || !self.data) return null;
       let data = self.data;
-      if (self.inputformat) {
+      if (!self.timevalue) {
+        const justAnyColumn = Object.values(data)[0];
+        const indices = Array.from({ length: justAnyColumn.length }, (_, i) => i);
+        data = { ...data, [self.keyColumn]: indices };
+      } else if (self.inputformat) {
         const D = new Date();
-        const key = idFromValue(self.timevalue);
-        const timestamps = data[key].map(d => +parse(d, self.inputformat, D));
-        data = { ...data, [key]: timestamps };
+        const timestamps = data[self.keyColumn].map(d => +parse(d, self.inputformat, D));
+        data = { ...data, [self.keyColumn]: timestamps };
       }
       return data;
     },
 
     get dataHash() {
       const raw = self.dataObj;
+      const { keyColumn } = self;
       if (!raw) return null;
       const keys = Object.keys(raw);
       const data = [];
@@ -145,6 +154,7 @@ const Model = types
           } else {
             data[i][key] = raw[key][i];
           }
+          if (!self.timevalue) data[i][keyColumn] = i;
         }
       }
       return data;
@@ -172,7 +182,7 @@ const Model = types
 
     // range of times or numerical indices
     get keysRange() {
-      const keys = self.dataObj?.[idFromValue(self.timevalue)];
+      const keys = self.dataObj?.[self.keyColumn];
       if (!keys) return [];
       return [keys[0], keys[keys.length - 1]];
     },
@@ -383,16 +393,12 @@ const Model = types
       }
       const data = self.dataObj;
       if (!data) return;
-      if (!self.timevalue) {
-        const message = "`timevalue` should be set to the name of column with times; use `#column#0` for headless csv";
-        store.completionStore.addErrors([errorBuilder.generalError(message)]);
-        return;
-      }
-      const times = data[idFromValue(self.timevalue)];
+      const times = data[self.keyColumn];
       if (!times) {
-        const message = `<b>${idFromValue(
-          self.timevalue,
-        )}</b> not found in data. Use <b>valueType="url"</b> for data loading or <b>#column#0</b> for headless csv`;
+        const message = [
+          `<b>${self.keyColumn}</b> not found in data.`,
+          `Use <b>valueType="url"</b> for data loading or <b>#column#0</b> for headless csv`,
+        ].join(" ");
         store.completionStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
@@ -453,9 +459,8 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const [ref, fullWidth, node] = useWidth();
 
   const focusHeight = 60;
-  const { margin, timevalue } = item;
+  const { margin, keyColumn: idX } = item;
   const width = fullWidth - margin.left - margin.right;
-  const idX = idFromValue(timevalue);
   // const data = store.task.dataObj;
   let keys = Object.keys(data).filter(key => key !== idX);
   if (item.overviewchannels) {
