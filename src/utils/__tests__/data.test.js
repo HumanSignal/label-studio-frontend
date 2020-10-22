@@ -1,9 +1,9 @@
-import { format } from "date-fns";
+import { timeFormat } from "d3";
 import { parseCSV } from "../data";
 
 const now = +new Date();
-const dateISO = date => format(date, "yyyy-MM-dd HH:mm:ss");
-const dateUS = date => format(date, "MM/dd/yyyy hh:mm:ss a");
+const dateISO = timeFormat("%Y-%m-%d %H:%M:%S");
+const dateUS = timeFormat("%m/%d/%Y %I:%M:%S %p");
 const minute = 60 * 1000;
 const data = {
   timestamp: [now, now + minute, now + minute * 2],
