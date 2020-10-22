@@ -711,7 +711,7 @@ const HtxTimeSeriesChannelViewD3 = ({ item }) => {
 
   return (
     <ChannelD3Observed
-      time={idFromValue(item.parent.timevalue)}
+      time={item.parent.keyColumn}
       value={idFromValue(item.value)}
       item={item}
       data={item.parent.dataObj}
