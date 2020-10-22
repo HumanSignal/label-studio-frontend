@@ -69,7 +69,7 @@ const TagAttrs = types.model({
   valuetype: types.maybeNull(types.enumeration(["url", "json"])),
   timevalue: "",
 
-  separator: "auto",
+  separator: ",",
   inputformat: "",
   format: "",
   overviewchannels: "", // comma-separated list of channels to show
@@ -374,7 +374,7 @@ const Model = types
         if (!data) {
           let { separator } = self;
           if (separator?.length > 1) {
-            const aliases = { tab: "\t", space: " ", auto: "auto", comma: ",", dot: "." };
+            const aliases = { tab: "\t", "\\t": "\t", space: " ", auto: "auto", comma: ",", dot: "." };
             separator = aliases[separator] || separator[0];
           }
           data = parseCSV(text, separator);
