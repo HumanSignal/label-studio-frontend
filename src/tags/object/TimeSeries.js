@@ -25,7 +25,6 @@ import {
   sparseValues,
   getOptimalWidth,
 } from "./TimeSeries/helpers";
-import { parse, format as formatFNS } from "date-fns";
 import { parseCSV, tryToParseJSON } from "../../utils/data";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import messages from "../../utils/messages";
@@ -59,7 +58,7 @@ import PersistentStateMixin from "../../mixins/PersistentState";
  * @param {string} [valueType] "url" | "json"
  * @param {string} [timeValue] value with times
  * @param {string} [inputFormat] value with times
- * @param {string} [format] format of time column: "date" | date format (as in date-fns) | number format
+ * @param {string} [format] format of time column: "date" (browser locale) | date format (d3) | number format (d3)
  * @param {string} [separator] custom separator for csv (usual values: , ; tab space)
  * @param {string} [overviewChannels] comma-separated list of channels displayed in overview
  */
@@ -133,8 +132,8 @@ const Model = types
         const indices = Array.from({ length: justAnyColumn.length }, (_, i) => i);
         data = { ...data, [self.keyColumn]: indices };
       } else if (self.inputformat) {
-        const D = new Date();
-        const timestamps = data[self.keyColumn].map(d => +parse(d, self.inputformat, D));
+        const parse = d3.timeParse(self.inputformat);
+        const timestamps = data[self.keyColumn].map(d => +parse(d));
         data = { ...data, [self.keyColumn]: timestamps };
       }
       return data;
@@ -206,10 +205,13 @@ const Model = types
     },
 
     formatTime(time) {
-      const { format } = self;
-      if (format === "date") return formatTrackerTime(time);
-      if (format) return self.isDate ? formatFNS(time, format) : d3.format(format)(time);
-      return String(time);
+      if (!self._format) {
+        const { format, isDate } = self;
+        if (format === "date") self._format = formatTrackerTime;
+        else if (format) self._format = isDate ? d3.timeFormat(format) : d3.format(format);
+        else self._format = String;
+      }
+      return self._format(time);
     },
   }))
 

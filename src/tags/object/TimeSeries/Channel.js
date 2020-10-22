@@ -16,7 +16,6 @@ import {
   sparseValues,
   checkD3EventLoop,
 } from "./helpers";
-import { format as formatFNS } from "date-fns";
 import InfoModal from "../../../components/Infomodal/Infomodal";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 
