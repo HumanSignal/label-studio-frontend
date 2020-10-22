@@ -248,6 +248,8 @@ export class Geometry {
    * @return {BBox[]}
    */
   static getDOMBBox(domNode, single = false) {
+    if (!domNode) return null;
+
     const bboxes = domNode.getClientRects();
     return single
       ? bboxes[0]
