@@ -364,7 +364,7 @@ const Model = types
         if (!data) {
           let { separator } = self;
           if (separator?.length > 1) {
-            const aliases = { tab: "\t", space: " " };
+            const aliases = { tab: "\t", space: " ", auto: "auto", comma: ",", dot: "." };
             separator = aliases[separator] || separator[0];
           }
           data = parseCSV(text, separator);
