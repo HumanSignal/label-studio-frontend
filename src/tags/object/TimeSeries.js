@@ -59,6 +59,7 @@ import PersistentStateMixin from "../../mixins/PersistentState";
  * @param {string} timeValue value with times
  * @param {string} [inputFormat] value with times
  * @param {string} [format] format of time column: "date" | date format (as in date-fns) | number format
+ * @param {string} [separator] custom separator for csv (usual values: , ; tab space)
  * @param {string} [overviewChannels] comma-separated list of channels displayed in overview
  */
 const TagAttrs = types.model({
@@ -67,6 +68,7 @@ const TagAttrs = types.model({
   valuetype: types.maybeNull(types.enumeration(["url", "json"])),
   timevalue: "",
 
+  separator: "auto",
   inputformat: "",
   format: "",
   overviewchannels: "", // comma-separated list of channels to show
@@ -359,7 +361,12 @@ const Model = types
       try {
         let data = tryToParseJSON(text);
         if (!data) {
-          data = parseCSV(text);
+          let { separator } = self;
+          if (separator?.length > 1) {
+            const aliases = { tab: "\t", space: " " };
+            separator = aliases[separator] || separator[0];
+          }
+          data = parseCSV(text, separator);
         }
         self.setData(data);
         self.updateValue(store);
