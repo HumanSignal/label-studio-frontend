@@ -65,7 +65,7 @@ const connect = (relation, root) => {
  * @param {HTMLElement} root
  */
 const calculateBBox = (shape, root) => {
-  const { x, y } = Geometry.getDOMBBox(root)[0];
+  const { x, y } = Geometry.getDOMBBox(root)[0] ?? { x: 0, y: 0 };
   const bboxList = shape.boundingBox();
 
   return bboxList.map(bbox => {
