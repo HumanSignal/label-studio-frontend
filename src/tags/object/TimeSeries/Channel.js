@@ -73,7 +73,7 @@ const csMap = {
 const TagAttrs = types.model({
   displayname: types.maybeNull(types.string),
 
-  units: types.maybeNull(types.string),
+  units: "",
   unitsformat: types.optional(types.string, ".1f"),
   caption: types.optional(types.boolean, true), // show channel caption view, like channel name, etc
 
