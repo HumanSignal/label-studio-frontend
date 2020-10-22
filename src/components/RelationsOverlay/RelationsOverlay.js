@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { observer } from "mobx-react";
 import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";
@@ -127,14 +129,10 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * }}
  */
 const RelationItemObserver = observer(({ relation, ...rest }) => {
+  const { node1: startNode, node2: endNode } = relation;
+
   return (
-    <RelationItem
-      id={relation.id}
-      startNode={relation.node1}
-      endNode={relation.node2}
-      direction={relation.direction}
-      {...rest}
-    />
+    <RelationItem id={relation.id} startNode={startNode} endNode={endNode} direction={relation.direction} {...rest} />
   );
 });
 
