@@ -30,6 +30,7 @@ import { parseCSV, tryToParseJSON } from "../../utils/data";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import messages from "../../utils/messages";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import PersistentStateMixin from "../../mixins/PersistentState";
 
 /**
  * TimeSeries tag can be used to label time series data.
@@ -59,6 +60,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
  * @param {string} timeValue value with times
  * @param {string} [inputFormat] value with times
  * @param {string} [format] format of time column: "date" | date format (as in date-fns) | number format
+ * @param {string} [separator] custom separator for csv (usual values: , ; tab space)
  * @param {string} [overviewChannels] comma-separated list of channels displayed in overview
  */
 const TagAttrs = types.model({
@@ -67,6 +69,7 @@ const TagAttrs = types.model({
   valuetype: types.maybeNull(types.enumeration(["url", "json"])),
   timevalue: "",
 
+  separator: "auto",
   inputformat: "",
   format: "",
   overviewchannels: "", // comma-separated list of channels to show
@@ -172,6 +175,15 @@ const Model = types
       const keys = self.dataObj?.[idFromValue(self.timevalue)];
       if (!keys) return [];
       return [keys[0], keys[keys.length - 1]];
+    },
+
+    get persistentValues() {
+      return {
+        brushRange: self.brushRange,
+        initialRange: self.initialRange,
+        // @todo as usual for rerender
+        scale: self.scale + 0.0001,
+      };
     },
 
     states() {
@@ -350,7 +362,12 @@ const Model = types
       try {
         let data = tryToParseJSON(text);
         if (!data) {
-          data = parseCSV(text);
+          let { separator } = self;
+          if (separator?.length > 1) {
+            const aliases = { tab: "\t", space: " " };
+            separator = aliases[separator] || separator[0];
+          }
+          data = parseCSV(text, separator);
         }
         self.setData(data);
         self.updateValue(store);
@@ -379,6 +396,8 @@ const Model = types
         store.completionStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
+      // if current view already restored by PersistentState
+      if (self.brushRange.length) return;
       self.updateTR([times[0], times[times.length >> 2]]);
     },
 
@@ -635,7 +654,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   }, [item, ref]);
 
   // the last thing updated during initialisation
-  if (!item.brushRange.length) return null;
+  if (!item.brushRange.length || !item.data) return null;
 
   return (
     <div ref={ref} className="htx-timeseries">
@@ -647,7 +666,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, TagAttrs, Model);
+const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);

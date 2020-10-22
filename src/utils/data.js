@@ -8,28 +8,51 @@ import { isString, escapeHtml } from "./utilities";
  * @param {string} text
  * @returns {{ [string]: number[] }}
  */
-export const parseCSV = text => {
+export const parseCSV = (text, separator = "auto") => {
   // @todo iterate over newlines for better performance
   const lines = text.split("\n");
   let names;
-  let separator = ",";
+
+  if (separator !== "auto" && !lines[0].includes(separator)) {
+    throw new Error([`Cannot find provided separator "${separator}".`, `Row 1: ${lines[0]}`].join(`\n`));
+  }
 
   // detect separator (2nd line is definitely with data)
-  if (lines.length > 1) {
-    const candidates = lines[1].trim().match(/[^\d\-.]/g);
+  if (separator === "auto" && lines.length > 1) {
+    const candidates = lines[1].trim().match(/[,;\s\t]/g);
     if (!candidates.length) throw new Error("No separators found");
     if (candidates.some(c => c !== candidates[0])) {
-      const list = escapeHtml([...new Set(candidates)].join(""));
-      throw new Error(`More than one separator found: ${list}`);
+      const list = Array.from(new Set(candidates))
+        .map(escapeHtml)
+        .map(s => `"${s}"`)
+        .join(", ");
+      throw new Error(
+        [
+          `More than one possible separator found: ${list}`,
+          `You can provide correct one with <Timeseries separator=",">`,
+        ].join(`\n`),
+      );
     }
     separator = candidates[0];
     if (lines[0].split(separator).length !== lines[1].split(separator).length)
-      throw new Error("Different amount of elements in rows");
+      throw new Error(
+        [
+          `Different amount of elements in rows.`,
+          `Row 1: ${lines[0]}`,
+          `Row 2: ${lines[1]}`,
+          `Guessed separator: ${separator}`,
+          `You can provide correct one with <Timeseries separator=",">`,
+        ].join(`\n`),
+      );
   }
 
   // detect header; if it is omitted, use "column#n" as a header names
   names = lines[0].trim().split(separator);
-  if (names.some(isNaN)) {
+  const secondLine = lines[1].trim().split(separator);
+  // assume that we have at least one column with numbers
+  // and name of this column is not number :)
+  // so we have different types for values in first and second rows
+  if (!names.every((n, i) => isNaN(n) === isNaN(secondLine[i]))) {
     lines.shift();
     names = names.map(n => n.toLowerCase());
   } else {
@@ -39,13 +62,26 @@ export const parseCSV = text => {
   const result = {};
   for (let name of names) result[name] = [];
 
+  if (names.length !== lines[0].split(separator).length) {
+    throw new Error(
+      [
+        `Column names count differs from data columns count.`,
+        `Columns: ${names.join(", ")};``Data: ${lines[0]};`,
+        `Separator: "${separator}".`,
+      ].join("\n"),
+    );
+  }
+
   let row;
   let i;
   for (let line of lines) {
     // skip empty lines including the last line
     if (!line.trim()) continue;
     row = line.split(separator);
-    for (i = 0; i < row.length; i++) result[names[i]].push(+row[i]);
+    for (i = 0; i < row.length; i++) {
+      const val = +row[i];
+      result[names[i]].push(isNaN(val) ? row[i] : val);
+    }
   }
 
   return result;
