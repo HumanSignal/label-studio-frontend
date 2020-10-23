@@ -3,7 +3,7 @@ import { isString, escapeHtml } from "./utilities";
 /**
  * Parse CSV
  * Accepts only numbers as a data
- * Returns hash with names (or "column#n" for headless csv) as a keys
+ * Returns hash with names (or indexed hash for headless csv) as a keys
  * and arrays of numbers as a values
  * @param {string} text
  * @returns {{ [string]: number[] }}
@@ -46,7 +46,7 @@ export const parseCSV = (text, separator = "auto") => {
       );
   }
 
-  // detect header; if it is omitted, use "column#n" as a header names
+  // detect header; if it is omitted, use indices as a header names
   names = lines[0].trim().split(separator);
   const secondLine = lines[1].trim().split(separator);
   // assume that we have at least one column with numbers
@@ -56,7 +56,7 @@ export const parseCSV = (text, separator = "auto") => {
     lines.shift();
     names = names.map(n => n.toLowerCase());
   } else {
-    names = names.map((_, i) => "column#" + i);
+    names = names.map((_, i) => i);
   }
 
   const result = {};
