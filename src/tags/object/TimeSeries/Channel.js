@@ -65,7 +65,7 @@ const TagAttrs = types.model({
   height: types.optional(types.string, "200"),
 
   strokewidth: types.optional(types.string, "1"),
-  strokecolor: types.optional(types.string, "#000000"),
+  strokecolor: types.optional(types.string, "#1f77b4"),
 
   column: types.string,
 });
