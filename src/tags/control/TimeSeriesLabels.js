@@ -20,7 +20,7 @@ import ControlBase from "./Base";
  *     <Label value="Nose"></Label>
  *   </TimeSeriesLabels>
  *   <TimeSeries name="img-1" value="$time">
- *     <TimeSeriesChannel value="$col" />
+ *     <Channel value="$col" />
  *   </TimeSeries>
  * </View>
  * @name TimeSeriesLabels

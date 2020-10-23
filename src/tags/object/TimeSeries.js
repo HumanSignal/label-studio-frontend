@@ -11,11 +11,7 @@ import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
-import { TimeSeriesChannelModel } from "./TimeSeries/Channel";
-import { TimeSeriesRegionModel } from "../../regions/TimeSeriesRegion";
-import { cloneNode } from "../../core/Helpers";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
-import { runTemplate } from "../../core/Template";
+import { restoreNewsnapshot } from "../../core/Helpers";
 import {
   checkD3EventLoop,
   idFromValue,
@@ -26,7 +22,6 @@ import {
   getOptimalWidth,
 } from "./TimeSeries/helpers";
 import { parseCSV, tryToParseJSON } from "../../utils/data";
-import InfoModal from "../../components/Infomodal/Infomodal";
 import messages from "../../utils/messages";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import PersistentStateMixin from "../../mixins/PersistentState";
@@ -39,8 +34,8 @@ import PersistentStateMixin from "../../mixins/PersistentState";
  * <!-- key column `time` is a number actually -->
  * <View>
  *   <TimeSeries name="device" value="$timeseries" valueType="url" timeValue="#time">
- *      <TimeSeriesChannel value="#sensor1" />
- *      <TimeSeriesChannel value="#sensor2" />
+ *      <Channel value="#sensor1" />
+ *      <Channel value="#sensor2" />
  *   </TimeSeries>
  * </View>
  * @example
@@ -48,8 +43,8 @@ import PersistentStateMixin from "../../mixins/PersistentState";
  * <!-- timeseries key (`time`) is date in `inputFormat` formatted as full date on plot -->
  * <View>
  *   <TimeSeries name="device" timeValue="#time" inputFormat="M/d/y hh:mm:ss.SSS">
- *      <TimeSeriesChannel value="#sensor1" />
- *      <TimeSeriesChannel value="#sensor2" />
+ *      <Channel value="#sensor1" />
+ *      <Channel value="#sensor2" />
  *   </TimeSeries>
  * </View>
  * @name TimeSeries
@@ -81,7 +76,7 @@ const TagAttrs = types.model({
 const Model = types
   .model("TimeSeriesModel", {
     type: "timeseries",
-    children: Types.unionArray(["timeserieschannel", "timeseriesoverview", "view", "hypertext"]),
+    children: Types.unionArray(["channel", "timeseriesoverview", "view", "hypertext"]),
 
     width: 840,
     margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
