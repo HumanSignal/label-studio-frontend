@@ -56,7 +56,7 @@ import "./TimeSeries/Channel";
  * @param {string} [timeColumn] column name or index that provides temporal values, if your time-series data has no temporal column then its automatically generated
  * @param {string} [timeFormat] pattern used to parse values inside timeColumn, parsing provided by d3
  * @param {string} [timeDisplayFormat] if temporal column is date then use d3 to format it, otherwise, if its a number then use d3 number formatting
- * @param {string} [separator] separator for you CSV file, default is comma ","
+ * @param {string} [sep] separator for you CSV file, default is comma ","
  * @param {string} [overviewChannels] comma-separated list of channels names or indexes displayed in overview
  */
 const TagAttrs = types.model({
@@ -65,7 +65,7 @@ const TagAttrs = types.model({
   valuetype: types.optional(types.enumeration(["url", "json"]), "url"),
   timecolumn: "",
 
-  separator: ",",
+  sep: ",",
   timeformat: "",
   timedisplayformat: "",
   overviewchannels: "", // comma-separated list of channels to show
@@ -371,7 +371,7 @@ const Model = types
       try {
         let data = tryToParseJSON(text);
         if (!data) {
-          let { separator } = self;
+          let separator = self.sep;
           if (separator?.length > 1) {
             const aliases = { tab: "\t", "\\t": "\t", space: " ", auto: "auto", comma: ",", dot: "." };
             separator = aliases[separator] || separator[0];
