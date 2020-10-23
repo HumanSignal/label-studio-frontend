@@ -29,7 +29,7 @@ export const parseCSV = (text, separator = "auto") => {
       throw new Error(
         [
           `More than one possible separator found: ${list}`,
-          `You can provide correct one with <Timeseries separator=",">`,
+          `You can provide correct one with <Timeseries sep=",">`,
         ].join(`\n`),
       );
     }
@@ -41,7 +41,7 @@ export const parseCSV = (text, separator = "auto") => {
           `Row 1: ${lines[0]}`,
           `Row 2: ${lines[1]}`,
           `Guessed separator: ${separator}`,
-          `You can provide correct one with <Timeseries separator=",">`,
+          `You can provide correct one with <Timeseries sep=",">`,
         ].join(`\n`),
       );
   }
