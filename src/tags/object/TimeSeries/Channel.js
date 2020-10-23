@@ -1,20 +1,13 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import * as d3 from "d3";
 import ObjectBase from "../Base";
 import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
-import {
-  getOptimalWidth,
-  getRegionColor,
-  fixMobxObserve,
-  idFromValue,
-  sparseValues,
-  checkD3EventLoop,
-} from "./helpers";
+import { getOptimalWidth, getRegionColor, fixMobxObserve, sparseValues, checkD3EventLoop } from "./helpers";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 
 /**
@@ -22,14 +15,15 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  * @example
  * <View>
  *   <TimeSeries name="video" value="$timestamp">
- *      <Channel value="$sensor1" />
- *      <Channel value="$sensor2" />
+ *      <Channel column="sensor1" />
+ *      <Channel column="sensor2" />
  *   </TimeSeries>
  * </View>
  * @name Channel
- * @param {string} displayName name of the channel
- * @param {string} units units name
- * @param {string} unitsFormat?? format values with d3-format; most useful format:
+ * @param {string} column column name or index
+ * @param {string} [legend] display name of the channel
+ * @param {string} [units] display units name
+ * @param {string} [displayFormat] format string for the values, uses d3-format:
  *        [,][.precision][f|%]
  *        , - group thousands with separator (from locale): , (12345.6 -> 12,345.6) ,.2f (12345.6 -> 12,345.60)
  *        .precision - precision for `f|%` type, significant digits for empty type:
@@ -37,15 +31,9 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  *                     .3 (12.3456 -> 12.3, 1.2345 -> 1.23, 12345 -> 1.23e+4)
  *        f - treat as float, default precision is .6: f (12 -> 12.000000) .2f (12 -> 12.00) .0f (12.34 -> 12)
  *        % - treat as percents and format accordingly: %.0 (0.128 -> 13%) %.1 (1.2345 -> 123.4%)
- * @param {string} caption show channel caption view, like channel name, etc
- * @param {string} interpolation line interpolation mode
- * @param {string} showGrid show grid on the plot
- * @param {string} showTracker show tracker line on the plot
- * @param {string} height height of the plot
- * @param {string} opacity opacity of the line
- * @param {string=} [strokeColor=#f48a42] stroke color
- * @param {number=} [strokeWidth=1] width of the stroke
- * @param {string} value value
+ * @param {number} [height] height of the plot
+ * @param {string=} [strokeColor=#f48a42] plot stroke color, expects hex value
+ * @param {number=} [strokeWidth=1] plot stroke width
  */
 
 const csMap = {
@@ -68,24 +56,18 @@ const csMap = {
 };
 
 const TagAttrs = types.model({
-  displayname: types.maybeNull(types.string),
-
+  legend: "",
   units: "",
-  unitsformat: types.optional(types.string, ".1f"),
-  caption: types.optional(types.boolean, true), // show channel caption view, like channel name, etc
+  displayformat: types.optional(types.string, ".1f"),
 
   interpolation: types.optional(types.enumeration(Object.values(csMap)), "curveStep"),
 
-  showgrid: types.optional(types.boolean, false),
-  showtracker: types.optional(types.boolean, true),
-
   height: types.optional(types.string, "200"),
 
-  opacity: types.optional(types.string, "0.8"),
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(types.string, "#000000"),
 
-  value: types.maybeNull(types.string),
+  column: types.string,
 });
 
 const Model = types
@@ -93,7 +75,6 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     type: "channel",
     children: Types.unionArray(["channel", "view"]),
-    // _value: types.optional(types.string, ""),
   })
   .views(self => ({
     get parent() {
@@ -466,22 +447,22 @@ class ChannelD3 extends React.Component {
   componentDidMount() {
     if (!this.ref.current) return;
 
-    const { data, item, range, time, value } = this.props;
+    const { data, item, range, time, column } = this.props;
     const { isDate, formatTime, margin, slicesCount } = item.parent;
     const height = this.height;
     this.zoomStep = slicesCount;
     const clipPathId = `clip_${item.id}`;
 
     const times = data[time];
-    const values = data[value];
+    const values = data[column];
     const { series } = this.props;
 
     if (!values) {
       const names = Object.keys(data).filter(name => name !== time);
-      const message = `\`${value}\` not found in data. Available columns: ${names.join(
+      const message = `\`${column}\` not found in data. Available columns: ${names.join(
         ", ",
-      )}. For headless csv you can use \`column#0\``;
-      item.store.completionStore.addErrors([errorBuilder.generalError(message)]);
+      )}. For headless csv you can use column index`;
+      getRoot(item).completionStore.addErrors([errorBuilder.generalError(message)]);
       return;
     }
 
@@ -493,7 +474,7 @@ class ChannelD3 extends React.Component {
     }
     this.slices = item.parent.dataSlices;
 
-    const formatValue = d3.format(item.unitsformat);
+    const formatValue = d3.format(item.displayformat);
     this.formatValue = formatValue;
     this.formatTime = formatTime;
 
@@ -530,13 +511,13 @@ class ChannelD3 extends React.Component {
 
     this.line = d3
       .line()
-      .y(d => this.y(d[value]))
+      .y(d => this.y(d[column]))
       .x(d => this.plotX(d[time]));
 
     this.lineSlice = d3
       .line()
       .defined(d => d[time] >= range[0] && d[time] <= range[1])
-      .y(d => this.y(d[value]))
+      .y(d => this.y(d[column]))
       .x(d => this.x(d[time]));
 
     //////////////////////////////////
@@ -560,7 +541,7 @@ class ChannelD3 extends React.Component {
     // decorative huge opaque block with channel name on background
     main
       .append("text")
-      .text(item.displayname)
+      .text(item.legend)
       .attr("dx", "1em")
       .attr("dy", "1em")
       .attr("font-weight", "bold")
@@ -582,6 +563,7 @@ class ChannelD3 extends React.Component {
       .selectAll("path")
       .attr("vector-effect", "non-scaling-stroke")
       .attr("fill", "none")
+      .attr("stroke-width", item.strokewidth || 1)
       .attr("stroke", item.strokecolor || "steelblue");
 
     this.renderTracker();
@@ -708,7 +690,7 @@ const HtxChannelViewD3 = ({ item }) => {
   return (
     <ChannelD3Observed
       time={item.parent.keyColumn}
-      value={idFromValue(item.value)}
+      column={item.column}
       item={item}
       data={item.parent.dataObj}
       series={item.parent.dataHash}

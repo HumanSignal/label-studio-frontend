@@ -6,8 +6,8 @@
     <Label value="Guitar"></Label>
     <Label value="Other"></Label>
   </TimeSeriesLabels>
-  <TimeSeries name="ts" timeValue="$time" format="date" overviewChannels="two">
-    <TimeSeriesChannel units="Hz" unitsFormat=",.1f" showgrid="true" strokeColor="#1f77b4" displayName="Sensor 1" value="$one" />
-    <TimeSeriesChannel units="Hz" unitsFormat=",.1f" showgrid="true" strokeColor="#ff7f0e" displayName="Sensor 2" value="$two" />
+  <TimeSeries name="ts" value="$timeseries" timeColumn="time" format="date" overviewChannels="two">
+    <Channel units="Hz" displayFormat=",.1f" strokeColor="#1f77b4" legend="Sensor 1" column="one" />
+    <Channel units="Hz" displayFormat=",.1f" strokeColor="#ff7f0e" legend="Sensor 2" column="two" />
   </TimeSeries>
 </View>

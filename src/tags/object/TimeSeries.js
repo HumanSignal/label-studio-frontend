@@ -26,6 +26,8 @@ import messages from "../../utils/messages";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import PersistentStateMixin from "../../mixins/PersistentState";
 
+import "./TimeSeries/Channel";
+
 /**
  * TimeSeries tag can be used to label time series data.
  * Read more about Time Series Labeling on [template page](../templates/time_series.html).
@@ -33,39 +35,39 @@ import PersistentStateMixin from "../../mixins/PersistentState";
  * <!-- csv loaded by url in `value` with 3 columns: time, sensor1, sensor2 -->
  * <!-- key column `time` is a number actually -->
  * <View>
- *   <TimeSeries name="device" value="$timeseries" valueType="url" timeValue="#time">
- *      <Channel value="#sensor1" />
- *      <Channel value="#sensor2" />
+ *   <TimeSeries name="device" value="$timeseries" valueType="url" timeColumn="time">
+ *      <Channel column="sensor1" />
+ *      <Channel column="sensor2" />
  *   </TimeSeries>
  * </View>
  * @example
- * <!-- data stored directly in task -->
- * <!-- timeseries key (`time`) is date in `inputFormat` formatted as full date on plot -->
+ * <!-- data stored directly in task's field `ts` as json -->
+ * <!-- timeseries key (`time`) is date in `timeFormat` formatted as full date on plot (by default) -->
  * <View>
- *   <TimeSeries name="device" timeValue="#time" inputFormat="M/d/y hh:mm:ss.SSS">
- *      <Channel value="#sensor1" />
- *      <Channel value="#sensor2" />
+ *   <TimeSeries name="device" value="$ts" timeColumn="time" timeFormat="%m/%d/%Y %H:%M:%S">
+ *      <Channel column="sensor1" />
+ *      <Channel column="sensor2" />
  *   </TimeSeries>
  * </View>
  * @name TimeSeries
- * @param {string} name of the element
- * @param {string} [value] field with url to CSV-like file (valuetype=url) or with whole json data; all task is data if omitted
- * @param {string} [valueType] "url" | "json"
- * @param {string} [timeValue] value with times
- * @param {string} [inputFormat] value with times
- * @param {string} [format] format of time column: "date" (browser locale) | date format (d3) | number format (d3)
- * @param {string} [separator] custom separator for csv (usual values: , ; tab space)
- * @param {string} [overviewChannels] comma-separated list of channels displayed in overview
+ * @param {string} name name of the element
+ * @param {string} value key used to lookup the data, it needs to reference either URLs for your time-series if valueType=url, otherwise expects JSON
+ * @param {string} [valueType] "url" | "json" If set to "url" then it loads value references inside `value` key, otherwise it expects JSON. Defaults to url
+ * @param {string} [timeColumn] column name or index that provides temporal values, if your time-series data has no temporal column then its automatically generated
+ * @param {string} [timeFormat] pattern used to parse values inside timeColumn, parsing provided by d3
+ * @param {string} [timeDisplayFormat] if temporal column is date then use d3 to format it, otherwise, if its a number then use d3 number formatting
+ * @param {string} [separator] separator for you CSV file, default is comma ","
+ * @param {string} [overviewChannels] comma-separated list of channels names or indexes displayed in overview
  */
 const TagAttrs = types.model({
   name: types.identifier,
-  value: types.maybeNull(types.string),
-  valuetype: types.maybeNull(types.enumeration(["url", "json"])),
-  timevalue: "",
+  value: types.string,
+  valuetype: types.optional(types.enumeration(["url", "json"]), "url"),
+  timecolumn: "",
 
   separator: ",",
-  inputformat: "",
-  format: "",
+  timeformat: "",
+  timedisplayformat: "",
   overviewchannels: "", // comma-separated list of channels to show
 
   multiaxis: types.optional(types.boolean, false), // show channels in the same view
@@ -111,23 +113,23 @@ const Model = types
     },
 
     get isDate() {
-      return Boolean(self.inputformat) || (self.format && /[a-zA-Z]/.test(self.format[0]));
+      return Boolean(self.timeformat) || (self.timedisplayformat && /[a-zA-Z]/.test(self.timedisplayformat[0]));
     },
 
     get keyColumn() {
       // for virtual column use just an uniq random name to not overlap with other column names
-      return self.timevalue ? idFromValue(self.timevalue) : "#@$";
+      return self.timecolumn || "#@$";
     },
 
     get dataObj() {
       if (!self.valueLoaded || !self.data) return null;
       let data = self.data;
-      if (!self.timevalue) {
+      if (!self.timecolumn) {
         const justAnyColumn = Object.values(data)[0];
         const indices = Array.from({ length: justAnyColumn.length }, (_, i) => i);
         data = { ...data, [self.keyColumn]: indices };
-      } else if (self.inputformat) {
-        const parse = d3.timeParse(self.inputformat);
+      } else if (self.timeformat) {
+        const parse = d3.timeParse(self.timeformat);
         const timestamps = data[self.keyColumn].map(d => +parse(d));
         data = { ...data, [self.keyColumn]: timestamps };
       }
@@ -148,7 +150,7 @@ const Model = types
           } else {
             data[i][key] = raw[key][i];
           }
-          if (!self.timevalue) data[i][keyColumn] = i;
+          if (!self.timecolumn) data[i][keyColumn] = i;
         }
       }
       return data;
@@ -201,7 +203,7 @@ const Model = types
 
     formatTime(time) {
       if (!self._format) {
-        const { format, isDate } = self;
+        const { timedisplayformat: format, isDate } = self;
         if (format === "date") self._format = formatTrackerTime;
         else if (format) self._format = isDate ? d3.timeFormat(format) : d3.format(format);
         else self._format = String;
@@ -394,7 +396,7 @@ const Model = types
       if (!times) {
         const message = [
           `<b>${self.keyColumn}</b> not found in data.`,
-          `Use <b>valueType="url"</b> for data loading or <b>#column#0</b> for headless csv`,
+          `Use <b>valueType="url"</b> for data loading or column index for headless csv`,
         ].join(" ");
         store.completionStore.addErrors([errorBuilder.generalError(message)]);
         return;
@@ -535,7 +537,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
     .on("end", brushended);
 
   const drawPath = key => {
-    const channel = item.children.find(c => c.value === `$${key}`);
+    const channel = item.children.find(c => c.column === key);
     const color = channel ? channel.strokecolor : "steelblue";
     const y = d3
       .scaleLinear()

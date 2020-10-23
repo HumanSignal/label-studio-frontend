@@ -11,9 +11,9 @@ const data = {
   rate: [0.01, 0.02, 0.04],
 };
 const dataHeadless = {
-  "column#0": [now, now + minute, now + minute * 2],
-  "column#1": [123, 125, 135],
-  "column#2": [0.01, 0.02, 0.04],
+  "0": [now, now + minute, now + minute * 2],
+  "1": [123, 125, 135],
+  "2": [0.01, 0.02, 0.04],
 };
 
 describe("parseCSV; csv with header", () => {
@@ -92,8 +92,8 @@ describe("parseCSV; headless csv", () => {
       `${dateISO(now + minute * 2)},135,0.04,F`,
     ].join("\n");
     const expected = { ...dataHeadless };
-    expected["column#0"] = expected["column#0"].map(dateISO);
-    expected["column#3"] = ["M", "F", "F"];
+    expected["0"] = expected["0"].map(dateISO);
+    expected["3"] = ["M", "F", "F"];
     expect(parseCSV(csv, ",")).toStrictEqual(expected);
   });
 });
