@@ -80,6 +80,11 @@ const Model = types
     get parent() {
       return Types.getParentOfTypeString(self, "TimeSeriesModel");
     },
+  }))
+  .actions(self => ({
+    afterCreate() {
+      self.column = self.column.toLowerCase();
+    },
   }));
 
 const ChannelModel = types.compose("ChannelModel", Model, TagAttrs, ObjectBase);

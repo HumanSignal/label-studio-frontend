@@ -118,7 +118,7 @@ const Model = types
 
     get keyColumn() {
       // for virtual column use just an uniq random name to not overlap with other column names
-      return self.timecolumn || "#@$";
+      return (self.timecolumn || "#@$").toLowerCase();
     },
 
     get dataObj() {
@@ -461,7 +461,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const { margin, keyColumn: idX } = item;
   const width = fullWidth - margin.left - margin.right;
   // const data = store.task.dataObj;
-  let keys = Object.keys(data).filter(key => key !== idX);
+  let keys = item.children.map(c => c.column);
   if (item.overviewchannels) {
     const channels = item.overviewchannels.split(",").filter(ch => keys.includes(ch));
     if (channels.length) keys = channels;
