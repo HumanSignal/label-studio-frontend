@@ -103,7 +103,7 @@ Scenario("check good nested Choice for Text", async function(I) {
   const personTag = locate(".ant-tag").withText("Person");
   I.seeElement(personTag);
   I.click(personTag);
-  I.doubleClick(".htx-text");
+  I.doubleClick(".htx-richtext");
   I.see("Regions (1)");
   I.dontSee("Female");
 
