@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo, useEffect } from "react";
+import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -11,24 +11,22 @@ import {
   getOptimalWidth,
   getRegionColor,
   fixMobxObserve,
-  formatTrackerTime,
   idFromValue,
   sparseValues,
   checkD3EventLoop,
 } from "./helpers";
-import InfoModal from "../../../components/Infomodal/Infomodal";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 
 /**
- * TimeSeriesChannel tag can be used to label time series data
+ * Channel tag can be used to label time series data
  * @example
  * <View>
  *   <TimeSeries name="video" value="$timestamp">
- *      <TimeSeriesChannel value="$sensor1" />
- *      <TimeSeriesChannel value="$sensor2" />
+ *      <Channel value="$sensor1" />
+ *      <Channel value="$sensor2" />
  *   </TimeSeries>
  * </View>
- * @name TimeSeriesChannel
+ * @name Channel
  * @param {string} displayName name of the channel
  * @param {string} units units name
  * @param {string} unitsFormat?? format values with d3-format; most useful format:
@@ -91,9 +89,9 @@ const TagAttrs = types.model({
 });
 
 const Model = types
-  .model("TimeSeriesChannelModel", {
+  .model("ChannelModel", {
     id: types.optional(types.identifier, guidGenerator),
-    type: "timeserieschannel",
+    type: "channel",
     children: Types.unionArray(["channel", "view"]),
     // _value: types.optional(types.string, ""),
   })
@@ -103,7 +101,7 @@ const Model = types
     },
   }));
 
-const TimeSeriesChannelModel = types.compose("TimeSeriesChannelModel", Model, TagAttrs, ObjectBase);
+const ChannelModel = types.compose("ChannelModel", Model, TagAttrs, ObjectBase);
 
 class ChannelD3 extends React.Component {
   ref = React.createRef();
@@ -700,8 +698,7 @@ class ChannelD3 extends React.Component {
 
 const ChannelD3Observed = observer(ChannelD3);
 
-// const HtxTimeSeriesChannelView = observer(({ store, item }) => <TS series={item._simple} />);
-const HtxTimeSeriesChannelViewD3 = ({ item }) => {
+const HtxChannelViewD3 = ({ item }) => {
   if (!item.parent.dataObj) return null;
   // @todo maybe later for some other option
   // let channels = item.parent.overviewchannels;
@@ -721,8 +718,8 @@ const HtxTimeSeriesChannelViewD3 = ({ item }) => {
   );
 };
 
-const HtxTimeSeriesChannel = observer(HtxTimeSeriesChannelViewD3);
+const HtxChannel = observer(HtxChannelViewD3);
 
-Registry.addTag("timeserieschannel", TimeSeriesChannelModel, HtxTimeSeriesChannel);
+Registry.addTag("channel", ChannelModel, HtxChannel);
 
-export { TimeSeriesChannelModel, HtxTimeSeriesChannel };
+export { ChannelModel, HtxChannel };
