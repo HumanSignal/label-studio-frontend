@@ -46,9 +46,14 @@ export const parseCSV = (text, separator = "auto") => {
       );
   }
 
+  const re = new RegExp(`"(""|[^"]+)*"|[^"${separator}]+|(?<=${separator})(?=${separator})`, "g");
+  const split = text => text.trim().match(re);
+
+  const start = performance.now();
+
   // detect header; if it is omitted, use indices as a header names
-  names = lines[0].trim().split(separator);
-  const secondLine = lines[1].trim().split(separator);
+  names = split(lines[0]);
+  const secondLine = split(lines[1]);
   // assume that we have at least one column with numbers
   // and name of this column is not number :)
   // so we have different types for values in first and second rows
@@ -62,7 +67,7 @@ export const parseCSV = (text, separator = "auto") => {
   const result = {};
   for (let name of names) result[name] = [];
 
-  if (names.length !== lines[0].split(separator).length) {
+  if (names.length !== split(lines[0]).length) {
     throw new Error(
       [
         `Column names count differs from data columns count.`,
@@ -77,12 +82,14 @@ export const parseCSV = (text, separator = "auto") => {
   for (let line of lines) {
     // skip empty lines including the last line
     if (!line.trim()) continue;
-    row = line.split(separator);
+    row = split(line);
     for (i = 0; i < row.length; i++) {
       const val = +row[i];
       result[names[i]].push(isNaN(val) ? row[i] : val);
     }
   }
+
+  console.log(`Parsed in ${performance.now() - start} ms`);
 
   return result;
 };
