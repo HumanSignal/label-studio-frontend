@@ -12,13 +12,6 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 
 /**
  * Channel tag can be used to label time series data
- * @example
- * <View>
- *   <TimeSeries name="video" value="$timestamp">
- *      <Channel column="sensor1" />
- *      <Channel column="sensor2" />
- *   </TimeSeries>
- * </View>
  * @name Channel
  * @param {string} column column name or index
  * @param {string} [legend] display name of the channel
