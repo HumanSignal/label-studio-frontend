@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 import { types, getParentOfType, getRoot } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
@@ -98,16 +99,24 @@ const Model = types
       self.end = end;
     },
 
+    afterCreate() {
+      if (typeof self.start === "string") {
+        // deal only with timestamps/indices
+        self.start = self.parent.parseTime(self.start);
+        self.end = self.parent.parseTime(self.end);
+      }
+    },
+
     serialize(control, object) {
+      // convert to original format from data/csv
+      const format = self.parent.timeformat ? d3.timeFormat(self.parent.timeformat) : Number;
       let res = {
         value: {
-          start: self.start,
-          end: self.end,
+          start: format(self.start),
+          end: format(self.end),
           instant: self.instant,
         },
       };
-
-      // res.value = Object.assign(res.value, control.serializableValue);
 
       return res;
     },
