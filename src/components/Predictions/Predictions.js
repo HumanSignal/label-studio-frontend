@@ -58,7 +58,8 @@ class Predictions extends Component {
     let title = (
       <div className={styles.title + " " + styles.titlespace}>
         <h3>Predictions</h3>
-        {store.completionStore.predictions.length > 0 && (
+        {/* @todo fix View All mode */}
+        {store.completionStore.predictions.length > 0 && false && (
           <Tooltip placement="topLeft" title="View all predictions">
             <Button
               size="small"
