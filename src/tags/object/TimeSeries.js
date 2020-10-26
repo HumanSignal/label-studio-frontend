@@ -121,6 +121,15 @@ const Model = types
       return (self.timecolumn || "#@$").toLowerCase();
     },
 
+    get parseTimeFn() {
+      return self.timeformat && self.timecolumn ? d3.timeParse(self.timeformat) : Number;
+    },
+
+    parseTime(time) {
+      const parse = self.parseTimeFn;
+      return +parse(time);
+    },
+
     get dataObj() {
       if (!self.valueLoaded || !self.data) return null;
       let data = self.data;
@@ -129,8 +138,7 @@ const Model = types
         const indices = Array.from({ length: justAnyColumn.length }, (_, i) => i);
         data = { ...data, [self.keyColumn]: indices };
       } else if (self.timeformat) {
-        const parse = d3.timeParse(self.timeformat);
-        const timestamps = data[self.keyColumn].map(d => +parse(d));
+        const timestamps = data[self.keyColumn].map(self.parseTime);
         data = { ...data, [self.keyColumn]: timestamps };
       }
       return data;
