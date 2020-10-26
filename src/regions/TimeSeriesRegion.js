@@ -17,8 +17,8 @@ const Model = types
     type: "timeseriesregion",
     object: types.late(() => types.reference(TimeSeriesModel)),
 
-    start: types.number,
-    end: types.number,
+    start: types.union(types.number, types.string),
+    end: types.union(types.number, types.string),
     instant: false,
   })
   .views(self => ({
