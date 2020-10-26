@@ -46,7 +46,7 @@ export const parseCSV = (text, separator = "auto") => {
       );
   }
 
-  const re = new RegExp(`"(""|[^"]+)*"|[^"${separator}]+|(?<=${separator})(?=${separator})`, "g");
+  const re = new RegExp(`"(""|[^"]+)*"|[^"${separator}]+|(?=${separator}(${separator}|$))`, "g");
   const split = text => text.trim().match(re);
 
   const start = performance.now();
@@ -71,7 +71,8 @@ export const parseCSV = (text, separator = "auto") => {
     throw new Error(
       [
         `Column names count differs from data columns count.`,
-        `Columns: ${names.join(", ")};``Data: ${lines[0]};`,
+        `Columns: ${names.join(", ")};`,
+        `Data: ${lines[0]};`,
         `Separator: "${separator}".`,
       ].join("\n"),
     );

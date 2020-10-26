@@ -96,4 +96,10 @@ describe("parseCSV; headless csv", () => {
     expected["3"] = ["M", "F", "F"];
     expect(parseCSV(csv, ",")).toStrictEqual(expected);
   });
+
+  test("Empty values", () => {
+    const csv = ["123,0.01,M", "125,,F", "135,0.04,"].join("\n");
+    const expected = { "0": [123, 125, 135], "1": [0.01, 0, 0.04], "2": ["M", "F", 0] };
+    expect(parseCSV(csv, ",")).toStrictEqual(expected);
+  });
 });
