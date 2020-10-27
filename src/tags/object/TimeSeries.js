@@ -661,7 +661,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
     node && drawRegions(regions);
   });
 
-  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style.fillcolor));
+  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style?.fillcolor));
 
   return <div className="htx-timeseries-overview" ref={ref} />;
 });
