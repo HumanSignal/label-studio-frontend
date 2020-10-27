@@ -21,7 +21,7 @@ git pull
 
 # Create new build
 rm -rf build
-yarn build-bundle
+yarn build:no-hash
 git add build
 
 # Replace links to published files in README to the actual one
