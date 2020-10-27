@@ -92,7 +92,7 @@ export const parseCSV = (text, separator = "auto") => {
 
   console.log(`Parsed in ${performance.now() - start} ms`);
 
-  return result;
+  return [result, names];
 };
 
 /**

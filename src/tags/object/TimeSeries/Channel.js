@@ -73,10 +73,14 @@ const Model = types
     get parent() {
       return Types.getParentOfTypeString(self, "TimeSeriesModel");
     },
-  }))
-  .actions(self => ({
-    afterCreate() {
-      self.column = self.column.toLowerCase();
+
+    get columnName() {
+      let column = self.column;
+      if (/^\d+$/.test(column)) {
+        column = self.parent.headers[column] || column;
+      }
+      column = column.toLowerCase();
+      return column;
     },
   }));
 
@@ -690,7 +694,7 @@ const HtxChannelViewD3 = ({ item }) => {
   return (
     <ChannelD3Observed
       time={item.parent.keyColumn}
-      column={item.column}
+      column={item.columnName}
       item={item}
       data={item.parent.dataObj}
       series={item.parent.dataHash}

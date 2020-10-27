@@ -92,6 +92,7 @@ const Model = types
     valueLoaded: false,
     zoomedRange: 0,
     scale: 1,
+    headers: [],
   }))
   .views(self => ({
     get regionsTimeRanges() {
@@ -224,6 +225,10 @@ const Model = types
     setData(data) {
       self.data = data;
       self.valueLoaded = true;
+    },
+
+    setColumnNames(headers) {
+      self.headers = headers;
     },
 
     setZoomedRange(range) {
@@ -378,15 +383,17 @@ const Model = types
 
       try {
         let data = tryToParseJSON(text);
+        let headers = [];
         if (!data) {
           let separator = self.sep;
           if (separator?.length > 1) {
             const aliases = { tab: "\t", "\\t": "\t", space: " ", auto: "auto", comma: ",", dot: "." };
             separator = aliases[separator] || separator[0];
           }
-          data = parseCSV(text, separator);
+          [data, headers] = parseCSV(text, separator);
         }
         self.setData(data);
+        self.setColumnNames(headers);
         self.updateValue(store);
       } catch (e) {
         const message = `Problems with parsing CSV: ${e?.message || e}<br>URL: ${url}`;
@@ -469,9 +476,13 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const { margin, keyColumn: idX } = item;
   const width = fullWidth - margin.left - margin.right;
   // const data = store.task.dataObj;
-  let keys = item.children.map(c => c.column);
+  let keys = item.children.map(c => c.columnName);
   if (item.overviewchannels) {
-    const channels = item.overviewchannels.split(",").filter(ch => keys.includes(ch));
+    const channels = item.overviewchannels
+      .toLowerCase()
+      .split(",")
+      .map(name => (/^\d+$/.test(name) ? item.headers[name] : name))
+      .filter(ch => keys.includes(ch));
     if (channels.length) keys = channels;
   }
   // const series = data[idX];
@@ -545,7 +556,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
     .on("end", brushended);
 
   const drawPath = key => {
-    const channel = item.children.find(c => c.column === key);
+    const channel = item.children.find(c => c.columnName === key);
     const color = channel ? channel.strokecolor : "steelblue";
     const y = d3
       .scaleLinear()
