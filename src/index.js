@@ -6,10 +6,12 @@ import App from "./components/App/App";
 import AppStore from "./stores/AppStore";
 import ProductionEnvironment from "./env/production";
 
+let LabelStudio;
+
 if (process.env.NODE_ENV === "production") {
   const environment = ProductionEnvironment;
 
-  window.LabelStudio = function(element, options) {
+  LabelStudio = function(element, options) {
     let params = options;
 
     if (params.options && params.options.secureMode) window.LS_SECURE_MODE = true;
@@ -36,7 +38,7 @@ if (process.env.NODE_ENV === "production") {
 } else {
   const environment = require("./env/development").default;
 
-  window.LabelStudio = function(element, options) {
+  LabelStudio = function(element, options) {
     let params = options;
 
     if (params.options && params.options.secureMode) window.LS_SECURE_MODE = true;
@@ -77,3 +79,7 @@ if (process.env.NODE_ENV === "production") {
     }
   };
 }
+
+window.LabelStudio = LabelStudio;
+
+export default LabelStudio;
