@@ -52,10 +52,10 @@ import "./TimeSeries/Channel";
  * @name TimeSeries
  * @param {string} name name of the element
  * @param {string} value key used to lookup the data, it needs to reference either URLs for your time-series if valueType=url, otherwise expects JSON
- * @param {string} [valueType] "url" | "json" If set to "url" then it loads value references inside `value` key, otherwise it expects JSON. Defaults to url
+ * @param {enum} [valueType] "url" or "json" If set to "url" then it loads value references inside `value` key, otherwise it expects JSON. Defaults to url
  * @param {string} [timeColumn] column name or index that provides temporal values, if your time-series data has no temporal column then its automatically generated
- * @param {string} [timeFormat] pattern used to parse values inside timeColumn, parsing provided by d3
- * @param {string} [timeDisplayFormat] if temporal column is date then use d3 to format it, otherwise, if its a number then use d3 number formatting
+ * @param {string} [timeFormat] pattern used to parse values inside timeColumn, parsing provided by d3, and follows `strftime` implementation
+ * @param {string} [timeDisplayFormat] format used to display temporal value, can be a number or a date, if a temporal column is a date then use strftime to format it, otherwise, if it's a number then use [d3 number](https://github.com/d3/d3-format#locale_format) formatting
  * @param {string} [sep] separator for you CSV file, default is comma ","
  * @param {string} [overviewChannels] comma-separated list of channels names or indexes displayed in overview
  */
