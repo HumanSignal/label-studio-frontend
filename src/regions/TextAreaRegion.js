@@ -1,5 +1,5 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { observer } from "mobx-react";
 import { types, getParentOfType } from "mobx-state-tree";
 
 import { Typography } from "antd";
@@ -48,7 +48,7 @@ const TextAreaRegionModel = types.compose(
   Model,
 );
 
-const HtxTextAreaRegionView = ({ store, item }) => {
+const HtxTextAreaRegionView = ({ item }) => {
   const classes = [styles.mark];
   const params = {};
   const { parent } = item;
@@ -99,7 +99,7 @@ const HtxTextAreaRegionView = ({ store, item }) => {
   );
 };
 
-const HtxTextAreaRegion = inject("store")(observer(HtxTextAreaRegionView));
+const HtxTextAreaRegion = observer(HtxTextAreaRegionView);
 
 Registry.addTag("textarearegion", TextAreaRegionModel, HtxTextAreaRegion);
 
