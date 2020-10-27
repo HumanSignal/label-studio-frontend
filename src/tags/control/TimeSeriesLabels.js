@@ -15,8 +15,7 @@ import ControlBase from "./Base";
  * TimeSeriesLabels tag creates labeled time range
  * @example
  * <View>
- *   <View>
- *  <TimeSeriesLabels name="label" toName="ts">
+ *   <TimeSeriesLabels name="label" toName="ts">
  *       <Label value="Run"/>
  *       <Label value="Walk"/>
  *   </TimeSeriesLabels>
