@@ -24,6 +24,8 @@ const obtainWatcher = node => {
       return createPropertyWatcher(["x", "y", "hidden", parentImagePropsWatch]);
     case "brushregion":
       return createPropertyWatcher(["needsUpdate", "hidden", parentImagePropsWatch]);
+    case "timeseriesregion":
+      return createPropertyWatcher(["start", "end", { parent: ["zoomedRange"] }]);
     default:
       return null;
   }
@@ -63,7 +65,7 @@ const connect = (relation, root) => {
  * @param {HTMLElement} root
  */
 const calculateBBox = (shape, root) => {
-  const { x, y } = Geometry.getDOMBBox(root)[0];
+  const { x, y } = Geometry.getDOMBBox(root, true) ?? { x: 0, y: 0 };
   const bboxList = shape.boundingBox();
 
   return bboxList.map(bbox => {

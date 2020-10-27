@@ -48,8 +48,6 @@ const renderResult = result => {
   return null;
 };
 
-const Results = observer(({ node }) => <Fragment>{node.results.map(renderResult)}</Fragment>);
-
 export default observer(({ store, completion }) => {
   const node = completion.highlightedNode;
 
@@ -82,7 +80,7 @@ export default observer(({ store, completion }) => {
           </Text>
         )}
 
-        <Results node={node} />
+        <Fragment>{node.results.map(renderResult)}</Fragment>
       </div>
 
       <div className={styles.block + " ls-entity-buttons"}>

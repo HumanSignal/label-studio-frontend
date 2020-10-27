@@ -5,7 +5,7 @@ import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../../../components/Hint/Hint";
 
-const AudioControls = observer(({ item, store }) => {
+const AudioControls = ({ item, store }) => {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1em" }}>
       <Button
@@ -33,6 +33,6 @@ const AudioControls = observer(({ item, store }) => {
       </Button>
     </div>
   );
-});
+};
 
 export default observer(AudioControls);

@@ -96,6 +96,19 @@ export function atobUnicode(str) {
 }
 
 /**
+ * Makes string safe to use inside dangerouslySetInnerHTML
+ * @param {string} unsafe
+ */
+export function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
  * Convert any value to an array
  * @template T
  * @param {T} value

@@ -248,14 +248,19 @@ export class Geometry {
    * @return {BBox[]}
    */
   static getDOMBBox(domNode, single = false) {
+    if (!domNode) return null;
+
     const bboxes = domNode.getClientRects();
-    return single
-      ? bboxes[0]
-      : Array.from(domNode.getClientRects()).map(domRect => ({
-          x: domRect.x,
-          y: domRect.y,
-          width: domRect.width,
-          height: domRect.height,
-        }));
+
+    if (bboxes.length === 0) return null;
+
+    const convertDOMRect = domRect => ({
+      x: domRect.x,
+      y: domRect.y,
+      width: domRect.width,
+      height: domRect.height,
+    });
+
+    return single ? convertDOMRect(bboxes[0]) : Array.from(domNode.getClientRects()).map(convertDOMRect);
   }
 }

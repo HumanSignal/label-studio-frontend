@@ -15,6 +15,7 @@ import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
 import { TextAreaModel } from "./TextArea";
+import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 
 import { EllipseLabelsModel } from "./EllipseLabels";
 import { EllipseModel } from "./Ellipse";
@@ -40,6 +41,7 @@ export {
   RectangleModel,
   ShortcutModel,
   TextAreaModel,
+  TimeSeriesLabelsModel,
   EllipseLabelsModel,
   EllipseModel,
   RelationsModel,
