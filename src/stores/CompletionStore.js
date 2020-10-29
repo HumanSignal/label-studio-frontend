@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot, isAlive } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -519,8 +519,14 @@ const Completion = types
         results: [result],
       });
 
-      // unselect labels after use, but consider "keep labels selected" settings
-      if (control.type.includes("labels")) self.unselectAll(true);
+      if (self.store.settings.selectAfterCreate) {
+        // some regions might need some actions right after creation (i.e. text)
+        // and some may be already deleted (i.e. bboxes)
+        setTimeout(() => isAlive(area) && self.selectArea(area));
+      } else {
+        // unselect labels after use, but consider "keep labels selected" settings
+        if (control.type.includes("labels")) self.unselectAll(true);
+      }
 
       return area;
     },

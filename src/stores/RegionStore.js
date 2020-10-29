@@ -156,6 +156,7 @@ export default types
           self.initHotkeys();
         }
       });
+      self.view = self.completion.store.settings.displayLabelsByDefault ? "labels" : "regions";
     },
 
     // init Alt hotkeys for regions selection
