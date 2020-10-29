@@ -3,6 +3,9 @@ import { types, onSnapshot, getRoot } from "mobx-state-tree";
 import Hotkey from "../core/Hotkey";
 import Utils from "../utils";
 
+const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
+const SIDEPANEL_MODE_LABELS = "SIDEPANEL_MODE_LABELS";
+
 /**
  * Setting store of Label Studio
  */
@@ -28,9 +31,17 @@ const SettingsModel = types
      */
     continuousLabeling: false,
 
+    // select regions after creating them
+    selectAfterCreate: false,
+
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
+
+    sidePanelMode: types.optional(
+      types.enumeration([SIDEPANEL_MODE_REGIONS, SIDEPANEL_MODE_LABELS]),
+      SIDEPANEL_MODE_REGIONS,
+    ),
 
     imageFullSize: types.optional(types.boolean, false),
 
@@ -43,6 +54,9 @@ const SettingsModel = types
   .views(self => ({
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+    get displayLabelsByDefault() {
+      return self.sidePanelMode === SIDEPANEL_MODE_LABELS;
     },
   }))
   .actions(self => ({
@@ -92,6 +106,17 @@ const SettingsModel = types
 
     toggleContinuousLabeling() {
       self.continuousLabeling = !self.continuousLabeling;
+    },
+
+    toggleSelectAfterCreate() {
+      self.selectAfterCreate = !self.selectAfterCreate;
+    },
+
+    toggleSidepanelModel() {
+      self.sidePanelMode =
+        self.sidePanelMode === SIDEPANEL_MODE_LABELS ? SIDEPANEL_MODE_REGIONS : SIDEPANEL_MODE_LABELS;
+      // apply immediately
+      self.completion.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
     },
 
     toggleAutoSave() {

@@ -90,6 +90,15 @@ export default observer(({ store }) => {
             Keep label selected after creating a region
           </Checkbox>
 
+          <br />
+          <Checkbox
+            value="Select regions after creating"
+            defaultChecked={store.settings.selectAfterCreate}
+            onChange={store.settings.toggleSelectAfterCreate}
+          >
+            Select regions after creating
+          </Checkbox>
+
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}
@@ -118,6 +127,14 @@ export default observer(({ store }) => {
             }}
           >
             Move sidepanel to the bottom
+          </Checkbox>
+          <br />
+          <Checkbox
+            value="Display Labels by default in Results panel"
+            defaultChecked={store.settings.displayLabelsByDefault}
+            onChange={store.settings.toggleSidepanelModel}
+          >
+            Display Labels by default in Results panel
           </Checkbox>
           {/* <br/> */}
           {/* <Checkbox */}
