@@ -146,6 +146,8 @@ const HtxKeyPointView = ({ item }) => {
         x={x}
         y={y}
         radius={item.width}
+        // fixes performance, but opactity+borders might look not so good
+        perfectDrawEnabled={false}
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
         name={item.id}
