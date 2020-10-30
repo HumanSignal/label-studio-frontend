@@ -69,7 +69,7 @@ export const parseCSV = (text, separator = "auto") => {
     lines.shift();
     names = names.map(n => n.toLowerCase());
   } else {
-    names = names.map((_, i) => i);
+    names = names.map((_, i) => String(i));
   }
 
   const result = {};
