@@ -132,8 +132,6 @@ const Model = types
       return p;
     },
 
-    afterAttach() {},
-
     convertPointsToMask() {},
 
     // addPoints(x, y, mode) {
