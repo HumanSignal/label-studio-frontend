@@ -30,8 +30,7 @@ export default observer(({ store }) => {
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="General" key="1">
           <Checkbox
-            value="Enable labeling hotkeys"
-            defaultChecked={store.settings.enableHotkeys}
+            checked={store.settings.enableHotkeys}
             onChange={() => {
               store.settings.toggleHotkeys();
             }}
@@ -40,8 +39,7 @@ export default observer(({ store }) => {
           </Checkbox>
           <br />
           <Checkbox
-            value="Show tooltips"
-            defaultChecked={store.settings.enableTooltips}
+            checked={store.settings.enableTooltips}
             onChange={() => {
               store.settings.toggleTooltips();
             }}
@@ -50,8 +48,7 @@ export default observer(({ store }) => {
           </Checkbox>
           <br />
           <Checkbox
-            value="Show labels tooltips"
-            defaultChecked={store.settings.enableLabelTooltips}
+            checked={store.settings.enableLabelTooltips}
             onChange={() => {
               store.settings.toggleLabelTooltips();
             }}
@@ -60,8 +57,7 @@ export default observer(({ store }) => {
           </Checkbox>
           <br />
           <Checkbox
-            value="Show labels inside the regions"
-            defaultChecked={store.settings.showLabels}
+            checked={store.settings.showLabels}
             onChange={() => {
               store.settings.toggleShowLabels();
             }}
@@ -81,8 +77,7 @@ export default observer(({ store }) => {
 
           <br />
           <Checkbox
-            value="Keep label selected after creating a region"
-            defaultChecked={store.settings.continuousLabeling}
+            checked={store.settings.continuousLabeling}
             onChange={() => {
               store.settings.toggleContinuousLabeling();
             }}
@@ -91,11 +86,7 @@ export default observer(({ store }) => {
           </Checkbox>
 
           <br />
-          <Checkbox
-            value="Select regions after creating"
-            defaultChecked={store.settings.selectAfterCreate}
-            onChange={store.settings.toggleSelectAfterCreate}
-          >
+          <Checkbox checked={store.settings.selectAfterCreate} onChange={store.settings.toggleSelectAfterCreate}>
             Select regions after creating
           </Checkbox>
 
@@ -125,8 +116,7 @@ export default observer(({ store }) => {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Layout" key="3">
           <Checkbox
-            value="Move sidepanel to the bottom"
-            defaultChecked={store.settings.bottomSidePanel}
+            checked={store.settings.bottomSidePanel}
             onChange={() => {
               store.settings.toggleBottomSP();
             }}
@@ -134,11 +124,7 @@ export default observer(({ store }) => {
             Move sidepanel to the bottom
           </Checkbox>
           <br />
-          <Checkbox
-            value="Display Labels by default in Results panel"
-            defaultChecked={store.settings.displayLabelsByDefault}
-            onChange={store.settings.toggleSidepanelModel}
-          >
+          <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
             Display Labels by default in Results panel
           </Checkbox>
           {/* <br/> */}
