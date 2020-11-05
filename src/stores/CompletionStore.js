@@ -520,9 +520,11 @@ const Completion = types
       });
 
       if (self.store.settings.selectAfterCreate) {
-        // some regions might need some actions right after creation (i.e. text)
-        // and some may be already deleted (i.e. bboxes)
-        setTimeout(() => isAlive(area) && self.selectArea(area));
+        if (!area.classification) {
+          // some regions might need some actions right after creation (i.e. text)
+          // and some may be already deleted (i.e. bboxes)
+          setTimeout(() => isAlive(area) && self.selectArea(area));
+        }
       } else {
         // unselect labels after use, but consider "keep labels selected" settings
         if (control.type.includes("labels")) self.unselectAll(true);
