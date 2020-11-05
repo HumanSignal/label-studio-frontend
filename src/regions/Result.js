@@ -194,6 +194,11 @@ const Result = types
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
 
+      const meta = self.from_name.metaValue;
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
+      }
+
       Object.assign(data, { id, from_name, to_name, type });
       value[valueType] && Object.assign(data.value, { [valueType]: value[valueType] });
       if (typeof score === "number") data.score = score;
