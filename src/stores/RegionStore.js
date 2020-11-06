@@ -22,12 +22,12 @@ export default types
 
     get sortedRegions() {
       const sorts = {
-        date: () => self.regions,
-        score: () => self.regions.sort((a, b) => b.score - a.score),
+        date: isDesc => (isDesc ? self.regions : [...self.regions].reverse()),
+        score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
-      const r = sorts[self.sort]();
-      return self.sortOrder === "asc" ? r.slice().reverse() : r;
+      const sorted = sorts[self.sort](self.sortOrder === "desc");
+      return sorted;
     },
 
     asTree(enrich) {
