@@ -5,7 +5,7 @@ const ControlBase = types.model({}).views(self => ({
   // 1. name of control tag for describing labeled region;
   // 2. label type to attach corresponding value to this region.
   // usually they are the same, but with some problems:
-  // a. for hypertextlabels both types were htmllabels;
+  // a. for hypertextlabels label type should be "htmllabels";
   // original type are overwritten by Tree#buildData with real tag name,
   // so _type was introduced to contain desired result type;
   // b. but for textarea they differ from each other: "textarea" and "text".

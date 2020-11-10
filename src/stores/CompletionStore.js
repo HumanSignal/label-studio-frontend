@@ -540,6 +540,15 @@ const Completion = types
         .concat(self.relationStore.serializeCompletion());
     },
 
+    // Some completions may be created with wrong assumptions
+    // And this problems are fixable, so better to fix them on start
+    fixBrokenCompletion(json) {
+      json.forEach(obj => {
+        if (obj.type === "htmllabels") obj.type = "hypertextlabels";
+      });
+      return json;
+    },
+
     /**
      * Deserialize completion of models
      */
@@ -550,6 +559,8 @@ const Completion = types
         if (typeof objCompletion !== "object") {
           objCompletion = JSON.parse(objCompletion);
         }
+
+        objCompletion = self.fixBrokenCompletion(objCompletion);
 
         self._initialCompletionObj = objCompletion;
 
