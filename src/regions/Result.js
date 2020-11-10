@@ -30,7 +30,7 @@ const Result = types
     // @todo some general type, maybe just a `string`
     type: types.enumeration([
       "labels",
-      "htmllabels",
+      "hypertextlabels",
       "rectangle",
       "keypoint",
       "polygon",
