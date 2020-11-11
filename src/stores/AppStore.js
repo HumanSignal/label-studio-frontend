@@ -348,7 +348,11 @@ export default types
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
-      predictions?.forEach(p => cs.addPrediction(p).deserializeCompletion(p.result));
+      predictions?.forEach(p => {
+        const obj = cs.addPrediction(p);
+        cs.selectCompletion(obj.id);
+        obj.deserializeCompletion(p.result);
+      });
       completions?.forEach((c, i) => {
         const obj = cs.addCompletion(c);
         cs.selectCompletion(obj.id);
