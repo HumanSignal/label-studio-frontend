@@ -199,6 +199,10 @@ const Result = types
         data.meta = { ...data.meta, ...meta };
       }
 
+      if (self.area.parentID) {
+        data.parentID = self.area.parentID.replace(/#.*/, "");
+      }
+
       Object.assign(data, { id, from_name, to_name, type });
       value[valueType] && Object.assign(data.value, { [valueType]: value[valueType] });
       if (typeof score === "number") data.score = score;
