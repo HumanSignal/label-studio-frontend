@@ -228,12 +228,12 @@ const RegionsTree = observer(({ regionStore }) => {
           dragReg.setParentID("");
         } else if (dropPosition !== -1) {
           // check if the dragReg can be a child of dropReg
-          const selDrop = dropReg.labelsState.selectedLabels;
+          const selDrop = dropReg.labeling?.selectedLabels || [];
           const labelWithConstraint = selDrop.filter(l => l.groupcancontain);
 
           if (labelWithConstraint.length) {
             const go = true;
-            const selDrag = dragReg.labelsState.selectedLabels;
+            const selDrag = dragReg.labeling.selectedLabels;
 
             const set1 = Utils.Checkers.flatten(labelWithConstraint.map(l => l.groupcancontain.split(",")));
             const set2 = Utils.Checkers.flatten(selDrag.map(l => (l.alias ? [l.alias, l.value] : [l.value])));
@@ -242,9 +242,9 @@ const RegionsTree = observer(({ regionStore }) => {
           }
 
           // check drop regions tree depth
-          if (dropReg.labelsState.groupdepth) {
+          if (dropReg.labeling?.from_name?.groupdepth) {
             const reached = false;
-            let maxDepth = Number(dropReg.labelsState.groupdepth);
+            let maxDepth = Number(dropReg.labeling.from_name.groupdepth);
 
             // find the height of the tree formed by dragReg for
             // example if we have a tree of A -> B -> C -> D and
