@@ -274,7 +274,7 @@ const RegionsTree = observer(({ regionStore }) => {
             }
           }
 
-          dragReg.setParentID(dropReg.pid);
+          dragReg.setParentID(dropReg.id);
         }
       }}
     >
