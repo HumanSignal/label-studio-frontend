@@ -227,7 +227,7 @@ const RegionsTree = observer(({ regionStore }) => {
         if (treeDepth === 2 && dropToGap && dropPosition === -1) {
           dragReg.setParentID("");
         } else if (dropPosition !== -1) {
-          dragReg.setParentID(dropReg.pid);
+          dragReg.setParentID(dropReg.id);
         }
       }}
     >
