@@ -28,6 +28,8 @@ const ClassificationArea = types.compose(
 const Area = types.union(
   {
     dispatcher(sn) {
+      // for some deserializations
+      if (sn.$treenode) return sn.$treenode.type;
       if (sn.value && Object.values(sn.value).length <= 1) return ClassificationArea;
       // may be a tag itself or just its name
       const objectName = sn.object.name || sn.object;
