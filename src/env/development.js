@@ -69,10 +69,10 @@ async function getExample() {
   let task = {
     data: JSON.stringify(datatype.tasks[0].data),
   };
-  let completion = datatype.completion.completions[0];
+  let completions = datatype.completion.completions;
   let predictions = datatype.tasks[0].predictions;
 
-  return { config, task, completion, predictions };
+  return { config, task, completions, predictions };
 }
 
 /**
