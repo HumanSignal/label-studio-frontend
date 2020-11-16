@@ -45,13 +45,13 @@ const ModelAttrs = types
 
     get serializableValue() {
       const obj = {};
-      obj["htmllabels"] = self.selectedValues();
+      obj[self.resultType] = self.selectedValues();
 
       return obj;
     },
 
     get resultType() {
-      return "htmllabels";
+      return "hypertextlabels";
     },
 
     get valueType() {

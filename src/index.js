@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Provider } from "mobx-react";
 
 import "./assets/styles/global.scss";
 import App from "./components/App/App";
@@ -31,12 +30,7 @@ if (process.env.NODE_ENV === "production") {
      */
     app.initializeStore(environment.getState(params.task));
 
-    ReactDOM.render(
-      <Provider store={app}>
-        <App />
-      </Provider>,
-      environment.rootElement(element),
-    );
+    ReactDOM.render(<App store={app} />, environment.rootElement(element));
 
     window.Htx = app;
     return app;
@@ -59,15 +53,10 @@ if (process.env.NODE_ENV === "production") {
 
         let app = AppStore.create(params, environment.configureApplication(params));
 
-        app.initializeStore({ completions: [params.completion], predictions: params.predictions });
+        app.initializeStore({ completions: params.completions, predictions: params.predictions });
         window.Htx = app;
 
-        ReactDOM.render(
-          <Provider store={app}>
-            <App />
-          </Provider>,
-          environment.rootElement(element),
-        );
+        ReactDOM.render(<App store={app} />, environment.rootElement(element));
       });
     } else {
       // this is static initialization from the index.html file
@@ -84,12 +73,7 @@ if (process.env.NODE_ENV === "production") {
       app.initializeStore({ completions: params.task.completions, predictions: params.task.predictions });
       window.Htx = app;
 
-      ReactDOM.render(
-        <Provider store={app}>
-          <App />
-        </Provider>,
-        environment.rootElement(element),
-      );
+      ReactDOM.render(<App store={app} />, environment.rootElement(element));
 
       return app;
     }

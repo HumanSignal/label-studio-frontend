@@ -49,10 +49,12 @@ export default inject("store")(
      * Check for Predict Menu
      */
     if (!store.completionStore.predictSelect || store.explore) {
+      const disabled = store.isSubmitting;
+
       if (store.hasInterface("skip")) {
         skipButton = (
           <Tooltip title="Skip task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
-            <Button type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
+            <Button disabled={disabled} type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
               Skip {buttons.skip}
             </Button>
           </Tooltip>
@@ -63,6 +65,7 @@ export default inject("store")(
         submitButton = (
           <Tooltip title="Save results: [ Ctrl+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
+              disabled={disabled}
               type="primary"
               icon={<CheckOutlined />}
               onClick={store.submitCompletion}
@@ -78,6 +81,7 @@ export default inject("store")(
         updateButton = (
           <Tooltip title="Update this task: [ Alt+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
+              disabled={disabled}
               type="primary"
               icon={<CheckCircleOutlined />}
               onClick={store.updateCompletion}

@@ -39,6 +39,9 @@ const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
   maxusages: types.maybeNull(types.string),
   showinline: types.optional(types.boolean, true),
+
+  // TODO this will move away from here
+  groupdepth: types.maybeNull(types.string),
 });
 
 /**

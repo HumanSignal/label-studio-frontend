@@ -33,6 +33,7 @@ import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-di
  * HTML
  */
 import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
+import { Taxonomy } from "../examples/taxonomy"; // eslint-disable-line no-unused-vars
 
 /**
  * RichText (HTML or plain text)
@@ -46,12 +47,14 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote"; // esl
  */
 import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unused-vars
 
+import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-unused-vars
+
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = NamedEntity;
+const data = Taxonomy;
 
 /**
  * Get current config
@@ -73,10 +76,10 @@ async function getExample() {
   let task = {
     data: JSON.stringify(datatype.tasks[0].data),
   };
-  let completion = datatype.completion.completions[0];
+  let completions = datatype.completion.completions;
   let predictions = datatype.tasks[0].predictions;
 
-  return { config, task, completion, predictions };
+  return { config, task, completions, predictions };
 }
 
 /**

@@ -8,6 +8,7 @@ import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
 import { RichTextRegionModel } from "./RichTextRegion";
 import { BrushRegionModel } from "./BrushRegion";
+import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
 
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
@@ -26,6 +27,8 @@ const ClassificationArea = types.compose(
 const Area = types.union(
   {
     dispatcher(sn) {
+      // for some deserializations
+      if (sn.$treenode) return sn.$treenode.type;
       if (sn.value && Object.values(sn.value).length <= 1) return ClassificationArea;
       // may be a tag itself or just its name
       const objectName = sn.object.name || sn.object;
@@ -39,6 +42,7 @@ const Area = types.union(
     },
   },
   AudioRegionModel,
+  TimeSeriesRegionModel,
   RectRegionModel,
   RichTextRegionModel,
   KeyPointRegionModel,

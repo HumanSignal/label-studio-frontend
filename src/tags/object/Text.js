@@ -15,6 +15,7 @@ import { runTemplate } from "../../core/Template";
 import styles from "./Text/Text.module.scss";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
+import messages from "../../utils/messages";
 
 /**
  * Text tag shows an Text markup that can be labeled
@@ -99,10 +100,13 @@ const Model = types
       if (self.valuetype === "url") {
         const url = self._value;
         if (!/^https?:\/\//.test(url)) {
-          const message = [
-            `You should not put text directly in your task data if you use valuetype=url.`,
-            `URL (${url}) is not valid.`,
-          ];
+          const message = [];
+          if (url) {
+            message.push(`URL (${url}) is not valid.`);
+            message.push(`You should not put text directly in your task data if you use valuetype="url".`);
+          } else {
+            message.push(`URL is empty, check ${self.value} in data JSON.`);
+          }
           if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
           InfoModal.error(message.map(t => <p>{t}</p>));
           self.loadedValue("");
@@ -115,7 +119,8 @@ const Model = types
           })
           .then(self.loadedValue)
           .catch(e => {
-            InfoModal.error(`Loading URL (${url}) unsuccessful: ${e}`);
+            const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
+            InfoModal.error(message, "Wow!");
             self.loadedValue("");
           });
       } else {
@@ -487,6 +492,12 @@ class TextPieceView extends Component {
 
   componentDidMount() {
     this._handleUpdate();
+
+    const ref = this.myRef;
+    const settings = this.props.store.settings;
+    if (ref && ref.classList && settings) {
+      ref.classList.toggle("htx-line-numbers", settings.showLineNumbers);
+    }
   }
 
   render() {
@@ -496,7 +507,7 @@ class TextPieceView extends Component {
 
     const val = item._value.split("\n").reduce((res, s, i) => {
       if (i) res.push(<br key={i} />);
-      res.push(s);
+      res.push(<span className={styles.line}>{s}</span>);
       return res;
     }, []);
 

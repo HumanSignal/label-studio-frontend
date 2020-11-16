@@ -14,7 +14,9 @@ import { RatingModel } from "./Rating";
 import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
+import { TaxonomyModel } from "./Taxonomy";
 import { TextAreaModel } from "./TextArea";
+import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 
 import { EllipseLabelsModel } from "./EllipseLabels";
 import { EllipseModel } from "./Ellipse";
@@ -39,7 +41,9 @@ export {
   RectangleLabelsModel,
   RectangleModel,
   ShortcutModel,
+  TaxonomyModel,
   TextAreaModel,
+  TimeSeriesLabelsModel,
   EllipseLabelsModel,
   EllipseModel,
   RelationsModel,

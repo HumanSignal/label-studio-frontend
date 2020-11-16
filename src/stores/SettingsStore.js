@@ -3,6 +3,9 @@ import { types, onSnapshot, getRoot } from "mobx-state-tree";
 import Hotkey from "../core/Hotkey";
 import Utils from "../utils";
 
+const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
+const SIDEPANEL_MODE_LABELS = "SIDEPANEL_MODE_LABELS";
+
 /**
  * Setting store of Label Studio
  */
@@ -28,9 +31,17 @@ const SettingsModel = types
      */
     continuousLabeling: false,
 
+    // select regions after creating them
+    selectAfterCreate: false,
+
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
+
+    sidePanelMode: types.optional(
+      types.enumeration([SIDEPANEL_MODE_REGIONS, SIDEPANEL_MODE_LABELS]),
+      SIDEPANEL_MODE_REGIONS,
+    ),
 
     imageFullSize: types.optional(types.boolean, false),
 
@@ -38,11 +49,19 @@ const SettingsModel = types
 
     showLabels: types.optional(types.boolean, false),
 
+    showLineNumbers: false,
+
+    showCompletionsPanel: types.optional(types.boolean, true),
+
+    showPredictionsPanel: types.optional(types.boolean, true),
     // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
     get completion() {
       return getRoot(self).completionStore.selected;
+    },
+    get displayLabelsByDefault() {
+      return self.sidePanelMode === SIDEPANEL_MODE_LABELS;
     },
   }))
   .actions(self => ({
@@ -90,8 +109,27 @@ const SettingsModel = types
       // });
     },
 
+    toggleShowLineNumbers() {
+      self.showLineNumbers = !self.showLineNumbers;
+
+      // hack to enable it from outside, because Text spawns spans on every rerender
+      // @todo it should be enabled inside Text
+      document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
+    },
+
     toggleContinuousLabeling() {
       self.continuousLabeling = !self.continuousLabeling;
+    },
+
+    toggleSelectAfterCreate() {
+      self.selectAfterCreate = !self.selectAfterCreate;
+    },
+
+    toggleSidepanelModel() {
+      self.sidePanelMode =
+        self.sidePanelMode === SIDEPANEL_MODE_LABELS ? SIDEPANEL_MODE_REGIONS : SIDEPANEL_MODE_LABELS;
+      // apply immediately
+      self.completion.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
     },
 
     toggleAutoSave() {
@@ -135,6 +173,14 @@ const SettingsModel = types
 
     toggleLabelTooltips() {
       self.enableLabelTooltips = !self.enableLabelTooltips;
+    },
+
+    toggleCompletionsPanel() {
+      self.showCompletionsPanel = !self.showCompletionsPanel;
+    },
+
+    togglePredictionsPanel() {
+      self.showPredictionsPanel = !self.showPredictionsPanel;
     },
   }));
 

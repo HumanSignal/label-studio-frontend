@@ -1,9 +1,5 @@
 @import "../../assets/styles/global.scss";
 
-.skip {
-  margin-bottom: 10px;
-}
-
 .task {
   opacity: 0.4;
 }
@@ -13,7 +9,8 @@
   display: flex;
   align-items: center;
 
-  & > button {
+  & > button,
+  & > span {
     margin: 0 10px;
 
     &:first-child {

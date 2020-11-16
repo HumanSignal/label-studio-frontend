@@ -30,7 +30,7 @@ const Result = types
     // @todo some general type, maybe just a `string`
     type: types.enumeration([
       "labels",
-      "htmllabels",
+      "hypertextlabels",
       "rectangle",
       "keypoint",
       "polygon",
@@ -41,7 +41,9 @@ const Result = types
       "polygonlabels",
       "brushlabels",
       "ellipselabels",
+      "timeserieslabels",
       "choices",
+      "taxonomy",
       "textarea",
       "rating",
       "pairwise",
@@ -61,6 +63,8 @@ const Result = types
       polygonlabels: types.maybe(types.array(types.string)),
       ellipselabels: types.maybe(types.array(types.string)),
       brushlabels: types.maybe(types.array(types.string)),
+      timeserieslabels: types.maybe(types.array(types.string)),
+      taxonomy: types.frozen(), // array of arrays of strings
     }),
     // info about object and region
     // meta: types.frozen(),
@@ -189,6 +193,15 @@ const Result = types
       // cut off completion id
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
+
+      const meta = self.from_name.metaValue;
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
+      }
+
+      if (self.area.parentID) {
+        data.parentID = self.area.parentID.replace(/#.*/, "");
+      }
 
       Object.assign(data, { id, from_name, to_name, type });
       value[valueType] && Object.assign(data.value, { [valueType]: value[valueType] });

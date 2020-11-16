@@ -1,8 +1,8 @@
 import Konva from "konva";
 import React from "react";
 import { Group, Line } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types, destroy, detach } from "mobx-state-tree";
+import { observer } from "mobx-react";
+import { types, destroy, detach, getRoot } from "mobx-state-tree";
 
 import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
@@ -32,6 +32,11 @@ const Model = types
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
+  }))
+  .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -304,8 +309,10 @@ function removeHoverAnchor({ layer }) {
   layer.draw();
 }
 
-const HtxPolygonView = ({ store, item }) => {
+const HtxPolygonView = ({ item }) => {
   if (item.hidden) return null;
+
+  const { store } = item;
 
   const style = item.style || item.tag || defaultStyle;
 
@@ -496,7 +503,7 @@ const HtxPolygonView = ({ store, item }) => {
   );
 };
 
-const HtxPolygon = inject("store")(observer(HtxPolygonView));
+const HtxPolygon = observer(HtxPolygonView);
 
 Registry.addTag("polygonregion", PolygonRegionModel, HtxPolygon);
 Registry.addRegionType(PolygonRegionModel, "image", value => !!value.points);

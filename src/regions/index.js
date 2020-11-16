@@ -5,6 +5,7 @@ import { types } from "mobx-state-tree";
 
 import { AudioRegionModel } from "./AudioRegion";
 import { BrushRegionModel, HtxBrush } from "./BrushRegion";
+import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
 import { KeyPointRegionModel, HtxKeyPoint } from "./KeyPointRegion";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
@@ -17,6 +18,7 @@ const AllRegionsType = types.union(
   AudioRegionModel,
   BrushRegionModel,
   EllipseRegionModel,
+  TimeSeriesRegionModel,
   KeyPointRegionModel,
   PolygonRegionModel,
   RectRegionModel,

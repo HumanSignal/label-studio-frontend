@@ -69,7 +69,9 @@ const _detect = region => {
   switch (region.type) {
     case "textrange":
     case "richtextregion":
-    case "audioregion": {
+    case "textarearegion":
+    case "audioregion":
+    case "timeseriesregion": {
       return Geometry.getDOMBBox(region.regionElement);
     }
     case "rectangleregion": {

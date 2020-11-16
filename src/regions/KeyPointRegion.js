@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { observer } from "mobx-react";
+import { types, getRoot } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants, { defaultStyle } from "../core/Constants";
@@ -30,6 +30,11 @@ const Model = types
     relativeX: 0,
     relativeY: 0,
     hideable: true,
+  }))
+  .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -108,8 +113,10 @@ const KeyPointRegionModel = types.compose(
   Model,
 );
 
-const HtxKeyPointView = ({ store, item }) => {
+const HtxKeyPointView = ({ item }) => {
   if (item.hidden) return null;
+
+  const { store } = item;
 
   const x = item.x;
   const y = item.y;
@@ -139,6 +146,8 @@ const HtxKeyPointView = ({ store, item }) => {
         x={x}
         y={y}
         radius={item.width}
+        // fixes performance, but opactity+borders might look not so good
+        perfectDrawEnabled={false}
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
         name={item.id}
@@ -198,7 +207,7 @@ const HtxKeyPointView = ({ store, item }) => {
   );
 };
 
-const HtxKeyPoint = inject("store")(observer(HtxKeyPointView));
+const HtxKeyPoint = observer(HtxKeyPointView);
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
 Registry.addRegionType(

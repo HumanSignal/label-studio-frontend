@@ -186,7 +186,8 @@ class Completions extends Component {
               </Button>
             </Tooltip>
           )}
-          &nbsp;
+          {/* @todo fix View All mode */}
+          {/* &nbsp;
           <Tooltip placement="topLeft" title="View all completions">
             <Button
               size="small"
@@ -198,7 +199,7 @@ class Completions extends Component {
             >
               <WindowsOutlined />
             </Button>
-          </Tooltip>
+          </Tooltip> */}
         </div>
       </div>
     );

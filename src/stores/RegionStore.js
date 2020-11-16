@@ -22,12 +22,12 @@ export default types
 
     get sortedRegions() {
       const sorts = {
-        date: () => self.regions,
-        score: () => self.regions.sort((a, b) => b.score - a.score),
+        date: isDesc => (isDesc ? self.regions : [...self.regions].reverse()),
+        score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
-      const r = sorts[self.sort]();
-      return self.sortOrder === "asc" ? r.slice().reverse() : r;
+      const sorted = sorts[self.sort](self.sortOrder === "desc");
+      return sorted;
     },
 
     asTree(enrich) {
@@ -42,18 +42,23 @@ export default types
         lookup = {};
 
       arr.forEach((el, idx) => {
-        lookup[el.pid] = enrich(el, idx);
-        lookup[el.pid]["item"] = el;
-        lookup[el.pid]["children"] = [];
+        lookup[el.id] = enrich(el, idx);
+        lookup[el.id]["item"] = el;
+        lookup[el.id]["children"] = [];
       });
 
       Object.keys(lookup).forEach(key => {
         const el = lookup[key];
-        if (el["item"].parentID) {
-          lookup[el["item"].parentID]["children"].push(el);
-        } else {
-          tree.push(el);
+        let pid = el["item"].parentID;
+        if (pid) {
+          let parent = lookup[pid];
+          if (!parent) parent = lookup[`${pid}#${self.completion.id}`];
+          if (parent) {
+            parent.children.push(el);
+            return;
+          }
         }
+        tree.push(el);
       });
 
       return tree;
@@ -125,7 +130,7 @@ export default types
       const arr = self.regions;
 
       // find regions that have that region as a parent
-      const children = self.filterByParentID(region.pid);
+      const children = self.filterByParentID(region.id);
       children && children.forEach(r => r.setParentID(region.parentID));
 
       for (let i = 0; i < arr.length; i++) {
@@ -142,8 +147,8 @@ export default types
       return self.regions.find(r => r.id === id);
     },
 
-    findRegion(pid) {
-      return self.regions.find(r => r.pid === pid);
+    findRegion(id) {
+      return self.regions.find(r => r.id === id);
     },
 
     filterByParentID(id) {
@@ -156,6 +161,7 @@ export default types
           self.initHotkeys();
         }
       });
+      self.view = self.completion.store.settings.displayLabelsByDefault ? "labels" : "regions";
     },
 
     // init Alt hotkeys for regions selection

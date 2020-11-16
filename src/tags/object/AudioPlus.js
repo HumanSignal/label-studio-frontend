@@ -228,13 +228,14 @@ const Model = types
 
 const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
 
-const HtxAudioView = observer(({ store, item }) => {
+const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
 
   return (
     <ObjectTag item={item}>
       <Fragment>
         <Waveform
+          dataField={item.value}
           src={item._value}
           selectRegion={item.selectRegion}
           handlePlay={item.handlePlay}
@@ -253,7 +254,7 @@ const HtxAudioView = observer(({ store, item }) => {
       </Fragment>
     </ObjectTag>
   );
-});
+};
 
 const HtxAudioPlus = inject("store")(observer(HtxAudioView));
 

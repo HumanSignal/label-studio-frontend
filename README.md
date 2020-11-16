@@ -20,13 +20,13 @@ npm install label-studio
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->
-<link href="https://unpkg.com/label-studio@0.7.5/build/static/css/main.css" rel="stylesheet">
+<link href="https://unpkg.com/label-studio@0.8.0/build/static/css/main.css" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
 <div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/label-studio@0.7.5/build/static/js/main.js"></script>
+<script src="https://unpkg.com/label-studio@0.8.0/build/static/js/main.js"></script>
 
 <!-- Initialize Label Studio -->
 <script>

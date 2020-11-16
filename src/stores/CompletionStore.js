@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot } from "mobx-state-tree";
+import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot, isAlive } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
@@ -521,8 +521,16 @@ const Completion = types
 
       const area = self.areas.put(areaRaw);
 
-      // unselect labels after use, but consider "keep labels selected" settings
-      if (control.type.includes("labels")) self.unselectAll(true);
+      if (self.store.settings.selectAfterCreate) {
+        if (!area.classification) {
+          // some regions might need some actions right after creation (i.e. text)
+          // and some may be already deleted (i.e. bboxes)
+          setTimeout(() => isAlive(area) && self.selectArea(area));
+        }
+      } else {
+        // unselect labels after use, but consider "keep labels selected" settings
+        if (control.type.includes("labels")) self.unselectAll(true);
+      }
 
       return area;
     },
@@ -532,6 +540,15 @@ const Completion = types
         .map(r => r.serialize())
         .filter(Boolean)
         .concat(self.relationStore.serializeCompletion());
+    },
+
+    // Some completions may be created with wrong assumptions
+    // And this problems are fixable, so better to fix them on start
+    fixBrokenCompletion(json) {
+      json.forEach(obj => {
+        if (obj.type === "htmllabels") obj.type = "hypertextlabels";
+      });
+      return json;
     },
 
     /**
@@ -544,6 +561,8 @@ const Completion = types
         if (typeof objCompletion !== "object") {
           objCompletion = JSON.parse(objCompletion);
         }
+
+        objCompletion = self.fixBrokenCompletion(objCompletion);
 
         self._initialCompletionObj = objCompletion;
 
