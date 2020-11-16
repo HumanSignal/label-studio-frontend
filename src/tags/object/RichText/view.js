@@ -2,19 +2,14 @@ import React, { Component } from "react";
 import { htmlEscape, matchesSelector } from "../../../utils/html";
 import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
-import { observer, inject } from "mobx-react";
+import { observer } from "mobx-react";
 import Utils from "../../../utils";
 
 class RichTextPieceView extends Component {
-  constructor(props) {
-    super(props);
-    this.rootNodeRef = React.createRef();
-  }
-
   _onMouseUp = () => {
     const { item } = this.props;
     const states = item.activeStates();
-    const root = this.rootNodeRef.current;
+    const root = item.rootNodeRef.current;
 
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
@@ -111,7 +106,6 @@ class RichTextPieceView extends Component {
   }
 
   componentDidMount() {
-    this.props.item.setRoot(this.rootNodeRef.current);
     this._handleUpdate();
   }
 
@@ -135,7 +129,7 @@ class RichTextPieceView extends Component {
     return (
       <ObjectTag item={item}>
         <div
-          ref={this.rootNodeRef}
+          ref={item.rootNodeRef}
           style={{ overflow: "auto" }}
           data-update={item._update}
           className="htx-richtext"
@@ -147,6 +141,8 @@ class RichTextPieceView extends Component {
   }
 }
 
+const RTPV = observer(RichTextPieceView);
+
 export const HtxRichText = ({ isText } = { isText: false }) => {
-  return inject("store")(observer(props => <RichTextPieceView {...props} isText={isText} />));
+  return props => <RTPV {...props} isText={isText} />;
 };

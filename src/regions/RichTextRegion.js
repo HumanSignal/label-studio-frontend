@@ -78,7 +78,7 @@ const Model = types
     },
 
     _getRootNode() {
-      return self.parent._rootNode;
+      return self.parent.rootNodeRef.current;
     },
 
     _createNativeRange() {

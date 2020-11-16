@@ -94,16 +94,15 @@ const Model = types
       return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
     },
   }))
+  .volatile(self => ({
+    rootNodeRef: React.createRef(),
+  }))
   .actions(self => ({
-    setRoot(root) {
-      self._rootNode = root;
-    },
-
     async updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
+      const value = runTemplate(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
-        const url = self._value;
+        const url = value;
 
         if (!/^https?:\/\//.test(url)) {
           const message = [WARNING_MESSAGES.dataTypeMistmatch(), WARNING_MESSAGES.badURL(url)];
@@ -126,7 +125,7 @@ const Model = types
           self.setRemoteValue("");
         }
       } else {
-        self.setRemoteValue(self._value);
+        self.setRemoteValue(value);
       }
     },
 
@@ -190,8 +189,8 @@ const Model = types
       if (range.isText) {
         const { startContainer, startOffset, endContainer, endOffset } = range._range;
         const [soff, eoff] = [
-          Utils.HTML.toGlobalOffset(self._rootNode, startContainer, startOffset),
-          Utils.HTML.toGlobalOffset(self._rootNode, endContainer, endOffset),
+          Utils.HTML.toGlobalOffset(self.rootNodeRef.current, startContainer, startOffset),
+          Utils.HTML.toGlobalOffset(self.rootNodeRef.current, endContainer, endOffset),
         ];
 
         area.updateOffsets(soff, eoff);
