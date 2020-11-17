@@ -232,7 +232,6 @@ const RegionsTree = observer(({ regionStore }) => {
           const labelWithConstraint = selDrop.filter(l => l.groupcancontain);
 
           if (labelWithConstraint.length) {
-            const go = true;
             const selDrag = dragReg.labeling.selectedLabels;
 
             const set1 = Utils.Checkers.flatten(labelWithConstraint.map(l => l.groupcancontain.split(",")));
@@ -243,7 +242,6 @@ const RegionsTree = observer(({ regionStore }) => {
 
           // check drop regions tree depth
           if (dropReg.labeling?.from_name?.groupdepth) {
-            const reached = false;
             let maxDepth = Number(dropReg.labeling.from_name.groupdepth);
 
             // find the height of the tree formed by dragReg for
@@ -257,7 +255,7 @@ const RegionsTree = observer(({ regionStore }) => {
               // TODO this can blow up if we have lots of stuff there
               const childrenHeight = regionStore.filterByParentID(node.pid).map(c => treeHeight(c));
 
-              if (childrenHeight.length == 0) return 0;
+              if (!childrenHeight.length) return 0;
 
               return 1 + Math.max.apply(Math, childrenHeight);
             };
