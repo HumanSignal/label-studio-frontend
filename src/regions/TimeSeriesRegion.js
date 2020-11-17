@@ -1,10 +1,10 @@
 import * as d3 from "d3";
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
-import { TimeSeriesModel, HtxTimeSeries } from "../tags/object/TimeSeries";
+import { TimeSeriesModel } from "../tags/object/TimeSeries";
 import { guidGenerator } from "../core/Helpers";
 import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";

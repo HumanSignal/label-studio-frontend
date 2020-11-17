@@ -1,5 +1,5 @@
 import { types, getType, getRoot } from "mobx-state-tree";
-import { observer, inject } from "mobx-react";
+import { inject } from "mobx-react";
 
 import * as Tools from "../../tools";
 import ImageView from "../../components/ImageView/ImageView";

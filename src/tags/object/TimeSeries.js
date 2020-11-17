@@ -424,22 +424,6 @@ const Model = types
     onHotKey() {},
   }));
 
-// Baselines are the dotted average lines displayed on the chart
-// In this case these are separately styled
-
-const baselineStyles = {
-  speed: {
-    stroke: "steelblue",
-    opacity: 0.5,
-    width: 0.25,
-  },
-  power: {
-    stroke: "green",
-    opacity: 0.5,
-    width: 0.25,
-  },
-};
-
 function useWidth() {
   const [width, setWidth] = React.useState(840);
   const [node, setNode] = React.useState(null);

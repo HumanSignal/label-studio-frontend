@@ -30,7 +30,6 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  */
 
 const csMap = {
-  curvestep: "curveStep",
   curvebasis: "curvebasis",
   curvebasisopen: "curveBasisOpen",
   curvebundle: "curveBundle",
@@ -218,7 +217,6 @@ class ChannelD3 extends React.Component {
     ];
     const managerBrush = d3.brushX().extent(extent);
     const x = this.x;
-    const handleSize = 3;
 
     if (flush) {
       this.gBrushes.selectAll(".brush").remove();
@@ -612,7 +610,8 @@ class ChannelD3 extends React.Component {
     });
 
     // zoomStep - zoom level when we need to switch between optimized and original data
-    const haveToSwitchData = scale > this.zoomStep === this.useOptimizedData;
+    const strongZoom = scale > this.zoomStep;
+    const haveToSwitchData = strongZoom === this.useOptimizedData;
     if (this.optimizedSeries && haveToSwitchData) {
       this.useOptimizedData = !this.useOptimizedData;
       if (this.useOptimizedData) {
