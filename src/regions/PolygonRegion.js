@@ -91,9 +91,9 @@ const Model = types
     },
 
     handleLineClick({ e, flattenedPoints, insertIdx }) {
-      e.cancelBubble = true;
-
       if (!self.closed || !self.selected) return;
+
+      e.cancelBubble = true;
 
       removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
