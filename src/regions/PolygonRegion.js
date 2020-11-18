@@ -336,7 +336,13 @@ const HtxPolygonView = ({ item }) => {
       <Group
         key={name}
         name={name}
-        onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
+        onClick={e => {
+          if (item.selected) {
+            item.handleLineClick({ e, flattenedPoints, insertIdx });
+          } else {
+            item.onClickRegion();
+          }
+        }}
         onMouseMove={e => {
           if (!item.closed || !item.selected || !item.editable) return;
 
