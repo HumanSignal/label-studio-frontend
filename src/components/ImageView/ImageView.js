@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Stage, Layer, Group, Line } from "react-konva";
 import { observer } from "mobx-react";
-import { getRoot } from "mobx-state-tree";
+import { getRoot, isAlive } from "mobx-state-tree";
 
 import ImageGrid from "../ImageGrid/ImageGrid";
 import ImageTransformer from "../ImageTransformer/ImageTransformer";
@@ -257,6 +257,10 @@ export default observer(
     render() {
       const { item, store } = this.props;
 
+      // @todo stupid but required check for `resetState()`
+      // when Image tries to render itself after detouching
+      if (!isAlive(item)) return null;
+
       // TODO fix me
       if (!store.task || !item._value) return null;
 
@@ -274,7 +278,7 @@ export default observer(
       };
       const imgTransform = [];
 
-      if (getRoot(item).settings.imageFullSize === false) {
+      if (getRoot(item).settings.fullscreen === false) {
         containerStyle["maxWidth"] = item.maxwidth;
       }
 

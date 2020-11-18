@@ -2,9 +2,6 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types, getParentOfType } from "mobx-state-tree";
 
-import { Typography } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-
 import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -14,8 +11,6 @@ import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
 import { HtxTextBox } from "../components/HtxTextBox/HtxTextBox";
-
-const { Paragraph } = Typography;
 
 const Model = types
   .model("TextAreaRegionModel", {

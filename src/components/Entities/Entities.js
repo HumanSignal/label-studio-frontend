@@ -1,5 +1,5 @@
 import React from "react";
-import { List, Divider, Badge, Menu, Dropdown, Tree, Tag, Button } from "antd";
+import { List, Divider, Badge, Menu, Dropdown, Spin, Tree, Tag, Button } from "antd";
 import { getRoot, isAlive } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
@@ -194,6 +194,21 @@ const LabelsList = observer(({ regionStore }) => {
 });
 
 const RegionsTree = observer(({ regionStore }) => {
+  // @todo improve list render
+  // this whole block performs async render to not block the rest of UI on first render
+  const [deferred, setDeferred] = React.useState(true);
+  const renderNow = React.useCallback(() => setDeferred(false), []);
+  React.useEffect(() => {
+    setTimeout(renderNow);
+  }, [renderNow]);
+
+  if (deferred)
+    return (
+      <div style={{ textAlign: "center" }}>
+        <Spin />
+      </div>
+    );
+
   const isFlat = !regionStore.sortedRegions.some(r => r.parentID !== "");
   const treeData = regionStore.asTree((item, idx) => {
     return {
@@ -232,7 +247,6 @@ const RegionsTree = observer(({ regionStore }) => {
           const labelWithConstraint = selDrop.filter(l => l.groupcancontain);
 
           if (labelWithConstraint.length) {
-            const go = true;
             const selDrag = dragReg.labeling.selectedLabels;
 
             const set1 = Utils.Checkers.flatten(labelWithConstraint.map(l => l.groupcancontain.split(",")));
@@ -243,7 +257,6 @@ const RegionsTree = observer(({ regionStore }) => {
 
           // check drop regions tree depth
           if (dropReg.labeling?.from_name?.groupdepth) {
-            const reached = false;
             let maxDepth = Number(dropReg.labeling.from_name.groupdepth);
 
             // find the height of the tree formed by dragReg for
@@ -257,7 +270,7 @@ const RegionsTree = observer(({ regionStore }) => {
               // TODO this can blow up if we have lots of stuff there
               const childrenHeight = regionStore.filterByParentID(node.pid).map(c => treeHeight(c));
 
-              if (childrenHeight.length == 0) return 0;
+              if (!childrenHeight.length) return 0;
 
               return 1 + Math.max.apply(Math, childrenHeight);
             };
