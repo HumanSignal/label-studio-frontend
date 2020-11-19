@@ -18,7 +18,9 @@ import { customTypes } from "../../core/CustomTypes";
 import messages from "../../utils/messages";
 
 /**
- * Text tag shows an Text markup that can be labeled
+ * Text tag shows an Text markup that can be labeled.
+ * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all the spaces.
+ * In any case every space counts for result offsets.
  * @example
  * <View>
  *   <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
