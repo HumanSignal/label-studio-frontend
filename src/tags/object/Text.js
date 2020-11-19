@@ -97,11 +97,12 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
+      const value = runTemplate(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
-        const url = self._value;
-        if (!/^https?:\/\//.test(url)) {
+        const url = value;
+        // "/..." for local files
+        if (!/^https?:\/\/|^\//.test(url)) {
           const message = [];
           if (url) {
             message.push(`URL (${url}) is not valid.`);
@@ -126,7 +127,7 @@ const Model = types
             self.loadedValue("");
           });
       } else {
-        self.loadedValue(self._value);
+        self.loadedValue(value);
       }
     },
 
