@@ -457,7 +457,7 @@ class TextPieceView extends Component {
             left = left - 1;
           }
 
-          for (var i = 0; i <= node.childNodes.length; i++) {
+          for (var i = 0; i <= node.childNodes?.length; i++) {
             const n = node.childNodes[i];
             if (n) {
               const res = traverse(n);
