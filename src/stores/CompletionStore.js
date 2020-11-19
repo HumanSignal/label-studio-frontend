@@ -299,6 +299,13 @@ const Completion = types
      * @param {*} region
      */
     deleteRegion(region) {
+      let { regions } = self.regionStore;
+      // move all children into the parent region of the given one
+      const children = regions.filter(r => r.parentID === region.id);
+      children && children.forEach(r => r.setParentID(region.parentID));
+
+      if (!region.classification) getEnv(self).onEntityDelete(region);
+
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
         detach(region);
@@ -518,6 +525,8 @@ const Completion = types
         value: areaValue,
         results: [result],
       });
+
+      if (!area.classification) getEnv(self).onEntityCreate(area);
 
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
