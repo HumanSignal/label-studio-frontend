@@ -431,6 +431,12 @@ const Completion = types
 
           states && states.forEach(s => tools.addToolsFromControl(s));
         }
+
+        // @todo special place to init such predefined values; `afterAttach` of the tag?
+        // preselected choices
+        if (!self.pk && node?.type === "choices" && node.preselectedValues?.length) {
+          self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
+        }
       });
 
       self.history.onUpdate(self.updateObjects);
