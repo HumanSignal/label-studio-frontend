@@ -68,13 +68,17 @@ const Model = types
       return true;
     },
   }))
+  .volatile(self => ({
+    // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
+    sel: false,
+  }))
   .actions(self => ({
     toggleSelected() {
       const choices = self.parent;
 
       choices.shouldBeUnselected && choices.resetSelected();
 
-      self.setSelected(!self.selected);
+      self.setSelected(!self.sel);
 
       choices.updateResult();
     },
@@ -84,7 +88,7 @@ const Model = types
     },
 
     setSelected(val) {
-      self.selected = val;
+      self.sel = val;
     },
 
     onHotKey() {
@@ -111,7 +115,7 @@ class HtxChoiceView extends Component {
       item.hotkey;
 
     const props = {
-      checked: item.selected,
+      checked: item.sel,
       disabled: item.parent.readonly,
       onChange: ev => {
         if (!item.completion.editable) return;
