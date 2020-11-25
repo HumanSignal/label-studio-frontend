@@ -204,12 +204,12 @@ export default types
         }
       });
 
-      Hotkey.addKey("ctrl+z", function() {
+      Hotkey.addKey("command+z, ctrl+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey("ctrl+shift+z", function() {
+      Hotkey.addKey("command+shift+z, ctrl+shift+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canRedo && history.redo();
       });
