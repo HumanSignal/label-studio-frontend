@@ -30,6 +30,7 @@ export default observer(({ store }) => {
         <Button
           type="ghost"
           icon={<UndoOutlined />}
+          disabled={!history?.canUndo}
           onClick={ev => {
             history && history.canUndo && history.undo();
             ev.preventDefault();
@@ -40,6 +41,7 @@ export default observer(({ store }) => {
         </Button>
         <Button
           type="ghost"
+          disabled={!history?.canRedo}
           icon={<RedoOutlined />}
           onClick={ev => {
             history && history.canRedo && history.redo();
@@ -50,6 +52,7 @@ export default observer(({ store }) => {
         </Button>
         <Button
           type="ghost"
+          disabled={!history?.canUndo}
           icon={<RollbackOutlined />}
           onClick={ev => {
             history && history.reset();
