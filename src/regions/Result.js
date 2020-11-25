@@ -31,6 +31,7 @@ const Result = types
     type: types.enumeration([
       "labels",
       "hypertextlabels",
+      "paragraphlabels",
       "rectangle",
       "keypoint",
       "polygon",
@@ -58,6 +59,7 @@ const Result = types
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
       htmllabels: types.maybe(types.array(types.string)),
+      paragraphlabels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
       keypointlabels: types.maybe(types.array(types.string)),
       polygonlabels: types.maybe(types.array(types.string)),

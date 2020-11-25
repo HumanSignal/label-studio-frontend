@@ -22,6 +22,12 @@ const NodeViews = {
 
   HyperTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
 
+  ParagraphsRegionModel: [
+    "Paragraphs",
+    FontColorsOutlined,
+    node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+  ],
+
   AudioRegionModel: ["Audio", AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
 
   TimeSeriesRegionModel: [
