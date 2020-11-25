@@ -9,6 +9,7 @@ import Task from "./TaskStore";
 import User from "./UserStore";
 import Utils from "../utils";
 import { delay } from "../utils/utilities";
+import messages from "../utils/messages";
 
 export default types
   .model("AppStore", {
@@ -169,10 +170,12 @@ export default types
        * Hotkey for delete
        */
       Hotkey.addKey(
-        "ctrl+backspace",
+        "command+backspace, ctrl+backspace",
         function() {
           const { selected } = self.completionStore;
-          selected.deleteAllRegions();
+          if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+            selected.deleteAllRegions();
+          }
         },
         "Delete all regions",
       );

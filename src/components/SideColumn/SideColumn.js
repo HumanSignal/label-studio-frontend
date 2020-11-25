@@ -8,6 +8,7 @@ import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
 import styles from "./SideColumn.module.scss";
+import messages from "../../utils/messages";
 
 /**
  * Component Side with:
@@ -30,7 +31,7 @@ export default observer(({ store }) => {
     return (
       <Popconfirm
         placement="bottomLeft"
-        title={"Please confirm you want to delete all labeled regions"}
+        title={messages.CONFIRM_TO_DELETE_ALL_REGIONS}
         onConfirm={confirm}
         okText="Delete"
         okType="danger"

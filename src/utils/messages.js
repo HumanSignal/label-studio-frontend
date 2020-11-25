@@ -10,6 +10,8 @@ export default {
   NO_NEXT_TASK: "No more data available for labeling",
   NO_ACCESS: "You don't have access to this task",
 
+  CONFIRM_TO_DELETE_ALL_REGIONS: "Please confirm you want to delete all labeled regions",
+
   // Tree validation messages
   ERR_REQUIRED: ({ modelName, field }) => {
     return `Attribute <b>${field}</b> is required for <b>${modelName}</b>`;
