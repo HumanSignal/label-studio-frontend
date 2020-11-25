@@ -76,6 +76,10 @@ const Model = types
       "label",
       "relations",
       "filter",
+      "timeseries",
+      "timeserieslabels",
+      "paragraphs",
+      "paragraphlabels",
     ]),
   })
   .views(self => ({

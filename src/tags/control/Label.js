@@ -92,6 +92,7 @@ const Model = types
         "BrushLabelsModel",
         "HyperTextLabelsModel",
         "TimeSeriesLabelsModel",
+        "ParagraphLabelsModel",
       ]);
     },
   }))

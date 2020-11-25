@@ -17,6 +17,7 @@ import { ShortcutModel } from "./Shortcut";
 import { TaxonomyModel } from "./Taxonomy";
 import { TextAreaModel } from "./TextArea";
 import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
+import { ParagraphLabelsModel } from "./ParagraphLabels";
 
 import { EllipseLabelsModel } from "./EllipseLabels";
 import { EllipseModel } from "./Ellipse";
@@ -48,4 +49,5 @@ export {
   EllipseModel,
   RelationsModel,
   RelationModel,
+  ParagraphLabelsModel,
 };
