@@ -135,7 +135,13 @@ const HtxTaxonomy = observer(({ item }) => {
 
   return (
     <div style={{ ...style }}>
-      <DropdownTreeSelect data={item.traverse(item.children)} onChange={item.onChange} showPartiallySelected />
+      <DropdownTreeSelect
+        data={item.traverse(item.children)}
+        onChange={item.onChange}
+        texts={{ placeholder: "Click to add..." }}
+        inlineSearchInput
+        showPartiallySelected
+      />
     </div>
   );
 });
