@@ -38,7 +38,7 @@ const Model = types
       Utils.HTML.removeSpans(self._spans);
     },
 
-    setParagraphs(text) {
+    setText(text) {
       self.text = text;
     },
 

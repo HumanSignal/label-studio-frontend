@@ -237,6 +237,10 @@ class HyperTextPieceView extends Component {
       try {
         const range = xpath.toRange(r.start, r.startOffset, r.end, r.endOffset, root);
 
+        if (!r.text && range.toString()) {
+          r.setText(range.toString());
+        }
+
         splitBoundaries(range);
 
         r._range = range;

@@ -480,6 +480,10 @@ class TextPieceView extends Component {
       range.setStart(ss.node, ss.left);
       range.setEnd(ee.node, ee.left);
 
+      if (!r.text && range.toString()) {
+        r.setText(range.toString());
+      }
+
       splitBoundaries(range);
 
       r._range = range;
