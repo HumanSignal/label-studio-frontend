@@ -69,9 +69,11 @@ function setScope(scope) {
 /**
  * Create combination
  */
-function makeComb() {
+function makeComb(canBeDigit) {
+  canBeDigit = !(canBeDigit === false);
   let prefix = null;
-  let st = "1234567890qwetasdfgzxcvbyiopjklnm";
+  let st = canBeDigit ? "1234567890" : "";
+  st += "qwetasdfgzxcvbyiopjklnm";
   let combs = st.split("");
 
   for (var i = 0; i <= combs.length; i++) {
