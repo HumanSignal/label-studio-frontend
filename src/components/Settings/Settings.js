@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import Hotkey from "../../core/Hotkey";
 
 const HotkeysDescription = () => {
-  const descr = Hotkey.keysDescipritions();
+  const descr = Hotkey.keysDescriptions();
   const columns = [
     { title: "Key", dataIndex: "key", key: "key" },
     { title: "Description", dataIndex: "descr", key: "descr" },

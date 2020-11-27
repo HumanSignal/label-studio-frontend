@@ -34,7 +34,7 @@ function addKey(key, func, desc, scope = "__main__") {
  */
 function overwriteKey(key, func) {} // eslint-disable-line no-unused-vars
 
-function keysDescipritions() {
+function keysDescriptions() {
   return _hotkeys_desc;
 }
 
@@ -50,7 +50,7 @@ function getKeys() {
 }
 
 /**
- * Unbund all hotkeys
+ * Unbind all hotkeys
  */
 function unbindAll() {
   for (let key of Object.keys(_hotkeys_map)) keymaster.unbind(key);
@@ -69,9 +69,11 @@ function setScope(scope) {
 /**
  * Create combination
  */
-function makeComb() {
+function makeComb(canBeDigit) {
+  canBeDigit = !(canBeDigit === false);
   let prefix = null;
-  let st = "1234567890qwetasdfgzxcvbyiopjklnm";
+  let st = canBeDigit ? "1234567890" : "";
+  st += "qwetasdfgzxcvbyiopjklnm";
   let combs = st.split("");
 
   for (var i = 0; i <= combs.length; i++) {
@@ -85,4 +87,4 @@ function makeComb() {
   return null;
 }
 
-export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescipritions };
+export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescriptions };

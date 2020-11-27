@@ -467,6 +467,18 @@ const Completion = types
       });
 
       self.traverseTree(node => {
+        // for textarea, digit can't be a hotkey
+        if (node && !node.hotkey && node.type === "textarea") {
+          const comb = Hotkey.makeComb(false);
+
+          if (!comb) return;
+
+          node.hotkey = comb;
+          Hotkey.addKey(node.hotkey, node.onHotKey);
+        }
+      });
+
+      self.traverseTree(node => {
         /**
          * Hotkey for controls
          */
