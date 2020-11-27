@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
 import { types, getRoot, getType } from "mobx-state-tree";
 import throttle from "lodash.throttle";
+import { Spin } from "antd";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -661,7 +662,12 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   }, [item, ref]);
 
   // the last thing updated during initialisation
-  if (!item.brushRange.length || !item.data) return null;
+  if (!item.brushRange.length || !item.data)
+    return (
+      <div style={{ textAlign: "center", height: 100 }}>
+        <Spin size="large" delay={300} />
+      </div>
+    );
 
   return (
     <div ref={ref} className="htx-timeseries">
