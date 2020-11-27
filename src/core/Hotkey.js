@@ -34,7 +34,7 @@ function addKey(key, func, desc, scope = "__main__") {
  */
 function overwriteKey(key, func) {} // eslint-disable-line no-unused-vars
 
-function keysDescipritions() {
+function keysDescriptions() {
   return _hotkeys_desc;
 }
 
@@ -50,7 +50,7 @@ function getKeys() {
 }
 
 /**
- * Unbund all hotkeys
+ * Unbind all hotkeys
  */
 function unbindAll() {
   for (let key of Object.keys(_hotkeys_map)) keymaster.unbind(key);
@@ -85,4 +85,4 @@ function makeComb() {
   return null;
 }
 
-export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescipritions };
+export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescriptions };

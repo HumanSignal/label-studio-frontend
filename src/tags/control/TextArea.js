@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Form, Input, Button } from "antd";
-import { observer } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types, destroy, getRoot } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
@@ -13,6 +13,8 @@ import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
 import { cloneNode } from "../../core/Helpers";
 import ControlBase from "./Base";
+import Hint from "../../components/Hint/Hint";
+import Hotkey from "../../core/Hotkey";
 
 const { TextArea } = Input;
 
@@ -35,6 +37,7 @@ const { TextArea } = Input;
  * @param {string} [requiredMessage]   - message to show if validation fails
  * @param {boolean=} [showSubmitButton] show submit button or hide it, it's shown by default when rows is more than one (i.e. textarea mode)
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
+ * @param {string} [hotkey] - hotkey, if not specified then will be automatically generated
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -45,6 +48,7 @@ const TagAttrs = types.model({
   rows: types.optional(types.string, "1"),
   showsubmitbutton: types.optional(types.boolean, false),
   placeholder: types.maybeNull(types.string),
+  hotkey: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
 });
@@ -217,6 +221,30 @@ const Model = types
 
       text.forEach(t => self.addText(t, obj.id));
     },
+
+    onHotKey(inputEl) {
+      inputEl.current.input.focus();
+    },
+
+    reinitializeHotKey(hotkey_prefix, have_regions, argument_for_onhotkey) {
+      const hotkey = have_regions ? hotkey_prefix + "+1" : hotkey_prefix;
+
+      const keys = Hotkey.getKeys();
+      if (hotkey.search("\\+") >= -1 && keys.includes(hotkey_prefix)) {
+        Hotkey.removeKey(hotkey_prefix);
+      }
+
+      if (keys.includes(hotkey)) {
+        Hotkey.removeKey(hotkey);
+      }
+
+      const onHotkeyFunc = () => {
+        this.onHotKey(argument_for_onhotkey);
+        return false;
+      };
+
+      Hotkey.addKey(hotkey, onHotkeyFunc, "Edit the text area region");
+    },
   }));
 
 const TextAreaModel = types.compose(
@@ -229,70 +257,86 @@ const TextAreaModel = types.compose(
   PerRegionMixin,
 );
 
-const HtxTextArea = observer(({ item }) => {
-  const rows = parseInt(item.rows);
+const HtxTextArea = inject("store")(
+  observer(({ item, store }) => {
+    const rows = parseInt(item.rows);
 
-  const props = {
-    name: item.name,
-    value: item._value,
-    rows: item.rows,
-    className: "is-search",
-    label: item.label,
-    placeholder: item.placeholder,
-    onChange: ev => {
-      const { value } = ev.target;
-      item.setValue(value);
-    },
-  };
+    const props = {
+      name: item.name,
+      value: item._value,
+      rows: item.rows,
+      className: "is-search",
+      label: item.label,
+      placeholder: item.placeholder,
+      onChange: ev => {
+        const { value } = ev.target;
+        item.setValue(value);
+      },
+    };
 
-  if (!item.completion.editable) props["disabled"] = true;
+    if (!item.completion.editable) props["disabled"] = true;
 
-  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+    const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
-  const showAddButton = (item.completion.editable && rows !== 1) || item.showSubmitButton;
-  const itemStyle = {};
-  if (showAddButton) itemStyle["marginBottom"] = 0;
+    const showAddButton = (item.completion.editable && rows !== 1) || item.showSubmitButton;
+    const itemStyle = {};
+    if (showAddButton) itemStyle["marginBottom"] = 0;
 
-  visibleStyle["marginTop"] = "4px";
+    visibleStyle["marginTop"] = "4px";
+    const inputEl = useRef();
 
-  return (
-    <div style={visibleStyle}>
-      {Tree.renderChildren(item)}
+    if (item.showSubmit) {
+      props["ref"] = inputEl;
 
-      {item.showSubmit && (
-        <Form
-          onFinish={ev => {
-            if (item.allowsubmit && item._value) {
-              item.addText(item._value);
-              item.setValue("");
-            }
+      item.reinitializeHotKey(item.hotkey, item.regions.length > 0, inputEl);
+    }
+    return (
+      <div style={visibleStyle}>
+        {Tree.renderChildren(item)}
+        {item.showSubmit && (
+          <Form
+            onFinish={ev => {
+              if (item.allowsubmit && item._value) {
+                item.addText(item._value);
+                item.setValue("");
+              }
 
-            return false;
-          }}
-        >
-          <Form.Item style={itemStyle}>
-            {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
-            {showAddButton && (
-              <Form.Item>
-                <Button style={{ marginTop: "10px" }} type="primary" htmlType="submit">
-                  Add
-                </Button>
-              </Form.Item>
-            )}
-          </Form.Item>
-        </Form>
-      )}
+              return false;
+            }}
+          >
+            <Form.Item style={itemStyle}>
+              {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
+              {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
+                <Hint>[{(item.regions && item.regions.length) > 0 ? item.hotkey + "+1" : item.hotkey}]</Hint>
+              )}
+              {showAddButton && (
+                <Form.Item>
+                  <Button style={{ marginTop: "10px" }} type="primary" htmlType="submit">
+                    Add
+                  </Button>
+                </Form.Item>
+              )}
+            </Form.Item>
+          </Form>
+        )}
 
-      {item.regions.length > 0 && (
-        <div style={{ marginBottom: "1em" }}>
-          {item.regions.map(t => (
-            <HtxTextAreaRegion key={t.id} item={t} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
+        {item.regions.length > 0 && (
+          <div style={{ marginBottom: "1em" }}>
+            {item.regions.map(t => (
+              <HtxTextAreaRegion
+                key={t.id}
+                index={item.regions.indexOf(t) + (item.showSubmit ? 1 : 0)}
+                itemsCount={item.regions.length + (item.showSubmit ? 1 : 0)}
+                item={t}
+                hotkey={item.hotkey}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }),
+);
 
 Registry.addTag("textarea", TextAreaModel, HtxTextArea);
 

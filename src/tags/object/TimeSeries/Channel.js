@@ -30,7 +30,6 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  */
 
 const csMap = {
-  curvestep: "curveStep",
   curvebasis: "curvebasis",
   curvebasisopen: "curveBasisOpen",
   curvebundle: "curveBundle",
