@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types, getRoot, isAlive } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants, { defaultStyle } from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -211,6 +211,7 @@ const EllipseRegionModel = types.compose(
 );
 
 const HtxEllipseView = ({ item }) => {
+  if (!isAlive(item)) return null;
   if (item.hidden) return null;
 
   const { store } = item;
