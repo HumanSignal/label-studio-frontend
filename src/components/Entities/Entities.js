@@ -1,5 +1,5 @@
 import React from "react";
-import { List, Divider, Badge, Menu, Dropdown, Tree, Tag, Button } from "antd";
+import { List, Divider, Badge, Menu, Dropdown, Spin, Tree, Tag, Button } from "antd";
 import { getRoot, isAlive } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
@@ -194,6 +194,21 @@ const LabelsList = observer(({ regionStore }) => {
 });
 
 const RegionsTree = observer(({ regionStore }) => {
+  // @todo improve list render
+  // this whole block performs async render to not block the rest of UI on first render
+  const [deferred, setDeferred] = React.useState(true);
+  const renderNow = React.useCallback(() => setDeferred(false), []);
+  React.useEffect(() => {
+    setTimeout(renderNow);
+  }, [renderNow]);
+
+  if (deferred)
+    return (
+      <div style={{ textAlign: "center" }}>
+        <Spin />
+      </div>
+    );
+
   const isFlat = !regionStore.sortedRegions.some(r => r.parentID !== "");
   const treeData = regionStore.asTree((item, idx) => {
     return {
@@ -227,6 +242,51 @@ const RegionsTree = observer(({ regionStore }) => {
         if (treeDepth === 2 && dropToGap && dropPosition === -1) {
           dragReg.setParentID("");
         } else if (dropPosition !== -1) {
+          // check if the dragReg can be a child of dropReg
+          const selDrop = dropReg.labeling?.selectedLabels || [];
+          const labelWithConstraint = selDrop.filter(l => l.groupcancontain);
+
+          if (labelWithConstraint.length) {
+            const selDrag = dragReg.labeling.selectedLabels;
+
+            const set1 = Utils.Checkers.flatten(labelWithConstraint.map(l => l.groupcancontain.split(",")));
+            const set2 = Utils.Checkers.flatten(selDrag.map(l => (l.alias ? [l.alias, l.value] : [l.value])));
+
+            if (set1.filter(value => -1 !== set2.indexOf(value)).length === 0) return;
+          }
+
+          // check drop regions tree depth
+          if (dropReg.labeling?.from_name?.groupdepth) {
+            let maxDepth = Number(dropReg.labeling.from_name.groupdepth);
+
+            // find the height of the tree formed by dragReg for
+            // example if we have a tree of A -> B -> C -> D and
+            // we're moving B -> C part somewhere then it'd have a
+            // height of 1
+            let treeHeight;
+            treeHeight = function(node) {
+              if (!node) return 0;
+
+              // TODO this can blow up if we have lots of stuff there
+              const childrenHeight = regionStore.filterByParentID(node.pid).map(c => treeHeight(c));
+
+              if (!childrenHeight.length) return 0;
+
+              return 1 + Math.max.apply(Math, childrenHeight);
+            };
+
+            if (maxDepth >= 0) {
+              maxDepth = maxDepth - treeHeight(dragReg);
+              let reg = dropReg;
+              while (reg) {
+                reg = regionStore.findRegion(reg.parentID);
+                maxDepth = maxDepth - 1;
+              }
+
+              if (maxDepth < 0) return;
+            }
+          }
+
           dragReg.setParentID(dropReg.id);
         }
       }}

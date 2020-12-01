@@ -164,11 +164,7 @@ const validateNameTag = (child, model) => {
  * @param {Object[]} flatTree
  */
 const validateToNameTag = (element, model, flatTree) => {
-  const { toname, controlledTags } = model.properties;
-
-  if (toname && element.toname === undefined) {
-    return errorBuilder.required(model.name, "toname");
-  }
+  const { controlledTags } = model.properties;
 
   if (!element.toname) return null;
 

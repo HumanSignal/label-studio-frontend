@@ -45,6 +45,7 @@ const Model = types
       "labels",
       "label",
       "table",
+      "taxonomy",
       "choices",
       "choice",
       "rating",
@@ -75,6 +76,10 @@ const Model = types
       "label",
       "relations",
       "filter",
+      "timeseries",
+      "timeserieslabels",
+      "paragraphs",
+      "paragraphlabels",
     ]),
   })
   .views(self => ({

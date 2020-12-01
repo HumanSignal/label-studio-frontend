@@ -22,6 +22,12 @@ const NodeViews = {
 
   HyperTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
 
+  ParagraphsRegionModel: [
+    "Paragraphs",
+    FontColorsOutlined,
+    node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+  ],
+
   AudioRegionModel: ["Audio", AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
 
   TimeSeriesRegionModel: [
@@ -82,7 +88,15 @@ const Node = observer(({ className, node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  const [, Icon, getContent] = NodeViews[name];
+  let [, Icon, getContent] = NodeViews[name];
+
+  if (node.labelsState) {
+    const aliases = node.labelsState.selectedAliases;
+    if (aliases.length)
+      Icon = function() {
+        return <span className={styles.alias}>{aliases.join(",")}</span>;
+      };
+  }
 
   return (
     <span className={[styles.node, className].filter(Boolean).join(" ")}>

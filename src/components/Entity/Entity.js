@@ -115,16 +115,16 @@ export default observer(({ store, completion }) => {
               </Button>
             </Tooltip>
 
-            <Tooltip placement="topLeft" title="Create Normalization">
-              <Button
-                className={styles.button}
-                onClick={() => {
-                  completion.setNormalizationMode(true);
-                }}
-              >
-                <PlusOutlined />
-              </Button>
-            </Tooltip>
+            {/*<Tooltip placement="topLeft" title="Create Normalization">*/}
+            {/*  <Button*/}
+            {/*    className={styles.button}*/}
+            {/*    onClick={() => {*/}
+            {/*      completion.setNormalizationMode(true);*/}
+            {/*    }}*/}
+            {/*  >*/}
+            {/*    <PlusOutlined />*/}
+            {/*  </Button>*/}
+            {/*</Tooltip>*/}
           </Fragment>
         )}
 

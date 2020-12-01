@@ -299,6 +299,13 @@ const Completion = types
      * @param {*} region
      */
     deleteRegion(region) {
+      let { regions } = self.regionStore;
+      // move all children into the parent region of the given one
+      const children = regions.filter(r => r.parentID === region.id);
+      children && children.forEach(r => r.setParentID(region.parentID));
+
+      if (!region.classification) getEnv(self).onEntityDelete(region);
+
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
         detach(region);
@@ -424,6 +431,12 @@ const Completion = types
 
           states && states.forEach(s => tools.addToolsFromControl(s));
         }
+
+        // @todo special place to init such predefined values; `afterAttach` of the tag?
+        // preselected choices
+        if (!self.pk && node?.type === "choices" && node.preselectedValues?.length) {
+          self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
+        }
       });
 
       self.history.onUpdate(self.updateObjects);
@@ -519,10 +532,14 @@ const Completion = types
         results: [result],
       });
 
+      if (!area.classification) getEnv(self).onEntityCreate(area);
+
       if (self.store.settings.selectAfterCreate) {
-        // some regions might need some actions right after creation (i.e. text)
-        // and some may be already deleted (i.e. bboxes)
-        setTimeout(() => isAlive(area) && self.selectArea(area));
+        if (!area.classification) {
+          // some regions might need some actions right after creation (i.e. text)
+          // and some may be already deleted (i.e. bboxes)
+          setTimeout(() => isAlive(area) && self.selectArea(area));
+        }
       } else {
         // unselect labels after use, but consider "keep labels selected" settings
         if (control.type.includes("labels")) self.unselectAll(true);
@@ -538,6 +555,15 @@ const Completion = types
         .concat(self.relationStore.serializeCompletion());
     },
 
+    // Some completions may be created with wrong assumptions
+    // And this problems are fixable, so better to fix them on start
+    fixBrokenCompletion(json) {
+      json.forEach(obj => {
+        if (obj.type === "htmllabels") obj.type = "hypertextlabels";
+      });
+      return json;
+    },
+
     /**
      * Deserialize completion of models
      */
@@ -548,6 +574,8 @@ const Completion = types
         if (typeof objCompletion !== "object") {
           objCompletion = JSON.parse(objCompletion);
         }
+
+        objCompletion = self.fixBrokenCompletion(objCompletion);
 
         self._initialCompletionObj = objCompletion;
 

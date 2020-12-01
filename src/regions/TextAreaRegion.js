@@ -2,9 +2,6 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types, getParentOfType } from "mobx-state-tree";
 
-import { Typography } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-
 import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -13,8 +10,7 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
-
-const { Paragraph } = Typography;
+import { HtxTextBox } from "../components/HtxTextBox/HtxTextBox";
 
 const Model = types
   .model("TextAreaRegionModel", {
@@ -65,12 +61,12 @@ const HtxTextAreaRegionView = ({ item }) => {
   }
 
   if (parent.editable) {
-    params["editable"] = {
-      onChange: str => {
-        item.setValue(str);
-      },
+    params.onChange = str => {
+      item.setValue(str);
     };
   }
+
+  params.onDelete = () => item.parent.remove(item);
 
   let divAttrs = {};
   if (!parent.perregion) {
@@ -91,10 +87,13 @@ const HtxTextAreaRegionView = ({ item }) => {
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
-      <Paragraph id={`TextAreaRegion-${item.id}`} className={classes.join(" ")} {...params}>
-        {item._value}
-      </Paragraph>
-      {parent.perregion && <DeleteOutlined className={styles.delete} onClick={() => item.parent.remove(item)} />}
+      <HtxTextBox
+        id={`TextAreaRegion-${item.id}`}
+        className={classes.join(" ")}
+        rows={parent.rows}
+        text={item._value}
+        {...params}
+      />
     </div>
   );
 };

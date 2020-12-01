@@ -2,7 +2,7 @@ import Konva from "konva";
 import React from "react";
 import { Group, Line } from "react-konva";
 import { observer } from "mobx-react";
-import { types, destroy, detach, getRoot } from "mobx-state-tree";
+import { types, destroy, detach, getRoot, isAlive } from "mobx-state-tree";
 
 import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
@@ -91,9 +91,9 @@ const Model = types
     },
 
     handleLineClick({ e, flattenedPoints, insertIdx }) {
-      e.cancelBubble = true;
-
       if (!self.closed || !self.selected) return;
+
+      e.cancelBubble = true;
 
       removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
@@ -310,6 +310,7 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ item }) => {
+  if (!isAlive(item)) return null;
   if (item.hidden) return null;
 
   const { store } = item;

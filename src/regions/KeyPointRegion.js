@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types, getRoot, isAlive } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import Constants, { defaultStyle } from "../core/Constants";
@@ -114,6 +114,7 @@ const KeyPointRegionModel = types.compose(
 );
 
 const HtxKeyPointView = ({ item }) => {
+  if (!isAlive(item)) return null;
   if (item.hidden) return null;
 
   const { store } = item;

@@ -9,8 +9,9 @@ import { NamedEntity } from "../examples/named_entity"; // eslint-disable-line n
 import { References } from "../examples/references"; // eslint-disable-line no-unused-vars
 import { Required } from "../examples/required"; // eslint-disable-line no-unused-vars
 import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
-import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
 import { Nested as NestedSimple } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
+import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
+import { Dialogue } from "../examples/phrases"; // eslint-disable-line no-unused-vars
 
 /**
  * Audio
@@ -33,6 +34,7 @@ import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-di
  * HTML
  */
 import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
+import { Taxonomy } from "../examples/taxonomy"; // eslint-disable-line no-unused-vars
 
 /**
  * Different
@@ -46,7 +48,7 @@ import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-u
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = TimeSeries;
+const data = Taxonomy;
 
 /**
  * Get current config
@@ -68,10 +70,10 @@ async function getExample() {
   let task = {
     data: JSON.stringify(datatype.tasks[0].data),
   };
-  let completion = datatype.completion.completions[0];
+  let completions = datatype.completion.completions;
   let predictions = datatype.tasks[0].predictions;
 
-  return { config, task, completion, predictions };
+  return { config, task, completions, predictions };
 }
 
 /**

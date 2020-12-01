@@ -7,6 +7,7 @@ import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import Types from "../../core/Types";
 import { ChoicesModel } from "./Choices";
 
 /**
@@ -40,6 +41,8 @@ const Model = types
     type: "choice",
     visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
+    // hierarchical Choices used for Taxonomy
+    children: Types.unionArray(["choice"]),
   })
   .views(self => ({
     get isCheckbox() {
@@ -65,13 +68,17 @@ const Model = types
       return true;
     },
   }))
+  .volatile(self => ({
+    // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
+    sel: false,
+  }))
   .actions(self => ({
     toggleSelected() {
       const choices = self.parent;
 
       choices.shouldBeUnselected && choices.resetSelected();
 
-      self.setSelected(!self.selected);
+      self.setSelected(!self.sel);
 
       choices.updateResult();
     },
@@ -81,7 +88,7 @@ const Model = types
     },
 
     setSelected(val) {
-      self.selected = val;
+      self.sel = val;
     },
 
     onHotKey() {
@@ -108,7 +115,7 @@ class HtxChoiceView extends Component {
       item.hotkey;
 
     const props = {
-      checked: item.selected,
+      checked: item.sel,
       disabled: item.parent.readonly,
       onChange: ev => {
         if (!item.completion.editable) return;

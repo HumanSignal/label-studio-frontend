@@ -8,6 +8,8 @@ import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User from "./UserStore";
 import Utils from "../utils";
+import { delay } from "../utils/utilities";
+import messages from "../utils/messages";
 
 export default types
   .model("AppStore", {
@@ -76,6 +78,10 @@ export default types
      */
     isLoading: types.optional(types.boolean, false),
     /**
+     * Submitting task; used to prevent from duplicating requests
+     */
+    isSubmitting: false,
+    /**
      * Flag for disable task in Label Studio
      */
     noTask: types.optional(types.boolean, false),
@@ -112,7 +118,15 @@ export default types
     }
 
     function setFlags(flags) {
-      const names = ["showingSettings", "showingDescription", "isLoading", "noTask", "noAccess", "labeledSuccess"];
+      const names = [
+        "showingSettings",
+        "showingDescription",
+        "isLoading",
+        "isSubmitting",
+        "noTask",
+        "noAccess",
+        "labeledSuccess",
+      ];
 
       for (let n of names) if (n in flags) self[n] = flags[n];
     }
@@ -156,10 +170,12 @@ export default types
        * Hotkey for delete
        */
       Hotkey.addKey(
-        "ctrl+backspace",
+        "command+backspace, ctrl+backspace",
         function() {
           const { selected } = self.completionStore;
-          selected.deleteAllRegions();
+          if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+            selected.deleteAllRegions();
+          }
         },
         "Delete all regions",
       );
@@ -191,12 +207,12 @@ export default types
         }
       });
 
-      Hotkey.addKey("ctrl+z", function() {
+      Hotkey.addKey("command+z, ctrl+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey("ctrl+shift+z", function() {
+      Hotkey.addKey("command+shift+z, ctrl+shift+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canRedo && history.redo();
       });
@@ -275,6 +291,19 @@ export default types
       });
     }
 
+    // Set `isSubmitting` flag to block [Submit] and related buttons during request
+    // to prevent from sending duplicating requests.
+    // Better to return request's Promise from SDK to make this work perfect.
+    function handleSubmittingFlag(fn, defaultMessage = "Error during submit") {
+      self.setFlags({ isSubmitting: true });
+      const res = fn();
+      // Wait for request, max 5s to not make disabled forever broken button;
+      // but block for at least 0.5s to prevent from double clicking.
+      Promise.race([Promise.all([res, delay(500)]), delay(5000)])
+        .catch(err => showModal(err?.message || err || defaultMessage))
+        .then(() => self.setFlags({ isSubmitting: false }));
+    }
+
     function submitCompletion() {
       const c = self.completionStore.selected;
       c.beforeSend();
@@ -283,7 +312,7 @@ export default types
 
       c.sendUserGenerate();
       c.dropDraft();
-      getEnv(self).onSubmitCompletion(self, c);
+      handleSubmittingFlag(() => getEnv(self).onSubmitCompletion(self, c));
     }
 
     function updateCompletion() {
@@ -298,7 +327,7 @@ export default types
     }
 
     function skipTask() {
-      getEnv(self).onSkipTask(self);
+      handleSubmittingFlag(() => getEnv(self).onSkipTask(self), "Error during skip, try again");
     }
 
     /**
@@ -322,7 +351,11 @@ export default types
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
-      predictions?.forEach(p => cs.addPrediction(p).deserializeCompletion(p.result));
+      predictions?.forEach(p => {
+        const obj = cs.addPrediction(p);
+        cs.selectCompletion(obj.id);
+        obj.deserializeCompletion(p.result);
+      });
       completions?.forEach((c, i) => {
         const obj = cs.addCompletion(c);
         cs.selectCompletion(obj.id);
@@ -348,6 +381,7 @@ export default types
       submitCompletion,
       updateCompletion,
 
+      showModal,
       toggleSettings,
       toggleDescription,
     };

@@ -92,6 +92,18 @@ const Model = types
       return self.completion.results.find(r => r.from_name === self);
     },
 
+    get preselectedValues() {
+      return self.tiedChildren.filter(c => c.selected === true).map(c => (c.alias ? c.alias : c.value));
+    },
+
+    get selectedLabels() {
+      return self.tiedChildren.filter(c => c.sel === true);
+    },
+
+    selectedValues() {
+      return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
+    },
+
     // perChoiceVisible() {
     //     if (! self.whenchoicevalue) return true;
 

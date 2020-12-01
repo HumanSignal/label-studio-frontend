@@ -55,6 +55,7 @@
     "react": "^16.13.1",
     "react-app-rewired": "^2.1.6",
     "react-dom": "^16.13.1",
+    "react-dropdown-tree-select": "^2.4.1",
     "react-konva": "^16.8.7-0",
     "react-rating": "^1.6.2",
     "react-scripts": "^3.4.3",
