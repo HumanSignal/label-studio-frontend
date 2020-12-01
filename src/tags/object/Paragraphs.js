@@ -17,6 +17,7 @@ import { splitBoundaries, findNodeAt } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
  * Paragraphs tag shows an Paragraphs markup that can be labeled
@@ -64,6 +65,10 @@ const Model = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
+    },
+
+    get store() {
+      return getRoot(self);
     },
 
     get completion() {
@@ -222,6 +227,29 @@ const Model = types
     },
 
     setRemoteValue(val) {
+      let errors = [];
+      if (!Array.isArray(val)) {
+        errors.push(`Provided data is not an array`);
+      } else {
+        if (!(self.namekey in val[0])) {
+          errors.push(`"${self.namekey}" field not found in task data; check your <b>nameKey</b> parameter`);
+        }
+        if (!(self.textkey in val[0])) {
+          errors.push(`"${self.textkey}" field not found in task data; check your <b>textKey</b> parameter`);
+        }
+      }
+      if (errors.length) {
+        const general = [
+          `Task data (provided as <b>${self.value}</b>) has wrong format.<br/>`,
+          `It should be an array of objects with fields,`,
+          `defined by <b>nameKey</b> ("author" by default)`,
+          `and <b>textKey</b> ("text" by default)`,
+        ].join(" ");
+        self.store.completionStore.addErrors([
+          errorBuilder.generalError(`${general}<ul>${errors.map(error => `<li>${error}</li>`).join("")}</ul>`),
+        ]);
+        return;
+      }
       self._value = val;
       self.needsUpdate();
     },
