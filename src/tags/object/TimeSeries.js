@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
 import { types, getRoot, getType } from "mobx-state-tree";
 import throttle from "lodash.throttle";
+import { Spin } from "antd";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -424,22 +425,6 @@ const Model = types
     onHotKey() {},
   }));
 
-// Baselines are the dotted average lines displayed on the chart
-// In this case these are separately styled
-
-const baselineStyles = {
-  speed: {
-    stroke: "steelblue",
-    opacity: 0.5,
-    width: 0.25,
-  },
-  power: {
-    stroke: "green",
-    opacity: 0.5,
-    width: 0.25,
-  },
-};
-
 function useWidth() {
   const [width, setWidth] = React.useState(840);
   const [node, setNode] = React.useState(null);
@@ -677,7 +662,12 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   }, [item, ref]);
 
   // the last thing updated during initialisation
-  if (!item.brushRange.length || !item.data) return null;
+  if (!item.brushRange.length || !item.data)
+    return (
+      <div style={{ textAlign: "center", height: 100 }}>
+        <Spin size="large" delay={300} />
+      </div>
+    );
 
   return (
     <div ref={ref} className="htx-timeseries">

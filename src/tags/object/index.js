@@ -4,5 +4,6 @@ import { HyperTextModel } from "./HyperText";
 import { ImageModel } from "./Image";
 import { TextModel } from "./Text";
 import { TimeSeriesModel } from "./TimeSeries";
+import { ParagraphsModel } from "./Paragraphs";
 
-export { AudioModel, AudioPlusModel, HyperTextModel, ImageModel, TextModel, TimeSeriesModel };
+export { AudioModel, AudioPlusModel, HyperTextModel, ImageModel, TextModel, ParagraphsModel, TimeSeriesModel };

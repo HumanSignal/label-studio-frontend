@@ -17,7 +17,7 @@ const Model = types
     start: types.number,
     end: types.number,
 
-    text: types.string,
+    text: "", // text is optional, for example in secureMode
   })
   .views(self => ({
     get parent() {

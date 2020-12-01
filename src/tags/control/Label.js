@@ -50,6 +50,8 @@ const TagAttrs = types.model({
   background: types.optional(customTypes.color, Constants.LABEL_BACKGROUND),
   selectedcolor: types.optional(customTypes.color, "#ffffff"),
   granularity: types.maybeNull(types.enumeration(["symbol", "word", "sentence", "paragraph"])),
+  groupcancontain: types.maybeNull(types.string),
+  // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
 });
 
 const Model = types
@@ -90,6 +92,7 @@ const Model = types
         "BrushLabelsModel",
         "HyperTextLabelsModel",
         "TimeSeriesLabelsModel",
+        "ParagraphLabelsModel",
       ]);
     },
   }))

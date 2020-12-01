@@ -342,9 +342,22 @@ function removeSpans(spans) {
   norm.forEach(n => n.normalize());
 }
 
+function findNodeAt(context, at) {
+  for (let node = context.firstChild, l = 0; node; ) {
+    if (node.textContent.length + l >= at)
+      if (!node.firstChild) return [node, at - l];
+      else node = node.firstChild;
+    else {
+      l += node.textContent.length;
+      node = node.nextSibling;
+    }
+  }
+}
+
 export {
   toggleLabelsAndScores,
   labelWithCSS,
+  findNodeAt,
   removeSpans,
   mainOffsets,
   findIdxContainer,

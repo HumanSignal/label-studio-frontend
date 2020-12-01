@@ -30,7 +30,8 @@ const Result = types
     // @todo some general type, maybe just a `string`
     type: types.enumeration([
       "labels",
-      "htmllabels",
+      "hypertextlabels",
+      "paragraphlabels",
       "rectangle",
       "keypoint",
       "polygon",
@@ -43,6 +44,7 @@ const Result = types
       "ellipselabels",
       "timeserieslabels",
       "choices",
+      "taxonomy",
       "textarea",
       "rating",
       "pairwise",
@@ -57,12 +59,14 @@ const Result = types
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
       htmllabels: types.maybe(types.array(types.string)),
+      paragraphlabels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
       keypointlabels: types.maybe(types.array(types.string)),
       polygonlabels: types.maybe(types.array(types.string)),
       ellipselabels: types.maybe(types.array(types.string)),
       brushlabels: types.maybe(types.array(types.string)),
       timeserieslabels: types.maybe(types.array(types.string)),
+      taxonomy: types.frozen(), // array of arrays of strings
     }),
     // info about object and region
     // meta: types.frozen(),
@@ -191,6 +195,11 @@ const Result = types
       // cut off completion id
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
+
+      const meta = self.from_name.metaValue;
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
+      }
 
       if (self.area.parentID) {
         data.parentID = self.area.parentID.replace(/#.*/, "");

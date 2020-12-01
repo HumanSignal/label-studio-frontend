@@ -1,5 +1,5 @@
 import { types, getType, getRoot } from "mobx-state-tree";
-import { observer, inject } from "mobx-react";
+import { inject } from "mobx-react";
 
 import * as Tools from "../../tools";
 import ImageView from "../../components/ImageView/ImageView";
@@ -15,7 +15,8 @@ import { EllipseRegionModel } from "../../regions/EllipseRegion";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Image tag shows an image on the page
+ * Image tag shows an image on the page.
+ * All the region numbers are percents of image original sizes — [0, 100]
  * @example
  * <View>
  *   <!-- Take the image url from the url column in JSON/CSV -->

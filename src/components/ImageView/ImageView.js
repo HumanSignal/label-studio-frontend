@@ -278,7 +278,7 @@ export default observer(
       };
       const imgTransform = [];
 
-      if (getRoot(item).settings.imageFullSize === false) {
+      if (getRoot(item).settings.fullscreen === false) {
         containerStyle["maxWidth"] = item.maxwidth;
       }
 

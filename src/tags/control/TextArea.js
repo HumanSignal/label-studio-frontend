@@ -245,6 +245,18 @@ const HtxTextArea = observer(({ item }) => {
     },
   };
 
+  if (rows > 1) {
+    // allow to add multiline text with shift+enter
+    props.onKeyDown = e => {
+      if (e.key === "Enter" && e.shiftKey && item.allowsubmit && item._value) {
+        e.preventDefault();
+        e.stopPropagation();
+        item.addText(item._value);
+        item.setValue("");
+      }
+    };
+  }
+
   if (!item.completion.editable) props["disabled"] = true;
 
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };

@@ -1,7 +1,7 @@
 import React from "react";
 import { Line, Shape, Group, Layer } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot } from "mobx-state-tree";
+import { types, getParent, getRoot, isAlive } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -132,8 +132,6 @@ const Model = types
       return p;
     },
 
-    afterAttach() {},
-
     convertPointsToMask() {},
 
     // addPoints(x, y, mode) {
@@ -229,6 +227,7 @@ const HtxBrushLayer = observer(({ item, points }) => {
 });
 
 const HtxBrushView = ({ item }) => {
+  if (!isAlive(item)) return null;
   if (item.hidden) return null;
 
   const { store } = item;
