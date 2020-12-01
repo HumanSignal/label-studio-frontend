@@ -66,10 +66,10 @@ const HtxTextAreaRegionView = ({ item }) => {
     };
   }
 
+  params.onDelete = () => item.parent.remove(item);
+
   let divAttrs = {};
-  if (parent.perregion) {
-    params.onDelete = () => item.parent.remove(item);
-  } else {
+  if (!parent.perregion) {
     divAttrs = {
       onMouseOver: () => {
         if (relationMode) {
