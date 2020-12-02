@@ -844,7 +844,7 @@ export default types
 
       // Area id is <uniq-id>#<completion-id> to be uniq across all tree
       s.forEach(r => {
-        if ("id" in r) {
+        if ("id" in r && typeof r.id === "string") {
           const id = r.id.replace(/#.*$/, `#${c.id}`);
           ids[r.id] = id;
           r.id = id;
