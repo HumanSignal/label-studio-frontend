@@ -44,7 +44,7 @@ const VisibilityMixin = types
               const choicesSelected = choiceValue
                 .split(",")
                 .map(v => tag.findLabel(v))
-                .some(c => c && c.selected);
+                .some(c => c && c.sel);
               return choicesSelected;
             }
 

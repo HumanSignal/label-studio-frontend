@@ -47,14 +47,24 @@ const configComplicated = `
       <Choice value="Negative"/>
       <Choice value="Neutral"/>
     </Choices>
-    <Textarea name="description" toName="my_text" perRegion="true"
-              choice="single" showInLine="true" whenLabelValue="Person">
-    </Textarea>
-    <Choices name="gender" toName="my_text" perRegion="true"
-             choice="single" showInLine="true" whenLabelValue="Person">
-      <Choice value="Female"/>
-      <Choice value="Male"/>
+    <Choices name="positive" toName="my_text"
+             visibleWhen="choice-selected"
+             whenTagName="sentiment"
+             whenChoiceValue="Positive">
+      <Choice value="Smile" />
+      <Choice value="Laughter" />
     </Choices>
+    <View visibleWhen="region-selected" whenLabelValue="Person">
+      <Header>More details about this person:</Header>
+      <Textarea name="description" toName="my_text" perRegion="true"
+                choice="single" showInLine="true" whenLabelValue="Person">
+      </Textarea>
+      <Choices name="gender" toName="my_text" perRegion="true"
+               choice="single" showInLine="true" whenLabelValue="Person">
+        <Choice value="Female"/>
+        <Choice value="Male"/>
+      </Choices>
+    </View>
     <Choices name="currency" toName="my_text" perRegion="true"
              choice="single" showInLine="true" whenLabelValue="Money">
       <Choice value="USD"/>
@@ -100,6 +110,10 @@ Scenario("check good nested Choice for Text", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
+  I.click("Positive");
+  I.see("Laughter");
+  I.click("Laughter");
+
   const personTag = locate(".ant-tag").withText("Person");
   I.seeElement(personTag);
   I.click(personTag);
@@ -113,11 +127,14 @@ Scenario("check good nested Choice for Text", async function(I) {
   I.click(regionInList);
 
   I.see("Regions (1)");
+  I.see("More details"); // View with visibleWhen
 
   I.click("Female");
 
   const result = await I.executeScript(serialize);
-  assert.equal(result.length, 2);
-  assert.deepEqual(result[0].value.labels, ["Person"]);
-  assert.deepEqual(result[1].value.choices, ["Female"]);
+  assert.equal(result.length, 4);
+  assert.deepEqual(result[0].value.choices, ["Positive"]);
+  assert.deepEqual(result[1].value.choices, ["Laughter"]);
+  assert.deepEqual(result[2].value.labels, ["Person"]);
+  assert.deepEqual(result[3].value.choices, ["Female"]);
 });
