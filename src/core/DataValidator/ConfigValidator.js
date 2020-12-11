@@ -121,6 +121,7 @@ const getTypeDescription = (type, withNullType = true) => {
  */
 const flattenTree = (tree, parent = null) => {
   const result = [];
+  if (!tree.children) return [];
 
   for (let child of tree.children) {
     /* Create a child without children and
