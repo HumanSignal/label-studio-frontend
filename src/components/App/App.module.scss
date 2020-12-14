@@ -110,3 +110,13 @@
     display: initial !important;
   }
 }
+
+/* Grid (View All mode) */
+
+.grid {
+  flex-grow: 1;
+  margin-right: 20px;
+  display: grid;
+  grid-template: auto / 1fr 1fr;
+  gap: 1em;
+}

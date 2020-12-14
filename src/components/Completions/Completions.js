@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
 import { observer } from "mobx-react";
-import { StarOutlined, DeleteOutlined, ForwardOutlined, PlusOutlined } from "@ant-design/icons";
+import { StarOutlined, DeleteOutlined, ForwardOutlined, PlusOutlined, WindowsOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
@@ -186,8 +186,7 @@ class Completions extends Component {
               </Button>
             </Tooltip>
           )}
-          {/* @todo fix View All mode */}
-          {/* &nbsp;
+          &nbsp;
           <Tooltip placement="topLeft" title="View all completions">
             <Button
               size="small"
@@ -199,7 +198,7 @@ class Completions extends Component {
             >
               <WindowsOutlined />
             </Button>
-          </Tooltip> */}
+          </Tooltip>
         </div>
       </div>
     );
