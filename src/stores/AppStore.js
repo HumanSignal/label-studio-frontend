@@ -353,7 +353,7 @@ export default types
       /* eslint-disable no-unused-expressions */
       predictions?.forEach(p => {
         const obj = cs.addPrediction(p);
-        cs.selectCompletion(obj.id);
+        cs.selectPrediction(obj.id);
         obj.deserializeCompletion(p.result);
       });
       completions?.forEach((c, i) => {
