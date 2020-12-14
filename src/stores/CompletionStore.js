@@ -111,6 +111,7 @@ const Completion = types
     },
   }))
   .volatile(self => ({
+    hidden: false,
     versions: {},
   }))
   .actions(self => ({
@@ -146,6 +147,10 @@ const Completion = types
 
     setNormalizationMode(val) {
       self.normalizationMode = val;
+    },
+
+    toggleVisibility(visible) {
+      self.hidden = visible === undefined ? !self.hidden : !visible;
     },
 
     setHighlightedNode(node) {
@@ -687,6 +692,7 @@ export default types
 
     function _selectItem(item) {
       self._unselectAll();
+      item.editable = false;
       item.selected = true;
       self.selected = item;
       item.updateObjects();

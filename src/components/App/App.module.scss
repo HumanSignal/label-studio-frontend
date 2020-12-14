@@ -120,3 +120,8 @@
   grid-template: auto / 1fr 1fr;
   gap: 1em;
 }
+
+/* don't let the empty blocks to break the nice grid */
+.grid > div:empty {
+  display: none;
+}
