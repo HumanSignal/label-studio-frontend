@@ -105,7 +105,7 @@ class App extends Component {
 
   renderAllCompletions() {
     const cs = this.props.store.completionStore;
-    return <Grid store={cs} completions={cs.completions} root={cs.root} />;
+    return <Grid store={cs} completions={[...cs.completions, ...cs.predictions]} root={cs.root} />;
   }
 
   renderAllPredictions() {
