@@ -35,7 +35,7 @@ export default class Grid extends Component {
 
     const item = c.children[c.children.length - 1];
     const clone = item.cloneNode(true);
-    c.insertBefore(clone, c.lastChild);
+    c.children[this.state.item].appendChild(clone);
 
     /* canvas are cloned empty, so clone their content */
     const sourceCanvas = item.querySelectorAll("canvas");
@@ -48,15 +48,26 @@ export default class Grid extends Component {
   };
 
   render() {
-    if (this.state.item < this.props.completions.length) {
-      this.props.store._selectItem(this.props.completions[this.state.item]);
-      return (
-        <div ref={this.container} className={styles.grid}>
-          <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />
-        </div>
-      );
+    const i = this.state.item;
+    const { completions } = this.props;
+    const renderNext = i < completions.length;
+    if (renderNext) {
+      this.props.store._selectItem(completions[i]);
+    } else {
+      this.props.store._unselectAll();
     }
 
-    return <div ref={this.container} className={styles.grid}></div>;
+    completions.map(c => console.log(c.hidden));
+
+    return (
+      <div ref={this.container} className={styles.grid}>
+        {completions.map((c, i) => (
+          <div style={{ display: c.hidden ? "none" : "unset" }} id={`c-${c.id}`}>
+            <h4>{c.id}</h4>
+          </div>
+        ))}
+        {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}
+      </div>
+    );
   }
 }
