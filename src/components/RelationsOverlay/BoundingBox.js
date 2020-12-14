@@ -71,6 +71,7 @@ const _detect = region => {
     case "hypertextregion":
     case "textarearegion":
     case "audioregion":
+    case "paragraphs":
     case "timeseriesregion": {
       return Geometry.getDOMBBox(region.regionElement);
     }
