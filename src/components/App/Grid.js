@@ -87,7 +87,11 @@ export default class Grid extends Component {
         <div ref={this.container} className={styles.grid}>
           {completions.map((c, i) => (
             <div style={{ display: c.hidden ? "none" : "unset" }} id={`c-${c.id}`}>
-              <h4 onClick={() => this.select(c)}>{c.id}</h4>
+              <h4 onClick={() => this.select(c)}>
+                {c.pk || c.id}
+                {c.type === "completion" && c.createdBy ? ` by ${c.createdBy}` : null}
+                {c.type === "prediction" && c.createdBy ? ` from model (${c.createdBy})` : null}
+              </h4>
             </div>
           ))}
           {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}

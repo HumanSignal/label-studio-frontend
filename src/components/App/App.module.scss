@@ -139,6 +139,7 @@ $gap: 30px;
 
 .container {
   position: relative;
+  flex-grow: 1;
 }
 
 .container > button {
@@ -146,6 +147,10 @@ $gap: 30px;
   top: 0;
   width: $gap;
   height: 100%;
+
+  &:hover {
+    background: #eee;
+  }
 }
 
 .container > button.left {
@@ -154,6 +159,13 @@ $gap: 30px;
 
 .container > button.right {
   right: 20px;
+}
+
+.grid > div:global(.hover) {
+  background: #eee;
+  h4 {
+    color: #1890ff;
+  }
 }
 
 /* don't let the empty blocks to break the nice grid */
