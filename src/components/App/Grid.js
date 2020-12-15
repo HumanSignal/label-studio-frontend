@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { Button } from "antd";
+import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
 
@@ -23,10 +25,8 @@ class Item extends Component {
 
 export default class Grid extends Component {
   state = {
-    count: 0,
     item: 0,
   };
-
   container = React.createRef();
 
   onFinish = () => {
@@ -47,6 +47,31 @@ export default class Grid extends Component {
     this.setState({ item: this.state.item + 1 });
   };
 
+  shift = delta => {
+    const c = this.container.current;
+    if (!c) return;
+    const gap = 30;
+    const step = (c.offsetWidth + gap) / 2;
+    const current = (c.scrollLeft + delta) / step;
+    const next = delta > 0 ? Math.ceil(current) : Math.floor(current);
+    const count = this.props.completions.length;
+    if (next < 0 || next > count - 2) return;
+    c.scrollTo({ left: next * step, top: 0, behavior: "smooth" });
+  };
+
+  left = () => {
+    this.shift(-1);
+  };
+
+  right = () => {
+    this.shift(1);
+  };
+
+  select = c => {
+    const { store } = this.props;
+    c.type === "completion" ? store.selectCompletion(c.id) : store.selectPrediction(c.id);
+  };
+
   render() {
     const i = this.state.item;
     const { completions } = this.props;
@@ -57,16 +82,18 @@ export default class Grid extends Component {
       this.props.store._unselectAll();
     }
 
-    completions.map(c => console.log(c.hidden));
-
     return (
-      <div ref={this.container} className={styles.grid}>
-        {completions.map((c, i) => (
-          <div style={{ display: c.hidden ? "none" : "unset" }} id={`c-${c.id}`}>
-            <h4>{c.id}</h4>
-          </div>
-        ))}
-        {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}
+      <div className={styles.container}>
+        <div ref={this.container} className={styles.grid}>
+          {completions.map((c, i) => (
+            <div style={{ display: c.hidden ? "none" : "unset" }} id={`c-${c.id}`}>
+              <h4 onClick={() => this.select(c)}>{c.id}</h4>
+            </div>
+          ))}
+          {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}
+        </div>
+        <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />
+        <Button type="text" onClick={this.right} className={styles.right} icon={<RightCircleOutlined />} />
       </div>
     );
   }
