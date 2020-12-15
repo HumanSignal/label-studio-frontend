@@ -78,12 +78,12 @@ const Completion = observer(({ item, store }) => {
 
   const highlight = e => {
     const c = document.getElementById(`c-${item.id}`);
-    if (c) c.style.background = "#f8f8f8";
+    if (c) c.classList.add("hover");
   };
 
   const unhighlight = e => {
     const c = document.getElementById(`c-${item.id}`);
-    if (c) c.style.background = "unset";
+    if (c) c.classList.remove("hover");
   };
 
   /**
