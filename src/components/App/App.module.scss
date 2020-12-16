@@ -110,3 +110,65 @@
     display: initial !important;
   }
 }
+
+/* Grid (View All mode) */
+
+$gap: 30px;
+
+.grid {
+  flex-grow: 1;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: auto;
+  margin-left: $gap;
+  margin-right: 20px + $gap;
+  position: relative;
+}
+
+.grid > div > h4 {
+  cursor: pointer;
+}
+
+.grid > div {
+  flex: 0 0 calc(50% - #{$gap/2});
+}
+
+.grid > div:not(:first-child) {
+  margin-left: $gap;
+}
+
+.container {
+  position: relative;
+  flex-grow: 1;
+}
+
+.container > button {
+  position: absolute;
+  top: 0;
+  width: $gap;
+  height: 100%;
+
+  &:hover {
+    background: #eee;
+  }
+}
+
+.container > button.left {
+  left: 0;
+}
+
+.container > button.right {
+  right: 20px;
+}
+
+.grid > div:global(.hover) {
+  background: #eee;
+  h4 {
+    color: #1890ff;
+  }
+}
+
+/* don't let the empty blocks to break the nice grid */
+.grid > div:empty {
+  display: none;
+}

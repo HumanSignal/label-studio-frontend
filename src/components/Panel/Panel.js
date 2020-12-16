@@ -23,10 +23,15 @@ import Hint from "../Hint/Hint";
  */
 export default observer(({ store }) => {
   const { history } = store.completionStore.selected;
+  const classname = [
+    styles.block,
+    styles.block__controls,
+    store.completionStore.viewingAllCompletions ? styles.hidden : "",
+  ].join(" ");
 
   return (
     <div className={styles.container + " ls-panel"}>
-      <div className={`${styles.block} ${styles.block__controls}`}>
+      <div className={classname}>
         <Button
           type="ghost"
           icon={<UndoOutlined />}
@@ -79,10 +84,9 @@ export default observer(({ store }) => {
         )}
       </div>
 
-      <div className={styles.block}>
+      <div className={[styles.block, styles.common].join(" ")}>
         {store.description && store.showingDescription && (
           <Button
-            type="primary"
             onClick={ev => {
               store.toggleDescription();
             }}
@@ -92,17 +96,15 @@ export default observer(({ store }) => {
         )}
         {store.description && !store.showingDescription && (
           <Button
-            type="primary"
             onClick={ev => {
               store.toggleDescription();
             }}
           >
-            Show Instructions
+            Instructions
           </Button>
         )}
 
         <Button
-          type="dashed"
           icon={<SettingOutlined />}
           onClick={ev => {
             store.toggleSettings();
@@ -111,7 +113,6 @@ export default observer(({ store }) => {
           }}
         />
         <Button
-          type="dashed"
           className="ls-fs"
           icon={store.settings.fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
           onClick={ev => {

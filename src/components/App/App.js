@@ -37,6 +37,7 @@ import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unuse
 import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
+import Grid from "./Grid";
 
 /**
  * App
@@ -103,7 +104,8 @@ class App extends Component {
   }
 
   renderAllCompletions() {
-    return this._renderAll(this.props.store.completionStore.completions);
+    const cs = this.props.store.completionStore;
+    return <Grid store={cs} completions={[...cs.completions, ...cs.predictions]} root={cs.root} />;
   }
 
   renderAllPredictions() {
