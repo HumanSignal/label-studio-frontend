@@ -141,7 +141,32 @@ const Model = types
         data = { ...data, [self.keyColumn]: indices };
       } else if (self.timeformat) {
         const timestamps = data[self.keyColumn].map(self.parseTime);
+        if (timestamps[0] === 0 && timestamps[1] === 0 && timestamps[2] === 0) {
+          const message = [
+            `<b>timeColumn</b> (${self.timecolumn}) cannot be parsed.`,
+            `First wrong values: ${data[self.keyColumn].slice(0, 3).join(", ")}`,
+          ];
+          if (self.timeformat) {
+            message.push(`Your <b>timeFormat</b>: ${self.timeformat}. It should be compatible with these values.`);
+          } else {
+            message.push(`You have to use <b>timeFormat</b> parameter if your values are datetimes.`);
+          }
+          message.push(
+            `<br/><a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
+          );
+          throw new Error(message.join("<br/>"));
+        }
         data = { ...data, [self.keyColumn]: timestamps };
+      } else {
+        if (isNaN(data[self.keyColumn][0])) {
+          const message = [
+            `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
+            `You have to use <b>timeFormat</b> parameter if your values are datetimes.`,
+            `First wrong values: ${data[self.keyColumn].slice(0, 3).join(", ")}`,
+            `<a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
+          ];
+          throw new Error(message.join("<br/>"));
+        }
       }
       return data;
     },
@@ -403,10 +428,16 @@ const Model = types
     },
 
     async updateValue(store) {
-      if (!self.dataObj) {
-        await self.preloadValue(store);
+      let data;
+      try {
+        if (!self.dataObj) {
+          await self.preloadValue(store);
+        }
+        data = self.dataObj;
+      } catch (e) {
+        store.completionStore.addErrors([errorBuilder.generalError(e.message)]);
+        return;
       }
-      const data = self.dataObj;
       if (!data) return;
       const times = data[self.keyColumn];
       if (!times) {
