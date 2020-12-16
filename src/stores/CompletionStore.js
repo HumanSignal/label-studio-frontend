@@ -111,6 +111,7 @@ const Completion = types
     },
   }))
   .volatile(self => ({
+    hidden: false,
     versions: {},
   }))
   .actions(self => ({
@@ -146,6 +147,10 @@ const Completion = types
 
     setNormalizationMode(val) {
       self.normalizationMode = val;
+    },
+
+    toggleVisibility(visible) {
+      self.hidden = visible === undefined ? !self.hidden : !visible;
     },
 
     setHighlightedNode(node) {
@@ -678,13 +683,25 @@ export default types
       self.viewingAllPredictions = false;
     }
 
-    function selectItem(id, list) {
-      unselectViewingAll();
-
+    function _unselectAll() {
       if (self.selected) {
         self.selected.unselectAll();
         self.selected.selected = false;
       }
+    }
+
+    function _selectItem(item) {
+      self._unselectAll();
+      item.editable = false;
+      item.selected = true;
+      self.selected = item;
+      item.updateObjects();
+    }
+
+    function selectItem(id, list) {
+      unselectViewingAll();
+
+      self._unselectAll();
 
       // sad hack with pk while sdk are not using pk everywhere
       const c = list.find(c => c.id === id || c.pk === String(id)) || list[0];
@@ -918,6 +935,9 @@ export default types
 
       selectCompletion,
       selectPrediction,
+
+      _selectItem,
+      _unselectAll,
 
       deleteCompletion,
     };

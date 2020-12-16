@@ -2,12 +2,30 @@ import React, { Component } from "react";
 import { Button, Card, List, Tooltip } from "antd";
 import { observer } from "mobx-react";
 
-import { CopyOutlined, WindowsOutlined } from "@ant-design/icons";
+import { CopyOutlined, EyeInvisibleOutlined, EyeOutlined, WindowsOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "../Completions/Completions.module.scss";
 
 const Prediction = observer(({ item, store }) => {
+  const toggleVisibility = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    item.toggleVisibility();
+    const c = document.getElementById(`c-${item.id}`);
+    if (c) c.style.display = item.hidden ? "none" : "unset";
+  };
+
+  const highlight = e => {
+    const c = document.getElementById(`c-${item.id}`);
+    if (c) c.classList.add("hover");
+  };
+
+  const unhighlight = e => {
+    const c = document.getElementById(`c-${item.id}`);
+    if (c) c.classList.remove("hover");
+  };
+
   return (
     <List.Item
       key={item.id}
@@ -15,6 +33,8 @@ const Prediction = observer(({ item, store }) => {
       onClick={ev => {
         !item.selected && store.completionStore.selectPrediction(item.id);
       }}
+      onMouseEnter={highlight}
+      onMouseLeave={unhighlight}
     >
       <div className={styles.itembtns}>
         <div>
@@ -43,6 +63,11 @@ const Prediction = observer(({ item, store }) => {
                 <CopyOutlined />
               </Button>
             </Tooltip>
+          )}
+          {store.completionStore.viewingAllCompletions && (
+            <Button size="small" type="primary" ghost onClick={toggleVisibility}>
+              {item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            </Button>
           )}
         </div>
       </div>

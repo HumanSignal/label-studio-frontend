@@ -1,7 +1,15 @@
 import React, { Component } from "react";
 import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
 import { observer } from "mobx-react";
-import { StarOutlined, DeleteOutlined, ForwardOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  StarOutlined,
+  DeleteOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  ForwardOutlined,
+  PlusOutlined,
+  WindowsOutlined,
+} from "@ant-design/icons";
 
 import Utils from "../../utils";
 import styles from "./Completions.module.scss";
@@ -59,6 +67,24 @@ const Completion = observer(({ item, store }) => {
       </Button>
     </Tooltip>
   );
+
+  const toggleVisibility = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    item.toggleVisibility();
+    const c = document.getElementById(`c-${item.id}`);
+    if (c) c.style.display = item.hidden ? "none" : "unset";
+  };
+
+  const highlight = e => {
+    const c = document.getElementById(`c-${item.id}`);
+    if (c) c.classList.add("hover");
+  };
+
+  const unhighlight = e => {
+    const c = document.getElementById(`c-${item.id}`);
+    if (c) c.classList.remove("hover");
+  };
 
   /**
    * Default badge for saved completions
@@ -136,6 +162,8 @@ const Completion = observer(({ item, store }) => {
       onClick={ev => {
         !item.selected && store.completionStore.selectCompletion(item.id);
       }}
+      onMouseEnter={highlight}
+      onMouseLeave={unhighlight}
     >
       <div className={styles.completioncard}>
         <div>
@@ -153,6 +181,11 @@ const Completion = observer(({ item, store }) => {
           <Tooltip placement="topLeft" title="Skipped completion">
             <ForwardOutlined className={styles.skipped} />
           </Tooltip>
+        )}
+        {store.completionStore.viewingAllCompletions && (
+          <Button size="small" type="primary" ghost onClick={toggleVisibility}>
+            {item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          </Button>
         )}
         {item.selected && btnsView()}
       </div>
@@ -186,8 +219,7 @@ class Completions extends Component {
               </Button>
             </Tooltip>
           )}
-          {/* @todo fix View All mode */}
-          {/* &nbsp;
+          &nbsp;
           <Tooltip placement="topLeft" title="View all completions">
             <Button
               size="small"
@@ -199,7 +231,7 @@ class Completions extends Component {
             >
               <WindowsOutlined />
             </Button>
-          </Tooltip> */}
+          </Tooltip>
         </div>
       </div>
     );
