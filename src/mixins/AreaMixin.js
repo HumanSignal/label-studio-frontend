@@ -45,7 +45,7 @@ export const AreaMixin = types
 
     // @todo may be slow, consider to add some code to completion (un)select* methods
     get selected() {
-      return self.completion.highlightedNode === self;
+      return self.completion?.highlightedNode === self;
     },
 
     getOneColor() {
