@@ -132,8 +132,7 @@ const Completion = observer(({ item, store }) => {
 
     return (
       <div className={styles.buttons}>
-        {/* @todo check for honeypot/ground truth interface */}
-        {true && (item.honeypot ? removeHoney() : setHoney())}
+        {store.hasInterface("ground-truth") && (item.honeypot ? removeHoney() : setHoney())}
         &nbsp;
         {store.hasInterface("completions:delete") && (
           <Tooltip placement="topLeft" title="Delete selected completion">
