@@ -6,7 +6,7 @@
 
 .segment {
   position: sticky;
-  top: 1rem;
+  top: 0;
   // hack for flex to prevent text block from glowing enormously
   min-width: 0;
   z-index: 1;
