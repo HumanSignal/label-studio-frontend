@@ -27,7 +27,7 @@ const Model = types
     },
 
     get completion() {
-      return getRoot(self).completionStore.selected;
+      return getRoot(self).completionStore?.selected;
     },
     get regionElement() {
       return self._brushRef;
