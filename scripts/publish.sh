@@ -21,8 +21,8 @@ git pull
 
 # Create new build
 rm -rf build
-yarn build:no-hash
-git add build
+yarn build:module
+rm build/.gitignore
 
 # Replace links to published files in README to the actual one
 # `ls -tU` sorts files by creation date (recent is first)
@@ -62,3 +62,6 @@ echo && echo -e "${GREEN}### GitHub package published${NC}" && echo
 
 # Restore modified files
 git checkout -- package.json package-lock.json
+
+# clean up
+rm -rf build

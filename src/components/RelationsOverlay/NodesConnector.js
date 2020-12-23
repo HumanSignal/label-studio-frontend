@@ -12,6 +12,7 @@ const obtainWatcher = node => {
   switch (node.type) {
     case "richtextregion":
     case "audioregion":
+    case "paragraphs":
       return DOMWatcher;
     case "rectangleregion":
       return createPropertyWatcher(["x", "y", "width", "height", "hidden", parentImagePropsWatch]);

@@ -111,6 +111,7 @@ const Completion = types
     },
   }))
   .volatile(self => ({
+    hidden: false,
     versions: {},
   }))
   .actions(self => ({
@@ -146,6 +147,10 @@ const Completion = types
 
     setNormalizationMode(val) {
       self.normalizationMode = val;
+    },
+
+    toggleVisibility(visible) {
+      self.hidden = visible === undefined ? !self.hidden : !visible;
     },
 
     setHighlightedNode(node) {
@@ -299,6 +304,13 @@ const Completion = types
      * @param {*} region
      */
     deleteRegion(region) {
+      let { regions } = self.regionStore;
+      // move all children into the parent region of the given one
+      const children = regions.filter(r => r.parentID === region.id);
+      children && children.forEach(r => r.setParentID(region.parentID));
+
+      if (!region.classification) getEnv(self).onEntityDelete(region);
+
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
         detach(region);
@@ -424,6 +436,12 @@ const Completion = types
 
           states && states.forEach(s => tools.addToolsFromControl(s));
         }
+
+        // @todo special place to init such predefined values; `afterAttach` of the tag?
+        // preselected choices
+        if (!self.pk && node?.type === "choices" && node.preselectedValues?.length) {
+          self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
+        }
       });
 
       self.history.onUpdate(self.updateObjects);
@@ -520,6 +538,8 @@ const Completion = types
       };
 
       const area = self.areas.put(areaRaw);
+
+      if (!area.classification) getEnv(self).onEntityCreate(area);
 
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
@@ -680,13 +700,25 @@ export default types
       self.viewingAllPredictions = false;
     }
 
-    function selectItem(id, list) {
-      unselectViewingAll();
-
+    function _unselectAll() {
       if (self.selected) {
         self.selected.unselectAll();
         self.selected.selected = false;
       }
+    }
+
+    function _selectItem(item) {
+      self._unselectAll();
+      item.editable = false;
+      item.selected = true;
+      self.selected = item;
+      item.updateObjects();
+    }
+
+    function selectItem(id, list) {
+      unselectViewingAll();
+
+      self._unselectAll();
 
       // sad hack with pk while sdk are not using pk everywhere
       const c = list.find(c => c.id === id || c.pk === String(id)) || list[0];
@@ -920,6 +952,9 @@ export default types
 
       selectCompletion,
       selectPrediction,
+
+      _selectItem,
+      _unselectAll,
 
       deleteCompletion,
     };

@@ -1,6 +1,18 @@
 import { isString, escapeHtml } from "./utilities";
 
 /**
+ * Simple way to retrieve linked data in `value` param from task
+ * Works only for prefixed values ($image); non-prefixed values left as is
+ * @param {string} value param
+ * @param {object} task
+ */
+export const parseValue = (value, task) => {
+  if (!value) return;
+  if (value[0] === "$") return task[value.substr(1)];
+  return value;
+};
+
+/**
  * Parse CSV
  * Accepts only numbers as a data
  * Returns hash with names (or indexed hash for headless csv) as a keys

@@ -18,7 +18,9 @@ import { customTypes } from "../../core/CustomTypes";
 import messages from "../../utils/messages";
 
 /**
- * Text tag shows an Text markup that can be labeled
+ * Text tag shows an Text markup that can be labeled.
+ * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all the spaces.
+ * In any case every space counts for result offsets.
  * @example
  * <View>
  *   <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
@@ -95,11 +97,12 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
+      const value = runTemplate(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
-        const url = self._value;
-        if (!/^https?:\/\//.test(url)) {
+        const url = value;
+        // "/..." for local files
+        if (!/^https?:\/\/|^\//.test(url)) {
           const message = [];
           if (url) {
             message.push(`URL (${url}) is not valid.`);
@@ -124,7 +127,7 @@ const Model = types
             self.loadedValue("");
           });
       } else {
-        self.loadedValue(self._value);
+        self.loadedValue(value);
       }
     },
 
@@ -455,7 +458,7 @@ class TextPieceView extends Component {
             left = left - 1;
           }
 
-          for (var i = 0; i <= node.childNodes.length; i++) {
+          for (var i = 0; i <= node.childNodes?.length; i++) {
             const n = node.childNodes[i];
             if (n) {
               const res = traverse(n);
@@ -476,6 +479,10 @@ class TextPieceView extends Component {
       const range = document.createRange();
       range.setStart(ss.node, ss.left);
       range.setEnd(ee.node, ee.left);
+
+      if (!r.text && range.toString()) {
+        r.setText(range.toString());
+      }
 
       splitBoundaries(range);
 

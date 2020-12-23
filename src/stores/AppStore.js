@@ -9,6 +9,7 @@ import Task from "./TaskStore";
 import User from "./UserStore";
 import Utils from "../utils";
 import { delay } from "../utils/utilities";
+import messages from "../utils/messages";
 
 export default types
   .model("AppStore", {
@@ -169,10 +170,12 @@ export default types
        * Hotkey for delete
        */
       Hotkey.addKey(
-        "ctrl+backspace",
+        "command+backspace, ctrl+backspace",
         function() {
           const { selected } = self.completionStore;
-          selected.deleteAllRegions();
+          if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+            selected.deleteAllRegions();
+          }
         },
         "Delete all regions",
       );
@@ -204,12 +207,12 @@ export default types
         }
       });
 
-      Hotkey.addKey("ctrl+z", function() {
+      Hotkey.addKey("command+z, ctrl+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey("ctrl+shift+z", function() {
+      Hotkey.addKey("command+shift+z, ctrl+shift+z", function() {
         const { history } = self.completionStore.selected;
         history && history.canRedo && history.redo();
       });
@@ -350,7 +353,7 @@ export default types
       /* eslint-disable no-unused-expressions */
       predictions?.forEach(p => {
         const obj = cs.addPrediction(p);
-        cs.selectCompletion(obj.id);
+        cs.selectPrediction(obj.id);
         obj.deserializeCompletion(p.result);
       });
       completions?.forEach((c, i) => {

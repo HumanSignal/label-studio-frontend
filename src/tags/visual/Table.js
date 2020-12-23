@@ -8,7 +8,9 @@ import Registry from "../../core/Registry";
 /**
  * Table tag, show object keys and values in a table
  * @example
- * <Table name="text-1" value="$text"></Table>
+ * <View>
+ *   <Table name="text-1" value="$text"></Table>
+ * </View>
  * @name Table
  * @param {string} value
  */

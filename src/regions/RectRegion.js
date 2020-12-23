@@ -211,6 +211,7 @@ const RectRegionModel = types.compose(
 
 const HtxRectangleView = ({ item }) => {
   if (!isAlive(item)) return null;
+  if (item.hidden) return null;
 
   const { store } = item;
 
@@ -220,8 +221,6 @@ const HtxRectangleView = ({ item }) => {
     strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
     strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
-
-  if (item.hidden) return null;
 
   return (
     <Fragment>

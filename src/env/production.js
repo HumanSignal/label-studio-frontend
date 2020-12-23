@@ -28,7 +28,13 @@ function getState(task) {
 function rootElement(element) {
   const el = document.createElement("div");
 
-  let root = document.getElementById(element);
+  let root;
+
+  if (typeof element === "string") {
+    root = document.getElementById(element);
+  } else {
+    root = element;
+  }
 
   root.innerHTML = "";
   root.appendChild(el);

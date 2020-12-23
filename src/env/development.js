@@ -9,8 +9,9 @@ import { NamedEntity } from "../examples/named_entity"; // eslint-disable-line n
 import { References } from "../examples/references"; // eslint-disable-line no-unused-vars
 import { Required } from "../examples/required"; // eslint-disable-line no-unused-vars
 import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
-import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
 import { Nested as NestedSimple } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
+import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
+import { Dialogue } from "../examples/phrases"; // eslint-disable-line no-unused-vars
 
 /**
  * Audio
@@ -88,7 +89,13 @@ async function getExample() {
 function rootElement(element) {
   const el = document.createElement("div");
 
-  let root = document.getElementById(element);
+  let root;
+
+  if (typeof element === "string") {
+    root = document.getElementById(element);
+  } else {
+    root = element;
+  }
 
   root.innerHTML = "";
   root.appendChild(el);

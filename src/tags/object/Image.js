@@ -15,7 +15,8 @@ import { EllipseRegionModel } from "../../regions/EllipseRegion";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Image tag shows an image on the page
+ * Image tag shows an image on the page.
+ * All the region numbers are percents of image original sizes — [0, 100]
  * @example
  * <View>
  *   <!-- Take the image url from the url column in JSON/CSV -->
