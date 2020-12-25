@@ -471,7 +471,7 @@ class HtxParagraphsView extends Component {
             r.fixOffsets(startOffset, endOffset);
           }
         } else if (!r.text && range.toString()) {
-          r.setParagraphs(range.toString());
+          r.setText(range.toString());
         }
 
         splitBoundaries(range);
