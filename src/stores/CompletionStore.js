@@ -223,11 +223,14 @@ const Completion = types
     },
 
     deleteAllRegions({ deleteReadOnly = false } = {}) {
-      let { regions } = self.regionStore;
+      let regions = Array.from(self.areas.values());
 
+      // @todo classifiactions have `readonly===undefined` so they won't be deleted with `false`
+      // @todo check this later for consistency
       if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
 
       regions.forEach(r => r.deleteRegion());
+      self.updateObjects();
     },
 
     addRegion(reg) {
