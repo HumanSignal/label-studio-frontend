@@ -64,6 +64,16 @@ export const AreaMixin = types
       self.selected = value;
     },
 
+    /**
+     * Remove region
+     */
+    deleteRegion() {
+      if (!self.completion.editable) return;
+      if (self.selected) self.completion.unselectAll();
+      if (self.destroyRegion) self.destroyRegion();
+      self.completion.deleteRegion(self);
+    },
+
     addResult(r) {
       self.results.push(r);
     },

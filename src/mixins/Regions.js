@@ -186,16 +186,6 @@ const RegionsMixin = types
       }
     },
 
-    /**
-     * Remove region
-     */
-    deleteRegion() {
-      if (!self.completion.editable) return;
-      if (self.selected) self.completion.unselectAll();
-      if (self.destroyRegion) self.destroyRegion();
-      self.completion.deleteRegion(self);
-    },
-
     setHighlight(val) {
       self.highlighted = val;
     },
