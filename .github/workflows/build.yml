@@ -28,7 +28,7 @@ jobs:
           npm-${{ runner.os }}-
 
     - run: npm ci
-    - run: npm run build-bundle
+    - run: npm run build:module
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
 
