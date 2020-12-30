@@ -196,9 +196,13 @@ const Result = types
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
 
-      const meta = self.from_name.metaValue;
-      if (meta) {
-        data.meta = { ...data.meta, ...meta };
+      const contolMeta = self.from_name.metaValue;
+      if (contolMeta) {
+        data.meta = { ...data.meta, ...contolMeta };
+      }
+      const areaMeta = self.area.meta;
+      if (areaMeta && Object.keys(areaMeta).length) {
+        data.meta = { ...data.meta, ...areaMeta };
       }
 
       if (self.area.parentID) {
