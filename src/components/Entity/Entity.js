@@ -99,7 +99,7 @@ export default observer(({ store, completion }) => {
         {/*   </Button> */}
         {/* </Tooltip> */}
 
-        {node.editable && (
+        {node.editable && !node.classification && (
           <Fragment>
             <Tooltip placement="topLeft" title="Create Relation: [r]">
               <Button
