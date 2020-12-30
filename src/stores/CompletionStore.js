@@ -568,6 +568,7 @@ const Completion = types
     fixBrokenCompletion(json) {
       json.forEach(obj => {
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
+        if (obj.normalization) obj.meta = { ...obj.meta, normalization: obj.normalization };
       });
       return json;
     },
