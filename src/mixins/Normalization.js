@@ -2,40 +2,34 @@ import { types } from "mobx-state-tree";
 
 /**
  * @todo rework this into MetaMixin for all the meta data
- * Normalization
+ * Meta Information
  * For normalize many labels to one value
  */
 const NormalizationMixin = types
   .model({
     meta: types.frozen({}),
     normInput: types.maybeNull(types.string),
-    normalization: types.maybeNull(types.string),
   })
   .actions(self => ({
-    afterCreate() {
-      if (self.meta.normalization) self.normalization = self.meta.normalization;
-    },
-
     /**
-     * Set normalization
+     * Set meta text
      * @param {*} val
      */
-    setNormalization(val) {
-      self.normalization = val;
+    setMetaInfo(val) {
       if (val) {
-        self.meta = { ...self.meta, normalization: val };
+        self.meta = { ...self.meta, text: [val] };
       } else {
         const adjusted = { ...self.meta };
-        delete adjusted.normalization;
+        delete adjusted.text;
         self.meta = adjusted;
       }
     },
 
     /**
-     * Delete normalization
+     * Delete meta text
      */
-    deleteNormalization() {
-      self.setNormalization("");
+    deleteMetaInfo() {
+      self.setMetaInfo("");
     },
 
     setNormInput(val) {

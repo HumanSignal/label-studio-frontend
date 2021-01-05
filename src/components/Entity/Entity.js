@@ -50,6 +50,7 @@ const renderResult = result => {
 
 export default observer(({ store, completion }) => {
   const node = completion.highlightedNode;
+  const [editMode, setEditMode] = React.useState(false);
 
   return (
     <Fragment>
@@ -66,15 +67,15 @@ export default observer(({ store, completion }) => {
           </Fragment>
         )}
 
-        {node.normalization && (
+        {node.meta?.text && (
           <Text>
-            Normalization: <Text code>{node.normalization}</Text>
+            Meta: <Text code>{node.meta.text}</Text>
             &nbsp;
             <DeleteOutlined
               type="delete"
               style={{ cursor: "pointer" }}
               onClick={() => {
-                node.deleteNormalization();
+                node.deleteMetaInfo();
               }}
             />
           </Text>
@@ -115,11 +116,11 @@ export default observer(({ store, completion }) => {
               </Button>
             </Tooltip>
 
-            <Tooltip placement="topLeft" title="Create Normalization">
+            <Tooltip placement="topLeft" title="Add Meta Information">
               <Button
                 className={styles.button}
                 onClick={() => {
-                  completion.setNormalizationMode(true);
+                  setEditMode(true);
                 }}
               >
                 <PlusOutlined />
@@ -158,12 +159,12 @@ export default observer(({ store, completion }) => {
         )}
       </div>
 
-      {completion.normalizationMode && (
+      {editMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
           onFinish={value => {
-            node.setNormalization(node.normInput);
-            completion.setNormalizationMode(false);
+            node.setMetaInfo(node.normInput);
+            setEditMode(false);
 
             // ev.preventDefault();
             // return false;
@@ -176,7 +177,7 @@ export default observer(({ store, completion }) => {
               node.setNormInput(value);
             }}
             style={{ marginBottom: "0.5em" }}
-            placeholder="Add Normalization"
+            placeholder="Meta Information"
           />
 
           <Button type="primary" htmlType="submit" style={{ marginRight: "0.5em" }}>
@@ -187,7 +188,7 @@ export default observer(({ store, completion }) => {
             type="danger"
             htmlType="reset"
             onClick={ev => {
-              completion.setNormalizationMode(false);
+              setEditMode(false);
 
               ev.preventDefault();
               return false;
