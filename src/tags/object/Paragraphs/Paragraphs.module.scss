@@ -68,6 +68,14 @@
   margin-left: 36px;
 }
 
+.audio {
+  height: 32px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .play {
   user-select: none;
   position: absolute;
