@@ -36,15 +36,7 @@ const NodeViews = {
     node => `TS ${node.object.formatTime(node.start)} - ${node.object.formatTime(node.end)}`,
   ],
 
-  TextAreaRegionModel: [
-    "Input",
-    MessageOutlined,
-    node => (
-      <Fragment>
-        Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
-      </Fragment>
-    ),
-  ],
+  TextAreaRegionModel: ["Input", MessageOutlined, node => <span style={{ color: "#5a5a5a" }}>{node._value}</span>],
 
   RectRegionModel: [
     "Rect",

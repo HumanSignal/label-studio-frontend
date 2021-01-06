@@ -16,6 +16,14 @@ export default types
       return getParent(self);
     },
 
+    get classifications() {
+      const textAreas = Array.from(self.completion.names.values())
+        .filter(t => t.type === "textarea" && !t.perregion)
+        .map(t => t.regions);
+
+      return [].concat(...textAreas);
+    },
+
     get regions() {
       return Array.from(self.completion.areas.values()).filter(area => !area.classification);
     },

@@ -58,7 +58,7 @@ const RegionItem = observer(({ item, idx, flat }) => {
         item.setHighlight(false);
       }}
     >
-      <SimpleBadge number={idx + 1} style={badgeStyle} />
+      <SimpleBadge number={idx === undefined ? " " : idx + 1} style={badgeStyle} />
       <Node node={item} className={styles.node} />
 
       {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
@@ -209,13 +209,21 @@ const RegionsTree = observer(({ regionStore }) => {
       </div>
     );
 
-  const isFlat = !regionStore.sortedRegions.some(r => r.parentID !== "");
-  const treeData = regionStore.asTree((item, idx) => {
+  const isFlat = !regionStore.sortedRegions.some(r => r.parentID);
+  const regions = regionStore.asTree((item, idx) => {
     return {
       key: item.id,
       title: <RegionItem item={item} idx={idx} flat={isFlat} />,
     };
   });
+
+  const classifications = regionStore.classifications.map(item => ({
+    classification: true,
+    key: item.id,
+    title: <RegionItem item={item} flat />,
+  }));
+
+  const treeData = [...classifications, ...regions];
 
   return (
     <Tree
@@ -227,7 +235,15 @@ const RegionsTree = observer(({ regionStore }) => {
       defaultExpandAll={true}
       autoExpandParent={true}
       switcherIcon={<DownOutlined />}
+      onDragStart={({ event, node }) => {
+        if (node.classification) {
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
+        }
+      }}
       onDrop={({ node, dragNode, dropPosition, dropToGap }) => {
+        if (node.classification) return false;
         const dropKey = node.props.eventKey;
         const dragKey = dragNode.props.eventKey;
         const dropPos = node.props.pos.split("-");
@@ -297,7 +313,8 @@ const RegionsTree = observer(({ regionStore }) => {
 });
 
 export default observer(({ store, regionStore }) => {
-  const { regions } = regionStore;
+  const { classifications, regions } = regionStore;
+  const count = regions.length + (regionStore.view === "regions" ? classifications.length : 0);
 
   return (
     <div>
@@ -315,13 +332,13 @@ export default observer(({ store, regionStore }) => {
           <Divider dashed orientation="left" style={{ height: "auto" }}>
             <Dropdown overlay={<GroupMenu regionStore={regionStore} />} placement="bottomLeft">
               <span className={globalStyles.link} onClick={e => e.preventDefault()}>
-                {regionStore.view === "regions" ? <span>Regions ({regions.length})</span> : null}
+                {regionStore.view === "regions" ? <span>Regions ({count})</span> : null}
                 {regionStore.view === "labels" ? "Labels" : null}
               </span>
             </Dropdown>
           </Divider>
         </div>
-        {regions.length > 0 && regionStore.view === "regions" && (
+        {count > 0 && regionStore.view === "regions" && (
           <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
             <span className={globalStyles.link} onClick={e => e.preventDefault()}>
               <SortAscendingOutlined /> Sort
@@ -329,11 +346,12 @@ export default observer(({ store, regionStore }) => {
           </Dropdown>
         )}
       </div>
-      {!regions.length && <p>No Regions created yet</p>}
+      {!count && regionStore.view === "regions" && <p>No Regions created yet</p>}
+      {!count && regionStore.view === "labels" && <p>No Labeled Regions created yet</p>}
 
-      {regions.length > 0 && regionStore.view === "regions" && <RegionsTree regionStore={regionStore} />}
+      {count > 0 && regionStore.view === "regions" && <RegionsTree regionStore={regionStore} />}
 
-      {regions.length > 0 && regionStore.view === "labels" && <LabelsList regionStore={regionStore} />}
+      {count > 0 && regionStore.view === "labels" && <LabelsList regionStore={regionStore} />}
     </div>
   );
 });
