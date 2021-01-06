@@ -21,6 +21,12 @@ const Model = types
     _value: types.string,
     // states: types.array(types.union(ChoicesModel)),
   })
+  .volatile(self => ({
+    classification: true,
+    perRegionTags: [],
+    results: [],
+    selected: false,
+  }))
   .views(self => ({
     get parent() {
       return getParentOfType(self, TextAreaModel);
@@ -33,6 +39,18 @@ const Model = types
     setValue(val) {
       self._value = val;
       self.parent.onChange();
+    },
+
+    deleteRegion() {
+      self.parent.remove(self);
+    },
+
+    selectRegion() {
+      self.selected = true;
+    },
+
+    afterUnselectRegion() {
+      self.selected = false;
     },
   }));
 
@@ -66,7 +84,7 @@ const HtxTextAreaRegionView = ({ item }) => {
     };
   }
 
-  params.onDelete = () => item.parent.remove(item);
+  params.onDelete = item.deleteRegion;
 
   let divAttrs = {};
   if (!parent.perregion) {
