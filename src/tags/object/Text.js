@@ -297,26 +297,16 @@ class TextPieceView extends Component {
     const strright = val.substring(end, val.length);
 
     if (strright.length > 0) {
-      let idxSpace = strright.indexOf(" ");
-      let idxNewline = strright.indexOf("\n");
-
-      let idx;
-
-      if (idxNewline === -1) idx = idxSpace;
-      if (idxSpace === -1) idx = idxNewline;
-
-      if (idxNewline > 0 && idxSpace > 0) {
-        idx = idxSpace > idxNewline ? idxNewline : idxSpace;
-      }
-
-      idx = idx + end;
+      const idxSpace = strright.indexOf(" ");
+      const idxNewline = strright.indexOf("\n");
+      const idx = Math.max(idxSpace, idxNewline);
 
       if (idx === -1) {
         r2.setEnd(r.endContainer, r.endContainer.length);
       }
 
       if (idx > 0) {
-        const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
+        const { node, len } = Utils.HTML.findIdxContainer(this.myRef, end + idx + 1);
         r2.setEnd(node, len > 0 ? len - 1 : 0);
       }
     }
