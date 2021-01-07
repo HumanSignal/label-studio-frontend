@@ -82,4 +82,14 @@
   left: 0;
   margin-top: -0.3em;
   font-size: inherit;
+
+  // highlight play/pause buttons on interactions
+  &:active path {
+    fill: #1890ff;
+  }
+
+  // only the circle of play button highlighted
+  &:focus path:first-child {
+    fill: #1890ff;
+  }
 }
