@@ -120,7 +120,6 @@ $gap: 30px;
   display: flex;
   flex-wrap: nowrap;
   overflow: auto;
-  margin-left: $gap;
   margin-right: 20px + $gap;
   position: relative;
 }
@@ -130,16 +129,14 @@ $gap: 30px;
 }
 
 .grid > div {
-  flex: 0 0 calc(50% - #{$gap/2});
-}
-
-.grid > div:not(:first-child) {
+  flex: 0 0 calc(50% - #{$gap});
   margin-left: $gap;
 }
 
 .container {
   position: relative;
   flex-grow: 1;
+  min-width: 0; // famous flex hack to prevent block from growing enormously
 }
 
 .container > button {
