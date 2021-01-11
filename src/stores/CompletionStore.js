@@ -2,7 +2,6 @@ import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot, isAlive
 
 import Constants from "../core/Constants";
 import Hotkey from "../core/Hotkey";
-import NormalizationStore from "./NormalizationStore";
 import RegionStore from "./RegionStore";
 import Registry from "../core/Registry";
 import RelationStore from "./RelationStore";
@@ -60,11 +59,6 @@ const Completion = types
     relationMode: types.optional(types.boolean, false),
     relationStore: types.optional(RelationStore, {
       relations: [],
-    }),
-
-    normalizationMode: types.optional(types.boolean, false),
-    normalizationStore: types.optional(NormalizationStore, {
-      normalizations: [],
     }),
 
     areas: types.map(Area),
@@ -145,10 +139,6 @@ const Completion = types
       self.pk = value;
     },
 
-    setNormalizationMode(val) {
-      self.normalizationMode = val;
-    },
-
     toggleVisibility(visible) {
       self.hidden = visible === undefined ? !self.hidden : !visible;
     },
@@ -223,11 +213,14 @@ const Completion = types
     },
 
     deleteAllRegions({ deleteReadOnly = false } = {}) {
-      let { regions } = self.regionStore;
+      let regions = Array.from(self.areas.values());
 
+      // @todo classifiactions have `readonly===undefined` so they won't be deleted with `false`
+      // @todo check this later for consistency
       if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
 
       regions.forEach(r => r.deleteRegion());
+      self.updateObjects();
     },
 
     addRegion(reg) {
@@ -259,10 +252,6 @@ const Completion = types
 
     addRelation(reg) {
       self.relationStore.addRelation(self._relationObj, reg);
-    },
-
-    addNormalization(normalization) {
-      self.normalizationStore.addNormalization();
     },
 
     validate() {
@@ -567,6 +556,7 @@ const Completion = types
     fixBrokenCompletion(json) {
       json.forEach(obj => {
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
+        if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
       });
       return json;
     },

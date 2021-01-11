@@ -31,6 +31,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
  * @param {string} value                 - value of the element
  * @param {json|url} [valueType=json]    - how to treat value — as data or as url with data to load from
  * @param {string} audioUrl              - audio to sync phrases with
+ * @param {boolean} showPlayer           - show audio player above the paragraphs
  * @param {no|yes} [saveTextResult=yes]  - whether to save `text` to `value` or not
  * @param {none|dialogue} [layout=none]  - the styles layout to use
  * @param {string} [nameKey=author]      - name key to use
@@ -41,6 +42,7 @@ const TagAttrs = types.model("ParagraphsModel", {
   value: types.maybeNull(types.string),
   valuetype: types.optional(types.enumeration(["json", "url"]), () => (window.LS_SECURE_MODE ? "url" : "json")),
   audiourl: types.maybeNull(types.string),
+  showplayer: false,
 
   highlightcolor: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
@@ -506,7 +508,15 @@ class HtxParagraphsView extends Component {
 
     return (
       <ObjectTag item={item}>
-        {withAudio && <audio src={item.audio} ref={item.getRef()} onEnded={item.reset} />}
+        {withAudio && (
+          <audio
+            controls={item.showplayer}
+            className={styles.audio}
+            src={item.audio}
+            ref={item.getRef()}
+            onEnded={item.reset}
+          />
+        )}
         <div
           ref={this.myRef}
           data-update={item._update}
