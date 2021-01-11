@@ -6,7 +6,7 @@ import {
   DeleteOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  ForwardOutlined,
+  StopOutlined,
   PlusOutlined,
   WindowsOutlined,
 } from "@ant-design/icons";
@@ -178,7 +178,7 @@ const Completion = observer(({ item, store }) => {
         {/* platform uses was_cancelled so check both */}
         {store.hasInterface("skip") && (item.skipped || item.was_cancelled) && (
           <Tooltip placement="topLeft" title="Skipped completion">
-            <ForwardOutlined className={styles.skipped} />
+            <StopOutlined className={styles.skipped} />
           </Tooltip>
         )}
         {store.completionStore.viewingAllCompletions && (
