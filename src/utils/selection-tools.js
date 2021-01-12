@@ -2,25 +2,121 @@ const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 const isText = text => text && /[\w']/i.test(text);
 
-const boundarySelection = (selection, boundary) => {
+const destructSelection = selection => {
   const range = selection.getRangeAt(0);
   const { startOffset, startContainer, endOffset, endContainer } = range;
 
-  const wordBoundary = boundary === "word";
   const firstSymbol = startContainer.textContent[startOffset];
   const prevSymbol = startContainer.textContent[startOffset - 1];
   const lastSymbol = endContainer.textContent[endOffset - 1];
   const nextSymbol = endContainer.textContent[endOffset];
 
-  if (!wordBoundary || !isText(firstSymbol) || isText(prevSymbol)) {
-    range.setEnd(startContainer, startOffset);
+  return {
+    selection,
+    range,
+    startOffset,
+    startContainer,
+    endOffset,
+    endContainer,
+    firstSymbol,
+    prevSymbol,
+    lastSymbol,
+    nextSymbol,
+  };
+};
+
+/**
+ *
+ * @param {Selection} selection
+ */
+const wordBoundarySelection = (selection, boundary) => {
+  const {
+    startOffset,
+    startContainer,
+    endOffset,
+    endContainer,
+    firstSymbol,
+    prevSymbol,
+    lastSymbol,
+    nextSymbol,
+  } = destructSelection(selection);
+
+  const resultRange = {};
+  let currentRange;
+
+  // It's easier to operate the selection when it's collapsed
+  selection.collapse(startContainer, startOffset);
+
+  if (!isText(firstSymbol)) {
+    if (isText(prevSymbol)) {
+      selection.modify("move", "backward", boundary);
+    } else {
+      selection.modify("move", "forward", boundary);
+    }
+  } else if (isText(prevSymbol)) {
     selection.modify("move", "backward", boundary);
   }
 
-  if (!wordBoundary || !isText(lastSymbol) || isText(nextSymbol)) {
-    const newRange = selection.getRangeAt(0);
-    newRange.setEnd(endContainer, endOffset);
-    selection.modify("extend", "forward", boundary);
+  currentRange = selection.getRangeAt(0);
+  Object.assign(resultRange, {
+    startContainer: currentRange.startContainer,
+    startOffset: currentRange.startOffset,
+  });
+
+  selection.collapse(endContainer, endOffset);
+
+  if (!isText(lastSymbol)) {
+    if (isText(nextSymbol)) {
+      selection.modify("move", "forward", boundary);
+    } else {
+      selection.modify("move", "backward", boundary);
+    }
+  } else if (isText(nextSymbol)) {
+    selection.modify("move", "forward", boundary);
+  }
+
+  currentRange = selection.getRangeAt(0);
+  Object.assign(resultRange, {
+    endContainer: currentRange.endContainer,
+    endOffset: currentRange.endOffset,
+  });
+
+  selection.removeAllRanges();
+  const range = new Range();
+  range.setStart(resultRange.startContainer, resultRange.startOffset);
+  range.setEnd(resultRange.endContainer, resultRange.endOffset);
+  selection.addRange(range);
+
+  return selection;
+};
+
+const boundarySelection = (selection, boundary) => {
+  const wordBoundary = boundary !== "symbol";
+  const {
+    startOffset,
+    startContainer,
+    endOffset,
+    endContainer,
+    firstSymbol,
+    prevSymbol,
+    lastSymbol,
+    nextSymbol,
+  } = destructSelection(selection);
+
+  if (wordBoundary) {
+    wordBoundarySelection(selection, boundary);
+  } else {
+    if (!isText(firstSymbol) || isText(prevSymbol)) {
+      const newRange = selection.getRangeAt(0);
+      newRange.setEnd(startContainer, startOffset);
+      selection.modify("move", "backward", boundary);
+    }
+
+    if (!isText(lastSymbol) || isText(nextSymbol)) {
+      const newRange = selection.getRangeAt(0);
+      newRange.setEnd(endContainer, endOffset);
+      selection.modify("extend", "forward", boundary);
+    }
   }
 };
 
