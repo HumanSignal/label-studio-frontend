@@ -139,7 +139,7 @@ const RelationItemObserver = observer(({ relation, ...rest }) => {
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
   rootNode = React.createRef();
-  state = { shouldRender: false, souldRenderConnections: Math.random() };
+  state = { shouldRender: false, shouldRenderConnections: Math.random() };
 
   componentDidMount() {
     if (this.rootNode.current) {
@@ -186,14 +186,14 @@ class RelationsOverlay extends PureComponent {
           dimm={hasHighlight && !highlighted}
           highlight={highlighted}
           visible={highlighted || visible}
-          shouldUpdate={this.state.souldRenderConnections}
+          shouldUpdate={this.state.shouldRenderConnections}
         />
       );
     });
   }
 
   onResize = () => {
-    this.setState({ souldRenderConnections: Math.random() });
+    this.setState({ shouldRenderConnections: Math.random() });
   };
 }
 
