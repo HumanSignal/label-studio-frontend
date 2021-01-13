@@ -197,9 +197,18 @@ class RelationsOverlay extends PureComponent {
   };
 }
 
-const RelationsOverlayObserver = observer(({ store }) => {
-  const { relations, showConnections, highlighted } = store;
-  return <RelationsOverlay relations={Array.from(relations)} visible={showConnections} highlighted={highlighted} />;
-});
+const RelationsOverlayObserver = observer(
+  React.forwardRef(({ store }, ref) => {
+    const { relations, showConnections, highlighted } = store;
+    return (
+      <RelationsOverlay
+        ref={ref}
+        relations={Array.from(relations)}
+        visible={showConnections}
+        highlighted={highlighted}
+      />
+    );
+  }),
+);
 
 export { RelationsOverlayObserver as RelationsOverlay };

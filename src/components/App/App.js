@@ -43,6 +43,8 @@ import Grid from "./Grid";
  * App
  */
 class App extends Component {
+  relationsRef = React.createRef();
+
   renderSuccess() {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }
@@ -90,7 +92,7 @@ class App extends Component {
       <>
         {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
           <Segment completion={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative" }} onScrollCapture={this._notifyScroll}>
               {Tree.renderItem(root)}
               {this.renderRelations(cs.selected)}
             </div>
@@ -114,7 +116,7 @@ class App extends Component {
 
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
-    return <RelationsOverlay key={guidGenerator()} store={store} />;
+    return <RelationsOverlay key={guidGenerator()} store={store} ref={this.relationsRef} />;
   }
 
   render() {
@@ -178,6 +180,12 @@ class App extends Component {
       </div>
     );
   }
+
+  _notifyScroll = () => {
+    if (this.relationsRef.current) {
+      this.relationsRef.current.onResize();
+    }
+  };
 }
 
 export default observer(App);
