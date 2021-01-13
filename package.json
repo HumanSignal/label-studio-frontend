@@ -61,6 +61,7 @@
     "react-scripts": "^3.4.3",
     "react-sortable-hoc": "^1.11.0",
     "react-test-renderer": "^16.13.1",
+    "react-virtualized-auto-sizer": "^1.0.3",
     "size-limit": "^4.6.0",
     "string.prototype.matchall": "^4.0.2",
     "svg.js": "^2.7.0",
