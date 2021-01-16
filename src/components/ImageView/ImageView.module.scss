@@ -40,3 +40,33 @@
     }
   }
 }
+
+.withGallery {
+  margin-bottom: 80px;
+}
+
+.gallery {
+  position: absolute;
+  bottom: -80px;
+  display: flex;
+  overflow-x: auto;
+  width: 100%;
+  padding-bottom: 8px; // for scroll
+
+  img {
+    cursor: pointer;
+    margin-right: 4px;
+    border: 4px solid transparent;
+    max-width: 120px;
+    height: 60px;
+    object-fit: cover;
+
+    &:hover {
+      border-color: #1890ff66;
+    }
+
+    &.active {
+      border-color: #1890ff;
+    }
+  }
+}

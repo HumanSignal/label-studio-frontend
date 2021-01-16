@@ -314,6 +314,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
+          className={item.images.length > 1 && styles.withGallery}
           style={{
             position: "relative",
             display: "flex",
@@ -373,8 +374,21 @@ export default observer(
               </Layer>
             </Stage>
           )}
-
           {this.renderTools()}
+          {item.images.length > 1 && (
+            <div className={styles.gallery}>
+              {item.images.map((src, i) => (
+                <img
+                  alt=""
+                  key={src}
+                  src={src}
+                  className={i === item.currentImage && styles.active}
+                  height="60"
+                  onClick={() => item.setCurrentImage(i)}
+                />
+              ))}
+            </div>
+          )}
         </ObjectTag>
       );
     }
