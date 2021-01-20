@@ -1,9 +1,10 @@
 import React from "react";
 import { Rect, Circle } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot } from "mobx-state-tree";
+import { types, getParent, hasParent } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
+import Types from "../core/Types";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -20,18 +21,24 @@ const PolygonPoint = types
 
     index: types.number,
 
-    selected: types.optional(types.boolean, false),
-
     style: "circle",
     size: "small",
   })
+  .volatile(self => ({
+    selected: false,
+  }))
   .views(self => ({
     get parent() {
+      if (!hasParent(self, 2)) return null;
       return getParent(self, 2);
     },
 
+    get stage() {
+      return self.parent?.parent;
+    },
+
     get completion() {
-      return getRoot(self).completionStore.selected;
+      return Types.getParentOfTypeString(self, "Completion");
     },
   }))
   .actions(self => ({
@@ -46,8 +53,8 @@ const PolygonPoint = types
         self.relativeX = self.x;
         self.relativeY = self.y;
       } else {
-        self.relativeX = (self.x / self.parent.parent.stageWidth) * 100;
-        self.relativeY = (self.y / self.parent.parent.stageHeight) * 100;
+        self.relativeX = (self.x / self.stage.stageWidth) * 100;
+        self.relativeY = (self.y / self.stage.stageHeight) * 100;
       }
     },
 
@@ -63,16 +70,16 @@ const PolygonPoint = types
       self.x = self.x + offsetX;
       self.y = self.y + offsetY;
 
-      self.relativeX = (self.x / self.parent.parent.stageWidth) * 100;
-      self.relativeY = (self.y / self.parent.parent.stageHeight) * 100;
+      self.relativeX = (self.x / self.stage.stageWidth) * 100;
+      self.relativeY = (self.y / self.stage.stageHeight) * 100;
     },
 
     _movePoint(x, y) {
       self.initX = x;
       self.initY = y;
 
-      self.relativeX = (x / self.parent.parent.stageWidth) * 100;
-      self.relativeY = (y / self.parent.parent.stageHeight) * 100;
+      self.relativeX = (x / self.stage.stageWidth) * 100;
+      self.relativeY = (y / self.stage.stageHeight) * 100;
 
       self.x = x;
       self.y = y;
@@ -82,8 +89,9 @@ const PolygonPoint = types
      * Close polygon
      * @param {*} ev
      */
-    closeStartPoint(ev) {
+    closeStartPoint() {
       if (!self.completion.editable) return;
+      if (self.parent.closed) return;
 
       if (self.parent.mouseOverStartPoint) {
         self.parent.closePoly();
@@ -93,8 +101,8 @@ const PolygonPoint = types
     handleMouseOverStartPoint(ev) {
       ev.cancelBubble = true;
 
-      const stage = self.parent.parent.stageRef;
-
+      const stage = self.stage?.stageRef;
+      if (!stage) return;
       stage.container().style.cursor = "crosshair";
 
       /**
@@ -118,8 +126,8 @@ const PolygonPoint = types
       const scale = scaleMap[self.size];
 
       startPoint.scale({
-        x: scale / self.parent.parent.zoomScale,
-        y: scale / self.parent.parent.zoomScale,
+        x: scale / self.stage.zoomScale,
+        y: scale / self.stage.zoomScale,
       });
 
       self.parent.setMouseOverStartPoint(true);
@@ -128,7 +136,8 @@ const PolygonPoint = types
     handleMouseOutStartPoint(ev) {
       const t = ev.target;
 
-      const stage = self.parent.parent.stageRef;
+      const stage = self.stage?.stageRef;
+      if (!stage) return;
       stage.container().style.cursor = "default";
 
       if (self.style === "rectangle") {
@@ -137,8 +146,8 @@ const PolygonPoint = types
       }
 
       t.scale({
-        x: 1 / self.parent.parent.zoomScale,
-        y: 1 / self.parent.parent.zoomScale,
+        x: 1 / self.stage.zoomScale,
+        y: 1 / self.stage.zoomScale,
       });
 
       self.parent.setMouseOverStartPoint(false);
@@ -146,6 +155,7 @@ const PolygonPoint = types
   }));
 
 const PolygonPointView = observer(({ item, name }) => {
+  if (!item.parent) return;
   const style = item.parent.style;
 
   const sizes = {
@@ -169,7 +179,6 @@ const PolygonPointView = observer(({ item, name }) => {
           fill: style.strokecolor || item.primary,
           onMouseOver: item.handleMouseOverStartPoint,
           onMouseOut: item.handleMouseOutStartPoint,
-          onClick: item.closeStartPoint,
         }
       : null;
 
@@ -179,8 +188,8 @@ const PolygonPointView = observer(({ item, name }) => {
 
       if (x < 0) x = 0;
       if (y < 0) y = 0;
-      if (x > item.parent.parent.stageWidth) x = item.parent.parent.stageWidth;
-      if (y > item.parent.parent.stageHeight) y = item.parent.parent.stageHeight;
+      if (x > item.stage.stageWidth) x = item.stage.stageWidth;
+      if (y > item.stage.stageHeight) y = item.stage.stageHeight;
 
       item._movePoint(x, y);
     },
@@ -196,12 +205,14 @@ const PolygonPointView = observer(({ item, name }) => {
 
     onMouseOver: e => {
       e.cancelBubble = true;
-      const stage = item.parent.parent.stageRef;
+      const stage = item.stage?.stageRef;
+      if (!stage) return;
       stage.container().style.cursor = "crosshair";
     },
 
     onMouseOut: e => {
-      const stage = item.parent.parent.stageRef;
+      const stage = item.stage?.stageRef;
+      if (!stage) return;
       stage.container().style.cursor = "default";
     },
   };
@@ -221,14 +232,18 @@ const PolygonPointView = observer(({ item, name }) => {
         strokeWidth={stroke[item.size]}
         dragOnTop={false}
         strokeScaleEnabled={false}
-        scaleX={1 / (item.parent.parent.zoomScale || 1)}
-        scaleY={1 / (item.parent.parent.zoomScale || 1)}
+        scaleX={1 / (item.stage.zoomScale || 1)}
+        scaleY={1 / (item.stage.zoomScale || 1)}
+        onDblClick={() => {
+          item.parent.deletePoint(item);
+        }}
         onClick={ev => {
+          // don't unselect polygon on point click
+          ev.evt.preventDefault();
+          ev.cancelBubble = true;
           if (item.parent.mouseOverStartPoint) {
-            item.parent.closePoly();
+            item.closeStartPoint();
           } else {
-            // ev.evt.preventDefault();
-            // ev.cancelBubble = true;
             item.parent.setSelectedPoint(item);
           }
         }}

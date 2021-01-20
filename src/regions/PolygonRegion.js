@@ -104,6 +104,15 @@ const Model = types
       self.insertPoint(insertIdx, point[0], point[1]);
     },
 
+    deletePoint(point) {
+      if (!self.points.includes(point)) return;
+      if (self.points.length <= 3) return;
+      if (self.selectedPoint === point) {
+        self.selectedPoint = null;
+      }
+      destroy(point);
+    },
+
     addPoint(x, y) {
       if (self.closed) return;
       self._addPoint(x, y);
