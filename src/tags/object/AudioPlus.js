@@ -12,6 +12,7 @@ import Waveform from "../../components/Waveform/Waveform";
 import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { PreviewGenerator } from "../../mixins/PreviewGenerator";
 
 /**
  * AudioPlus tag plays audio and shows its wave
@@ -226,7 +227,14 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const AudioPlusModel = types.compose(
+  "AudioPlusModel",
+  TagAttrs,
+  Model,
+  ProcessAttrsMixin,
+  ObjectBase,
+  PreviewGenerator,
+);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
