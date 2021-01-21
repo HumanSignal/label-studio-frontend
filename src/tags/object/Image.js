@@ -13,6 +13,7 @@ import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
 import { customTypes } from "../../core/CustomTypes";
+import { PreviewGenerator } from "../../mixins/PreviewGenerator";
 
 /**
  * Image tag shows an image on the page.
@@ -459,7 +460,7 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase, PreviewGenerator);
 
 const HtxImage = inject("store")(ImageView);
 

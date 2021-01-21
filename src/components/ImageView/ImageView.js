@@ -339,6 +339,7 @@ export default observer(
               onError={this.handleError}
               onClick={this.handleOnClick}
               alt="LS"
+              crossOrigin="anonymous"
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}

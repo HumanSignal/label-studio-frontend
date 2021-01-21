@@ -17,6 +17,7 @@ import { errorBuilder } from "../core/DataValidator/ConfigValidator";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
+import { generatePages } from "../utils/image_gen";
 
 const Completion = types
   .model("Completion", {
@@ -547,6 +548,19 @@ const Completion = types
         .map(r => r.serialize())
         .filter(Boolean)
         .concat(self.relationStore.serializeCompletion());
+    },
+
+    generatePreviews() {
+      const previews = self.objects.reduce((res, object) => {
+        if (object.generatePreview) {
+          res[object.value] = object.generatePreview();
+        }
+        return res;
+      }, {});
+
+      return generatePages(previews);
+
+      return previews;
     },
 
     // Some completions may be created with wrong assumptions
