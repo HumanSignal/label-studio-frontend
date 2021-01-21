@@ -88,6 +88,8 @@ export const PreviewGenerator = types.model("PreviewGenerator").views(self => ({
 
     let offset = 0;
     const context = canvas.getContext("2d");
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
     canvases.forEach(c => {
       const [width, height] = [c.width * zoom, c.height * zoom];
