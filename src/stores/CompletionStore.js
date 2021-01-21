@@ -550,17 +550,16 @@ const Completion = types
         .concat(self.relationStore.serializeCompletion());
     },
 
-    generatePreviews() {
-      const previews = self.objects.reduce((res, object) => {
+    async generatePreviews() {
+      const previews = {};
+
+      for (let object of self.objects) {
         if (object.generatePreview) {
-          res[object.value] = object.generatePreview();
+          previews[object.value] = await object.generatePreview();
         }
-        return res;
-      }, {});
+      }
 
       return generatePages(previews);
-
-      return previews;
     },
 
     // Some completions may be created with wrong assumptions

@@ -28,6 +28,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import PersistentStateMixin from "../../mixins/PersistentState";
 
 import "./TimeSeries/Channel";
+import { PreviewGenerator } from "../../mixins/PreviewGenerator";
 
 /**
  * TimeSeries tag can be used to label time series data.
@@ -710,7 +711,14 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model);
+const TimeSeriesModel = types.compose(
+  "TimeSeriesModel",
+  ObjectBase,
+  PersistentStateMixin,
+  TagAttrs,
+  Model,
+  PreviewGenerator,
+);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);

@@ -1,11 +1,11 @@
 export class ImageGen {
   constructor(options) {
     this.variants = options.variants ?? [];
-    this.layers = options.layers;
+    this.layers = options.layers ?? [];
     this.size = options.size;
     this.background = options.background;
 
-    console.assert(!!this.layers.length, "Background not provided.");
+    console.assert(!!this.background, "Background not provided.");
   }
 
   generate() {
@@ -30,7 +30,7 @@ export class ImageGen {
     const resultCanvas = this.createCanvas(width, height);
     const canvasContext = resultCanvas.getContext("2d");
 
-    this.bakeLayers(canvasContext, [this.background, ...this.layers]);
+    this.bakeLayers(canvasContext, [bottomLayer, ...this.layers]);
 
     return canvasContext;
   }
@@ -113,6 +113,8 @@ export class ImageGen {
 }
 
 export const generatePages = previews => {
+  console.log(previews);
+
   const previewsHTML = Object.entries(previews)
     .map(([key, value]) => {
       return `
@@ -180,5 +182,6 @@ export const generatePages = previews => {
 
   const blob = new Blob([pageHTML], { type: "text/html" });
   const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
   return url.toString();
 };
