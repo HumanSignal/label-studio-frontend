@@ -83,3 +83,5 @@ if (process.env.NODE_ENV === "production") {
 window.LabelStudio = LabelStudio;
 
 export default LabelStudio;
+
+export { LabelStudio };
