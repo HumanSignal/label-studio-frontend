@@ -6,7 +6,7 @@
 
 **Label Studio is an open-source, configurable data annotation tool. :v:**
 
-Frontend, as its name suggests, is the frontend library developed using React and mobx-state-tree, distributed as an NPM package. You can include it in your applications and provide data annotation support to your users. It can be granularly customized and extended. 
+Frontend, as its name suggests, is the frontend library developed using React and mobx-state-tree, distributed as an NPM package. You can include it in your applications and provide data annotation support to your users. It can be granularly customized and extended.
 
 <br/>
 
@@ -18,6 +18,15 @@ npm install label-studio
 
 ## Usage
 
+**With Webpack**
+
+```js
+import LabelStudio from 'label-studio';
+import 'label-studio/build/static/css/main.css';
+```
+
+**Width UNPKG.com**
+
 ```xhtml
 <!-- Include Label Studio stylesheet -->
 <link href="https://unpkg.com/label-studio@0.8.2/build/static/css/main.css" rel="stylesheet">
@@ -27,7 +36,11 @@ npm install label-studio
 
 <!-- Include the Label Studio library -->
 <script src="https://unpkg.com/label-studio@0.8.2/build/static/js/main.js"></script>
+```
 
+**Initialization**
+
+```xhtml
 <!-- Initialize Label Studio -->
 <script>
   var labelStudio = new LabelStudio('label-studio', {
@@ -36,7 +49,7 @@ npm install label-studio
         <Image name="img" value="$image"></Image>
         <RectangleLabels name="tag" toName="img">
           <Label value="Hello"></Label>
-          <Label value="World"></Label>  
+          <Label value="World"></Label>
         </RectangleLabels>
       </View>
     `,
@@ -66,7 +79,7 @@ npm install label-studio
         image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
       }
     },
-    
+
     onLabelStudioLoad: function(LS) {
       var c = LS.completionStore.addCompletion({
         userGenerate: true
@@ -74,7 +87,7 @@ npm install label-studio
       LS.completionStore.selectCompletion(c.id);
     }
   });
-</script>    
+</script>
 ```
 
 ## Development
@@ -95,7 +108,7 @@ npm install label-studio
    ```bash
    npm run start
    ```
-   
+
 4. Check different ways to initiate the development server config & task data in `src/env/development.js`, changing the `data` variable is a good place to start.
 
 5. After you make changes and ready to use it in production, you need to create a production build
@@ -113,9 +126,9 @@ Label Studio for Teams is our enterprise edition (cloud & on-prem), that include
 | Project | Description |
 |-|-|
 | [label-studio](https://github.com/heartexlabs/label-studio) | Server part, distributed as a pip package |
-| label-studio-frontend | Frontend part, written in JavaScript and React, can be embedded into your application | 
-| [label-studio-converter](https://github.com/heartexlabs/label-studio-converter) | Encode labels into the format of your favorite machine learning library | 
-| [label-studio-transformers](https://github.com/heartexlabs/label-studio-transformers) | Transformers library connected and configured for use with label studio | 
+| label-studio-frontend | Frontend part, written in JavaScript and React, can be embedded into your application |
+| [label-studio-converter](https://github.com/heartexlabs/label-studio-converter) | Encode labels into the format of your favorite machine learning library |
+| [label-studio-transformers](https://github.com/heartexlabs/label-studio-transformers) | Transformers library connected and configured for use with label studio |
 
 ## License
 
