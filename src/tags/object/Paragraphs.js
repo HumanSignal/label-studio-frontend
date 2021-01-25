@@ -435,6 +435,9 @@ class HtxParagraphsView extends Component {
     const root = this.myRef.current;
     const { item } = this.props;
 
+    // wait until text is loaded
+    if (!item._value) return;
+
     item.regs.forEach(function(r, i) {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on completions switching
