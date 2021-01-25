@@ -288,7 +288,7 @@ class TextPieceView extends Component {
         r2.setStart(r.startContainer, 0);
       }
 
-      if (idx > 0) {
+      if (idx >= 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
         r2.setStart(node, len);
       }
@@ -299,8 +299,13 @@ class TextPieceView extends Component {
     if (strright.length > 0) {
       const idxSpace = strright.indexOf(" ");
       const idxNewline = strright.indexOf("\n");
-      const idx = Math.max(idxSpace, idxNewline);
+      let idx = Math.min(idxSpace, idxNewline);
 
+      if (idx === -1) {
+        idx = idxSpace === -1 ? idxNewline : idxSpace;
+      }
+
+      // if no spaces and newlines — we are on the last word of the whole text
       if (idx === -1) {
         r2.setEnd(r.endContainer, r.endContainer.length);
       }
