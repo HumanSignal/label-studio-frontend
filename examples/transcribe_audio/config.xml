@@ -1,6 +1,12 @@
 <View>
-  <Header value="Listen the audio:"></Header>
+  <Header value="Audio transcription:"></Header>
   <Audio name="audio" value="$url"></Audio>
-  <Header value="Write the transcription:"></Header>
-  <TextArea name="answer"></TextArea>
+  <TextArea name="answer" transcription="true" rows="3" maxSubmissions="1"></TextArea>
+
+
+  <Style>
+  [dataneedsupdate]{display:flex;align-items:center}
+  [dataneedsupdate]>div:first-child{flex-grow:1;order:2}
+  [dataneedsupdate]>div:last-child{margin-top:0 !important;margin-right:1em}
+  </Style>
 </View>
