@@ -58,7 +58,7 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", onChange, onDelete, text, rows = 1, ...props } = this.props;
+    const { className = "", onChange, onDelete, text, rows = 1, onlyEdit, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
@@ -87,12 +87,16 @@ export class HtxTextBox extends React.Component {
       },
     };
 
+    this.updateHeight();
+
     return (
       <Paragraph {...props} className={className + " ant-typography-edit-content " + styles.editing}>
         {rows > 1 ? <textarea {...inputProps} /> : <input {...inputProps} />}
-        <Tooltip title="Save: [shift+enter]">
-          <EnterOutlined className={"ant-typography-edit-content-confirm " + styles.enter} onClick={this.save} />
-        </Tooltip>
+        {!onlyEdit && (
+          <Tooltip title="Save: [shift+enter]">
+            <EnterOutlined className={"ant-typography-edit-content-confirm " + styles.enter} onClick={this.save} />
+          </Tooltip>
+        )}
       </Paragraph>
     );
   }
@@ -112,6 +116,6 @@ export class HtxTextBox extends React.Component {
   }
 
   render() {
-    return this.state.editing ? this.renderEdit() : this.renderView();
+    return this.state.editing || this.props.onlyEdit ? this.renderEdit() : this.renderView();
   }
 }
