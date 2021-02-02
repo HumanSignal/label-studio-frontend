@@ -504,7 +504,7 @@ const Completion = types
       //   }
       // };
 
-      Hotkey.setScope("__main__");
+      Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
     createResult(areaValue, resultValue, control, object) {
