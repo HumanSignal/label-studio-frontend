@@ -467,7 +467,7 @@ const Completion = types
           else audioNode = node;
 
           node.hotkey = comb;
-          Hotkey.addKey(comb, node.onHotKey, "Play an audio");
+          Hotkey.addKey(comb, node.onHotKey, "Play an audio", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
 
           audiosNum++;
         }

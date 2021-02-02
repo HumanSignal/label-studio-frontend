@@ -12,6 +12,7 @@ import { Slider, Row, Col, Select } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
 import InfoModal from "../Infomodal/Infomodal";
 import messages from "../../utils/messages";
+import Hotkey from "../../core/Hotkey";
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
@@ -219,6 +220,14 @@ export default class Waveform extends React.Component {
     this.onZoomPlus(e, step);
   };
 
+  onBack = () => {
+    let time = this.wavesurfer.getCurrentTime();
+    if (!time) return false;
+    time--;
+    this.wavesurfer.setCurrentTime(time > 0 ? time : 0);
+    return false;
+  };
+
   componentDidMount() {
     this.$el = ReactDOM.findDOMNode(this);
 
@@ -368,6 +377,8 @@ export default class Waveform extends React.Component {
     if (this.props.regions) {
       this.props.onLoad(this.wavesurfer);
     }
+
+    Hotkey.addKey("ctrl+b", this.onBack, "Back for one second", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
   }
 
   render() {
