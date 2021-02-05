@@ -50,7 +50,7 @@ const Model = types
     type: "audio",
     _value: types.optional(types.string, ""),
     playing: types.optional(types.boolean, false),
-    height: types.optional(types.number, 20),
+    height: types.optional(types.string, "20"),
   })
   .views(self => ({
     get completion() {
