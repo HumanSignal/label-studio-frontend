@@ -59,6 +59,7 @@ import "./TimeSeries/Channel";
  * @param {string} [timeDisplayFormat] format used to display temporal value, can be a number or a date, if a temporal column is a date then use strftime to format it, otherwise, if it's a number then use [d3 number](https://github.com/d3/d3-format#locale_format) formatting
  * @param {string} [sep] separator for you CSV file, default is comma ","
  * @param {string} [overviewChannels] comma-separated list of channels names or indexes displayed in overview
+ * @param {boolean} [fixedScale=false] always scale y-axis to the maximum to fit all the values; if false current view scales to fit only displayed values
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -70,6 +71,8 @@ const TagAttrs = types.model({
   timeformat: "",
   timedisplayformat: "",
   overviewchannels: "", // comma-separated list of channels to show
+
+  fixedscale: false,
 
   multiaxis: types.optional(types.boolean, false), // show channels in the same view
   // visibilitycontrols: types.optional(types.boolean, false), // show channel visibility controls
