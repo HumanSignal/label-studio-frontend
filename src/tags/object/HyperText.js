@@ -23,6 +23,8 @@ import { customTypes } from "../../core/CustomTypes";
  * @name HyperText
  * @param {string} name - name of the element
  * @param {string} value - value of the element
+ * @param {url|text} [valueType]       - where is the text stored — directly in task or should be loaded by url
+ * @param {yes|no} [saveTextResult]    - store labeled text along with result or not; by default doesn't store text for `valueType=url`
  * @param {boolean} [showLabels=false] - show labels next to the region
  * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
  * @param {boolean} [clickableLinks=false] - allow to open resources from links

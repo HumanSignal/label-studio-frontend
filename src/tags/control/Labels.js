@@ -2,7 +2,6 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
-import RequiredMixin from "../../mixins/Required";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
@@ -28,8 +27,6 @@ import ControlBase from "./Base";
  * @param {string} toName                    - name of the element that you want to label
  * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
  * @param {number} [maxUsages]               - maximum available usages
- * @param {boolean} [required=false]         - validation if label is required
- * @param {string} [requiredMessage]         - message to show if validation fails
  * @param {boolean} [showInline=true]        - show items in the same visual line
  */
 const TagAttrs = types.model({
@@ -83,7 +80,6 @@ const LabelsModel = types.compose(
   ModelAttrs,
   TagAttrs,
   Model,
-  RequiredMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );
