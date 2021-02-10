@@ -1,3 +1,6 @@
+const webpack = require("webpack");
+const info = require("./package.json");
+
 module.exports = function override(config, env) {
   if (process.env.BUILD_NO_MINIMIZATION) {
     config.optimization.minimizer = undefined;
@@ -37,6 +40,12 @@ module.exports = function override(config, env) {
     config.output.libraryExport = "default";
     config.output.libraryTarget = "umd";
   }
+
+  config.plugins = (config.plugins || []).concat([
+    new webpack.DefinePlugin({
+      LSF_VERSION: JSON.stringify(info.version),
+    }),
+  ]);
 
   return config;
 };
