@@ -9,7 +9,8 @@ const config = `
 `;
 
 const data = {
-  image: "https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg",
+  image:
+    "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
 };
 
 const result = [
@@ -18,8 +19,8 @@ const result = [
     from_name: "tag",
     to_name: "img",
     image_rotation: 0,
-    original_height: 501,
-    original_width: 800,
+    original_height: 2802,
+    original_width: 2242,
     type: "keypointlabels",
     value: {
       x: 49.6,
@@ -33,8 +34,8 @@ const result = [
     from_name: "tag",
     to_name: "img",
     image_rotation: 0,
-    original_height: 501,
-    original_width: 800,
+    original_height: 2802,
+    original_width: 2242,
     type: "keypointlabels",
     value: {
       x: 47.73333333333334,
