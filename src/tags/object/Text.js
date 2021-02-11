@@ -27,7 +27,9 @@ import messages from "../../utils/messages";
  * </View>
  * @name Text
  * @param {string} name                      - name of the element
- * @param {string} value                     - value of the element
+ * @param {string} value                     - data field with text or url
+ * @param {url|text} [valueType]             - where is the text stored — directly in task or should be loaded by url
+ * @param {yes|no} [saveTextResult]          - store labeled text along with result or not; by default doesn't store text for `valueType=url`
  * @param {boolean} [selectionEnabled=true]  - enable or disable selection
  * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
  * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
@@ -288,7 +290,7 @@ class TextPieceView extends Component {
         r2.setStart(r.startContainer, 0);
       }
 
-      if (idx > 0) {
+      if (idx >= 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
         r2.setStart(node, len);
       }
@@ -299,8 +301,13 @@ class TextPieceView extends Component {
     if (strright.length > 0) {
       const idxSpace = strright.indexOf(" ");
       const idxNewline = strright.indexOf("\n");
-      const idx = Math.max(idxSpace, idxNewline);
+      let idx = Math.min(idxSpace, idxNewline);
 
+      if (idx === -1) {
+        idx = idxSpace === -1 ? idxNewline : idxSpace;
+      }
+
+      // if no spaces and newlines — we are on the last word of the whole text
       if (idx === -1) {
         r2.setEnd(r.endContainer, r.endContainer.length);
       }

@@ -32,6 +32,7 @@ module.exports = function override(config, env) {
   }
 
   if (process.env.BUILD_MODULE) {
+    config.target = "web";
     config.output.library = "LabelStudio";
     config.output.libraryExport = "default";
     config.output.libraryTarget = "umd";
