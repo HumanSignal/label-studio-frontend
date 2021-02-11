@@ -365,6 +365,14 @@ export default types
       /* eslint-enable no-unused-expressions */
     }
 
+    /**
+     * Generates previews for every object of a
+     * current completion
+     */
+    function generatePreviews() {
+      return self.completionStore.generatePreviews();
+    }
+
     return {
       setFlags,
       addInterface,
@@ -384,5 +392,7 @@ export default types
       showModal,
       toggleSettings,
       toggleDescription,
+
+      generatePreviews,
     };
   });

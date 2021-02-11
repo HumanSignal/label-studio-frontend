@@ -559,7 +559,7 @@ const Completion = types
         }
       }
 
-      return generatePages(previews);
+      return previews;
     },
 
     // Some completions may be created with wrong assumptions
