@@ -27,6 +27,7 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  * @param {number} [height] height of the plot
  * @param {string=} [strokeColor=#f48a42] plot stroke color, expects hex value
  * @param {number=} [strokeWidth=1] plot stroke width
+ * @param {boolean} [fixedScale] if false current view scales to fit only displayed values; if given overwrites TimeSeries' fixedScale
  */
 
 const csMap = {
@@ -58,6 +59,8 @@ const TagAttrs = types.model({
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(types.string, "#1f77b4"),
+
+  fixedscale: types.maybe(types.boolean),
 
   column: types.string,
 });
@@ -395,14 +398,17 @@ class ChannelD3 extends React.Component {
   };
 
   renderYAxis = () => {
-    this.main
-      .append("g")
-      .call(
-        d3
-          .axisLeft(this.y)
-          .tickFormat(this.formatValue)
-          .tickSize(3),
-      )
+    // @todo usual .data([0]) trick doesn't work for some reason :(
+    let g = this.main.select(".yaxis");
+    if (!g.size()) {
+      g = this.main.append("g").attr("class", "yaxis");
+    }
+    g.call(
+      d3
+        .axisLeft(this.y)
+        .tickFormat(this.formatValue)
+        .tickSize(3),
+    )
       .call(g => g.select(".domain").remove())
       .call(g =>
         g
@@ -496,7 +502,7 @@ class ChannelD3 extends React.Component {
 
     const y = d3
       .scaleLinear()
-      .domain([d3.min(values), d3.max(values)])
+      .domain(d3.extent(values))
       .range([height - margin.max, margin.min]);
 
     const stick = screenX => {
@@ -609,6 +615,37 @@ class ChannelD3 extends React.Component {
       use: this.useOptimizedData,
     });
 
+    let translateY = 0;
+    let scaleY = 1;
+    const originY = this.y.range()[0];
+    const { item } = this.props;
+    // overwrite parent's
+    const fixedscale = item.fixedscale === undefined ? item.parent.fixedscale : item.fixedscale;
+
+    if (!fixedscale) {
+      // array slice may slow it down, so just find a min-max by ourselves
+      const { data, time, column } = this.props;
+      const values = data[column];
+      // indices of the first and last displayed values
+      let i = d3.bisectRight(data[time], range[0]);
+      let j = d3.bisectRight(data[time], range[1]);
+      // find min-max
+      let min = values[i];
+      let max = values[i];
+      for (; i < j; i++) {
+        if (min > values[i]) min = values[i];
+        if (max < values[i]) max = values[i];
+      }
+      // calc scale and shift
+      const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
+      const heightY = this.y.range().reduce((a, b) => a - b); // min - max because y range is inverted
+
+      scaleY = diffY / (max - min);
+      translateY = (min / diffY) * heightY;
+
+      this.y.domain([min, max]);
+    }
+
     // zoomStep - zoom level when we need to switch between optimized and original data
     const strongZoom = scale > this.zoomStep;
     const haveToSwitchData = strongZoom === this.useOptimizedData;
@@ -623,7 +660,8 @@ class ChannelD3 extends React.Component {
     }
 
     if (this.useOptimizedData) {
-      this.path.attr("transform", `translate(${translate} 0) scale(${scale} 1)`);
+      this.path.attr("transform", `translate(${translate} ${translateY}) scale(${scale} ${scaleY})`);
+      this.path.attr("transform-origin", `left ${originY}`);
       this.path2.attr("d", "");
     } else {
       if (this.optimizedSeries) {
@@ -642,6 +680,7 @@ class ChannelD3 extends React.Component {
     }
 
     this.renderXAxis();
+    this.renderYAxis();
   }
 
   componentDidUpdate(prevProps, prevState) {
