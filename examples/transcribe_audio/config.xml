@@ -1,7 +1,7 @@
 <View>
   <Header value="Audio transcription:"></Header>
   <Audio name="audio" value="$url" height="46"></Audio>
-  <TextArea name="answer" transcription="true" rows="3" maxSubmissions="1"></TextArea>
+  <TextArea name="answer" toName="audio" transcription="true" rows="3" maxSubmissions="1"></TextArea>
 
 
   <Style>
