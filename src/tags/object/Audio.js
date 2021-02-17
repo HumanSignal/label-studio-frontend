@@ -50,7 +50,7 @@ const Model = types
     type: "audio",
     _value: types.optional(types.string, ""),
     playing: types.optional(types.boolean, false),
-    height: types.optional(types.number, 20),
+    height: types.optional(types.string, "20"),
   })
   .views(self => ({
     get completion() {
@@ -73,7 +73,8 @@ const Model = types
     },
 
     onHotKey() {
-      return self._ws.playPause();
+      self._ws.playPause();
+      return false;
     },
 
     onLoad(ws) {

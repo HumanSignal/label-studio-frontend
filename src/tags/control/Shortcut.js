@@ -7,6 +7,7 @@ import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
+import Hotkey from "../../core/Hotkey";
 
 /**
  * Shortcut tag can be used to define a shortcut, which adds a predefined object
@@ -33,20 +34,21 @@ const Model = types
     type: "shortcut",
     _value: types.optional(types.string, ""),
   })
-  .views(self => ({
-    get hotkeyScope() {
-      const p = getParent(getParent(self));
-      return p.name;
-    },
+  .volatile(() => ({
+    hotkeyScope: Hotkey.INPUT_SCOPE,
   }))
   .actions(self => ({
     onClick() {
-      const p = getParent(getParent(self));
+      const textarea = getParent(self, 2);
 
-      if (p.onShortcut) p.onShortcut(self.value);
+      if (textarea.onShortcut) textarea.onShortcut(self.value);
     },
 
-    onHotKey() {
+    onHotKey(event) {
+      const textarea = getParent(self, 2);
+      const name = (event.target || event.srcElement).name;
+      // fired on a wrong element
+      if (textarea.name !== name) return;
       return self.onClick();
     },
   }));

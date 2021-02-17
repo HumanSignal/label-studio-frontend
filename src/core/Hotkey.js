@@ -3,13 +3,15 @@ import keymaster from "keymaster";
 let _hotkeys_map = {};
 let _hotkeys_desc = {};
 
+const DEFAULT_SCOPE = "__main__";
+const INPUT_SCOPE = "__input__";
+
 keymaster.filter = function(event) {
   if (keymaster.getScope() === "__none__") return;
 
   const tag = (event.target || event.srcElement).tagName;
-  const name = (event.target || event.srcElement).name;
 
-  keymaster.setScope(/^(INPUT|TEXTAREA|SELECT)$/.test(tag) ? name : "__main__");
+  keymaster.setScope(/^(INPUT|TEXTAREA|SELECT)$/.test(tag) ? INPUT_SCOPE : DEFAULT_SCOPE);
 
   return true;
 };
@@ -19,13 +21,19 @@ keymaster.filter = function(event) {
  * @param {*} key
  * @param {*} func
  */
-function addKey(key, func, desc, scope = "__main__") {
+function addKey(key, func, desc, scope = DEFAULT_SCOPE) {
   if (_hotkeys_map[key]) return;
 
   _hotkeys_map[key] = func;
   _hotkeys_desc[key] = desc;
 
-  keymaster(key, scope, func);
+  scope
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean)
+    .forEach(scope => {
+      keymaster(key, scope, func);
+    });
 }
 
 /**
@@ -38,8 +46,14 @@ function keysDescipritions() {
   return _hotkeys_desc;
 }
 
-function removeKey(key, scope = "__main__") {
-  keymaster.unbind(key, scope);
+function removeKey(key, scope = DEFAULT_SCOPE) {
+  scope
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean)
+    .forEach(scope => {
+      keymaster.unbind(key, scope);
+    });
 
   delete _hotkeys_map[key];
   delete _hotkeys_desc[key];
@@ -85,4 +99,14 @@ function makeComb() {
   return null;
 }
 
-export default { removeKey, addKey, unbindAll, makeComb, setScope, getKeys, keysDescipritions };
+export default {
+  DEFAULT_SCOPE,
+  INPUT_SCOPE,
+  removeKey,
+  addKey,
+  unbindAll,
+  makeComb,
+  setScope,
+  getKeys,
+  keysDescipritions,
+};

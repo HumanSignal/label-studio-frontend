@@ -30,6 +30,7 @@ const { TextArea } = Input;
  * @param {string=} [placeholder] placeholder text
  * @param {string=} [maxSubmissions] maximum number of submissions
  * @param {boolean=} [editable=false] editable textarea results
+ * @param {boolean=} [transcription=false] always show editor
  * @param {number} [rows] number of rows in the textarea
  * @param {boolean} [required=false]   - validation if textarea is required
  * @param {string} [requiredMessage]   - message to show if validation fails
@@ -47,6 +48,7 @@ const TagAttrs = types.model({
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
+  transcription: false,
 });
 
 const Model = types
