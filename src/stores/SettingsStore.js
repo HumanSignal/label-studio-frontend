@@ -139,7 +139,7 @@ const SettingsModel = types
     toggleHotkeys() {
       self.enableHotkeys = !self.enableHotkeys;
       if (self.enableHotkeys) {
-        Hotkey.setScope("__main__");
+        Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
       } else {
         Hotkey.setScope("__none__");
       }

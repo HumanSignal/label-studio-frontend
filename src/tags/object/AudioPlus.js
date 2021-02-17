@@ -78,7 +78,8 @@ const Model = types
   .actions(self => ({
     onHotKey(e) {
       e && e.preventDefault();
-      return self._ws.playPause();
+      self._ws.playPause();
+      return false;
     },
 
     fromStateJSON(obj, fromModel) {

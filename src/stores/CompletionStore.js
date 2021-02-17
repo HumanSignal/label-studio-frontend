@@ -467,7 +467,7 @@ const Completion = types
           else audioNode = node;
 
           node.hotkey = comb;
-          Hotkey.addKey(comb, node.onHotKey, "Play an audio");
+          Hotkey.addKey(comb, node.onHotKey, "Play an audio", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
 
           audiosNum++;
         }
@@ -504,7 +504,7 @@ const Completion = types
       //   }
       // };
 
-      Hotkey.setScope("__main__");
+      Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
     createResult(areaValue, resultValue, control, object) {
