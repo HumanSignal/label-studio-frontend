@@ -1,3 +1,5 @@
+/* global LSF_VERSION */
+
 import { types, getEnv } from "mobx-state-tree";
 
 import CompletionStore from "./CompletionStore";
@@ -94,6 +96,9 @@ export default types
      */
     labeledSuccess: types.optional(types.boolean, false),
   })
+  .volatile(self => ({
+    version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
+  }))
   .views(self => ({
     /**
      * Get alert
