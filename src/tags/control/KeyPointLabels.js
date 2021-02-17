@@ -24,6 +24,9 @@ import ControlBase from "./Base";
  * @name KeyPointLabels
  * @param {string} name                  - name of the element
  * @param {string} toName                - name of the image to label
+ * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
+ * @param {number} [maxUsages]               - maximum available usages
+ * @param {boolean} [showInline=true]        - show items in the same visual line
  * @param {float=} [opacity=0.9]         - opacity of keypoint
  * @param {string=} [fillColor]          - keypoint fill color, default is transparent
  * @param {number=} [strokeWidth=1]      - width of the stroke

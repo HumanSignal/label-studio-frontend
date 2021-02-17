@@ -28,6 +28,9 @@ import ControlBase from "./Base";
  * @name TimeSeriesLabels
  * @param {string} name name of the element
  * @param {string} toname name of the timeseries to label
+ * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
+ * @param {number} [maxUsages]               - maximum available usages
+ * @param {boolean} [showInline=true]        - show items in the same visual line
  * @param {float=} [opacity=0.9] opacity of range
  * @param {string=} fillColor range fill color, default is transparent
  * @param {number=} [strokeWidth=1] width of the stroke

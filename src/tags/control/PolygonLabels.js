@@ -23,6 +23,9 @@ import ControlBase from "./Base";
  * @name PolygonLabels
  * @param {string} name                             - name of tag
  * @param {string} toName                           - name of image to label
+ * @param {single|multiple=} [choice=single]        - configure if you can select just one or multiple labels
+ * @param {number} [maxUsages]                      - maximum available usages
+ * @param {boolean} [showInline=true]               - show items in the same visual line
  * @param {number} [opacity=0.6]                    - opacity of polygon
  * @param {string} [fillColor]                      - rectangle fill color, default is transparent
  * @param {string} [strokeColor]                    - stroke color
