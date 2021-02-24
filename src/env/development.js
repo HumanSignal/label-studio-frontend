@@ -99,6 +99,18 @@ function rootElement(element) {
 }
 
 /**
+ * Builds callbacks for custom controls
+ */
+function getControlCallbacks(params) {
+  return (params.controls || []).reduce((callbacks, c) => {
+    return {
+      ...callbacks,
+      [c.emits]: params[c.emits] || External.onControlCalled,
+    };
+  }, {});
+}
+
+/**
  * Function to configure application with callbacks
  * @param {object} params
  */
@@ -117,6 +129,7 @@ function configureApplication(params) {
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
     onSelectCompletion: params.onSelectCompletion || External.onSelectCompletion,
+    ...getControlCallbacks(params),
   };
 
   return options;

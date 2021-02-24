@@ -48,6 +48,11 @@ function onGroundTruth() {}
  */
 function onSelectCompletion(completion, previousCompletion) {}
 
+/**
+ * Callback when an empty action callback is called
+ */
+function onControlCalled(labelStudio, completion) {}
+
 export default {
   onDeleteCompletion,
   onEntityCreate,
@@ -59,4 +64,5 @@ export default {
   onTaskLoad,
   onUpdateCompletion,
   onSelectCompletion,
+  onControlCalled,
 };

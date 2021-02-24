@@ -5,6 +5,7 @@ import { types, getEnv } from "mobx-state-tree";
 import CompletionStore from "./CompletionStore";
 import Hotkey from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
+import Control from "./ControlStore";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
@@ -31,6 +32,11 @@ export default types
      * Configure the visual UI shown to the user
      */
     interfaces: types.array(types.string),
+
+    /**
+     * Configure handlers for custom actions
+     */
+    controls: types.optional(types.array(Control), []),
 
     /**
      * Flag for labeling of tasks
@@ -255,6 +261,15 @@ export default types
         "Circle through entities",
       );
 
+      /**
+       * Hotkeys for custom controls
+       */
+      self.controls
+        .filter(c => c.hotkey && c.display)
+        .forEach(c => {
+          Hotkey.addKey(c.hotkey, self.getControlHandler(c), c.description);
+        });
+
       getEnv(self).onLabelStudioLoad(self);
     }
 
@@ -335,6 +350,16 @@ export default types
       handleSubmittingFlag(() => getEnv(self).onSkipTask(self), "Error during skip, try again");
     }
 
+    function getControlHandler(control) {
+      const completion = self.completionStore.selected;
+      const handler = () => getEnv(self)[control.emits](self, completion);
+
+      if (control.async) {
+        return () => handleSubmittingFlag(handler, `Error while trying to ${control.name}!`);
+      }
+      return handler;
+    }
+
     /**
      * Reset completion store
      */
@@ -385,6 +410,7 @@ export default types
       submitDraft,
       submitCompletion,
       updateCompletion,
+      getControlHandler,
 
       showModal,
       toggleSettings,
