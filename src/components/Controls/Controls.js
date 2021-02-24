@@ -11,87 +11,95 @@ const TOOLTIP_DELAY = 0.8;
 
 export default inject("store")(
   observer(({ item, store }) => {
-    /**
-     * Buttons of Controls
-     */
-    let buttons = {
-      skip: "",
-      update: "",
-      submit: "",
-    };
-
     const { userGenerate, sentUserGenerate, versions } = item;
     const { enableHotkeys, enableTooltips } = store.settings;
+
+    let draftMenu;
+    let taskInformation;
+
+    /**
+     * UI Controls
+     */
+    let controls = store.controls
+      .concat([
+        {
+          name: "Submit",
+          description: "Save results",
+          hotkey: "ctrl+enter",
+          priority: 10,
+          display:
+            (userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit")),
+          type: "primary",
+          icon: <CheckOutlined />,
+          handler: store.submitCompletion,
+          classes: styles.submit + " ls-submit-btn",
+        },
+        {
+          name: "Skip",
+          description: "Cancel (skip) task",
+          hotkey: "ctrl+space",
+          priority: 20,
+          display: store.hasInterface("skip"),
+          type: "ghost",
+          handler: store.skipTask,
+          classes: styles.skip + " ls-skip-btn",
+        },
+        {
+          name: sentUserGenerate || versions.result ? "Update" : "Submit",
+          description: "Update this task",
+          hotkey: "alt+enter",
+          priority: 30,
+          display: (userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update")),
+          type: "primary",
+          icon: <CheckCircleOutlined />,
+          handler: store.updateCompletion,
+          classes: "ls-update-btn",
+        },
+      ])
+      .filter(c => c.display);
 
     /**
      * Task information
      */
-    let taskInformation;
     if (store.task) {
       taskInformation = <h4 className={styles.task + " ls-task-info"}>Task ID: {store.task.id}</h4>;
     }
 
     /**
-     * Hotkeys
+     * Add tooltips
      */
-    if (enableHotkeys && enableTooltips) {
-      buttons.submit = <Hint> [ Ctrl+Enter ]</Hint>;
-      buttons.skip = <Hint> [ Ctrl+Space ]</Hint>;
-      buttons.update = <Hint> [ Alt+Enter] </Hint>;
-    }
+    controls.forEach(control => {
+      const hotkey = control.hotkey
+        .split("+")
+        .map(key => key.charAt(0).toUpperCase() + key.slice(1))
+        .join(" + ");
 
-    let skipButton;
-    let updateButton;
-    let submitButton;
-    let draftMenu;
+      control.hint = `[${hotkey}]`;
+      control.title = `${control.description}: ${control.hint}`;
+    });
 
     /**
      * Check for Predict Menu
      */
     if (!store.completionStore.predictSelect || store.explore) {
       const disabled = store.isSubmitting;
+      const hints = enableHotkeys && enableTooltips;
 
-      if (store.hasInterface("skip")) {
-        skipButton = (
-          <Tooltip title="Cancel (skip) task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
-            <Button disabled={disabled} type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
-              Skip {buttons.skip}
-            </Button>
-          </Tooltip>
-        );
-      }
-
-      if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
-        submitButton = (
-          <Tooltip title="Save results: [ Ctrl+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
+      controls = controls
+        .sort((a, b) => a.priority - b.priority)
+        .map(control => (
+          <Tooltip key={control.name} title={control.title} mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               disabled={disabled}
-              type="primary"
-              icon={<CheckOutlined />}
-              onClick={store.submitCompletion}
-              className={styles.submit + " ls-submit-btn"}
+              type={control.type}
+              icon={control.icon}
+              onClick={control.handler || store.getControlHandler(control)}
+              className={control.classes}
             >
-              Submit {buttons.submit}
+              {control.name} {hints ? <Hint>{control.hint}</Hint> : ""}
             </Button>
           </Tooltip>
-        );
-      }
-
-      if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
-        updateButton = (
-          <Tooltip title="Update this task: [ Alt+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
-            <Button
-              disabled={disabled}
-              type="primary"
-              icon={<CheckCircleOutlined />}
-              onClick={store.updateCompletion}
-              className="ls-update-btn"
-            >
-              {sentUserGenerate || versions.result ? "Update" : "Submit"} {buttons.update}
-            </Button>
-          </Tooltip>
-        );
-      }
+        ));
 
       if (!store.hasInterface("completions:menu")) {
         draftMenu = <DraftPanel item={item} />;
@@ -102,9 +110,7 @@ export default inject("store")(
       <div className={styles.block}>
         <div className={styles.wrapper}>
           <div className={styles.container}>
-            {skipButton}
-            {updateButton}
-            {submitButton}
+            {controls}
             {draftMenu}
           </div>
           {taskInformation}
