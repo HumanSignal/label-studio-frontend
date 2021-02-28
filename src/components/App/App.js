@@ -14,11 +14,11 @@ import Tree from "../../core/Tree";
 /**
  * Components
  */
+import Completion from "../Completion/Completion";
 import Completions from "../Completions/Completions";
 import Controls from "../Controls/Controls";
 import Debug from "../Debug";
 import Panel from "../Panel/Panel";
-import Predictions from "../Predictions/Predictions";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
 import SideColumn from "../SideColumn/SideColumn";
@@ -143,8 +143,6 @@ class App extends Component {
         <Settings store={store} />
         <Provider store={store}>
           <div>
-            {store.hasInterface("panel") && <Panel store={store} />}
-
             {store.showingDescription && (
               <Segment>
                 <div dangerouslySetInnerHTML={{ __html: store.description }} />
@@ -156,22 +154,9 @@ class App extends Component {
             {/*   <div className={styles.pinsright}><PushpinOutlined /></div> */}
             {/* </div> */}
 
-            <div className={stCommon + " ls-common"}>
-              {cs.validation === null
-                ? this._renderUI(root, store, cs, settings)
-                : this.renderConfigValidationException()}
-              <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("completions:menu") && store.settings.showCompletionsPanel && (
-                  <Completions store={store} />
-                )}
-                {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
-                  <Predictions store={store} />
-                )}
-                {store.hasInterface("side-column") && !cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-                  <SideColumn store={store} />
-                )}
-              </div>
-            </div>
+            {(store.hasInterface("completions:menu") && store.settings.showCompletionsPanel && (
+              <Completions store={store} />
+            )) || <Completion store={store} />}
           </div>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}

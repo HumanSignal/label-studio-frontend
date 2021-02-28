@@ -27,9 +27,9 @@ export default inject("store")(
      * Task information
      */
     let taskInformation;
-    if (store.task) {
-      taskInformation = <h4 className={styles.task + " ls-task-info"}>Task ID: {store.task.id}</h4>;
-    }
+    // if (store.task) {
+    //   taskInformation = <h4 className={styles.task + " ls-task-info"}>Task ID: {store.task.id}</h4>;
+    // }
 
     /**
      * Hotkeys
