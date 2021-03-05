@@ -240,9 +240,9 @@ export default observer(
 
     renderTools() {
       const { item, store } = this.props;
-      const cs = store.completionStore;
+      const cs = store.annotationStore;
 
-      if (cs.viewingAllCompletions || cs.viewingAllPredictions) return null;
+      if (cs.viewingAllAnnotations || cs.viewingAllPredictions) return null;
 
       return (
         <div className={styles.block}>

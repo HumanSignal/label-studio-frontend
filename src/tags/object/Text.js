@@ -72,16 +72,16 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -140,10 +140,10 @@ const Model = types
 
       self._value = val;
 
-      self._regionsCache.forEach(({ region, completion }) => {
+      self._regionsCache.forEach(({ region, annotation }) => {
         region.setText(self._value.substring(region.startOffset, region.endOffset));
         self.regions.push(region);
-        completion.addRegion(region);
+        annotation.addRegion(region);
       });
 
       self._regionsCache = [];
@@ -167,12 +167,12 @@ const Model = types
       r._range = p._range;
 
       if (self.valuetype === "url" && self.loaded === false) {
-        self._regionsCache.push({ region: r, completion: self.completion });
+        self._regionsCache.push({ region: r, annotation: self.annotation });
         return;
       }
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
@@ -186,7 +186,7 @@ const Model = types
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.completion.createResult(range, labels, control, self);
+      const area = self.annotation.createResult(range, labels, control, self);
       area._range = range._range;
       return area;
     },
@@ -200,7 +200,7 @@ const Model = types
       let r;
       let m;
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -436,7 +436,7 @@ class TextPieceView extends Component {
 
     item.regs.forEach(function(r) {
       // spans can be totally missed if this is app init or undo/redo
-      // or they can be disconnected from DOM on completions switching
+      // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
       if (r._spans?.[0]?.isConnected) return;
 

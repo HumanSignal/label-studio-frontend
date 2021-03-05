@@ -44,12 +44,12 @@ const Model = types
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get toTag() {
-      return self.completion.names.get(self.toname);
+      return self.annotation.names.get(self.toname);
     },
   }))
   .actions(self => ({

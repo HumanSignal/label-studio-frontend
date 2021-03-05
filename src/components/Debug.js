@@ -8,13 +8,13 @@ class DebugComponent extends Component {
     res: null,
     config: this.props.store.config,
     data: this.props.store.task.data,
-    completions: "",
+    annotations: "",
   };
 
   render() {
     const self = this;
     const { store } = this.props;
-    const completion = store.completionStore.selected;
+    const annotation = store.annotationStore.selected;
 
     return (
       <div>
@@ -23,7 +23,7 @@ class DebugComponent extends Component {
         <div>
           <Button
             onClick={ev => {
-              this.setState({ res: JSON.stringify(store.completionStore.selected.toJSON()) });
+              this.setState({ res: JSON.stringify(store.annotationStore.selected.toJSON()) });
             }}
           >
             Serialize whole tree
@@ -31,7 +31,7 @@ class DebugComponent extends Component {
 
           <Button
             onClick={ev => {
-              this.setState({ res: JSON.stringify(store.completionStore.selected.serializeCompletion()) });
+              this.setState({ res: JSON.stringify(store.annotationStore.selected.serializeAnnotation()) });
             }}
           >
             Seriealize results tree
@@ -39,7 +39,7 @@ class DebugComponent extends Component {
 
           <Button
             onClick={ev => {
-              if (self.state.res) completion.deserializeCompletion(JSON.parse(self.state.res));
+              if (self.state.res) annotation.deserializeAnnotation(JSON.parse(self.state.res));
             }}
           >
             Load Serialized Results
@@ -47,14 +47,14 @@ class DebugComponent extends Component {
 
           <Button
             onClick={ev => {
-              const c = store.completionStore.addInitialCompletion();
-              store.completionStore.selectCompletion(c.id);
+              const c = store.annotationStore.addInitialAnnotation();
+              store.annotationStore.selectAnnotation(c.id);
 
-              if (self.state.res) c.deserializeCompletion(JSON.parse(self.state.res));
+              if (self.state.res) c.deserializeAnnotation(JSON.parse(self.state.res));
               // this.setState.res;
             }}
           >
-            Load As New Completion
+            Load As New Annotation
           </Button>
 
           <Button
@@ -77,11 +77,11 @@ class DebugComponent extends Component {
 
               store.resetState();
               store.addTask(task);
-              store.addGeneratedCompletion(task);
+              store.addGeneratedAnnotation(task);
               store.markLoading(false);
 
-              if (store.completionStore.selected)
-                store.completionStore.selected.traverseTree(node => node.updateValue && node.updateValue(self));
+              if (store.annotationStore.selected)
+                store.annotationStore.selected.traverseTree(node => node.updateValue && node.updateValue(self));
             }}
           >
             Simulate Loading Task
@@ -111,13 +111,13 @@ class DebugComponent extends Component {
                   this.setState({ data: ev.target.value });
                 }}
               />
-              <p>Completions</p>
+              <p>Annotations</p>
               <Input.TextArea
                 rows={10}
-                value={this.state.completions}
+                value={this.state.annotations}
                 className="is-search"
                 onChange={ev => {
-                  this.setState({ completions: ev.target.value });
+                  this.setState({ annotations: ev.target.value });
                 }}
               />
             </div>
@@ -126,15 +126,15 @@ class DebugComponent extends Component {
             style={{ width: "100%" }}
             onClick={ev => {
               const { config } = this.state;
-              const completions = JSON.parse(this.state.completions || `[{ "result": [] }]`);
+              const annotations = JSON.parse(this.state.annotations || `[{ "result": [] }]`);
               const data = JSON.parse(this.state.data);
 
               store.resetState();
               store.assignConfig(config);
               store.assignTask({ data });
-              store.initializeStore({ completions, predictions: [] });
-              const cs = store.completionStore;
-              if (cs.completions.length) cs.selectCompletion(cs.completions[0].id);
+              store.initializeStore({ annotations, predictions: [] });
+              const cs = store.annotationStore;
+              if (cs.annotations.length) cs.selectAnnotation(cs.annotations[0].id);
             }}
           >
             Apply

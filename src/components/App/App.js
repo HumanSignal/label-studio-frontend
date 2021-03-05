@@ -14,7 +14,7 @@ import Tree from "../../core/Tree";
 /**
  * Components
  */
-import Completions from "../Completions/Completions";
+import Annotations from "../Annotations/Annotations";
 import Controls from "../Controls/Controls";
 import Debug from "../Debug";
 import Panel from "../Panel/Panel";
@@ -47,7 +47,7 @@ class App extends Component {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }
 
-  renderNoCompletion() {
+  renderNoAnnotation() {
     return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
   }
 
@@ -62,7 +62,7 @@ class App extends Component {
   renderConfigValidationException() {
     return (
       <Segment>
-        <TreeValidation errors={this.props.store.completionStore.validation} />
+        <TreeValidation errors={this.props.store.annotationStore.validation} />
       </Segment>
     );
   }
@@ -72,13 +72,13 @@ class App extends Component {
   }
 
   _renderAll(obj) {
-    if (obj.length === 1) return <Segment completion={obj[0]}>{[Tree.renderItem(obj[0].root)]}</Segment>;
+    if (obj.length === 1) return <Segment annotation={obj[0]}>{[Tree.renderItem(obj[0].root)]}</Segment>;
 
     return (
       <div className="ls-renderall">
         {obj.map(c => (
           <div className="ls-fade">
-            <Segment completion={c}>{[Tree.renderItem(c.root)]}</Segment>
+            <Segment annotation={c}>{[Tree.renderItem(c.root)]}</Segment>
           </div>
         ))}
       </div>
@@ -88,8 +88,8 @@ class App extends Component {
   _renderUI(root, store, cs, settings) {
     return (
       <>
-        {!cs.viewingAllCompletions && !cs.viewingAllPredictions && (
-          <Segment completion={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
+        {!cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
+          <Segment annotation={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
             <div style={{ position: "relative" }}>
               {Tree.renderItem(root)}
               {this.renderRelations(cs.selected)}
@@ -97,19 +97,19 @@ class App extends Component {
             {store.hasInterface("controls") && <Controls item={cs.selected} />}
           </Segment>
         )}
-        {cs.viewingAllCompletions && this.renderAllCompletions()}
+        {cs.viewingAllAnnotations && this.renderAllAnnotations()}
         {cs.viewingAllPredictions && this.renderAllPredictions()}
       </>
     );
   }
 
-  renderAllCompletions() {
-    const cs = this.props.store.completionStore;
-    return <Grid store={cs} completions={[...cs.completions, ...cs.predictions]} root={cs.root} />;
+  renderAllAnnotations() {
+    const cs = this.props.store.annotationStore;
+    return <Grid store={cs} annotations={[...cs.annotations, ...cs.predictions]} root={cs.root} />;
   }
 
   renderAllPredictions() {
-    return this._renderAll(this.props.store.completionStore.predictions);
+    return this._renderAll(this.props.store.annotationStore.predictions);
   }
 
   renderRelations(selectedStore) {
@@ -120,7 +120,7 @@ class App extends Component {
   render() {
     const self = this;
     const { store } = self.props;
-    const cs = store.completionStore;
+    const cs = store.annotationStore;
     const root = cs.selected && cs.selected.root;
     const { settings } = store;
 
@@ -132,7 +132,7 @@ class App extends Component {
 
     if (store.labeledSuccess) return self.renderSuccess();
 
-    if (!root) return self.renderNoCompletion();
+    if (!root) return self.renderNoAnnotation();
 
     const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
     const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
@@ -161,13 +161,13 @@ class App extends Component {
                 ? this._renderUI(root, store, cs, settings)
                 : this.renderConfigValidationException()}
               <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("completions:menu") && store.settings.showCompletionsPanel && (
-                  <Completions store={store} />
+                {store.hasInterface("annotations:menu") && store.settings.showAnnotationsPanel && (
+                  <Annotations store={store} />
                 )}
                 {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
                   <Predictions store={store} />
                 )}
-                {store.hasInterface("side-column") && !cs.viewingAllCompletions && !cs.viewingAllPredictions && (
+                {store.hasInterface("side-column") && !cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
                   <SideColumn store={store} />
                 )}
               </div>

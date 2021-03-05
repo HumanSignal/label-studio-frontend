@@ -60,7 +60,7 @@ const Model = LabelMixin.views(self => ({
   },
 })).actions(self => ({
   validate() {
-    const regions = self.completion.regionStore.regions;
+    const regions = self.annotation.regionStore.regions;
 
     for (let r of regions) {
       for (let s of r.states) {

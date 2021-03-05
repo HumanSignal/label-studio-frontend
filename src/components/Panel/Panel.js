@@ -22,11 +22,11 @@ import Hint from "../Hint/Hint";
  * Settings
  */
 export default observer(({ store }) => {
-  const { history } = store.completionStore.selected;
+  const { history } = store.annotationStore.selected;
   const classname = [
     styles.block,
     styles.block__controls,
-    store.completionStore.viewingAllCompletions ? styles.hidden : "",
+    store.annotationStore.viewingAllAnnotations ? styles.hidden : "",
   ].join(" ");
 
   return (

@@ -18,8 +18,8 @@ const ToolMixin = types
       return self._control;
     },
 
-    get completion() {
-      return getRoot(self.control).completionStore.selected;
+    get annotation() {
+      return getRoot(self.control).annotationStore.selected;
     },
 
     get viewClass() {
@@ -52,7 +52,7 @@ const ToolMixin = types
     },
 
     get getSelectedShape() {
-      return self.control.completion.highlightedNode;
+      return self.control.annotation.highlightedNode;
     },
   }))
   .actions(self => ({
@@ -69,7 +69,7 @@ const ToolMixin = types
       let r;
       let states = [];
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       // workaround to prevent perregion textarea from duplicating

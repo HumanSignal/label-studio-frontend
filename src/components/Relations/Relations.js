@@ -75,7 +75,7 @@ const Relation = observer(({ store, rl }) => {
 });
 
 const ListItem = observer(({ item }) => {
-  const node = getRoot(item).completionStore.selected.highlightedNode;
+  const node = getRoot(item).annotationStore.selected.highlightedNode;
   const isSelected = node === item.node1 || node === item.node2;
 
   return (
@@ -130,10 +130,10 @@ const ListItem = observer(({ item }) => {
 });
 
 export default observer(({ store }) => {
-  const completion = store.completionStore.selected;
-  const { relations } = completion.relationStore;
+  const annotation = store.annotationStore.selected;
+  const { relations } = annotation.relationStore;
   const hasRelations = relations.length > 0;
-  const relationsUIVisible = completion.relationStore.showConnections;
+  const relationsUIVisible = annotation.relationStore.showConnections;
 
   return (
     <Fragment>
@@ -158,7 +158,7 @@ export default observer(({ store }) => {
               size="small"
               type="link"
               icon={relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-              onClick={() => completion.relationStore.toggleConnections()}
+              onClick={() => annotation.relationStore.toggleConnections()}
               className={[relationsUIVisible ? styles.uihidden : styles.uivisible, globalStyles.link]}
             />
           </div>
@@ -173,7 +173,7 @@ export default observer(({ store }) => {
           bordered
           itemLayout="vertical"
           className={styles.list}
-          dataSource={completion.relationStore.relations}
+          dataSource={annotation.relationStore.relations}
           renderItem={item => <ListItem item={item} />}
         />
       )}

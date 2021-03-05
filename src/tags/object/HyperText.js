@@ -58,16 +58,16 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -97,7 +97,7 @@ const Model = types
       r._range = p._range;
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
@@ -108,7 +108,7 @@ const Model = types
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.completion.createResult(range, labels, control, self);
+      const area = self.annotation.createResult(range, labels, control, self);
       area._range = range._range;
       return area;
     },
@@ -122,7 +122,7 @@ const Model = types
       const { start, startOffset, end, endOffset, text } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
         return;
       }
 
@@ -232,7 +232,7 @@ class HyperTextPieceView extends Component {
 
     item.regs.forEach(function(r) {
       // spans can be totally missed if this is app init or undo/redo
-      // or they can be disconnected from DOM on completions switching
+      // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
       if (r._spans?.[0]?.isConnected) return;
 

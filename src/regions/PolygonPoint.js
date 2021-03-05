@@ -37,8 +37,8 @@ const PolygonPoint = types
       return self.parent?.parent;
     },
 
-    get completion() {
-      return Types.getParentOfTypeString(self, "Completion");
+    get annotation() {
+      return Types.getParentOfTypeString(self, "Annotation");
     },
   }))
   .actions(self => ({
@@ -90,7 +90,7 @@ const PolygonPoint = types
      * @param {*} ev
      */
     closeStartPoint() {
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
       if (self.parent.closed) return;
 
       if (self.parent.mouseOverStartPoint) {
@@ -195,11 +195,11 @@ const PolygonPointView = observer(({ item, name }) => {
     },
 
     onDragStart: e => {
-      item.completion.history.freeze();
+      item.annotation.history.freeze();
     },
 
     onDragEnd: e => {
-      item.completion.history.unfreeze();
+      item.annotation.history.unfreeze();
       e.cancelBubble = true;
     },
 

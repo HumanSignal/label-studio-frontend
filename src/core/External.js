@@ -1,17 +1,17 @@
 /**
- * Callback on submit completion
+ * Callback on submit annotation
  */
-function onSubmitCompletion() {}
+function onSubmitAnnotation() {}
 
 /**
- * Callback on update completion
+ * Callback on update annotation
  */
-function onUpdateCompletion() {}
+function onUpdateAnnotation() {}
 
 /**
- * Callback on delete completion
+ * Callback on delete annotation
  */
-function onDeleteCompletion() {}
+function onDeleteAnnotation() {}
 
 /**
  * Callback on skip task
@@ -44,19 +44,19 @@ function onEntityDelete() {}
 function onGroundTruth() {}
 
 /**
- * Callback when a new completion gets selected
+ * Callback when a new annotation gets selected
  */
-function onSelectCompletion(completion, previousCompletion) {}
+function onSelectAnnotation(annotation, previousAnnotation) {}
 
 export default {
-  onDeleteCompletion,
+  onDeleteAnnotation,
   onEntityCreate,
   onEntityDelete,
   onGroundTruth,
   onLabelStudioLoad,
   onSkipTask,
-  onSubmitCompletion,
+  onSubmitAnnotation,
   onTaskLoad,
-  onUpdateCompletion,
-  onSelectCompletion,
+  onUpdateAnnotation,
+  onSelectAnnotation,
 };

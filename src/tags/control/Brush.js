@@ -20,8 +20,8 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({
