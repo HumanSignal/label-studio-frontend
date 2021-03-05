@@ -25,7 +25,7 @@ const HtxTextNodeView = ({ store, range, id, highlightStyle, style, charIndex, c
       });
     }
 
-    store.completionStore.selected.regionStore.regions.forEach(i => {
+    store.annotationStore.selected.regionStore.regions.forEach(i => {
       if (i.selected) {
         overlap.forEach(overlapItem => {
           if (overlapItem === i.id) {

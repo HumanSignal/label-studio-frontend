@@ -58,16 +58,16 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -86,7 +86,7 @@ const Model = types
       let r;
       let m;
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -163,14 +163,14 @@ const Model = types
       r._ws_region = wsRegion;
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
 
     addRegion(ws_region) {
       // area id is assigned to WS region during deserealization
-      const find_r = self.completion.areas.get(ws_region.id);
+      const find_r = self.annotation.areas.get(ws_region.id);
 
       if (find_r) {
         find_r.applyCSSClass(ws_region);
@@ -187,7 +187,7 @@ const Model = types
 
       const control = self.activeStates()[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const r = self.completion.createResult(ws_region, labels, control, self);
+      const r = self.annotation.createResult(ws_region, labels, control, self);
       r._ws_region = ws_region;
       r.updateAppearenceFromState();
       return r;

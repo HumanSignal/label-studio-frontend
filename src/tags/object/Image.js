@@ -160,13 +160,13 @@ const Model = types
     /**
      * @return {object}
      */
-    get completion() {
-      // return Types.getParentOfTypeString(self, "Completion");
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      // return Types.getParentOfTypeString(self, "Annotation");
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
     get selectedShape() {
@@ -177,7 +177,7 @@ const Model = types
      * @return {object}
      */
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -234,7 +234,7 @@ const Model = types
 
   .actions(self => ({
     freezeHistory() {
-      //self.completion.history.freeze();
+      //self.annotation.history.freeze();
     },
 
     updateBrushControl(arg) {
@@ -371,7 +371,7 @@ const Model = types
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
-      setTimeout(self.completion.reinitHistory, 0);
+      setTimeout(self.annotation.reinitHistory, 0);
     },
 
     checkLabels() {
@@ -384,7 +384,7 @@ const Model = types
     addShape(shape) {
       self.regions.push(shape);
 
-      self.completion.addRegion(shape);
+      self.annotation.addRegion(shape);
       self.setSelected(shape.id);
       shape.selectRegion();
     },
@@ -443,14 +443,14 @@ const Model = types
     },
 
     /**
-     * Transform JSON data (completions and predictions) to format
+     * Transform JSON data (annotations and predictions) to format
      */
     fromStateJSON(obj, fromModel) {
       const tools = self.getToolsManager().allTools();
 
       // when there is only the image classification and nothing else, we need to handle it here
       if (tools.length === 0 && obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
 
         return;
       }

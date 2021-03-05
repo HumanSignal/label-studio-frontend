@@ -70,10 +70,10 @@ async function getExample() {
   let task = {
     data: JSON.stringify(datatype.tasks[0].data),
   };
-  let completions = datatype.completion.completions;
+  let annotations = datatype.annotation.annotations;
   let predictions = datatype.tasks[0].predictions;
 
-  return { config, task, completions, predictions };
+  return { config, task, annotations, predictions };
 }
 
 /**
@@ -106,9 +106,9 @@ function configureApplication(params) {
   const options = {
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
-    onSubmitCompletion: params.onSubmitCompletion ? params.onSubmitCompletion : External.onSubmitCompletion,
-    onUpdateCompletion: params.onUpdateCompletion ? params.onUpdateCompletion : External.onUpdateCompletion,
-    onDeleteCompletion: params.onDeleteCompletion ? params.onDeleteCompletion : External.onDeleteCompletion,
+    onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,
+    onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
+    onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
     onSubmitDraft: params.onSubmitDraft || External.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
@@ -116,7 +116,7 @@ function configureApplication(params) {
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
-    onSelectCompletion: params.onSelectCompletion || External.onSelectCompletion,
+    onSelectAnnotation: params.onSelectAnnotation || External.onSelectAnnotation,
   };
 
   return options;

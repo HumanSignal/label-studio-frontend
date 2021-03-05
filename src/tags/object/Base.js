@@ -54,7 +54,7 @@ const ObjectBase = types
           const label = exceeded[0];
           InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
         }
-        self.completion.unselectAll();
+        self.annotation.unselectAll();
       }
       return states;
     }

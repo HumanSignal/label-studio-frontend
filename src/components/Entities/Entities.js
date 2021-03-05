@@ -21,7 +21,7 @@ import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
 
 const RegionItem = observer(({ item, idx, flat }) => {
   if (!isAlive(item)) return null;
-  const c = getRoot(item).completionStore.selected;
+  const c = getRoot(item).annotationStore.selected;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,

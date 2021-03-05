@@ -53,18 +53,18 @@ const Model = types
     height: types.optional(types.string, "20"),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
       if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if (obj.value.text) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
     },
 

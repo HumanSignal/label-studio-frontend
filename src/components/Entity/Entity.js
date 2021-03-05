@@ -48,8 +48,8 @@ const renderResult = result => {
   return null;
 };
 
-export default observer(({ store, completion }) => {
-  const node = completion.highlightedNode;
+export default observer(({ store, annotation }) => {
+  const node = annotation.highlightedNode;
   const [editMode, setEditMode] = React.useState(false);
 
   return (
@@ -92,7 +92,7 @@ export default observer(({ store, completion }) => {
         {/*         node.toggleHidden(); */}
         {/*         //node.unselectRegion(); */}
         {/*         //node.selectRegion(); */}
-        {/*         // completion.startRelationMode(node); */}
+        {/*         // annotation.startRelationMode(node); */}
         {/*     }} */}
         {/*   > */}
         {/*     { node.hidden ? <EyeOutlined /> : <EyeInvisibleOutlined /> } */}
@@ -107,7 +107,7 @@ export default observer(({ store, completion }) => {
                 aria-label="Create Relation"
                 className={styles.button}
                 onClick={() => {
-                  completion.startRelationMode(node);
+                  annotation.startRelationMode(node);
                 }}
               >
                 <LinkOutlined />
@@ -134,7 +134,7 @@ export default observer(({ store, completion }) => {
             className={styles.button}
             type="dashed"
             onClick={() => {
-              completion.unselectAll();
+              annotation.unselectAll();
             }}
           >
             <CompressOutlined />
@@ -148,7 +148,7 @@ export default observer(({ store, completion }) => {
               type="danger"
               className={styles.button}
               onClick={() => {
-                completion.highlightedNode.deleteRegion();
+                annotation.highlightedNode.deleteRegion();
               }}
             >
               <DeleteOutlined />
