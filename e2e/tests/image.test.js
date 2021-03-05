@@ -41,7 +41,7 @@ const createRegion = (from_name, type, values) => ({
   },
 });
 
-const completionMoonwalker = {
+const annotationMoonwalker = {
   id: "1001",
   lead_time: 15.053,
   result: [createRegion("tag", "rectanglelabels", { rectanglelabels: ["Moonwalker"] })],
@@ -49,9 +49,9 @@ const completionMoonwalker = {
 
 // perregion regions have the same id as main region
 // and their own data (`text` in this case)
-const completionWithPerRegion = {
+const annotationWithPerRegion = {
   id: "1002",
-  result: [completionMoonwalker.result[0], createRegion("answer", "textarea", { text: ["blah"] })],
+  result: [annotationMoonwalker.result[0], createRegion("answer", "textarea", { text: ["blah"] })],
 };
 
 const image =
@@ -61,7 +61,7 @@ Scenario("Check Rect region for Image", async function(I) {
   const params = {
     config,
     data: { image },
-    completions: [completionMoonwalker],
+    annotations: [annotationMoonwalker],
   };
 
   I.amOnPage("/");
@@ -84,7 +84,7 @@ Scenario("Image with perRegion tags", async function(I) {
   const params = {
     config: perRegionConfig,
     data: { image },
-    completions: [completionWithPerRegion],
+    annotations: [annotationWithPerRegion],
   };
 
   I.amOnPage("/");
