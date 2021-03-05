@@ -34,8 +34,8 @@ Feature("Smoke test through all the examples");
 examples.forEach(example =>
   Scenario(example.title || "Noname smoke test", async function(I) {
     // @todo optional predictions in example
-    const { completions, config, data, result = completions[0].result } = example;
-    const params = { completions: [{ id: "test", result }], config, data };
+    const { annotations, config, data, result = annotations[0].result } = example;
+    const params = { annotations: [{ id: "test", result }], config, data };
 
     const ids = [];
     // add all unique ids from non-classification results
