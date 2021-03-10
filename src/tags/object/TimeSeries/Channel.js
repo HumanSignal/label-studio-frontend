@@ -28,6 +28,8 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
  * @param {string=} [strokeColor=#f48a42] plot stroke color, expects hex value
  * @param {number=} [strokeWidth=1] plot stroke width
  * @param {boolean} [fixedScale] if false current view scales to fit only displayed values; if given overwrites TimeSeries' fixedScale
+ * @param {number} [lowerBound] scale y-axis to the set lower value. Respects the value of fixedScale.
+ * @param {number} [upperBound] scale y-axis to the set upper value. Respects the value of fixedScale.
  */
 
 const csMap = {
@@ -59,7 +61,8 @@ const TagAttrs = types.model({
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(types.string, "#1f77b4"),
-
+  lowerbound: types.maybe(types.string),
+  upperbound: types.maybe(types.string),
   fixedscale: types.maybe(types.boolean),
 
   column: types.string,
@@ -622,20 +625,35 @@ class ChannelD3 extends React.Component {
     // overwrite parent's
     const fixedscale = item.fixedscale === undefined ? item.parent.fixedscale : item.fixedscale;
 
-    if (!fixedscale) {
+    if (!fixedscale || item.lowerbound !== undefined || item.upperbound !== undefined) {
       // array slice may slow it down, so just find a min-max by ourselves
       const { data, time, column } = this.props;
       const values = data[column];
-      // indices of the first and last displayed values
-      let i = d3.bisectRight(data[time], range[0]);
-      let j = d3.bisectRight(data[time], range[1]);
-      // find min-max
-      let min = values[i];
-      let max = values[i];
-      for (; i < j; i++) {
-        if (min > values[i]) min = values[i];
-        if (max < values[i]) max = values[i];
+
+      let min = Math.min(...values);
+      let max = Math.max(...values);
+
+      if (!fixedscale) {
+        // indices of the first and last displayed values
+        let i = d3.bisectRight(data[time], range[0]);
+        let j = d3.bisectRight(data[time], range[1]);
+        // find min-max
+        min = values[i];
+        max = values[i];
+        for (; i < j; i++) {
+          if (min > values[i]) min = values[i];
+          if (max < values[i]) max = values[i];
+        }
       }
+
+      // use upper and/or lower bounds of y-axis
+      if (item.lowerbound !== undefined) {
+        min = item.lowerbound;
+      }
+      if (item.upperbound !== undefined) {
+        max = item.upperbound;
+      }
+
       // calc scale and shift
       const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
       const heightY = this.y.range().reduce((a, b) => a - b); // min - max because y range is inverted
