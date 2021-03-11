@@ -63,6 +63,8 @@ import "./TimeSeries/Channel";
  * @param {string} [sep] separator for you CSV file, default is comma ","
  * @param {string} [overviewChannels] comma-separated list of channels names or indexes displayed in overview
  * @param {boolean} [fixedScale=false] always scale y-axis to the maximum to fit all the values; if false current view scales to fit only displayed values
+ * @param {number} [lowerBound] scale y-axis to the set lower value. Respects the value of fixedScale.
+ * @param {number} [upperBound] scale y-axis to the set upper value. Respects the value of fixedScale.
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -76,6 +78,8 @@ const TagAttrs = types.model({
   overviewchannels: "", // comma-separated list of channels to show
 
   fixedscale: false,
+  upperbound: 0.0,
+  lowerbound: 0.0,
 
   multiaxis: types.optional(types.boolean, false), // show channels in the same view
   // visibilitycontrols: types.optional(types.boolean, false), // show channel visibility controls
