@@ -100,7 +100,7 @@ const Annotation = observer(({ item, store }) => {
    * Title of card
    */
   if (item.userGenerate && !item.sentUserGenerate) {
-    annotationID = <span className={styles.title}>New annotation</span>;
+    annotationID = <span className={styles.title}>Unsaved Annotation</span>;
   } else {
     if (item.pk) {
       annotationID = <span className={styles.title}>ID {item.pk}</span>;
@@ -170,7 +170,7 @@ const Annotation = observer(({ item, store }) => {
             {badge}
             {annotationID}
           </div>
-          Created
+          {item.pk ? "Created" : "Started"}
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
           {item.createdBy ? ` by ${item.createdBy}` : null}
           <DraftPanel item={item} />
