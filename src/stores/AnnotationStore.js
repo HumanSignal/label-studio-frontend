@@ -17,6 +17,22 @@ import { errorBuilder } from "../core/DataValidator/ConfigValidator";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
+import { camelizeKeys } from "../utils/camelizeKeys";
+
+const User = types
+  .model("User", {
+    id: types.identifierNumber,
+    firstName: types.string,
+    lastName: types.string,
+    username: types.string,
+    email: types.string,
+    lastActivity: types.string,
+    avatar: types.maybeNull(types.string),
+    initials: types.string,
+  })
+  .preProcessSnapshot(sn => {
+    return camelizeKeys(sn);
+  });
 
 const Annotation = types
   .model("Annotation", {
@@ -29,6 +45,7 @@ const Annotation = types
 
     selected: types.optional(types.boolean, false),
     type: types.enumeration(["annotation", "prediction"]),
+    annotator: types.maybeNull(User),
 
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),

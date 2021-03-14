@@ -13,6 +13,7 @@ import {
 
 import Utils from "../../utils";
 import styles from "./Annotations.module.scss";
+import { style } from "d3-selection";
 
 export const DraftPanel = observer(({ item }) => {
   if (!item.draftSaved && !item.versions.draft) return null;
@@ -32,6 +33,23 @@ export const DraftPanel = observer(({ item }) => {
         </Button>
       </Tooltip>
       {saved}
+    </div>
+  );
+});
+
+const Annotator = observer(({ annotator }) => {
+  const fullName = [annotator.firstName, annotator.lastName].join(" ").trim();
+  return (
+    <div className={styles.annotator}>
+      <div className={styles.userpic}>
+        {annotator.avatar ? (
+          <img src={annotator.avatar} alt="" />
+        ) : (
+          <div className={styles.userpic__username}>{annotator.initials}</div>
+        )}
+      </div>
+
+      <div className={styles.annotator__username}>{fullName || annotator.username || annotator.email}</div>
     </div>
   );
 });
@@ -172,7 +190,9 @@ const Annotation = observer(({ item, store }) => {
           </div>
           {item.pk ? "Created" : "Started"}
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
-          {item.createdBy ? ` by ${item.createdBy}` : null}
+
+          {item.annotator ? <Annotator annotator={item.annotator} /> : item.createdBy ? ` by ${item.createdBy}` : null}
+
           <DraftPanel item={item} />
         </div>
         {/* platform uses was_cancelled so check both */}
