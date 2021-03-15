@@ -11,7 +11,6 @@ import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
-import InfoModal from "../../components/Infomodal/Infomodal";
 import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries, findNodeAt } from "../../utils/html";
 import { parseValue } from "../../utils/data";
@@ -208,7 +207,7 @@ const Model = types
             message.push(`URL is empty, check ${value} in data JSON.`);
           }
           if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
-          InfoModal.error(message.map(t => <p>{t}</p>));
+          store.annotationStore.addErrors([errorBuilder.generalError(message.join("\n"))]);
           self.setRemoteValue("");
           return;
         }
@@ -220,7 +219,7 @@ const Model = types
           .then(self.setRemoteValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
-            InfoModal.error(message, "Wow!");
+            store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.setRemoteValue("");
           });
       } else {

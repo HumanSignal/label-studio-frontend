@@ -12,6 +12,7 @@ import Waveform from "../../components/Waveform/Waveform";
 import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
  * AudioPlus tag plays audio and shows its wave
@@ -56,6 +57,10 @@ const Model = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
+    },
+
+    get store() {
+      return getRoot(self);
     },
 
     get annotation() {
@@ -222,6 +227,14 @@ const Model = types
       });
     },
 
+    // @todo didn't enabled in Waveform yet
+    // @todo because in some cases it may trigger error, but works good
+    // @todo don't replace all interface with error message
+    onError(error) {
+      const cs = self.store.annotationStore;
+      cs.addErrors([errorBuilder.generalError(error)]);
+    },
+
     wsCreated(ws) {
       self._ws = ws;
     },
@@ -243,6 +256,7 @@ const HtxAudioView = ({ store, item }) => {
           onCreate={item.wsCreated}
           addRegion={item.addRegion}
           onLoad={item.onLoad}
+          onError={item.onError}
           speed={item.speed}
           zoom={item.zoom}
           volume={item.volume}

@@ -13,7 +13,7 @@ import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import styles from "./Text/Text.module.scss";
-import InfoModal from "../../components/Infomodal/Infomodal";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { customTypes } from "../../core/CustomTypes";
 import messages from "../../utils/messages";
 
@@ -107,13 +107,14 @@ const Model = types
         if (!/^https?:\/\/|^\//.test(url)) {
           const message = [];
           if (url) {
+            // @todo cut long texts ("Lorem ipsum...amet")
             message.push(`URL (${url}) is not valid.`);
             message.push(`You should not put text directly in your task data if you use valuetype="url".`);
           } else {
             message.push(`URL is empty, check ${self.value} in data JSON.`);
           }
           if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
-          InfoModal.error(message.map(t => <p>{t}</p>));
+          store.annotationStore.addErrors([errorBuilder.generalError(message.join("\n"))]);
           self.loadedValue("");
           return;
         }
@@ -125,7 +126,7 @@ const Model = types
           .then(self.loadedValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
-            InfoModal.error(message, "Wow!");
+            store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.loadedValue("");
           });
       } else {
