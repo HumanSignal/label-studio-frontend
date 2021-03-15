@@ -172,7 +172,7 @@ const Annotation = observer(({ item, store }) => {
           </div>
           {item.pk ? "Created" : "Started"}
           <i>{item.createdAgo ? ` ${item.createdAgo} ago` : ` ${Utils.UDate.prettyDate(item.createdDate)}`}</i>
-          {item.createdBy ? ` by ${item.createdBy}` : null}
+          {item.createdBy && item.pk ? ` by ${item.createdBy}` : null}
           <DraftPanel item={item} />
         </div>
         {/* platform uses was_cancelled so check both */}
