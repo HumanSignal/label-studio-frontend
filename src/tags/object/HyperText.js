@@ -11,7 +11,7 @@ import Registry from "../../core/Registry";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
 import { restoreNewsnapshot, guidGenerator } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
-import { runTemplate } from "../../core/Template";
+import { parseValue } from "../../utils/data";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
@@ -85,7 +85,7 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
+      self._value = parseValue(self.value, store.task.dataObj);
     },
 
     createRegion(p) {
@@ -274,7 +274,7 @@ class HyperTextPieceView extends Component {
   render() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
+    let val = parseValue(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 

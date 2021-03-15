@@ -11,7 +11,7 @@ import Utils from "../../utils";
 import { TextRegionModel } from "../../regions/TextRegion";
 import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
-import { runTemplate } from "../../core/Template";
+import { parseValue } from "../../utils/data";
 import styles from "./Text/Text.module.scss";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
@@ -99,7 +99,7 @@ const Model = types
     },
 
     updateValue(store) {
-      const value = runTemplate(self.value, store.task.dataObj);
+      const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
         const url = value;
@@ -268,7 +268,7 @@ class TextPieceView extends Component {
   getValue() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
+    let val = parseValue(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 

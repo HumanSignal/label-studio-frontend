@@ -10,8 +10,8 @@ import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
+import { parseValue } from "../../utils/data";
 import { guidGenerator } from "../../core/Helpers";
-import { runTemplate } from "../../core/Template";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
 
@@ -192,7 +192,7 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj) || "";
+      self._value = parseValue(self.value, store.task.dataObj);
       self._updateBackgroundColor(self._value);
     },
   }));
