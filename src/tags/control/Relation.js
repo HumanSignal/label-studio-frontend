@@ -21,8 +21,8 @@ import { customTypes } from "../../core/CustomTypes";
  *   </Labels>
  * </View>
  * @name Relation
- * @param {string} value - value of the relation
- * @param {string} [background] - background color of active label
+ * @param {string} value - Value of the relation
+ * @param {string} [background] - Background color of the active label
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

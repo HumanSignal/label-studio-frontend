@@ -27,20 +27,20 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px" />
  * </View>
  * @name Image
- * @param {string} name                       - name of the element
- * @param {string} value                      - value
- * @param {string=} [width=100%]              - image width
- * @param {string=} [maxWidth=750px]          - image maximum width
- * @param {boolean=} [zoom=false]             - enable zooming an image by the mouse wheel
- * @param {boolean=} [negativeZoom=false]     - enable zooming out an image
- * @param {float=} [zoomBy=1.1]               - scale factor
- * @param {boolean=} [grid=false]             - show grid
- * @param {number=} [gridSize=30]             - size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - color of the grid, opacity is 0.15
- * @param {boolean} [zoomControl=false]       - show zoom controls in toolbar
- * @param {boolean} [brightnessControl=false] - show brightness control in toolbar
- * @param {boolean} [contrastControl=false]   - show contrast control in toolbar
- * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
+ * @param {string} name                       - Name of the element
+ * @param {string} value                      - Value
+ * @param {string=} [width=100%]              - Image width
+ * @param {string=} [maxWidth=750px]          - Maximum image width
+ * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
+ * @param {boolean=} [negativeZoom=false]     - Enable zooming out an image
+ * @param {float=} [zoomBy=1.1]               - Scale factor
+ * @param {boolean=} [grid=false]             - Show grid
+ * @param {number=} [gridSize=30]             - Specify size of the grid
+ * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid, opacity is 0.15
+ * @param {boolean} [zoomControl=false]       - Whether to show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false] - Whether to show brightness control in toolbar
+ * @param {boolean} [contrastControl=false]   - Whether to show contrast control in toolbar
+ * @param {boolean} [rotateControl=false]     - Whether to show rotate control in toolbar
  */
 const TagAttrs = types.model({
   name: types.identifier,

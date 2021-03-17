@@ -23,11 +23,11 @@ import ControlBase from "./Base";
  *   </View>
  * </View>
  * @name Pairwise
- * @param {string} name               - name of the element
- * @param {string} toName             - names of the elements you want to compare
- * @param {string} [selectionStyle]   - style of the selection
- * @params {string} [leftClass=left]  - class name of the left object
- * @params {string} [rightClass=left] - class name of the right object
+ * @param {string} name               - Name of the element
+ * @param {string} toName             - Names of the elements you want to compare
+ * @param {string} [selectionStyle]   - Style of the selection
+ * @params {string} [leftClass=left]  - Class name of the left object
+ * @params {string} [rightClass=left] - Class name of the right object
  */
 const TagAttrs = types.model({
   name: types.identifier,

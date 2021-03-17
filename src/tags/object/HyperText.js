@@ -15,19 +15,19 @@ import { runTemplate } from "../../core/Template";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * HyperText tag shows an HyperText markup that can be labeled
+ * HyperText tag shows HyperText markup that can be labeled.
  * @example
  * <View>
  *   <HyperText name="text-1" value="$text" />
  * </View>
  * @name HyperText
- * @param {string} name - name of the element
- * @param {string} value - value of the element
- * @param {url|text} [valueType]       - where is the text stored — directly in task or should be loaded by url
- * @param {yes|no} [saveTextResult]    - store labeled text along with result or not; by default doesn't store text for `valueType=url`
- * @param {boolean} [showLabels=false] - show labels next to the region
- * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
- * @param {boolean} [clickableLinks=false] - allow to open resources from links
+ * @param {string} name - Name of the element
+ * @param {string} value - Value of the element
+ * @param {url|text} [valueType]       - Where the text is stored — directly in uploaded data or needs to be loaded from a URL
+ * @param {yes|no} [saveTextResult]    - Whether or not to store labeled text along with the results. By default doesn't store text for `valueType=url`
+ * @param {boolean} [showLabels=false] - Whether to show labels next to the region
+ * @param {none|base64|base64unicode} [encoding]  - How to decode values from encoded strings
+ * @param {boolean} [clickableLinks=false] - Whether to allow opening resources from links in the hypertext markup. 
  */
 const TagAttrs = types.model("HyperTextModel", {
   // opional for cases with inline html: <HyperText><hr/></HyperText>
