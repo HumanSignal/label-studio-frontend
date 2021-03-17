@@ -8,7 +8,7 @@ import Types from "../../core/Types";
 import VisibilityMixin from "../../mixins/Visibility";
 
 /**
- * View element. It's analogous to div element in html and can be used to visual configure display of blocks
+ * Use the View element to configure a display of blocks, similar to the div tag in HTML.
  * @example
  * <View style="display: flex;">
  *   <View style="flex: 50%">
@@ -21,13 +21,13 @@ import VisibilityMixin from "../../mixins/Visibility";
  *   </View>
  * </View>
  * @name View
- * @param {block|inline} display
- * @param {string} [style] css style string
- * @param {string} [className] - class name of the css style to apply
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] show the contents of a view when condition is true
- * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
- * @param {string} [whenLabelValue] narrow down visibility by label value
- * @param {string} [whenChoiceValue] narrow down visibility by choice value
+ * @param {block|inline} display 
+ * @param {string} [style] CSS style string
+ * @param {string} [className] - Class name of the css style to apply
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] Show the contents of a view when condition is true
+ * @param {string} [whenTagName] Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices use the name of the choices tag.
+ * @param {string} [whenLabelValue] Narrow down visibility by label value
+ * @param {string} [whenChoiceValue] Narrow down visibility by choice value
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),

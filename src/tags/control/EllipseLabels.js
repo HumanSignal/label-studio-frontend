@@ -22,16 +22,16 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name EllipseLabels
- * @param {string} name               - name of the element
- * @param {string} toName             - name of the image to label
- * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {number} [maxUsages]               - maximum available usages
- * @param {boolean} [showInline=true]        - show items in the same visual line
- * @param {float=} [opacity=0.6]      - opacity of rectangle
- * @param {string=} [fillColor]       - ellipse fill color, default is transparent
- * @param {string=} [strokeColor]     - stroke color
- * @param {number=} [strokeWidth=1]   - width of stroke
- * @param {boolean=} [canRotate=true] - show or hide rotation handle
+ * @param {string} name               - Name of the element
+ * @param {string} toName             - Name of the image to label
+ * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
+ * @param {number} [maxUsages]               - Maximum available uses of the label
+ * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {float=} [opacity=0.6]      - Opacity of rectangle
+ * @param {string=} [fillColor]       - Ellipse fill color, default is transparent
+ * @param {string=} [strokeColor]     - Stroke color
+ * @param {number=} [strokeWidth=1]   - Width of stroke
+ * @param {boolean=} [canRotate=true] - Show or hide rotation handle
  */
 const TagAttrs = types.model({
   name: types.identifier,

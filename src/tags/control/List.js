@@ -40,13 +40,13 @@ const ListItemModel = types
  *  <List name="ranker" value="$replies" elementValue="$text" elementTag="Text" ranked="true" sortedHighlightColor="#fcfff5"></List>
  * </View>
  * @name List
- * @param {string} elementValue lookup key for child object
- * @param {Text|Image|Audio} elementTag element used to render children
- * @param {string} value list value
- * @param {string} name of group
- * @param {string=} sortedHighlightColor color
- * @param {string=} axis axis used for drag-n-drop
- * @param {string=} lockAxis lock axis
+ * @param {string} elementValue Lookup key for a child object
+ * @param {Text|Image|Audio} [elementTag=Text] elementTag Element used to render children
+ * @param {string} value List values
+ * @param {string} Name of group
+ * @param {string=} sortedHighlightColor Color
+ * @param {x|y} [axis=y] axis Axis used for drag and drop
+ * @param {x|y} lockAxis Lock axis
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),

@@ -28,11 +28,11 @@ import "react-dropdown-tree-select/dist/styles.css";
  *     </Choice>
  *     <Choice value="Offline" />
  *   </Taxonomy>
- *   <Text name="text" value="You never believe what he did to the country" />
+ *   <Text name="text" value="You'd never believe what he did to the country" />
  * </View>
  * @name Taxonomy
- * @param {string} name                - name of the group
- * @param {string} toName              - name of the element that you want to label
+ * @param {string} name                - Name of the group
+ * @param {string} toName              - Name of the element that you want to label
  */
 const TagAttrs = types.model({
   name: types.identifier,
