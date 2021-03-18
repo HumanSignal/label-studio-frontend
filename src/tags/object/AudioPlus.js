@@ -9,10 +9,9 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import Waveform from "../../components/Waveform/Waveform";
-import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
+import styles from "./AudioPlus/AudioPlus.module.scss";
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
-import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
  * AudioPlus tag plays audio and shows its wave
@@ -53,6 +52,9 @@ const Model = types
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
   })
+  .volatile(self => ({
+    errors: [],
+  }))
   .views(self => ({
     get hasStates() {
       const states = self.states();
@@ -227,12 +229,8 @@ const Model = types
       });
     },
 
-    // @todo didn't enabled in Waveform yet
-    // @todo because in some cases it may trigger error, but works good
-    // @todo don't replace all interface with error message
     onError(error) {
-      const cs = self.store.annotationStore;
-      cs.addErrors([errorBuilder.generalError(error)]);
+      self.errors = [error];
     },
 
     wsCreated(ws) {
@@ -248,6 +246,13 @@ const HtxAudioView = ({ store, item }) => {
   return (
     <ObjectTag item={item}>
       <Fragment>
+        {item.errors?.length > 0 && (
+          <div className="ls-errors">
+            {item.errors.map(error => (
+              <div className={styles.error} dangerouslySetInnerHTML={{ __html: error }} />
+            ))}
+          </div>
+        )}
         <Waveform
           dataField={item.value}
           src={item._value}
