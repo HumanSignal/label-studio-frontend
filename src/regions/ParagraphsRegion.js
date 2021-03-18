@@ -33,7 +33,7 @@ const Model = types
       return self.object;
     },
     get regionElement() {
-      return self._spans[0];
+      return self._spans?.[0];
     },
   }))
   .actions(self => ({
