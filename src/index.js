@@ -53,7 +53,7 @@ if (process.env.NODE_ENV === "production") {
 
         let app = AppStore.create(params, environment.configureApplication(params));
 
-        app.initializeStore({ annotations: params.annotations, predictions: params.predictions });
+        app.initializeStore(params);
         window.Htx = app;
 
         ReactDOM.render(<App store={app} />, environment.rootElement(element));
@@ -70,7 +70,7 @@ if (process.env.NODE_ENV === "production") {
 
       let app = AppStore.create(params, environment.configureApplication(params));
 
-      app.initializeStore({ annotations: params.task.annotations, predictions: params.task.predictions });
+      app.initializeStore(params.task);
       window.Htx = app;
 
       ReactDOM.render(<App store={app} />, environment.rootElement(element));

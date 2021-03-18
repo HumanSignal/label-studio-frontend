@@ -294,7 +294,7 @@ export default class Waveform extends React.Component {
         body = "Error while processing audio. Check media format and availability.";
       }
 
-      InfoModal.error(body, "Wow!");
+      if (this.props.onError) this.props.onError(body);
     });
 
     /**

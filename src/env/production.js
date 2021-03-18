@@ -13,12 +13,10 @@ function getData(task) {
 }
 
 function getState(task) {
-  const annotations = task && task.annotations ? task.annotations : null;
-  const predictions = task && task.predictions ? task.predictions : null;
-
   return {
-    annotations: annotations,
-    predictions: predictions,
+    annotations: task?.annotations,
+    completions: task?.completions,
+    predictions: task?.predictions,
   };
 }
 
