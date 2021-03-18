@@ -9,6 +9,8 @@ import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
 
+import styles from "./AudioPlus/AudioPlus.module.scss";
+
 /**
  * Audio tag plays a simple audio file
  * @example
@@ -57,6 +59,9 @@ const Model = types
       return getRoot(self).annotationStore.selected;
     },
   }))
+  .volatile(self => ({
+    errors: [],
+  }))
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
       if (obj.value.choices) {
@@ -81,6 +86,10 @@ const Model = types
       self._ws = ws;
     },
 
+    onError(error) {
+      self.errors = [error];
+    },
+
     wsCreated(ws) {
       self._ws = ws;
     },
@@ -93,11 +102,19 @@ const HtxAudioView = ({ store, item }) => {
 
   return (
     <ObjectTag item={item}>
+      {item.errors?.length > 0 && (
+        <div className="ls-errors">
+          {item.errors.map(error => (
+            <div className={styles.error} dangerouslySetInnerHTML={{ __html: error }} />
+          ))}
+        </div>
+      )}
       <Waveform
         dataField={item.value}
         src={item._value}
         onCreate={item.wsCreated}
         onLoad={item.onLoad}
+        onError={item.onError}
         handlePlay={item.handlePlay}
         speed={item.speed}
         zoom={item.zoom}

@@ -349,8 +349,9 @@ export default types
     /**
      * Function to initilaze annotation store
      * Given annotations and predictions
+     * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ annotations, predictions }) {
+    function initializeStore({ annotations, completions, predictions }) {
       const cs = self.annotationStore;
       cs.initRoot(self.config);
 
@@ -361,7 +362,7 @@ export default types
         cs.selectPrediction(obj.id);
         obj.deserializeAnnotation(p.result);
       });
-      annotations?.forEach((c, i) => {
+      [...(completions || []), ...(annotations || [])]?.forEach((c, i) => {
         const obj = cs.addAnnotation(c);
         cs.selectAnnotation(obj.id);
         obj.deserializeAnnotation(c.draft || c.result);
