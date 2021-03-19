@@ -23,11 +23,11 @@ import ControlBase from "./Base";
  * @name PolygonLabels
  * @param {string} name                             - Name of tag
  * @param {string} toName                           - Name of image to label
- * @param {single|multiple=} [choice=single]        - Configure whether you can select  one or multiple labels
+ * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels
  * @param {number} [maxUsages]                      - Maximum available uses of the label
  * @param {boolean} [showInline=true]               - Show items in the same visual line
  * @param {number} [opacity=0.6]                    - Opacity of polygon
- * @param {string} [fillColor]                      - Rectangle fill color, default is transparent
+ * @param {string} [fillColor]                      - Polygon fill color
  * @param {string} [strokeColor]                    - Stroke color
  * @param {number} [strokeWidth=1]                  - Width of stroke
  * @param {small|medium|large} [pointSize=medium]   - Size of polygon handle points

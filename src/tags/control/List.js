@@ -36,17 +36,17 @@ const ListItemModel = types
  * List element, used for ranking results. Great choice for recomendation systems.
  * @example
  * <View>
- *  <HyperText value="$markup"></HyperText>
+ *  <HyperText name="page" value="$markup"></HyperText>
  *  <List name="ranker" value="$replies" elementValue="$text" elementTag="Text" ranked="true" sortedHighlightColor="#fcfff5"></List>
  * </View>
  * @name List
- * @param {string} elementValue Lookup key for a child object
- * @param {Text|Image|Audio} [elementTag=Text] elementTag Element used to render children
- * @param {string} value List values
- * @param {string} Name of group
- * @param {string=} sortedHighlightColor Color
- * @param {x|y} [axis=y] axis Axis used for drag and drop
- * @param {x|y} lockAxis Lock axis
+ * @param {string} elementValue                - Lookup key for a child object
+ * @param {Text|Image|Audio} [elementTag=Text] - Element used to render children
+ * @param {string} value                       - List values
+ * @param {string} name                        - Name of group
+ * @param {string=} sortedHighlightColor       - Color
+ * @param {x|y} [axis=y]                       - Axis used for drag and drop
+ * @param {x|y} lockAxis                       - Lock axis
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),

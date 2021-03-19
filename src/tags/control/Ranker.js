@@ -66,10 +66,10 @@ const RankerItemModel = types
  *   }]
  * }]
  * @name Ranker
- * @param {string} Name of group
- * @param {y|x=} [axis=y] Axis direction
- * @param {x|y} lockAxis Lock axis
- * @param {string} sortedHighlightColor Sorted color
+ * @param {string} name                 - Name of group
+ * @param {y|x=} [axis=y]               - Axis direction
+ * @param {x|y} lockAxis                - Lock axis
+ * @param {string} sortedHighlightColor - Sorted color
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),

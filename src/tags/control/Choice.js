@@ -18,14 +18,12 @@ import { ChoicesModel } from "./Choices";
  *   <Choices name="gender" toName="txt-1" choice="single">
  *     <Choice value="Man" />
  *     <Choice value="Woman" />
- *		<Choice value="Nonbinary" />
- *		<Choice value="Other" />
+ *     <Choice value="Nonbinary" />
+ *     <Choice value="Other" />
  *   </Choices>
  *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choice
- * @param {string} name        - Name of the group of choices
- * @param {string} toName      - Name of the data item that you want to label
  * @param {string} value       - Choice value
  * @param {boolean} [selected] - Specify whether to preselect this label on the labeling interface
  * @param {string} [alias]     - Alias for the label
