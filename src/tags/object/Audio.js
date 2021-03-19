@@ -8,8 +8,7 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
-
-import styles from "./AudioPlus/AudioPlus.module.scss";
+import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
  * Audio tag plays a simple audio file
@@ -102,13 +101,9 @@ const HtxAudioView = ({ store, item }) => {
 
   return (
     <ObjectTag item={item}>
-      {item.errors?.length > 0 && (
-        <div className="ls-errors">
-          {item.errors.map(error => (
-            <div className={styles.error} dangerouslySetInnerHTML={{ __html: error }} />
-          ))}
-        </div>
-      )}
+      {item.errors?.map(error => (
+        <ErrorMessage error={error} />
+      ))}
       <Waveform
         dataField={item.value}
         src={item._value}

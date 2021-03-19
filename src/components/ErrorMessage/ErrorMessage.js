@@ -1,9 +1,8 @@
 import React from "react";
 import styles from "./ErrorMessage.module.scss";
-console.log({ styles });
 
 export const ErrorMessage = ({ error }) => {
-  console.log("ErrorMessage", error);
+  console.error(error);
   if (typeof error === "string") {
     return <div className={styles.error} dangerouslySetInnerHTML={{ __html: error }} />;
   }
