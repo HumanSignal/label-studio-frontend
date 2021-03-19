@@ -1,4 +1,5 @@
-.ls-error {
+.error {
+  margin: 16px 0;
   padding: 10px 15px;
   display: block;
   border-radius: 3px;
@@ -7,6 +8,6 @@
   background-color: rgb(255, 193, 174);
 
   & + & {
-    margin-top: 10px;
+    margin: 0 0 16px; // in case we are in flex container, where margins don't collapse
   }
 }

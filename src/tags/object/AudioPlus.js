@@ -9,9 +9,9 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import Waveform from "../../components/Waveform/Waveform";
-import styles from "./AudioPlus/AudioPlus.module.scss";
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
  * AudioPlus tag plays audio and shows its wave
@@ -246,13 +246,9 @@ const HtxAudioView = ({ store, item }) => {
   return (
     <ObjectTag item={item}>
       <Fragment>
-        {item.errors?.length > 0 && (
-          <div className="ls-errors">
-            {item.errors.map(error => (
-              <div className={styles.error} dangerouslySetInnerHTML={{ __html: error }} />
-            ))}
-          </div>
-        )}
+        {item.errors?.map(error => (
+          <ErrorMessage error={error} />
+        ))}
         <Waveform
           dataField={item.value}
           src={item._value}
