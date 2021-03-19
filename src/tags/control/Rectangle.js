@@ -14,13 +14,13 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Rectangle
- * @param {string} name                   - name of the element
- * @param {string} toName                 - name of the image to label
- * @param {float=} [opacity=0.6]          - opacity of rectangle
- * @param {string=} [fillColor]           - rectangle fill color, default is transparent
- * @param {string=} [strokeColor=#f48a42] - stroke color
- * @param {number=} [strokeWidth=1]       - width of the stroke
- * @param {boolean=} [canRotate=true]     - show or hide rotation handle
+ * @param {string} name                   - Name of the element
+ * @param {string} toName                 - Name of the image to label
+ * @param {float=} [opacity=0.6]          - Opacity of rectangle
+ * @param {string=} [fillColor]           - Rectangle fill color
+ * @param {string=} [strokeColor=#f48a42] - Stroke color
+ * @param {number=} [strokeWidth=1]       - Width of the stroke
+ * @param {boolean=} [canRotate=true]     - Show or hide rotation control
  */
 const TagAttrs = types.model({
   name: types.identifier,

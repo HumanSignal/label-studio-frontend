@@ -18,9 +18,9 @@ import Hotkey from "../../core/Hotkey";
  *   </TextArea>
  * </View>
  * @name Shortcut
- * @param {string} value A value of the shortcut
- * @param {string} [alias] Shortcut alias
- * @param {string} [hotkey] Hotkey
+ * @param {string} value    - A value of the shortcut
+ * @param {string} [alias]  - Shortcut alias
+ * @param {string} [hotkey] - Hotkey
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

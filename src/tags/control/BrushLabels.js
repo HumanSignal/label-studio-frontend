@@ -11,7 +11,7 @@ import { HtxLabels, LabelsModel } from "./Labels";
 import ControlBase from "./Base";
 
 /**
- * BrushLabels tag creates segmented labeling
+ * Use the BrushLabels tag to create segmented labeling for images.
  * @example
  * <View>
  *   <BrushLabels name="labels" toName="image">
@@ -21,11 +21,11 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name BrushLabels
- * @param {string} name   - name of the element
- * @param {string} toName - name of the image to label
- * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {number} [maxUsages]               - maximum available usages
- * @param {boolean} [showInline=true]        - show items in the same visual line
+ * @param {string} name                      - Name of the element
+ * @param {string} toName                    - Name of the image to label
+ * @param {single|multiple=} [choice=single] - Configure whether the data labeler can select one or multiple labels
+ * @param {number} [maxUsages]               - The maximum available uses of a label
+ * @param {boolean} [showInline=true]        - Show items in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,

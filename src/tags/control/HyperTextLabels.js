@@ -14,17 +14,17 @@ import ControlBase from "./Base";
  * @example
  * <View>
  *   <HyperTextLabels name="labels" toName="ht">
- *     <Label value="Face" />
- *     <Label value="Nose" />
+ *     <Label value="Header" />
+ *     <Label value="Body Text" />
  *   </HyperTextLabels>
  *   <HyperText name="ht" value="$html" />
  * </View>
  * @name HyperTextLabels
- * @param {string} name name of the element
- * @param {string} toName name of the html element to label
- * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {number} [maxUsages]               - maximum available usages
- * @param {boolean} [showInline=true]        - show items in the same visual line
+ * @param {string} name                      - Name of the element
+ * @param {string} toName                    - Name of the HTML element to label
+ * @param {single|multiple=} [choice=single] - Configure if you can select one or multiple labels
+ * @param {number} [maxUsages]               - Maximum available uses of a label
+ * @param {boolean} [showInline=true]        - Show items in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,

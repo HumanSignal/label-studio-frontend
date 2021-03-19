@@ -8,7 +8,7 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 
 /**
- * Header tag, show header
+ * Use the Header tag to show a header.
  * @example
  * <View>
  *   <Header name="text-1" value="$text" />
@@ -18,10 +18,10 @@ import Tree from "../../core/Tree";
  *   <Header name="text-1" value="Please select the class" />
  * </View>
  * @name Header
- * @param {string} value              - text of header
- * @param {number} [size=4]           - size of header
- * @param {string} [style]            - css style string
- * @param {boolean} [underline=false] - underline of header
+ * @param {string} value              - Text of header
+ * @param {number} [size=4]           - Size of header
+ * @param {string} [style]            - CSS style string
+ * @param {boolean} [underline=false] - Whether to underline the header
  */
 const Model = types.model({
   type: "header",

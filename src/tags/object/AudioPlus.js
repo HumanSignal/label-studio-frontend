@@ -14,7 +14,7 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
- * AudioPlus tag plays audio and shows its wave
+ * AudioPlus tag plays audio and shows its waveform.
  * @example
  * <View>
  *   <Labels name="lbl-1" toName="audio-1">
@@ -25,12 +25,12 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
  *   <AudioPlus name="audio-1" value="$audio" />
  * </View>
  * @name AudioPlus
- * @param {string} name - name of the element
- * @param {string} value - value of the element
- * @param {boolean=} [volume=false] - show the volume slider (from 0 to 1)
- * @param {boolean} [speed=false] - show the speed slider (from 0.5 to 3)
- * @param {boolean} [zoom=true] - show the zoom slider
- * @param {string} [hotkey] - hotkey used to play/pause audio
+ * @param {string} name - Name of the element
+ * @param {string} value - Value of the element
+ * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
+ * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
+ * @param {boolean} [zoom=true] - Whether to show the zoom slider
+ * @param {string} [hotkey] - Hotkey used to play or pause audio
  */
 const TagAttrs = types.model({
   name: types.identifier,
