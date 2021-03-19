@@ -1,4 +1,3 @@
-import Konva from "konva";
 import { encode, decode } from "@thi.ng/rle-pack";
 
 import * as Colors from "./colors";
@@ -40,15 +39,20 @@ function RLE2Region(rle, image) {
 function Region2RLE(region, image, lineOpts) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
+  const stage = region.object?.stageRef;
+  if (!stage) {
+    console.error(`Stage not found for area #${region.cleanId}`);
+    return;
+  }
 
-  const layer = Konva.stages[0].findOne(`#${region.cleanId}`);
+  const layer = stage.findOne(`#${region.cleanId}`);
   if (!layer) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
   }
   // hide labels on regions and show them later
   layer.find(".region-label").hide();
-  Konva.stages[0].drawScene();
+  stage.drawScene();
   // resize to original size
   const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
   const ctx = canvas.getContext("2d");
@@ -56,7 +60,7 @@ function Region2RLE(region, image, lineOpts) {
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
   layer.find(".region-label").show();
-  Konva.stages[0].drawScene();
+  stage.drawScene();
   const rle = encode(data.data, data.data.length);
 
   return rle;
