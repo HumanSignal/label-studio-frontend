@@ -27,16 +27,16 @@ import { customTypes } from "../../core/CustomTypes";
  * </View>
  * @name Label
  * @param {string} value                    - Value of the label
- * @param {boolean} [selected=false]        - Whether to preselect this label 
+ * @param {boolean} [selected=false]        - Whether to preselect this label
  * @param {number} [maxUsages]              - Maximum available uses of the label
- * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified.
+ * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
  * @param {string} [alias]                  - Label alias
  * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
  * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
  * @param {string} [size=medium]            - Size of text in the label
- * @param {string} [background=#36B37E]             - Background color of an active label in hexadecimal
- * @param {string} [selectedColor=#ffffff]          - Color of text in an active label in hexadecimal
- * @param {symbol|word|sentence|paragraph} [granularity]       - Set control based on symbol or word selection (only for Text)
+ * @param {string} [background=#36B37E]     - Background color of an active label
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

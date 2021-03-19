@@ -37,10 +37,10 @@ const { Option } = Select;
  * @param {boolean} [showInline=false] - Show items in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] When true, show the contents of a view.
- * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
- * @param {string} [whenLabelValue] narrow down visibility by label value
- * @param {string} [whenChoiceValue] narrow down visibility by choice value
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - When true, show the contents of a view
+ * @param {string} [whenTagName]       - Narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {string} [whenLabelValue]    - Narrow down visibility by label value
+ * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({

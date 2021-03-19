@@ -23,19 +23,19 @@ const { TextArea } = Input;
  *   <TextArea name="ta"></TextArea>
  * </View>
  * @name TextArea
- * @param {string} name Name of the element
- * @param {string} toName Name of the element that you want to label, if any
- * @param {string} value
- * @param {string=} [label] Label text
- * @param {string=} [placeholder] Placeholder text
- * @param {string=} [maxSubmissions] Maximum number of submissions
- * @param {boolean=} [editable=false] Editable textarea results
- * @param {boolean=} [transcription=false] If false, always show editor
- * @param {number} [rows] Number of rows in the textarea
- * @param {boolean} [required=false]   - Validate whether content in textarea is required
- * @param {string} [requiredMessage]   - Message to show if validation fails
- * @param {boolean=} [showSubmitButton] - Whether to show or hide the submit button. By default it shows when there are more than one rows of text, such as in textarea mode.
- * @param {boolean} [perRegion] Use this tag to label regions instead of whole objects 
+ * @param {string} name                    - Name of the element
+ * @param {string} toName                  - Name of the element that you want to label
+ * @param {string} value                   - Pre-filled value
+ * @param {string=} [label]                - Label text
+ * @param {string=} [placeholder]          - Placeholder text
+ * @param {string=} [maxSubmissions]       - Maximum number of submissions
+ * @param {boolean=} [editable=false]      - Editable textarea results
+ * @param {boolean=} [transcription=false] - If false, always show editor
+ * @param {number} [rows]                  - Number of rows in the textarea
+ * @param {boolean} [required=false]       - Validate whether content in textarea is required
+ * @param {string} [requiredMessage]       - Message to show if validation fails
+ * @param {boolean=} [showSubmitButton]    - Whether to show or hide the submit button. By default it shows when there are more than one rows of text, such as in textarea mode.
+ * @param {boolean} [perRegion]            - Use this tag to label regions instead of whole objects
  */
 const TagAttrs = types.model({
   name: types.identifier,

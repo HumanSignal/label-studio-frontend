@@ -29,7 +29,7 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]               - Maximum available uses of the label
  * @param {boolean} [showInline=true]        - Show items in the same visual line
  * @param {float} [opacity=0.6]      - Opacity of rectangle
- * @param {string} [fillColor]       - Rectangle fill color, default is transparent
+ * @param {string} [fillColor]       - Rectangle fill color
  * @param {string} [strokeColor]     - Stroke color
  * @param {number} [strokeWidth=1]   - Width of stroke
  * @param {boolean} [canRotate=true] - Show or hide rotation control

@@ -24,7 +24,7 @@ import ControlBase from "./Base";
  * </View>
  * @name Pairwise
  * @param {string} name               - Name of the element
- * @param {string} toName             - Names of the elements you want to compare
+ * @param {string} toName             - Names of the elements you want to compare, comma-separated
  * @param {string} [selectionStyle]   - Style of the selection
  * @params {string} [leftClass=left]  - Class name of the left object
  * @params {string} [rightClass=left] - Class name of the right object

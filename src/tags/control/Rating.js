@@ -21,16 +21,16 @@ import ControlBase from "./Base";
  * </View>
  *
  * @name Rating
- * @param {string} name Name of the element
- * @param {string} toName Name of the element that you want to label
- * @param {number} [maxRating=5] Maximum rating value
- * @param {number} [defaultValue=0] Default rating value
- * @param {small|medium|large} [size=medium] Rating icon size
- * @param {star|heart|fire|smile} [icon=star] Rating icon
- * @param {string} hotkey HotKey for changing rating value
- * @param {boolean} [required=false]   - Whether rating validation is required
- * @param {string} [requiredMessage]   - Message to show if validation fails
- * @param {boolean} [perRegion] Use this tag to label regions instead of the whole object
+ * @param {string} name                       - Name of the element
+ * @param {string} toName                     - Name of the element that you want to label
+ * @param {number} [maxRating=5]              - Maximum rating value
+ * @param {number} [defaultValue=0]           - Default rating value
+ * @param {small|medium|large} [size=medium]  - Rating icon size
+ * @param {star|heart|fire|smile} [icon=star] - Rating icon
+ * @param {string} hotkey                     - HotKey for changing rating value
+ * @param {boolean} [required=false]          - Whether rating validation is required
+ * @param {string} [requiredMessage]          - Message to show if validation fails
+ * @param {boolean} [perRegion]               - Use this tag to label regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,

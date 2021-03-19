@@ -17,7 +17,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {string} name                   - Name of the element
  * @param {string} toName                 - Name of the image to label
  * @param {float=} [opacity=0.6]          - Opacity of rectangle
- * @param {string=} [fillColor]           - Rectangle fill color, default is transparent
+ * @param {string=} [fillColor]           - Rectangle fill color
  * @param {string=} [strokeColor=#f48a42] - Stroke color
  * @param {number=} [strokeWidth=1]       - Width of the stroke
  * @param {boolean=} [canRotate=true]     - Show or hide rotation control

@@ -17,7 +17,7 @@ import Types from "../../core/Types";
  * @param {string} name                           - Name of tag
  * @param {string} toname                         - Name of image to label
  * @param {number} [opacity=0.6]                  - Opacity of polygon
- * @param {string} [fillColor=transparent]        - Rectangle fill color
+ * @param {string} [fillColor=transparent]        - Polygon fill color
  * @param {string} [strokeColor=#f48a42]          - Stroke color
  * @param {number} [strokeWidth=3]                - Width of stroke
  * @param {small|medium|large} [pointSize=small]  - Size of polygon handle points

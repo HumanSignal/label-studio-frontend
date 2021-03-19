@@ -21,8 +21,8 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name BrushLabels
- * @param {string} name   - Name of the element
- * @param {string} toName - Name of the image to label
+ * @param {string} name                      - Name of the element
+ * @param {string} toName                    - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether the data labeler can select one or multiple labels
  * @param {number} [maxUsages]               - The maximum available uses of a label
  * @param {boolean} [showInline=true]        - Show items in the same visual line

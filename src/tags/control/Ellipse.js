@@ -17,8 +17,8 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {float} [opacity=0.6]          - Opacity of ellipse
- * @param {string} [fillColor]   - Rectangle fill color 
- * @param {string} [strokeColor=#f48a42] - Stroke color in hexadecimal 
+ * @param {string} [fillColor]           - Ellipse fill color
+ * @param {string} [strokeColor=#f48a42] - Stroke color in hexadecimal
  * @param {number} [strokeWidth=1]       - Width of the stroke
  * @param {boolean} [canRotate=true]     - Show or hide rotation control
  */
