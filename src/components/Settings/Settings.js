@@ -131,13 +131,13 @@ export default observer(({ store }) => {
 
           <br />
           <Checkbox
-            value="Show Completions panel"
-            defaultChecked={store.settings.showCompletionsPanel}
+            value="Show Annotations panel"
+            defaultChecked={store.settings.showAnnotationsPanel}
             onChange={() => {
-              store.settings.toggleCompletionsPanel();
+              store.settings.toggleAnnotationsPanel();
             }}
           >
-            Show Completions panel
+            Show Annotations panel
           </Checkbox>
           <br />
           <Checkbox

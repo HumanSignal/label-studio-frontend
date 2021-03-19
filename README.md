@@ -59,9 +59,9 @@ import 'label-studio/build/static/css/main.css';
       "update",
       "controls",
       "side-column",
-      "completions:menu",
-      "completions:add-new",
-      "completions:delete",
+      "annotations:menu",
+      "annotations:add-new",
+      "annotations:delete",
       "predictions:menu",
     ],
 
@@ -72,7 +72,7 @@ import 'label-studio/build/static/css/main.css';
     },
 
     task: {
-      completions: [],
+      annotations: [],
       predictions: [],
       id: 1,
       data: {
@@ -81,10 +81,10 @@ import 'label-studio/build/static/css/main.css';
     },
 
     onLabelStudioLoad: function(LS) {
-      var c = LS.completionStore.addCompletion({
+      var c = LS.annotationStore.addAnnotation({
         userGenerate: true
       });
-      LS.completionStore.selectCompletion(c.id);
+      LS.annotationStore.selectAnnotation(c.id);
     }
   });
 </script>

@@ -59,7 +59,7 @@ const ModelAttrs = types
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {

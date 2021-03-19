@@ -44,8 +44,8 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return Types.getParentOfTypeString(self, "Completion");
+    get annotation() {
+      return Types.getParentOfTypeString(self, "Annotation");
     },
   }))
   .actions(self => ({

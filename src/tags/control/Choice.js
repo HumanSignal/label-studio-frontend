@@ -55,8 +55,8 @@ const Model = types
       return self.parent.layout === "select";
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get parent() {
@@ -118,7 +118,7 @@ class HtxChoiceView extends Component {
       checked: item.sel,
       disabled: item.parent.readonly,
       onChange: ev => {
-        if (!item.completion.editable) return;
+        if (!item.annotation.editable) return;
         item.toggleSelected();
         ev.nativeEvent.target.blur();
       },

@@ -67,12 +67,12 @@ const Model = types
       return self.choice === "single" || self.choice === "single-radio";
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     get serializableValue() {
@@ -84,12 +84,12 @@ const Model = types
 
     get result() {
       if (self.perregion) {
-        const area = self.completion.highlightedNode;
+        const area = self.annotation.highlightedNode;
         if (!area) return null;
 
-        return self.completion.results.find(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
 
     get preselectedValues() {
@@ -110,7 +110,7 @@ const Model = types
     //     // this is a special check when choices are labeling other choices
     //     // may need to show
     //     if (self.whenchoicevalue) {
-    //         const choicesTag = self.completion.names.get(self.toname);
+    //         const choicesTag = self.annotation.names.get(self.toname);
     //         const ch = choicesTag.findLabel(self.whenchoicevalue);
 
     //         if (ch && ch.selected)
@@ -164,11 +164,11 @@ const Model = types
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
-          const area = self.completion.highlightedNode;
+          const area = self.annotation.highlightedNode;
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({}, { choices: self.selectedValues() }, self, self.toname);
+          self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
         }
       }
     },

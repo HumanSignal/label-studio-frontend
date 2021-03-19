@@ -149,7 +149,7 @@ class ChannelD3 extends React.Component {
     // click simulation - if selection didn't move
     const isJustClick = moved.start === r.start && moved.end === r.end;
     if (isJustClick) {
-      parent.completion.unselectAreas();
+      parent.annotation.unselectAreas();
       r.onClickRegion();
     } else {
       parent.regionChanged(moved, i);
@@ -199,7 +199,7 @@ class ChannelD3 extends React.Component {
       const regions = ranges.filter(r => r.start <= value && r.end >= value);
       const nextIndex = regions.findIndex(r => r.selected) + 1;
       const region = regions[nextIndex];
-      parent.completion.unselectAreas();
+      parent.annotation.unselectAreas();
       region && region.onClickRegion();
 
       return;
@@ -470,7 +470,7 @@ class ChannelD3 extends React.Component {
       const message = `\`${column}\` not found in data. Available columns: ${names.join(
         ", ",
       )}. For headless csv you can use column index`;
-      getRoot(item).completionStore.addErrors([errorBuilder.generalError(message)]);
+      getRoot(item).annotationStore.addErrors([errorBuilder.generalError(message)]);
       return;
     }
 

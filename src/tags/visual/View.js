@@ -83,8 +83,8 @@ const Model = types
     ]),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
   }));
 

@@ -31,12 +31,12 @@ const RegionsMixin = types
       return getParent(self);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get editable() {
-      return self.readonly === false && self.completion.editable === true;
+      return self.readonly === false && self.annotation.editable === true;
     },
   }))
   .actions(self => ({
@@ -124,7 +124,7 @@ const RegionsMixin = types
           })
           .filter(Boolean);
       } else {
-        const obj = self.completion.toNames.get(parent.name);
+        const obj = self.annotation.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;
 
         const tree = {
@@ -146,42 +146,42 @@ const RegionsMixin = types
     unselectRegion(tryToKeepStates = false) {
       console.log("UNSELECT REGION", "you should not be here");
       if (1) return;
-      const completion = self.completion;
+      const annotation = self.annotation;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
 
-      if (completion.relationMode) {
-        completion.stopRelationMode();
+      if (annotation.relationMode) {
+        annotation.stopRelationMode();
       }
       if (parent.setSelected) {
         parent.setSelected(undefined);
       }
 
       self.selected = false;
-      completion.setHighlightedNode(null);
+      annotation.setHighlightedNode(null);
 
       self.afterUnselectRegion();
 
       if (!keepStates) {
-        completion.unloadRegionState(self);
+        annotation.unloadRegionState(self);
       }
     },
 
     afterUnselectRegion() {},
 
     onClickRegion() {
-      const completion = self.completion;
-      if (!completion.editable) return;
+      const annotation = self.annotation;
+      if (!annotation.editable) return;
 
-      if (completion.relationMode) {
-        completion.addRelation(self);
-        completion.stopRelationMode();
-        completion.regionStore.unselectAll();
+      if (annotation.relationMode) {
+        annotation.addRelation(self);
+        annotation.stopRelationMode();
+        annotation.regionStore.unselectAll();
       } else {
         const wasNotSelected = !self.selected;
-        completion.unselectAll();
+        annotation.unselectAll();
         if (wasNotSelected) {
-          completion.selectArea(self);
+          annotation.selectArea(self);
         }
       }
     },

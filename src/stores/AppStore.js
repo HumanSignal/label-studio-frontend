@@ -2,7 +2,7 @@
 
 import { types, getEnv } from "mobx-state-tree";
 
-import CompletionStore from "./CompletionStore";
+import AnnotationStore from "./AnnotationStore";
 import Hotkey from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
 import Project from "./ProjectStore";
@@ -38,10 +38,10 @@ export default types
     explore: types.optional(types.boolean, false),
 
     /**
-     * Completions Store
+     * Annotations Store
      */
-    completionStore: types.optional(CompletionStore, {
-      completions: [],
+    annotationStore: types.optional(AnnotationStore, {
+      annotations: [],
       predictions: [],
     }),
 
@@ -159,7 +159,7 @@ export default types
       /**
        * Hotkey for submit
        */
-      Hotkey.addKey("ctrl+enter", self.submitCompletion, "Submit a task");
+      Hotkey.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
 
       /**
        * Hotkey for skip task
@@ -167,9 +167,9 @@ export default types
       if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask, "Skip a task");
 
       /**
-       * Hotkey for update completion
+       * Hotkey for update annotation
        */
-      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion, "Update a task");
+      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateAnnotation, "Update a task");
 
       /**
        * Hotkey for delete
@@ -177,7 +177,7 @@ export default types
       Hotkey.addKey(
         "command+backspace, ctrl+backspace",
         function() {
-          const { selected } = self.completionStore;
+          const { selected } = self.annotationStore;
           if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
             selected.deleteAllRegions();
           }
@@ -189,7 +189,7 @@ export default types
       Hotkey.addKey(
         "r",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           if (c && c.highlightedNode && !c.relationMode) {
             c.startRelationMode(c.highlightedNode);
           }
@@ -199,33 +199,33 @@ export default types
 
       // unselect region
       Hotkey.addKey("u", function() {
-        const c = self.completionStore.selected;
+        const c = self.annotationStore.selected;
         if (c && !c.relationMode) {
           c.unselectAll();
         }
       });
 
       Hotkey.addKey("h", function() {
-        const c = self.completionStore.selected;
+        const c = self.annotationStore.selected;
         if (c && c.highlightedNode && !c.relationMode) {
           c.highlightedNode.toggleHidden();
         }
       });
 
       Hotkey.addKey("command+z, ctrl+z", function() {
-        const { history } = self.completionStore.selected;
+        const { history } = self.annotationStore.selected;
         history && history.canUndo && history.undo();
       });
 
       Hotkey.addKey("command+shift+z, ctrl+shift+z", function() {
-        const { history } = self.completionStore.selected;
+        const { history } = self.annotationStore.selected;
         history && history.canRedo && history.redo();
       });
 
       Hotkey.addKey(
         "escape",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           if (c && c.relationMode) {
             c.stopRelationMode();
           } else if (c && c.highlightedNode) {
@@ -238,7 +238,7 @@ export default types
       Hotkey.addKey(
         "backspace",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           if (c && c.highlightedNode) {
             c.highlightedNode.deleteRegion();
           }
@@ -249,7 +249,7 @@ export default types
       Hotkey.addKey(
         "alt+tab",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           c && c.regionStore.selectNext();
         },
         "Circle through entities",
@@ -273,7 +273,7 @@ export default types
     }
 
     function assignConfig(config) {
-      const cs = self.completionStore;
+      const cs = self.annotationStore;
       self.config = config;
       cs.initRoot(self.config);
     }
@@ -309,25 +309,25 @@ export default types
         .then(() => self.setFlags({ isSubmitting: false }));
     }
 
-    function submitCompletion() {
-      const c = self.completionStore.selected;
+    function submitAnnotation() {
+      const c = self.annotationStore.selected;
       c.beforeSend();
 
       if (!c.validate()) return;
 
       c.sendUserGenerate();
       c.dropDraft();
-      handleSubmittingFlag(() => getEnv(self).onSubmitCompletion(self, c));
+      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, c));
     }
 
-    function updateCompletion() {
-      const c = self.completionStore.selected;
+    function updateAnnotation() {
+      const c = self.annotationStore.selected;
       c.beforeSend();
 
       if (!c.validate()) return;
 
       c.dropDraft();
-      getEnv(self).onUpdateCompletion(self, c);
+      getEnv(self).onUpdateAnnotation(self, c);
       !c.sentUserGenerate && c.sendUserGenerate();
     }
 
@@ -336,22 +336,23 @@ export default types
     }
 
     /**
-     * Reset completion store
+     * Reset annotation store
      */
     function resetState() {
-      self.completionStore = CompletionStore.create({ completions: [] });
+      self.annotationStore = AnnotationStore.create({ annotations: [] });
 
-      // const c = self.completionStore.addInitialCompletion();
+      // const c = self.annotationStore.addInitialAnnotation();
 
-      // self.completionStore.selectCompletion(c.id);
+      // self.annotationStore.selectAnnotation(c.id);
     }
 
     /**
-     * Function to initilaze completion store
-     * Given completions and predictions
+     * Function to initilaze annotation store
+     * Given annotations and predictions
+     * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ completions, predictions }) {
-      const cs = self.completionStore;
+    function initializeStore({ annotations, completions, predictions }) {
+      const cs = self.annotationStore;
       cs.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
@@ -359,12 +360,12 @@ export default types
       predictions?.forEach(p => {
         const obj = cs.addPrediction(p);
         cs.selectPrediction(obj.id);
-        obj.deserializeCompletion(p.result);
+        obj.deserializeAnnotation(p.result);
       });
-      completions?.forEach((c, i) => {
-        const obj = cs.addCompletion(c);
-        cs.selectCompletion(obj.id);
-        obj.deserializeCompletion(c.draft || c.result);
+      [...(completions || []), ...(annotations || [])]?.forEach((c, i) => {
+        const obj = cs.addAnnotation(c);
+        cs.selectAnnotation(obj.id);
+        obj.deserializeAnnotation(c.draft || c.result);
         obj.reinitHistory();
       });
       /* eslint-enable no-unused-expressions */
@@ -383,8 +384,8 @@ export default types
 
       skipTask,
       submitDraft,
-      submitCompletion,
-      updateCompletion,
+      submitAnnotation,
+      updateAnnotation,
 
       showModal,
       toggleSettings,

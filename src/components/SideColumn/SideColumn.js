@@ -12,14 +12,14 @@ import messages from "../../utils/messages";
 
 /**
  * Component Side with:
- * Completions
+ * Annotations
  * Entities
  * Relations
  */
 export default observer(({ store }) => {
-  const completion = store.completionStore.selected;
-  const c = store.completionStore.selected;
-  const node = completion.highlightedNode;
+  const annotation = store.annotationStore.selected;
+  const c = store.annotationStore.selected;
+  const node = annotation.highlightedNode;
 
   const { regions } = c.regionStore;
 
@@ -54,13 +54,13 @@ export default observer(({ store }) => {
 
   return (
     <Card title={title} size="small" className={styles.card}>
-      {node && <Entity store={store} completion={completion} />}
+      {node && <Entity store={store} annotation={annotation} />}
 
-      {!completion.highlightedNode && <p style={{ marginBottom: 0 }}>Nothing selected</p>}
+      {!annotation.highlightedNode && <p style={{ marginBottom: 0 }}>Nothing selected</p>}
 
-      <Entities store={store} regionStore={completion.regionStore} />
+      <Entities store={store} regionStore={annotation.regionStore} />
 
-      <Relations store={store} item={completion} />
+      <Relations store={store} item={annotation} />
     </Card>
   );
 });

@@ -51,8 +51,8 @@ const Model = types
     rating: types.maybeNull(types.number),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     selectedValues() {
@@ -71,12 +71,12 @@ const Model = types
 
     get result() {
       if (self.perregion) {
-        const area = self.completion.highlightedNode;
+        const area = self.annotation.highlightedNode;
         if (!area) return null;
 
-        return self.completion.results.find(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => ({
@@ -102,11 +102,11 @@ const Model = types
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
-          const area = self.completion.highlightedNode;
+          const area = self.annotation.highlightedNode;
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({}, { rating: value }, self, self.toname);
+          self.annotation.createResult({}, { rating: value }, self, self.toname);
         }
       }
     },
