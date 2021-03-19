@@ -19,22 +19,22 @@ import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
- * Paragraphs tag shows an Paragraphs markup that can be labeled
- * it expects an array of objects like that [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ * Paragraphs tag shows paragraph markup that can be labeled.
+ * it expects an array of objects like this: [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
  * @example
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
  * </View>
  * @name Paragraphs
- * @param {string} name                  - name of the element
- * @param {string} value                 - value of the element
- * @param {json|url} [valueType=json]    - how to treat value — as data or as url with data to load from
- * @param {string} audioUrl              - audio to sync phrases with
- * @param {boolean} showPlayer           - show audio player above the paragraphs
- * @param {no|yes} [saveTextResult=yes]  - whether to save `text` to `value` or not
- * @param {none|dialogue} [layout=none]  - the styles layout to use
- * @param {string} [nameKey=author]      - name key to use
- * @param {string} [textKey=text]        - text key to use
+ * @param {string} name                  - Name of the element
+ * @param {string} value                 - Value of the element
+ * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} audioUrl              - Audio to sync phrases with
+ * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
+ * @param {no|yes} [saveTextResult=yes]  - Whether to save `text` to `value` or not
+ * @param {none|dialogue} [layout=none]  - The styles layout to use
+ * @param {string} [nameKey=author]      - The name key to use
+ * @param {string} [textKey=text]        - The text key to use
  */
 const TagAttrs = types.model("ParagraphsModel", {
   name: types.identifier,
