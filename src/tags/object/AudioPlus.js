@@ -9,9 +9,9 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import Waveform from "../../components/Waveform/Waveform";
-import styles from "./AudioPlus/AudioPlus.module.scss"; // eslint-disable-line no-unused-vars
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
  * AudioPlus tag plays audio and shows its wave
@@ -52,22 +52,29 @@ const Model = types
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
   })
+  .volatile(self => ({
+    errors: [],
+  }))
   .views(self => ({
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get store() {
+      return getRoot(self);
+    },
+
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -86,7 +93,7 @@ const Model = types
       let r;
       let m;
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -163,14 +170,14 @@ const Model = types
       r._ws_region = wsRegion;
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
 
     addRegion(ws_region) {
       // area id is assigned to WS region during deserealization
-      const find_r = self.completion.areas.get(ws_region.id);
+      const find_r = self.annotation.areas.get(ws_region.id);
 
       if (find_r) {
         find_r.applyCSSClass(ws_region);
@@ -187,7 +194,7 @@ const Model = types
 
       const control = self.activeStates()[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const r = self.completion.createResult(ws_region, labels, control, self);
+      const r = self.annotation.createResult(ws_region, labels, control, self);
       r._ws_region = ws_region;
       r.updateAppearenceFromState();
       return r;
@@ -222,6 +229,10 @@ const Model = types
       });
     },
 
+    onError(error) {
+      self.errors = [error];
+    },
+
     wsCreated(ws) {
       self._ws = ws;
     },
@@ -235,6 +246,9 @@ const HtxAudioView = ({ store, item }) => {
   return (
     <ObjectTag item={item}>
       <Fragment>
+        {item.errors?.map(error => (
+          <ErrorMessage error={error} />
+        ))}
         <Waveform
           dataField={item.value}
           src={item._value}
@@ -243,6 +257,7 @@ const HtxAudioView = ({ store, item }) => {
           onCreate={item.wsCreated}
           addRegion={item.addRegion}
           onLoad={item.onLoad}
+          onError={item.onError}
           speed={item.speed}
           zoom={item.zoom}
           volume={item.volume}

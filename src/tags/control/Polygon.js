@@ -49,8 +49,8 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({

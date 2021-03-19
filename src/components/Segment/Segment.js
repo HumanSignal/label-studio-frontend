@@ -8,8 +8,8 @@ import styles from "./Segment.module.scss";
  */
 export default class Segment extends React.Component {
   componentDidMount() {
-    const { completion } = this.props;
-    if (completion) completion.updateObjects();
+    const { annotation } = this.props;
+    if (annotation) annotation.updateObjects();
   }
 
   render() {

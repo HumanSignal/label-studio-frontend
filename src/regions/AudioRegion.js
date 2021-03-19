@@ -119,7 +119,7 @@ const Model = types
     onClick(wavesurfer) {
       // if (! self.editable) return;
 
-      if (!self.completion.relationMode) {
+      if (!self.annotation.relationMode) {
         // Object.values(wavesurfer.regions.list).forEach(r => {
         //   // r.update({ color: self.selectedregionbg });
         // });
@@ -131,14 +131,14 @@ const Model = types
     },
 
     onMouseOver() {
-      if (self.completion.relationMode) {
+      if (self.annotation.relationMode) {
         self.setHighlight(true);
         self._ws_region.element.style.cursor = Constants.RELATION_MODE_CURSOR;
       }
     },
 
     onMouseLeave() {
-      if (self.completion.relationMode) {
+      if (self.annotation.relationMode) {
         self.setHighlight(false);
         self._ws_region.element.style.cursor = Constants.MOVE_CURSOR;
       }

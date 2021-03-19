@@ -21,14 +21,14 @@ const _Tool = types
     createRegion(opts) {
       const control = self.control;
       const labels = { [control.valueType]: control.selectedValues?.() };
-      self.obj.completion.createResult(opts, labels, control, self.obj);
+      self.obj.annotation.createResult(opts, labels, control, self.obj);
     },
 
     mousedownEv(ev, [x, y]) {
       if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
       if (!self.obj.checkLabels()) return;
 
-      self.completion.history.freeze();
+      self.annotation.history.freeze();
 
       self.mode = "drawing";
 
@@ -53,11 +53,11 @@ const _Tool = types
       const s = self.getActiveShape;
 
       if (s.radiusX < MIN_SIZE.X || s.radiusY < MIN_SIZE.Y) {
-        self.completion.removeArea(s);
-        if (self.control.type === "ellipselabels") self.completion.unselectAll(true);
+        self.annotation.removeArea(s);
+        if (self.control.type === "ellipselabels") self.annotation.unselectAll(true);
       } else {
-        self.completion.history.unfreeze();
-        // self.obj.completion.highlightedNode.unselectRegion(true);
+        self.annotation.history.unfreeze();
+        // self.obj.annotation.highlightedNode.unselectRegion(true);
       }
 
       self.mode = "viewing";

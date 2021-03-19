@@ -8,6 +8,7 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
+import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
  * Audio tag plays a simple audio file
@@ -53,18 +54,21 @@ const Model = types
     height: types.optional(types.string, "20"),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
+  }))
+  .volatile(self => ({
+    errors: [],
   }))
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
       if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if (obj.value.text) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
     },
 
@@ -81,6 +85,10 @@ const Model = types
       self._ws = ws;
     },
 
+    onError(error) {
+      self.errors = [error];
+    },
+
     wsCreated(ws) {
       self._ws = ws;
     },
@@ -93,11 +101,15 @@ const HtxAudioView = ({ store, item }) => {
 
   return (
     <ObjectTag item={item}>
+      {item.errors?.map(error => (
+        <ErrorMessage error={error} />
+      ))}
       <Waveform
         dataField={item.value}
         src={item._value}
         onCreate={item.wsCreated}
         onLoad={item.onLoad}
+        onError={item.onError}
         handlePlay={item.handlePlay}
         speed={item.speed}
         zoom={item.zoom}

@@ -66,7 +66,7 @@ const HtxTextAreaRegionView = ({ item }) => {
   const classes = [styles.mark];
   const params = {};
   const { parent } = item;
-  const { relationMode } = item.completion;
+  const { relationMode } = item.annotation;
 
   if (relationMode) {
     classes.push(styles.relation);

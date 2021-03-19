@@ -9,12 +9,12 @@ export const AreaMixin = types
     parentID: types.maybeNull(types.string),
   })
   .views(self => ({
-    // self id without completion id added to uniquiness across all the tree
+    // self id without annotation id added to uniquiness across all the tree
     get cleanId() {
       return self.id.replace(/#.*/, "");
     },
 
-    get completion() {
+    get annotation() {
       return getParent(self, 2);
     },
 
@@ -31,7 +31,7 @@ export const AreaMixin = types
     },
 
     get perRegionTags() {
-      return self.completion.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
+      return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
     },
 
     get parent() {
@@ -43,9 +43,9 @@ export const AreaMixin = types
       return styled && styled.style;
     },
 
-    // @todo may be slow, consider to add some code to completion (un)select* methods
+    // @todo may be slow, consider to add some code to annotation (un)select* methods
     get selected() {
-      return self.completion?.highlightedNode === self;
+      return self.annotation?.highlightedNode === self;
     },
 
     getOneColor() {
@@ -68,10 +68,10 @@ export const AreaMixin = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.completion.editable) return;
-      if (self.selected) self.completion.unselectAll();
+      if (!self.annotation.editable) return;
+      if (self.selected) self.annotation.unselectAll();
       if (self.destroyRegion) self.destroyRegion();
-      self.completion.deleteRegion(self);
+      self.annotation.deleteRegion(self);
     },
 
     addResult(r) {
@@ -83,7 +83,7 @@ export const AreaMixin = types
       if (index < 0) return;
       self.results.splice(index, 1);
       destroy(r);
-      if (!self.results.length) self.completion.deleteArea(self);
+      if (!self.results.length) self.annotation.deleteArea(self);
     },
 
     setValue(tag) {

@@ -12,12 +12,12 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
-    get completion() {
+    get annotation() {
       return getParent(self);
     },
 
     get classifications() {
-      const textAreas = Array.from(self.completion.names.values())
+      const textAreas = Array.from(self.annotation.names.values())
         .filter(t => t.type === "textarea" && !t.perregion)
         .map(t => t.regions);
 
@@ -25,7 +25,7 @@ export default types
     },
 
     get regions() {
-      return Array.from(self.completion.areas.values()).filter(area => !area.classification);
+      return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
     get sortedRegions() {
@@ -60,7 +60,7 @@ export default types
         let pid = el["item"].parentID;
         if (pid) {
           let parent = lookup[pid];
-          if (!parent) parent = lookup[`${pid}#${self.completion.id}`];
+          if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
           if (parent) {
             parent.children.push(el);
             return;
@@ -169,7 +169,7 @@ export default types
           self.initHotkeys();
         }
       });
-      self.view = self.completion.store.settings.displayLabelsByDefault ? "labels" : "regions";
+      self.view = self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
     },
 
     // init Alt hotkeys for regions selection
@@ -196,7 +196,7 @@ export default types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectAll(tryToKeepStates = false) {
-      self.completion.unselectAll();
+      self.annotation.unselectAll();
     },
 
     unhighlightAll() {

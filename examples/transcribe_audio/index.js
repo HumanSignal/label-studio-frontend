@@ -1,5 +1,5 @@
 import config from "./config.xml";
 import tasks from "./tasks.json";
-import completion from "./completions/1.json";
+import annotation from "./annotations/1.json";
 
-export const TranscribeAudio = { config, tasks, completion };
+export const TranscribeAudio = { config, tasks, annotation };

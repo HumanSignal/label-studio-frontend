@@ -260,7 +260,7 @@ const HtxBrushView = ({ item }) => {
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
           } else {
@@ -269,7 +269,7 @@ const HtxBrushView = ({ item }) => {
           }
         }}
         onMouseOut={e => {
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(false);
           }
 
@@ -279,7 +279,7 @@ const HtxBrushView = ({ item }) => {
           }
         }}
         onClick={e => {
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.onClickRegion();
             return;
           }
@@ -288,7 +288,7 @@ const HtxBrushView = ({ item }) => {
 
           const stage = item.parent.stageRef;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";
           }
 

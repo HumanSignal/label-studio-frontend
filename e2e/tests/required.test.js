@@ -26,7 +26,7 @@ Scenario("Check required param", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  // Add new Completion to be able to submit it
+  // Add new Annotation to be able to submit it
   I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
   I.click("Submit");
   I.waitForText("OK");
@@ -47,14 +47,14 @@ Scenario("Check required param", async function(I) {
 
   I.click("Valid");
   I.click("Submit");
-  // Completion is submitted, so now we can only update it
+  // Annotation is submitted, so now we can only update it
   I.dontSee("Submit");
   I.see("Update");
 
   // Reload to check another combination
   I.executeAsyncScript(initLabelStudio, params);
-  // Page is reloaded, there are no new completion from prev steps
-  I.dontSee("New completion");
+  // Page is reloaded, there are no new annotation from prev steps
+  I.dontSee("New annotation");
   I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
   I.click("Valid");
   I.click("Submit");

@@ -9,7 +9,7 @@ import { isString, escapeHtml } from "./utilities";
 export const parseValue = (value, task) => {
   if (!value) return;
   if (value[0] === "$") return task[value.substr(1)];
-  return value;
+  return value ?? "";
 };
 
 /**

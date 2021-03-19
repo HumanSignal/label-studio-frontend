@@ -99,7 +99,7 @@ const Node = observer(({ className, node }) => {
 });
 
 const NodeMinimal = observer(({ node }) => {
-  const { sortedRegions: regions } = getRoot(node).completionStore.selected.regionStore;
+  const { sortedRegions: regions } = getRoot(node).annotationStore.selected.regionStore;
   const index = regions.indexOf(node);
   const name = getType(node).name;
   if (!(name in NodeViews)) return null;

@@ -112,12 +112,12 @@ const Model = types
       return getRoot(self);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     get isDate() {
@@ -234,7 +234,7 @@ const Model = types
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -319,7 +319,7 @@ const Model = types
 
     fromStateJSON(obj, fromModel) {
       if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if ("timeserieslabels" in obj.value) {
@@ -339,7 +339,7 @@ const Model = types
       const labels = { [control.valueType]: control.selectedValues() };
 
       // const r = self.createRegion(start, end, clonedStates);
-      const r = self.completion.createResult({ start, end, instant: start === end }, labels, control, self);
+      const r = self.annotation.createResult({ start, end, instant: start === end }, labels, control, self);
 
       return r;
     },
@@ -372,13 +372,13 @@ const Model = types
 
       if (!self.value) {
         const message = `Attribute <b>value</b> for <b>${self.name}</b> should be provided when <b>valuetype="url"</b>`;
-        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
       const url = dataObj[idFromValue(self.value)];
       if (!url || typeof url !== "string") {
         const message = `Cannot find url in <b>${idFromValue(self.value)}</b> field of your task`;
-        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
       let text = "";
@@ -389,7 +389,7 @@ const Model = types
         res = await fetch(url);
         if (!res.ok) {
           if (res.status === 400) {
-            store.completionStore.addErrors([
+            store.annotationStore.addErrors([
               errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, messages.ERR_LOADING_S3),
             ]);
             return;
@@ -407,7 +407,7 @@ const Model = types
             error = e;
           }
         }
-        store.completionStore.addErrors([
+        store.annotationStore.addErrors([
           errorBuilder.loadingError(error, url, self.value, cors ? messages.ERR_LOADING_CORS : undefined),
         ]);
         return;
@@ -429,7 +429,7 @@ const Model = types
         self.updateValue(store);
       } catch (e) {
         const message = `Problems with parsing CSV: ${e?.message || e}<br>URL: ${url}`;
-        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        store.annotationStore.addErrors([errorBuilder.generalError(message)]);
       }
     },
 
@@ -441,7 +441,7 @@ const Model = types
         }
         data = self.dataObj;
       } catch (e) {
-        store.completionStore.addErrors([errorBuilder.generalError(e.message)]);
+        store.annotationStore.addErrors([errorBuilder.generalError(e.message)]);
         return;
       }
       if (!data) return;
@@ -451,7 +451,7 @@ const Model = types
           `<b>${self.keyColumn}</b> not found in data.`,
           `Use <b>valueType="url"</b> for data loading or column index for headless csv`,
         ].join(" ");
-        store.completionStore.addErrors([errorBuilder.generalError(message)]);
+        store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
       // if current view already restored by PersistentState

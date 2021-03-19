@@ -10,8 +10,8 @@ import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
+import { parseValue } from "../../utils/data";
 import { guidGenerator } from "../../core/Helpers";
-import { runTemplate } from "../../core/Template";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
 
@@ -62,8 +62,8 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get maxUsages() {
@@ -71,7 +71,7 @@ const Model = types
     },
 
     usedAlready() {
-      const regions = self.completion.regionStore.regions;
+      const regions = self.annotation.regionStore.regions;
       // count all the usages among all the regions
       const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
       return used;
@@ -104,12 +104,12 @@ const Model = types
       // here we check if you click on label from labels group
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
-      const region = self.completion.highlightedNode;
+      const region = self.annotation.highlightedNode;
       const sameObject = region && region.parent.name === self.parent.toname;
       if (region && region.readonly === true && sameObject) return;
 
       // one more check if that label can be selected
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
 
       // don't select if it can not be used
       if (!self.selected && !self.canBeUsed()) {
@@ -129,7 +129,7 @@ const Model = types
       // if we are going to select label and it would be the first in this labels group
       if (!labels.selectedLabels.length && !self.selected) {
         // unselect labels from other groups of labels connected to this obj
-        self.completion.toNames
+        self.annotation.toNames
           .get(labels.toname)
           .filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name)
           .forEach(tag => tag.unselectAll && tag.unselectAll());
@@ -192,7 +192,7 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj) || "";
+      self._value = parseValue(self.value, store.task.dataObj);
       self._updateBackgroundColor(self._value);
     },
   }));

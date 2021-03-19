@@ -29,7 +29,7 @@ const WIDTH = 706;
 const HEIGHT = 882;
 const convertToImageSize = getSizeConvertor(WIDTH, HEIGHT);
 
-const completionEmpty = {
+const annotationEmpty = {
   id: "1000",
   result: [],
 };
@@ -131,7 +131,7 @@ xScenario("Simple shapes on Image", async function(I) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),
       data: { image: IMAGE },
-      completions: [completionEmpty],
+      annotations: [annotationEmpty],
     };
 
     I.amOnPage("/");

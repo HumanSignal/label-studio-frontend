@@ -26,8 +26,8 @@ const Model = types
       return self.object;
     },
 
-    get completion() {
-      return getRoot(self).completionStore?.selected;
+    get annotation() {
+      return getRoot(self).annotationStore?.selected;
     },
     get regionElement() {
       return self._brushRef;
