@@ -13,6 +13,8 @@ import Utils from "../utils";
 import { delay } from "../utils/utilities";
 import messages from "../utils/messages";
 
+const hotkeys = Hotkey("AppStore");
+
 export default types
   .model("AppStore", {
     /**
@@ -98,7 +100,6 @@ export default types
   })
   .volatile(self => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
-    hotkeys: Hotkey(),
   }))
   .views(self => ({
     /**
@@ -158,27 +159,27 @@ export default types
       window.Htx = self;
 
       // Unbind previous keys in case LS was re-initialized
-      self.hotkeys.unbindAll();
+      hotkeys.unbindAll();
 
       /**
        * Hotkey for submit
        */
-      if (self.hasInterface("submit")) self.hotkeys.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
+      if (self.hasInterface("submit")) hotkeys.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) self.hotkeys.addKey("ctrl+space", self.skipTask, "Skip a task");
+      if (self.hasInterface("skip")) hotkeys.addKey("ctrl+space", self.skipTask, "Skip a task");
 
       /**
        * Hotkey for update annotation
        */
-      if (self.hasInterface("update")) self.hotkeys.addKey("alt+enter", self.updateAnnotation, "Update a task");
+      if (self.hasInterface("update")) hotkeys.addKey("alt+enter", self.updateAnnotation, "Update a task");
 
       /**
        * Hotkey for delete
        */
-      self.hotkeys.addKey(
+      hotkeys.addKey(
         "command+backspace, ctrl+backspace",
         function() {
           const { selected } = self.annotationStore;
@@ -190,7 +191,7 @@ export default types
       );
 
       // create relation
-      self.hotkeys.addKey(
+      hotkeys.addKey(
         "r",
         function() {
           const c = self.annotationStore.selected;
@@ -202,31 +203,31 @@ export default types
       );
 
       // unselect region
-      self.hotkeys.addKey("u", function() {
+      hotkeys.addKey("u", function() {
         const c = self.annotationStore.selected;
         if (c && !c.relationMode) {
           c.unselectAll();
         }
       });
 
-      self.hotkeys.addKey("h", function() {
+      hotkeys.addKey("h", function() {
         const c = self.annotationStore.selected;
         if (c && c.highlightedNode && !c.relationMode) {
           c.highlightedNode.toggleHidden();
         }
       });
 
-      self.hotkeys.addKey("command+z, ctrl+z", function() {
+      hotkeys.addKey("command+z, ctrl+z", function() {
         const { history } = self.annotationStore.selected;
         history && history.canUndo && history.undo();
       });
 
-      self.hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
+      hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
         const { history } = self.annotationStore.selected;
         history && history.canRedo && history.redo();
       });
 
-      self.hotkeys.addKey(
+      hotkeys.addKey(
         "escape",
         function() {
           const c = self.annotationStore.selected;
@@ -239,7 +240,7 @@ export default types
         "Unselect region, exit relation mode",
       );
 
-      self.hotkeys.addKey(
+      hotkeys.addKey(
         "backspace",
         function() {
           const c = self.annotationStore.selected;
@@ -250,7 +251,7 @@ export default types
         "Delete selected region",
       );
 
-      self.hotkeys.addKey(
+      hotkeys.addKey(
         "alt+tab",
         function() {
           const c = self.annotationStore.selected;

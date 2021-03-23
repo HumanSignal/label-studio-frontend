@@ -10,6 +10,8 @@ import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
 
+const hotkeys = Hotkey("TimeSeries");
+
 const Model = types
   .model("TimeSeriesRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
@@ -33,9 +35,6 @@ const Model = types
       return self._brushRef;
     },
   }))
-  .volatile(() => ({
-    hotkeys: Hotkey(),
-  }))
   .actions(self => ({
     growRight(size) {
       self.end = self.end + size;
@@ -57,15 +56,15 @@ const Model = types
       const one = 1000;
       const lots = one * 10;
 
-      self.hotkeys.addKey("left", () => self.growLeft(one), "Increase region to the left");
-      self.hotkeys.addKey("right", () => self.growRight(one), "Increase region to the right");
-      self.hotkeys.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
-      self.hotkeys.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
+      hotkeys.addKey("left", () => self.growLeft(one), "Increase region to the left");
+      hotkeys.addKey("right", () => self.growRight(one), "Increase region to the right");
+      hotkeys.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
+      hotkeys.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
 
-      self.hotkeys.addKey("shift+left", () => self.growLeft(lots));
-      self.hotkeys.addKey("shift+right", () => self.growRight(lots));
-      self.hotkeys.addKey("shift+alt+left", () => self.shrinkLeft(lots));
-      self.hotkeys.addKey("shift+alt+right", () => self.shrinkRight(lots));
+      hotkeys.addKey("shift+left", () => self.growLeft(lots));
+      hotkeys.addKey("shift+right", () => self.growRight(lots));
+      hotkeys.addKey("shift+alt+left", () => self.shrinkLeft(lots));
+      hotkeys.addKey("shift+alt+right", () => self.shrinkRight(lots));
 
       self.parent.scrollToRegion(self);
     },

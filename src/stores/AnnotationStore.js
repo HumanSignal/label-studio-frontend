@@ -18,6 +18,8 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 
+const hotkeys = Hotkey("Annotations");
+
 const Annotation = types
   .model("Annotation", {
     id: types.identifier,
@@ -107,7 +109,6 @@ const Annotation = types
   .volatile(self => ({
     hidden: false,
     versions: {},
-    hotkeys: Hotkey(),
   }))
   .actions(self => ({
     reinitHistory() {
@@ -445,7 +446,7 @@ const Annotation = types
     },
 
     setupHotKeys() {
-      self.hotkeys.unbindAll();
+      hotkeys.unbindAll();
 
       let audiosNum = 0;
       let audioNode = null;
@@ -456,7 +457,7 @@ const Annotation = types
       // Hotkeys setup
       self.traverseTree(node => {
         if (node && node.onHotKey && node.hotkey) {
-          self.hotkeys.addKey(node.hotkey, node.onHotKey, undefined, node.hotkeyScope);
+          hotkeys.addKey(node.hotkey, node.onHotKey, undefined, node.hotkeyScope);
         }
       });
 
@@ -468,7 +469,7 @@ const Annotation = types
           else audioNode = node;
 
           node.hotkey = comb;
-          self.hotkeys.addKey(comb, node.onHotKey, "Play an audio", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+          hotkeys.addKey(comb, node.onHotKey, "Play an audio", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
 
           audiosNum++;
         }
@@ -479,19 +480,19 @@ const Annotation = types
          * Hotkey for controls
          */
         if (node && node.onHotKey && !node.hotkey) {
-          const comb = self.hotkeys.makeComb();
+          const comb = hotkeys.makeComb();
 
           if (!comb) return;
 
           node.hotkey = comb;
-          self.hotkeys.addKey(node.hotkey, node.onHotKey);
+          hotkeys.addKey(node.hotkey, node.onHotKey);
         }
       });
 
       if (audioNode && audiosNum > 1) {
         audioNode.hotkey = mod + "+1";
-        self.hotkeys.addKey(audioNode.hotkey, audioNode.onHotKey);
-        self.hotkeys.removeKey(mod);
+        hotkeys.addKey(audioNode.hotkey, audioNode.onHotKey);
+        hotkeys.removeKey(mod);
       }
 
       // prevent spacebar from scrolling

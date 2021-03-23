@@ -15,7 +15,7 @@ keymaster.filter = function(event) {
   return true;
 };
 
-export const Hotkey = () => {
+export const Hotkey = name => {
   let _hotkeys_map = {};
 
   return {

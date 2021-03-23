@@ -2,6 +2,8 @@ import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 
+const hotkeys = Hotkey("RegionStore");
+
 export default types
   .model("RegionStore", {
     sort: types.optional(types.enumeration(["date", "score"]), "date"),
@@ -11,9 +13,6 @@ export default types
 
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
-  .volatile(() => ({
-    hotkeys: Hotkey(),
-  }))
   .views(self => ({
     get annotation() {
       return getParent(self);
@@ -179,10 +178,10 @@ export default types
     initHotkeys() {
       const PREFIX = "alt+shift+";
 
-      self.hotkeys.unbindAll();
+      hotkeys.unbindAll();
 
       self.sortedRegions.forEach((r, n) => {
-        self.hotkeys.addKey(PREFIX + (n + 1), function() {
+        hotkeys.addKey(PREFIX + (n + 1), function() {
           self.unselectAll();
           r.selectRegion();
         });
@@ -190,7 +189,7 @@ export default types
 
       // this is added just for the reference to show up in the
       // settings page
-      self.hotkeys.addKey("alt+shift+$n", () => {}, "Select a region");
+      hotkeys.addKey("alt+shift+$n", () => {}, "Select a region");
     },
 
     /**
