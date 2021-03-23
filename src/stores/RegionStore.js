@@ -1,6 +1,8 @@
 import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
+
+const hotkeys = Hotkey("RegionStore");
 
 export default types
   .model("RegionStore", {
@@ -175,13 +177,11 @@ export default types
     // init Alt hotkeys for regions selection
     initHotkeys() {
       const PREFIX = "alt+shift+";
-      const keys = Hotkey.getKeys();
-      const rkeys = keys.filter(k => k.indexOf(PREFIX) !== -1);
 
-      rkeys.forEach(k => Hotkey.removeKey(k));
+      hotkeys.unbindAll();
 
       self.sortedRegions.forEach((r, n) => {
-        Hotkey.addKey(PREFIX + (n + 1), function() {
+        hotkeys.addKey(PREFIX + (n + 1), function() {
           self.unselectAll();
           r.selectRegion();
         });
@@ -189,7 +189,7 @@ export default types
 
       // this is added just for the reference to show up in the
       // settings page
-      Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");
+      hotkeys.addKey("alt+shift+$n", () => {}, "Select a region");
     },
 
     /**

@@ -7,7 +7,7 @@ import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
-import Hotkey from "../../core/Hotkey";
+import { Hotkey } from "../../core/Hotkey";
 
 /**
  * Shortcut tag can be used to define a shortcut, which adds a predefined object

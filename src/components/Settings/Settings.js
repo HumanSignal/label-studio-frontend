@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Checkbox, Tabs, Table } from "antd";
 import { observer } from "mobx-react";
 
-import Hotkey from "../../core/Hotkey";
+import { Hotkey } from "../../core/Hotkey";
 
 const HotkeysDescription = () => {
   const descr = Hotkey.keysDescipritions();
