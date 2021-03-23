@@ -21,7 +21,7 @@ import ControlBase from "./Base";
  *   </Labels>
  * </View>
  * @name Relations
- * @param {single|multiple=} [choice=single] configure if you can select just one or multiple labels
+ * @param {single|multiple=} [choice=single] Configure whether you can select one or multiple labels
  */
 const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "multiple"]), "multiple"),

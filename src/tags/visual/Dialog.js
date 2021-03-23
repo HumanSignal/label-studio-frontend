@@ -9,13 +9,13 @@ import DialogView from "../../components/Dialog/Dialog";
 import { stringToColor, convertToRGBA } from "../../utils/colors";
 
 /**
- * Dialog tag renders a dialog
+ * Dialog tag renders a dialog.
  * @example
  * <View>
  *  <Dialog name="dialog" value="$dialog"></Dialog>
  * <View>
- * @param {string} name name of the element
- * @param {object} value value of the element
+ * @param {string} name Name of the element
+ * @param {object} value Value of the element
  */
 const Replica = types.model({
   name: types.string,

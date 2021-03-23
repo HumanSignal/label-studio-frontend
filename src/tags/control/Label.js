@@ -16,7 +16,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Label tag represents a single label
+ * Label tag represents a single label.
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
@@ -26,17 +26,17 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
- * @param {string} value                    - value of the label
- * @param {boolean} [selected=false]        - if this label should be preselected
- * @param {number} [maxUsages]              - maximum available usages
- * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
- * @param {string} [alias]                  - label alias
- * @param {boolean} [showAlias=false]       - show alias inside label text
- * @param {string} [aliasStyle=opacity:0.6] - alias CSS style
- * @param {string} [size=medium]            - size of text in the label
- * @param {string} [background]             - background color of an active label
- * @param {string} [selectedColor]          - color of text in an active label
- * @param {symbol|word} [granularity]       - control per symbol or word selection (only for Text)
+ * @param {string} value                    - Value of the label
+ * @param {boolean} [selected=false]        - Whether to preselect this label
+ * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
+ * @param {string} [alias]                  - Label alias
+ * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
+ * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
+ * @param {string} [size=medium]            - Size of text in the label
+ * @param {string} [background=#36B37E]     - Background color of an active label
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

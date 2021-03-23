@@ -22,15 +22,15 @@ import ControlBase from "./Base";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPointLabels
- * @param {string} name                  - name of the element
- * @param {string} toName                - name of the image to label
- * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {number} [maxUsages]               - maximum available usages
- * @param {boolean} [showInline=true]        - show items in the same visual line
- * @param {float=} [opacity=0.9]         - opacity of keypoint
- * @param {string=} [fillColor]          - keypoint fill color, default is transparent
- * @param {number=} [strokeWidth=1]      - width of the stroke
- * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
+ * @param {string} name                  - Name of the element
+ * @param {string} toName                - Name of the image to label
+ * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
+ * @param {number} [maxUsages]           - Maximum available uses of the label
+ * @param {boolean} [showInline=true]    - Show items in the same visual line
+ * @param {float=} [opacity=0.9]         - Opacity of the keypoint
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color
+ * @param {number=} [strokeWidth=1]      - Width of the stroke
+ * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color
  */
 const TagAttrs = types.model({
   name: types.identifier,

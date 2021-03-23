@@ -14,12 +14,12 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPoint
- * @param {string} name                  - name of the element
- * @param {string} toName                - name of the image to label
- * @param {float=} [opacity=0.9]         - opacity of keypoint
- * @param {string=} [fillColor=#8bad00]  - keypoint fill color
- * @param {number=} [strokeWidth=1]      - width of the stroke
- * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
+ * @param {string} name                  - Name of the element
+ * @param {string} toName                - Name of the image to label
+ * @param {float=} [opacity=0.9]         - Opacity of keypoint
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color
+ * @param {number=} [strokeWidth=1]      - Width of the stroke
+ * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color
  */
 const TagAttrs = types.model({
   name: types.identifier,
