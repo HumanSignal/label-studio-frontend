@@ -57,6 +57,7 @@ import 'label-studio/build/static/css/main.css';
     interfaces: [
       "panel",
       "update",
+      "submit",
       "controls",
       "side-column",
       "annotations:menu",

@@ -159,7 +159,7 @@ export default types
       /**
        * Hotkey for submit
        */
-      Hotkey.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
+      if (self.hasInterface("submit")) Hotkey.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
 
       /**
        * Hotkey for skip task
