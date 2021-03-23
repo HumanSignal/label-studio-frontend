@@ -99,7 +99,9 @@ export const Hotkey = () => {
 };
 
 Hotkey.DEFAULT_SCOPE = DEFAULT_SCOPE;
+
 Hotkey.INPUT_SCOPE = INPUT_SCOPE;
+
 Hotkey.keysDescipritions = function() {
   return _hotkeys_desc;
 };
