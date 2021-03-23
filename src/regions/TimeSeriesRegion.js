@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { types, getRoot } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import { TimeSeriesModel } from "../tags/object/TimeSeries";
@@ -9,6 +9,8 @@ import { guidGenerator } from "../core/Helpers";
 import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
+
+const hotkeys = Hotkey("TimeSeries");
 
 const Model = types
   .model("TimeSeriesRegionModel", {
@@ -54,15 +56,15 @@ const Model = types
       const one = 1000;
       const lots = one * 10;
 
-      Hotkey.addKey("left", () => self.growLeft(one), "Increase region to the left");
-      Hotkey.addKey("right", () => self.growRight(one), "Increase region to the right");
-      Hotkey.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
-      Hotkey.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
+      hotkeys.addKey("left", () => self.growLeft(one), "Increase region to the left");
+      hotkeys.addKey("right", () => self.growRight(one), "Increase region to the right");
+      hotkeys.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
+      hotkeys.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
 
-      Hotkey.addKey("shift+left", () => self.growLeft(lots));
-      Hotkey.addKey("shift+right", () => self.growRight(lots));
-      Hotkey.addKey("shift+alt+left", () => self.shrinkLeft(lots));
-      Hotkey.addKey("shift+alt+right", () => self.shrinkRight(lots));
+      hotkeys.addKey("shift+left", () => self.growLeft(lots));
+      hotkeys.addKey("shift+right", () => self.growRight(lots));
+      hotkeys.addKey("shift+alt+left", () => self.shrinkLeft(lots));
+      hotkeys.addKey("shift+alt+right", () => self.shrinkRight(lots));
 
       self.parent.scrollToRegion(self);
     },
@@ -76,20 +78,7 @@ const Model = types
     },
 
     afterUnselectRegion() {
-      [
-        "left",
-        "right",
-        "ctrl+left",
-        "ctrl+right",
-        "up",
-        "shift+up",
-        "down",
-        "shift+down",
-        "ctrl+up",
-        "ctrl+shift+up",
-        "ctrl+down",
-        "ctrl+shift+down",
-      ].forEach(key => Hotkey.removeKey(key));
+      hotkeys.unbindAll();
 
       self.parent.updateView();
     },

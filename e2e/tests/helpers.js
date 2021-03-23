@@ -13,6 +13,7 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
   const interfaces = [
     "panel",
     "update",
+    "submit",
     "controls",
     "side-column",
     "annotations:menu",
