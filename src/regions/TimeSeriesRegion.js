@@ -78,20 +78,7 @@ const Model = types
     },
 
     afterUnselectRegion() {
-      [
-        "left",
-        "right",
-        "ctrl+left",
-        "ctrl+right",
-        "up",
-        "shift+up",
-        "down",
-        "shift+down",
-        "ctrl+up",
-        "ctrl+shift+up",
-        "ctrl+down",
-        "ctrl+shift+down",
-      ].forEach(key => Hotkey.removeKey(key));
+      hotkeys.unbindAll();
 
       self.parent.updateView();
     },
