@@ -1,7 +1,7 @@
 import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot, isAlive } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
 import RegionStore from "./RegionStore";
 import Registry from "../core/Registry";
 import RelationStore from "./RelationStore";
@@ -107,6 +107,7 @@ const Annotation = types
   .volatile(self => ({
     hidden: false,
     versions: {},
+    hotkeys: Hotkey(),
   }))
   .actions(self => ({
     reinitHistory() {
@@ -444,7 +445,7 @@ const Annotation = types
     },
 
     setupHotKeys() {
-      Hotkey.unbindAll();
+      self.hotkeys.unbindAll();
 
       let audiosNum = 0;
       let audioNode = null;
@@ -455,7 +456,7 @@ const Annotation = types
       // Hotkeys setup
       self.traverseTree(node => {
         if (node && node.onHotKey && node.hotkey) {
-          Hotkey.addKey(node.hotkey, node.onHotKey, undefined, node.hotkeyScope);
+          self.hotkeys.addKey(node.hotkey, node.onHotKey, undefined, node.hotkeyScope);
         }
       });
 
@@ -467,7 +468,7 @@ const Annotation = types
           else audioNode = node;
 
           node.hotkey = comb;
-          Hotkey.addKey(comb, node.onHotKey, "Play an audio", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+          self.hotkeys.addKey(comb, node.onHotKey, "Play an audio", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
 
           audiosNum++;
         }
@@ -478,19 +479,19 @@ const Annotation = types
          * Hotkey for controls
          */
         if (node && node.onHotKey && !node.hotkey) {
-          const comb = Hotkey.makeComb();
+          const comb = self.hotkeys.makeComb();
 
           if (!comb) return;
 
           node.hotkey = comb;
-          Hotkey.addKey(node.hotkey, node.onHotKey);
+          self.hotkeys.addKey(node.hotkey, node.onHotKey);
         }
       });
 
       if (audioNode && audiosNum > 1) {
         audioNode.hotkey = mod + "+1";
-        Hotkey.addKey(audioNode.hotkey, audioNode.onHotKey);
-        Hotkey.removeKey(mod);
+        self.hotkeys.addKey(audioNode.hotkey, audioNode.onHotKey);
+        self.hotkeys.removeKey(mod);
       }
 
       // prevent spacebar from scrolling

@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { types, getRoot } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import { TimeSeriesModel } from "../tags/object/TimeSeries";
@@ -33,6 +33,9 @@ const Model = types
       return self._brushRef;
     },
   }))
+  .volatile(() => ({
+    hotkeys: Hotkey(),
+  }))
   .actions(self => ({
     growRight(size) {
       self.end = self.end + size;
@@ -54,15 +57,15 @@ const Model = types
       const one = 1000;
       const lots = one * 10;
 
-      Hotkey.addKey("left", () => self.growLeft(one), "Increase region to the left");
-      Hotkey.addKey("right", () => self.growRight(one), "Increase region to the right");
-      Hotkey.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
-      Hotkey.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
+      self.hotkeys.addKey("left", () => self.growLeft(one), "Increase region to the left");
+      self.hotkeys.addKey("right", () => self.growRight(one), "Increase region to the right");
+      self.hotkeys.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
+      self.hotkeys.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
 
-      Hotkey.addKey("shift+left", () => self.growLeft(lots));
-      Hotkey.addKey("shift+right", () => self.growRight(lots));
-      Hotkey.addKey("shift+alt+left", () => self.shrinkLeft(lots));
-      Hotkey.addKey("shift+alt+right", () => self.shrinkRight(lots));
+      self.hotkeys.addKey("shift+left", () => self.growLeft(lots));
+      self.hotkeys.addKey("shift+right", () => self.growRight(lots));
+      self.hotkeys.addKey("shift+alt+left", () => self.shrinkLeft(lots));
+      self.hotkeys.addKey("shift+alt+right", () => self.shrinkRight(lots));
 
       self.parent.scrollToRegion(self);
     },
