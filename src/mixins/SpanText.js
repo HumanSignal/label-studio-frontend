@@ -45,7 +45,7 @@ export default types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.style.fillcolor;
+      let labelColor = self.parent.highlightcolor || self.style?.fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
