@@ -2,11 +2,8 @@ body {
   position: relative;
   margin: 0;
   padding: 0;
-}
-
-#label-studio {
-  margin-left: 20px;
-  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .footer {
@@ -21,14 +18,13 @@ body {
 
 #header {
   background-color: #fff;
-  height: 60px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   padding: 0px 20px 0px 40px;
   z-index: 100;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 3px;
   width: 100%;
-  margin-bottom: 60px;
 }
 
 #header a {
@@ -49,7 +45,7 @@ body {
   font-size: 1.5em;
   line-height: 40px;
   color: #273849;
-  font-family: "Dosis", "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  font-family: "Roboto", Arial, sans-serif;
   font-weight: 500;
   display: flex;
 }
@@ -80,6 +76,9 @@ body {
 }
 
 #ls-container {
-  margin-left: 3em;
-  margin-right: 3em;
+  flex: 1;
+}
+
+#label-studio {
+  height: 100%;
 }

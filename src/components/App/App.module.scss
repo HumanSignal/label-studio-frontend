@@ -12,9 +12,15 @@
   z-index: 1;
 }
 
+.main-content-wrapper {
+  width: 100%;
+}
+
 .editor {
+  height: 100%;
   min-width: 320px;
   margin: 0 auto;
+  background-color: #f3f3f3;
 
   @include respond("phone") {
     width: 300px;
@@ -36,14 +42,10 @@
   min-width: 320px;
   display: flex;
   flex-flow: column;
-
-  & > div {
-    margin-bottom: 20px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
+  z-index: 100;
+  align-self: stretch;
+  background-color: #fff;
+  box-shadow: -1px 0 0 rgba(#000, 0.1);
 
   @include respond("phone") {
     margin-left: 0;
@@ -85,6 +87,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  height: 100%;
 }
 
 .commonbsp {

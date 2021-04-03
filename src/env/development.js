@@ -55,6 +55,7 @@ const data = TranscribeAudio;
  * @param {string} pathToConfig
  */
 async function getConfig(pathToConfig) {
+  console.log(pathToConfig);
   const response = await fetch(pathToConfig);
   const config = await response.text();
   return config;
@@ -80,8 +81,6 @@ async function getExample() {
  * Function to return App element
  */
 function rootElement(element) {
-  const el = document.createElement("div");
-
   let root;
 
   if (typeof element === "string") {
@@ -91,11 +90,10 @@ function rootElement(element) {
   }
 
   root.innerHTML = "";
-  root.appendChild(el);
 
   root.style.width = "auto";
 
-  return el;
+  return root;
 }
 
 /**

@@ -2,17 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600|Roboto Mono' rel='stylesheet' type='text/css' />
-    <link href='//fonts.googleapis.com/css?family=Dosis:500&text=LabelStudio' rel='stylesheet' type='text/css' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="//fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link href="//fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#000000">
-    <!--
-      manifest.json provides metadata used when your web app is added to the
-      homescreen on Android. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-    <link rel="stylesheet" href="%PUBLIC_URL%/styles/main.css">
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -22,6 +17,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
       -->
+    <link rel="stylesheet" href="/styles/main.css">
     <title>Label Studio</title>
   </head>
   <body>
@@ -31,7 +27,7 @@
 
     <div id="header">
       <a id="logo" href="/">
-        <img src="./images/ls_logo.png" alt="label studio logo">
+        <img src="/images/ls_logo.png" alt="label studio logo">
         <span style="font-size: 1.2em;">Label Studio</span>
       </a>
       <ul id="nav">
@@ -44,9 +40,8 @@
     <div id="ls-container">
       <div id="label-studio"></div>
     </div>
-    <footer class="footer">Made by <a target="_blank" href="https://heartex.net">Heartex</a> in San Francisco
-      <br/><br/>
-      <img src="./images/3nowhite.svg" height="80" />
+    <footer class="footer">
+      Made with <img src="/images/3nowhite.svg" height="16" /> by <a target="_blank" href="https://heartex.net">Heartex</a> in San Francisco
     </footer>
 
     <script>
@@ -63,21 +58,18 @@
     <script>
       domReady(function () {
         var ls = new LabelStudio("label-studio", {
-
           description: "Description",
-
-            interfaces: [
-                "panel",
-                "update",
-                "submit",
-                "controls",
-                "side-column",
-                "annotations:menu",
-                "annotations:add-new",
-                "annotations:delete",
-                "predictions:menu",
-            ],
-
+          interfaces: [
+              "panel",
+              "update",
+              "submit",
+              "controls",
+              "side-column",
+              "annotations:menu",
+              "annotations:add-new",
+              "annotations:delete",
+              "predictions:menu",
+          ],
           task: {
             annotations: [],
             predictions: [],
@@ -87,7 +79,6 @@
             }
           }
         });
-
       });
     </script>
   </body>

@@ -38,6 +38,9 @@ import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
+import { AnnotationTabs } from "../AnnotationTabs/AnnotatioTabs";
+import { CurrentAnnotation } from "../CurrentAnnotation/CurrentAnnotation";
+import { SidebarToggle } from "../SidebarToggle/SidebarToggle";
 
 /**
  * App
@@ -76,8 +79,8 @@ class App extends Component {
 
     return (
       <div className="ls-renderall">
-        {obj.map(c => (
-          <div className="ls-fade">
+        {obj.map((c, i) => (
+          <div key={`all-${i}`} className="ls-fade">
             <Segment annotation={c}>{[Tree.renderItem(c.root)]}</Segment>
           </div>
         ))}
@@ -118,21 +121,21 @@ class App extends Component {
   }
 
   render() {
-    const self = this;
-    const { store } = self.props;
+    console.log({ styles });
+    const { store } = this.props;
     const cs = store.annotationStore;
     const root = cs.selected && cs.selected.root;
     const { settings } = store;
 
-    if (store.isLoading) return self.renderLoader();
+    if (store.isLoading) return this.renderLoader();
 
-    if (store.noTask) return self.renderNothingToLabel();
+    if (store.noTask) return this.renderNothingToLabel();
 
-    if (store.noAccess) return self.renderNoAccess();
+    if (store.noAccess) return this.renderNoAccess();
 
-    if (store.labeledSuccess) return self.renderSuccess();
+    if (store.labeledSuccess) return this.renderSuccess();
 
-    if (!root) return self.renderNoAnnotation();
+    if (!root) return this.renderNoAnnotation();
 
     const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
     const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
@@ -142,35 +145,38 @@ class App extends Component {
       <div className={stEditor + " ls-editor"}>
         <Settings store={store} />
         <Provider store={store}>
-          <div>
-            {store.hasInterface("panel") && <Panel store={store} />}
+          {/* {store.hasInterface("panel") && <Panel store={store} />} */}
 
-            {store.showingDescription && (
-              <Segment>
-                <div dangerouslySetInnerHTML={{ __html: store.description }} />
-              </Segment>
-            )}
+          {store.showingDescription && (
+            <Segment>
+              <div dangerouslySetInnerHTML={{ __html: store.description }} />
+            </Segment>
+          )}
 
-            {/* <div className={styles.pins}> */}
-            {/*   <div style={{ width: "100%", marginRight: "20px" }}><PushpinOutlined /></div> */}
-            {/*   <div className={styles.pinsright}><PushpinOutlined /></div> */}
-            {/* </div> */}
+          {/* <div className={styles.pins}> */}
+          {/*   <div style={{ width: "100%", marginRight: "20px" }}><PushpinOutlined /></div> */}
+          {/*   <div className={styles.pinsright}><PushpinOutlined /></div> */}
+          {/* </div> */}
 
-            <div className={stCommon + " ls-common"}>
+          <div className={stCommon + " ls-common"}>
+            <div className={styles["main-content-wrapper"]}>
+              {/* {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
+                <Predictions store={store} />
+              )}
+              {store.hasInterface("annotations:menu") && store.settings.showAnnotationsPanel && (
+                <Annotations store={store} />
+              )} */}
+              <AnnotationTabs store={store} />
               {cs.validation === null
                 ? this._renderUI(root, store, cs, settings)
                 : this.renderConfigValidationException()}
-              <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("annotations:menu") && store.settings.showAnnotationsPanel && (
-                  <Annotations store={store} />
-                )}
-                {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
-                  <Predictions store={store} />
-                )}
-                {store.hasInterface("side-column") && !cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
-                  <SideColumn store={store} />
-                )}
-              </div>
+            </div>
+            <div className={stMenu + " ls-menu"}>
+              <SidebarToggle />
+              <CurrentAnnotation annotation={store.annotationStore.selected} />
+              {store.hasInterface("side-column") && !cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
+                <SideColumn store={store} />
+              )}
             </div>
           </div>
         </Provider>

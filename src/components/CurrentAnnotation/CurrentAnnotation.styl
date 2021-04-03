@@ -1,0 +1,32 @@
+.annotation
+  padding 16px
+
+  &__info
+    height 32px
+    display flex
+    align-items center
+    justify-content space-between
+
+  &__actions
+    height 36px
+    display grid
+    grid-template-columns 1fr 1fr
+    grid-column-gap 12px
+
+.history
+  display flex
+
+  &__action
+    padding 0
+    display block
+    border none
+    background none
+
+    &:disabled
+      opacity 0.6
+
+    svg
+      display block
+
+    &_delete
+      color #DD0000

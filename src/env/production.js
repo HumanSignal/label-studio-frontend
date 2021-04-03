@@ -24,8 +24,6 @@ function getState(task) {
  * LS will render in this part
  */
 function rootElement(element) {
-  const el = document.createElement("div");
-
   let root;
 
   if (typeof element === "string") {
@@ -35,9 +33,8 @@ function rootElement(element) {
   }
 
   root.innerHTML = "";
-  root.appendChild(el);
 
-  return el;
+  return root;
 }
 
 /**
