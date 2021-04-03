@@ -9,7 +9,7 @@ import "./CurrentAnnotation.styl";
 
 export const CurrentAnnotation = observer(({ annotation }) => {
   return annotation ? (
-    <Block name="annotation">
+    <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
         ID: {annotation.id}
         <RadioGroup size="medium" value="latest">
@@ -44,21 +44,31 @@ export const CurrentAnnotation = observer(({ annotation }) => {
 const HistoryActions = observer(({ history }) => {
   return (
     <Block name="history">
-      <Elem tag="button" name="action" disabled={!history?.canUndo} onClick={() => history?.canUndo && history.undo()}>
-        <LsUndo />
-      </Elem>
-      <Elem tag="button" name="action" disabled={!history?.canRedo} onClick={() => history?.canRedo && history.redo()}>
-        <LsRedo />
-      </Elem>
       <Elem
-        tag="button"
+        tag={Button}
         name="action"
-        mod={{ delete: true }}
+        type="text"
+        disabled={!history?.canUndo}
+        onClick={() => history?.canUndo && history.undo()}
+        icon={<LsUndo />}
+      />
+      <Elem
+        tag={Button}
+        name="action"
+        type="text"
+        disabled={!history?.canRedo}
+        onClick={() => history?.canRedo && history.redo()}
+        icon={<LsRedo />}
+      />
+      <Elem
+        tag={Button}
+        name="action"
+        look="danger"
+        type="text"
         disabled={!history?.canUndo}
         onClick={() => history?.reset()}
-      >
-        <LsRemove />
-      </Elem>
+        icon={<LsRemove />}
+      />
     </Block>
   );
 });

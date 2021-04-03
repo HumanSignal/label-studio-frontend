@@ -2,6 +2,8 @@ import React, { useCallback } from "react";
 import { observer } from "mobx-react";
 import styles from "./AnnotationTabs.module.scss";
 import { PlusOutlined } from "@ant-design/icons";
+import { Userpic } from "../../common/Userpic/Userpic";
+import { Space } from "../../common/Space/Space";
 
 const Annotation = observer(({ annotation, selected, onClick }) => {
   const classList = [styles.annotation];
@@ -16,7 +18,10 @@ const Annotation = observer(({ annotation, selected, onClick }) => {
         onClick(annotation);
       }}
     >
-      ID {annotation.id}
+      <Space size="small">
+        <Userpic username="NS" />
+        ID {annotation.id}
+      </Space>
     </div>
   );
 });
