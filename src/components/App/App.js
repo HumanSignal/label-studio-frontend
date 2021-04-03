@@ -40,7 +40,8 @@ import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
 import { AnnotationTabs } from "../AnnotationTabs/AnnotatioTabs";
 import { CurrentAnnotation } from "../CurrentAnnotation/CurrentAnnotation";
-import { SidebarToggle } from "../SidebarToggle/SidebarToggle";
+import { SidebarContent, SidebarPage, SidebarToggle } from "../SidebarToggle/SidebarToggle";
+import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 
 /**
  * App
@@ -121,7 +122,6 @@ class App extends Component {
   }
 
   render() {
-    console.log({ styles });
     const { store } = this.props;
     const cs = store.annotationStore;
     const root = cs.selected && cs.selected.root;
@@ -145,38 +145,28 @@ class App extends Component {
       <div className={stEditor + " ls-editor"}>
         <Settings store={store} />
         <Provider store={store}>
-          {/* {store.hasInterface("panel") && <Panel store={store} />} */}
-
           {store.showingDescription && (
             <Segment>
               <div dangerouslySetInnerHTML={{ __html: store.description }} />
             </Segment>
           )}
 
-          {/* <div className={styles.pins}> */}
-          {/*   <div style={{ width: "100%", marginRight: "20px" }}><PushpinOutlined /></div> */}
-          {/*   <div className={styles.pinsright}><PushpinOutlined /></div> */}
-          {/* </div> */}
-
           <div className={stCommon + " ls-common"}>
             <div className={styles["main-content-wrapper"]}>
-              {/* {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
-                <Predictions store={store} />
-              )}
-              {store.hasInterface("annotations:menu") && store.settings.showAnnotationsPanel && (
-                <Annotations store={store} />
-              )} */}
               <AnnotationTabs store={store} />
               {cs.validation === null
                 ? this._renderUI(root, store, cs, settings)
                 : this.renderConfigValidationException()}
             </div>
             <div className={stMenu + " ls-menu"}>
-              <SidebarToggle />
-              <CurrentAnnotation annotation={store.annotationStore.selected} />
-              {store.hasInterface("side-column") && !cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
-                <SideColumn store={store} />
-              )}
+              <SidebarToggle active="annotation">
+                <SidebarPage name="annotation" title="Annotation">
+                  <AnnotationTab store={store} />
+                </SidebarPage>
+                <SidebarPage name="comments" title="Comments">
+                  Hello there
+                </SidebarPage>
+              </SidebarToggle>
             </div>
           </div>
         </Provider>

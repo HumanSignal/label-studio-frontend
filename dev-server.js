@@ -6,7 +6,7 @@ const config = require("./webpack.config-builder")({
   withDevServer: false,
 });
 
-const port = 5005;
+const port = 3000;
 
 const options = {
   compress: true,

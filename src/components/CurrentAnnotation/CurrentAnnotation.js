@@ -4,6 +4,7 @@ import { LsRedo, LsUndo, LsRemove, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import { Space } from "../../common/Space/Space";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import "./CurrentAnnotation.styl";
 
@@ -21,16 +22,18 @@ export const CurrentAnnotation = observer(({ annotation }) => {
       <Space spread style={{ margin: "8px 0" }}>
         <HistoryActions history={annotation.history} />
 
-        <Button
-          icon={<LsTrash />}
-          look="danger"
-          type="text"
-          style={{
-            height: 36,
-            width: 36,
-            padding: 0,
-          }}
-        />
+        <Tooltip title="Delete annotation">
+          <Button
+            icon={<LsTrash />}
+            look="danger"
+            type="text"
+            style={{
+              height: 36,
+              width: 36,
+              padding: 0,
+            }}
+          />
+        </Tooltip>
       </Space>
 
       <Elem name="actions">
@@ -44,31 +47,37 @@ export const CurrentAnnotation = observer(({ annotation }) => {
 const HistoryActions = observer(({ history }) => {
   return (
     <Block name="history">
-      <Elem
-        tag={Button}
-        name="action"
-        type="text"
-        disabled={!history?.canUndo}
-        onClick={() => history?.canUndo && history.undo()}
-        icon={<LsUndo />}
-      />
-      <Elem
-        tag={Button}
-        name="action"
-        type="text"
-        disabled={!history?.canRedo}
-        onClick={() => history?.canRedo && history.redo()}
-        icon={<LsRedo />}
-      />
-      <Elem
-        tag={Button}
-        name="action"
-        look="danger"
-        type="text"
-        disabled={!history?.canUndo}
-        onClick={() => history?.reset()}
-        icon={<LsRemove />}
-      />
+      <Tooltip title="Undo">
+        <Elem
+          tag={Button}
+          name="action"
+          type="text"
+          disabled={!history?.canUndo}
+          onClick={() => history?.canUndo && history.undo()}
+          icon={<LsUndo />}
+        />
+      </Tooltip>
+      <Tooltip title="Redo">
+        <Elem
+          tag={Button}
+          name="action"
+          type="text"
+          disabled={!history?.canRedo}
+          onClick={() => history?.canRedo && history.redo()}
+          icon={<LsRedo />}
+        />
+      </Tooltip>
+      <Tooltip title="Reset">
+        <Elem
+          tag={Button}
+          name="action"
+          look="danger"
+          type="text"
+          disabled={!history?.canUndo}
+          onClick={() => history?.reset()}
+          icon={<LsRemove />}
+        />
+      </Tooltip>
     </Block>
   );
 });

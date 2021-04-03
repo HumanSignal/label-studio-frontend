@@ -224,8 +224,6 @@ function treeToModel(html) {
   const htmlSelfClosingTags = editSelfClosingTags(htmlWithotBreaks);
   let document;
 
-  console.log({ html, htmlWithotBreaks, htmlSelfClosingTags });
-
   // it's actually a sync function, but there is no sync interface
   // because of some backwards compat
   xml2js.parseString(
@@ -236,7 +234,6 @@ function treeToModel(html) {
       charsAsChildren: true,
     },
     function(err, result) {
-      console.log({ err, result });
       document = result;
     },
   );

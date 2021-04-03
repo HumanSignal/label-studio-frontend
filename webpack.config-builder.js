@@ -184,10 +184,9 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
-  new webpack.ProgressPlugin(),
 ];
 
-if (isDevelopment) {
+if (isDevelopment || process.env.NODE_ENV === "test") {
   plugins.push(
     new HtmlWebPackPlugin({
       title: "Label Studio Frontend",
@@ -196,12 +195,16 @@ if (isDevelopment) {
   );
 }
 
+if (isDevelopment) {
+  plugins.push(new webpack.ProgressPlugin());
+}
+
 const sourceMap = isDevelopment ? "cheap-module-source-map" : "source-map";
 
-module.exports = ({ withDevServer = true } = {}) => ({
+module.exports = () => ({
   mode: DEFAULT_NODE_ENV || "development",
   devtool: sourceMap,
-  ...(withDevServer ? devServer() : {}),
+  ...devServer(),
   entry: path.resolve(__dirname, "src/index.js"),
   output: {
     path: path.resolve(__dirname, "build"),

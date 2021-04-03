@@ -97,6 +97,11 @@ export default types
      * Finish of labeling
      */
     labeledSuccess: types.optional(types.boolean, false),
+
+    /**
+     * Show or hide comments section
+     */
+    showComments: false,
   })
   .volatile(self => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
@@ -149,6 +154,10 @@ export default types
 
     function addInterface(name) {
       return self.interfaces.push(name);
+    }
+
+    function toggleComments(state) {
+      return (self.showComments = state);
     }
 
     /**
@@ -393,6 +402,7 @@ export default types
       updateAnnotation,
 
       showModal,
+      toggleComments,
       toggleSettings,
       toggleDescription,
     };

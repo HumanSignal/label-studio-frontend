@@ -1,11 +1,41 @@
-import React from "react";
-import styles from "./SidebarToggle.module.scss";
+import { observer } from "mobx-react";
+import React, { createContext, useState } from "react";
+import { Children } from "react";
+import { Block, Elem } from "../../utils/bem";
+import "./SidebarToggle.styl";
 
-export const SidebarToggle = () => {
+const SidebarContext = createContext();
+
+export const SidebarToggle = observer(({ active, children }) => {
+  const [selected, setSelected] = useState(active);
+  const tabs = Children.toArray(children);
+
   return (
-    <div className={styles.container}>
-      <div className={[styles.button, styles.active].join(" ")}>Annotation</div>
-      <div className={styles.button}>Comments</div>
-    </div>
+    <SidebarContext.Provider value={{ selected }}>
+      <Block name="sidebar-tabs">
+        <Elem name="toggle">
+          {tabs.map(tab => (
+            <Elem
+              name="tab"
+              key={tab.props.name}
+              mod={{ active: tab.props.name === selected }}
+              onClick={() => setSelected(tab.props.name)}
+            >
+              {tab.props.title}
+            </Elem>
+          ))}
+        </Elem>
+
+        <Elem name="content">{tabs.find(tab => tab.props.name === selected)}</Elem>
+      </Block>
+    </SidebarContext.Provider>
   );
+});
+
+export const SidebarPage = ({ children }) => {
+  return children;
+};
+
+export const SidebarContent = ({ children }) => {
+  return <Block name="sidebar-content">{children}</Block>;
 };

@@ -38,8 +38,6 @@ if (process.env.NODE_ENV === "production") {
 } else {
   const environment = require("./env/development").default;
 
-  console.log({ environment });
-
   LabelStudio = function(element, options) {
     let params = options;
 

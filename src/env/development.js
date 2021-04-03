@@ -48,14 +48,13 @@ import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-u
  */
 // import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
 
-const data = TranscribeAudio;
+const data = ImageBbox;
 
 /**
  * Get current config
  * @param {string} pathToConfig
  */
 async function getConfig(pathToConfig) {
-  console.log(pathToConfig);
   const response = await fetch(pathToConfig);
   const config = await response.text();
   return config;
