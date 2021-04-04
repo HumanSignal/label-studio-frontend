@@ -10,6 +10,8 @@ import { wrapArray } from "../../utils/utilities";
 import globalStyles from "../../styles/global.module.scss";
 
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
+import { Block, Elem } from "../../utils/bem";
+import "./Relations.styl";
 
 const { Option } = Select;
 
@@ -136,47 +138,35 @@ export default observer(({ store }) => {
   const relationsUIVisible = annotation.relationStore.showConnections;
 
   return (
-    <Fragment>
+    <Block name="relations">
       {/* override LS styles' height */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          paddingLeft: "4px",
-          paddingRight: "4px",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ flex: 1, paddingRight: 10 }}>
-          <Divider dashed orientation="left" style={{ height: "auto" }}>
-            Relations ({relations.length})
-          </Divider>
-        </div>
+      <Elem name="header">
+        <Elem name="title">Relations ({relations.length})</Elem>
         {hasRelations && (
-          <div>
-            <Button
-              size="small"
-              type="link"
-              icon={relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-              onClick={() => annotation.relationStore.toggleConnections()}
-              className={[relationsUIVisible ? styles.uihidden : styles.uivisible, globalStyles.link]}
-            />
-          </div>
+          <Button
+            size="small"
+            type="link"
+            icon={relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            onClick={() => annotation.relationStore.toggleConnections()}
+            className={[relationsUIVisible ? styles.uihidden : styles.uivisible, globalStyles.link]}
+          />
         )}
-      </div>
+      </Elem>
 
-      {!hasRelations && <p>No Relations added yet</p>}
-
-      {hasRelations && (
-        <List
-          size="small"
-          bordered
-          itemLayout="vertical"
-          className={styles.list}
-          dataSource={annotation.relationStore.relations}
-          renderItem={item => <ListItem item={item} />}
-        />
-      )}
-    </Fragment>
+      <Elem name="content">
+        {hasRelations ? (
+          <List
+            size="small"
+            bordered
+            itemLayout="vertical"
+            className={styles.list}
+            dataSource={annotation.relationStore.relations}
+            renderItem={item => <ListItem item={item} />}
+          />
+        ) : (
+          <p>No Relations added yet</p>
+        )}
+      </Elem>
+    </Block>
   );
 });

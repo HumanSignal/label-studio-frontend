@@ -93,13 +93,10 @@ class App extends Component {
     return (
       <>
         {!cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
-          <Segment annotation={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
-            <div style={{ position: "relative" }}>
-              {Tree.renderItem(root)}
-              {this.renderRelations(cs.selected)}
-            </div>
-            {store.hasInterface("controls") && <Controls item={cs.selected} />}
-          </Segment>
+          <div style={{ position: "relative" }}>
+            {Tree.renderItem(root)}
+            {this.renderRelations(cs.selected)}
+          </div>
         )}
         {cs.viewingAllAnnotations && this.renderAllAnnotations()}
         {cs.viewingAllPredictions && this.renderAllPredictions()}
@@ -123,8 +120,8 @@ class App extends Component {
 
   render() {
     const { store } = this.props;
-    const cs = store.annotationStore;
-    const root = cs.selected && cs.selected.root;
+    const as = store.annotationStore;
+    const root = as.selected && as.selected.root;
     const { settings } = store;
 
     if (store.isLoading) return this.renderLoader();
@@ -154,19 +151,21 @@ class App extends Component {
           <div className={stCommon + " ls-common"}>
             <div className={styles["main-content-wrapper"]}>
               <AnnotationTabs store={store} />
-              {cs.validation === null
-                ? this._renderUI(root, store, cs, settings)
+              {as.validation === null
+                ? this._renderUI(root, store, as, settings)
                 : this.renderConfigValidationException()}
             </div>
             <div className={stMenu + " ls-menu"}>
-              <SidebarToggle active="annotation">
-                <SidebarPage name="annotation" title="Annotation">
-                  <AnnotationTab store={store} />
-                </SidebarPage>
-                <SidebarPage name="comments" title="Comments">
-                  Hello there
-                </SidebarPage>
-              </SidebarToggle>
+              {store.hasInterface("side-column") && !as.viewingAllAnnotations && !as.viewingAllPredictions && (
+                <SidebarToggle active="annotation">
+                  <SidebarPage name="annotation" title="Annotation">
+                    <AnnotationTab store={store} />
+                  </SidebarPage>
+                  <SidebarPage name="comments" title="Comments">
+                    Hello there
+                  </SidebarPage>
+                </SidebarToggle>
+              )}
             </div>
           </div>
         </Provider>

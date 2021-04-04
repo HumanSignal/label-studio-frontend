@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import React from "react";
 import { LsRedo, LsUndo, LsRemove, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
+import { confirm } from "../../common/Modal/Modal";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import { Space } from "../../common/Space/Space";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
@@ -13,7 +14,7 @@ export const CurrentAnnotation = observer(({ annotation }) => {
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
         ID: {annotation.id}
-        <RadioGroup size="medium" value="latest">
+        <RadioGroup size="medium" defaultValue="latest">
           <RadioGroup.Button value="original">Original</RadioGroup.Button>
           <RadioGroup.Button value="latest">Latest</RadioGroup.Button>
         </RadioGroup>
@@ -27,6 +28,15 @@ export const CurrentAnnotation = observer(({ annotation }) => {
             icon={<LsTrash />}
             look="danger"
             type="text"
+            onClick={() => {
+              confirm({
+                title: "Delete annotaion",
+                body: "This action cannot be undone",
+                buttonLook: "destructive",
+                okText: "Proceed",
+                onOk: () => annotation.list.deleteAnnotation(annotation),
+              });
+            }}
             style={{
               height: 36,
               width: 36,

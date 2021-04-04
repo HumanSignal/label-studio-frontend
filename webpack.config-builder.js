@@ -244,6 +244,7 @@ module.exports = () => ({
       },
       {
         test: /\.styl$/i,
+        exclude: /node_modules/,
         oneOf: [
           {
             test: /global\.styl$/,
@@ -256,6 +257,7 @@ module.exports = () => ({
       },
       {
         test: /\.scss$/i,
+        exclude: /node_modules/,
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
@@ -291,6 +293,7 @@ module.exports = () => ({
       },
       {
         test: /\.(webm|mov)$/i,
+        exclude: /node_modules/,
         use: [
           {
             loader: require.resolve("url-loader"),

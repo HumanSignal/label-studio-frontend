@@ -54,10 +54,10 @@ export default observer(({ store, annotation }) => {
 
   return (
     <Fragment>
-      <p className={styles.row}>
+      <div className={styles.row}>
         <NodeMinimal node={node} /> (id: {node.id}){" "}
         {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
-      </p>
+      </div>
       <div className={styles.statesblk + " ls-entity-states"}>
         {node.score && (
           <Fragment>

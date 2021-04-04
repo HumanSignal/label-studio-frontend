@@ -53,7 +53,7 @@ export default observer(({ store }) => {
   );
 
   return (
-    <Card title={title} size="small" className={styles.card}>
+    <>
       {node && <Entity store={store} annotation={annotation} />}
 
       {!annotation.highlightedNode && <p style={{ marginBottom: 0 }}>Nothing selected</p>}
@@ -61,6 +61,6 @@ export default observer(({ store }) => {
       <Entities store={store} regionStore={annotation.regionStore} />
 
       <Relations store={store} item={annotation} />
-    </Card>
+    </>
   );
 });

@@ -5,7 +5,7 @@ import { aroundTransition } from "../../utils/transition";
 import { alignElements } from "../../utils/dom";
 import "./Tooltip.styl";
 
-export const Tooltip = forwardRef(({ title, children, defaultVisible, style }, ref) => {
+export const Tooltip = forwardRef(({ title, children, defaultVisible, mouseEnterDelay = 0, style }, ref) => {
   if (!children || Array.isArray(children)) {
     throw new Error("Tooltip does accept a single child only");
   }
@@ -83,8 +83,10 @@ export const Tooltip = forwardRef(({ title, children, defaultVisible, style }, r
     ...child.props,
     ref: triggerElement,
     onMouseEnter(e) {
-      setInjected(true);
-      child.props.onMouseEnter?.(e);
+      setTimeout(() => {
+        setInjected(true);
+        child.props.onMouseEnter?.(e);
+      }, mouseEnterDelay);
     },
     onMouseLeave(e) {
       performAnimation(false);
