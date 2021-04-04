@@ -40,8 +40,8 @@ export default observer(({ regionStore }) => {
             {regionStore.view === "regions"
               ? `${count} Region${count > 1 ? "s" : ""}`
               : regionStore.view === "labels"
-              ? "Labels"
-              : null}
+                ? "Labels"
+                : null}
           </Elem>
 
           {regionStore.view === "regions" && count > 0 && (

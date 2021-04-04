@@ -138,12 +138,8 @@
     }
   },
   "lint-staged": {
-    "*.(js|jsx)": [
-      "npm run prettier",
-      "git add"
-    ],
-    "*.(css|scss)": [
-      "npm run prettier-styles",
+    "*.(js|ts|tsx)": [
+      "eslint --fix",
       "git add"
     ]
   },
