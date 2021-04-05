@@ -15,11 +15,11 @@ export const configureStore = async (params) => {
 
   params = {...params};
 
-  if (!params.config && env.getExample) {
+  if (!params?.config && env.getExample) {
     const {task, config} = await env.getExample();
     params.config = config;
     params.task = task;
-  } else if (params.task) {
+  } else if (params?.task) {
     params.task = env.getData(params.task);
   }
 

@@ -1,7 +1,7 @@
 import { Component } from "react";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
-import { inject, observer } from "mobx-react";
+import { registerPanels } from "./registerPanels";
 
 export class LabelStudio extends Component {
   componentDidMount() {
@@ -14,10 +14,7 @@ export class LabelStudio extends Component {
     return this.state.store ? (
       <App
         store={this.state.store}
-        panels={(this.props.panels ?? []).map(panel => ({
-          ...panel,
-          Component: panel.builder({ inject, observer })
-        }))}
+        panels={registerPanels(this.props.panels) ?? []}
       />
     ) : null;
   }

@@ -3,6 +3,7 @@ import { render } from "react-dom";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
+import { registerPanels } from "./registerPanels";
 
 export class LabelStudio {
   constructor (root, options = {}) {
@@ -20,17 +21,9 @@ export class LabelStudio {
     render((
       <App
         store={this.store}
-        panels={this.options.panels ?? []}
+        panels={registerPanels(this.options.panels) ?? []}
       />
     ), getRoot(this.root));
-  }
-
-  /**@private */
-  registerPanels(panels = []) {
-    return panels.map(panel => ({
-      ...panel,
-      Component: panel.builder({ inject, observer })
-    }));
   }
 }
 
