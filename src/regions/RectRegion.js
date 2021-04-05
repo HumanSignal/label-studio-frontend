@@ -286,7 +286,7 @@ const HtxRectangleView = ({ item }) => {
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
           } else {
@@ -297,15 +297,15 @@ const HtxRectangleView = ({ item }) => {
           const stage = item.parent.stageRef;
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(false);
           }
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.editable) return;
+          if (!item.annotation.editable) return;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
 

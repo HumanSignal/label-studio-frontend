@@ -45,7 +45,7 @@ export default types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.style.fillcolor;
+      let labelColor = self.parent.highlightcolor || self.style?.fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
@@ -75,7 +75,7 @@ export default types
     addEventsToSpans(spans) {
       const addEvent = s => {
         s.onmouseover = function(ev) {
-          if (self.completion.relationMode) {
+          if (self.annotation.relationMode) {
             self.toggleHighlight();
             s.style.cursor = Constants.RELATION_MODE_CURSOR;
             // only one span should be highlighted

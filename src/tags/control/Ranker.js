@@ -32,14 +32,13 @@ const RankerItemModel = types
   }));
 
 /**
- * Ranker tag, used to ranking models
+ * Ranker tag, used for ranking models.
  *
- * Ranker has a complex mechanics and uses only the "prediction" field from the input task,
- * please explore input task example carefully.
+ * Ranker has complex mechanics and uses only the "prediction" field from a labeling task. Please verify the information in the labeling task carefully.
  *
- * It renders given list of strings and allows to drag and reorder them.
- * To see this tag in action you have to use json below as task on "Import" page:
- * setup given config, go to Import, then copy-paste json to the input field and submit.
+ * It renders a given list of strings and allows you to drag and reorder them.
+ * To see this tag in action you have to import the example JSON below as a task on "Import" page. Save it as a file called example_ranker_tag.json, then upload it.
+ * Set up a project with the given configuration and the example JSON file.
  *
  * @example
  * <View>
@@ -49,7 +48,7 @@ const RankerItemModel = types
  * @example
  * [{
  *   "data": {
- *     "text": "Some text for ranker"
+ *     "text": "Some text for the ranker tag"
  *   },
  *   "predictions": [{
  *     "model_version": "1564027355",
@@ -67,9 +66,10 @@ const RankerItemModel = types
  *   }]
  * }]
  * @name Ranker
- * @param {string} name of group
- * @param {y|x=} [axis=y] axis direction
- * @param {string} sortedHighlightColor sorted color
+ * @param {string} name                 - Name of group
+ * @param {y|x=} [axis=y]               - Axis direction
+ * @param {x|y} lockAxis                - Lock axis
+ * @param {string} sortedHighlightColor - Sorted color
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),

@@ -23,18 +23,19 @@ const { TextArea } = Input;
  *   <TextArea name="ta"></TextArea>
  * </View>
  * @name TextArea
- * @param {string} name name of the element
- * @param {string} toName name of the element that you want to label if any
- * @param {string} value
- * @param {string=} [label] label text
- * @param {string=} [placeholder] placeholder text
- * @param {string=} [maxSubmissions] maximum number of submissions
- * @param {boolean=} [editable=false] editable textarea results
- * @param {number} [rows] number of rows in the textarea
- * @param {boolean} [required=false]   - validation if textarea is required
- * @param {string} [requiredMessage]   - message to show if validation fails
- * @param {boolean=} [showSubmitButton] show submit button or hide it, it's shown by default when rows is more than one (i.e. textarea mode)
- * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
+ * @param {string} name                    - Name of the element
+ * @param {string} toName                  - Name of the element that you want to label
+ * @param {string} value                   - Pre-filled value
+ * @param {string=} [label]                - Label text
+ * @param {string=} [placeholder]          - Placeholder text
+ * @param {string=} [maxSubmissions]       - Maximum number of submissions
+ * @param {boolean=} [editable=false]      - Editable textarea results
+ * @param {boolean=} [transcription=false] - If false, always show editor
+ * @param {number} [rows]                  - Number of rows in the textarea
+ * @param {boolean} [required=false]       - Validate whether content in textarea is required
+ * @param {string} [requiredMessage]       - Message to show if validation fails
+ * @param {boolean=} [showSubmitButton]    - Whether to show or hide the submit button. By default it shows when there are more than one rows of text, such as in textarea mode.
+ * @param {boolean} [perRegion]            - Use this tag to label regions instead of whole objects
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -47,6 +48,7 @@ const TagAttrs = types.model({
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
+  transcription: false,
 });
 
 const Model = types
@@ -70,8 +72,8 @@ const Model = types
       return self.regions.length;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get showSubmit() {
@@ -94,12 +96,12 @@ const Model = types
 
     get result() {
       if (self.perregion) {
-        const area = self.completion.highlightedNode;
+        const area = self.annotation.highlightedNode;
         if (!area) return null;
 
-        return self.completion.results.find(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => ({
@@ -160,11 +162,11 @@ const Model = types
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
-          const area = self.completion.highlightedNode;
+          const area = self.annotation.highlightedNode;
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({}, { text: self.selectedValues() }, self, self.toname);
+          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
         }
       }
     },
@@ -257,11 +259,11 @@ const HtxTextArea = observer(({ item }) => {
     };
   }
 
-  if (!item.completion.editable) props["disabled"] = true;
+  if (!item.annotation.editable) props["disabled"] = true;
 
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
-  const showAddButton = (item.completion.editable && rows !== 1) || item.showSubmitButton;
+  const showAddButton = (item.annotation.editable && rows !== 1) || item.showSubmitButton;
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 

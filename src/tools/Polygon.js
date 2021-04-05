@@ -61,9 +61,9 @@ const _Tool = types
           coordstype: "px",
         };
 
-        self.obj.completion.history.freeze();
+        self.obj.annotation.history.freeze();
         const labels = { [control.valueType]: control.selectedValues?.() };
-        self.obj.completion.createResult(opts, labels, control, self.obj);
+        self.obj.annotation.createResult(opts, labels, control, self.obj);
       }
     },
   }));

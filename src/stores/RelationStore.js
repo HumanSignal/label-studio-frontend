@@ -35,7 +35,7 @@ const Relation = types
   .actions(self => ({
     afterAttach() {
       const root = getRoot(self);
-      const c = root.completionStore.selected;
+      const c = root.annotationStore.selected;
 
       // find <Relations> tag in the tree
       let relations = null;
@@ -138,7 +138,7 @@ const RelationStore = types
       rl.length && rl.forEach(self.deleteRelation);
     },
 
-    serializeCompletion() {
+    serializeAnnotation() {
       return self.relations.map(r => {
         const s = {
           from_id: r.node1.cleanId,

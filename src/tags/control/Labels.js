@@ -13,7 +13,7 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * Labels tag, create a group of labels
+ * Labels tag, create a group of labels.
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
@@ -23,11 +23,11 @@ import ControlBase from "./Base";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Labels
- * @param {string} name                      - name of the element
- * @param {string} toName                    - name of the element that you want to label
- * @param {single|multiple=} [choice=single] - configure if you can select just one or multiple labels
- * @param {number} [maxUsages]               - maximum available usages
- * @param {boolean} [showInline=true]        - show items in the same visual line
+ * @param {string} name                      - Name of the element
+ * @param {string} toName                    - Name of the element that you want to label
+ * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
+ * @param {number} [maxUsages]               - Maximum available uses of the label
+ * @param {boolean} [showInline=true]        - Show items in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -60,7 +60,7 @@ const Model = LabelMixin.views(self => ({
   },
 })).actions(self => ({
   validate() {
-    const regions = self.completion.regionStore.regions;
+    const regions = self.annotation.regionStore.regions;
 
     for (let r of regions) {
       for (let s of r.states) {

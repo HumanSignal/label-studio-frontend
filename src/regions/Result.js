@@ -85,8 +85,8 @@ const Result = types
       return getParent(self, 2);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get mainValue() {
@@ -101,7 +101,7 @@ const Result = types
     },
 
     get editable() {
-      return self.readonly === false && self.completion.editable === true;
+      return self.readonly === false && self.annotation.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
@@ -126,7 +126,7 @@ const Result = types
       if (control.visiblewhen === "choice-selected") {
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
-        const results = self.completion.results.filter(r => r.type === "choices" && r !== self);
+        const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
         if (tagName) {
           const result = results.find(r => r.from_name.name === tagName);
           if (!result) return false;
@@ -192,7 +192,7 @@ const Result = types
       const data = self.area ? self.area.serialize() : {};
       if (!data) return null;
       if (!self.isSubmitable) return null;
-      // cut off completion id
+      // cut off annotation id
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
 
@@ -250,7 +250,7 @@ const Result = types
           })
           .filter(Boolean);
       } else {
-        const obj = self.completion.toNames.get(parent.name);
+        const obj = self.annotation.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;
 
         const tree = {
@@ -266,19 +266,19 @@ const Result = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
 
       self.unselectRegion();
 
-      self.completion.relationStore.deleteNodeRelation(self);
+      self.annotation.relationStore.deleteNodeRelation(self);
 
       if (self.type === "polygonregion") {
         self.destroyRegion();
       }
 
-      self.completion.regionStore.deleteRegion(self);
+      self.annotation.regionStore.deleteRegion(self);
 
-      self.completion.deleteRegion(self);
+      self.annotation.deleteRegion(self);
     },
 
     setHighlight(val) {

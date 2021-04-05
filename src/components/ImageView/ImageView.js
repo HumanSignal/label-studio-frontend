@@ -8,7 +8,7 @@ import ImageTransformer from "../ImageTransformer/ImageTransformer";
 import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
-import InfoModal from "../Infomodal/Infomodal";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 export default observer(
   class ImageView extends Component {
@@ -106,7 +106,11 @@ export default observer(
     };
 
     handleError = () => {
-      InfoModal.error(`Cannot load image (${this.props.item._value}).\nCheck console/network panel for more info.`);
+      const { item, store } = this.props;
+      const cs = store.annotationStore;
+      cs.addErrors([
+        errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
+      ]);
     };
 
     updateGridSize = range => {
@@ -240,9 +244,9 @@ export default observer(
 
     renderTools() {
       const { item, store } = this.props;
-      const cs = store.completionStore;
+      const cs = store.annotationStore;
 
-      if (cs.viewingAllCompletions || cs.viewingAllPredictions) return null;
+      if (cs.viewingAllAnnotations || cs.viewingAllPredictions) return null;
 
       return (
         <div className={styles.block}>

@@ -12,7 +12,7 @@ const PerRegionMixin = types
     perRegionVisible() {
       if (!self.perregion) return true;
 
-      const region = self.completion.highlightedNode;
+      const region = self.annotation.highlightedNode;
       if (!region) {
         // no region is selected return hidden
         return false;

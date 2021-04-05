@@ -28,20 +28,20 @@ import { PreviewGenerator } from "../../mixins/PreviewGenerator";
  *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px" />
  * </View>
  * @name Image
- * @param {string} name                       - name of the element
- * @param {string} value                      - value
- * @param {string=} [width=100%]              - image width
- * @param {string=} [maxWidth=750px]          - image maximum width
- * @param {boolean=} [zoom=false]             - enable zooming an image by the mouse wheel
- * @param {boolean=} [negativeZoom=false]     - enable zooming out an image
- * @param {float=} [zoomBy=1.1]               - scale factor
- * @param {boolean=} [grid=false]             - show grid
- * @param {number=} [gridSize=30]             - size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - color of the grid, opacity is 0.15
- * @param {boolean} [zoomControl=false]       - show zoom controls in toolbar
- * @param {boolean} [brightnessControl=false] - show brightness control in toolbar
- * @param {boolean} [contrastControl=false]   - show contrast control in toolbar
- * @param {boolean} [rotateControl=false]     - show rotate control in toolbar
+ * @param {string} name                       - Name of the element
+ * @param {string} value                      - Value
+ * @param {string=} [width=100%]              - Image width
+ * @param {string=} [maxWidth=750px]          - Maximum image width
+ * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
+ * @param {boolean=} [negativeZoom=false]     - Enable zooming out an image
+ * @param {float=} [zoomBy=1.1]               - Scale factor
+ * @param {boolean=} [grid=false]             - Show grid
+ * @param {number=} [gridSize=30]             - Specify size of the grid
+ * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid, opacity is 0.15
+ * @param {boolean} [zoomControl=false]       - Whether to show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false] - Whether to show brightness control in toolbar
+ * @param {boolean} [contrastControl=false]   - Whether to show contrast control in toolbar
+ * @param {boolean} [rotateControl=false]     - Whether to show rotate control in toolbar
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -161,13 +161,13 @@ const Model = types
     /**
      * @return {object}
      */
-    get completion() {
-      // return Types.getParentOfTypeString(self, "Completion");
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      // return Types.getParentOfTypeString(self, "Annotation");
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion?.regionStore.regions.filter(r => r.object === self) || [];
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
     get selectedShape() {
@@ -178,7 +178,7 @@ const Model = types
      * @return {object}
      */
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -235,7 +235,7 @@ const Model = types
 
   .actions(self => ({
     freezeHistory() {
-      //self.completion.history.freeze();
+      //self.annotation.history.freeze();
     },
 
     updateBrushControl(arg) {
@@ -372,7 +372,7 @@ const Model = types
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
-      setTimeout(self.completion.reinitHistory, 0);
+      setTimeout(self.annotation.reinitHistory, 0);
     },
 
     checkLabels() {
@@ -385,7 +385,7 @@ const Model = types
     addShape(shape) {
       self.regions.push(shape);
 
-      self.completion.addRegion(shape);
+      self.annotation.addRegion(shape);
       self.setSelected(shape.id);
       shape.selectRegion();
     },
@@ -444,14 +444,14 @@ const Model = types
     },
 
     /**
-     * Transform JSON data (completions and predictions) to format
+     * Transform JSON data (annotations and predictions) to format
      */
     fromStateJSON(obj, fromModel) {
       const tools = self.getToolsManager().allTools();
 
       // when there is only the image classification and nothing else, we need to handle it here
       if (tools.length === 0 && obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
 
         return;
       }

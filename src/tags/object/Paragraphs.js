@@ -11,7 +11,6 @@ import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
-import InfoModal from "../../components/Infomodal/Infomodal";
 import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries, findNodeAt } from "../../utils/html";
 import { parseValue } from "../../utils/data";
@@ -20,22 +19,22 @@ import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 /**
- * Paragraphs tag shows an Paragraphs markup that can be labeled
- * it expects an array of objects like that [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ * Paragraphs tag shows paragraph markup that can be labeled.
+ * it expects an array of objects like this: [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
  * @example
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
  * </View>
  * @name Paragraphs
- * @param {string} name                  - name of the element
- * @param {string} value                 - value of the element
- * @param {json|url} [valueType=json]    - how to treat value — as data or as url with data to load from
- * @param {string} audioUrl              - audio to sync phrases with
- * @param {boolean} showPlayer           - show audio player above the paragraphs
- * @param {no|yes} [saveTextResult=yes]  - whether to save `text` to `value` or not
- * @param {none|dialogue} [layout=none]  - the styles layout to use
- * @param {string} [nameKey=author]      - name key to use
- * @param {string} [textKey=text]        - text key to use
+ * @param {string} name                  - Name of the element
+ * @param {string} value                 - Value of the element
+ * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} audioUrl              - Audio to sync phrases with
+ * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
+ * @param {no|yes} [saveTextResult=yes]  - Whether to save `text` to `value` or not
+ * @param {none|dialogue} [layout=none]  - The styles layout to use
+ * @param {string} [nameKey=author]      - The name key to use
+ * @param {string} [textKey=text]        - The text key to use
  */
 const TagAttrs = types.model("ParagraphsModel", {
   name: types.identifier,
@@ -73,8 +72,8 @@ const Model = types
       return getRoot(self);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get audio() {
@@ -88,7 +87,7 @@ const Model = types
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     layoutStyles(data) {
@@ -117,7 +116,7 @@ const Model = types
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -208,7 +207,7 @@ const Model = types
             message.push(`URL is empty, check ${value} in data JSON.`);
           }
           if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
-          InfoModal.error(message.map(t => <p>{t}</p>));
+          store.annotationStore.addErrors([errorBuilder.generalError(message.join("\n"))]);
           self.setRemoteValue("");
           return;
         }
@@ -220,7 +219,7 @@ const Model = types
           .then(self.setRemoteValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
-            InfoModal.error(message, "Wow!");
+            store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.setRemoteValue("");
           });
       } else {
@@ -247,7 +246,7 @@ const Model = types
           `defined by <b>nameKey</b> ("author" by default)`,
           `and <b>textKey</b> ("text" by default)`,
         ].join(" ");
-        self.store.completionStore.addErrors([
+        self.store.annotationStore.addErrors([
           errorBuilder.generalError(`${general}<ul>${errors.map(error => `<li>${error}</li>`).join("")}</ul>`),
         ]);
         return;
@@ -265,7 +264,7 @@ const Model = types
       r._range = p._range;
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
@@ -276,7 +275,7 @@ const Model = types
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.completion.createResult(range, labels, control, self);
+      const area = self.annotation.createResult(range, labels, control, self);
       area._range = range._range;
       return area;
     },
@@ -290,7 +289,7 @@ const Model = types
       const { start, startOffset, end, endOffset, text } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
         return;
       }
 
@@ -440,7 +439,7 @@ class HtxParagraphsView extends Component {
 
     item.regs.forEach(function(r, i) {
       // spans can be totally missed if this is app init or undo/redo
-      // or they can be disconnected from DOM on completions switching
+      // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
       if (r._spans?.[0]?.isConnected) return;
 

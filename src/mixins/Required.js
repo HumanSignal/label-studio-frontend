@@ -11,7 +11,7 @@ const RequiredMixin = types
         // validating when choices labeling is done per region,
         // for example choice may be required to be selected for
         // every bbox
-        const objectTag = self.completion.names.get(self.toname);
+        const objectTag = self.annotation.names.get(self.toname);
 
         for (let reg of objectTag.regs) {
           const s = reg.results.find(s => s.type === self.resultType);
@@ -21,7 +21,7 @@ const RequiredMixin = types
           }
 
           if (!s?.hasValue) {
-            self.completion.selectArea(reg);
+            self.annotation.selectArea(reg);
             self.requiredModal();
 
             return false;

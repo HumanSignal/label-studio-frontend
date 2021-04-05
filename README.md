@@ -29,13 +29,13 @@ import 'label-studio/build/static/css/main.css';
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->
-<link href="https://unpkg.com/label-studio@0.8.2/build/static/css/main.css" rel="stylesheet">
+<link href="https://unpkg.com/label-studio@1.0.1/build/static/css/main.css" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
 <div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/label-studio@0.8.2/build/static/js/main.js"></script>
+<script src="https://unpkg.com/label-studio@1.0.1/build/static/js/main.js"></script>
 ```
 
 **Initialization**
@@ -57,11 +57,12 @@ import 'label-studio/build/static/css/main.css';
     interfaces: [
       "panel",
       "update",
+      "submit",
       "controls",
       "side-column",
-      "completions:menu",
-      "completions:add-new",
-      "completions:delete",
+      "annotations:menu",
+      "annotations:add-new",
+      "annotations:delete",
       "predictions:menu",
     ],
 
@@ -72,7 +73,7 @@ import 'label-studio/build/static/css/main.css';
     },
 
     task: {
-      completions: [],
+      annotations: [],
       predictions: [],
       id: 1,
       data: {
@@ -81,10 +82,10 @@ import 'label-studio/build/static/css/main.css';
     },
 
     onLabelStudioLoad: function(LS) {
-      var c = LS.completionStore.addCompletion({
+      var c = LS.annotationStore.addAnnotation({
         userGenerate: true
       });
-      LS.completionStore.selectCompletion(c.id);
+      LS.annotationStore.selectAnnotation(c.id);
     }
   });
 </script>

@@ -90,7 +90,7 @@ const _Tool = types
     createRegion(opts) {
       const control = self.control;
       const labels = { [control.valueType]: control.selectedValues?.() };
-      return self.obj.completion.createResult(opts, labels, control, self.obj);
+      return self.obj.annotation.createResult(opts, labels, control, self.obj);
     },
 
     updateCursor() {
@@ -140,7 +140,7 @@ const _Tool = types
             coordstype: "px",
           });
 
-          self.obj.completion.selectArea(brush);
+          self.obj.annotation.selectArea(brush);
 
           const p = brush.addTouch({
             type: "add",

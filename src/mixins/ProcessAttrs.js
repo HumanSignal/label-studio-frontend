@@ -1,6 +1,6 @@
 import { types } from "mobx-state-tree";
 
-import { runTemplate } from "../core/Template";
+import { parseValue } from "../utils/data";
 
 const ProcessAttrsMixin = types.model().actions(self => ({
   updateLocalValue(value) {
@@ -8,7 +8,7 @@ const ProcessAttrsMixin = types.model().actions(self => ({
   },
 
   updateValue(store) {
-    self._value = runTemplate(self.value, store.task.dataObj) || "";
+    self._value = parseValue(self.value, store.task.dataObj);
   },
 }));
 

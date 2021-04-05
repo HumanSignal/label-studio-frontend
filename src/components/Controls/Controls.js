@@ -4,7 +4,7 @@ import { observer, inject } from "mobx-react";
 import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
-import { DraftPanel } from "../Completions/Completions";
+import { DraftPanel } from "../Annotations/Annotations";
 import styles from "./Controls.module.scss";
 
 const TOOLTIP_DELAY = 0.8;
@@ -48,7 +48,7 @@ export default inject("store")(
     /**
      * Check for Predict Menu
      */
-    if (!store.completionStore.predictSelect || store.explore) {
+    if (!store.annotationStore.predictSelect || store.explore) {
       const disabled = store.isSubmitting;
 
       if (store.hasInterface("skip")) {
@@ -68,7 +68,7 @@ export default inject("store")(
               disabled={disabled}
               type="primary"
               icon={<CheckOutlined />}
-              onClick={store.submitCompletion}
+              onClick={store.submitAnnotation}
               className={styles.submit + " ls-submit-btn"}
             >
               Submit {buttons.submit}
@@ -84,7 +84,7 @@ export default inject("store")(
               disabled={disabled}
               type="primary"
               icon={<CheckCircleOutlined />}
-              onClick={store.updateCompletion}
+              onClick={store.updateAnnotation}
               className="ls-update-btn"
             >
               {sentUserGenerate || versions.result ? "Update" : "Submit"} {buttons.update}
@@ -93,7 +93,7 @@ export default inject("store")(
         );
       }
 
-      if (!store.hasInterface("completions:menu")) {
+      if (!store.hasInterface("annotations:menu")) {
         draftMenu = <DraftPanel item={item} />;
       }
     }
@@ -112,6 +112,6 @@ export default inject("store")(
       </div>
     );
 
-    return (item.type === "completion" || store.explore) && content;
+    return (item.type === "annotation" || store.explore) && content;
   }),
 );

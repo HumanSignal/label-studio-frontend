@@ -7,7 +7,7 @@ import InfoModal from "../components/Infomodal/Infomodal";
  */
 const LabelMixin = types.model("LabelMixin").actions(self => ({
   /**
-   * Usage check of selected controls before send completion to server
+   * Usage check of selected controls before send annotation to server
    */
   beforeSend() {
     const names = self.selectedValues();

@@ -1,6 +1,6 @@
 {
   "name": "label-studio",
-  "version": "0.8.2",
+  "version": "1.0.1",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
   "homepage": "https://labelstud.io",
   "author": {
@@ -84,7 +84,7 @@
     "prettier-styles": "prettier --write src/**/*.{css,scss}",
     "prettier": "prettier --write src/**/*.js",
     "size": "npm run build && size-limit",
-    "start": "npm run copy-examples && react-scripts start",
+    "start": "npm run copy-examples && react-app-rewired start",
     "test:e2e": "cd e2e && npx codeceptjs run --steps",
     "test:e2e:headless": "cd e2e && HEADLESS=true npx codeceptjs run --steps",
     "test:coverage": "npm test -- --coverage",

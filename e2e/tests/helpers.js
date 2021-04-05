@@ -3,24 +3,25 @@
  * @param {object} params
  * @param {string} params.config
  * @param {object} params.data object with property used in config
- * @param {object[]} params.completions
+ * @param {object[]} params.annotations
  * @param {object[]} params.predictions
  * @param {function} done
  */
-const initLabelStudio = async ({ config, data, completions = [{ result: [] }], predictions = [] }, done) => {
+const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
     "panel",
     "update",
+    "submit",
     "controls",
     "side-column",
-    "completions:menu",
-    "completions:add-new",
-    "completions:delete",
+    "annotations:menu",
+    "annotations:add-new",
+    "annotations:delete",
     "predictions:menu",
   ];
-  const task = { data, completions, predictions };
+  const task = { data, annotations, predictions };
   new window.LabelStudio("label-studio", { interfaces, config, task });
   done();
 };
@@ -189,7 +190,7 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
   done();
 };
 
-const serialize = () => window.Htx.completionStore.selected.serializeCompletion();
+const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 module.exports = {
   initLabelStudio,
