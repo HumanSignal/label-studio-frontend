@@ -6,7 +6,6 @@ import { registerPanels } from "./registerPanels";
 
 export class LabelStudio {
   constructor (root, options = {}) {
-    console.trace("Call chain");
     this.root = root;
     this.options = options ?? {};
     this.createApp();

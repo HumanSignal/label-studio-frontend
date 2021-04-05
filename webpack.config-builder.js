@@ -76,7 +76,7 @@ const output = () => {
   }
 
   if (BUILD.MODULE) {
-    result.library = "DataManager";
+    result.library = "LabelStudio";
     result.libraryExport = "default";
     result.libraryTarget = "umd";
     result.globalObject = `(typeof self !== 'undefined' ? self : this)`;
