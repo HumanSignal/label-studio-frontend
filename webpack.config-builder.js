@@ -40,18 +40,26 @@ const babelOptimizeOptions = () => {
 };
 
 const optimizer = () => {
-  const result = {};
-
-  result.minimize = BUILD.NO_MINIMIZE ? false : true;
-
-  result.minimizer = BUILD.NO_MINIMIZE ? undefined : [new TerserPlugin(), new CssMinimizerPlugin()];
-
-  result.runtimeChunk = BUILD.NO_CHUNKS ? false : true;
-  result.splitChunks = {
-    cacheGroups: {
-      default: BUILD.NO_CHUNKS ? false : true,
-    },
+  const result = {
+    minimize: true,
+    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
+    runtimeChunk: true,
+    splitChunks: {
+      cacheGroups: {
+        default: true,
+      }
+    }
   };
+
+  if (BUILD.NO_MINIMIZE) {
+    result.minimize = false;
+    result.minimizer = undefined;
+  }
+
+  if (BUILD.NO_CHUNKS) {
+    result.runtimeChunk = false;
+    result.splitChunks = {cacheGroups: { default: false }}
+  }
 
   return result;
 };
@@ -197,6 +205,14 @@ if (isDevelopment || process.env.NODE_ENV === "test") {
 
 if (isDevelopment) {
   plugins.push(new webpack.ProgressPlugin());
+}
+
+if (BUILD.NO_CHUNKS) {
+  babelLoader.options.plugins.unshift("babel-plugin-remove-webpack")
+
+  plugins.push(new webpack.optimize.LimitChunkCountPlugin({
+    maxChunks: 1,
+  }));
 }
 
 const sourceMap = isDevelopment ? "cheap-module-source-map" : "source-map";

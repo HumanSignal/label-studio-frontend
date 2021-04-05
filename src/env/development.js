@@ -50,7 +50,7 @@ import { TimeSeries } from "../examples/timeseries";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageBbox;
+const data = TranscribeAudio;
 
 function getData(task) {
   if (task && task.data) {
