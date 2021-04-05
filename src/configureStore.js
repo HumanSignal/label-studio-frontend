@@ -9,24 +9,23 @@ const getEnvironment = async () => {
 };
 
 export const configureStore = async (params) => {
-  const {options} = params;
-
-  if (options?.secureMode) window.LS_SECURE_MODE = true;
+  if (params.options?.secureMode) window.LS_SECURE_MODE = true;
 
   const env = await getEnvironment();
 
   params = {...params};
 
   if (!params.config && env.getExample) {
-    const example = await env.getExample();
-    Object.assign(params, example);
+    const {task, config} = await env.getExample();
+    params.config = config;
+    params.task = task;
   } else if (params.task) {
-    Object.assign(params, env.getData(params.task));
+    params.task = env.getData(params.task);
   }
 
   const store = AppStore.create(params, env.configureApplication(params));
 
-  store.initializeStore(params);
+  store.initializeStore(params.task);
 
   return { store, getRoot: env.rootElement };
 };

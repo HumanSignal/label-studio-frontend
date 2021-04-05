@@ -80,11 +80,14 @@ async function getExample() {
   let datatype = data;
 
   let config = await getConfig(datatype.config);
-  let task = {
-    data: JSON.stringify(datatype.tasks[0].data),
-  };
   let annotations = datatype.annotation.annotations;
   let predictions = datatype.tasks[0].predictions;
+
+  let task = {
+    annotations,
+    predictions,
+    data: JSON.stringify(datatype.tasks[0].data),
+  };
 
   return { config, task, annotations, predictions };
 }
