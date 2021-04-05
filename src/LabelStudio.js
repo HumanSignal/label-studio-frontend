@@ -9,7 +9,6 @@ export class LabelStudio {
   constructor (root, options = {}) {
     this.root = root;
     this.options = options ?? {};
-    this.panels = this.registerPanels(this.options.panels);
     this.createApp();
   }
 
