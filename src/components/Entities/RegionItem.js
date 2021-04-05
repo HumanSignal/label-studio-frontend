@@ -3,7 +3,6 @@ import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 import { Button } from "../../common/Button/Button";
 import { Node } from "../Node/Node";
-import { SimpleBadge } from "../SimpleBadge/SimpleBadge";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 

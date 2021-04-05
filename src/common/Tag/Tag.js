@@ -3,9 +3,13 @@ import { Block } from "../../utils/bem";
 import { colors } from "../../utils/namedColors";
 import "./Tag.styl";
 
-const prepareColor = colorString => {
+const prepareColor = (colorString, solid) => {
   const baseColor = color(colorString);
-  return {
+  return solid ? {
+    color: color.contrast(baseColor, '#fff') > 4.5 ? '#fff' : '#000',
+    background: baseColor,
+    "shadow-color": baseColor.darken(0.22),
+  } : {
     color: baseColor,
     background: baseColor.desaturate(2).brighten(2.2),
     "shadow-color": baseColor.desaturate(1).brighten(1.22),
@@ -20,8 +24,8 @@ const getColor = colorString => {
   }
 };
 
-export const Tag = ({ className, style, size, color, children }) => {
-  const finalColor = Object.entries(prepareColor(getColor(color))).reduce(
+export const Tag = ({ className, style, size, color, solid = false, children }) => {
+  const finalColor = Object.entries(prepareColor(getColor(color), solid)).reduce(
     (res, [key, color]) => ({ ...res, [`--${key}`]: color }),
     {},
   );

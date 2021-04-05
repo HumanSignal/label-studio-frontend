@@ -124,7 +124,7 @@
     "size": "npm run build && size-limit",
     "start": "node dev-server.js",
     "test:e2e": "cd e2e && npx codeceptjs run --steps",
-    "": "cd e2e && HEADLESS=true npx codeceptjs run --steps",
+    "test:e2e:headless": "cd e2e && HEADLESS=true npx codeceptjs run --steps",
     "test:coverage": "npm test -- --coverage",
     "test:watch": "react-scripts test",
     "test": "set CI=true react-scripts test"

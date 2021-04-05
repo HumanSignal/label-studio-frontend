@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature */
 
 const {
   initLabelStudio,
@@ -126,6 +126,7 @@ const shapes = [
   },
 ];
 
+// eslint-disable-next-line no-undef
 xScenario("Simple shapes on Image", async function(I) {
   for (let shape of shapes) {
     const params = {

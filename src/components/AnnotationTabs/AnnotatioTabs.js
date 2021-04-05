@@ -9,6 +9,8 @@ const Annotation = observer(({ annotation, selected, onClick }) => {
   const classList = [styles.annotation];
   if (selected) classList.push(styles.selected);
 
+  const isUnsaved = annotation.userGenerate && !annotation.sentUserGenerate;
+
   return (
     <div
       className={classList.join(" ")}
@@ -19,8 +21,8 @@ const Annotation = observer(({ annotation, selected, onClick }) => {
       }}
     >
       <Space size="small">
-        <Userpic username="NS" />
-        ID {annotation.id}
+        <Userpic user={{email: annotation.createdBy}} />
+        ID {annotation.id} {isUnsaved && "*"}
       </Space>
     </div>
   );

@@ -10,8 +10,8 @@ export const Oneof = ({ value, children, className }) => {
 
   return selectedChild
     ? cloneElement(selectedChild, {
-        ...selectedChild.props,
-        className: [className, selectedChild.props.className].join(" "),
-      })
+      ...selectedChild.props,
+      className: [className, selectedChild.props.className].join(" "),
+    })
     : null;
 };

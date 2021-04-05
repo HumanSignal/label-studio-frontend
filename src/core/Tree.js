@@ -159,7 +159,7 @@ function treeToModel(html) {
     return res;
   })();
 
-  function findHT(node) {
+  function findHT() {
     htseen = htseen + 1;
     return hypertexts[htseen];
   }
@@ -304,7 +304,9 @@ function findParentOfType(obj, classes) {
     try {
       const p = getParentOfType(obj, c);
       if (p) return p;
-    } catch (err) {}
+    } catch (err) {
+      console.err(err);
+    }
   }
 
   return null;

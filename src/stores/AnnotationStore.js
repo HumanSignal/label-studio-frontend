@@ -106,7 +106,7 @@ const Annotation = types
       return results;
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     hidden: false,
     versions: {},
   }))
@@ -145,7 +145,7 @@ const Annotation = types
       self.hidden = visible === undefined ? !self.hidden : !visible;
     },
 
-    setHighlightedNode(node) {
+    setHighlightedNode() {
       // moved to selectArea and others
     },
 
@@ -361,7 +361,7 @@ const Annotation = types
 
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
-        snapshot => {
+        () => {
           if (self.autosave.paused) return;
 
           const result = self.serializeAnnotation();

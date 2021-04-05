@@ -11,7 +11,7 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Button } from "../../common/Button/Button";
 import { Tag } from "../../common/Tag/Tag";
 import { Space } from "../../common/Space/Space";
-import { Block } from "../../utils/bem";
+import { Block, Elem } from "../../utils/bem";
 import "./Entity.styl";
 
 const { Paragraph, Text } = Typography;
@@ -24,7 +24,7 @@ const renderLabels = element => {
         const bgColor = label.background || "#000000";
 
         return (
-          <Tag key={label.id} color={bgColor} className={styles.tag}>
+          <Tag key={label.id} color={bgColor} solid>
             {label.value}
           </Tag>
         );
@@ -108,10 +108,13 @@ export default observer(({ store, annotation }) => {
 
   return (
     <Block name="entity">
-      <div className={styles.row}>
-        <NodeMinimal node={node} /> (id: {node.id}){" "}
+      <Elem name="info" tag={Space} spread>
+        <Elem name="node">
+          <NodeMinimal node={node} />
+          (ID: {node.id})
+        </Elem>
         {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
-      </div>
+      </Elem>
       <div className={styles.statesblk + " ls-entity-states"}>
         {node.score && (
           <Fragment>
@@ -179,12 +182,9 @@ export default observer(({ store, annotation }) => {
       {editMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
-          onFinish={value => {
+          onFinish={() => {
             node.setMetaInfo(node.normInput);
             setEditMode(false);
-
-            // ev.preventDefault();
-            // return false;
           }}
         >
           <Input

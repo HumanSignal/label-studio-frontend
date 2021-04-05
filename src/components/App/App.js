@@ -14,21 +14,19 @@ import Tree from "../../core/Tree";
 /**
  * Components
  */
-import Annotations from "../Annotations/Annotations";
-import Controls from "../Controls/Controls";
 import Debug from "../Debug";
-import Panel from "../Panel/Panel";
-import Predictions from "../Predictions/Predictions";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
-import SideColumn from "../SideColumn/SideColumn";
 import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
 
 /**
  * Tags
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as ObjectTags from "../../tags/object"; // eslint-disable-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as ControlTags from "../../tags/control"; // eslint-disable-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unused-vars
 
 /**
@@ -39,8 +37,7 @@ import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
 import { AnnotationTabs } from "../AnnotationTabs/AnnotatioTabs";
-import { CurrentAnnotation } from "../CurrentAnnotation/CurrentAnnotation";
-import { SidebarContent, SidebarPage, SidebarToggle } from "../SidebarToggle/SidebarToggle";
+import { SidebarPage, SidebarToggle } from "../SidebarToggle/SidebarToggle";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 
 /**
@@ -89,7 +86,7 @@ class App extends Component {
     );
   }
 
-  _renderUI(root, store, cs, settings) {
+  _renderUI(root, store, cs) {
     return (
       <>
         {!cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
@@ -161,9 +158,11 @@ class App extends Component {
                   <SidebarPage name="annotation" title="Annotation">
                     <AnnotationTab store={store} />
                   </SidebarPage>
-                  <SidebarPage name="comments" title="Comments">
-                    Hello there
-                  </SidebarPage>
+                  {this.props.panels.map(({name, title, Component}) => (
+                    <SidebarPage key={name} name={name} title={title}>
+                      <Component/>
+                    </SidebarPage>
+                  ))}
                 </SidebarToggle>
               )}
             </div>

@@ -5,7 +5,6 @@ import { observer } from "mobx-react";
 import { SortAscendingOutlined } from "@ant-design/icons";
 
 import "./Entities.scss";
-import globalStyles from "../../styles/global.module.scss";
 import { RegionTree } from "./RegionTree";
 import { LabelList } from "./LabelList";
 import { SortMenu } from "./SortMenu";
@@ -55,9 +54,10 @@ export default observer(({ regionStore }) => {
       </Elem>
 
       <Oneof value={regionStore.view}>
-        <div case="regions">{count ? <RegionTree regionStore={regionStore} /> : <p>No Regions created yet</p>}</div>
+        <div case="regions">
+          {count ? <RegionTree regionStore={regionStore} /> : <Elem name="empty">No Regions created yet</Elem>}</div>
         <div case="labels">
-          {count ? <LabelList regionStore={regionStore} /> : <p>No Labeled Regions created yet</p>}
+          {count ? <LabelList regionStore={regionStore} /> : <Elem name="empty">No Labeled Regions created yet</Elem>}
         </div>
       </Oneof>
     </Block>

@@ -20,7 +20,7 @@ export default observer(({ store }) => {
       {node ? (
         <Entity store={store} annotation={annotation} />
       ) : (
-        <p style={{ marginBottom: 0 }}>Nothing selected</p>
+        <p style={{ marginBottom: 0, paddingInline: 15}}>Nothing selected</p>
       )}
 
       <Entities store={store} regionStore={annotation.regionStore} />

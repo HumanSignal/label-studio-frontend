@@ -103,7 +103,7 @@ export default types
      */
     showComments: false,
   })
-  .volatile(self => ({
+  .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
   }))
   .views(self => ({
@@ -376,7 +376,7 @@ export default types
         cs.selectPrediction(obj.id);
         obj.deserializeAnnotation(p.result);
       });
-      [...(completions || []), ...(annotations || [])]?.forEach((c, i) => {
+      [...(completions || []), ...(annotations || [])]?.forEach((c) => {
         const obj = cs.addAnnotation(c);
         cs.selectAnnotation(obj.id);
         obj.deserializeAnnotation(c.draft || c.result);

@@ -1,7 +1,7 @@
 import { Tag } from "antd";
 import { observer } from "mobx-react";
 
-export const LabelItem = observer(({ item, idx }) => {
+export const LabelItem = observer(({ item }) => {
   const bg = item.background;
   const labelStyle = {
     backgroundColor: bg,

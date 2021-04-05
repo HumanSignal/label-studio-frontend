@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
-import { Select, Divider, List, Button } from "antd";
+import React from "react";
+import { Select, List, Button } from "antd";
 import { isValidReference, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -15,7 +15,7 @@ import "./Relations.styl";
 
 const { Option } = Select;
 
-const RelationMeta = observer(({ store, rl }) => {
+const RelationMeta = observer(({ rl }) => {
   const r = rl.relations;
   const selected = r.getSelected().map(v => v.value);
 
@@ -27,7 +27,7 @@ const RelationMeta = observer(({ store, rl }) => {
         style={{ width: "100%" }}
         placeholder="Please select"
         defaultValue={selected}
-        onChange={(val, option) => {
+        onChange={(val) => {
           const values = wrapArray(val);
           r.unselectAll();
           values.forEach(v => r.findRelation(v).setSelected(true));
@@ -48,7 +48,7 @@ const RelationMeta = observer(({ store, rl }) => {
  *
  * Shows the relationship between two selected items
  */
-const Relation = observer(({ store, rl }) => {
+const Relation = observer(({ rl }) => {
   if (!isValidReference(() => rl.node1) || !isValidReference(() => rl.node2)) {
     return null;
   }

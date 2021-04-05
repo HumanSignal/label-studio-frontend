@@ -1,5 +1,3 @@
-import React, { Fragment } from "react";
-import { Badge } from "antd";
 import { getType, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
@@ -16,6 +14,8 @@ import {
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
+import "./Node.styl";
+import { Block, Elem } from "../../utils/bem";
 
 const NodeViews = {
   TextRegionModel: ["Text", FontColorsOutlined, node => <span className={null}>{node.text.substring(0, 100)}</span>],
@@ -104,28 +104,16 @@ const NodeMinimal = observer(({ node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) return null;
 
-  const oneColor = node.getOneColor();
-  let badgeStyle = {};
-
-  if (oneColor) {
-    badgeStyle = {
-      backgroundColor: oneColor,
-    };
-  } else {
-    badgeStyle = {
-      backgroundColor: "#fff",
-      color: "#999",
-      boxShadow: "0 0 0 1px #d9d9d9 inset",
-    };
-  }
-
   const [text, Icon] = NodeViews[name];
+
   return (
-    <span className={styles.minimal}>
-      {index >= 0 && <Badge count={index + 1} style={badgeStyle} />}
-      <Icon />
+    <Block name="node-minimal" tag="span">
+      {index >= 0 && <Elem name="counter">{index + 1}</Elem>}
+
+      <Elem name="icon" tag={Icon}/>
+
       {text}
-    </span>
+    </Block>
   );
 });
 
