@@ -1,7 +1,8 @@
 import { inject, observer } from "mobx-react";
 import { render } from "react-dom";
 import App from "./components/App/App";
-import AppStore from "./stores/AppStore";
+import { configureStore } from "./configureStore";
+import { LabelStudio as LabelStudioReact } from './Component';
 
 export class LabelStudio {
   constructor (root, options = {}) {
@@ -12,24 +13,8 @@ export class LabelStudio {
   }
 
   async createApp() {
-    const {options} = this.options;
-
-    if (options?.secureMode) window.LS_SECURE_MODE = true;
-
-    const env = await this.getEnvironment();
-
-    const params = {...this.options};
-
-    if (!this.options.config) {
-      const example = await env.getExample();
-      Object.assign(params, example);
-    } else if (this.options.task) {
-      Object.assign(params, env.getData(this.options.task));
-    }
-
-    this.store = AppStore.create(params, env.configureApplication(params));
-    this.store.initializeStore(params);
-
+    const {store, getRoot} = await configureStore(this.options);
+    this.store = store;
     window.Htx = this.store;
 
     render((
@@ -37,16 +22,7 @@ export class LabelStudio {
         store={this.store}
         panels={this.options.panels ?? []}
       />
-    ), env.rootElement(this.root));
-  }
-
-  /**@private */
-  async getEnvironment() {
-    if (process.env.NODE_ENV === "production") {
-      return (await import("./env/production")).default;
-    } else {
-      return (await import("./env/development")).default;
-    }
+    ), getRoot(this.root));
   }
 
   /**@private */
@@ -57,3 +33,5 @@ export class LabelStudio {
     }));
   }
 }
+
+LabelStudio.Component = LabelStudioReact;
