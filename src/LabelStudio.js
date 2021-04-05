@@ -1,4 +1,3 @@
-import { inject, observer } from "mobx-react";
 import { render } from "react-dom";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
@@ -7,6 +6,7 @@ import { registerPanels } from "./registerPanels";
 
 export class LabelStudio {
   constructor (root, options = {}) {
+    console.trace("Call chain");
     this.root = root;
     this.options = options ?? {};
     this.createApp();
