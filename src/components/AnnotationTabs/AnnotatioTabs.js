@@ -28,7 +28,7 @@ const EntityTab = observer(({ entity, selected, prediction = false, onClick }) =
           user={{email: entity.createdBy}}
           mod={{prediction}}
         >{prediction && <LsSparks/>}</Elem>
-        ID {entity.id} {isUnsaved && "*"}
+        ID {entity.pk ?? entity.id} {isUnsaved && "*"}
       </Space>
     </Elem>
   );

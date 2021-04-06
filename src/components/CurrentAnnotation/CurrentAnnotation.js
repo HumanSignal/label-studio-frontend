@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { LsRedo, LsUndo, LsRemove, LsTrash } from "../../assets/icons";
+import { LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
@@ -15,7 +15,7 @@ export const CurrentAnnotation = observer(({ annotation, showControls = true }) 
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
-        ID: {annotation.id}
+        ID: {annotation.pk ?? annotation.id}
         <RadioGroup size="medium" defaultValue="latest">
           <RadioGroup.Button value="original">Original</RadioGroup.Button>
           <RadioGroup.Button value="latest">Latest</RadioGroup.Button>
