@@ -1,4 +1,4 @@
-import { render } from "react-dom";
+import { render, unmountComponentAtNode } from "react-dom";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
@@ -8,11 +8,12 @@ export class LabelStudio {
   constructor (root, options = {}) {
     this.root = root;
     this.options = options ?? {};
-    this.createApp();
+    this.destroy = this.createApp();
   }
 
   async createApp() {
     const {store, getRoot} = await configureStore(this.options);
+    const rootElement = getRoot(this.root);
     this.store = store;
     window.Htx = this.store;
 
@@ -21,7 +22,11 @@ export class LabelStudio {
         store={this.store}
         panels={registerPanels(this.options.panels) ?? []}
       />
-    ), getRoot(this.root));
+    ), rootElement);
+
+    return () => {
+      unmountComponentAtNode(rootElement);
+    };
   }
 }
 
