@@ -1,3 +1,4 @@
+import { store } from "codeceptjs";
 import { observer } from "mobx-react";
 import React from "react";
 import { LsRedo, LsUndo, LsRemove, LsTrash } from "../../assets/icons";
@@ -9,7 +10,7 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import "./CurrentAnnotation.styl";
 
-export const CurrentAnnotation = observer(({ annotation }) => {
+export const CurrentAnnotation = observer(({ annotation, showControls = true }) => {
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
@@ -46,10 +47,16 @@ export const CurrentAnnotation = observer(({ annotation }) => {
         </Tooltip>
       </Space>
 
-      <Elem name="actions">
-        <Button look="danger">Reject</Button>
-        <Button look="primary">Fix + Accept</Button>
-      </Elem>
+      {showControls && (
+        <Elem name="actions">
+          <Button look="danger">
+            Reject
+          </Button>
+          <Button look="primary">
+            Fix + Accept
+          </Button>
+        </Elem>
+      )}
     </Block>
   ) : null;
 });

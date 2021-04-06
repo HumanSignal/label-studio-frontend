@@ -1,19 +1,18 @@
 import React, { useCallback } from "react";
 import { observer } from "mobx-react";
-import styles from "./AnnotationTabs.module.scss";
-import { PlusOutlined } from "@ant-design/icons";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
+import { Block, Elem } from "../../utils/bem";
+import "./AnnotationTabs.styl";
+import { LsPlus } from "../../assets/icons";
 
 const Annotation = observer(({ annotation, selected, onClick }) => {
-  const classList = [styles.annotation];
-  if (selected) classList.push(styles.selected);
-
   const isUnsaved = annotation.userGenerate && !annotation.sentUserGenerate;
 
   return (
-    <div
-      className={classList.join(" ")}
+    <Elem
+      name="item"
+      mod={{selected}}
       onClick={e => {
         e.preventDefault();
         e.stopPropagation();
@@ -21,16 +20,20 @@ const Annotation = observer(({ annotation, selected, onClick }) => {
       }}
     >
       <Space size="small">
-        <Userpic user={{email: annotation.createdBy}} />
+        <Elem name="userpic" tag={Userpic} user={{email: annotation.createdBy}} />
         ID {annotation.id} {isUnsaved && "*"}
       </Space>
-    </div>
+    </Elem>
   );
 });
 
-export const AnnotationTabs = observer(({ store }) => {
+export const AnnotationTabs = observer(({
+  store,
+  showAnnotations = true,
+  showPredictions = true,
+  allowCreateNew = true,
+}) => {
   const { annotationStore: as } = store;
-  const annotations = as.annotations;
   const onAnnotationSelect = useCallback(
     annotation => {
       if (!annotation.selected) {
@@ -45,9 +48,21 @@ export const AnnotationTabs = observer(({ store }) => {
     as.selectAnnotation(c.id);
   }, [as]);
 
-  return (
-    <div className={styles.wrapper}>
-      {annotations.map(annotation => (
+  const visible = showAnnotations || showPredictions;
+
+  return visible ? (
+    <Block name="annotation-tabs">
+      {showPredictions && as.predictions.map(annotation => (
+        <Annotation
+          key={annotation.id}
+          annotation={annotation}
+          selected={annotation.selected}
+          onClick={onAnnotationSelect}
+          prediction={true}
+        />
+      ))}
+
+      {showAnnotations && as.annotations.map(annotation => (
         <Annotation
           key={annotation.id}
           annotation={annotation}
@@ -55,9 +70,12 @@ export const AnnotationTabs = observer(({ store }) => {
           onClick={onAnnotationSelect}
         />
       ))}
-      <button className={styles["add-annotation"]} onClick={onCreateAnnotation}>
-        <PlusOutlined />
-      </button>
-    </div>
-  );
+
+      {allowCreateNew && (
+        <Elem tag="button" name="add" onClick={onCreateAnnotation}>
+          <LsPlus/>
+        </Elem>
+      )}
+    </Block>
+  ) : null;
 });

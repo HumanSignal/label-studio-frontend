@@ -147,7 +147,12 @@ class App extends Component {
 
           <div className={stCommon + " ls-common"}>
             <div className={styles["main-content-wrapper"]}>
-              <AnnotationTabs store={store} />
+              <AnnotationTabs
+                store={store}
+                showAnnotations={store.hasInterface("annotations:tabs")}
+                showPredictions={store.hasInterface("predictions:tabs")}
+                allowCreateNew={store.hasInterface("annotations:add-new")}
+              />
               {as.validation === null
                 ? this._renderUI(root, store, as, settings)
                 : this.renderConfigValidationException()}
