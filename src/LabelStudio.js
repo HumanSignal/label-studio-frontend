@@ -8,7 +8,8 @@ export class LabelStudio {
   constructor (root, options = {}) {
     this.root = root;
     this.options = options ?? {};
-    this.destroy = this.createApp();
+    this.destroy = (() => { /* noop */ });
+    this.createApp();
   }
 
   async createApp() {
@@ -24,7 +25,7 @@ export class LabelStudio {
       />
     ), rootElement);
 
-    return () => {
+    this.destroy = () => {
       unmountComponentAtNode(rootElement);
     };
   }
