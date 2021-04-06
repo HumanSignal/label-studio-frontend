@@ -60,7 +60,9 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
           </Button>
         </ButtonTooltip>
       );
-    } else if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
+    }
+
+    if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       buttons.push(
         <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
           <Button disabled={disabled} look="primary" onClick={store.updateAnnotation}>
