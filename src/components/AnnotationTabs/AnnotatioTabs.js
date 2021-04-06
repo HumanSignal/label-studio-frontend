@@ -4,10 +4,10 @@ import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./AnnotationTabs.styl";
-import { LsPlus } from "../../assets/icons";
+import { LsPlus, LsSparks } from "../../assets/icons";
 
-const Annotation = observer(({ annotation, selected, onClick }) => {
-  const isUnsaved = annotation.userGenerate && !annotation.sentUserGenerate;
+const EntityTab = observer(({ entity, selected, prediction = false, onClick }) => {
+  const isUnsaved = entity.userGenerate && !entity.sentUserGenerate;
 
   return (
     <Elem
@@ -16,12 +16,19 @@ const Annotation = observer(({ annotation, selected, onClick }) => {
       onClick={e => {
         e.preventDefault();
         e.stopPropagation();
-        onClick(annotation);
+        onClick(entity, prediction);
       }}
     >
       <Space size="small">
-        <Elem name="userpic" tag={Userpic} user={{email: annotation.createdBy}} />
-        ID {annotation.id} {isUnsaved && "*"}
+        <Elem
+          name="userpic"
+          tag={Userpic}
+          username={prediction ? entity.createdBy : null}
+          showUsername={prediction}
+          user={{email: entity.createdBy}}
+          mod={{prediction}}
+        >{prediction && <LsSparks/>}</Elem>
+        ID {entity.id} {isUnsaved && "*"}
       </Space>
     </Elem>
   );
@@ -34,14 +41,15 @@ export const AnnotationTabs = observer(({
   allowCreateNew = true,
 }) => {
   const { annotationStore: as } = store;
-  const onAnnotationSelect = useCallback(
-    annotation => {
-      if (!annotation.selected) {
-        as.selectAnnotation(annotation.id);
+  const onAnnotationSelect = useCallback((entity, isPrediction) => {
+    if (!entity.selected) {
+      if (isPrediction) {
+        as.selectPrediction(entity.id);
+      } else {
+        as.selectAnnotation(entity.id);
       }
-    },
-    [as],
-  );
+    }
+  }, [as],);
 
   const onCreateAnnotation = useCallback(() => {
     const c = as.addAnnotation({ userGenerate: true });
@@ -51,21 +59,21 @@ export const AnnotationTabs = observer(({
   const visible = showAnnotations || showPredictions;
 
   return visible ? (
-    <Block name="annotation-tabs">
-      {showPredictions && as.predictions.map(annotation => (
-        <Annotation
-          key={annotation.id}
-          annotation={annotation}
-          selected={annotation.selected}
+    <Block name="annotation-tabs" onMouseDown={e => e.stopPropagation()}>
+      {showPredictions && as.predictions.map(prediction => (
+        <EntityTab
+          key={prediction.id}
+          entity={prediction}
+          selected={prediction.selected}
           onClick={onAnnotationSelect}
           prediction={true}
         />
       ))}
 
       {showAnnotations && as.annotations.map(annotation => (
-        <Annotation
+        <EntityTab
           key={annotation.id}
-          annotation={annotation}
+          entity={annotation}
           selected={annotation.selected}
           onClick={onAnnotationSelect}
         />

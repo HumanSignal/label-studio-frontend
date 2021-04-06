@@ -52,7 +52,6 @@ export class HtxTextBox extends React.Component {
   updateHeight = throttle(() => {
     const borders = 2;
     const height = (this.inputRef.current?.scrollHeight || 0) + borders;
-    console.log(height, this.state.height);
     if (height && height !== this.state.height) {
       this.setState({ height });
     }

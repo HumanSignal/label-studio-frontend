@@ -6,7 +6,7 @@ import "./Userpic.styl";
 const FALLBACK_IMAGE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
-export const Userpic = forwardRef(({ username, src, user, className, showUsername, ...rest }, ref) => {
+export const Userpic = forwardRef(({ username, src, user, className, showUsername, children, ...rest }, ref) => {
   const imgRef = useRef();
   const [finalUsername, setFinalUsername] = useState(username);
   const [finalSrc, setFinalSrc] = useState(user?.avatar ?? src);
@@ -41,20 +41,24 @@ export const Userpic = forwardRef(({ username, src, user, className, showUsernam
 
   const userpic = (
     <Block ref={ref} name="userpic" mix={className} {...rest}>
-      <Elem
-        tag="img"
-        name="avatar"
-        ref={imgRef}
-        src={finalSrc}
-        alt={(finalUsername ?? "").toUpperCase()}
-        style={{ opacity: imgVisible ? 1 : 0 }}
-        onLoad={onImageLoaded}
-        onError={() => setFinalSrc(FALLBACK_IMAGE)}
-      />
-      {nameVisible && (
-        <Elem tag="span" name="username">
-          {(finalUsername ?? "").toUpperCase()}
-        </Elem>
+      {children ? children : (
+        <>
+          <Elem
+            tag="img"
+            name="avatar"
+            ref={imgRef}
+            src={finalSrc}
+            alt={(finalUsername ?? "").toUpperCase()}
+            style={{ opacity: imgVisible ? 1 : 0 }}
+            onLoad={onImageLoaded}
+            onError={() => setFinalSrc(FALLBACK_IMAGE)}
+          />
+          {nameVisible && (
+            <Elem tag="span" name="username">
+              {(finalUsername ?? "").toUpperCase()}
+            </Elem>
+          )}
+        </>
       )}
     </Block>
   );
