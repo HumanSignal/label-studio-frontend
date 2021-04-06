@@ -29,7 +29,8 @@ const RequiredMixin = types
         }
       } else {
         // validation when its classifying the whole object
-        if (!self.holdsState) {
+        // isVisible can be undefined (so comparison is true) or boolean (so check for visibility)
+        if (self.isVisible !== false && !self.holdsState) {
           self.requiredModal();
           return false;
         }
