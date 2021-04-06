@@ -1,4 +1,3 @@
-import { store } from "codeceptjs";
 import { observer } from "mobx-react";
 import React from "react";
 import { LsRedo, LsUndo, LsRemove, LsTrash } from "../../assets/icons";
