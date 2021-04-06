@@ -47,7 +47,7 @@
   z-index: 100;
   align-self: stretch;
   background-color: #fff;
-  box-shadow: -1px 0 0 rgba(#000, 0.1);
+  border-left: 1px solid rgba(#000, 0.1);
 
   @include respond("phone") {
     margin-left: 0;
