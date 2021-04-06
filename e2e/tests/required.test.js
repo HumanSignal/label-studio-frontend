@@ -15,6 +15,14 @@ const config = `
       <Choice value="Don't select me" alias="dont"></Choice>
       <Choice value="Me neither" alias="neither"></Choice>
     </Choices>
+    <Choices name="easter-egg" required="true" toName="text"
+      visibleWhen="choice-selected"
+      whenTagName="second"
+      whenChoiceValue="Me neither"
+    >
+      <Choice value="Secret level"></Choice>
+      <Choice value="Click on me now"></Choice>
+    </Choices>
   </View>
 `;
 
@@ -23,29 +31,32 @@ const text = "To have faith is to trust yourself to the water";
 Scenario("Check required param", async function(I) {
   const params = { config, data: { text } };
 
+  const waitForError = name => {
+    I.waitForText("OK");
+    I.see("Warning");
+    I.see('Checkbox "' + name + '" is required');
+    I.seeElement(".ant-modal");
+    I.click("OK");
+    I.waitToHide(".ant-modal");
+  };
+
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
   // Add new Annotation to be able to submit it
   I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
   I.click("Submit");
-  I.waitForText("OK");
-  I.see("Warning");
-  I.see('Checkbox "validation-label" is required');
-  I.seeElement(".ant-modal");
-  I.click("OK");
-  I.waitToHide(".ant-modal");
+  waitForError("validation-label");
 
   I.click("Me neither");
   I.click("Submit");
-  I.waitForText("OK");
-  I.see("Warning");
-  I.see('Checkbox "validation-label" is required');
-  I.seeElement(".ant-modal");
-  I.click("OK");
-  I.waitToHide(".ant-modal");
+  waitForError("validation-label");
 
   I.click("Valid");
+  I.click("Submit");
+  waitForError("easter-egg");
+
+  I.click("Don't select me");
   I.click("Submit");
   // Annotation is submitted, so now we can only update it
   I.dontSee("Submit");
