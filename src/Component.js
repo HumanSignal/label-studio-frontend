@@ -4,32 +4,32 @@ import { configureStore } from "./configureStore";
 import { registerPanels } from "./registerPanels";
 
 export class LabelStudio extends Component {
-  state = {}
+  state = {
+    initialized: false,
+  }
 
   componentDidMount() {
     configureStore(this.props).then(({store}) => {
-      this.setState({ store });
+      this.store = store;
+      window.Htx = this.store;
+      this.setState({ initialized: true });
     });
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.task !== prevProps.task) {
-      this.lsf.resetState();
-      this.lsf.assignTask(this.props.task);
-      this.lsf.initializeStore(this.props.task);
+      this.store.resetState();
+      this.store.assignTask(this.props.task);
+      this.store.initializeStore(this.props.task);
     }
   }
 
   render() {
-    return this.lsf ? (
+    return this.state.initialized ? (
       <App
-        store={this.lsf}
+        store={this.store}
         panels={registerPanels(this.props.panels) ?? []}
       />
     ) : null;
-  }
-
-  get lsf() {
-    return this.state.store;
   }
 }
