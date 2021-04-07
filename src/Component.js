@@ -12,12 +12,24 @@ export class LabelStudio extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.task !== prevProps.task) {
+      this.lsf.resetState();
+      this.lsf.assignTask(this.props.task);
+      this.lsf.initializeStore(this.props.task);
+    }
+  }
+
   render() {
-    return this.state.store ? (
+    return this.lsf ? (
       <App
-        store={this.state.store}
+        store={this.lsf}
         panels={registerPanels(this.props.panels) ?? []}
       />
     ) : null;
+  }
+
+  get lsf() {
+    return this.state.store;
   }
 }
