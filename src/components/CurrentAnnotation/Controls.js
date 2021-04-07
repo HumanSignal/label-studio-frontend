@@ -19,7 +19,7 @@ const ButtonTooltip = inject("store")(observer(({store, title, children}) => {
 }));
 
 export const Controls = inject("store")(observer(({store, annotation}) => {
-  const isReview = store.hasInterface("reivew");
+  const isReview = store.hasInterface("review");
   const { userGenerate, sentUserGenerate, versions, history } = annotation;
   const buttons = [];
 
@@ -37,7 +37,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
         <Button disabled={disabled} look="primary">
-          {history.canUndo() ? "Fix + Accept" : "Accept"}
+          {history.canUndo ? "Fix + Accept" : "Accept"}
         </Button>
       </ButtonTooltip>
     );
