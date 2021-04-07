@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 /**
  * Callback on submit annotation
  */
@@ -48,6 +50,16 @@ function onGroundTruth() {}
  */
 function onSelectAnnotation(annotation, previousAnnotation) {}
 
+/**
+ * Called when "Accept" or "Fix + Accept" is pressed
+ */
+function onAcceptAnnotation(store, entity){}
+
+/**
+ * Called when "Reject" is pressed
+ */
+function onRejectAnnotation(store, entity){}
+
 export default {
   onDeleteAnnotation,
   onEntityCreate,
@@ -59,4 +71,6 @@ export default {
   onTaskLoad,
   onUpdateAnnotation,
   onSelectAnnotation,
+  onAcceptAnnotation,
+  onRejectAnnotation
 };

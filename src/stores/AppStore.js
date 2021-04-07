@@ -349,6 +349,22 @@ export default types
       handleSubmittingFlag(() => getEnv(self).onSkipTask(self), "Error during skip, try again");
     }
 
+    function acceptAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+        const isDirty = entity.history.canUndo;
+        getEnv(self).onAcceptAnnotation(self, {isDirty, entity});
+      }, "Error during skip, try again");
+    }
+
+    function rejectAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+        const isDirty = entity.history.canUndo;
+        getEnv(self).onRejectAnnotation(self, {isDirty, entity});
+      }, "Error during skip, try again");
+    }
+
     /**
      * Reset annotation store
      */
@@ -400,6 +416,8 @@ export default types
       submitDraft,
       submitAnnotation,
       updateAnnotation,
+      acceptAnnotation,
+      rejectAnnotation,
 
       showModal,
       toggleComments,
