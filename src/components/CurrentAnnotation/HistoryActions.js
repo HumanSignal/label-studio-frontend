@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import React, { observer } from "mobx-react";
 import { LsRedo, LsRemove, LsUndo } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
