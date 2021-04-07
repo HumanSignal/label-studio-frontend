@@ -324,25 +324,25 @@ export default types
     }
 
     function submitAnnotation() {
-      const c = self.annotationStore.selected;
-      c.beforeSend();
+      const entity = self.annotationStore.selected;
+      entity.beforeSend();
 
-      if (!c.validate()) return;
+      if (!entity.validate()) return;
 
-      c.sendUserGenerate();
-      c.dropDraft();
-      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, c));
+      entity.sendUserGenerate();
+      entity.dropDraft();
+      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, entity));
     }
 
     function updateAnnotation() {
-      const c = self.annotationStore.selected;
-      c.beforeSend();
+      const entity = self.annotationStore.selected;
+      entity.beforeSend();
 
-      if (!c.validate()) return;
+      if (!entity.validate()) return;
 
-      c.dropDraft();
-      getEnv(self).onUpdateAnnotation(self, c);
-      !c.sentUserGenerate && c.sendUserGenerate();
+      entity.dropDraft();
+      getEnv(self).onUpdateAnnotation(self, entity);
+      !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
     function skipTask() {
@@ -352,7 +352,11 @@ export default types
     function acceptAnnotation() {
       handleSubmittingFlag(() => {
         const entity = self.annotationStore.selected;
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
         const isDirty = entity.history.canUndo;
+        entity.dropDraft();
         getEnv(self).onAcceptAnnotation(self, {isDirty, entity});
       }, "Error during skip, try again");
     }
@@ -360,7 +364,11 @@ export default types
     function rejectAnnotation() {
       handleSubmittingFlag(() => {
         const entity = self.annotationStore.selected;
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
         const isDirty = entity.history.canUndo;
+        entity.dropDraft();
         getEnv(self).onRejectAnnotation(self, {isDirty, entity});
       }, "Error during skip, try again");
     }
