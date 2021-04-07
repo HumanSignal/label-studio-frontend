@@ -4,6 +4,8 @@ import { configureStore } from "./configureStore";
 import { registerPanels } from "./registerPanels";
 
 export class LabelStudio extends Component {
+  state = {}
+
   componentDidMount() {
     configureStore(this.props).then(({store}) => {
       this.setState({ store });
