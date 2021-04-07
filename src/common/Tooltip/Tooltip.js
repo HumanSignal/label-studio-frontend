@@ -1,4 +1,4 @@
-import React, { Children, cloneElement, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Children, cloneElement, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Block, Elem } from "../../utils/bem";
 import { aroundTransition } from "../../utils/transition";

@@ -1,7 +1,7 @@
-import React, { inject, observer } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { Button } from "../../common/Button/Button";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { Block } from "../../utils/bem";
+import { Block, Elem } from "../../utils/bem";
 import "./Controls.styl";
 
 const TOOLTIP_DELAY = 0.8;

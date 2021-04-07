@@ -1,4 +1,4 @@
-import React, { render, unmountComponentAtNode } from "react-dom";
+import { render, unmountComponentAtNode } from "react-dom";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';

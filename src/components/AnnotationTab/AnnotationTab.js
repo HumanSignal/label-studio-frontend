@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { CurrentAnnotation } from "../CurrentAnnotation/CurrentAnnotation";
+import { CurrentAnnotation } from "../CurrentAnnotation/CurrentAnnotation";
 import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
