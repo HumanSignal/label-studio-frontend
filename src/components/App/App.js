@@ -37,7 +37,7 @@ import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
 import { AnnotationTabs } from "../AnnotationTabs/AnnotatioTabs";
-import { SidebarPage, SidebarToggle } from "../SidebarToggle/SidebarToggle";
+import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 
 /**
@@ -159,7 +159,7 @@ class App extends Component {
             </div>
             <div className={stMenu + " ls-menu"}>
               {store.hasInterface("side-column") && !as.viewingAllAnnotations && !as.viewingAllPredictions && (
-                <SidebarToggle active="annotation">
+                <SidebarTabs active="annotation">
                   <SidebarPage name="annotation" title="Annotation">
                     <AnnotationTab store={store} />
                   </SidebarPage>
@@ -168,7 +168,7 @@ class App extends Component {
                       <Component/>
                     </SidebarPage>
                   ))}
-                </SidebarToggle>
+                </SidebarTabs>
               )}
             </div>
           </div>

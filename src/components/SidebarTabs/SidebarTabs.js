@@ -2,11 +2,11 @@ import { observer } from "mobx-react";
 import React, { createContext, useState } from "react";
 import { Children } from "react";
 import { Block, Elem } from "../../utils/bem";
-import "./SidebarToggle.styl";
+import "./SidebarTabs.styl";
 
 const SidebarContext = createContext();
 
-export const SidebarToggle = observer(({ active, children }) => {
+export const SidebarTabs = observer(({ active, children }) => {
   const [selected, setSelected] = useState(active);
   const tabs = Children.toArray(children);
 
