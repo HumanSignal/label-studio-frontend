@@ -1,5 +1,6 @@
 import { flatten, wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
+import { decode } from "@thi.ng/rle-pack";
 
 /**
  * @type {import("./Geometry").BBox}
@@ -102,7 +103,12 @@ const _detect = region => {
     }
     case "brushregion": {
       const points = flatten(wrapArray(region.touches.filter(t => t.type === "add").map(t => Array.from(t.points))));
-      return imageRelatedBBox(region, Geometry.getBrushBBox(points));
+      const touchesBbox = points.length ? Geometry.getBrushBBox(points) : null;
+      let imageDataBBox;
+      if (region.rle) {
+        imageDataBBox = Geometry.getImageDataBBox(decode(region.rle), region.parent.imageRef);
+      }
+      return imageRelatedBBox(region, Geometry.combineBBoxes(touchesBbox, imageDataBBox));
     }
     default: {
       console.warn(`Unknown region type: ${region.type}`);
