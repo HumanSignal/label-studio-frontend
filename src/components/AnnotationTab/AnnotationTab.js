@@ -15,6 +15,7 @@ export const AnnotationTab = observer(({ store }) => {
         <CurrentAnnotation
           annotation={as.selected}
           showControls={store.hasInterface("controls")}
+          canDelete={store.hasInterface("annotations:delete")}
         />
       )}
 

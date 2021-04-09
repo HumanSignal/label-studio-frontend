@@ -11,7 +11,7 @@ import { Controls } from "./Controls";
 import "./CurrentAnnotation.styl";
 import { HistoryActions } from "./HistoryActions";
 
-export const CurrentAnnotation = observer(({ annotation, showControls = true }) => {
+export const CurrentAnnotation = observer(({ annotation, canDelete=true, showControls = true }) => {
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
@@ -27,27 +27,29 @@ export const CurrentAnnotation = observer(({ annotation, showControls = true }) 
           history={annotation.history}
         />
 
-        <Tooltip title="Delete annotation">
-          <Button
-            icon={<LsTrash />}
-            look="danger"
-            type="text"
-            onClick={() => {
-              confirm({
-                title: "Delete annotaion",
-                body: "This action cannot be undone",
-                buttonLook: "destructive",
-                okText: "Proceed",
-                onOk: () => annotation.list.deleteAnnotation(annotation),
-              });
-            }}
-            style={{
-              height: 36,
-              width: 36,
-              padding: 0,
-            }}
-          />
-        </Tooltip>
+        {canDelete && (
+          <Tooltip title="Delete annotation">
+            <Button
+              icon={<LsTrash />}
+              look="danger"
+              type="text"
+              onClick={() => {
+                confirm({
+                  title: "Delete annotaion",
+                  body: "This action cannot be undone",
+                  buttonLook: "destructive",
+                  okText: "Proceed",
+                  onOk: () => annotation.list.deleteAnnotation(annotation),
+                });
+              }}
+              style={{
+                height: 36,
+                width: 36,
+                padding: 0,
+              }}
+            />
+          </Tooltip>
+        )}
       </Space>
 
       {showControls && <Controls annotation={annotation}/>}
