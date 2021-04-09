@@ -86,19 +86,17 @@ const LabelsModel = types.compose(
 
 const HtxLabels = observer(({ item }) => {
   const style = {
-    marginTop: "1em",
-    marginBottom: "1em",
+    margin: "1em",
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
     flexFlow: "wrap",
-    marginLeft: "-5px",
   };
 
   if (!item.showinline) {
+    style["margin"] = "0";
     style["flexDirection"] = "column";
     style["alignItems"] = "flex-start";
-    style["marginTop"] = "0";
   }
 
   if (!item.visible) {
