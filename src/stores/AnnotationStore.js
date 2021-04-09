@@ -17,6 +17,7 @@ import { errorBuilder } from "../core/DataValidator/ConfigValidator";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
+import { UserExtended } from "./UserStore";
 
 const hotkeys = Hotkey("Annotations");
 
@@ -35,6 +36,7 @@ const Annotation = types
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
+    user: types.optional(types.maybeNull(types.reference(UserExtended)), null),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
@@ -819,6 +821,7 @@ export default types
       };
 
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
+      if (options.user) node.user = options.user;
 
       //
       return Annotation.create(node);

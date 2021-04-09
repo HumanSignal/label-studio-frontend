@@ -8,7 +8,7 @@ import InfoModal from "../components/Infomodal/Infomodal";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
-import User from "./UserStore";
+import User, { UserExtended } from "./UserStore";
 import Utils from "../utils";
 import { delay } from "../utils/utilities";
 import messages from "../utils/messages";
@@ -102,6 +102,8 @@ export default types
      * Show or hide comments section
      */
     showComments: false,
+
+    users: types.optional(types.array(UserExtended), [])
   })
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",

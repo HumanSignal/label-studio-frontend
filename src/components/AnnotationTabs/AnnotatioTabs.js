@@ -25,7 +25,7 @@ const EntityTab = observer(({ entity, selected, prediction = false, onClick }) =
           tag={Userpic}
           username={prediction ? entity.createdBy : null}
           showUsername={prediction}
-          user={{email: entity.createdBy}}
+          user={entity.user ?? {email: entity.createdBy}}
           mod={{prediction}}
         >{prediction && <LsSparks/>}</Elem>
         ID {entity.pk ?? entity.id} {isUnsaved && "*"}
