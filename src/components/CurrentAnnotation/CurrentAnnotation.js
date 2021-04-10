@@ -7,6 +7,7 @@ import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import { Space } from "../../common/Space/Space";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
+import { AnnotationHistory } from "./AnnotationHistory";
 import { Controls } from "./Controls";
 import "./CurrentAnnotation.styl";
 import { HistoryActions } from "./HistoryActions";
@@ -53,6 +54,8 @@ export const CurrentAnnotation = observer(({ annotation, canDelete=true, showCon
       </Space>
 
       {showControls && <Controls annotation={annotation}/>}
+
+      <AnnotationHistory/>
     </Block>
   ) : null;
 });
