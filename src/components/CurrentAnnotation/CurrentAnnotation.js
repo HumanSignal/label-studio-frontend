@@ -12,7 +12,12 @@ import { Controls } from "./Controls";
 import "./CurrentAnnotation.styl";
 import { HistoryActions } from "./HistoryActions";
 
-export const CurrentAnnotation = observer(({ annotation, canDelete=true, showControls = true }) => {
+export const CurrentAnnotation = observer(({
+  annotation,
+  canDelete = true,
+  showControls = true,
+  showHistory = true,
+}) => {
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
