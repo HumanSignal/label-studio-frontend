@@ -1,5 +1,5 @@
-import React from "react";
-import { Line, Shape, Group, Layer } from "react-konva";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Line, Shape, Group, Layer, Image } from "react-konva";
 import { observer } from "mobx-react";
 import { types, getParent, getRoot, isAlive } from "mobx-state-tree";
 
@@ -216,7 +216,7 @@ const HtxBrushLayer = observer(({ item, points }) => {
         e.cancelBubble = false;
       }}
       points={[...points.points]}
-      stroke={item.style.strokecolor}
+      stroke={item.style?.strokecolor}
       strokeWidth={points.strokeWidth}
       lineJoin={"round"}
       lineCap="round"
@@ -227,6 +227,38 @@ const HtxBrushLayer = observer(({ item, points }) => {
 });
 
 const HtxBrushView = ({ item }) => {
+  const [image, setImage] = useState();
+  useMemo(() => {
+    if (!item.rle) return;
+    const img = Canvas.RLE2Region(item.rle, item.parent);
+    img.onload = () => {
+      setImage(img);
+    };
+  }, [item.rle, item.parent]);
+
+  const imageHitFunc = useCallback(
+    (context, shape) => {
+      if (image) {
+        context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
+        const colorParts = [
+          parseInt(shape.colorKey.slice(1, 3), 16),
+          parseInt(shape.colorKey.slice(3, 5), 16),
+          parseInt(shape.colorKey.slice(5, 7), 16),
+        ];
+        const imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+        for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
+          if (imageData.data[i * 4 + 3] > 0) {
+            for (let k = 0; k < 3; k++) {
+              imageData.data[i * 4 + k] = colorParts[k];
+            }
+          }
+        }
+        context.putImageData(imageData, 0, 0);
+      }
+    },
+    [image],
+  );
+
   if (!isAlive(item)) return null;
   if (item.hidden) return null;
 
@@ -296,33 +328,14 @@ const HtxBrushView = ({ item }) => {
           item.onClickRegion();
         }}
       >
-        {/* @todo rewrite this to just an Konva.Image, much simplier */}
         {/* @todo and this will allow to use scale on parent Group */}
-        <Shape
-          sceneFunc={(ctx, shape) => {
-            if (item.parent.naturalWidth === 1) return null;
-
-            if (item._loadedOnce === true) {
-              ctx.drawImage(item._img, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-              ctx.fillStrokeShape(shape);
-
-              return;
-            }
-
-            if (item.rle) {
-              const img = Canvas.RLE2Region(item.rle, item.parent);
-              item._loadedOnce = true;
-
-              img.onload = function() {
-                ctx.drawImage(img, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-                ctx.fillStrokeShape(shape);
-              };
-
-              item._img = img;
-            }
-          }}
+        <Image
+          image={image}
+          hitFunc={imageHitFunc}
           opacity={1}
           {...highlight}
+          width={item.parent.stageWidth}
+          height={item.parent.stageHeight}
         />
 
         <Group scaleX={item.scaleX} scaleY={item.scaleY}>
