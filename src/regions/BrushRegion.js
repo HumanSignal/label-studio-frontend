@@ -209,12 +209,20 @@ const HtxBrushLayer = observer(({ item, points }) => {
           opacity: 1,
           globalCompositeOperation: "destination-out",
         };
-
+  const eraseLineHitFunc = useCallback(function(context, shape) {
+    const colorKey = shape.colorKey;
+    shape._sceneFunc(context, shape);
+    shape.colorKey = "#ffffff";
+    context.strokeShape(shape);
+    shape.colorKey = colorKey;
+  });
+  const lineHitFunc = points.type === "eraser" ? eraseLineHitFunc : null;
   return (
     <Line
       onMouseDown={e => {
         e.cancelBubble = false;
       }}
+      hitFunc={lineHitFunc}
       points={[...points.points]}
       stroke={item.style?.strokecolor}
       strokeWidth={points.strokeWidth}
