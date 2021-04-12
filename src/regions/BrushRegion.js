@@ -219,9 +219,6 @@ const HtxBrushLayer = observer(({ item, points }) => {
   const lineHitFunc = points.type === "eraser" ? eraseLineHitFunc : null;
   return (
     <Line
-      onMouseDown={e => {
-        e.cancelBubble = false;
-      }}
       hitFunc={lineHitFunc}
       points={[...points.points]}
       stroke={item.style?.strokecolor}
@@ -293,10 +290,11 @@ const HtxBrushView = ({ item }) => {
         // onClick={e => {
         //     e.cancelBubble = false;
         // }}
-        // onMouseDown={e => {
-        //     console.log("down");
-        //     e.cancelBubble = false;
-        // }}
+        onMouseDown={e => {
+          if (store.annotationStore.selected.relationMode) {
+            e.cancelBubble = true;
+          }
+        }}
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 
