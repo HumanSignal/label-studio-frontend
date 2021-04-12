@@ -121,3 +121,12 @@ export function wrapArray(value) {
 export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function findClosestParent(el, predicate = () => true) {
+  while ((el = el.parent)) {
+    if (predicate(el)) {
+      return el;
+    }
+  }
+  return null;
+}
