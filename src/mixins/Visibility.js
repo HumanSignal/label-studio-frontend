@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 
 /*
  * Per Region Mixin
@@ -12,6 +12,10 @@ const VisibilityMixin = types
   })
   .views(self => ({
     get isVisible() {
+      if (getParent(self, 2)?.isVisible === false) {
+        return false;
+      }
+
       if (self.visiblewhen) {
         const fns = {
           "region-selected": ({ tagName, labelValue }) => {

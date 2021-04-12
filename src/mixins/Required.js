@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 
 const RequiredMixin = types
   .model({
@@ -30,7 +30,7 @@ const RequiredMixin = types
       } else {
         // validation when its classifying the whole object
         // isVisible can be undefined (so comparison is true) or boolean (so check for visibility)
-        if (self.isVisible !== false && !self.holdsState) {
+        if (!self.holdsState && self.isVisible !== false && getParent(self, 2)?.isVisible !== false) {
           self.requiredModal();
           return false;
         }
