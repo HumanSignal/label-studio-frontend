@@ -7,6 +7,7 @@ import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
+import { clamp } from "../utils/utilities";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -47,111 +48,117 @@ const _Tool = types
       };
     },
   }))
-  .actions(self => ({
-    fromStateJSON(json, controlTag) {
-      const region = self.createFromJSON(json, controlTag);
+  .actions(self => {
+    let touchPoints;
+    return {
+      fromStateJSON(json, controlTag) {
+        const region = self.createFromJSON(json, controlTag);
 
-      if (json.value.points) {
-        const p = region.addPoints({ type: "add" });
-        p.addPoints(json.value.points);
-      }
+        if (json.value.points) {
+          const p = region.addPoints({ type: "add" });
+          p.addPoints(json.value.points);
+        }
 
-      if (json.value.format === "rle") {
-        region._rle = json.value.rle;
-      }
+        if (json.value.format === "rle") {
+          region._rle = json.value.rle;
+        }
 
-      return region;
-    },
+        return region;
+      },
 
-    // fromStateJSON(obj, fromModel) {
-    //   if ("brushlabels" in obj.value) {
-    //     const states = restoreNewsnapshot(fromModel);
-    //     states.fromStateJSON(obj);
+      // fromStateJSON(obj, fromModel) {
+      //   if ("brushlabels" in obj.value) {
+      //     const states = restoreNewsnapshot(fromModel);
+      //     states.fromStateJSON(obj);
 
-    //     const region = self.createRegion({
-    //       pid: obj.id,
-    //       stroke: states.getSelectedColor(),
-    //       states: states,
-    //       // coordstype: "px",
-    //       // points: obj.value.points,
-    //     });
+      //     const region = self.createRegion({
+      //       pid: obj.id,
+      //       stroke: states.getSelectedColor(),
+      //       states: states,
+      //       // coordstype: "px",
+      //       // points: obj.value.points,
+      //     });
 
-    //     if (obj.value.points) {
-    //       const p = region.addPoints({ type: "add" });
-    //       p.addPoints(obj.value.points);
-    //     }
+      //     if (obj.value.points) {
+      //       const p = region.addPoints({ type: "add" });
+      //       p.addPoints(obj.value.points);
+      //     }
 
-    //     if (obj.value.format === "rle") {
-    //       region._rle = obj.value.rle;
-    //     }
-    //   }
-    // },
+      //     if (obj.value.format === "rle") {
+      //       region._rle = obj.value.rle;
+      //     }
+      //   }
+      // },
 
-    createRegion(opts) {
-      const control = self.control;
-      const labels = { [control.valueType]: control.selectedValues?.() };
-      return self.obj.annotation.createResult(opts, labels, control, self.obj);
-    },
+      createRegion(opts) {
+        const control = self.control;
+        const labels = { [control.valueType]: control.selectedValues?.() };
+        return self.obj.annotation.createResult(opts, labels, control, self.obj);
+      },
 
-    updateCursor() {
-      const val = self.strokeWidth;
-      const stage = self.obj.stageRef;
-      const base64 = Canvas.brushSizeCircle(val);
-      const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
+      updateCursor() {
+        const val = self.strokeWidth;
+        const stage = self.obj.stageRef;
+        const base64 = Canvas.brushSizeCircle(val);
+        const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
 
-      stage.container().style.cursor = cursor.join("");
-    },
+        stage.container().style.cursor = cursor.join("");
+      },
 
-    setStroke(val) {
-      self.strokeWidth = val;
-    },
+      setStroke(val) {
+        self.strokeWidth = val;
+      },
 
-    mouseupEv() {
-      self.mode = "viewing";
-    },
+      addTouchPoint(x, y) {
+        const { stageWidth, stageHeight } = self.obj;
+        touchPoints.addPoints(clamp(Math.floor(x), 0, stageWidth), clamp(Math.floor(y), 0, stageHeight));
+      },
 
-    mousemoveEv(ev, [x, y]) {
-      if (self.mode !== "drawing") return;
+      mouseupEv() {
+        self.mode = "viewing";
+      },
 
-      const shape = self.getSelectedShape;
+      mousemoveEv(ev, [x, y]) {
+        if (self.mode !== "drawing") return;
 
-      shape.currentTouch.addPoints(Math.floor(x), Math.floor(y));
-    },
+        self.addTouchPoint(x, y);
+      },
 
-    mousedownEv(ev, [x, y]) {
-      const c = self.control;
-      const brush = self.getSelectedShape;
+      mousedownEv(ev, [x, y]) {
+        const c = self.control;
+        const brush = self.getSelectedShape;
 
-      if (brush) {
-        self.mode = "drawing";
-
-        const p = brush.addTouch({
-          type: "add",
-          strokeWidth: self.strokeWidth || c.strokeWidth,
-        });
-
-        p.addPoints(Math.floor(x), Math.floor(y));
-      } else {
-        if (c.isSelected) {
+        if (brush) {
           self.mode = "drawing";
 
-          const brush = self.createRegion({
-            touches: [],
-            coordstype: "px",
-          });
-
-          self.obj.annotation.selectArea(brush);
-
-          const p = brush.addTouch({
+          touchPoints = brush.addTouch({
             type: "add",
             strokeWidth: self.strokeWidth || c.strokeWidth,
           });
 
-          p.addPoints(Math.floor(x), Math.floor(y));
+          self.addTouchPoint(x, y);
+        } else {
+          if (c.isSelected) {
+            self.mode = "drawing";
+
+            const brush = self.createRegion({
+              touches: [],
+              coordstype: "px",
+            });
+
+            self.obj.annotation.selectArea(brush);
+
+            touchPoints = brush.addTouch({
+              type: "add",
+              strokeWidth: self.strokeWidth || c.strokeWidth,
+            });
+
+            self.addTouchPoint(x, y);
+          }
         }
-      }
-    },
-  }));
+      },
+    };
+  });
 
 const Brush = types.compose(ToolMixin, BaseTool, _Tool);
 

@@ -7,6 +7,7 @@ import BaseTool from "./Base";
 import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
+import { clamp } from "../utils/utilities";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -35,40 +36,49 @@ const _Tool = types
       return <ToolView item={self} />;
     },
   }))
-  .actions(self => ({
-    updateCursor() {
-      const val = 24;
-      const stage = self.obj.stageRef;
-      const base64 = Canvas.brushSizeCircle(val);
-      const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
+  .actions(self => {
+    let touchPoints;
+    return {
+      updateCursor() {
+        const val = 24;
+        const stage = self.obj.stageRef;
+        const base64 = Canvas.brushSizeCircle(val);
+        const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
 
-      stage.container().style.cursor = cursor.join("");
-    },
+        stage.container().style.cursor = cursor.join("");
+      },
 
-    mouseupEv() {
-      self.mode = "viewing";
-    },
+      addTouchPoint(x, y) {
+        const { stageWidth, stageHeight } = self.obj;
+        touchPoints.addPoints(clamp(Math.floor(x), 0, stageWidth), clamp(Math.floor(y), 0, stageHeight));
+      },
 
-    mousemoveEv(ev, [x, y]) {
-      if (self.mode !== "drawing") return;
+      mouseupEv() {
+        self.mode = "viewing";
+      },
 
-      const shape = self.getSelectedShape;
-      if (shape && shape.type === "brushregion") {
-        shape.currentTouch.addPoints(Math.floor(x), Math.floor(y));
-      }
-    },
+      mousemoveEv(ev, [x, y]) {
+        if (self.mode !== "drawing") return;
 
-    mousedownEv(ev, [x, y]) {
-      self.mode = "drawing";
+        const shape = self.getSelectedShape;
+        if (shape && shape.type === "brushregion") {
+          self.addTouchPoint(x, y);
+        }
+      },
 
-      const shape = self.getSelectedShape;
-      if (!shape) return;
+      mousedownEv(ev, [x, y]) {
+        self.mode = "drawing";
 
-      if (shape && shape.type === "brushregion") {
-        shape.addTouch({ type: "eraser" });
-      }
-    },
-  }));
+        const shape = self.getSelectedShape;
+        if (!shape) return;
+
+        if (shape && shape.type === "brushregion") {
+          touchPoints = shape.addTouch({ type: "eraser" });
+          self.addTouchPoint(x, y);
+        }
+      },
+    };
+  });
 
 const Erase = types.compose(ToolMixin, _Tool, BaseTool);
 

@@ -130,3 +130,7 @@ export function findClosestParent(el, predicate = () => true) {
   }
   return null;
 }
+
+export function clamp(x, min, max) {
+  return Math.min(max, Math.max(min, x));
+}
