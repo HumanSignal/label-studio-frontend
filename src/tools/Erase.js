@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { addDisposer, types } from "mobx-state-tree";
 import { ScissorOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
@@ -8,6 +8,7 @@ import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { clamp } from "../utils/utilities";
+import { reaction } from "mobx";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -19,10 +20,6 @@ const ToolView = observer(({ item }) => {
         item.manager.unselectAll();
 
         item.setSelected(!sel);
-
-        if (item.selected) {
-          item.updateCursor();
-        }
       }}
       icon={<ScissorOutlined />}
     />
@@ -39,6 +36,19 @@ const _Tool = types
   .actions(self => {
     let touchPoints;
     return {
+      afterCreate() {
+        const dispose = reaction(
+          () => self.selected,
+          () => {
+            if (self.selected) {
+              this.updateCursor();
+            }
+          },
+        );
+
+        addDisposer(self, dispose);
+      },
+
       updateCursor() {
         const val = 24;
         const stage = self.obj.stageRef;
