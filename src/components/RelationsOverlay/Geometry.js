@@ -244,12 +244,11 @@ export class Geometry {
   /**
    * Calculate BBox of Brush region from image data
    * @param {Uint8ClampedArray} imageData Array containing the data in the RGBA order
-   * @param {HTMLImageElement} imageRef Annotating image element for understanding dimensions and scale
+   * @param {Number} width
+   * @param {Number} height
    * @return {BBox}
    */
-  static getImageDataBBox(imageData, imageRef) {
-    const w = imageRef.naturalWidth,
-      h = imageRef.naturalHeight;
+  static getImageDataBBox(imageData, w, h) {
     if (imageData.length !== w * h * 4) return null;
     let min = { x: w, y: h },
       max = { x: 0, y: 0 };
@@ -264,10 +263,7 @@ export class Geometry {
         }
       }
     }
-    return this.scaleBBox(
-      { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y },
-      imageRef.width / imageRef.naturalWidth,
-    );
+    return { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y };
   }
   /**
    * Combine two or more BBoxes into one

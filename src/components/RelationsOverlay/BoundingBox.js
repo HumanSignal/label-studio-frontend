@@ -102,13 +102,10 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      const points = flatten(wrapArray(region.touches.filter(t => t.type === "add").map(t => Array.from(t.points))));
-      const touchesBbox = points.length ? Geometry.getBrushBBox(points) : null;
-      let imageDataBBox;
-      if (region.rle) {
-        imageDataBBox = Geometry.getImageDataBBox(decode(region.rle), region.parent.imageRef);
-      }
-      return imageRelatedBBox(region, Geometry.combineBBoxes(touchesBbox, imageDataBBox));
+      return imageRelatedBBox(
+        region,
+        Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
+      );
     }
     default: {
       console.warn(`Unknown region type: ${region.type}`);

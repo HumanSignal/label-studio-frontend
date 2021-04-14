@@ -122,6 +122,11 @@ const Model = types
     get parent() {
       return self.object;
     },
+    get imageData() {
+      if (!self.layerRef) return null;
+      const ctx = self.layerRef.canvas.context;
+      return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
+    },
   }))
   .actions(self => {
     let pathPoints,
