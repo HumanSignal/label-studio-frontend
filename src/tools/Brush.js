@@ -49,16 +49,26 @@ const _Tool = types
     let brush;
     return {
       afterCreate() {
-        const dispose = reaction(
-          () => self.selected,
-          () => {
-            if (self.selected) {
-              this.updateCursor();
-            }
-          },
+        addDisposer(
+          self,
+          reaction(
+            () => self.selected,
+            () => {
+              if (self.selected) {
+                this.updateCursor();
+              }
+            },
+          ),
         );
-
-        addDisposer(self, dispose);
+        addDisposer(
+          self,
+          reaction(
+            () => self.strokeWidth,
+            () => {
+              this.updateCursor();
+            },
+          ),
+        );
       },
 
       fromStateJSON(json, controlTag) {
