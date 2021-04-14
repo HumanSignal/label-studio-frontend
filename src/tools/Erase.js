@@ -7,7 +7,7 @@ import BaseTool from "./Base";
 import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
-import { clamp } from "../utils/utilities";
+import { findClosestParent } from "../utils/utilities";
 import { reaction } from "mobx";
 
 const ToolView = observer(({ item }) => {
@@ -34,7 +34,8 @@ const _Tool = types
     },
   }))
   .actions(self => {
-    let touchPoints;
+    let pathPoints;
+    let brush;
     return {
       afterCreate() {
         const dispose = reaction(
@@ -58,33 +59,50 @@ const _Tool = types
         stage.container().style.cursor = cursor.join("");
       },
 
-      addTouchPoint(x, y) {
-        const { stageWidth, stageHeight } = self.obj;
-        touchPoints.addPoints(clamp(Math.floor(x), 0, stageWidth), clamp(Math.floor(y), 0, stageHeight));
+      addPoint(x, y) {
+        brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
       mouseupEv() {
+        if (self.mode !== "drawing") return;
         self.mode = "viewing";
+        brush.endPath();
       },
 
       mousemoveEv(ev, [x, y]) {
         if (self.mode !== "drawing") return;
+        if (
+          !findClosestParent(
+            ev.target,
+            el => el === self.obj.stageRef.content,
+            el => el.parentElement,
+          )
+        )
+          return;
 
         const shape = self.getSelectedShape;
         if (shape && shape.type === "brushregion") {
-          self.addTouchPoint(x, y);
+          self.addPoint(x, y);
         }
       },
 
       mousedownEv(ev, [x, y]) {
-        self.mode = "drawing";
+        if (
+          !findClosestParent(
+            ev.target,
+            el => el === self.obj.stageRef.content,
+            el => el.parentElement,
+          )
+        )
+          return;
 
-        const shape = self.getSelectedShape;
-        if (!shape) return;
+        brush = self.getSelectedShape;
+        if (!brush) return;
 
-        if (shape && shape.type === "brushregion") {
-          touchPoints = shape.addTouch({ type: "eraser" });
-          self.addTouchPoint(x, y);
+        if (brush && brush.type === "brushregion") {
+          self.mode = "drawing";
+          pathPoints = brush.beginPath({ type: "eraser", opacity: 1 });
+          self.addPoint(x, y);
         }
       },
     };

@@ -7,7 +7,7 @@ import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
-import { clamp } from "../utils/utilities";
+import { findClosestParent } from "../utils/utilities";
 import { reaction } from "mobx";
 
 const ToolView = observer(({ item }) => {
@@ -45,7 +45,8 @@ const _Tool = types
     },
   }))
   .actions(self => {
-    let touchPoints;
+    let pathPoints;
+    let brush;
     return {
       afterCreate() {
         const dispose = reaction(
@@ -118,51 +119,67 @@ const _Tool = types
         self.strokeWidth = val;
       },
 
-      addTouchPoint(x, y) {
-        const { stageWidth, stageHeight } = self.obj;
-        touchPoints.addPoints(clamp(Math.floor(x), 0, stageWidth), clamp(Math.floor(y), 0, stageHeight));
+      addPoint(x, y) {
+        brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
       mouseupEv() {
+        if (self.mode !== "drawing") return;
         self.mode = "viewing";
+        brush.endPath();
+        self.obj.annotation.selectArea(brush);
       },
 
       mousemoveEv(ev, [x, y]) {
         if (self.mode !== "drawing") return;
+        if (
+          !findClosestParent(
+            ev.target,
+            el => el === self.obj.stageRef.content,
+            el => el.parentElement,
+          )
+        )
+          return;
 
-        self.addTouchPoint(x, y);
+        self.addPoint(x, y);
       },
 
       mousedownEv(ev, [x, y]) {
+        if (
+          !findClosestParent(
+            ev.target,
+            el => el === self.obj.stageRef.content,
+            el => el.parentElement,
+          )
+        )
+          return;
         const c = self.control;
-        const brush = self.getSelectedShape;
+        brush = self.getSelectedShape;
 
         if (brush) {
           self.mode = "drawing";
 
-          touchPoints = brush.addTouch({
+          pathPoints = brush.beginPath({
             type: "add",
             strokeWidth: self.strokeWidth || c.strokeWidth,
           });
 
-          self.addTouchPoint(x, y);
+          self.addPoint(x, y);
         } else {
           if (c.isSelected) {
             self.mode = "drawing";
 
-            const brush = self.createRegion({
+            brush = self.createRegion({
               touches: [],
               coordstype: "px",
             });
 
-            self.obj.annotation.selectArea(brush);
-
-            touchPoints = brush.addTouch({
+            pathPoints = brush.beginPath({
               type: "add",
               strokeWidth: self.strokeWidth || c.strokeWidth,
             });
 
-            self.addTouchPoint(x, y);
+            self.addPoint(x, y);
           }
         }
       },
