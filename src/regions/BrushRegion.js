@@ -151,14 +151,17 @@ const Model = types
       },
 
       preDraw(x, y) {
-        if (!self.layerRef || cachedPoints.length === 0) return;
+        if (!self.layerRef) return;
         const layer = self.layerRef;
         const ctx = layer.canvas.context;
         ctx.save();
         ctx.beginPath();
-        if (cachedPoints.length / 2 > 2) {
+        if (cachedPoints.length / 2 > 3) {
           ctx.moveTo(lastPointX, lastPointY);
-        } else {
+        } else if (cachedPoints.length === 0) {
+          ctx.moveTo(x, y);
+        }
+        {
           ctx.moveTo(cachedPoints[0], cachedPoints[1]);
           for (let i = 0; i < cachedPoints.length / 2; i++) {
             ctx.lineTo(cachedPoints[2 * i], cachedPoints[2 * i + 1]);
@@ -190,6 +193,10 @@ const Model = types
       },
 
       endPath() {
+        if (cachedPoints.length === 2) {
+          cachedPoints.push(cachedPoints[0]);
+          cachedPoints.push(cachedPoints[1]);
+        }
         self.touches.push(pathPoints);
         self.currentTouch = pathPoints;
         pathPoints.setPoints(cachedPoints);
