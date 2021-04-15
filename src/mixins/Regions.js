@@ -1,5 +1,6 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
+import { AnnotationMixin } from "./AnnotationMixin";
 
 const RegionsMixin = types
   .model({
@@ -29,10 +30,6 @@ const RegionsMixin = types
 
     get parent() {
       return getParent(self);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get editable() {
@@ -145,6 +142,7 @@ const RegionsMixin = types
      */
     unselectRegion(tryToKeepStates = false) {
       console.log("UNSELECT REGION", "you should not be here");
+      // eslint-disable-next-line no-constant-condition
       if (1) return;
       const annotation = self.annotation;
       const parent = self.parent;
@@ -200,4 +198,4 @@ const RegionsMixin = types
     },
   }));
 
-export default RegionsMixin;
+export default types.compose(RegionsMixin, AnnotationMixin);

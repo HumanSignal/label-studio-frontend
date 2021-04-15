@@ -1,11 +1,22 @@
 import { getRoot, types } from "mobx-state-tree";
+import { isDefined } from "../utils/utilities";
 
 export const AnnotationMixin = types.model("AnnotationMixin", {
 
 }).views((self) => ({
   get annotation() {
-    const as = getRoot(self).annotationStore;
+    const as = self.annotationStore;
     console.log({h: as.selectedHistory, an: as.selected});
     return as.selectedHistory ?? as.selected;
+  },
+
+  get annotationStore() {
+    const root = getRoot(self);
+
+    if (root === self) {
+      return getRoot(self.control).annotationStore;
+    }
+
+    return root.annotationStore;
   }
 }));

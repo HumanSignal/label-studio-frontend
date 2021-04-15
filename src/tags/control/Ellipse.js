@@ -4,6 +4,7 @@ import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Ellipse
@@ -45,10 +46,6 @@ const Model = types
       const states = self.states();
       return states && states.length > 0;
     },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -59,7 +56,7 @@ const Model = types
     },
   }));
 
-const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase);
+const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase, AnnotationMixin);
 
 const HtxView = () => {
   return null;

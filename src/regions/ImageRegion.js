@@ -33,12 +33,6 @@ const RegionMixin = types
       return getParent(self);
     },
 
-    get annotation() {
-      const as = getRoot(self).annotationStore;
-      console.log({h: as.selectedHistory, an: as.selected});
-      return as.selectedHistory ?? as.selected;
-    },
-
     get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
