@@ -16,6 +16,7 @@ import styles from "./Text/Text.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { customTypes } from "../../core/CustomTypes";
 import messages from "../../utils/messages";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Text tag shows text markup that can be labeled.
@@ -70,10 +71,6 @@ const Model = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
@@ -248,7 +245,7 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxTextView extends Component {
   render() {

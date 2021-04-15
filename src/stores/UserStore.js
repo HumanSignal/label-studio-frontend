@@ -1,6 +1,6 @@
 import { types } from "mobx-state-tree";
 
-export const UserExtended = types.model("User", {
+export const UserExtended = types.model("UserExtended", {
   id: types.identifierNumber,
   first_name: types.maybeNull(types.string),
   last_name: types.maybeNull(types.string),

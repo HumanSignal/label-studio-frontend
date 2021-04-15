@@ -50,7 +50,8 @@ const RegionItemContent = observer(({ idx, item }) => {
 export const RegionItem = observer(({ item, idx, flat }) => {
   if (!isAlive(item)) return null;
 
-  const c = getRoot(item).annotationStore.selected;
+  const as = getRoot(item).annotationStore;
+  const anno = as.selectedHistory ?? as.selected;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,
@@ -62,7 +63,7 @@ export const RegionItem = observer(({ item, idx, flat }) => {
     <List.Item
       key={item.id}
       className={classnames.join(" ")}
-      onClick={() => c.selectArea(item)}
+      onClick={() => anno.selectArea(item)}
       onMouseOver={() => item.setHighlight(true)}
       onMouseOut={() => item.setHighlight(false)}
     >

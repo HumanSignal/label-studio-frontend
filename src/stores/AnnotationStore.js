@@ -31,7 +31,7 @@ const Annotation = types
     pk: types.maybeNull(types.string),
 
     selected: types.optional(types.boolean, false),
-    type: types.enumeration(["annotation", "prediction"]),
+    type: types.enumeration(["annotation", "prediction", "history"]),
 
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
@@ -587,13 +587,15 @@ const Annotation = types
 
             let area = self.areas.get(areaId);
             if (!area) {
-              area = self.areas.put({
+              const areaSnapshot = {
                 id: areaId,
                 object: data.to_name,
                 ...data,
                 ...value,
                 value,
-              });
+              };
+
+              area = self.areas.put(areaSnapshot);
             }
 
             area.addResult({ ...data, id: resultId, type, value });
@@ -622,6 +624,7 @@ const Annotation = types
 export default types
   .model("AnnotationStore", {
     selected: types.maybeNull(types.reference(Annotation)),
+    selectedHistory: types.maybeNull(types.safeReference(Annotation)),
 
     root: Types.allModelsTypes(),
     names: types.map(types.reference(Types.allModelsTypes())),
@@ -629,6 +632,7 @@ export default types
 
     annotations: types.array(Annotation),
     predictions: types.array(Annotation),
+    history: types.array(Annotation),
 
     viewingAllAnnotations: types.optional(types.boolean, false),
     viewingAllPredictions: types.optional(types.boolean, false),
@@ -847,6 +851,28 @@ export default types
       return item;
     }
 
+
+    function addHistory(options = {}) {
+      options.type = "history";
+
+      const item = addItem(options);
+
+      console.log({item, options, users: getRoot(self).users});
+
+      self.history.push(item);
+
+      return item;
+    }
+
+    function clearHistory() {
+      self.history.forEach(item => destroy(item));
+      self.history.length = 0;
+    }
+
+    function selectHistory(item) {
+      self.selectedHistory = item;
+    }
+
     function addAnnotationFromPrediction(prediction) {
       // immutable work, because we'll change ids soon
       const s = prediction._initialAnnotationObj.map(r => ({ ...r }));
@@ -924,6 +950,9 @@ export default types
       addPrediction,
       addAnnotation,
       addAnnotationFromPrediction,
+      addHistory,
+      clearHistory,
+      selectHistory,
 
       addErrors,
       validate,

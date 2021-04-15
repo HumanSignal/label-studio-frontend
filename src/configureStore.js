@@ -25,7 +25,10 @@ export const configureStore = async (params) => {
 
   const store = AppStore.create(params, env.configureApplication(params));
 
-  store.initializeStore(params.task ?? {});
+  store.initializeStore({
+    ...(params.task ?? {}),
+    annotationHistory: params.history ?? []
+  });
 
   return { store, getRoot: env.rootElement };
 };

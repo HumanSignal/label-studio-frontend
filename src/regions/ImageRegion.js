@@ -1,6 +1,7 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 // @todo remove file
 const RegionMixin = types
@@ -33,7 +34,9 @@ const RegionMixin = types
     },
 
     get annotation() {
-      return getRoot(self).annotationStore.selected;
+      const as = getRoot(self).annotationStore;
+      console.log({h: as.selectedHistory, an: as.selected});
+      return as.selectedHistory ?? as.selected;
     },
 
     get editable() {
@@ -269,4 +272,4 @@ const RegionMixin = types
     },
   }));
 
-export default RegionMixin;
+export default types.compose(RegionMixin, AnnotationMixin);

@@ -391,24 +391,49 @@ export default types
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ annotations, completions, predictions }) {
-      const cs = self.annotationStore;
-      cs.initRoot(self.config);
+    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+      const as = self.annotationStore;
+      as.initRoot(self.config);
+
+      console.log({annotations, completions, predictions, annotationHistory});
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
-      predictions?.forEach(p => {
-        const obj = cs.addPrediction(p);
-        cs.selectPrediction(obj.id);
+      (predictions ?? []).forEach(p => {
+        const obj = as.addPrediction(p);
+        as.selectPrediction(obj.id);
         obj.deserializeAnnotation(p.result);
       });
-      [...(completions || []), ...(annotations || [])]?.forEach((c) => {
-        const obj = cs.addAnnotation(c);
-        cs.selectAnnotation(obj.id);
+
+      [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
+        const obj = as.addAnnotation(c);
+        as.selectAnnotation(obj.id);
         obj.deserializeAnnotation(c.draft || c.result);
         obj.reinitHistory();
       });
+
+      console.log({annotationHistory});
+      self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
+    }
+
+    function setHistory(history = []) {
+      const as = self.annotationStore;
+
+      as.clearHistory();
+
+      (history ?? []).forEach(item => {
+        const obj = as.addHistory({
+          ...item,
+          user: item.created_by,
+          createdDate: item.created_at,
+        });
+        const result = item.previous_annotation_history_result ?? [];
+
+        console.log(result);
+
+        obj.deserializeAnnotation(result);
+      });
     }
 
     return {
@@ -421,6 +446,7 @@ export default types
       assignConfig,
       resetState,
       initializeStore,
+      setHistory,
 
       skipTask,
       submitDraft,

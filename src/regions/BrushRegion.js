@@ -199,16 +199,14 @@ const BrushRegionModel = types.compose(
 const HtxBrushLayer = observer(({ item, points }) => {
   const highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
   const params =
-    points.type === "add"
-      ? {
-          ...highlight,
-          opacity: item.mode === "brush" ? item.opacity : 1,
-          globalCompositeOperation: "source-over",
-        }
-      : {
-          opacity: 1,
-          globalCompositeOperation: "destination-out",
-        };
+    points.type === "add" ? {
+      ...highlight,
+      opacity: item.mode === "brush" ? item.opacity : 1,
+      globalCompositeOperation: "source-over",
+    } : {
+      opacity: 1,
+      globalCompositeOperation: "destination-out",
+    };
 
   return (
     <Line

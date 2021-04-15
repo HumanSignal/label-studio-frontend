@@ -60,7 +60,9 @@ export const CurrentAnnotation = observer(({
 
       {showControls && <Controls annotation={annotation}/>}
 
-      <AnnotationHistory/>
+      {showHistory && !annotation.userGenerate && (
+        <AnnotationHistory/>
+      )}
     </Block>
   ) : null;
 });

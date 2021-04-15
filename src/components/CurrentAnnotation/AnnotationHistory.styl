@@ -2,5 +2,33 @@
   margin 24px 0 8px
 
   .history-item
+    cursor default
+
     &__date
       opacity 0.4
+
+    &:not(:first-child)
+      margin-top 12px
+
+    &:not(&_disabled)
+      cursor pointer
+
+    &:hover:not(&_disabled),
+    &_selected:not(&_disabled)
+      padding 6px 10px
+      margin -6px -10px
+      border-radius 5px
+      background-color #efefef
+
+      &:not(:first-child)
+        margin-top 6px
+
+    &_disabled
+      opacity 0.6
+      padding 6px 10px
+      margin -6px -10px
+      border-radius 5px
+      background-color #fcfcfc
+
+      &:not(:first-child)
+        margin-top 6px

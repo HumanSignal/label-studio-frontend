@@ -86,17 +86,17 @@ class App extends Component {
     );
   }
 
-  _renderUI(root, store, cs) {
+  _renderUI(root, as) {
     return (
       <>
-        {!cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
+        {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
           <div style={{ position: "relative" }}>
             {Tree.renderItem(root)}
-            {this.renderRelations(cs.selected)}
+            {this.renderRelations(as.selected)}
           </div>
         )}
-        {cs.viewingAllAnnotations && this.renderAllAnnotations()}
-        {cs.viewingAllPredictions && this.renderAllPredictions()}
+        {as.viewingAllAnnotations && this.renderAllAnnotations()}
+        {as.viewingAllPredictions && this.renderAllPredictions()}
       </>
     );
   }
@@ -154,7 +154,7 @@ class App extends Component {
                 allowCreateNew={store.hasInterface("annotations:add-new")}
               />
               {as.validation === null
-                ? this._renderUI(root, store, as, settings)
+                ? this._renderUI(as.selectedHistory?.root ?? root, as)
                 : this.renderConfigValidationException()}
             </div>
             <div className={stMenu + " ls-menu"}>

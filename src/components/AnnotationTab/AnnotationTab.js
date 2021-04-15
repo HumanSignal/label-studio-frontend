@@ -6,7 +6,7 @@ import Relations from "../Relations/Relations";
 
 export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
-  const annotation = store.annotationStore.selected;
+  const annotation = as.selectedHistory ?? as.selected;
   const node = annotation.highlightedNode;
 
   return (
@@ -21,14 +21,14 @@ export const AnnotationTab = observer(({ store }) => {
       )}
 
       {node ? (
-        <Entity store={store} annotation={as.selected} />
+        <Entity store={store} annotation={annotation} />
       ) : (
         <p style={{ marginBottom: 0, paddingInline: 15}}>Nothing selected</p>
       )}
 
-      <Entities store={store} regionStore={as.selected.regionStore} />
+      <Entities store={store} regionStore={annotation.regionStore} />
 
-      <Relations store={store} item={as.selected} />
+      <Relations store={store} item={annotation} />
     </>
   );
 });

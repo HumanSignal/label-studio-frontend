@@ -13,6 +13,7 @@ import { restoreNewsnapshot, guidGenerator } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * HyperText tag shows HyperText markup that can be labeled.
@@ -27,7 +28,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {yes|no} [saveTextResult]    - Whether or not to store labeled text along with the results. By default doesn't store text for `valueType=url`
  * @param {boolean} [showLabels=false] - Whether to show labels next to the region
  * @param {none|base64|base64unicode} [encoding]  - How to decode values from encoded strings
- * @param {boolean} [clickableLinks=false] - Whether to allow opening resources from links in the hypertext markup. 
+ * @param {boolean} [clickableLinks=false] - Whether to allow opening resources from links in the hypertext markup.
  */
 const TagAttrs = types.model("HyperTextModel", {
   // opional for cases with inline html: <HyperText><hr/></HyperText>
@@ -58,10 +59,6 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get regs() {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
@@ -74,8 +71,8 @@ const Model = types
       const states = self.states();
       return states
         ? states.filter(
-            s => s.isSelected && (getType(s).name === "HyperTextLabelsModel" || getType(s).name === "RatingModel"),
-          )
+          s => s.isSelected && (getType(s).name === "HyperTextLabelsModel" || getType(s).name === "RatingModel"),
+        )
         : null;
     },
   }))
@@ -149,7 +146,7 @@ const Model = types
     },
   }));
 
-const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxHyperTextView extends Component {
   render() {
