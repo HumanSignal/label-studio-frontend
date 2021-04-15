@@ -22,10 +22,6 @@ export const CurrentAnnotation = observer(({
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
         ID: {annotation.pk ?? annotation.id}
-        <RadioGroup size="medium" defaultValue="latest">
-          <RadioGroup.Button value="original">Original</RadioGroup.Button>
-          <RadioGroup.Button value="latest">Latest</RadioGroup.Button>
-        </RadioGroup>
       </Elem>
 
       <Space spread style={{ margin: "8px 0" }}>

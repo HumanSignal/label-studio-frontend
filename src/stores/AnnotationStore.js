@@ -643,6 +643,10 @@ export default types
     get store() {
       return getRoot(self);
     },
+
+    get viewingAll() {
+      return self.viewingAllAnnotations || self.viewingAllPredictions;
+    }
   }))
   .actions(self => {
     function toggleViewingAll() {

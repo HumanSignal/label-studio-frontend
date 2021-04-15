@@ -4,19 +4,20 @@ import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./AnnotationTabs.styl";
-import { LsPlus, LsSparks } from "../../assets/icons";
+import { LsGrid, LsPlus, LsSparks } from "../../assets/icons";
 
-const EntityTab = observer(({ entity, selected, prediction = false, onClick }) => {
+export const EntityTab = observer(({ entity, selected, bordered = true, prediction = false, style, onClick }) => {
   const isUnsaved = entity.userGenerate && !entity.sentUserGenerate;
 
   return (
-    <Elem
-      name="item"
-      mod={{selected}}
+    <Block
+      name="entity-tab"
+      mod={{selected, bordered}}
+      style={style}
       onClick={e => {
         e.preventDefault();
         e.stopPropagation();
-        onClick(entity, prediction);
+        onClick?.(entity, prediction);
       }}
     >
       <Space size="small">
@@ -30,7 +31,7 @@ const EntityTab = observer(({ entity, selected, prediction = false, onClick }) =
         >{prediction && <LsSparks/>}</Elem>
         ID {entity.pk ?? entity.id} {isUnsaved && "*"}
       </Space>
-    </Elem>
+    </Block>
   );
 });
 
@@ -56,10 +57,18 @@ export const AnnotationTabs = observer(({
     as.selectAnnotation(c.id);
   }, [as]);
 
+  const onToggleVisibility = useCallback(() => {
+    as.toggleViewingAllAnnotations();
+  }, [as]);
+
   const visible = showAnnotations || showPredictions;
 
   return visible ? (
     <Block name="annotation-tabs" onMouseDown={e => e.stopPropagation()}>
+      <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
+        <LsGrid/>
+      </Elem>
+
       {showPredictions && as.predictions.map(prediction => (
         <EntityTab
           key={prediction.id}

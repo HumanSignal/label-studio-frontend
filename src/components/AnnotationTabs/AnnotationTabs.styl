@@ -8,21 +8,8 @@
   background-color var(--main-bg-color)
   border-bottom 1px solid rgba(0, 0, 0, 0.1)
 
-  &__item
-    height 100%
-    min-width 170px
-    display flex
-    cursor pointer
-    align-items center
-    padding 10px 12px
-    box-sizing border-box
-    border-right 1px solid rgba(#000, 0.1)
-
-    &_selected
-      cursor default
-      background-color #fff
-
-  &__add
+  &__add,
+  &__all
     border none
     width 44px
     height 44px
@@ -31,6 +18,33 @@
     cursor pointer
     font-size 16px
     background none
+    display flex
+    align-items center
+    justify-content center
+
+  &__all
+    outline none
+    color rgba(#000, 0.6)
+    border-right 1px solid rgba(#000, 0.1)
+
+    &_active
+      color $accent_color
+
+.entity-tab
+  height 100%
+  min-width 170px
+  display flex
+  cursor pointer
+  align-items center
+  padding 10px 12px
+  box-sizing border-box
+
+  &_bordered
+    border-right 1px solid rgba(#000, 0.1)
+
+  &_selected
+    cursor default
+    background-color #fff
 
   &__userpic
     width 24px
@@ -40,5 +54,3 @@
       color #944BFF
       background-color #E9DDF8
       box-shadow inset 0px 0px 0px 1px rgba(148, 75, 255, 0.15)
-
-
