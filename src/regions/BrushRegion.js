@@ -252,8 +252,7 @@ const Model = types
         if (self.touches.length) {
           const object = self.object;
           const rle = Canvas.Region2RLE(self, object, {
-            stroke: self.strokeColor,
-            tension: self.tension,
+            color: self.strokeColor,
           });
           self.toches = cast([]);
           self.rle = Array.from(rle);
@@ -262,10 +261,7 @@ const Model = types
 
       serialize() {
         const object = self.object;
-        const rle = Canvas.Region2RLE(self, object, {
-          stroke: self.strokeColor,
-          tension: self.tension,
-        });
+        const rle = Canvas.Region2RLE(self, object);
 
         if (!rle || !rle.length) return null;
 
@@ -345,7 +341,7 @@ const HtxBrushView = ({ item, meta }) => {
   const [image, setImage] = useState();
   useMemo(() => {
     if (!item.rle) return;
-    const img = Canvas.RLE2Region(item.rle, item.parent);
+    const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
     img.onload = () => {
       setImage(img);
     };
