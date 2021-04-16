@@ -104,7 +104,10 @@ const _detect = region => {
     case "brushregion": {
       return imageRelatedBBox(
         region,
-        Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
+        Geometry.scaleBBox(
+          Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
+          1 / region.layerRef.canvas.pixelRatio,
+        ),
       );
     }
     default: {
