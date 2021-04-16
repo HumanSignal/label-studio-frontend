@@ -861,8 +861,6 @@ export default types
 
       const item = addItem(options);
 
-      console.log({item, options, users: getRoot(self).users});
-
       self.history.push(item);
 
       return item;

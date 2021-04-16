@@ -395,8 +395,6 @@ export default types
       const as = self.annotationStore;
       as.initRoot(self.config);
 
-      console.log({annotations, completions, predictions, annotationHistory});
-
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
       (predictions ?? []).forEach(p => {
@@ -412,7 +410,6 @@ export default types
         obj.reinitHistory();
       });
 
-      console.log({annotationHistory});
       self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
     }
@@ -429,8 +426,6 @@ export default types
           createdDate: item.created_at,
         });
         const result = item.previous_annotation_history_result ?? [];
-
-        console.log(result);
 
         obj.deserializeAnnotation(result);
       });

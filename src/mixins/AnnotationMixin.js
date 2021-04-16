@@ -6,7 +6,6 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
 }).views((self) => ({
   get annotation() {
     const as = self.annotationStore;
-    console.log({h: as.selectedHistory, an: as.selected});
     return as.selectedHistory ?? as.selected;
   },
 
