@@ -282,26 +282,28 @@ export function getScaleGradient(number) {
  * @param {string} color
  */
 export function colorToRGBAArray(value) {
-  if (value.charAt(0) === "#") {
-    const colorRGBArray = hexToRGBArray(value);
-    colorRGBArray.push(1);
-    return colorRGBArray;
-  }
+  if (value) {
+    if (value.charAt(0) === "#") {
+      const colorRGBArray = hexToRGBArray(value);
+      colorRGBArray.push(1);
+      return colorRGBArray;
+    }
 
-  let matches;
-  if ((matches = RGBARegEx.exec(value))) {
-    return matches.slice(1, 5).map(x => +x);
-  }
-  if ((matches = RGBRegEx.exec(value))) {
-    const colorRGBArray = matches.slice(1, 4);
-    colorRGBArray.push(1);
-    return colorRGBArray.map(x => +x);
-  }
-  if (typeof value === "string" && typeof colorNames[value.toLowerCase()] !== undefined) {
-    const hexColor = colorNames[value.toLowerCase()];
-    const colorRGBArray = hexToRGBArray(hexColor);
-    colorRGBArray.push(1);
-    return colorRGBArray;
+    let matches;
+    if ((matches = RGBARegEx.exec(value))) {
+      return matches.slice(1, 5).map(x => +x);
+    }
+    if ((matches = RGBRegEx.exec(value))) {
+      const colorRGBArray = matches.slice(1, 4);
+      colorRGBArray.push(1);
+      return colorRGBArray.map(x => +x);
+    }
+    if (typeof value === "string" && typeof colorNames[value.toLowerCase()] !== undefined) {
+      const hexColor = colorNames[value.toLowerCase()];
+      const colorRGBArray = hexToRGBArray(hexColor);
+      colorRGBArray.push(1);
+      return colorRGBArray;
+    }
   }
   return [0, 0, 0, 1];
 }
