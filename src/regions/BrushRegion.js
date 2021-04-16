@@ -345,7 +345,7 @@ const HtxBrushView = ({ item, meta }) => {
     img.onload = () => {
       setImage(img);
     };
-  }, [item.rle, item.parent]);
+  }, [item.rle, item.parent, item.strokeColor]);
 
   const imageHitFunc = useCallback(
     (context, shape) => {
@@ -370,23 +370,27 @@ const HtxBrushView = ({ item, meta }) => {
   let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   const highlightedImageRef = useRef(new window.Image());
-
-  useEffect(() => {
-    const imageData = item.layerRef.canvas.context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
-    let tmpCanvas = document.createElement("canvas");
-    let tmpCtx = tmpCanvas.getContext("2d");
-    tmpCanvas.width = item.parent.stageWidth;
-    tmpCanvas.height = item.parent.stageHeight;
-    tmpCtx.putImageData(imageData, 0, 0);
-    const dataUrl = tmpCanvas.toDataURL();
-    highlightedImageRef.current.src = dataUrl;
-  }, [image, item.parent.stageWidth, item.parent.stageHeight, item.touches, item.touches.length]);
+  const layerRef = useRef();
+  const highlightedRef = useRef();
+  const drawCallback = useCallback(() => {
+    if (layerRef.current && !highlightedRef.current) {
+      const dataUrl = layerRef.current.canvas.toDataURL();
+      highlightedImageRef.current.src = dataUrl;
+    }
+  }, []);
 
   if (!isAlive(item)) return null;
   if (item.hidden) return null;
-
+  highlightedRef.current = item.highlighted;
   return (
-    <Layer id={item.cleanId} ref={ref => item.setLayerRef(ref)}>
+    <Layer
+      id={item.cleanId}
+      ref={ref => {
+        item.setLayerRef(ref);
+        layerRef.current = ref;
+      }}
+      onDraw={drawCallback}
+    >
       <Group
         attrMy={item.needsUpdate}
         name="segmentation"
