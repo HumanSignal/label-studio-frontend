@@ -108,7 +108,7 @@ const Model = types
     /**
      * Determines node opacity. Can be any number between 0 and 1
      */
-    opacity: 1,
+    opacity: 0.6,
     scaleX: 1,
     scaleY: 1,
 
@@ -136,9 +136,6 @@ const Model = types
     get strokeColor() {
       return rgbArrayToHex(self.colorParts);
     },
-    get alpha() {
-      return self.opacity * self.colorParts[3];
-    },
   }))
   .actions(self => {
     let pathPoints,
@@ -153,7 +150,7 @@ const Model = types
             () => self.layerRef,
             () => {
               if (self.layerRef) {
-                self.layerRef.canvas._canvas.style.opacity = self.alpha;
+                self.layerRef.canvas._canvas.style.opacity = self.opacity;
               }
             },
           ),
