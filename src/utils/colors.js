@@ -235,11 +235,9 @@ export function colorToRGBA(value, alpha) {
  * @param {number} alpha
  */
 export function convertToRGBA(value, alpha) {
-  if (value.charAt(0) === "#") {
-    return hexToRGBA(value, alpha);
-  } else {
-    return colorToRGBA(value, alpha);
-  }
+  const rgba = colorToRGBAArray(value);
+  rgba[3] = Number(alpha) === alpha ? alpha : rgba[3];
+  return rgbaArrayToRGBA(rgba);
 }
 
 /**
@@ -316,4 +314,8 @@ export function rgbArrayToHex(value) {
   const color = value.slice(0, 3).map(x => (x | (1 << 8)).toString(16).slice(1));
   color.unshift("#");
   return color.join("");
+}
+
+export function rgbaArrayToRGBA(rgba) {
+  return `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]}, ${rgba[3]})`;
 }
