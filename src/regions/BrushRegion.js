@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { Line, Group, Layer, Image } from "react-konva";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Line, Group, Layer, Image, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot, isAlive, cast } from "mobx-state-tree";
+import { types, getParent, getRoot, isAlive, cast, addDisposer } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -12,6 +12,8 @@ import { ImageModel } from "../tags/object/Image";
 import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
+import { reaction } from "mobx";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -117,6 +119,7 @@ const Model = types
 
     needsUpdate: 1,
     hideable: true,
+    layerRef: undefined,
   }))
   .views(self => ({
     get parent() {
@@ -127,6 +130,15 @@ const Model = types
       const ctx = self.layerRef.canvas.context;
       return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
     },
+    get colorParts() {
+      return colorToRGBAArray(self.style?.strokecolor);
+    },
+    get strokeColor() {
+      return rgbArrayToHex(self.colorParts);
+    },
+    get alpha() {
+      return self.opacity * self.colorParts[3];
+    },
   }))
   .actions(self => {
     let pathPoints,
@@ -135,6 +147,17 @@ const Model = types
       lastPointY = -1;
     return {
       afterCreate() {
+        addDisposer(
+          self,
+          reaction(
+            () => self.layerRef,
+            () => {
+              if (self.layerRef) {
+                self.layerRef.canvas._canvas.style.opacity = self.alpha;
+              }
+            },
+          ),
+        );
         // if ()
         // const newdata = ctx.createImageData(750, 937);
         // newdata.data.set(decode(item._rle));
@@ -160,8 +183,7 @@ const Model = types
           ctx.moveTo(lastPointX, lastPointY);
         } else if (cachedPoints.length === 0) {
           ctx.moveTo(x, y);
-        }
-        {
+        } else {
           ctx.moveTo(cachedPoints[0], cachedPoints[1]);
           for (let i = 0; i < cachedPoints.length / 2; i++) {
             ctx.lineTo(cachedPoints[2 * i], cachedPoints[2 * i + 1]);
@@ -171,9 +193,8 @@ const Model = types
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.lineWidth = pathPoints.strokeWidth * self.scaleX;
-        ctx.strokeStyle = self.style?.strokecolor;
+        ctx.strokeStyle = self.strokeColor;
         ctx.globalCompositeOperation = pathPoints.compositeOperation;
-        ctx.globalAlpha = pathPoints.opacity;
         ctx.stroke();
         ctx.restore();
         lastPointX = x;
