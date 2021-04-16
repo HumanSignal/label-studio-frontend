@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Line, Group, Layer, Image, Shape } from "react-konva";
 import { observer } from "mobx-react";
 import { types, getParent, getRoot, isAlive, cast, addDisposer } from "mobx-state-tree";
@@ -293,31 +293,52 @@ const BrushRegionModel = types.compose(
   Model,
 );
 
-const HtxBrushLayer = observer(({ item, points }) => {
-  const highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
-
-  const eraseLineHitFunc = useCallback(function(context, shape) {
-    const colorKey = shape.colorKey;
-    shape._sceneFunc(context, shape);
-    shape.colorKey = "#ffffff";
-    context.strokeShape(shape);
-    shape.colorKey = colorKey;
+const HtxBrushLayer = observer(({ item, pointsList }) => {
+  const drawLine = useCallback((ctx, { points, strokeWidth, strokeColor, compositeOperation }) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(points[0], points[1]);
+    for (let i = 0; i < points.length / 2; i++) {
+      ctx.lineTo(points[2 * i], points[2 * i + 1]);
+    }
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = strokeWidth;
+    ctx.strokeStyle = strokeColor;
+    ctx.globalCompositeOperation = compositeOperation;
+    ctx.stroke();
+    ctx.restore();
   });
-  const lineHitFunc = points.type === "eraser" ? eraseLineHitFunc : null;
-  return (
-    <Line
-      hitFunc={lineHitFunc}
-      points={[...points.points]}
-      stroke={item.style?.strokecolor}
-      strokeWidth={points.strokeWidth}
-      lineJoin={"round"}
-      lineCap="round"
-      tension={item.tension}
-      globalCompositeOperation={points.compositeOperation}
-      opacity={points.opacity}
-      {...highlight}
-    />
+
+  const sceneFunc = useCallback(
+    (context, shape) => {
+      pointsList.forEach(points => {
+        drawLine(context, {
+          points: points.points,
+          strokeWidth: points.strokeWidth,
+          strokeColor: item.strokeColor,
+          compositeOperation: points.compositeOperation,
+        });
+      });
+    },
+    [pointsList, pointsList.length, item.strokeColor],
   );
+
+  const hitFunc = useCallback(
+    (context, shape) => {
+      pointsList.forEach(points => {
+        drawLine(context, {
+          points: points.points,
+          strokeWidth: points.strokeWidth,
+          strokeColor: points.type === "eraser" ? "#ffffff" : shape.colorKey,
+          compositeOperation: "source-over",
+        });
+      });
+    },
+    [pointsList, pointsList.length],
+  );
+
+  return <Shape sceneFunc={sceneFunc} hitFunc={hitFunc} />;
 });
 
 const HtxBrushView = ({ item, meta }) => {
@@ -334,12 +355,8 @@ const HtxBrushView = ({ item, meta }) => {
     (context, shape) => {
       if (image) {
         context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-        const colorParts = [
-          parseInt(shape.colorKey.slice(1, 3), 16),
-          parseInt(shape.colorKey.slice(3, 5), 16),
-          parseInt(shape.colorKey.slice(5, 7), 16),
-        ];
         const imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+        const colorParts = colorToRGBAArray(shape.colorKey);
         for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
           if (imageData.data[i * 4 + 3] > 0) {
             for (let k = 0; k < 3; k++) {
@@ -350,26 +367,27 @@ const HtxBrushView = ({ item, meta }) => {
         context.putImageData(imageData, 0, 0);
       }
     },
-    [image],
+    [image, item.parent.stageWidth, item.parent.stageHeight],
   );
+  const { store } = item;
+
+  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
+
+  const highlightedImageRef = useRef(new window.Image());
+
+  useEffect(() => {
+    const imageData = item.layerRef.canvas.context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+    let tmpCanvas = document.createElement("canvas");
+    let tmpCtx = tmpCanvas.getContext("2d");
+    tmpCanvas.width = item.parent.stageWidth;
+    tmpCanvas.height = item.parent.stageHeight;
+    tmpCtx.putImageData(imageData, 0, 0);
+    const dataUrl = tmpCanvas.toDataURL();
+    highlightedImageRef.current.src = dataUrl;
+  }, [image, item.parent.stageWidth, item.parent.stageHeight, item.touches, item.touches.length]);
 
   if (!isAlive(item)) return null;
   if (item.hidden) return null;
-
-  const { store } = item;
-
-  // if (item.parent.stageRef && item._rle) {
-  //     const sref = item.parent.stageRef;
-  //     const ctx = sref.getLayers()[0].getContext("2d");
-  //     const newdata = ctx.createImageData(item.parent.stageWidth, item.parent.stageHeight);
-
-  //     newdata.data.set(decode(item._rle));
-
-  //     // newdata.data.set(RLEdecode(_rle))
-  //     ctx.putImageData(newdata, 0, 0);
-  // }
-
-  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   return (
     <Layer id={item.cleanId} ref={ref => item.setLayerRef(ref)}>
@@ -423,23 +441,21 @@ const HtxBrushView = ({ item, meta }) => {
           item.onClickRegion();
         }}
       >
-        {/* @todo and this will allow to use scale on parent Group */}
+        <Image image={image} hitFunc={imageHitFunc} width={item.parent.stageWidth} height={item.parent.stageHeight} />
+
+        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+          <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
+          <LabelOnMask item={item} />
+        </Group>
+
         <Image
-          image={image}
-          hitFunc={imageHitFunc}
-          opacity={1}
+          image={highlightedImageRef.current}
+          sceneFunc={item.highlighted ? null : () => {}}
+          hitFunc={() => {}}
           {...highlight}
           width={item.parent.stageWidth}
           height={item.parent.stageHeight}
         />
-
-        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
-          {item.touches.map(p => (
-            <HtxBrushLayer key={p.id} store={store} item={item} points={p} />
-          ))}
-
-          <LabelOnMask item={item} />
-        </Group>
       </Group>
     </Layer>
   );
