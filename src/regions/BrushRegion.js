@@ -28,7 +28,6 @@ const Points = types
     id: types.optional(types.identifier, guidGenerator),
     type: types.optional(types.enumeration(["add", "eraser"]), "add"),
     points: types.array(types.number),
-    opacity: types.number,
     /**
      * Stroke width
      */
@@ -135,6 +134,9 @@ const Model = types
     },
     get strokeColor() {
       return rgbArrayToHex(self.colorParts);
+    },
+    get touchesLength() {
+      return self.touches.length;
     },
   }))
   .actions(self => {
