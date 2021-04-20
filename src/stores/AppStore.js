@@ -115,6 +115,8 @@ export default types
     get alert() {
       return getEnv(self).alert;
     },
+
+    initialized: false,
   }))
   .actions(self => {
     /**
@@ -413,7 +415,10 @@ export default types
       self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
 
-      getEnv(self).onStorageInitialized(self);
+      if (!self.initialized) {
+        self.initialized = true;
+        getEnv(self).onStorageInitialized(self);
+      }
     }
 
     function setHistory(history = []) {

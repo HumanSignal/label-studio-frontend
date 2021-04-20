@@ -61,7 +61,7 @@ function onAcceptAnnotation(store, entity){}
 function onRejectAnnotation(store, entity){}
 
 /**
- * Called every time when storage gets initialized
+ * Called when storage gets initialized for the first time
  */
 function onStorageInitialized(ls) {}
 
