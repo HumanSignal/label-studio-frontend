@@ -60,6 +60,11 @@ function onAcceptAnnotation(store, entity){}
  */
 function onRejectAnnotation(store, entity){}
 
+/**
+ * Called every time when storage gets initialized
+ */
+function onStorageInitialized(ls) {}
+
 export default {
   onDeleteAnnotation,
   onEntityCreate,
@@ -72,5 +77,6 @@ export default {
   onUpdateAnnotation,
   onSelectAnnotation,
   onAcceptAnnotation,
-  onRejectAnnotation
+  onRejectAnnotation,
+  onStorageInitialized
 };

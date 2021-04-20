@@ -412,6 +412,8 @@ export default types
 
       self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
+
+      getEnv(self).onStorageInitialized(self);
     }
 
     function setHistory(history = []) {

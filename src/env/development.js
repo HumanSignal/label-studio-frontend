@@ -132,6 +132,7 @@ function configureApplication(params) {
     onSelectAnnotation: params.onSelectAnnotation || External.onSelectAnnotation,
     onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
     onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
+    onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
   };
 
   return options;
