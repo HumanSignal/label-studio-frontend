@@ -1,6 +1,7 @@
 import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
+import { isDefined } from "../utils/utilities";
 
 const hotkeys = Hotkey("RegionStore");
 
@@ -20,6 +21,7 @@ export default types
 
     get classifications() {
       const textAreas = Array.from(self.annotation.names.values())
+        .filter(t => isDefined(t))
         .filter(t => t.type === "textarea" && !t.perregion)
         .map(t => t.regions);
 
