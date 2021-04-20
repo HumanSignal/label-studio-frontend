@@ -107,6 +107,7 @@ export default types
   })
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
+    initialized: false,
   }))
   .views(self => ({
     /**
@@ -115,8 +116,6 @@ export default types
     get alert() {
       return getEnv(self).alert;
     },
-
-    initialized: false,
   }))
   .actions(self => {
     /**
