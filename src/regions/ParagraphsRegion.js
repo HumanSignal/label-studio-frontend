@@ -5,7 +5,7 @@ import RegionsMixin from "../mixins/Regions";
 import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
-import { LabelsModel } from "../tags/control/Labels";
+import { LabelsModel } from "../tags/control/Labels/Labels";
 import { ParagraphLabelsModel } from "../tags/control/ParagraphLabels";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";

@@ -136,7 +136,7 @@ const labelToSVG = (function() {
     svg.appendChild(svgText);
     document.body.appendChild(svg);
 
-    const textLen = svg.getBoundingClientRect().width;
+    const textLen = svgText.getBoundingClientRect().width;
     svg.remove();
 
     return textLen;
@@ -162,6 +162,7 @@ const labelToSVG = (function() {
       items.push(
         `<text x="${width}" y="11" style="font-size: 9.5px; font-weight: bold; font-family: Monaco">${label}</text>`,
       );
+      console.log({label, width: calculateTextWidth(label)});
       width = width + calculateTextWidth(label) + 2;
     }
 

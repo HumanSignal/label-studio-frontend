@@ -3,7 +3,7 @@
  */
 import React, { Component } from "react";
 import { Result, Spin } from "antd";
-import { getEnv } from "mobx-state-tree";
+import { getEnv, getRoot } from "mobx-state-tree";
 import { observer, Provider } from "mobx-react";
 
 /**
@@ -22,12 +22,9 @@ import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
 /**
  * Tags
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as ObjectTags from "../../tags/object"; // eslint-disable-line no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as ControlTags from "../../tags/control"; // eslint-disable-line no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unused-vars
+import "../../tags/object";
+import "../../tags/control";
+import "../../tags/visual";
 
 /**
  * Styles
@@ -39,6 +36,8 @@ import Grid from "./Grid";
 import { AnnotationTabs } from "../AnnotationTabs/AnnotatioTabs";
 import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
+import { Block, Elem } from "../../utils/bem";
+import './App.styl';
 
 /**
  * App
@@ -90,10 +89,17 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <div style={{ position: "relative" }}>
-            {Tree.renderItem(root)}
-            {this.renderRelations(as.selected)}
-          </div>
+          <Block name="main-view">
+            <Elem name="annotation">
+              {Tree.renderItem(root)}
+              {this.renderRelations(as.selected)}
+            </Elem>
+            {getRoot(as).hasInterface('infobar') && (
+              <Elem name="infobar">
+                Task #{getRoot(as).task.id}
+              </Elem>
+            )}
+          </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}
         {as.viewingAllPredictions && this.renderAllPredictions()}
@@ -135,6 +141,10 @@ class App extends Component {
     const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
     const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
+    const mainContainerClass = [styles["main-content-wrapper"]];
+
+    if (store.hasInterface("side-column")) mainContainerClass.push(styles["with-side-column"]);
+
     return (
       <div className={stEditor + " ls-editor"}>
         <Settings store={store} />
@@ -146,7 +156,7 @@ class App extends Component {
           )}
 
           <div className={stCommon + " ls-common"}>
-            <div className={styles["main-content-wrapper"]}>
+            <div className={mainContainerClass.join(" ")}>
               <AnnotationTabs
                 store={store}
                 showAnnotations={store.hasInterface("annotations:tabs")}
