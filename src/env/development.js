@@ -50,7 +50,7 @@ import { TimeSeries } from "../examples/timeseries";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = NamedEntity;
+const data = ImageBbox;
 
 function getData(task) {
   if (task && task.data) {

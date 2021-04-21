@@ -59,11 +59,18 @@ class App extends Component {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
   }
 
-  renderConfigValidationException() {
+  renderConfigValidationException(store) {
     return (
-      <Segment>
-        <TreeValidation errors={this.props.store.annotationStore.validation} />
-      </Segment>
+      <Block name="main-view">
+        <Elem name="annotation" style={{padding: "0 1em"}}>
+          <TreeValidation errors={this.props.store.annotationStore.validation} />
+        </Elem>
+        {store.hasInterface('infobar') && (
+          <Elem name="infobar">
+            Task #{store.task.id}
+          </Elem>
+        )}
+      </Block>
     );
   }
 
@@ -165,7 +172,7 @@ class App extends Component {
               />
               {as.validation === null
                 ? this._renderUI(as.selectedHistory?.root ?? root, as)
-                : this.renderConfigValidationException()}
+                : this.renderConfigValidationException(store)}
             </div>
             <div className={stMenu + " ls-menu"}>
               {store.hasInterface("side-column") && !as.viewingAllAnnotations && !as.viewingAllPredictions && (
