@@ -32,6 +32,11 @@ const Annotation = types
 
     selected: types.optional(types.boolean, false),
     type: types.enumeration(["annotation", "prediction", "history"]),
+    acceptedState: types.optional(
+      types.maybeNull(
+        types.enumeration(['fixed', 'accepted', 'rejected'])
+      ), null
+    ),
 
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),

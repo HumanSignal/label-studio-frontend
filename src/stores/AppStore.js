@@ -10,7 +10,7 @@ import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User, { UserExtended } from "./UserStore";
 import Utils from "../utils";
-import { delay } from "../utils/utilities";
+import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
 
 const hotkeys = Hotkey("AppStore");
@@ -426,12 +426,17 @@ export default types
       as.clearHistory();
 
       (history ?? []).forEach(item => {
+        const fixed = isDefined(item.fixed_annotation_history_result);
+        const accepted = item.accepted;
+
         const obj = as.addHistory({
           ...item,
           user: item.created_by,
           createdDate: item.created_at,
+          acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
         });
-        const result = item.fixed_annotation_history_result ?? [];
+
+        const result = item.previous_annotation_history_result ?? [];
 
         obj.deserializeAnnotation(result);
       });

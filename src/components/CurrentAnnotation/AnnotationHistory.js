@@ -1,5 +1,6 @@
 import { formatDistance, formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
+import { LsThumbsDown, LsThumbsUp } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
@@ -42,6 +43,7 @@ export const AnnotationHistory = injector(observer(({
             key={`h-${id}`}
             user={user}
             date={createdDate}
+            acceptedState={annotation.acceptedState}
             selected={selectedHistory?.id === annotation.id}
             selectable={annotation.results.length}
             onClick={() => annotationStore.selectHistory(annotation)}
@@ -52,7 +54,7 @@ export const AnnotationHistory = injector(observer(({
   );
 }));
 
-const HistoryItem = observer(({user, date, selected = false, selectable = true, onClick}) => {
+const HistoryItem = observer(({user, date, acceptedState, selected = false, selectable = true, onClick}) => {
   return (
     <Block name="history-item" mod={{selected, disabled: !selectable}} onClick={onClick}>
       <Space spread>
@@ -61,11 +63,22 @@ const HistoryItem = observer(({user, date, selected = false, selectable = true, 
           {user.username}
         </Space>
 
-        {date ? (
-          <Elem name="date">
-            {formatDistanceToNow(new Date(date), { addSuffix: true })}
-          </Elem>
-        ) : null}
+
+        <Space size="small">
+          {(acceptedState === 'accepted') ? (
+            <LsThumbsUp style={{color: '#2AA000'}}/>
+          ) : acceptedState === 'fixed' ? (
+            <LsThumbsUp style={{color: '#FA8C16'}}/>
+          ) : acceptedState === 'rejected' ? (
+            <LsThumbsDown style={{color: "#dd0000"}}/>
+          ) : null}
+
+          {date ? (
+            <Elem name="date">
+              {formatDistanceToNow(new Date(date), { addSuffix: true })}
+            </Elem>
+          ) : null}
+        </Space>
       </Space>
     </Block>
   );
