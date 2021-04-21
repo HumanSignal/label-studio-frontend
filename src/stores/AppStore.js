@@ -431,7 +431,7 @@ export default types
           user: item.created_by,
           createdDate: item.created_at,
         });
-        const result = item.previous_annotation_history_result ?? [];
+        const result = item.fixed_annotation_history_result ?? [];
 
         obj.deserializeAnnotation(result);
       });
