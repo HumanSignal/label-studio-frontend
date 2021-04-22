@@ -13,10 +13,11 @@ export const Space = ({
   spread,
   stretch,
   align,
+  collapsed,
   ...rest
 }) => {
   return (
-    <Block name="space" mod={{ direction, size, spread, stretch, align }} mix={className} style={style} {...rest}>
+    <Block name="space" mod={{ direction, size, spread, stretch, align, collapsed }} mix={className} style={style} {...rest}>
       {children}
     </Block>
   );

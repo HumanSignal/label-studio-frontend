@@ -1,6 +1,6 @@
-import { observer } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import React from "react";
-import { LsTrash } from "../../assets/icons";
+import { LsSettings, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
@@ -12,7 +12,10 @@ import { Controls } from "./Controls";
 import "./CurrentAnnotation.styl";
 import { HistoryActions } from "./HistoryActions";
 
-export const CurrentAnnotation = observer(({
+const injector = inject('store');
+
+export const CurrentAnnotation = injector(observer(({
+  store,
   annotation,
   canDelete = true,
   showControls = true,
@@ -29,29 +32,41 @@ export const CurrentAnnotation = observer(({
           history={annotation.history}
         />
 
-        {canDelete && (
-          <Tooltip title="Delete annotation">
-            <Button
-              icon={<LsTrash />}
-              look="danger"
-              type="text"
-              onClick={() => {
-                confirm({
-                  title: "Delete annotaion",
-                  body: "This action cannot be undone",
-                  buttonLook: "destructive",
-                  okText: "Proceed",
-                  onOk: () => annotation.list.deleteAnnotation(annotation),
-                });
-              }}
-              style={{
-                height: 36,
-                width: 36,
-                padding: 0,
-              }}
-            />
-          </Tooltip>
-        )}
+        <Space size="small" collapsed>
+          {canDelete && (
+            <Tooltip title="Delete annotation">
+              <Button
+                icon={<LsTrash />}
+                look="danger"
+                type="text"
+                onClick={() => {
+                  confirm({
+                    title: "Delete annotaion",
+                    body: "This action cannot be undone",
+                    buttonLook: "destructive",
+                    okText: "Proceed",
+                    onOk: () => annotation.list.deleteAnnotation(annotation),
+                  });
+                }}
+                style={{
+                  height: 36,
+                  width: 36,
+                  padding: 0,
+                }}
+              />
+            </Tooltip>
+          )}
+          <Button
+            icon={<LsSettings/>}
+            type="text"
+            onClick={() => store.toggleSettings()}
+            style={{
+              height: 36,
+              width: 36,
+              padding: 0,
+            }}
+          />
+        </Space>
       </Space>
 
       {showControls && <Controls annotation={annotation}/>}
@@ -61,4 +76,4 @@ export const CurrentAnnotation = observer(({
       )}
     </Block>
   ) : null;
-});
+}));
