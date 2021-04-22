@@ -16,10 +16,6 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-
-  &.with-side-column {
-    width: calc(100% - 320px)
-  }
 }
 
 .editor {
