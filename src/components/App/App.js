@@ -62,7 +62,7 @@ class App extends Component {
   renderConfigValidationException(store) {
     return (
       <Block name="main-view">
-        <Elem name="annotation" style={{padding: "0 1em"}}>
+        <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
         {store.hasInterface('infobar') && (

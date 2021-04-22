@@ -87,24 +87,6 @@ const LabelsModel = types.compose(
 );
 
 const HtxLabels = observer(({ item }) => {
-  const style = {
-    padding: "1em",
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    flexFlow: "wrap",
-  };
-
-  if (!item.showinline) {
-    style["margin"] = "0";
-    style["flexDirection"] = "column";
-    style["alignItems"] = "flex-start";
-  }
-
-  if (!item.visible) {
-    style["display"] = "none";
-  }
-
   return (
     <Block
       name="labels"
