@@ -65,9 +65,11 @@ export const AnnotationTabs = observer(({
 
   return visible ? (
     <Block name="annotation-tabs" onMouseDown={e => e.stopPropagation()}>
-      <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
-        <LsGrid/>
-      </Elem>
+      {store.hasInterface('annotations:view-all') && (
+        <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
+          <LsGrid/>
+        </Elem>
+      )}
 
       {showPredictions && as.predictions.map(prediction => (
         <EntityTab
