@@ -18,27 +18,29 @@ import ControlBase from "./Base";
 const { Option } = Select;
 
 /**
- * Choices tag, create a group of choices, radio, or checkboxes. Shall
- * be used for a single or multi-class classification.
+ * Use the Choices tag to create a group of choices, radio buttons, or checkboxes. Can
+ * be used for single or multi-class classification.
  * @example
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single-radio">
  *     <Choice alias="M" value="Male" />
  *     <Choice alias="F" value="Female" />
+ *     <Choice alias="NB" value="Nonbinary" />
+ *     <Choice alias="X" value="Other" />
  *   </Choices>
- *   <Text name="txt-1" value="John went to see Marry" />
+ *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choices
- * @param {string} name                - name of the group
- * @param {string} toName              - name of the element that you want to label
- * @param {single|single-radio|multiple} [choice=single] - single or multi-class
- * @param {boolean} [showInline=false] - show items in the same visual line
- * @param {boolean} [required=false]   - validation if choice has been selected
- * @param {string} [requiredMessage]   - message to show if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] show the contents of a view when condition is true
- * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
- * @param {string} [whenLabelValue] narrow down visibility by label value
- * @param {string} [whenChoiceValue] narrow down visibility by choice value
+ * @param {string} name                - Name of the group of choices
+ * @param {string} toName              - Name of the data item that you want to label
+ * @param {single|single-radio|multiple} [choice=single] - Single or multi-class classification
+ * @param {boolean} [showInline=false] - Show items in the same visual line
+ * @param {boolean} [required=false]   - Validate whether a choice has been selected
+ * @param {string} [requiredMessage]   - Show a message if validation fails
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - When true, show the contents of a view
+ * @param {string} [whenTagName]       - Narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {string} [whenLabelValue]    - Narrow down visibility by label value
+ * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
  * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
  */
 const TagAttrs = types.model({
@@ -67,12 +69,12 @@ const Model = types
       return self.choice === "single" || self.choice === "single-radio";
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     get serializableValue() {
@@ -84,12 +86,12 @@ const Model = types
 
     get result() {
       if (self.perregion) {
-        const area = self.completion.highlightedNode;
+        const area = self.annotation.highlightedNode;
         if (!area) return null;
 
-        return self.completion.results.find(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
 
     get preselectedValues() {
@@ -110,7 +112,7 @@ const Model = types
     //     // this is a special check when choices are labeling other choices
     //     // may need to show
     //     if (self.whenchoicevalue) {
-    //         const choicesTag = self.completion.names.get(self.toname);
+    //         const choicesTag = self.annotation.names.get(self.toname);
     //         const ch = choicesTag.findLabel(self.whenchoicevalue);
 
     //         if (ch && ch.selected)
@@ -164,11 +166,11 @@ const Model = types
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
-          const area = self.completion.highlightedNode;
+          const area = self.annotation.highlightedNode;
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({}, { choices: self.selectedValues() }, self, self.toname);
+          self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
         }
       }
     },

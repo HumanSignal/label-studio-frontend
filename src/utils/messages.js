@@ -6,7 +6,7 @@ const URL_CORS_DOCS = "https://app.heartex.ai/docs/guide/FAQ.html#Image-audio-re
 
 export default {
   DONE: "Done!",
-  NO_COMP_LEFT: "No more completions",
+  NO_COMP_LEFT: "No more annotations",
   NO_NEXT_TASK: "No more data available for labeling",
   NO_ACCESS: "You don't have access to this task",
 

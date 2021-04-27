@@ -10,13 +10,13 @@ import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
+import { parseValue } from "../../utils/data";
 import { guidGenerator } from "../../core/Helpers";
-import { runTemplate } from "../../core/Template";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Label tag represents a single label
+ * Label tag represents a single label.
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
@@ -26,17 +26,17 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
- * @param {string} value                    - value of the label
- * @param {boolean} [selected=false]        - if this label should be preselected
- * @param {number} [maxUsages]              - maximum available usages
- * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
- * @param {string} [alias]                  - label alias
- * @param {boolean} [showAlias=false]       - show alias inside label text
- * @param {string} [aliasStyle=opacity:0.6] - alias CSS style
- * @param {string} [size=medium]            - size of text in the label
- * @param {string} [background]             - background color of an active label
- * @param {string} [selectedColor]          - color of text in an active label
- * @param {symbol|word} [granularity]       - control per symbol or word selection (only for Text)
+ * @param {string} value                    - Value of the label
+ * @param {boolean} [selected=false]        - Whether to preselect this label
+ * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
+ * @param {string} [alias]                  - Label alias
+ * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
+ * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
+ * @param {string} [size=medium]            - Size of text in the label
+ * @param {string} [background=#36B37E]     - Background color of an active label
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -62,8 +62,8 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get maxUsages() {
@@ -71,7 +71,7 @@ const Model = types
     },
 
     usedAlready() {
-      const regions = self.completion.regionStore.regions;
+      const regions = self.annotation.regionStore.regions;
       // count all the usages among all the regions
       const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
       return used;
@@ -104,12 +104,12 @@ const Model = types
       // here we check if you click on label from labels group
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
-      const region = self.completion.highlightedNode;
+      const region = self.annotation.highlightedNode;
       const sameObject = region && region.parent.name === self.parent.toname;
       if (region && region.readonly === true && sameObject) return;
 
       // one more check if that label can be selected
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
 
       // don't select if it can not be used
       if (!self.selected && !self.canBeUsed()) {
@@ -129,7 +129,7 @@ const Model = types
       // if we are going to select label and it would be the first in this labels group
       if (!labels.selectedLabels.length && !self.selected) {
         // unselect labels from other groups of labels connected to this obj
-        self.completion.toNames
+        self.annotation.toNames
           .get(labels.toname)
           .filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name)
           .forEach(tag => tag.unselectAll && tag.unselectAll());
@@ -192,7 +192,7 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj) || "";
+      self._value = parseValue(self.value, store.task.dataObj);
       self._updateBackgroundColor(self._value);
     },
   }));

@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { types, getParent } from "mobx-state-tree";
 
 /*
  * Per Region Mixin
@@ -12,10 +12,14 @@ const VisibilityMixin = types
   })
   .views(self => ({
     get isVisible() {
+      if (getParent(self, 2)?.isVisible === false) {
+        return false;
+      }
+
       if (self.visiblewhen) {
         const fns = {
           "region-selected": ({ tagName, labelValue }) => {
-            const area = self.completion.highlightedNode;
+            const area = self.annotation.highlightedNode;
 
             if (!area || (tagName && area.labeling?.from_name.name !== tagName)) {
               return false;
@@ -28,7 +32,7 @@ const VisibilityMixin = types
 
           "choice-selected": ({ tagName, choiceValue }) => {
             if (!tagName) {
-              for (let choices of self.completion.names.values()) {
+              for (let choices of self.annotation.names.values()) {
                 if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
                   return true;
                 }
@@ -36,7 +40,7 @@ const VisibilityMixin = types
               return false;
             }
 
-            const tag = self.completion.names.get(tagName);
+            const tag = self.annotation.names.get(tagName);
 
             if (!tag) return false;
 
@@ -51,7 +55,7 @@ const VisibilityMixin = types
             return tag.isSelected;
           },
 
-          "no-region-selected": ({ tagName }) => !self.completion.highlightedNode,
+          "no-region-selected": ({ tagName }) => !self.annotation.highlightedNode,
         };
 
         if (Object.keys(fns).includes(self.visiblewhen)) {

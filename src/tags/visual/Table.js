@@ -6,7 +6,7 @@ import { types, getRoot } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 
 /**
- * Table tag, show object keys and values in a table
+ * Table tag, use to show object keys and values in a table.
  * @example
  * <View>
  *   <Table name="text-1" value="$text"></Table>
