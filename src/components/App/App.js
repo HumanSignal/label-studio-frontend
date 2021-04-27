@@ -169,6 +169,7 @@ class App extends Component {
                 showAnnotations={store.hasInterface("annotations:tabs")}
                 showPredictions={store.hasInterface("predictions:tabs")}
                 allowCreateNew={store.hasInterface("annotations:add-new")}
+                allowViewAll={store.hasInterface('annotations:view-all')}
               />
               {as.validation === null
                 ? this._renderUI(as.selectedHistory?.root ?? root, as)

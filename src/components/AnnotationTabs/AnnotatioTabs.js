@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { forwardRef, useCallback, useEffect, useRef } from "react";
 import { observer } from "mobx-react";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
@@ -6,12 +6,13 @@ import { Block, Elem } from "../../utils/bem";
 import "./AnnotationTabs.styl";
 import { LsGrid, LsPlus, LsSparks } from "../../assets/icons";
 
-export const EntityTab = observer(({ entity, selected, bordered = true, prediction = false, style, onClick }) => {
+export const EntityTab = observer(forwardRef(({ entity, selected, bordered = true, prediction = false, style, onClick }, ref) => {
   const isUnsaved = entity.userGenerate && !entity.sentUserGenerate;
 
   return (
     <Block
       name="entity-tab"
+      ref={ref}
       mod={{selected, bordered}}
       style={style}
       onClick={e => {
@@ -33,14 +34,18 @@ export const EntityTab = observer(({ entity, selected, bordered = true, predicti
       </Space>
     </Block>
   );
-});
+}));
 
 export const AnnotationTabs = observer(({
   store,
   showAnnotations = true,
   showPredictions = true,
   allowCreateNew = true,
+  allowViewAll = true,
 }) => {
+  const listRef = useRef();
+  const selectedRef = useRef();
+
   const { annotationStore: as } = store;
   const onAnnotationSelect = useCallback((entity, isPrediction) => {
     if (!entity.selected) {
@@ -63,32 +68,48 @@ export const AnnotationTabs = observer(({
 
   const visible = showAnnotations || showPredictions;
 
+  const list = [];
+
+  if (showPredictions) list.push(...as.predictions);
+  if (showAnnotations) list.push(...as.annotations);
+
+  useEffect(() => {
+    if (selectedRef.current) {
+      const list = listRef.current;
+      const elem = selectedRef.current;
+      const xOffset = elem.offsetLeft + (elem.clientWidth / 2) - (list.clientWidth / 2);
+
+      list.scrollTo({
+        left: xOffset,
+        behavior: "smooth",
+      });
+    }
+  }, [store.annotationStore.selected, selectedRef, listRef]);
+
   return visible ? (
-    <Block name="annotation-tabs" onMouseDown={e => e.stopPropagation()}>
-      {store.hasInterface('annotations:view-all') && (
+    <Block
+      name="annotation-tabs"
+      mod={{ viewAll: allowViewAll, addNew: allowCreateNew }}
+      onMouseDown={e => e.stopPropagation()}
+    >
+      {allowViewAll && (
         <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
           <LsGrid/>
         </Elem>
       )}
 
-      {showPredictions && as.predictions.map(prediction => (
-        <EntityTab
-          key={prediction.id}
-          entity={prediction}
-          selected={prediction.selected}
-          onClick={onAnnotationSelect}
-          prediction={true}
-        />
-      ))}
-
-      {showAnnotations && as.annotations.map(annotation => (
-        <EntityTab
-          key={annotation.id}
-          entity={annotation}
-          selected={annotation.selected}
-          onClick={onAnnotationSelect}
-        />
-      ))}
+      <Elem name="list" ref={listRef}>
+        {list.map(entity => (
+          <EntityTab
+            key={entity.id}
+            entity={entity}
+            selected={entity.selected}
+            onClick={onAnnotationSelect}
+            prediction={entity.type === 'prediction'}
+            ref={entity.selected ? selectedRef : undefined}
+          />
+        ))}
+      </Elem>
 
       {allowCreateNew && (
         <Elem tag="button" name="add" onClick={onCreateAnnotation}>

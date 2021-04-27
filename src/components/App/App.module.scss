@@ -92,8 +92,8 @@
 
 .common {
   flex: 1;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: calc(100% - 320px) 320px;
   align-items: stretch;
   max-width: 100%;
 }
