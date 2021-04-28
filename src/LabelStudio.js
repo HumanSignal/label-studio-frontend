@@ -5,11 +5,20 @@ import { LabelStudio as LabelStudioReact } from './Component';
 import { registerPanels } from "./registerPanels";
 
 export class LabelStudio {
+  static instances = new Set();
+
+  static destroyAll() {
+    this.instances.forEach(inst => inst.destroy());
+    this.instances.clear();
+  }
+
   constructor (root, options = {}) {
     this.root = root;
     this.options = options ?? {};
     this.destroy = (() => { /* noop */ });
     this.createApp();
+
+    this.constructor.instances.add(this);
   }
 
   async createApp() {
@@ -25,9 +34,11 @@ export class LabelStudio {
       />
     ), rootElement);
 
-    this.destroy = () => {
+    const destructor = () => {
       unmountComponentAtNode(rootElement);
     };
+
+    this.destroy = destructor;
   }
 }
 

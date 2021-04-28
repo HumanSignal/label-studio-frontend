@@ -118,15 +118,15 @@ Scenario("check good nested Choice for Text", async function(I) {
   I.seeElement(personTag);
   I.click(personTag);
   I.doubleClick(".htx-text");
-  I.see("Regions (1)");
+  I.see("1 Region");
   I.dontSee("Female");
 
   // the only element of regions tree list
-  const regionInList = locate(".ant-tree").find(".ant-tree-treenode");
+  const regionInList = locate(".lsf-entities__regions").find(".ant-list-item");
   // select this region
   I.click(regionInList);
 
-  I.see("Regions (1)");
+  I.see("1 Region");
   I.see("More details"); // View with visibleWhen
 
   I.click("Female");

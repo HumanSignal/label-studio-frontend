@@ -39,6 +39,7 @@ export const CurrentAnnotation = injector(observer(({
                 icon={<LsTrash />}
                 look="danger"
                 type="text"
+                aria-label="Delete"
                 onClick={() => {
                   confirm({
                     title: "Delete annotaion",
@@ -59,6 +60,7 @@ export const CurrentAnnotation = injector(observer(({
           <Button
             icon={<LsSettings/>}
             type="text"
+            aria-label="Settings"
             onClick={() => store.toggleSettings()}
             style={{
               height: 36,

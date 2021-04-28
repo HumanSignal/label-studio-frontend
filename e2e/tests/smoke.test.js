@@ -46,7 +46,7 @@ examples.forEach(example =>
     await I.amOnPage("/");
     await I.executeAsyncScript(initLabelStudio, params);
 
-    I.see("Regions (" + count + ")");
+    I.see(`${count} Region${count > 1 ? 's' : ''}`);
 
     let restored;
 
@@ -66,15 +66,15 @@ examples.forEach(example =>
     assertWithTolerance(restored, result);
 
     if (count) {
-      I.click(".ant-tree-treenode");
+      I.click(".ant-list-item");
       // I.click('Delete Entity') - it founds something by tooltip, but not a button
       // so click the bin button in entity's info block
       I.click(".ls-entity-buttons span[aria-label=delete]");
-      I.see("Regions (" + (count - 1) + ")");
-      I.click("Reset");
-      I.see("Regions (" + count + ")");
+      I.see(`${count-1} Region${(count-1) > 1 ? 's' : ''}`);
+      I.click(".lsf-history__action[aria-label=Reset]");
+      I.see(`${count} Region${count > 1 ? 's' : ''}`);
       // Reset is undoable
-      I.click("Undo");
+      I.click(".lsf-history__action[aria-label=Undo]");
 
       // so after all these manipulations first region should be deleted
       restored = await I.executeScript(serialize);

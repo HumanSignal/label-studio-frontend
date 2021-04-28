@@ -140,7 +140,7 @@ xScenario("Simple shapes on Image", async function(I) {
     // canvas won't be initialized fully before the image loads
     await I.executeAsyncScript(waitForImage);
     I.waitForVisible("canvas");
-    I.see("Regions (0)");
+    I.see("0 Region");
 
     for (let region of shape.regions) {
       // draw the shape using corresponding helper and params

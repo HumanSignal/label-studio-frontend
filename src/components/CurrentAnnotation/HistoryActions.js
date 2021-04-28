@@ -13,6 +13,7 @@ export const HistoryActions = observer(({ history }) => {
           tag={Button}
           name="action"
           type="text"
+          aria-label="Undo"
           disabled={!history?.canUndo}
           onClick={() => history?.canUndo && history.undo()}
           icon={<LsUndo />}
@@ -23,6 +24,7 @@ export const HistoryActions = observer(({ history }) => {
           tag={Button}
           name="action"
           type="text"
+          aria-label="Redo"
           disabled={!history?.canRedo}
           onClick={() => history?.canRedo && history.redo()}
           icon={<LsRedo />}
@@ -34,6 +36,7 @@ export const HistoryActions = observer(({ history }) => {
           name="action"
           look="danger"
           type="text"
+          aria-label="Reset"
           disabled={!history?.canUndo}
           onClick={() => history?.reset()}
           icon={<LsRemove />}

@@ -54,11 +54,12 @@ export default observer(({ regionStore }) => {
       </Elem>
 
       <Oneof value={regionStore.view}>
-        <div case="regions">
-          {count ? <RegionTree regionStore={regionStore} /> : <Elem name="empty">No Regions created yet</Elem>}</div>
-        <div case="labels">
+        <Elem name="regions" case="regions">
+          {count ? <RegionTree regionStore={regionStore} /> : <Elem name="empty">No Regions created yet</Elem>}
+        </Elem>
+        <Elem name="labels" case="labels">
           {count ? <LabelList regionStore={regionStore} /> : <Elem name="empty">No Labeled Regions created yet</Elem>}
-        </div>
+        </Elem>
       </Oneof>
     </Block>
   );

@@ -70,7 +70,13 @@ const assembleClass = (block: string, elem?: string, mix?: CNMix | CNMix[], mod?
     const mixes = Array.isArray(mix) ? mix : [mix];
     const mixMap = ([] as CNMix[])
       .concat(...mixes)
-      .filter(m => m !== undefined && m !== null && m !== "")
+      .filter(m => {
+        if (typeof m === 'string') {
+          return m.trim() !== '';
+        } else {
+          return m !== undefined && m !== null;
+        }
+      })
       .map(m => {
         if (typeof m === 'string') {
           return m;
@@ -80,7 +86,7 @@ const assembleClass = (block: string, elem?: string, mix?: CNMix | CNMix[], mod?
       })
       .reduce((res, cls) => [...res, ...cls!.split(/\s+/)], [] as string[]);
 
-    finalClass.push(...mixMap);
+    finalClass.push(...Array.from(new Set(mixMap)));
   }
 
   const attachNamespace = (cls: string) => {
