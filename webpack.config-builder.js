@@ -192,20 +192,12 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
+  new webpack.ProgressPlugin(),
+  new HtmlWebPackPlugin({
+    title: "Label Studio Frontend",
+    template: "public/index.html",
+  }),
 ];
-
-if (isDevelopment || process.env.NODE_ENV === "test") {
-  plugins.push(
-    new HtmlWebPackPlugin({
-      title: "Label Studio Frontend",
-      template: "public/index.html",
-    }),
-  );
-}
-
-if (isDevelopment) {
-  plugins.push(new webpack.ProgressPlugin());
-}
 
 if (BUILD.NO_CHUNKS) {
   babelLoader.options.plugins.unshift("babel-plugin-remove-webpack")
