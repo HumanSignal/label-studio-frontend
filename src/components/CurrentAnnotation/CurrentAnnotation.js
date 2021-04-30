@@ -21,6 +21,8 @@ export const CurrentAnnotation = injector(observer(({
   showControls = true,
   showHistory = true,
 }) => {
+  const isPrediction = annotation?.type === 'prediction';
+
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info">
@@ -28,11 +30,13 @@ export const CurrentAnnotation = injector(observer(({
       </Elem>
 
       <Space spread style={{ margin: "8px 0" }}>
-        <HistoryActions
-          history={annotation.history}
-        />
+        {!isPrediction ? (
+          <HistoryActions
+            history={annotation.history}
+          />
+        ) : (<div/>)}
 
-        <Space size="small" collapsed>
+        <Space size="small" align="flex-end" collapsed>
           {canDelete && (
             <Tooltip title="Delete annotation">
               <Button
@@ -71,7 +75,7 @@ export const CurrentAnnotation = injector(observer(({
         </Space>
       </Space>
 
-      {showControls && <Controls annotation={annotation}/>}
+      {showControls && !isPrediction && <Controls annotation={annotation}/>}
 
       {showHistory && !annotation.userGenerate && (
         <AnnotationHistory/>

@@ -5,6 +5,7 @@ const webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 
 const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.NODE_ENV || "development";
 
@@ -15,6 +16,7 @@ const BUILD = {
   NO_CHUNKS: isDevelopment || !!process.env.BUILD_NO_CHUNKS,
   NO_HASH: isDevelopment || process.env.BUILD_NO_HASH,
   MODULE: !isDevelopment && !!process.env.BUILD_MODULE,
+  DYAGNOSTICS: !!process.env.BUILD_DYAGNOSTICS,
 };
 
 const dirPrefix = {
@@ -207,6 +209,12 @@ if (BUILD.NO_CHUNKS) {
   }));
 }
 
+if (BUILD.DYAGNOSTICS) {
+  plugins.unshift(
+    new SpeedMeasurePlugin()
+  )
+}
+
 const sourceMap = isDevelopment ? "cheap-module-source-map" : "source-map";
 
 module.exports = () => ({
@@ -231,6 +239,9 @@ module.exports = () => ({
   performance: {
     maxEntrypointSize: Infinity,
     maxAssetSize: 1000000,
+  },
+  cache: {
+    type: 'memory',
   },
   module: {
     rules: [
@@ -314,6 +325,7 @@ module.exports = () => ({
       },
       {
         test: /\.svg$/,
+        exclude: /node_modules/,
         use: [
           {
             loader: "@svgr/webpack",
@@ -325,6 +337,7 @@ module.exports = () => ({
       },
       {
         test: /\.xml$/,
+        exclude: /node_modules/,
         loader: "url-loader",
       },
     ],
