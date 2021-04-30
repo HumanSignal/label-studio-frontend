@@ -3,7 +3,7 @@ import { Button } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
-import {EntityTab} from '../AnnotationTabs/AnnotatioTabs';
+import {EntityTab} from '../AnnotationTabs/AnnotationTabs';
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
