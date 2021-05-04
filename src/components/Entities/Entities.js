@@ -315,18 +315,16 @@ export default observer(({ store, regionStore }) => {
   const { classifications, regions } = regionStore;
   const count = regions.length + (regionStore.view === "regions" ? classifications.length : 0);
 
+  const toggleVisibility = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    regionStore.toggleVisibility();
+  };
+
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          paddingLeft: "4px",
-          paddingRight: "4px",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ flex: 1 }}>
+    <div className={styles.section}>
+      <div className={styles.header}>
+        <div className={styles.title}>
           {/* override LS styles' height */}
           <Divider dashed orientation="left" style={{ height: "auto" }}>
             <Dropdown overlay={<GroupMenu regionStore={regionStore} />} placement="bottomLeft">
@@ -336,6 +334,17 @@ export default observer(({ store, regionStore }) => {
               </span>
             </Dropdown>
           </Divider>
+        </div>
+        <div>
+          <Button
+            size="small"
+            type="link"
+            ghost
+            className={regionStore.isAllHidden ? styles.uihidden : styles.uivisible}
+            onClick={toggleVisibility}
+          >
+            {regionStore.isAllHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          </Button>
         </div>
         {count > 0 && regionStore.view === "regions" && (
           <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">

@@ -1,3 +1,16 @@
+.section {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 4px;
+    padding-right: 4px;
+    align-items: center;
+  }
+  .title {
+    flex: 1;
+  }
+}
+
 .treelabels {
   border: 1px solid #d9d9d9;
   max-height: 350px;
@@ -74,6 +87,14 @@
 
 .list .lstitem {
   border-bottom: none;
+}
+
+.uihidden {
+  opacity: 0.5;
+}
+
+.uivisible {
+  opacity: 1;
 }
 
 .ant-tree-switcher {

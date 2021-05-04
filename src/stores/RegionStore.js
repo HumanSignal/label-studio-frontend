@@ -30,6 +30,10 @@ export default types
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
+    get isAllHidden() {
+      return !self.regions.find(area => !area.hidden);
+    },
+
     get sortedRegions() {
       const sorts = {
         date: isDesc => (isDesc ? self.regions : [...self.regions].reverse()),
@@ -211,5 +215,14 @@ export default types
       const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
 
       next && next.selectRegion();
+    },
+
+    toggleVisibility() {
+      const shouldBeHidden = !self.isAllHidden;
+      self.regions.forEach(area => {
+        if (area.hidden !== shouldBeHidden) {
+          area.toggleHidden();
+        }
+      });
     },
   }));
