@@ -147,6 +147,7 @@ class App extends Component {
     const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
     const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
     const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
+    const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
 
     const mainContainerClass = [styles["main-content-wrapper"]];
 
@@ -162,7 +163,7 @@ class App extends Component {
             </Segment>
           )}
 
-          <div className={stCommon + " ls-common"}>
+          <div className={stCommon + (viewingAll ? 'view-all' : '') + " ls-common"}>
             <div className={mainContainerClass.join(" ")}>
               <AnnotationTabs
                 store={store}
@@ -175,20 +176,22 @@ class App extends Component {
                 ? this._renderUI(as.selectedHistory?.root ?? root, as)
                 : this.renderConfigValidationException(store)}
             </div>
-            <div className={stMenu + " ls-menu"}>
-              {store.hasInterface("side-column") && !as.viewingAllAnnotations && !as.viewingAllPredictions && (
-                <SidebarTabs active="annotation">
-                  <SidebarPage name="annotation" title="Annotation">
-                    <AnnotationTab store={store} />
-                  </SidebarPage>
-                  {this.props.panels.map(({name, title, Component}) => (
-                    <SidebarPage key={name} name={name} title={title}>
-                      <Component/>
+            {(viewingAll === false) && (
+              <div className={stMenu + " ls-menu"}>
+                {store.hasInterface("side-column") && (
+                  <SidebarTabs active="annotation">
+                    <SidebarPage name="annotation" title="Annotation">
+                      <AnnotationTab store={store} />
                     </SidebarPage>
-                  ))}
-                </SidebarTabs>
-              )}
-            </div>
+                    {this.props.panels.map(({name, title, Component}) => (
+                      <SidebarPage key={name} name={name} title={title}>
+                        <Component/>
+                      </SidebarPage>
+                    ))}
+                  </SidebarTabs>
+                )}
+              </div>
+            )}
           </div>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}

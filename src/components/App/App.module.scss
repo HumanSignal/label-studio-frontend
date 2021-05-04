@@ -96,6 +96,10 @@
   grid-template-columns: calc(100% - 320px) 320px;
   align-items: stretch;
   max-width: 100%;
+
+  &.view-all {
+    grid-template-columns: 100%;
+  }
 }
 
 .commonbsp {
