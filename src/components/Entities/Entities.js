@@ -92,12 +92,10 @@ const LabelItem = observer(({ item, idx }) => {
   const labelStyle = {
     backgroundColor: bg,
     color: item.selectedcolor,
-    cursor: "pointer",
-    margin: "5px",
   };
 
   return (
-    <Tag style={labelStyle} size={item.size}>
+    <Tag style={labelStyle} className={styles.treetag} size={item.size}>
       {item._value}
     </Tag>
   );
@@ -176,6 +174,7 @@ const LabelsList = observer(({ regionStore }) => {
     return {
       key: item.id,
       title: isLabel ? <LabelItem item={item} idx={idx} /> : <RegionItem item={item} idx={idx} />,
+      className: isLabel ? styles.treelabel : null,
     };
   });
 

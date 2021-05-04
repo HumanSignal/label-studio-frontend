@@ -4,6 +4,18 @@
   overflow-y: auto;
 }
 
+.treelabel :global(.ant-tree-node-content-wrapper) {
+  cursor: default;
+}
+
+.treetag {
+  margin: "5px";
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 .item {
   color: get-color(error);
   font-size: 14px;
