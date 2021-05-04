@@ -28,7 +28,6 @@ export const AnnotationHistory = injector(observer(({
   selectedHistory,
   history
 }) => {
-  console.log({selected});
   return (
     <Block name="annotation-history">
       <HistoryItem
