@@ -98,7 +98,7 @@ export default types
       // create the tree
       let idx = 0;
       const tree = Object.keys(labels).map(lname => {
-        const el = enrich(labels[lname], idx, true);
+        const el = enrich(labels[lname], idx, true, map[lname]);
         el["children"] = map[lname].map(r => enrich(r, idx++));
 
         return el;
@@ -222,6 +222,20 @@ export default types
       self.regions.forEach(area => {
         if (area.hidden !== shouldBeHidden) {
           area.toggleHidden();
+        }
+      });
+    },
+
+    setHiddenByLabel(shouldBeHidden, label) {
+      self.regions.forEach(area => {
+        if (area.hidden !== shouldBeHidden) {
+          const l = area.labeling;
+          if (l) {
+            const selected = l.selectedLabels;
+            if (selected.includes(label)) {
+              area.toggleHidden();
+            }
+          }
         }
       });
     },

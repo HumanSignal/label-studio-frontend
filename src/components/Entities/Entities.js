@@ -69,7 +69,7 @@ const RegionItem = observer(({ item, idx, flat }) => {
           type="text"
           icon={item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           onClick={item.toggleHidden}
-          className={item.hidden ? styles.hidden : styles.visible}
+          className={[styles.lstitem__actionIcon, item.hidden ? styles.hidden : styles.visible].join(" ")}
         />
       )}
 
@@ -87,17 +87,30 @@ const RegionItem = observer(({ item, idx, flat }) => {
   );
 });
 
-const LabelItem = observer(({ item, idx }) => {
+const LabelItem = observer(({ item, idx, regions, regionStore }) => {
   const bg = item.background;
   const labelStyle = {
     backgroundColor: bg,
     color: item.selectedcolor,
   };
-
+  const isHidden = Object.values(regions).reduce((acc, item) => acc && item.hidden, true);
   return (
-    <Tag style={labelStyle} className={styles.treetag} size={item.size}>
-      {item._value}
-    </Tag>
+    <List.Item key={item.id} className={[styles.lstitem, styles.lstitem_label].join(" ")}>
+      <Tag style={labelStyle} className={styles.treetag} size={item.size}>
+        {item._value}
+      </Tag>
+      <div className={styles.lstitem__actions}>
+        <Button
+          size="small"
+          type="text"
+          icon={isHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          onClick={() => {
+            regionStore.setHiddenByLabel(!isHidden, item);
+          }}
+          className={[styles.lstitem__actionIcon, isHidden ? styles.uihidden : styles.uivisible].join(" ")}
+        />
+      </div>
+    </List.Item>
   );
 });
 
@@ -170,10 +183,14 @@ const SortMenu = observer(({ regionStore }) => {
 });
 
 const LabelsList = observer(({ regionStore }) => {
-  const treeData = regionStore.asLabelsTree((item, idx, isLabel) => {
+  const treeData = regionStore.asLabelsTree((item, idx, isLabel, children) => {
     return {
       key: item.id,
-      title: isLabel ? <LabelItem item={item} idx={idx} /> : <RegionItem item={item} idx={idx} />,
+      title: isLabel ? (
+        <LabelItem item={item} idx={idx} regions={children} regionStore={regionStore} />
+      ) : (
+        <RegionItem item={item} idx={idx} />
+      ),
       className: isLabel ? styles.treelabel : null,
     };
   });
@@ -339,7 +356,6 @@ export default observer(({ store, regionStore }) => {
           <Button
             size="small"
             type="link"
-            ghost
             className={regionStore.isAllHidden ? styles.uihidden : styles.uivisible}
             onClick={toggleVisibility}
           >
