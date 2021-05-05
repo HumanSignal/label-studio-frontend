@@ -190,6 +190,19 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
   done();
 };
 
+/**
+ * Count shapes on Konva, founded by selector
+ * @param {string|function} selector from Konva's finding methods params
+ * @param {function} done
+ */
+const countKonvaShapes = async done => {
+  const stage = window.Konva.stages[0];
+  const count = stage.find(node => {
+    return node.getType() === "Shape" && node.isVisible();
+  }).length;
+  done(count);
+};
+
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 module.exports = {
@@ -206,6 +219,7 @@ module.exports = {
   clickMultipleKonva,
   polygonKonva,
   dragKonva,
+  countKonvaShapes,
 
   serialize,
 };
