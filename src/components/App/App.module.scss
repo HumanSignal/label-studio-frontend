@@ -132,20 +132,17 @@ $gap: 30px;
 
 .grid {
   flex-grow: 1;
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-auto-columns: 50%;
+  grid-auto-flow: column;
+  grid-column-gap: $gap;
+  margin: 0 30px;
   overflow: auto;
-  margin-right: 20px + $gap;
   position: relative;
 }
 
 .grid > div > h4 {
   cursor: pointer;
-}
-
-.grid > div {
-  flex: 0 0 calc(50% - #{$gap});
-  margin-left: $gap;
 }
 
 .container {
@@ -170,7 +167,7 @@ $gap: 30px;
 }
 
 .container > button.right {
-  right: 20px;
+  right: 0;
 }
 
 .grid > div:global(.hover) {

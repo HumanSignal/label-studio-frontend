@@ -92,9 +92,10 @@ export const AnnotationTabs = observer(({
       mod={{ viewAll: allowViewAll, addNew: allowCreateNew }}
       onMouseDown={e => e.stopPropagation()}
     >
-      {allowViewAll && (
-        <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
-          <LsGrid/>
+
+      {allowCreateNew && (
+        <Elem tag="button" name="add" onClick={onCreateAnnotation}>
+          <LsPlus/>
         </Elem>
       )}
 
@@ -111,9 +112,9 @@ export const AnnotationTabs = observer(({
         ))}
       </Elem>
 
-      {allowCreateNew && (
-        <Elem tag="button" name="add" onClick={onCreateAnnotation}>
-          <LsPlus/>
+      {allowViewAll && (
+        <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
+          <LsGrid/>
         </Elem>
       )}
     </Block>

@@ -97,8 +97,9 @@ export default class Grid extends Component {
               />
             </div>
           ))}
-          <br/>
-          {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}
+          {renderNext && (
+            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />
+          )}
         </div>
         <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />
         <Button type="text" onClick={this.right} className={styles.right} icon={<RightCircleOutlined />} />

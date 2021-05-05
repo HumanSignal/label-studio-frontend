@@ -11,10 +11,10 @@
   border-bottom 1px solid rgba(0, 0, 0, 0.1)
 
   &_viewAll
-    grid-template-columns 44px 1fr
+    grid-template-columns 1fr 44px
 
   &_addNew
-    grid-template-columns 1fr 44px
+    grid-template-columns 44px 1fr
 
   &_viewAll&_addNew
     grid-template-columns 44px 1fr 44px
@@ -33,10 +33,12 @@
     align-items center
     justify-content center
 
+  &__add
+    border-right 1px solid rgba(#000, 0.1)
+
   &__all
     outline none
     color rgba(#000, 0.6)
-    border-right 1px solid rgba(#000, 0.1)
 
     &_active
       color $accent_color

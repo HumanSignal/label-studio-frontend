@@ -25,8 +25,26 @@ export const CurrentAnnotation = injector(observer(({
 
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
-      <Elem name="info">
+      <Elem name="info" tag={Space} spread>
         ID: {annotation.pk ?? annotation.id}
+
+        {store.hasInterface("annotations:add-new") && (
+          <Tooltip title={`Create copy of this ${annotation.type}`}>
+            <Button size="small" look="ghost" onClick={(ev) => {
+              ev.preventDefault();
+
+              const cs = store.annotationStore;
+              const c = cs.addAnnotationFromPrediction(annotation);
+
+              // this is here because otherwise React doesn't re-render the change in the tree
+              window.setTimeout(function() {
+                store.annotationStore.selectAnnotation(c.id);
+              }, 50);
+            }}>
+              Create copy
+            </Button>
+          </Tooltip>
+        )}
       </Elem>
 
       <Space spread style={{ margin: "8px 0" }}>
@@ -75,7 +93,9 @@ export const CurrentAnnotation = injector(observer(({
         </Space>
       </Space>
 
-      {showControls && !isPrediction && <Controls annotation={annotation}/>}
+      {showControls && (store.hasInterface("review") || !isPrediction) && (
+        <Controls annotation={annotation}/>
+      )}
 
       {showHistory && !annotation.userGenerate && (
         <AnnotationHistory/>
