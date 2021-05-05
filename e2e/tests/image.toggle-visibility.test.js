@@ -157,9 +157,9 @@ Scenario("Checking regions grouped by label", async I => {
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   I.executeAsyncScript(waitForImage);
   I.waitForVisible("canvas", 3);
-  I.moveCursorTo({ react: "Card Divider Dropdown" });
-  I.click({ react: "MenuItem", props: { eventKey: "labels" } });
-  I.moveCursorTo({ react: "div" });
+  I.moveCursorTo(locate(".ant-dropdown-trigger").withText("Regions (3)"));
+  I.click(locate(".ant-menu-item").withText("Labels"));
+  I.click(locate("div").withText("Results"));
 
   await checkVisible(3);
   hideOne();
