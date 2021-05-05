@@ -3,7 +3,6 @@ import React from "react";
 import { LsSettings, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
-import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import { Space } from "../../common/Space/Space";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
@@ -22,13 +21,14 @@ export const CurrentAnnotation = injector(observer(({
   showHistory = true,
 }) => {
   const isPrediction = annotation?.type === 'prediction';
+  const saved = !annotation.userGenerate && annotation.sentUserGenerate;
 
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info" tag={Space} spread>
         ID: {annotation.pk ?? annotation.id}
 
-        {store.hasInterface("annotations:add-new") && (
+        {store.hasInterface("annotations:add-new") && saved && (
           <Tooltip title={`Create copy of this ${annotation.type}`}>
             <Button size="small" look="ghost" onClick={(ev) => {
               ev.preventDefault();
