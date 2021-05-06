@@ -133,7 +133,7 @@ $gap: 30px;
 .grid {
   flex-grow: 1;
   display: grid;
-  grid-auto-columns: 50%;
+  grid-auto-columns: calc(50% - 15px);
   grid-auto-flow: column;
   grid-column-gap: $gap;
   margin: 0 30px;

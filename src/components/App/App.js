@@ -163,7 +163,7 @@ class App extends Component {
             </Segment>
           )}
 
-          <div className={stCommon + (viewingAll ? 'view-all' : '') + " ls-common"}>
+          <div className={stCommon + (viewingAll ? " view-all" : "") + " ls-common"}>
             <div className={mainContainerClass.join(" ")}>
               <AnnotationTabs
                 store={store}
