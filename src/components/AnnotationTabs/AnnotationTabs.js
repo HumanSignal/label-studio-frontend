@@ -7,7 +7,7 @@ import "./AnnotationTabs.styl";
 import { LsGrid, LsPlus, LsSparks } from "../../assets/icons";
 
 export const EntityTab = observer(forwardRef(({ entity, selected, bordered = true, prediction = false, style, onClick }, ref) => {
-  const isUnsaved = entity.userGenerate && !entity.sentUserGenerate;
+  const isUnsaved = (entity.userGenerate && !entity.sentUserGenerate) || entity.draftSelected;
 
   return (
     <Block

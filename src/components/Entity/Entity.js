@@ -111,6 +111,7 @@ export default observer(({ store, annotation }) => {
       <Elem name="info" tag={Space} spread>
         <Elem name="node">
           <NodeMinimal node={node} />
+          {" "}
           (ID: {node.id})
         </Elem>
         {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
