@@ -144,10 +144,14 @@ class App extends Component {
 
     if (!root) return this.renderNoAnnotation();
 
-    const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
-    const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
-    const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
+    const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
+    const stCommon = [
+      settings.bottomSidePanel ? styles.commonbsp : styles.common,
+      viewingAll ? styles["view-all"] : "",
+      "ls-common",
+    ].join(" ");
+    const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
     const mainContainerClass = [styles["main-content-wrapper"]];
 
@@ -163,7 +167,7 @@ class App extends Component {
             </Segment>
           )}
 
-          <div className={stCommon + (viewingAll ? " view-all" : "") + " ls-common"}>
+          <div className={stCommon}>
             <div className={mainContainerClass.join(" ")}>
               <AnnotationTabs
                 store={store}
