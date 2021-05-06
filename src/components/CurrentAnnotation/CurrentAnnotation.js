@@ -10,6 +10,7 @@ import { AnnotationHistory } from "./AnnotationHistory";
 import { Controls } from "./Controls";
 import "./CurrentAnnotation.styl";
 import { HistoryActions } from "./HistoryActions";
+import { DraftPanel } from "../DraftPanel/DraftPanel";
 
 const injector = inject('store');
 
@@ -96,6 +97,8 @@ export const CurrentAnnotation = injector(observer(({
       {showControls && (store.hasInterface("review") || !isPrediction) && (
         <Controls annotation={annotation}/>
       )}
+
+      <DraftPanel item={annotation} />
 
       {showHistory && !annotation.userGenerate && (
         <AnnotationHistory/>

@@ -46,7 +46,6 @@ const Annotation = types
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
 
-    draft: false,
     // @todo use types.Date
     draftSaved: types.maybe(types.string),
 
@@ -79,7 +78,7 @@ const Annotation = types
     highlightedNode: types.maybeNull(types.safeReference(AllRegionsType)),
   })
   .preProcessSnapshot(sn => {
-    sn.draft = Boolean(sn.draft);
+    // sn.draft = Boolean(sn.draft);
     return sn;
   })
   .views(self => ({
@@ -113,8 +112,12 @@ const Annotation = types
       return results;
     },
   }))
-  .volatile(() => ({
+  .volatile(self => ({
     hidden: false,
+    draftId: 0,
+    draftSelected: false,
+    autosaveDelay: 5000,
+    isDraftSaving: false,
     versions: {},
   }))
   .actions(self => ({
@@ -330,10 +333,11 @@ const Annotation = types
 
     addVersions(versions) {
       self.versions = { ...self.versions, ...versions };
+      if (versions.draft) self.setDraftSelected();
     },
 
     toggleDraft() {
-      const isDraft = self.draft;
+      const isDraft = self.draftSelected;
       if (!isDraft && !self.versions.draft) return;
       self.autosave.flush();
       self.pauseAutosave();
@@ -341,10 +345,10 @@ const Annotation = types
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
         self.deserializeAnnotation(self.versions.result);
-        self.draft = false;
+        self.draftSelected = false;
       } else {
         self.deserializeAnnotation(self.versions.draft);
-        self.draft = true;
+        self.draftSelected = true;
       }
       self.updateObjects();
       self.startAutosave();
@@ -375,12 +379,12 @@ const Annotation = types
           // if this is new annotation and no regions added yet
           if (!self.pk && !result.length) return;
 
-          self.setDraft(true);
+          self.setDraftSelected();
           self.versions.draft = result;
 
           self.store.submitDraft(self).then(self.onDraftSaved);
         },
-        5000,
+        self.autosaveDelay,
         { leading: false },
       );
 
@@ -397,8 +401,12 @@ const Annotation = types
       self.autosave && self.autosave.cancel && self.autosave.cancel();
     },
 
-    setDraft(flag) {
-      self.draft = flag;
+    setDraftId(id) {
+      self.draftId = id;
+    },
+
+    setDraftSelected(selected = true) {
+      self.draftSelected = selected;
     },
 
     onDraftSaved() {
@@ -408,7 +416,8 @@ const Annotation = types
     dropDraft() {
       if (!self.autosave) return;
       self.autosave.cancel();
-      self.draft = false;
+      self.draftId = 0;
+      self.draftSelected = false;
       self.draftSaved = undefined;
       self.versions.draft = undefined;
     },
