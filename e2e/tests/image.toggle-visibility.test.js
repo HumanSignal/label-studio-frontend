@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { initLabelStudio, waitForImage, countKonvaShapes } = require("./helpers");
+const { initLabelStudio, waitForImage, countKonvaShapes, switchRegionTreeView } = require("./helpers");
 
 const config = `
 <View>
@@ -157,10 +157,8 @@ Scenario("Checking regions grouped by label", async I => {
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   I.executeAsyncScript(waitForImage);
   I.waitForVisible("canvas", 3);
-  I.moveCursorTo(locate(".ant-dropdown-trigger").withText("Regions (3)"));
-  I.click(locate(".ant-menu-item").withText("Labels"));
-  I.click(locate("div").withText("Results"));
-
+  I.executeAsyncScript(switchRegionTreeView, "labels");
+  I.see("Labels");
   await checkVisible(3);
   hideOne();
   await checkVisible(2);

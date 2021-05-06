@@ -203,6 +203,11 @@ const countKonvaShapes = async done => {
   done(count);
 };
 
+const switchRegionTreeView = (viewName, done) => {
+  Htx.annotationStore.selected.regionStore.setView(viewName);
+  done();
+};
+
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 module.exports = {
@@ -220,6 +225,7 @@ module.exports = {
   polygonKonva,
   dragKonva,
   countKonvaShapes,
+  switchRegionTreeView,
 
   serialize,
 };
