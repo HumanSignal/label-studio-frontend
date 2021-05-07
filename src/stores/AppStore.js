@@ -333,8 +333,8 @@ export default types
       if (!entity.validate()) return;
 
       entity.sendUserGenerate();
-      entity.dropDraft();
       handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, entity));
+      entity.dropDraft();
     }
 
     function updateAnnotation() {
@@ -343,8 +343,8 @@ export default types
 
       if (!entity.validate()) return;
 
-      entity.dropDraft();
       getEnv(self).onUpdateAnnotation(self, entity);
+      entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
