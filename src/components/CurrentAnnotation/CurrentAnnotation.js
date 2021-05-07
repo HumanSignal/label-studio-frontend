@@ -22,7 +22,7 @@ export const CurrentAnnotation = injector(observer(({
   showHistory = true,
 }) => {
   const isPrediction = annotation?.type === 'prediction';
-  const saved = !annotation.userGenerate && annotation.sentUserGenerate;
+  const saved = !annotation.userGenerate || annotation.sentUserGenerate;
 
   return annotation ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
@@ -42,7 +42,7 @@ export const CurrentAnnotation = injector(observer(({
                 store.annotationStore.selectAnnotation(c.id);
               }, 50);
             }}>
-              Create copy
+              Create Copy
             </Button>
           </Tooltip>
         )}
