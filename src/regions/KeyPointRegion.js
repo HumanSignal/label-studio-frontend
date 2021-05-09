@@ -88,7 +88,7 @@ const Model = types
         value: {
           x: self.convertXToPerc(self.x),
           y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.radiusX),
+          width: self.convertHDimensionToPerc(self.width),
         },
       };
     },
