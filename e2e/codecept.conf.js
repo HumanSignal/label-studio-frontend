@@ -27,6 +27,7 @@ exports.config = {
   },
   include: {
     I: "./steps_file.js",
+    AtImageView: "./fragments/AtImageView.js",
   },
   bootstrap: null,
   mocha: {},
