@@ -3,6 +3,11 @@ import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
 import { registerPanels } from "./registerPanels";
+import { configure } from "mobx";
+
+configure({
+  isolateGlobalState: true,
+});
 
 export class LabelStudio {
   static instances = new Set();
