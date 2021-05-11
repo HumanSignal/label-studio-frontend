@@ -103,6 +103,7 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
+
       cs.addErrors([
         errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
       ]);
@@ -203,7 +204,6 @@ export default observer(
 
     render() {
       const { item, store } = this.props;
-      console.log('ImageView', {item});
 
       // @todo stupid but required check for `resetState()`
       // when Image tries to render itself after detouching
