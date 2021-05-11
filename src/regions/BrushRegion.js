@@ -172,6 +172,10 @@ const Model = types
         self.layerRef = ref;
       },
 
+      prepareCoords([x, y]) {
+        return self.parent.zoomOriginalCoords([x, y]);
+      },
+
       preDraw(x, y) {
         if (!self.layerRef) return;
         const layer = self.layerRef;
@@ -179,19 +183,19 @@ const Model = types
         ctx.save();
         ctx.beginPath();
         if (cachedPoints.length / 2 > 3) {
-          ctx.moveTo(lastPointX, lastPointY);
+          ctx.moveTo(...self.prepareCoords([lastPointX, lastPointY]));
         } else if (cachedPoints.length === 0) {
-          ctx.moveTo(x, y);
+          ctx.moveTo(...self.prepareCoords([x, y]));
         } else {
-          ctx.moveTo(cachedPoints[0], cachedPoints[1]);
+          ctx.moveTo(...self.prepareCoords([cachedPoints[0], cachedPoints[1]]));
           for (let i = 0; i < cachedPoints.length / 2; i++) {
-            ctx.lineTo(cachedPoints[2 * i], cachedPoints[2 * i + 1]);
+            ctx.lineTo(...self.prepareCoords([cachedPoints[2 * i], cachedPoints[2 * i + 1]]));
           }
         }
-        ctx.lineTo(x, y);
+        ctx.lineTo(...self.prepareCoords([x, y]));
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-        ctx.lineWidth = pathPoints.strokeWidth * self.scaleX;
+        ctx.lineWidth = pathPoints.strokeWidth * self.scaleX * self.parent.stageScale;
         ctx.strokeStyle = self.strokeColor;
         ctx.globalCompositeOperation = pathPoints.compositeOperation;
         ctx.stroke();
