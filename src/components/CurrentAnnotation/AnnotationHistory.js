@@ -38,7 +38,7 @@ export const AnnotationHistory = injector(observer(({
         selected={!isDefined(selectedHistory)}
       />
 
-      {history.filter(anno => anno.results.length).map((annotation) => {
+      {history.map((annotation) => {
         const {id, user, createdDate} = annotation;
 
         return (
