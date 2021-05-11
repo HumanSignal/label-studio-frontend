@@ -141,6 +141,7 @@ const Model = types
       });
     },
 
+    // @todo not used
     // only px coordtype here
     rotate(degree = -90) {
       self.points.forEach(point => {
@@ -215,30 +216,14 @@ const Model = types
 
     serialize() {
       if (self.points.length < 3) return null;
-
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-
-      const perc_points = self.points.map(p => {
-        const normalized = self.rotatePoint(p, degree, false);
-        const res_w = (normalized.x * 100) / width;
-        const res_h = (normalized.y * 100) / height;
-
-        return [res_w, res_h];
-      });
-
-      let res = {
-        value: {
-          points: perc_points,
-        },
-        original_width: natural.width,
-        original_height: natural.height,
+      return {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
+        value: {
+          points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+        },
       };
-
-      return res;
     },
   }));
 
