@@ -165,8 +165,7 @@ const _Tool = types
           return;
         const c = self.control;
         brush = self.getSelectedShape;
-
-        if (brush) {
+        if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
 
           pathPoints = brush.beginPath({

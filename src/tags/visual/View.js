@@ -21,7 +21,7 @@ import VisibilityMixin from "../../mixins/Visibility";
  *   </View>
  * </View>
  * @name View
- * @param {block|inline} display 
+ * @param {block|inline} display
  * @param {string} [style] CSS style string
  * @param {string} [className] - Class name of the css style to apply
  * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] Show the contents of a view when condition is true
