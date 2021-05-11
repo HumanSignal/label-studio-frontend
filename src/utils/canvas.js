@@ -1,6 +1,8 @@
 import { encode, decode } from "@thi.ng/rle-pack";
 
 import * as Colors from "./colors";
+import { Stage } from "react-konva";
+import React from "react";
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
@@ -40,6 +42,7 @@ function Region2RLE(region, image, lineOpts) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
   const stage = region.object?.stageRef;
+  const parent = region.parent;
   if (!stage) {
     console.error(`Stage not found for area #${region.cleanId}`);
     return;
@@ -52,6 +55,26 @@ function Region2RLE(region, image, lineOpts) {
   }
   // hide labels on regions and show them later
   layer.find(".region-label").hide();
+
+  const width = stage.getWidth(),
+    height = stage.getHeight(),
+    scaleX = stage.getScaleX(),
+    scaleY = stage.getScaleY(),
+    x = stage.getX(),
+    y = stage.getY(),
+    offsetX = stage.getOffsetX(),
+    offsetY = stage.getOffsetY(),
+    rotation = stage.getRotation();
+  stage
+    .setWidth(parent.stageWidth)
+    .setHeight(parent.stageHeight)
+    .setScaleX(1)
+    .setScaleY(1)
+    .setX(0)
+    .setY(0)
+    .setOffsetX(0)
+    .setOffsetY(0)
+    .setRotation(0);
   stage.drawScene();
   // resize to original size
   const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
@@ -60,6 +83,16 @@ function Region2RLE(region, image, lineOpts) {
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
   layer.find(".region-label").show();
+  stage
+    .setWidth(width)
+    .setHeight(height)
+    .setScaleX(scaleX)
+    .setScaleY(scaleY)
+    .setX(x)
+    .setY(y)
+    .setOffsetX(offsetX)
+    .setOffsetY(offsetY)
+    .setRotation(rotation);
   stage.drawScene();
   const rle = encode(data.data, data.data.length);
 

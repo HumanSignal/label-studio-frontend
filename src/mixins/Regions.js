@@ -56,6 +56,7 @@ const RegionsMixin = types
 
     // "web" degree is opposite to mathematical, -90 is 90 actually
     // swapSizes = true when canvas is already rotated at this moment
+    // @todo not used
     rotatePoint(point, degree, swapSizes = true) {
       const { x, y } = point;
       if (!degree) return { x, y };
@@ -76,9 +77,26 @@ const RegionsMixin = types
       return { x, y };
     },
 
+    // @todo not used
     rotateDimensions({ width, height }, degree) {
       if ((degree + 360) % 180 === 0) return { width, height };
       return { width: height, height: width };
+    },
+
+    convertXToPerc(x) {
+      return (x * 100) / self.parent.stageWidth;
+    },
+
+    convertYToPerc(y) {
+      return (y * 100) / self.parent.stageHeight;
+    },
+
+    convertHDimensionToPerc(hd) {
+      return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+    },
+
+    convertVDimensionToPerc(vd) {
+      return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
     },
 
     // update region appearence based on it's current states, for

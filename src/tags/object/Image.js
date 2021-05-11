@@ -13,6 +13,7 @@ import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
 import { customTypes } from "../../core/CustomTypes";
+import { clamp } from "../../utils/utilities";
 
 /**
  * Image tag shows an image on the page.
@@ -148,6 +149,9 @@ const Model = types
       [],
     ),
   })
+  .volatile(self => ({
+    stageRatio: 1,
+  }))
   .views(self => ({
     /**
      * @return {boolean}
@@ -171,6 +175,19 @@ const Model = types
 
     get selectedShape() {
       return self.regs.find(r => r.selected);
+    },
+
+    get stageTranslate() {
+      return {
+        0: { x: 0, y: 0 },
+        90: { x: 0, y: self.stageHeight },
+        180: { x: self.stageWidth, y: self.stageHeight },
+        270: { x: self.stageWidth, y: 0 },
+      }[self.rotation];
+    },
+
+    get stageScale() {
+      return self.zoomScale * self.stageRatio;
     },
 
     /**
@@ -207,6 +224,23 @@ const Model = types
     get controlButtonType() {
       const name = self.controlButton();
       return getType(name).name;
+    },
+
+    get stageComponentSize() {
+      if ((self.rotation + 360) % 180 === 90) {
+        return {
+          width: self.stageHeight * self.stageRatio,
+          height: self.stageWidth * self.stageRatio,
+        };
+      }
+      return {
+        width: self.stageWidth * self.stageRatio,
+        height: self.stageHeight * self.stageRatio,
+      };
+    },
+
+    get zoomBy() {
+      return parseFloat(self.zoomby);
     },
   }))
 
@@ -281,8 +315,50 @@ const Model = types
     },
 
     setZoomPosition(x, y) {
-      self.zoomingPositionX = x;
-      self.zoomingPositionY = y;
+      self.zoomingPositionX = clamp(
+        x,
+        self.stageComponentSize.width - self.stageComponentSize.width * self.zoomScale,
+        0,
+      );
+      self.zoomingPositionY = clamp(
+        y,
+        self.stageComponentSize.height - self.stageComponentSize.height * self.zoomScale,
+        0,
+      );
+    },
+
+    handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
+      if (val) {
+        self.freezeHistory();
+        const stage = self.stageRef;
+        let stageScale = self.stageScale;
+        let zoomScale = self.zoomScale;
+
+        let mouseAbsolutePos;
+        let zoomingPosition;
+        window.stage = stage;
+        mouseAbsolutePos = {
+          x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
+          y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
+        };
+
+        stageScale = val > 0 ? stageScale * self.zoomBy : stageScale / self.zoomBy;
+        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
+
+        zoomingPosition = {
+          x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
+          y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,
+        };
+        if (self.negativezoom !== true && zoomScale <= 1) {
+          self.setZoom(1, 0, 0);
+          return;
+        }
+        if (zoomScale <= 1) {
+          self.setZoom(zoomScale, 0, 0);
+          return;
+        }
+        self.setZoom(zoomScale, zoomingPosition.x, zoomingPosition.y);
+      }
     },
 
     /**
@@ -312,27 +388,29 @@ const Model = types
 
     rotate(degree = -90) {
       self.rotation = (self.rotation + degree + 360) % 360;
-
-      // 1. swap canvas sizes to correct relative calculations
-      const w = self.stageWidth;
-      self.stageWidth = self.stageHeight;
-      self.stageHeight = w;
-      const nw = self.naturalWidth;
-      self.naturalWidth = self.naturalHeight;
-      self.naturalHeight = nw;
-
-      const ratio = self.stageHeight / self.stageWidth;
-
-      // 2. rotate regions
-      self.regions.forEach(s => s.rotate(degree));
-
-      // 3. scale to fit original width and resize all regions
-      self._updateImageSize({
-        width: w,
-        height: Math.round(ratio * w),
-        naturalWidth: self.naturalWidth,
-        naturalHeight: self.naturalHeight,
-      });
+      let ratioK = 1 / self.stageRatio;
+      if ((self.rotation + 360) % 180 === 90) {
+        self.stageRatio = self.initialWidth / self.initialHeight;
+      } else {
+        self.stageRatio = 1;
+      }
+      ratioK = ratioK * self.stageRatio;
+      if (degree === -90) {
+        this.setZoomPosition(
+          self.zoomingPositionY * ratioK,
+          self.stageComponentSize.height -
+            self.zoomingPositionX * ratioK -
+            self.stageComponentSize.height * self.zoomScale,
+        );
+      }
+      if (degree === 90) {
+        this.setZoomPosition(
+          self.stageComponentSize.width -
+            self.zoomingPositionY * ratioK -
+            self.stageComponentSize.width * self.zoomScale,
+          self.zoomingPositionX * ratioK,
+        );
+      }
     },
 
     _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
@@ -340,11 +418,25 @@ const Model = types
         self.naturalWidth = naturalWidth;
         self.naturalHeight = naturalHeight;
       }
+      if ((self.rotation + 360) % 180 === 90) {
+        self.stageWidth = width;
+        self.stageHeight = Math.round((width / self.initialWidth) * self.initialHeight);
+      } else {
+        self.stageWidth = width;
+        self.stageHeight = height;
+      }
 
-      self.stageWidth = width;
-      self.stageHeight = height;
       self.sizeUpdated = true;
+      self._updateRegionsSizes({
+        width: self.stageWidth,
+        height: self.stageHeight,
+        naturalWidth,
+        naturalHeight,
+        userResize,
+      });
+    },
 
+    _updateRegionsSizes({ width, height, naturalWidth, naturalHeight, userResize }) {
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
@@ -357,17 +449,7 @@ const Model = types
       const { width, height, naturalWidth, naturalHeight } = ev.target;
       self.initialWidth = width;
       self.initialHeight = height;
-      if ((self.rotation + 360) % 180 === 90) {
-        // swap sizes
-        self._updateImageSize({
-          width: height,
-          height: width,
-          naturalWidth: naturalHeight,
-          naturalHeight: naturalWidth,
-        });
-      } else {
-        self._updateImageSize({ width, height, naturalWidth, naturalHeight });
-      }
+      self._updateImageSize({ width, height, naturalWidth, naturalHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
@@ -391,15 +473,19 @@ const Model = types
 
     // convert screen coords to image coords considering zoom
     fixZoomedCoords([x, y]) {
-      return [(x - self.zoomingPositionX) / self.zoomScale, (y - self.zoomingPositionY) / self.zoomScale];
       // good official way, but maybe a bit slower and with repeating cloning
-      // const p = self.stageRef.getAbsoluteTransform().copy().invert().point({ x, y });
-      // return [p.x, p.y];
+      const p = self.stageRef
+        .getAbsoluteTransform()
+        .copy()
+        .invert()
+        .point({ x, y });
+      return [p.x, p.y];
     },
 
     // convert image coords to screen coords considering zoom
     zoomOriginalCoords([x, y]) {
-      return [x * self.zoomScale + self.zoomingPositionX, y * self.zoomScale + self.zoomingPositionY];
+      const p = self.stageRef.getAbsoluteTransform().point({ x, y });
+      return [p.x, p.y];
     },
 
     /**
