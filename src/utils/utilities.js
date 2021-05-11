@@ -125,3 +125,7 @@ export function delay(ms = 0) {
 export const isDefined = value => {
   return value !== null && value !== undefined;
 };
+
+export function clamp(x, min, max) {
+  return Math.min(max, Math.max(min, x));
+}
