@@ -47,7 +47,7 @@ const annotations = [
 
 Feature("Toggle image's regions visibility");
 
-Scenario("Checking mass toggling of visibility", async I => {
+Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
   const ALL_VISIBLE_SELECTOR = "[class^=Entities_header] [aria-label=eye]";
   const ALL_HIDDEN_SELECTOR = "[class^=Entities_header] [aria-label=eye-invisible]";
   const ONE_VISIBLE_SELECTOR = "[class^=Entities_header] ~ .ant-tree [aria-label=eye]";
@@ -90,7 +90,7 @@ Scenario("Checking mass toggling of visibility", async I => {
 
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
-  I.executeAsyncScript(waitForImage);
+  AtImageView.waitForImage();
   I.waitForVisible("canvas", 3);
   I.see("Regions (3)");
   await checkVisible(3);
@@ -112,7 +112,22 @@ Scenario("Checking mass toggling of visibility", async I => {
   await checkVisible(0);
 });
 
-Scenario("Checking regions grouped by label", async I => {
+Scenario("Hiding of mass visibility switcher", (I, AtImageView) => {
+  const ALL_VISIBILITY_TOGGLE_SELECTOR = "[class^=Entities_header] [aria-label^=eye]";
+
+  I.amOnPage("/");
+  I.executeAsyncScript(initLabelStudio, { config, data });
+  AtImageView.waitForImage();
+  I.waitForVisible("canvas", 3);
+  I.see("Regions (0)");
+  I.dontSeeElement(ALL_VISIBILITY_TOGGLE_SELECTOR);
+  I.click(locate(".ant-tag").withText("Planet"));
+  AtImageView.dragKonva(300, 300, 50, 50);
+  I.see("Regions (1)");
+  I.seeElement(ALL_VISIBILITY_TOGGLE_SELECTOR);
+});
+
+Scenario("Checking regions grouped by label", async (I, AtImageView) => {
   const ALL_VISIBLE_SELECTOR = "[class^=Entities_treelabel] [aria-label=eye]";
   const ALL_HIDDEN_SELECTOR = "[class^=Entities_treelabel] [aria-label=eye-invisible]";
   const ONE_VISIBLE_SELECTOR = "[class^=Entities_treelabel] ~ div [aria-label=eye]";
@@ -155,7 +170,7 @@ Scenario("Checking regions grouped by label", async I => {
 
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
-  I.executeAsyncScript(waitForImage);
+  AtImageView.waitForImage();
   I.waitForVisible("canvas", 3);
   I.executeAsyncScript(switchRegionTreeView, "labels");
   I.see("Labels");

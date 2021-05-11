@@ -352,16 +352,18 @@ export default observer(({ store, regionStore }) => {
             </Dropdown>
           </Divider>
         </div>
-        <div>
-          <Button
-            size="small"
-            type="link"
-            className={regionStore.isAllHidden ? styles.uihidden : styles.uivisible}
-            onClick={toggleVisibility}
-          >
-            {regionStore.isAllHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-          </Button>
-        </div>
+        {count > 0 ? (
+          <div>
+            <Button
+              size="small"
+              type="link"
+              className={regionStore.isAllHidden ? styles.uihidden : styles.uivisible}
+              onClick={toggleVisibility}
+            >
+              {regionStore.isAllHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            </Button>
+          </div>
+        ) : null}
         {count > 0 && regionStore.view === "regions" && (
           <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
             <span className={globalStyles.link} onClick={e => e.preventDefault()}>
