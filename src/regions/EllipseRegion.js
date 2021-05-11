@@ -113,6 +113,7 @@ const Model = types
       }
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
@@ -169,29 +170,15 @@ const Model = types
     },
 
     serialize() {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-      const { width: radiusX, height: radiusY } = self.rotateDimensions(
-        {
-          width: (self.radiusX * (self.scaleX || 1) * 100) / self.object.stageWidth, //  * (self.scaleX || 1)
-          height: (self.radiusY * (self.scaleY || 1) * 100) / self.object.stageHeight,
-        },
-        degree,
-      );
-
-      const { x, y } = self.rotatePoint(self, degree, false);
-
       const res = {
-        original_width: natural.width,
-        original_height: natural.height,
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (x * 100) / width,
-          y: (y * 100) / height,
-          radiusX,
-          radiusY,
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          radiusX: self.convertHDimensionToPerc(self.radiusX),
+          radiusY: self.convertVDimensionToPerc(self.radiusY),
           rotation: self.rotation,
         },
       };

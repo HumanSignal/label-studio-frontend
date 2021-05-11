@@ -52,6 +52,7 @@ const Model = types
       }
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       self.setPosition(p.x, p.y);
@@ -80,27 +81,16 @@ const Model = types
     },
 
     serialize() {
-      const object = self.object;
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-
-      const { x, y } = self.rotatePoint(self, degree, false);
-
-      const res = {
-        original_width: natural.width,
-        original_height: natural.height,
+      return {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
-
         value: {
-          x: (x * 100) / width,
-          y: (y * 100) / height,
-          width: (self.width * 100) / width, //  * (self.scaleX || 1)
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
         },
       };
-
-      return res;
     },
   }));
 
