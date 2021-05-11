@@ -224,7 +224,9 @@ const getCanvasSize = done => {
 };
 const setZoom = (scale, x, y, done) => {
   Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
-  done();
+  setTimeout(() => {
+    done();
+  }, 30);
 };
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
