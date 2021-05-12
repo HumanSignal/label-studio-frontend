@@ -248,6 +248,15 @@ const Model = types
   .actions(self => {
     const toolsManager = new ToolsManager({ obj: self });
 
+    function afterAttach() {
+      setTimeout(() => {
+        const rect = Tools.Rect.create({}, { manager: toolsManager });
+        rect._control = self.states()[0];
+        console.log({ rect, control: rect._control });
+        toolsManager.addTool("rect", rect);
+      }, 100);
+    }
+
     function afterCreate() {
       if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
 
@@ -263,7 +272,7 @@ const Model = types
       return toolsManager;
     }
 
-    return { afterCreate, getToolsManager };
+    return { afterAttach, afterCreate, getToolsManager };
   })
 
   .actions(self => ({

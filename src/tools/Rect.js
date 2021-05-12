@@ -1,4 +1,5 @@
 import { types } from "mobx-state-tree";
+import React from "react";
 
 import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
@@ -16,6 +17,10 @@ const _Tool = types
         controlTagTypes: ["rectanglelabels", "rectangle"],
       };
     },
+    get viewClass() {
+      const onClick = e => self.setSelected(true);
+      return self.selected ? <b onClick={onClick}>R</b> : <div onClick={onClick}>R</div>;
+    },
   }))
   .actions(self => ({
     createRegion(opts) {
@@ -26,7 +31,7 @@ const _Tool = types
 
     mousedownEv(ev, [x, y]) {
       if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
-      if (!self.obj.checkLabels()) return;
+      // if (!self.obj.checkLabels()) return;
 
       self.annotation.history.freeze();
 
