@@ -352,7 +352,7 @@ export default observer(({ store, regionStore }) => {
             </Dropdown>
           </Divider>
         </div>
-        {count > 0 ? (
+        {regions.length > 0 ? (
           <div>
             <Button
               size="small"
