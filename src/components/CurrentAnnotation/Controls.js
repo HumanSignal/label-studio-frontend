@@ -2,6 +2,7 @@ import { inject, observer } from "mobx-react";
 import { Button } from "../../common/Button/Button";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
+import { isDefined } from "../../utils/utilities";
 import "./Controls.styl";
 
 const TOOLTIP_DELAY = 0.8;
@@ -20,10 +21,11 @@ const ButtonTooltip = inject("store")(observer(({store, title, children}) => {
 
 export const Controls = inject("store")(observer(({store, annotation}) => {
   const isReview = store.hasInterface("review");
+  const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, history } = annotation;
   const buttons = [];
 
-  const disabled = store.isSubmitting;
+  const disabled = store.isSubmitting || historySelected;
 
   if (isReview) {
     buttons.push(
