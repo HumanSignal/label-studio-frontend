@@ -121,3 +121,7 @@ export function wrapArray(value) {
 export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function clamp(x, min, max) {
+  return Math.min(max, Math.max(min, x));
+}

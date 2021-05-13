@@ -11,14 +11,14 @@ import Utils from "../../utils";
 import { TextRegionModel } from "../../regions/TextRegion";
 import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
-import { runTemplate } from "../../core/Template";
+import { parseValue } from "../../utils/data";
 import styles from "./Text/Text.module.scss";
-import InfoModal from "../../components/Infomodal/Infomodal";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { customTypes } from "../../core/CustomTypes";
 import messages from "../../utils/messages";
 
 /**
- * Text tag shows an Text markup that can be labeled.
+ * Text tag shows text markup that can be labeled.
  * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all the spaces.
  * In any case every space counts for result offsets.
  * @example
@@ -27,7 +27,9 @@ import messages from "../../utils/messages";
  * </View>
  * @name Text
  * @param {string} name                      - name of the element
- * @param {string} value                     - value of the element
+ * @param {string} value                     - data field with text or url
+ * @param {url|text} [valueType]             - where is the text stored — directly in task or should be loaded by url
+ * @param {yes|no} [saveTextResult]          - store labeled text along with result or not; by default doesn't store text for `valueType=url`
  * @param {boolean} [selectionEnabled=true]  - enable or disable selection
  * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
  * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
@@ -70,16 +72,16 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -97,7 +99,7 @@ const Model = types
     },
 
     updateValue(store) {
-      const value = runTemplate(self.value, store.task.dataObj);
+      const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
         const url = value;
@@ -105,13 +107,14 @@ const Model = types
         if (!/^https?:\/\/|^\//.test(url)) {
           const message = [];
           if (url) {
+            // @todo cut long texts ("Lorem ipsum...amet")
             message.push(`URL (${url}) is not valid.`);
             message.push(`You should not put text directly in your task data if you use valuetype="url".`);
           } else {
             message.push(`URL is empty, check ${self.value} in data JSON.`);
           }
           if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
-          InfoModal.error(message.map(t => <p>{t}</p>));
+          store.annotationStore.addErrors([errorBuilder.generalError(message.join("\n"))]);
           self.loadedValue("");
           return;
         }
@@ -123,7 +126,7 @@ const Model = types
           .then(self.loadedValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
-            InfoModal.error(message, "Wow!");
+            store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.loadedValue("");
           });
       } else {
@@ -138,10 +141,10 @@ const Model = types
 
       self._value = val;
 
-      self._regionsCache.forEach(({ region, completion }) => {
+      self._regionsCache.forEach(({ region, annotation }) => {
         region.setText(self._value.substring(region.startOffset, region.endOffset));
         self.regions.push(region);
-        completion.addRegion(region);
+        annotation.addRegion(region);
       });
 
       self._regionsCache = [];
@@ -165,12 +168,12 @@ const Model = types
       r._range = p._range;
 
       if (self.valuetype === "url" && self.loaded === false) {
-        self._regionsCache.push({ region: r, completion: self.completion });
+        self._regionsCache.push({ region: r, annotation: self.annotation });
         return;
       }
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
@@ -184,7 +187,7 @@ const Model = types
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.completion.createResult(range, labels, control, self);
+      const area = self.annotation.createResult(range, labels, control, self);
       area._range = range._range;
       return area;
     },
@@ -198,7 +201,7 @@ const Model = types
       let r;
       let m;
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -266,7 +269,7 @@ class TextPieceView extends Component {
   getValue() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
+    let val = parseValue(item.value, store.task.dataObj);
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
@@ -288,7 +291,7 @@ class TextPieceView extends Component {
         r2.setStart(r.startContainer, 0);
       }
 
-      if (idx > 0) {
+      if (idx >= 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
         r2.setStart(node, len);
       }
@@ -299,8 +302,13 @@ class TextPieceView extends Component {
     if (strright.length > 0) {
       const idxSpace = strright.indexOf(" ");
       const idxNewline = strright.indexOf("\n");
-      const idx = Math.max(idxSpace, idxNewline);
+      let idx = Math.min(idxSpace, idxNewline);
 
+      if (idx === -1) {
+        idx = idxSpace === -1 ? idxNewline : idxSpace;
+      }
+
+      // if no spaces and newlines — we are on the last word of the whole text
       if (idx === -1) {
         r2.setEnd(r.endContainer, r.endContainer.length);
       }
@@ -429,7 +437,7 @@ class TextPieceView extends Component {
 
     item.regs.forEach(function(r) {
       // spans can be totally missed if this is app init or undo/redo
-      // or they can be disconnected from DOM on completions switching
+      // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
       if (r._spans?.[0]?.isConnected) return;
 

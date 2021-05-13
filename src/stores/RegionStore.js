@@ -1,6 +1,8 @@
 import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
+
+const hotkeys = Hotkey("RegionStore");
 
 export default types
   .model("RegionStore", {
@@ -12,12 +14,12 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
-    get completion() {
+    get annotation() {
       return getParent(self);
     },
 
     get classifications() {
-      const textAreas = Array.from(self.completion.names.values())
+      const textAreas = Array.from(self.annotation.names.values())
         .filter(t => t.type === "textarea" && !t.perregion)
         .map(t => t.regions);
 
@@ -25,7 +27,7 @@ export default types
     },
 
     get regions() {
-      return Array.from(self.completion.areas.values()).filter(area => !area.classification);
+      return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
     get sortedRegions() {
@@ -60,7 +62,7 @@ export default types
         let pid = el["item"].parentID;
         if (pid) {
           let parent = lookup[pid];
-          if (!parent) parent = lookup[`${pid}#${self.completion.id}`];
+          if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
           if (parent) {
             parent.children.push(el);
             return;
@@ -169,19 +171,17 @@ export default types
           self.initHotkeys();
         }
       });
-      self.view = self.completion.store.settings.displayLabelsByDefault ? "labels" : "regions";
+      self.view = self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
     },
 
     // init Alt hotkeys for regions selection
     initHotkeys() {
       const PREFIX = "alt+shift+";
-      const keys = Hotkey.getKeys();
-      const rkeys = keys.filter(k => k.indexOf(PREFIX) !== -1);
 
-      rkeys.forEach(k => Hotkey.removeKey(k));
+      hotkeys.unbindAll();
 
       self.sortedRegions.forEach((r, n) => {
-        Hotkey.addKey(PREFIX + (n + 1), function() {
+        hotkeys.addKey(PREFIX + (n + 1), function() {
           self.unselectAll();
           r.selectRegion();
         });
@@ -189,14 +189,14 @@ export default types
 
       // this is added just for the reference to show up in the
       // settings page
-      Hotkey.addKey("alt+shift+$n", () => {}, "Select a region");
+      hotkeys.addKey("alt+shift+$n", () => {}, "Select a region");
     },
 
     /**
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectAll(tryToKeepStates = false) {
-      self.completion.unselectAll();
+      self.annotation.unselectAll();
     },
 
     unhighlightAll() {

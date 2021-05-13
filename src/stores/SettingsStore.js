@@ -51,14 +51,14 @@ const SettingsModel = types
 
     showLineNumbers: false,
 
-    showCompletionsPanel: types.optional(types.boolean, true),
+    showAnnotationsPanel: types.optional(types.boolean, true),
 
     showPredictionsPanel: types.optional(types.boolean, true),
     // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
     get displayLabelsByDefault() {
       return self.sidePanelMode === SIDEPANEL_MODE_LABELS;
@@ -102,7 +102,7 @@ const SettingsModel = types
 
       Utils.HTML.toggleLabelsAndScores(self.showLabels);
 
-      // const c = getRoot(self).completionStore.selected;
+      // const c = getRoot(self).annotationStore.selected;
       // c.regionStore.regions.forEach(r => {
       //   // TODO there is no showLables in the regions right now
       //   return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
@@ -129,7 +129,7 @@ const SettingsModel = types
       self.sidePanelMode =
         self.sidePanelMode === SIDEPANEL_MODE_LABELS ? SIDEPANEL_MODE_REGIONS : SIDEPANEL_MODE_LABELS;
       // apply immediately
-      self.completion.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
+      self.annotation.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
     },
 
     toggleAutoSave() {
@@ -139,7 +139,7 @@ const SettingsModel = types
     toggleHotkeys() {
       self.enableHotkeys = !self.enableHotkeys;
       if (self.enableHotkeys) {
-        Hotkey.setScope("__main__");
+        Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
       } else {
         Hotkey.setScope("__none__");
       }
@@ -175,8 +175,8 @@ const SettingsModel = types
       self.enableLabelTooltips = !self.enableLabelTooltips;
     },
 
-    toggleCompletionsPanel() {
-      self.showCompletionsPanel = !self.showCompletionsPanel;
+    toggleAnnotationsPanel() {
+      self.showAnnotationsPanel = !self.showAnnotationsPanel;
     },
 
     togglePredictionsPanel() {

@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import Registry from "../../core/Registry";
 
 /**
- * Style tag, add css styles right through the config
+ * Style tag, add CSS styles right through the labeling config.
  * @example
  * <View>
  *   <Style> .cls-name { background: red; }</Style>

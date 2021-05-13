@@ -8,9 +8,10 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
+import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
- * Audio tag plays a simple audio file
+ * Audio tag plays a simple audio file.
  * @example
  * <View>
  *   <Audio name="audio" value="$audio" />
@@ -31,9 +32,9 @@ import Waveform from "../../components/Waveform/Waveform";
  *   <TextArea name="ta" toName="audio" />
  * </View>
  * @name Audio
- * @param {string} name of the element
- * @param {string} value of the element
- * @param {string} hotkey hotkey used to play/pause audio
+ * @param {string} name Name of the element
+ * @param {string} value Value of the element
+ * @param {string} hotkey Hotkey used to play or pause audio
  */
 
 const TagAttrs = types.model({
@@ -50,21 +51,24 @@ const Model = types
     type: "audio",
     _value: types.optional(types.string, ""),
     playing: types.optional(types.boolean, false),
-    height: types.optional(types.number, 20),
+    height: types.optional(types.string, "20"),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
+  }))
+  .volatile(self => ({
+    errors: [],
   }))
   .actions(self => ({
     fromStateJSON(obj, fromModel) {
       if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if (obj.value.text) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
     },
 
@@ -73,11 +77,16 @@ const Model = types
     },
 
     onHotKey() {
-      return self._ws.playPause();
+      self._ws.playPause();
+      return false;
     },
 
     onLoad(ws) {
       self._ws = ws;
+    },
+
+    onError(error) {
+      self.errors = [error];
     },
 
     wsCreated(ws) {
@@ -92,11 +101,15 @@ const HtxAudioView = ({ store, item }) => {
 
   return (
     <ObjectTag item={item}>
+      {item.errors?.map(error => (
+        <ErrorMessage error={error} />
+      ))}
       <Waveform
         dataField={item.value}
         src={item._value}
         onCreate={item.wsCreated}
         onLoad={item.onLoad}
+        onError={item.onError}
         handlePlay={item.handlePlay}
         speed={item.speed}
         zoom={item.zoom}

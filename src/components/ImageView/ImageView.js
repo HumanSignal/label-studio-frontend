@@ -8,7 +8,7 @@ import ImageTransformer from "../ImageTransformer/ImageTransformer";
 import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
-import InfoModal from "../Infomodal/Infomodal";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 
 export default observer(
   class ImageView extends Component {
@@ -18,8 +18,8 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-
-      return item.event("click", e, e.evt.offsetX, e.evt.offsetY);
+      let evt = e.evt || e;
+      return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
     handleMouseDown = e => {
@@ -91,22 +91,21 @@ export default observer(
 
       item.freezeHistory();
 
-      const stage = item.stageRef;
-      const scale = stage.scaleX();
-
-      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && scale > 1) {
+      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
         e.evt.preventDefault();
-        const newPos = { x: stage.x() + e.evt.movementX, y: stage.y() + e.evt.movementY };
-        item.setZoom(scale, newPos.x, newPos.y);
-        stage.position(newPos);
-        stage.batchDraw();
+        const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
+        item.setZoomPosition(newPos.x, newPos.y);
       } else {
         return item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
       }
     };
 
     handleError = () => {
-      InfoModal.error(`Cannot load image (${this.props.item._value}).\nCheck console/network panel for more info.`);
+      const { item, store } = this.props;
+      const cs = store.annotationStore;
+      cs.addErrors([
+        errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
+      ]);
     };
 
     updateGridSize = range => {
@@ -131,63 +130,11 @@ export default observer(
          */
         e.evt.preventDefault();
       }
-
-      const { item } = this.props;
-      item.freezeHistory();
-
-      const stage = item.stageRef;
-      const scaleBy = parseFloat(item.zoomby);
-      const oldScale = stage.scaleX();
-
-      let mousePointTo;
-      let newScale;
-      let pos;
-      let newPos;
-
       if (e.evt) {
-        mousePointTo = {
-          x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-          y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
-        };
-
-        newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-        newPos = {
-          x: -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale,
-          y: -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale,
-        };
-      } else {
-        pos = {
-          x: stage.width() / 2,
-          y: stage.height() / 2,
-        };
-
-        mousePointTo = {
-          x: pos.x / oldScale - stage.x() / oldScale,
-          y: pos.y / oldScale - stage.y() / oldScale,
-        };
-
-        newScale = Math.max(0.05, oldScale * e);
-
-        newPos = {
-          x: -(mousePointTo.x - pos.x / newScale) * newScale,
-          y: -(mousePointTo.y - pos.y / newScale) * newScale,
-        };
+        const { item } = this.props;
+        const stage = item.stageRef;
+        item.handleZoom(e.evt.deltaY, stage.getPointerPosition());
       }
-
-      if (item.negativezoom !== true && newScale <= 1) {
-        item.setZoom(1, 0, 0);
-        stage.scale({ x: 1, y: 1 });
-        stage.position({ x: 0, y: 0 });
-        stage.batchDraw();
-        return;
-      }
-
-      stage.scale({ x: newScale, y: newScale });
-
-      item.setZoom(newScale, newPos.x, newPos.y);
-      stage.position(newPos);
-      stage.batchDraw();
     };
 
     renderRulers() {
@@ -240,9 +187,9 @@ export default observer(
 
     renderTools() {
       const { item, store } = this.props;
-      const cs = store.completionStore;
+      const cs = store.annotationStore;
 
-      if (cs.viewingAllCompletions || cs.viewingAllPredictions) return null;
+      if (cs.viewingAllAnnotations || cs.viewingAllPredictions) return null;
 
       return (
         <div className={styles.block}>
@@ -299,7 +246,7 @@ export default observer(
         imgTransform.push(`translate(${translate[item.rotation] || "0, 0"})`);
         if ([90, 270].includes(item.rotation)) {
           // we can not rotate img itself, so we change container's size via css margin hack, ...
-          const ratio = item.naturalHeight / item.naturalWidth;
+          const ratio = item.naturalWidth / item.naturalHeight;
           filler = <div className={styles.filler} style={{ marginTop: `${ratio * 100}%` }} />;
           containerClassName += " " + styles.rotated;
           // ... prepare image size for transform rotation and use position: absolute
@@ -349,13 +296,16 @@ export default observer(
               }}
               style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
               className={"image-element"}
-              width={item.stageWidth}
-              height={item.stageHeight}
-              scaleX={item.scale}
-              scaleY={item.scale}
+              width={item.stageComponentSize.width}
+              height={item.stageComponentSize.height}
+              scaleX={item.stageScale}
+              scaleY={item.stageScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               onClick={this.handleOnClick}
+              offsetX={item.stageTranslate.x}
+              offsetY={item.stageTranslate.y}
+              rotation={item.rotation}
               onMouseDown={this.handleMouseDown}
               onMouseMove={this.handleMouseMove}
               onMouseUp={this.handleMouseUp}

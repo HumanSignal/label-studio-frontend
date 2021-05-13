@@ -9,13 +9,13 @@ import DialogView from "../../components/Dialog/Dialog";
 import { stringToColor, convertToRGBA } from "../../utils/colors";
 
 /**
- * Dialog tag renders a dialog
+ * Dialog tag renders a dialog.
  * @example
  * <View>
  *  <Dialog name="dialog" value="$dialog"></Dialog>
  * <View>
- * @param {string} name name of the element
- * @param {object} value value of the element
+ * @param {string} name Name of the element
+ * @param {object} value Value of the element
  */
 const Replica = types.model({
   name: types.string,
@@ -34,11 +34,11 @@ function DialogActions(self) {
   return {
     fromStateJSON(obj) {
       if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if (obj.value.text) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
     },
   };
@@ -51,8 +51,8 @@ const Model = types
     data: types.map(Replica),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => DialogActions(self));

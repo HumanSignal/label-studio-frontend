@@ -81,7 +81,7 @@ const newResult = {
 
 Scenario("NER Text", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: results }],
+    annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
     data: { text },
   };
@@ -99,7 +99,7 @@ Scenario("NER Text", async function(I) {
   result = await I.executeScript(serialize);
   assert.deepEqual(result, results);
 
-  // Create a new completion to create the same result from scratch
+  // Create a new annotation to create the same result from scratch
   I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
 
   I.pressKey("2");
@@ -110,7 +110,7 @@ Scenario("NER Text", async function(I) {
   newResult.id = result[0].id;
   assert.deepEqual(result, [newResult]);
 
-  // delete this new completion
+  // delete this new annotation
   I.click(locate(".ant-btn").withChild("[aria-label=delete]"));
   I.click("Delete"); // approve
 
@@ -140,7 +140,7 @@ Scenario("NER Text", async function(I) {
 
 Scenario("NER Text with text field missing", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsWithoutText }],
+    annotations: [{ id: "TestCmpl", result: resultsWithoutText }],
     config: configSimple,
     data: { text },
   };
@@ -159,7 +159,7 @@ Scenario("NER Text with text field missing", async function(I) {
 // for security reasons text is not saved by default for valueType=url
 Scenario("NER Text from url", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsFromUrl }],
+    annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
     data: { url },
   };
@@ -178,7 +178,7 @@ Scenario("NER Text from url", async function(I) {
 
 Scenario("NER Text from url with text saved", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsFromUrlWithoutText }],
+    annotations: [{ id: "TestCmpl", result: resultsFromUrlWithoutText }],
     config: configUrlSaveText,
     data: { url },
   };
@@ -197,7 +197,7 @@ Scenario("NER Text from url with text saved", async function(I) {
 
 Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: results }],
+    annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
     data: { url },
   };
@@ -219,7 +219,7 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {
 
 Scenario("NER Text with SECURE MODE", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsFromUrl }],
+    annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
     data: { url },
   };

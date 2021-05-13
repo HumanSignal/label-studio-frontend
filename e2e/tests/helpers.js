@@ -3,24 +3,25 @@
  * @param {object} params
  * @param {string} params.config
  * @param {object} params.data object with property used in config
- * @param {object[]} params.completions
+ * @param {object[]} params.annotations
  * @param {object[]} params.predictions
  * @param {function} done
  */
-const initLabelStudio = async ({ config, data, completions = [{ result: [] }], predictions = [] }, done) => {
+const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
     "panel",
     "update",
+    "submit",
     "controls",
     "side-column",
-    "completions:menu",
-    "completions:add-new",
-    "completions:delete",
+    "annotations:menu",
+    "annotations:add-new",
+    "annotations:delete",
     "predictions:menu",
   ];
-  const task = { data, completions, predictions };
+  const task = { data, annotations, predictions };
   new window.LabelStudio("label-studio", { interfaces, config, task });
   done();
 };
@@ -143,7 +144,7 @@ const polygonKonva = async (points, done) => {
     const delay = () => new Promise(resolve => setTimeout(resolve, 10));
     const stage = window.Konva.stages[0];
     for (let point of points) {
-      stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
+      stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1], preventDefault: () => {} } });
       await delay();
     }
 
@@ -157,7 +158,7 @@ const polygonKonva = async (points, done) => {
     firstPoint.fire("mouseover");
     await delay();
     // and only after that we can click on it
-    firstPoint.fire("click");
+    firstPoint.fire("click", { evt: { preventDefault: () => {} } });
     done();
   } catch (e) {
     done(String(e));
@@ -189,7 +190,72 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
   done();
 };
 
-const serialize = () => window.Htx.completionStore.selected.serializeCompletion();
+/**
+ * Check if there is layer with given color at given coords
+ * @param {number} x
+ * @param {number} y
+ * @param {number[]} rgbArray
+ * @param {function} done
+ * @param {number} tolerance
+ */
+const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
+  const stage = window.Konva.stages[0];
+  const areEqualRGB = (a, b) => {
+    for (let i = 3; i--; ) {
+      if (Math.abs(a[i] - b[i]) > tolerance) {
+        return false;
+      }
+    }
+    return true;
+  };
+  for (let layer of stage.getLayers()) {
+    const rgba = layer.getContext().getImageData(x, y, 1, 1).data;
+    if (areEqualRGB(rgbArray, rgba)) {
+      done(true);
+      return;
+    }
+  }
+  done(false);
+  return;
+};
+const getCanvasSize = done => {
+  const stage = window.Konva.stages[0];
+  done({ width: Math.floor(stage.width()) - 1, height: Math.floor(stage.height()) - 1 });
+};
+const setZoom = (scale, x, y, done) => {
+  Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
+  setTimeout(() => {
+    done();
+  }, 30);
+};
+
+const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
+
+// Only for debugging
+const whereIsPixel = (rgbArray, tolerance, done) => {
+  const stage = window.Konva.stages[0];
+  const areEqualRGB = (a, b) => {
+    for (let i = 3; i--; ) {
+      if (Math.abs(a[i] - b[i]) > tolerance) {
+        return false;
+      }
+    }
+    return true;
+  };
+  let points = [];
+  for (let layer of stage.getLayers()) {
+    const canvas = layer.getCanvas();
+    for (let x = 0; x < canvas.width; x++) {
+      for (let y = 0; y < canvas.height; y++) {
+        const rgba = layer.getContext().getImageData(x, y, 1, 1).data;
+        if (areEqualRGB(rgbArray, rgba)) {
+          points.push([x, y]);
+        }
+      }
+    }
+  }
+  done(points);
+};
 
 module.exports = {
   initLabelStudio,
@@ -205,6 +271,10 @@ module.exports = {
   clickMultipleKonva,
   polygonKonva,
   dragKonva,
+  hasKonvaPixelColorAtPoint,
+  getCanvasSize,
+  setZoom,
+  whereIsPixel,
 
   serialize,
 };

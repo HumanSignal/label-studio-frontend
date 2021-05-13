@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import { CopyOutlined, EyeInvisibleOutlined, EyeOutlined, WindowsOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
-import styles from "../Completions/Completions.module.scss";
+import styles from "../Annotations/Annotations.module.scss";
 
 const Prediction = observer(({ item, store }) => {
   const toggleVisibility = e => {
@@ -29,9 +29,9 @@ const Prediction = observer(({ item, store }) => {
   return (
     <List.Item
       key={item.id}
-      className={item.selected ? `${styles.completion} ${styles.completion_selected}` : styles.completion}
+      className={item.selected ? `${styles.annotation} ${styles.annotation_selected}` : styles.annotation}
       onClick={ev => {
-        !item.selected && store.completionStore.selectPrediction(item.id);
+        !item.selected && store.annotationStore.selectPrediction(item.id);
       }}
       onMouseEnter={highlight}
       onMouseLeave={unhighlight}
@@ -44,19 +44,19 @@ const Prediction = observer(({ item, store }) => {
         </div>
         <div className={styles.buttons}>
           {item.selected && (
-            <Tooltip placement="topLeft" title="Add a new completion based on this prediction">
+            <Tooltip placement="topLeft" title="Add a new annotation based on this prediction">
               <Button
                 size="small"
                 onClick={ev => {
                   ev.preventDefault();
 
-                  const cs = store.completionStore;
+                  const cs = store.annotationStore;
                   const p = cs.selected;
-                  const c = cs.addCompletionFromPrediction(p);
+                  const c = cs.addAnnotationFromPrediction(p);
 
                   // this is here because otherwise React doesn't re-render the change in the tree
                   window.setTimeout(function() {
-                    store.completionStore.selectCompletion(c.id);
+                    store.annotationStore.selectAnnotation(c.id);
                   }, 50);
                 }}
               >
@@ -64,7 +64,7 @@ const Prediction = observer(({ item, store }) => {
               </Button>
             </Tooltip>
           )}
-          {store.completionStore.viewingAllCompletions && (
+          {store.annotationStore.viewingAllAnnotations && (
             <Button size="small" type="primary" ghost onClick={toggleVisibility}>
               {item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             </Button>
@@ -78,20 +78,20 @@ const Prediction = observer(({ item, store }) => {
 class Predictions extends Component {
   render() {
     const { store } = this.props;
-    const { predictions } = store.completionStore;
+    const { predictions } = store.annotationStore;
 
     let title = (
       <div className={styles.title + " " + styles.titlespace}>
         <h3>Predictions</h3>
         {/* @todo fix View All mode */}
-        {store.completionStore.predictions.length > 0 && false && (
+        {store.annotationStore.predictions.length > 0 && false && (
           <Tooltip placement="topLeft" title="View all predictions">
             <Button
               size="small"
-              type={store.completionStore.viewingAllPredictions ? "primary" : ""}
+              type={store.annotationStore.viewingAllPredictions ? "primary" : ""}
               onClick={ev => {
                 ev.preventDefault();
-                store.completionStore.toggleViewingAllPredictions();
+                store.annotationStore.toggleViewingAllPredictions();
               }}
             >
               <WindowsOutlined />
