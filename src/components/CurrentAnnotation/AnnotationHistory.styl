@@ -1,40 +1,46 @@
 .annotation-history
   margin 24px 0 8px
 
-  .history-item
-    cursor default
+  &__divider
+    height 1px
+    position relative
+    margin 14px 0
+    background-color rgba(#000, 0.1)
 
-    &__date
-      opacity 0.4
+    &::before
+      top 0
+      left 0
+      font-size 12px
+      color rgba(#000, 0.4)
+      padding-right 5px
+      position absolute
+      content attr(title)
+      transform translateY(-50%)
+      background-color #fff
 
-    &:not(:first-child)
-      margin-top 12px
+.history-item
+  cursor default
+  padding 6px 10px
+  margin 0 -10px
+  border-radius 5px
 
-    &:not(&_disabled)
-      cursor pointer
+  &__date
+    opacity 0.4
 
-    &:hover:not(&_disabled),
-    &_selected:not(&_disabled)
-      padding 6px 10px
-      margin -6px -10px
-      border-radius 5px
-      background-color #efefef
+  &:not(&_disabled)
+    cursor pointer
 
-      &:not(:first-child)
-        margin-top 6px
+  &:hover:not(&_disabled),
+  &_selected:not(&_disabled)
+    background-color #efefef
 
-    &_disabled
-      opacity 0.6
-      padding 6px 10px
-      margin -6px -10px
-      border-radius 5px
-      background-color #fcfcfc
+  &_disabled
+    opacity 0.6
+    border-radius 5px
+    background-color #fcfcfc
 
-      &:not(:first-child)
-        margin-top 6px
-
-    &__userpic
-      &_prediction
-        color #944BFF
-        background-color #E9DDF8
-        box-shadow inset 0px 0px 0px 1px rgba(148, 75, 255, 0.15)
+  &__userpic
+    &_prediction
+      color #944BFF
+      background-color #E9DDF8
+      box-shadow inset 0px 0px 0px 1px rgba(148, 75, 255, 0.15)

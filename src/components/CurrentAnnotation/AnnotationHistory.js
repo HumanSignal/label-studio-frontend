@@ -37,22 +37,26 @@ export const AnnotationHistory = injector(observer(({
         onClick={() => annotationStore.selectHistory(null)}
         selected={!isDefined(selectedHistory)}
       />
+      {history.length > 0 && (
+        <>
+          <Elem name="divider" title="Review history"/>
+          {history.map((annotation) => {
+            const {id, user, createdDate} = annotation;
 
-      {history.map((annotation) => {
-        const {id, user, createdDate} = annotation;
-
-        return (
-          <HistoryItem
-            key={`h-${id}`}
-            user={user}
-            date={createdDate}
-            acceptedState={annotation.acceptedState}
-            selected={selectedHistory?.id === annotation.id}
-            selectable={annotation.results.length}
-            onClick={() => annotationStore.selectHistory(annotation)}
-          />
-        );
-      })}
+            return (
+              <HistoryItem
+                key={`h-${id}`}
+                user={user}
+                date={createdDate}
+                acceptedState={annotation.acceptedState}
+                selected={selectedHistory?.id === annotation.id}
+                selectable={annotation.results.length}
+                onClick={() => annotationStore.selectHistory(annotation)}
+              />
+            );
+          })}
+        </>
+      )}
     </Block>
   );
 }));
