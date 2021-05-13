@@ -16,6 +16,7 @@ const RegionsMixin = types
   .volatile(self => ({
     // selected: false,
     highlighted: false,
+    isDrawing: false,
   }))
   .views(self => ({
     get perRegionStates() {
@@ -42,6 +43,10 @@ const RegionsMixin = types
   .actions(self => ({
     setParentID(id) {
       self.parentID = id;
+    },
+
+    setDrawing(val) {
+      self.isDrawing = val;
     },
 
     moveTop(size) {},
@@ -189,7 +194,7 @@ const RegionsMixin = types
 
     onClickRegion() {
       const annotation = self.annotation;
-      if (!annotation.editable) return;
+      if (!annotation.editable || self.isDrawing) return;
 
       if (annotation.relationMode) {
         annotation.addRelation(self);
