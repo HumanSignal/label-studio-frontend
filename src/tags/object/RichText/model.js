@@ -2,13 +2,12 @@ import React from "react";
 
 import RegionsMixin from "../../../mixins/Regions";
 import { types, getRoot, getType } from "mobx-state-tree";
-import { restoreNewsnapshot, guidGenerator, cloneNode } from "../../../core/Helpers";
+import { restoreNewsnapshot } from "../../../core/Helpers";
 import ObjectBase from "../Base";
 import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
 import { customTypes } from "../../../core/CustomTypes";
-import * as xpath from "xpath-range";
 import { parseValue } from "../../../utils/data";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
