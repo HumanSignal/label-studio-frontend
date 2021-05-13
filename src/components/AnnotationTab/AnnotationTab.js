@@ -8,6 +8,7 @@ export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
   const annotation = as.selectedHistory ?? as.selected;
   const node = annotation.highlightedNode;
+  const hasSegmentation = store.hasSegmentation;
 
   return (
     <>
@@ -22,13 +23,19 @@ export const AnnotationTab = observer(({ store }) => {
 
       {node ? (
         <Entity store={store} annotation={annotation} />
-      ) : (
-        <p style={{ marginTop: 12, marginBottom: 0, paddingInline: 15}}>Nothing selected</p>
+      ) : hasSegmentation ? (
+        <p style={{ marginTop: 12, marginBottom: 0, paddingInline: 15}}>
+          No Region selected
+        </p>
+      ) : null}
+
+      {hasSegmentation && (
+        <Entities store={store} regionStore={annotation.regionStore} />
       )}
 
-      <Entities store={store} regionStore={annotation.regionStore} />
-
-      <Relations store={store} item={annotation} />
+      {hasSegmentation && (
+        <Relations store={store} item={annotation} />
+      )}
     </>
   );
 });

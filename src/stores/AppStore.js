@@ -116,6 +116,11 @@ export default types
     get alert() {
       return getEnv(self).alert;
     },
+
+    get hasSegmentation() {
+      const match = Array.from(self.annotationStore.names.values()).map(({type}) => !!type.match(/labels/));
+      return match.find(v => v === true) ?? false;
+    },
   }))
   .actions(self => {
     /**
