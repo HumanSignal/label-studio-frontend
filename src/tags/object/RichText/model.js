@@ -4,12 +4,12 @@ import RegionsMixin from "../../../mixins/Regions";
 import { types, getRoot, getType } from "mobx-state-tree";
 import { restoreNewsnapshot, guidGenerator, cloneNode } from "../../../core/Helpers";
 import ObjectBase from "../Base";
-import { runTemplate } from "../../../core/Template";
 import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
 import { customTypes } from "../../../core/CustomTypes";
 import * as xpath from "xpath-range";
+import { parseValue } from "../../../utils/data";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -99,7 +99,7 @@ const Model = types
   }))
   .actions(self => ({
     async updateValue(store) {
-      const value = runTemplate(self.value, store.task.dataObj);
+      const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
         const url = value;
