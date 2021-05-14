@@ -195,6 +195,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         if (currentMode !== DRAG_MODE) return;
         endPoint = { x, y };
         if (!self.isDrawing) return;
+        self.draw(x, y);
         self.finishDrawing(x, y);
       },
 
