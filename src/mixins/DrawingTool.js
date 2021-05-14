@@ -139,6 +139,11 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
     };
     return {
       updateDraw: throttle(function(x, y) {
+        if (currentMode === DEFAULT_MODE) return;
+        self.draw(x, y);
+      }, 48), // 3 frames, optimized enough and not laggy yet
+
+      draw(x, y) {
         const shape = self.getCurrentArea();
         if (!shape) return;
         const { stageWidth, stageHeight } = self.obj;
@@ -151,7 +156,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         y2 = Math.min(stageHeight, y2);
 
         shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
-      }, 48), // 3 frames, optimized enough and not laggy yet
+      },
 
       finishDrawing(x, y) {
         Super.finishDrawing(x, y);
@@ -188,9 +193,9 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
 
       mouseupEv(ev, [x, y]) {
         if (currentMode !== DRAG_MODE) return;
+        endPoint = { x, y };
         if (!self.isDrawing) return;
         self.finishDrawing(x, y);
-        endPoint = { x, y };
       },
 
       clickEv(ev, [x, y]) {
@@ -199,7 +204,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         if (currentMode === DEFAULT_MODE) {
           modeAfterMouseMove = TWO_CLICKS_MODE;
         } else if (self.isDrawing && currentMode === TWO_CLICKS_MODE) {
-          self.updateDraw(x, y);
+          self.draw(x, y);
           self.finishDrawing(x, y);
           currentMode = DEFAULT_MODE;
         }
@@ -212,7 +217,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
           if (!self.isDrawing) return;
           x += self.defaultDimensions.width;
           y += self.defaultDimensions.height;
-          self.updateDraw(x, y);
+          self.draw(x, y);
           self.finishDrawing(x, y);
         }
       },
