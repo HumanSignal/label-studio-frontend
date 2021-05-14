@@ -45,7 +45,6 @@ const _Tool = types
     },
   }))
   .actions(self => {
-    let pathPoints;
     let brush;
     return {
       afterCreate() {
@@ -168,7 +167,7 @@ const _Tool = types
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
 
-          pathPoints = brush.beginPath({
+          brush.beginPath({
             type: "add",
             strokeWidth: self.strokeWidth || c.strokeWidth,
           });
@@ -183,7 +182,7 @@ const _Tool = types
               coordstype: "px",
             });
 
-            pathPoints = brush.beginPath({
+            brush.beginPath({
               type: "add",
               strokeWidth: self.strokeWidth || c.strokeWidth,
             });

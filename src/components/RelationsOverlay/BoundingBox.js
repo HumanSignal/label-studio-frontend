@@ -1,6 +1,5 @@
-import { flatten, wrapArray } from "../../utils/utilities";
+import { wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
-import { decode } from "@thi.ng/rle-pack";
 
 /**
  * @type {import("./Geometry").BBox}

@@ -34,7 +34,6 @@ const _Tool = types
     },
   }))
   .actions(self => {
-    let pathPoints;
     let brush;
     return {
       afterCreate() {
@@ -101,7 +100,7 @@ const _Tool = types
 
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
-          pathPoints = brush.beginPath({ type: "eraser", opacity: 1 });
+          brush.beginPath({ type: "eraser", opacity: 1 });
           self.addPoint(x, y);
         }
       },
