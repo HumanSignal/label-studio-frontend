@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { addDisposer, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { ScissorOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
@@ -8,7 +8,6 @@ import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
-import { reaction } from "mobx";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -36,26 +35,18 @@ const _Tool = types
   .actions(self => {
     let brush;
     return {
-      afterCreate() {
-        const dispose = reaction(
-          () => self.selected,
-          () => {
-            if (self.selected) {
-              this.updateCursor();
-            }
-          },
-        );
-
-        addDisposer(self, dispose);
-      },
-
       updateCursor() {
+        if (!self.selected) return;
         const val = 24;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
         const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
 
         stage.container().style.cursor = cursor.join("");
+      },
+
+      afterUpdateSelected() {
+        self.updateCursor();
       },
 
       addPoint(x, y) {

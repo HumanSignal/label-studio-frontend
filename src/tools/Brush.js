@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { addDisposer, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { HighlightOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
@@ -8,7 +8,6 @@ import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
-import { reaction } from "mobx";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -47,29 +46,6 @@ const _Tool = types
   .actions(self => {
     let brush;
     return {
-      afterCreate() {
-        addDisposer(
-          self,
-          reaction(
-            () => self.selected,
-            () => {
-              if (self.selected) {
-                this.updateCursor();
-              }
-            },
-          ),
-        );
-        addDisposer(
-          self,
-          reaction(
-            () => self.strokeWidth,
-            () => {
-              this.updateCursor();
-            },
-          ),
-        );
-      },
-
       fromStateJSON(json, controlTag) {
         const region = self.createFromJSON(json, controlTag);
 
@@ -116,6 +92,7 @@ const _Tool = types
       },
 
       updateCursor() {
+        if (!self.selected) return;
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
@@ -126,6 +103,11 @@ const _Tool = types
 
       setStroke(val) {
         self.strokeWidth = val;
+        self.updateCursor();
+      },
+
+      afterUpdateSelected() {
+        self.updateCursor();
       },
 
       addPoint(x, y) {
