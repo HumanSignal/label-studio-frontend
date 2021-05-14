@@ -229,6 +229,24 @@ const setZoom = (scale, x, y, done) => {
   }, 30);
 };
 
+/**
+ * Count shapes on Konva, founded by selector
+ * @param {string|function} selector from Konva's finding methods params
+ * @param {function} done
+ */
+const countKonvaShapes = async done => {
+  const stage = window.Konva.stages[0];
+  const count = stage.find(node => {
+    return node.getType() === "Shape" && node.isVisible();
+  }).length;
+  done(count);
+};
+
+const switchRegionTreeView = (viewName, done) => {
+  Htx.annotationStore.selected.regionStore.setView(viewName);
+  done();
+};
+
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 // Only for debugging
@@ -275,6 +293,8 @@ module.exports = {
   getCanvasSize,
   setZoom,
   whereIsPixel,
+  countKonvaShapes,
+  switchRegionTreeView,
 
   serialize,
 };

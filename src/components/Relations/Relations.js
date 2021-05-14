@@ -157,9 +157,9 @@ export default observer(({ store }) => {
             <Button
               size="small"
               type="link"
-              icon={relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              icon={!relationsUIVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => annotation.relationStore.toggleConnections()}
-              className={[relationsUIVisible ? styles.uihidden : styles.uivisible, globalStyles.link]}
+              className={[!relationsUIVisible ? styles.uihidden : styles.uivisible, globalStyles.link]}
             />
           </div>
         )}

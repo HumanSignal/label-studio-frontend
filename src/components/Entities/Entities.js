@@ -69,7 +69,7 @@ const RegionItem = observer(({ item, idx, flat }) => {
           type="text"
           icon={item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           onClick={item.toggleHidden}
-          className={item.hidden ? styles.hidden : styles.visible}
+          className={[styles.lstitem__actionIcon, item.hidden ? styles.hidden : styles.visible].join(" ")}
         />
       )}
 
@@ -87,19 +87,30 @@ const RegionItem = observer(({ item, idx, flat }) => {
   );
 });
 
-const LabelItem = observer(({ item, idx }) => {
+const LabelItem = observer(({ item, idx, regions, regionStore }) => {
   const bg = item.background;
   const labelStyle = {
     backgroundColor: bg,
     color: item.selectedcolor,
-    cursor: "pointer",
-    margin: "5px",
   };
-
+  const isHidden = Object.values(regions).reduce((acc, item) => acc && item.hidden, true);
   return (
-    <Tag style={labelStyle} size={item.size}>
-      {item._value}
-    </Tag>
+    <List.Item key={item.id} className={[styles.lstitem, styles.lstitem_label].join(" ")}>
+      <Tag style={labelStyle} className={styles.treetag} size={item.size}>
+        {item._value}
+      </Tag>
+      <div className={styles.lstitem__actions}>
+        <Button
+          size="small"
+          type="text"
+          icon={isHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          onClick={() => {
+            regionStore.setHiddenByLabel(!isHidden, item);
+          }}
+          className={[styles.lstitem__actionIcon, isHidden ? styles.uihidden : styles.uivisible].join(" ")}
+        />
+      </div>
+    </List.Item>
   );
 });
 
@@ -172,10 +183,15 @@ const SortMenu = observer(({ regionStore }) => {
 });
 
 const LabelsList = observer(({ regionStore }) => {
-  const treeData = regionStore.asLabelsTree((item, idx, isLabel) => {
+  const treeData = regionStore.asLabelsTree((item, idx, isLabel, children) => {
     return {
       key: item.id,
-      title: isLabel ? <LabelItem item={item} idx={idx} /> : <RegionItem item={item} idx={idx} />,
+      title: isLabel ? (
+        <LabelItem item={item} idx={idx} regions={children} regionStore={regionStore} />
+      ) : (
+        <RegionItem item={item} idx={idx} />
+      ),
+      className: isLabel ? styles.treelabel : null,
     };
   });
 
@@ -316,18 +332,16 @@ export default observer(({ store, regionStore }) => {
   const { classifications, regions } = regionStore;
   const count = regions.length + (regionStore.view === "regions" ? classifications.length : 0);
 
+  const toggleVisibility = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    regionStore.toggleVisibility();
+  };
+
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          paddingLeft: "4px",
-          paddingRight: "4px",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ flex: 1 }}>
+    <div className={styles.section}>
+      <div className={styles.header}>
+        <div className={styles.title}>
           {/* override LS styles' height */}
           <Divider dashed orientation="left" style={{ height: "auto" }}>
             <Dropdown overlay={<GroupMenu regionStore={regionStore} />} placement="bottomLeft">
@@ -338,6 +352,18 @@ export default observer(({ store, regionStore }) => {
             </Dropdown>
           </Divider>
         </div>
+        {regions.length > 0 ? (
+          <div>
+            <Button
+              size="small"
+              type="link"
+              className={regionStore.isAllHidden ? styles.uihidden : styles.uivisible}
+              onClick={toggleVisibility}
+            >
+              {regionStore.isAllHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            </Button>
+          </div>
+        ) : null}
         {count > 0 && regionStore.view === "regions" && (
           <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
             <span className={globalStyles.link} onClick={e => e.preventDefault()}>
