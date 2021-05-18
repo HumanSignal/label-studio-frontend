@@ -36,7 +36,6 @@ class ToolsManager {
       if (tool.setSelected) tool.setSelected(true);
     } else {
       if (tool.setSelected) tool.setSelected(false);
-      this.selectDefault();
     }
   }
 
