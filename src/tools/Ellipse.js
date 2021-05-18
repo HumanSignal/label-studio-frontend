@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { DrawingTool } from "../mixins/DrawingTool";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
   .model({
@@ -15,6 +16,12 @@ const _Tool = types
         stateTypes: "ellipselabels",
         controlTagTypes: ["ellipselabels", "ellipse"],
       };
+    },
+    get viewTooltip() {
+      return "Ellipse region";
+    },
+    get iconComponent() {
+      return NodeViews.EllipseRegionModel[1];
     },
   }))
   .actions(self => ({

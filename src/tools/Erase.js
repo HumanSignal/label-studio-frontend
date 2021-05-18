@@ -15,9 +15,7 @@ const ToolView = observer(({ item }) => {
       onClick={ev => {
         const sel = item.selected;
 
-        item.manager.unselectAll();
-
-        item.setSelected(!sel);
+        item.manager.selectTool(item, !sel);
 
         if (item.selected) {
           item.updateCursor();
@@ -70,6 +68,6 @@ const _Tool = types
     },
   }));
 
-const Erase = types.compose(ToolMixin, _Tool, BaseTool);
+const Erase = types.compose(ToolMixin, BaseTool, _Tool);
 
 export { Erase };

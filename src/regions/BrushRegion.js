@@ -12,6 +12,7 @@ import { ImageModel } from "../tags/object/Image";
 import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { defaultStyle } from "../core/Constants";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -209,14 +210,14 @@ const HtxBrushLayer = observer(({ item, points }) => {
           opacity: 1,
           globalCompositeOperation: "destination-out",
         };
-
+  const style = item.style || item.tag || defaultStyle;
   return (
     <Line
       onMouseDown={e => {
         e.cancelBubble = false;
       }}
       points={[...points.points]}
-      stroke={item.style.strokecolor}
+      stroke={style.strokecolor}
       strokeWidth={points.strokeWidth}
       lineJoin={"round"}
       lineCap="round"

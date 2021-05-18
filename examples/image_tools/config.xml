@@ -1,0 +1,8 @@
+<View>
+  <Image name="image" value="$image" />
+  <Rectangle name="rect" toName="image" />
+  <Ellipse name="ellipse" toName="image" />
+  <KeyPoint name="kp" toName="image" />
+  <Polygon name="polygon" toName="image" />
+  <Brush name="brush" toName="image" />
+</View>

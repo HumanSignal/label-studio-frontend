@@ -53,7 +53,7 @@ const Model = types
 
     opacity: 0.6,
 
-    fill: false,
+    fill: true,
     fillColor: "#ff8800", // Constants.FILL_COLOR,
     fillOpacity: 0.6,
 

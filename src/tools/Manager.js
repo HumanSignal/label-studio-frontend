@@ -13,8 +13,9 @@ class ToolsManager {
     this.tools[key] = tool;
     tool._manager = this;
 
-    if (tool.default) {
+    if (tool.default && !this._default_tool) {
       this._default_tool = tool;
+      if (tool.setSelected) tool.setSelected(true);
     }
   }
 
@@ -27,6 +28,23 @@ class ToolsManager {
 
     const stage = this.obj.stageRef;
     stage.container().style.cursor = "default";
+  }
+
+  selectTool(tool, value) {
+    if (value) {
+      this.unselectAll();
+      if (tool.setSelected) tool.setSelected(true);
+    } else {
+      if (tool.setSelected) tool.setSelected(false);
+      this.selectDefault();
+    }
+  }
+
+  selectDefault() {
+    if (this._default_tool) {
+      const tool = this._default_tool;
+      if (tool.setSelected) tool.setSelected(true);
+    }
   }
 
   allTools() {
@@ -55,12 +73,6 @@ class ToolsManager {
 
     if (selectedTool) {
       selectedTool.event(name, ev, args);
-      return;
-    }
-
-    // if there is a default tool then dispatch an event there
-    if (this._default_tool) {
-      this._default_tool.event(name, ev, args);
       return;
     }
   }

@@ -29,6 +29,7 @@ import { ImageMultilabel } from "../examples/image_multilabel"; // eslint-disabl
 import { ImageEllipselabels } from "../examples/image_ellipses"; // eslint-disable-line no-unused-vars
 import { ImagePolygons } from "../examples/image_polygons"; // eslint-disable-line no-unused-vars
 import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-disable-line no-unused-vars
+import { ImageTools } from "../examples/image_tools"; // eslint-disable-line no-unused-vars
 
 /**
  * HTML

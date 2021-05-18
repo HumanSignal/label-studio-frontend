@@ -15,9 +15,7 @@ const ToolView = observer(({ item }) => {
       icon={<HighlightOutlined />}
       onClick={ev => {
         const sel = item.selected;
-        item.manager.unselectAll();
-
-        item.setSelected(!sel);
+        item.manager.selectTool(item, !sel);
 
         if (item.selected) {
           item.updateCursor();
@@ -25,6 +23,7 @@ const ToolView = observer(({ item }) => {
       }}
       onChange={val => {
         item.setStroke(val);
+        item.manager.selectTool(item, true);
         item.updateCursor();
       }}
     />
@@ -122,7 +121,7 @@ const _Tool = types
       const c = self.control;
       const brush = self.getSelectedShape;
 
-      if (brush) {
+      if (brush && brush.type === "brushregion") {
         self.mode = "drawing";
 
         const p = brush.addTouch({
@@ -132,23 +131,22 @@ const _Tool = types
 
         p.addPoints(Math.floor(x), Math.floor(y));
       } else {
-        if (c.isSelected) {
-          self.mode = "drawing";
+        if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
+        self.mode = "drawing";
 
-          const brush = self.createRegion({
-            touches: [],
-            coordstype: "px",
-          });
+        const brush = self.createRegion({
+          touches: [],
+          coordstype: "px",
+        });
 
-          self.obj.annotation.selectArea(brush);
+        self.obj.annotation.selectArea(brush);
 
-          const p = brush.addTouch({
-            type: "add",
-            strokeWidth: self.strokeWidth || c.strokeWidth,
-          });
+        const p = brush.addTouch({
+          type: "add",
+          strokeWidth: self.strokeWidth || c.strokeWidth,
+        });
 
-          p.addPoints(Math.floor(x), Math.floor(y));
-        }
+        p.addPoints(Math.floor(x), Math.floor(y));
       }
     },
   }));

@@ -1,9 +1,9 @@
 import { types } from "mobx-state-tree";
-import React from "react";
 
 import BaseTool, { MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { DrawingTool } from "../mixins/DrawingTool";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
   .model({
@@ -17,9 +17,11 @@ const _Tool = types
         controlTagTypes: ["rectanglelabels", "rectangle"],
       };
     },
-    get viewClass() {
-      const onClick = e => self.setSelected(true);
-      return self.selected ? <b onClick={onClick}>R</b> : <div onClick={onClick}>R</div>;
+    get viewTooltip() {
+      return "Rectangle region";
+    },
+    get iconComponent() {
+      return NodeViews.RectRegionModel[1];
     },
   }))
   .actions(self => ({

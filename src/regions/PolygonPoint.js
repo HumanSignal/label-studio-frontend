@@ -5,6 +5,7 @@ import { types, getParent, hasParent } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
 import Types from "../core/Types";
+import { defaultStyle } from "../core/Constants";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -156,8 +157,8 @@ const PolygonPoint = types
 
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
-  const style = item.parent.style;
 
+  const style = item.parent.style || item.parent.tag || defaultStyle;
   const sizes = {
     small: 4,
     medium: 8,

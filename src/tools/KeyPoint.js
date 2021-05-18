@@ -2,6 +2,7 @@ import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
   .model({
@@ -13,6 +14,12 @@ const _Tool = types
         stateTypes: "keypointlabels",
         controlTagTypes: ["keypointlabels", "keypoint"],
       };
+    },
+    get viewTooltip() {
+      return "Key point region";
+    },
+    get iconComponent() {
+      return NodeViews.KeyPointRegionModel[1];
     },
   }))
   .actions(self => ({

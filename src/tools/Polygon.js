@@ -2,6 +2,7 @@ import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
   .model({
@@ -24,6 +25,13 @@ const _Tool = types
         stateTypes: "polygonlabels",
         controlTagTypes: ["polygonlabels", "polygon"],
       };
+    },
+
+    get viewTooltip() {
+      return "Polygon region";
+    },
+    get iconComponent() {
+      return NodeViews.PolygonRegionModel[1];
     },
 
     moreRegionParams(obj) {
