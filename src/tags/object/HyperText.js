@@ -27,7 +27,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {yes|no} [saveTextResult]    - Whether or not to store labeled text along with the results. By default doesn't store text for `valueType=url`
  * @param {boolean} [showLabels=false] - Whether to show labels next to the region
  * @param {none|base64|base64unicode} [encoding]  - How to decode values from encoded strings
- * @param {boolean} [clickableLinks=false] - Whether to allow opening resources from links in the hypertext markup. 
+ * @param {boolean} [clickableLinks=false] - Whether to allow opening resources from links in the hypertext markup.
  */
 const TagAttrs = types.model("HyperTextModel", {
   // opional for cases with inline html: <HyperText><hr/></HyperText>

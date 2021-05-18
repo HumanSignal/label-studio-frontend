@@ -11,7 +11,7 @@ import Waveform from "../../components/Waveform/Waveform";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 
 /**
- * Audio tag plays a simple audio file. 
+ * Audio tag plays a simple audio file.
  * @example
  * <View>
  *   <Audio name="audio" value="$audio" />

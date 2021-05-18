@@ -89,7 +89,11 @@ class App extends Component {
     return (
       <>
         {!cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
-          <Segment annotation={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
+          <Segment
+            key={cs.selected?.id}
+            annotation={cs.selected}
+            className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}
+          >
             <div style={{ position: "relative" }}>
               {Tree.renderItem(root)}
               {this.renderRelations(cs.selected)}
