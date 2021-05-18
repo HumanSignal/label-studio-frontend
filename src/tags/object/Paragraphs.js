@@ -358,9 +358,7 @@ class HtxParagraphsView extends Component {
     });
 
     var i,
-      self = this,
       ranges = [],
-      rangesToIgnore = [],
       selection = window.getSelection();
 
     if (selection.isCollapsed) {

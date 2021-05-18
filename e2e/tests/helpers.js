@@ -1,3 +1,5 @@
+/* global Htx */
+
 /**
  * Load custom example
  * @param {object} params
@@ -231,6 +233,51 @@ const setZoom = (scale, x, y, done) => {
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
+const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
+  const findOnPosition = (root, position, byNode = false) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+
+    let lastPosition = position;
+    let currentNode = walker.nextNode();
+
+    while (currentNode) {
+      if (currentNode.nodeType === Node.TEXT_NODE || currentNode.nodeName === "BR") {
+        let length = byNode ? 1 : currentNode.length;
+
+        if (length === undefined || length === null) {
+          length = 1;
+        }
+
+        if (length >= lastPosition) {
+          return { node: currentNode, position: lastPosition };
+        } else {
+          lastPosition -= length;
+        }
+      }
+
+      currentNode = walker.nextNode();
+    }
+  };
+
+  const elem = document.querySelector(selector);
+
+  const start = findOnPosition(elem, rangeStart);
+  const end = findOnPosition(elem, rangeEnd);
+
+  const range = new Range();
+  range.setStart(start.node, start.position);
+  range.setEnd(end.node, end.position);
+
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+
+  const evt = new MouseEvent("mouseup");
+  evt.initMouseEvent("mouseup", true, true);
+  elem.dispatchEvent(evt);
+
+  done();
+};
+
 // Only for debugging
 const whereIsPixel = (rgbArray, tolerance, done) => {
   const stage = window.Konva.stages[0];
@@ -277,4 +324,5 @@ module.exports = {
   whereIsPixel,
 
   serialize,
+  selectText,
 };

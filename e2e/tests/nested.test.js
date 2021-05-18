@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { initLabelStudio, serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
@@ -117,7 +117,11 @@ Scenario("check good nested Choice for Text", async function(I) {
   const personTag = locate(".ant-tag").withText("Person");
   I.seeElement(personTag);
   I.click(personTag);
-  I.doubleClick(".htx-richtext");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 51,
+    rangeEnd: 55,
+  });
   I.see("Regions (1)");
   I.dontSee("Female");
 

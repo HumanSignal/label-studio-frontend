@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { Badge } from "antd";
 import { getType, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";

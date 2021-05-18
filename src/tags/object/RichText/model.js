@@ -76,16 +76,16 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
-      return self.completion.regionStore.regions.filter(r => r.object === self);
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
@@ -136,10 +136,10 @@ const Model = types
 
       self._value = val;
 
-      self._regionsCache.forEach(({ region, completion }) => {
+      self._regionsCache.forEach(({ region, annotation }) => {
         region.setText(self._value.substring(region.startOffset, region.endOffset));
         self.regions.push(region);
-        completion.addRegion(region);
+        annotation.addRegion(region);
       });
 
       self._regionsCache = [];
@@ -164,12 +164,12 @@ const Model = types
       });
 
       if (self.valuetype === "url" && self.loaded === false) {
-        self._regionsCache.push({ region, completion: self.completion });
+        self._regionsCache.push({ region, annotation: self.annotation });
         return;
       }
 
       self.regions.push(region);
-      self.completion.addRegion(region);
+      self.annotation.addRegion(region);
 
       region.applyHighlight();
 
@@ -182,7 +182,7 @@ const Model = types
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.completion.createResult(range, labels, control, self);
+      const area = self.annotation.createResult(range, labels, control, self);
       area._range = range._range;
 
       if (range.isText) {
@@ -202,13 +202,12 @@ const Model = types
 
     fromStateJSON(obj, fromModel) {
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
         return;
       }
 
       const tree = self._objectFromJSON(obj, fromModel);
 
-      console.log({ tree });
       self.createRegion(tree);
     },
 

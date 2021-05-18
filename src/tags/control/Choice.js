@@ -53,7 +53,6 @@ const Model = types
     },
 
     get isSelect() {
-      console.log(self.parent.layout);
       return self.parent.layout === "select";
     },
 

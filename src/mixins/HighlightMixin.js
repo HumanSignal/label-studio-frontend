@@ -14,14 +14,14 @@ export const HighlightMixin = types
     applyHighlight() {
       // Avoid calling this method twice
       if (self._hasSpans()) {
-        console.log("Spans already created");
+        console.warn("Spans already created");
         return;
       }
 
       const range = self._getRange();
       // Avoid rendering before view is ready
       if (!range) {
-        console.log("No range found to highlight");
+        console.warn("No range found to highlight");
         return;
       }
 
@@ -61,8 +61,8 @@ export const HighlightMixin = types
      * Make current region selected
      */
     selectRegion() {
-      self.completion.setHighlightedNode(self);
-      self.completion.loadRegionState(self);
+      self.annotation.setHighlightedNode(self);
+      self.annotation.loadRegionState(self);
 
       self.addClass(self._stylesheet.state.active);
 

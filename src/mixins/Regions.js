@@ -162,7 +162,6 @@ const RegionsMixin = types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectRegion(tryToKeepStates = false) {
-      console.log("UNSELECT REGION", "you should not be here");
       if (1) return;
       const annotation = self.annotation;
       const parent = self.parent;

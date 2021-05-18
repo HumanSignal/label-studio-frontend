@@ -1,6 +1,6 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario, locate, pause */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { initLabelStudio, serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
@@ -57,7 +57,7 @@ const results = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
-    value: { start: 43, end: 48, labels: ["Person"], text: "Alice" },
+    value: { start: 233, end: 237, labels: ["Person"], text: "Alice" },
   },
   {
     id: "qwerty",
@@ -103,7 +103,11 @@ Scenario("NER Text", async function(I) {
   I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
 
   I.pressKey("2");
-  I.doubleClick(".htx-text");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 233,
+    rangeEnd: 237,
+  });
   result = await I.executeScript(serialize);
 
   // id is auto-generated, so use already assigned
@@ -115,27 +119,34 @@ Scenario("NER Text", async function(I) {
   I.click("Delete"); // approve
 
   I.pressKey("1");
-  I.doubleClick(".htx-text");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 233,
+    rangeEnd: 237,
+  });
   result = await I.executeScript(serialize);
   newResult.id = result[2].id;
   newResult.value.labels = ["Person"];
   assert.deepEqual(result, [...results, newResult]);
 
   // @todo this hotkey doesn't work. why?
-  // I.pressKey('r')
+  // I.pressKey('R')
+  I.wait(5);
   I.click(locate("li").withText("Alice"));
   I.click("Create Relation");
+  I.click(locate(".htx-highlight").withText("come"));
+  I.wait(1);
   I.click(locate(".htx-highlight").withText("come"));
 
   I.see("Relations (1)");
 
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 4);
+  assert.strictEqual(result.length, 4);
   assert.deepEqual(result[0].value, results[0].value);
   assert.deepEqual(result[1].value, results[1].value);
-  assert.equal(result[3].type, "relation");
-  assert.equal(result[3].from_id, result[0].id);
-  assert.equal(result[3].to_id, result[2].id);
+  assert.strictEqual(result[3].type, "relation");
+  assert.strictEqual(result[3].from_id, result[0].id);
+  assert.strictEqual(result[3].to_id, result[2].id);
 });
 
 Scenario("NER Text with text field missing", async function(I) {
@@ -173,7 +184,7 @@ Scenario("NER Text from url", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepEqual(result, resultsFromUrlWithoutText);
+  assert.deepEqual(result, results);
 });
 
 Scenario("NER Text from url with text saved", async function(I) {

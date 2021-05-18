@@ -4,7 +4,6 @@ import * as xpath from "xpath-range";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import WithStatesMixin from "../mixins/WithStates";
-import { guidGenerator } from "../core/Helpers";
 import { RichTextModel } from "../tags/object/RichText/model";
 
 import { HighlightMixin } from "../mixins/HighlightMixin";
@@ -21,7 +20,7 @@ const Model = types
     endOffset: types.integer,
     start: types.string,
     end: types.string,
-    text: types.string,
+    text: types.maybeNull(types.string),
     isText: types.optional(types.boolean, false),
   })
   .views(self => ({

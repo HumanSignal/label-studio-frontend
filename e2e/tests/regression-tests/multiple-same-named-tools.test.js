@@ -1,3 +1,5 @@
+/* global Scenario, Feature, locate */
+
 const { initLabelStudio, dragKonva, waitForImage, serialize } = require("../helpers");
 const assert = require("assert");
 
@@ -26,7 +28,7 @@ Scenario("Two RectangleLabels", async I => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 
-  I.waitForVisible("canvas", 3);
+  I.waitForVisible("canvas", 5);
   I.executeAsyncScript(waitForImage);
 
   I.click(locate(".ant-tag").withText("Plane"));

@@ -72,7 +72,7 @@ class RichTextPieceView extends Component {
 
     if (!region) return;
 
-    if (region.completion.relationMode) {
+    if (region.annotation.relationMode) {
       region.setHighlight(true);
     }
   };

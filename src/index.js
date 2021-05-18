@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import ReactDOM, { unmountComponentAtNode } from "react-dom";
 
 import "./assets/styles/global.scss";
 import App from "./components/App/App";
@@ -30,7 +30,9 @@ if (process.env.NODE_ENV === "production") {
      */
     app.initializeStore(environment.getState(params.task));
 
-    ReactDOM.render(<App store={app} />, environment.rootElement(element));
+    const rootNode = environment.rootElement(element);
+    unmountComponentAtNode(rootNode);
+    ReactDOM.render(<App store={app} />, rootNode);
 
     window.Htx = app;
     return app;
@@ -56,7 +58,9 @@ if (process.env.NODE_ENV === "production") {
         app.initializeStore(params);
         window.Htx = app;
 
-        ReactDOM.render(<App store={app} />, environment.rootElement(element));
+        const rootNode = environment.rootElement(element);
+        unmountComponentAtNode(rootNode);
+        ReactDOM.render(<App store={app} />, rootNode);
       });
     } else {
       // this is static initialization from the index.html file
@@ -73,7 +77,9 @@ if (process.env.NODE_ENV === "production") {
       app.initializeStore(params.task);
       window.Htx = app;
 
-      ReactDOM.render(<App store={app} />, environment.rootElement(element));
+      const rootNode = environment.rootElement(element);
+      unmountComponentAtNode(rootNode);
+      ReactDOM.render(<App store={app} />, rootNode);
 
       return app;
     }
