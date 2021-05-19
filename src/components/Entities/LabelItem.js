@@ -1,4 +1,4 @@
-import { List, Space, Tag } from "antd";
+import { List, Tag } from "antd";
 import { observer } from "mobx-react";
 import { Button } from "../../common/Button/Button";
 import {
@@ -6,6 +6,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import { Block, Elem } from "../../utils/bem";
+import { Space } from "../../common/Space/Space";
 
 export const LabelItem = observer(({ item, regions, regionStore }) => {
   const bg = item.background;

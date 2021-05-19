@@ -49,7 +49,7 @@ export default observer(({ regionStore }) => {
         <Space spread>
           <Elem name="title">
             {regionStore.view === "regions"
-              ? `${count} Region${count > 1 ? "s" : ""}`
+              ? `${count} Region${(count === 0 || count > 1) ? "s" : ""}`
               : regionStore.view === "labels"
                 ? "Labels"
                 : null}
