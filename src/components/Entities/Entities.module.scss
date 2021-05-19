@@ -1,6 +1,31 @@
+.section {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 4px;
+    padding-right: 4px;
+    align-items: center;
+  }
+  .title {
+    flex: 1;
+  }
+}
+
 .treelabels {
   max-height: 350px;
   overflow-y: auto;
+}
+
+.treelabel :global(.ant-tree-node-content-wrapper) {
+  cursor: default;
+}
+
+.treetag {
+  margin: "5px";
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .item {
@@ -60,10 +85,36 @@
       font-weight: 500;
     }
   }
+
+  &_label {
+    justify-content: space-between;
+  }
+
+  &__actions {
+    flex: 0 0 auto;
+
+    & [role="img"] {
+      margin: 0;
+    }
+  }
+
+  &__actionIcon {
+    flex: 0 0 auto;
+    text-align: center;
+    justify-content: center;
+  }
 }
 
 .list .lstitem {
   border-bottom: none;
+}
+
+.uihidden {
+  opacity: 0.5;
+}
+
+.uivisible {
+  opacity: 1;
 }
 
 .ant-tree-switcher {

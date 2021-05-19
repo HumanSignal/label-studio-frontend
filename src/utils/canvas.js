@@ -1,7 +1,7 @@
 import { encode, decode } from "@thi.ng/rle-pack";
 
 import * as Colors from "./colors";
-import { Stage } from "react-konva";
+import { colorToRGBAArray } from "./colors";
 import React from "react";
 
 // given the imageData object returns the DOM Image with loaded data
@@ -18,7 +18,7 @@ function imageData2Image(imagedata) {
 }
 
 // given the RLE array returns the DOM Image element with loaded image
-function RLE2Region(rle, image) {
+function RLE2Region(rle, image, { color }) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
@@ -29,7 +29,14 @@ function RLE2Region(rle, image) {
 
   const newdata = ctx.createImageData(nw, nh);
   newdata.data.set(decode(rle));
-
+  const rgb = colorToRGBAArray(color);
+  for (let i = newdata.data.length / 4; i--; ) {
+    if (newdata.data[i * 4 + 3]) {
+      newdata.data[i * 4] = rgb[0];
+      newdata.data[i * 4 + 1] = rgb[1];
+      newdata.data[i * 4 + 2] = rgb[2];
+    }
+  }
   ctx.putImageData(newdata, 0, 0);
 
   var new_image = new Image();
@@ -38,7 +45,7 @@ function RLE2Region(rle, image) {
 }
 
 // given the brush region return the RLE encoded array
-function Region2RLE(region, image, lineOpts) {
+function Region2RLE(region, image) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
   const stage = region.object?.stageRef;
@@ -82,6 +89,9 @@ function Region2RLE(region, image, lineOpts) {
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
+  for (let i = data.data.length / 4; i--; ) {
+    data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
+  }
   layer.find(".region-label").show();
   stage
     .setWidth(width)

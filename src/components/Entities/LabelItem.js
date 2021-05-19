@@ -1,7 +1,13 @@
-import { Tag } from "antd";
+import { List, Space, Tag } from "antd";
 import { observer } from "mobx-react";
+import { Button } from "../../common/Button/Button";
+import {
+  EyeInvisibleOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
+import { Block, Elem } from "../../utils/bem";
 
-export const LabelItem = observer(({ item }) => {
+export const LabelItem = observer(({ item, regions, regionStore }) => {
   const bg = item.background;
   const labelStyle = {
     backgroundColor: bg,
@@ -10,9 +16,25 @@ export const LabelItem = observer(({ item }) => {
     margin: "5px",
   };
 
+  const isHidden = Object.values(regions).reduce((acc, item) => acc && item.hidden, true);
+
   return (
-    <Tag style={labelStyle} color={item.selectedcolor} size={item.size}>
-      {item._value}
-    </Tag>
+    <Block name="list-item" tag={List.Item} key={item.id}>
+      <Space spread>
+        <Tag style={labelStyle} size={item.size}>
+          {item._value}
+        </Tag>
+
+        <Elem
+          name="visibility"
+          tag={Button}
+          size="small"
+          type="text"
+          icon={isHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          onClick={() => regionStore.setHiddenByLabel(!isHidden, item)}
+          mod={{hidden: isHidden}}
+        />
+      </Space>
+    </Block>
   );
 });

@@ -13,10 +13,22 @@ import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import "./Entities.styl";
+import { Button } from "../../common/Button/Button";
+
+import {
+  EyeInvisibleOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 
 export default observer(({ regionStore }) => {
   const { classifications, regions } = regionStore;
   const count = regions.length + (regionStore.view === "regions" ? classifications.length : 0);
+
+  const toggleVisibility = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    regionStore.toggleVisibility();
+  };
 
   return (
     <Block name="entities">
@@ -43,13 +55,27 @@ export default observer(({ regionStore }) => {
                 : null}
           </Elem>
 
-          {regionStore.view === "regions" && count > 0 && (
-            <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
-              <Elem name="sort" onClick={e => e.preventDefault()}>
-                <SortAscendingOutlined /> Sort
-              </Elem>
-            </Dropdown>
-          )}
+          <Space size="small" align="end">
+            {regions.length > 0 ? (
+              <Elem
+                name="visibility"
+                tag={Button}
+                size="small"
+                type="link"
+                onClick={toggleVisibility}
+                mod={{hidden: regionStore.isAllHidden}}
+                icon={regionStore.isAllHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              />
+            ) : null}
+
+            {regionStore.view === "regions" && count > 0 && (
+              <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
+                <Elem name="sort" onClick={e => e.preventDefault()}>
+                  <SortAscendingOutlined /> Sort
+                </Elem>
+              </Dropdown>
+            )}
+          </Space>
         </Space>
       </Elem>
 

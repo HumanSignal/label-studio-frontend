@@ -6,10 +6,14 @@ import { RegionItem } from "./RegionItem";
 import { observer } from "mobx-react";
 
 export const LabelList = observer(({ regionStore }) => {
-  const treeData = regionStore.asLabelsTree((item, idx, isLabel) => {
+  const treeData = regionStore.asLabelsTree((item, idx, isLabel, children) => {
     return {
       key: item.id,
-      title: isLabel ? <LabelItem item={item} idx={idx} /> : <RegionItem item={item} idx={idx} />,
+      title: isLabel ? (
+        <LabelItem item={item} idx={idx} regions={children} regionStore={regionStore} />
+      ) : (
+        <RegionItem item={item} idx={idx} />
+      ),
     };
   });
 

@@ -249,14 +249,16 @@ function treeToModel(html) {
  * @param {*} el
  */
 function renderItem(el) {
-  const typeName = getType(el).name;
+  const type = getType(el);
+  const identifierAttribute = type.identifierAttribute;
+  const typeName = type.name;
   const View = Registry.getViewByModel(typeName);
 
   if (!View) {
     throw new Error(`No view for model: ${typeName}`);
   }
-
-  return <View key={guidGenerator()} item={el} />;
+  const key = el[identifierAttribute] || guidGenerator();
+  return <View key={key} item={el} />;
 }
 
 /**

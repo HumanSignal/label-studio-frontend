@@ -55,7 +55,10 @@ const ToolMixin = types
   .actions(self => ({
     setSelected(val) {
       self.selected = val;
+      self.afterUpdateSelected();
     },
+
+    afterUpdateSelected() {},
 
     event(name, ev, args) {
       const fn = name + "Ev";

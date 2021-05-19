@@ -242,6 +242,50 @@ export class Geometry {
   }
 
   /**
+   * Calculate BBox of Brush region from image data
+   * @param {Uint8ClampedArray} imageData Array containing the data in the RGBA order
+   * @param {Number} width
+   * @param {Number} height
+   * @return {BBox}
+   */
+  static getImageDataBBox(imageData, w, h) {
+    if (imageData.length !== w * h * 4) return null;
+    let min = { x: w, y: h },
+      max = { x: 0, y: 0 };
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let alphaIndex = 4 * (y * w + x) + 3;
+        if (imageData[alphaIndex]) {
+          if (min.x > x) min.x = x;
+          if (min.y > y) min.y = y;
+          if (max.x < x) max.x = x;
+          if (max.y < y) max.y = y;
+        }
+      }
+    }
+    return { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y };
+  }
+  /**
+   * Combine two or more BBoxes into one
+   * @param {...BBox} bboxes Bboxes to merge
+   * @return {BBox}
+   */
+  static combineBBoxes(...bboxes) {
+    const [x1, y1, x2, y2] = this.getPointsBBox(
+      bboxes.reduce((points, bbox) => {
+        if (bbox && bbox.x && bbox.y) {
+          points.push(bbox.x);
+          points.push(bbox.y);
+          points.push(bbox.x + bbox.width);
+          points.push(bbox.y + bbox.height);
+        }
+        return points;
+      }, []),
+    );
+    return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+  }
+
+  /**
    * Get BBox of any DOM node
    * @param {HTMLElement} domNode
    * @param {boolean} single Should return all possible BBoxes or not

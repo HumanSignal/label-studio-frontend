@@ -126,6 +126,15 @@ export const isDefined = value => {
   return value !== null && value !== undefined;
 };
 
+export function findClosestParent(el, predicate = () => true, parentGetter = el => el.parent) {
+  while ((el = parentGetter(el))) {
+    if (predicate(el)) {
+      return el;
+    }
+  }
+  return null;
+}
+
 export function clamp(x, min, max) {
   return Math.min(max, Math.max(min, x));
 }
