@@ -23,14 +23,14 @@ const getConfigWithShapes = (shapes, props = "") => `
    <View>
     <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
     ${shapes
-      .map(
-        shape => `
+    .map(
+      shape => `
     <${shape}Labels ${props} name="${shape}" toName="img">
       <Label value="${shape}" background="${BLUEVIOLET.color}"></Label>
     </${shape}Labels>
     `,
-      )
-      .join("")}
+    )
+    .join("")}
   </View>`;
 
 const createShape = {
@@ -175,7 +175,7 @@ Scenario("Creating regions by various gestures", async function(I, AtImageView) 
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
   I.waitForVisible("canvas");
-  I.see("Regions (0)");
+  I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   const convertToImageSize = getSizeConvertor(canvasSize.width, canvasSize.height);
   const cellSize = { width: 100, height: 100 };
