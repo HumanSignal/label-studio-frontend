@@ -5,4 +5,12 @@
   <KeyPoint name="kp" toName="image" />
   <Polygon name="polygon" toName="image" />
   <Brush name="brush" toName="image" />
+  <Labels name="labels" toName="image" fillOpacity="0.5" strokeWidth="5">
+    <Label value="Planet" background="green"></Label>
+    <Label value="Moonwalker" background="blue"></Label>
+  </Labels>
+  <RectangleLabels name="rectangle-labels" toName="image" fillOpacity="0.5" strokeWidth="5">
+    <Label value="Planet" background="red"></Label>
+    <Label value="Moonwalker" background="purple"></Label>
+  </RectangleLabels>
 </View>
