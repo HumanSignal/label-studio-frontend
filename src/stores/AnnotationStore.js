@@ -554,11 +554,45 @@ const Annotation = types
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      json.forEach(obj => {
+      return json.filter(obj => {
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
+
+        // Clear non-existent labels
+        const areReferredTagsExistent = self.names.has(obj.from_name) && self.names.has(obj.to_name);
+        if (obj.type.endsWith("labels")) {
+          const keys = Object.keys(obj.value);
+          for (const key of keys) {
+            if (key.endsWith("labels")) {
+              if (self.names.has(obj.from_name)) {
+                const labelsContainer = self.names.get(obj.from_name);
+                const value = obj.value[key];
+                if (value && value.length) {
+                  obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                }
+              }
+              if (!self.names.has(obj.from_name) || !obj.value[key].length) {
+                delete obj.value[key];
+                if (self.names.has(obj.to_name)) {
+                  // Redirect references to existent tool
+                  const targetObject = self.names.get(obj.to_name);
+                  const states = targetObject.states();
+                  if (states?.length) {
+                    const fixedType = obj.type.replace(/labels$/, "");
+                    const state = states.find(state => state.type === fixedType);
+                    if (state) {
+                      obj.type = fixedType;
+                      obj.from_name = state.name;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        return self.names.has(obj.from_name) && self.names.has(obj.to_name);
       });
-      return json;
     },
 
     /**
@@ -817,7 +851,6 @@ export default types
         pk: pk && String(pk),
         root: self.root,
       };
-
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
 
       //
