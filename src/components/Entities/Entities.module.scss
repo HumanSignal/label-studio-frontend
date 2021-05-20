@@ -12,7 +12,6 @@
 }
 
 .treelabels {
-  border: 1px solid #d9d9d9;
   max-height: 350px;
   overflow-y: auto;
 }
@@ -46,19 +45,11 @@
   display: flex;
   flex-wrap: nowrap;
   position: relative;
-  padding: 6px 0 6px 6px;
+  padding: 0;
 
   & > *:not(:last-child),
   & [role="img"] {
     margin-right: 6px;
-  }
-
-  &:hover {
-    background: #f5f5f5;
-
-    .node {
-      color: #1890ff;
-    }
   }
 
   &.flat {
@@ -80,8 +71,19 @@
     }
   }
 
+  &:hover,
   &.selected {
-    background: #bae7ff;
+    background-color: rgba(#000, 0.05);
+
+    .node {
+      color: #000;
+    }
+  }
+
+  &.selected {
+    .node {
+      font-weight: 500;
+    }
   }
 
   &_label {

@@ -9,6 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Audio tag plays a simple audio file.
@@ -53,11 +54,6 @@ const Model = types
     playing: types.optional(types.boolean, false),
     height: types.optional(types.string, "20"),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .volatile(self => ({
     errors: [],
   }))
@@ -94,15 +90,15 @@ const Model = types
     },
   }));
 
-const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase);
+const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
 
   return (
     <ObjectTag item={item}>
-      {item.errors?.map(error => (
-        <ErrorMessage error={error} />
+      {item.errors?.map((error, i) => (
+        <ErrorMessage key={`err-${i}`} error={error} />
       ))}
       <Waveform
         dataField={item.value}

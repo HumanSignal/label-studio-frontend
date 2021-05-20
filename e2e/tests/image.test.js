@@ -69,7 +69,7 @@ Scenario("Check Rect region for Image", async function(I) {
 
   I.waitForVisible("canvas", 3);
   I.executeAsyncScript(waitForImage);
-  I.see("Regions (1)");
+  I.see("1 Region");
   // select first and only region
   I.click(locate("li").withText("Rectangle"));
   I.see("Labels:");
@@ -92,7 +92,7 @@ Scenario("Image with perRegion tags", async function(I) {
 
   I.waitForVisible("canvas", 3);
   I.executeAsyncScript(waitForImage);
-  I.see("Regions (1)");
+  I.see("1 Region");
   // select first and only region
   I.click(locate("li").withText("Rectangle"));
   I.see("Labels:");
@@ -111,11 +111,11 @@ Scenario("Image with perRegion tags", async function(I) {
 
   // serialize with two textarea regions
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 2);
-  assert.equal(result[0].id, "Dx_aB91ISN");
-  assert.equal(result[1].id, "Dx_aB91ISN");
-  assert.deepEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
-  assert.deepEqual(result[1].value.text, ["blah", "another"]);
+  assert.strictEqual(result.length, 2);
+  assert.strictEqual(result[0].id, "Dx_aB91ISN");
+  assert.strictEqual(result[1].id, "Dx_aB91ISN");
+  assert.deepStrictEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
+  assert.deepStrictEqual(result[1].value.text, ["blah", "another"]);
 
   // delete first deserialized text and check that only "another" left
   I.click(locate("[aria-label=delete]").inside('[data-testid="textarea-region"]'));
@@ -123,9 +123,9 @@ Scenario("Image with perRegion tags", async function(I) {
   I.seeElement(locate("mark").withText("another"));
 
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 2);
-  assert.deepEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
-  assert.deepEqual(result[1].value.text, ["another"]);
+  assert.strictEqual(result.length, 2);
+  assert.deepStrictEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
+  assert.deepStrictEqual(result[1].value.text, ["another"]);
 
   // delete also "another" region
   I.click(locate("[aria-label=delete]").inside('[data-testid="textarea-region"]'));
@@ -133,6 +133,6 @@ Scenario("Image with perRegion tags", async function(I) {
   I.dontSeeElement(locate("mark"));
 
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 1);
-  assert.deepEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
+  assert.strictEqual(result.length, 1);
+  assert.deepStrictEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
 });

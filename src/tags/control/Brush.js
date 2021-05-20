@@ -3,6 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const TagAttrs = types.model({
   name: types.identifier,
@@ -18,10 +19,6 @@ const Model = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({
@@ -41,7 +38,7 @@ const Model = types
     },
   }));
 
-const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase);
+const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase, AnnotationMixin);
 
 const HtxView = () => {
   return null;

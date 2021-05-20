@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * Load custom example
  * @param {object} params
@@ -16,12 +17,18 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
     "submit",
     "controls",
     "side-column",
+    "annotations:history",
+    "annotations:current",
+    "annotations:tabs",
     "annotations:menu",
     "annotations:add-new",
     "annotations:delete",
+    "predictions:tabs",
     "predictions:menu",
   ];
   const task = { data, annotations, predictions };
+
+  window.LabelStudio.destroyAll();
   new window.LabelStudio("label-studio", { interfaces, config, task });
   done();
 };
@@ -249,6 +256,23 @@ const switchRegionTreeView = (viewName, done) => {
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
+const selectText = async ({selector, rangeStart, rangeEnd}, done) => {
+  const elem = document.querySelector(selector);
+  const range = new Range();
+
+  range.setStart(elem.firstChild, rangeStart);
+  range.setEnd(elem.firstChild, rangeEnd);
+
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+
+  const evt = new MouseEvent('mouseup');
+  evt.initMouseEvent('mouseup', true, true);
+  elem.dispatchEvent(evt);
+
+  done();
+};
+
 // Only for debugging
 const whereIsPixel = (rgbArray, tolerance, done) => {
   const stage = window.Konva.stages[0];
@@ -297,4 +321,5 @@ module.exports = {
   switchRegionTreeView,
 
   serialize,
+  selectText,
 };

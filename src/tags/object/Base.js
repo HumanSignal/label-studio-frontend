@@ -1,6 +1,7 @@
 import { types } from "mobx-state-tree";
 import isMatch from "lodash.ismatch";
 import InfoModal from "../../components/Infomodal/Infomodal";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const ObjectBase = types
   .model({
@@ -66,4 +67,4 @@ const ObjectBase = types
     };
   });
 
-export default ObjectBase;
+export default types.compose(ObjectBase, AnnotationMixin);

@@ -13,6 +13,7 @@ import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 
 /**
@@ -159,14 +160,6 @@ const Model = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
-    },
-
-    /**
-     * @return {object}
-     */
-    get annotation() {
-      // return Types.getParentOfTypeString(self, "Annotation");
-      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
@@ -545,7 +538,7 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
 
 const HtxImage = inject("store")(ImageView);
 
