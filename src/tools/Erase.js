@@ -8,6 +8,7 @@ import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -96,6 +97,6 @@ const _Tool = types
     };
   });
 
-const Erase = types.compose(ToolMixin, BaseTool, _Tool);
+const Erase = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Erase };

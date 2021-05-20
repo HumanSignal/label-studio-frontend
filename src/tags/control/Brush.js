@@ -3,6 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 const TagAttrs = types.model({
   name: types.identifier,
@@ -41,7 +42,7 @@ const Model = types
     },
   }));
 
-const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase);
+const BrushModel = types.compose("BrushModel", ControlBase, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

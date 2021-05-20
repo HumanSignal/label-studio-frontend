@@ -39,13 +39,6 @@ class ToolsManager {
     }
   }
 
-  selectDefault() {
-    if (this._default_tool) {
-      const tool = this._default_tool;
-      if (tool.setSelected) tool.setSelected(true);
-    }
-  }
-
   allTools() {
     return Object.values(this.tools);
   }

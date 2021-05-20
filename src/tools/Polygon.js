@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { NodeViews } from "../components/Node/Node";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
   .model({
@@ -49,7 +50,7 @@ const _Tool = types
 
       if (withStates && !control.isSelected && current === null) return;
 
-      if (!current && !self.obj.checkLabels()) return;
+      //if (!current && !self.obj.checkLabels()) return;
 
       // if there is a polygon in process of creation right now, but
       // the user has clicked on the labels without first finishing
@@ -70,13 +71,12 @@ const _Tool = types
         };
 
         self.obj.annotation.history.freeze();
-        const labels = { [control.valueType]: control.selectedValues?.() };
-        self.obj.annotation.createResult(opts, labels, control, self.obj);
+        self.createRegion(opts);
       }
     },
   }));
 
-const Polygon = types.compose(ToolMixin, BaseTool, _Tool);
+const Polygon = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Polygon };
 

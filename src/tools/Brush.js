@@ -8,6 +8,7 @@ import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -83,12 +84,6 @@ const _Tool = types
       //     }
       //   }
       // },
-
-      createRegion(opts) {
-        const control = self.control;
-        const labels = { [control.valueType]: control.selectedValues?.() };
-        return self.obj.annotation.createResult(opts, labels, control, self.obj);
-      },
 
       updateCursor() {
         if (!self.selected) return;
@@ -173,6 +168,6 @@ const _Tool = types
     };
   });
 
-const Brush = types.compose(ToolMixin, BaseTool, _Tool);
+const Brush = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Brush };

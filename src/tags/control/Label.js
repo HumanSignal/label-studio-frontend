@@ -121,9 +121,9 @@ const Model = types
 
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
-      // not going to endup without the label(s) at all
+      // not going to endup without results at all
       if (region && sameObject) {
-        if (labels.selectedLabels.length === 1 && self.selected) return;
+        if (labels.selectedLabels.length === 1 && self.selected && region.results.length === 1) return;
       }
 
       // if we are going to select label and it would be the first in this labels group
@@ -137,8 +137,7 @@ const Model = types
         // unselect other tools if they exist and selected
         const tool = Object.values(self.parent.tools || {})[0];
         if (tool && tool.manager.findSelectedTool() !== tool) {
-          tool.manager.unselectAll();
-          tool.setSelected(true);
+          tool.manager.selectTool(tool, true);
         }
       }
 

@@ -17,6 +17,17 @@ const DrawingTool = types.model("DrawingTool").actions(self => ({
 
     shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
   }, 48), // 3 frames, optimized enough and not laggy yet
+
+  createRegion(opts) {
+    const control = self.control;
+    const resultValue = control.getResultValue();
+    const area = self.obj.annotation.createResult(opts, resultValue, control, self.obj);
+    const activeStates = self.obj.activeStates();
+    activeStates.forEach(state => {
+      area.setValue(state);
+    });
+    return area;
+  },
 }));
 
 export { DrawingTool };

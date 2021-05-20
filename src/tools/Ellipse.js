@@ -25,15 +25,9 @@ const _Tool = types
     },
   }))
   .actions(self => ({
-    createRegion(opts) {
-      const control = self.control;
-      const labels = { [control.valueType]: control.selectedValues?.() };
-      self.obj.annotation.createResult(opts, labels, control, self.obj);
-    },
-
     mousedownEv(ev, [x, y]) {
       if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
-      if (!self.obj.checkLabels()) return;
+      //if (!self.obj.checkLabels()) return;
 
       self.annotation.history.freeze();
 

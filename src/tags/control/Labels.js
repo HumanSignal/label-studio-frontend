@@ -11,6 +11,7 @@ import Types from "../../core/Types";
 import { LabelModel } from "./Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * Labels tag, create a group of labels.
@@ -28,6 +29,10 @@ import ControlBase from "./Base";
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
  * @param {number} [maxUsages]               - Maximum available uses of the label
  * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {float=} [opacity=0.6]          - Opacity of rectangle
+ * @param {string=} [fillColor]           - Rectangle fill color
+ * @param {string=} [strokeColor=#f48a42] - Stroke color
+ * @param {number=} [strokeWidth=1]       - Width of the stroke
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -39,6 +44,13 @@ const TagAttrs = types.model({
 
   // TODO this will move away from here
   groupdepth: types.maybeNull(types.string),
+
+  opacity: types.optional(customTypes.range(), "0.6"),
+  fillcolor: types.optional(customTypes.color, "#f48a42"),
+
+  strokewidth: types.optional(types.string, "1"),
+  strokecolor: types.optional(customTypes.color, "#f48a42"),
+  fillopacity: types.optional(customTypes.range(), "0.6"),
 });
 
 /**

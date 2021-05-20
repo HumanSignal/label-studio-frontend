@@ -38,6 +38,12 @@ const SelectedModelMixin = types
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
     },
 
+    getResultValue() {
+      return {
+        [self.valueType]: self.selectedValues(),
+      };
+    },
+
     // return labels that are selected and have an alias only
     get selectedAliases() {
       return self.selectedLabels.filter(c => c.alias).map(c => c.alias);
