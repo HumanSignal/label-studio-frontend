@@ -179,7 +179,7 @@ const labelToSVG = (function() {
     svg.appendChild(svgText);
     document.body.appendChild(svg);
 
-    const textLen = svg.getBoundingClientRect().width;
+    const textLen = svgText.getBoundingClientRect().width;
     svg.remove();
 
     return textLen;

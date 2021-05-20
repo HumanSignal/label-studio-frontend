@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature */
 
 const {
   initLabelStudio,
@@ -126,6 +126,7 @@ const shapes = [
   },
 ];
 
+// eslint-disable-next-line no-undef
 xScenario("Simple shapes on Image", async function(I) {
   for (let shape of shapes) {
     const params = {
@@ -139,7 +140,7 @@ xScenario("Simple shapes on Image", async function(I) {
     // canvas won't be initialized fully before the image loads
     await I.executeAsyncScript(waitForImage);
     I.waitForVisible("canvas");
-    I.see("Regions (0)");
+    I.see("0 Regions");
 
     for (let region of shape.regions) {
       // draw the shape using corresponding helper and params

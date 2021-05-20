@@ -107,6 +107,7 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
+
       cs.addErrors([
         errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
       ]);

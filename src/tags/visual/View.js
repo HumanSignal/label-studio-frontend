@@ -6,6 +6,7 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import VisibilityMixin from "../../mixins/Visibility";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Use the View element to configure a display of blocks, similar to the div tag in HTML.
@@ -81,14 +82,9 @@ const Model = types
       "paragraphs",
       "paragraphlabels",
     ]),
-  })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }));
+  });
 
-const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin);
+const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
 const HtxView = observer(({ item, store }) => {
   let style = {};

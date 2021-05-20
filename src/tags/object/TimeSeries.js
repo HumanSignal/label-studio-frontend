@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import React from "react";
 import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
@@ -28,6 +26,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import PersistentStateMixin from "../../mixins/PersistentState";
 
 import "./TimeSeries/Channel";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * TimeSeries tag can be used to label time series data.
@@ -110,10 +109,6 @@ const Model = types
 
     get store() {
       return getRoot(self);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
@@ -716,7 +711,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model);
+const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model, AnnotationMixin);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);
