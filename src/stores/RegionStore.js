@@ -1,6 +1,7 @@
 import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
+import { isDefined } from "../utils/utilities";
 
 const hotkeys = Hotkey("RegionStore");
 
@@ -20,6 +21,7 @@ export default types
 
     get classifications() {
       const textAreas = Array.from(self.annotation.names.values())
+        .filter(t => isDefined(t))
         .filter(t => t.type === "textarea" && !t.perregion)
         .map(t => t.regions);
 
@@ -28,6 +30,10 @@ export default types
 
     get regions() {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
+    },
+
+    get isAllHidden() {
+      return !self.regions.find(area => !area.hidden);
     },
 
     get sortedRegions() {
@@ -94,7 +100,7 @@ export default types
       // create the tree
       let idx = 0;
       const tree = Object.keys(labels).map(lname => {
-        const el = enrich(labels[lname], idx, true);
+        const el = enrich(labels[lname], idx, true, map[lname]);
         el["children"] = map[lname].map(r => enrich(r, idx++));
 
         return el;
@@ -211,5 +217,28 @@ export default types
       const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
 
       next && next.selectRegion();
+    },
+
+    toggleVisibility() {
+      const shouldBeHidden = !self.isAllHidden;
+      self.regions.forEach(area => {
+        if (area.hidden !== shouldBeHidden) {
+          area.toggleHidden();
+        }
+      });
+    },
+
+    setHiddenByLabel(shouldBeHidden, label) {
+      self.regions.forEach(area => {
+        if (area.hidden !== shouldBeHidden) {
+          const l = area.labeling;
+          if (l) {
+            const selected = l.selectedLabels;
+            if (selected.includes(label)) {
+              area.toggleHidden();
+            }
+          }
+        }
+      });
     },
   }));

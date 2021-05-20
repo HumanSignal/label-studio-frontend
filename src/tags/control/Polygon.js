@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Use the Polygon tag to add polygons to an image without selecting a label. It's useful when you have only one label.
@@ -48,11 +49,6 @@ const Model = types
     // regions: types.array(RectRegionModel),
     _value: types.optional(types.string, ""),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -70,7 +66,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model);
+const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model, AnnotationMixin);
 
 const HtxView = () => null;
 

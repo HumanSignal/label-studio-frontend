@@ -1,4 +1,6 @@
+/* global inject */
 const { I } = inject();
+
 const {
   waitForImage,
   clickKonva,

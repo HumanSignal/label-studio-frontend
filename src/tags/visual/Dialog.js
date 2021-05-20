@@ -7,6 +7,7 @@ import { guidGenerator } from "../../utils/unique";
 import Registry from "../../core/Registry";
 import DialogView from "../../components/Dialog/Dialog";
 import { stringToColor, convertToRGBA } from "../../utils/colors";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Dialog tag renders a dialog.
@@ -50,14 +51,9 @@ const Model = types
     type: "Dialog",
     data: types.map(Replica),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => DialogActions(self));
 
-const DialogModel = types.compose("DialogModel", TagAttrs, Model);
+const DialogModel = types.compose("DialogModel", TagAttrs, Model, AnnotationMixin);
 
 const HtxDialogView = inject("store")(
   observer(({ store, item }) => {

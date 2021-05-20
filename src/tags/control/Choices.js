@@ -14,6 +14,7 @@ import Types from "../../core/Types";
 import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const { Option } = Select;
 
@@ -67,10 +68,6 @@ const Model = types
   .views(self => ({
     get shouldBeUnselected() {
       return self.choice === "single" || self.choice === "single-radio";
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     states() {
@@ -220,6 +217,7 @@ const ChoicesModel = types.compose(
   PerRegionMixin,
   VisibilityMixin,
   Model,
+  AnnotationMixin,
 );
 
 const HtxChoices = observer(({ item }) => {

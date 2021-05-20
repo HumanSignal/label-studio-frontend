@@ -13,6 +13,7 @@ import Types from "../../core/Types";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "../../regions/TextAreaRegion";
 import { cloneNode } from "../../core/Helpers";
 import ControlBase from "./Base";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const { TextArea } = Input;
 
@@ -70,10 +71,6 @@ const Model = types
 
     get submissionsNum() {
       return self.regions.length;
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get showSubmit() {
@@ -229,6 +226,7 @@ const TextAreaModel = types.compose(
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
+  AnnotationMixin,
 );
 
 const HtxTextArea = observer(({ item }) => {

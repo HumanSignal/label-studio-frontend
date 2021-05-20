@@ -14,6 +14,7 @@ import { parseValue } from "../../utils/data";
 import { guidGenerator } from "../../core/Helpers";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Label tag represents a single label.
@@ -62,10 +63,6 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get maxUsages() {
       return Number(self.maxusages || self.parent.maxusages);
     },
@@ -197,7 +194,7 @@ const Model = types
     },
   }));
 
-const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
+const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

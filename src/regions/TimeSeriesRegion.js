@@ -9,6 +9,7 @@ import { guidGenerator } from "../core/Helpers";
 import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 const hotkeys = Hotkey("TimeSeries");
 
@@ -28,9 +29,6 @@ const Model = types
       return self.object;
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore?.selected;
-    },
     get regionElement() {
       return self._brushRef;
     },
@@ -118,6 +116,7 @@ const TimeSeriesRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   Model,
+  AnnotationMixin,
 );
 
 Registry.addTag("timeseriesregion", TimeSeriesRegionModel, () => {});

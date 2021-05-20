@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import BaseTool, { DEFAULT_DIMENSIONS, MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 const _Tool = types
   .model("RectTool")
@@ -37,6 +38,6 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool);
+const Rect = types.compose(ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool, AnnotationMixin);
 
 export { Rect };

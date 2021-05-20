@@ -1,10 +1,10 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { initLabelStudio, serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
-Feature("NER Text");
+Feature("NERText");
 
 function removeTextFromResult(result) {
   return result.map(({ value: { start, end, labels }, ...r }) => ({ ...r, value: { start, end, labels } }));
@@ -79,7 +79,7 @@ const newResult = {
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 
-Scenario("NER Text", async function(I) {
+Scenario("NERText", async function(I) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -97,29 +97,39 @@ Scenario("NER Text", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepEqual(result, results);
+  assert.deepStrictEqual(result, results);
 
   // Create a new annotation to create the same result from scratch
-  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  I.click(".lsf-annotation-tabs__add");
 
   I.pressKey("2");
   I.doubleClick(".htx-text");
+  I.executeAsyncScript(selectText, {
+    selector: '.htx-text span:nth-child(7)',
+    rangeStart: 51,
+    rangeEnd: 55,
+  });
   result = await I.executeScript(serialize);
 
   // id is auto-generated, so use already assigned
   newResult.id = result[0].id;
-  assert.deepEqual(result, [newResult]);
+  assert.deepStrictEqual(result, [newResult]);
 
   // delete this new annotation
-  I.click(locate(".ant-btn").withChild("[aria-label=delete]"));
-  I.click("Delete"); // approve
+  I.click(".lsf-button[aria-label=Delete]");
+  I.click("Proceed"); // approve
 
   I.pressKey("1");
-  I.doubleClick(".htx-text");
+  I.executeAsyncScript(selectText, {
+    selector: '.htx-text span:nth-child(7)',
+    rangeStart: 51,
+    rangeEnd: 55,
+  });
   result = await I.executeScript(serialize);
+
   newResult.id = result[2].id;
   newResult.value.labels = ["Person"];
-  assert.deepEqual(result, [...results, newResult]);
+  assert.deepStrictEqual(result, [...results, newResult]);
 
   // @todo this hotkey doesn't work. why?
   // I.pressKey('r')
@@ -130,12 +140,12 @@ Scenario("NER Text", async function(I) {
   I.see("Relations (1)");
 
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 4);
-  assert.deepEqual(result[0].value, results[0].value);
-  assert.deepEqual(result[1].value, results[1].value);
-  assert.equal(result[3].type, "relation");
-  assert.equal(result[3].from_id, result[0].id);
-  assert.equal(result[3].to_id, result[2].id);
+  assert.strictEqual(result.length, 4);
+  assert.deepStrictEqual(result[0].value, results[0].value);
+  assert.deepStrictEqual(result[1].value, results[1].value);
+  assert.strictEqual(result[3].type, "relation");
+  assert.strictEqual(result[3].from_id, result[0].id);
+  assert.strictEqual(result[3].to_id, result[2].id);
 });
 
 Scenario("NER Text with text field missing", async function(I) {
@@ -153,7 +163,7 @@ Scenario("NER Text with text field missing", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepEqual(result, results);
+  assert.deepStrictEqual(result, results);
 });
 
 // for security reasons text is not saved by default for valueType=url
@@ -173,7 +183,7 @@ Scenario("NER Text from url", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepEqual(result, resultsFromUrlWithoutText);
+  assert.deepStrictEqual(result, resultsFromUrlWithoutText);
 });
 
 Scenario("NER Text from url with text saved", async function(I) {
@@ -192,7 +202,7 @@ Scenario("NER Text from url with text saved", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepEqual(result, resultsFromUrl);
+  assert.deepStrictEqual(result, resultsFromUrl);
 });
 
 Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {
