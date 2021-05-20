@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import { observer } from "mobx-react";
 import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";

@@ -3,6 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ControlBase from "./Base";
 
 /**
@@ -43,10 +44,6 @@ const Model = types
     selected: types.maybeNull(types.enumeration(["left", "right", "none"])),
   })
   .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get names() {
       return self.toname.split(",");
     },
@@ -134,7 +131,7 @@ const Model = types
     },
   }));
 
-const PairwiseModel = types.compose("PairwiseModel", TagAttrs, ControlBase, Model);
+const PairwiseModel = types.compose("PairwiseModel", TagAttrs, ControlBase, Model, AnnotationMixin);
 
 const HtxPairwise = () => {
   return null;

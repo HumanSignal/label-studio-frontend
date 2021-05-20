@@ -1,6 +1,7 @@
 import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 const Result = types
   .model("Result", {
@@ -83,10 +84,6 @@ const Result = types
 
     get area() {
       return getParent(self, 2);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get mainValue() {
@@ -294,4 +291,4 @@ const Result = types
     },
   }));
 
-export default Result;
+export default types.compose(Result, AnnotationMixin);

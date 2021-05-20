@@ -7,7 +7,7 @@ import Registry from "../../core/Registry";
 import RequiredMixin from "../../mixins/Required";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 

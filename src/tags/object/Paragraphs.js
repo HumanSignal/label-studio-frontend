@@ -17,6 +17,7 @@ import { parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Paragraphs tag shows paragraph markup that can be labeled.
@@ -70,10 +71,6 @@ const Model = types
 
     get store() {
       return getRoot(self);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get audio() {
@@ -321,7 +318,7 @@ const Model = types
     },
   }));
 
-const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxParagraphsView extends Component {
   constructor(props) {

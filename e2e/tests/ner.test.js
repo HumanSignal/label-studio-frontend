@@ -64,13 +64,13 @@ Scenario("NER labeling for HyperText", async function(I) {
   I.pressKeyUp("Shift");
 
   I.pressKey("2");
-  I.doubleClick(".ls-segment b:nth-child(2)");
+  I.doubleClick(".lsf-main-view b:nth-child(2)");
 
   I.click("[data-testid=r1-mid]");
   // @todo this hotkey doesn't work. why?
   // I.pressKey('r')
   I.click("Create Relation");
-  I.click(".ls-segment b:nth-child(2)");
+  I.click(".lsf-main-view b:nth-child(2)");
 
   I.see("Relations (1)");
 

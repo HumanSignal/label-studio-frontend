@@ -1,4 +1,4 @@
-/* global Feature, locate, DataTable, Data */
+/* global Feature, Scenario, DataTable, Data, locate */
 
 const { initLabelStudio, serialize } = require("./helpers");
 
@@ -52,7 +52,7 @@ const shapes = [
   },
   {
     shape: "Polygon",
-    action: "clickPointsKonva",
+    action: "clickPolygonPointsKonva",
     regions: [
       {
         params: [
@@ -116,7 +116,7 @@ Data(shapesTable).Scenario("Simple rotation", async function(I, AtImageView, cur
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
   I.waitForVisible("canvas");
-  I.see("Regions (0)");
+  I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -153,7 +153,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
   I.waitForVisible("canvas");
-  I.see("Regions (0)");
+  I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");

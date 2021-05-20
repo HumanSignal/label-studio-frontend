@@ -12,6 +12,7 @@ import Waveform from "../../components/Waveform/Waveform";
 import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * AudioPlus tag plays audio and shows its waveform.
@@ -63,10 +64,6 @@ const Model = types
 
     get store() {
       return getRoot(self);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
@@ -238,7 +235,7 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase);
+const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
@@ -246,8 +243,8 @@ const HtxAudioView = ({ store, item }) => {
   return (
     <ObjectTag item={item}>
       <Fragment>
-        {item.errors?.map(error => (
-          <ErrorMessage error={error} />
+        {item.errors?.map((error, i) => (
+          <ErrorMessage key={`err-${i}`} error={error} />
         ))}
         <Waveform
           dataField={item.value}

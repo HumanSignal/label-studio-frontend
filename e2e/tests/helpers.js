@@ -1,5 +1,4 @@
-/* global Htx */
-
+/* eslint-disable no-undef */
 /**
  * Load custom example
  * @param {object} params
@@ -18,12 +17,18 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
     "submit",
     "controls",
     "side-column",
+    "annotations:history",
+    "annotations:current",
+    "annotations:tabs",
     "annotations:menu",
     "annotations:add-new",
     "annotations:delete",
+    "predictions:tabs",
     "predictions:menu",
   ];
   const task = { data, annotations, predictions };
+
+  window.LabelStudio.destroyAll();
   new window.LabelStudio("label-studio", { interfaces, config, task });
   done();
 };
@@ -46,7 +51,7 @@ const waitForImage = async done => {
 const convertToFixed = data => {
   if (["string", "number"].includes(typeof data)) {
     const n = Number(data);
-    return Number.isInteger(n) ? n : +Number(n).toFixed(2);
+    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(2);
   }
   if (Array.isArray(data)) {
     return data.map(n => convertToFixed(n));
@@ -118,7 +123,7 @@ const clickRect = () => {
  */
 const clickKonva = (x, y, done) => {
   const stage = window.Konva.stages[0];
-  stage.fire("click", { clientX: x, clientY: y, evt: { offsetX: x, offsetY: y } });
+  stage.fire("click", { clientX: x, clientY: y, evt: { offsetX: x, offsetY: y, timeStamp: Date.now() } });
   done();
 };
 
@@ -129,9 +134,20 @@ const clickKonva = (x, y, done) => {
  */
 const clickMultipleKonva = async (points, done) => {
   const stage = window.Konva.stages[0];
+  const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
+  let lastPoint;
   for (let point of points) {
-    stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1] } });
-    // await delay(10);
+    if (lastPoint) {
+      stage.fire("mousemove", { evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now() } });
+      await delay();
+    }
+    stage.fire("mousedown", { evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now() } });
+    await delay();
+    stage.fire("mouseup", { evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now() } });
+    await delay();
+    stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now() } });
+    lastPoint = point;
+    await delay();
   }
   done();
 };
@@ -143,10 +159,12 @@ const clickMultipleKonva = async (points, done) => {
  */
 const polygonKonva = async (points, done) => {
   try {
-    const delay = () => new Promise(resolve => setTimeout(resolve, 10));
+    const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
     const stage = window.Konva.stages[0];
     for (let point of points) {
-      stage.fire("click", { evt: { offsetX: point[0], offsetY: point[1], preventDefault: () => {} } });
+      stage.fire("click", {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
       await delay();
     }
 
@@ -177,14 +195,14 @@ const polygonKonva = async (points, done) => {
  */
 const dragKonva = async (x, y, shiftX, shiftY, done) => {
   const stage = window.Konva.stages[0];
-  const delay = () => new Promise(resolve => setTimeout(resolve, 10));
+  const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
   stage.fire("mousedown", { evt: { offsetX: x, offsetY: y } });
-  // await delay(10);
+  await delay();
   stage.fire("mousemove", { evt: { offsetX: x + (shiftX >> 1), offsetY: y + (shiftY >> 1) } });
-  // await delay(10);
+  await delay();
   // we should move the cursor to the last point and only after that release the mouse
   stage.fire("mousemove", { evt: { offsetX: x + shiftX, offsetY: y + shiftY } });
-  // await delay(10);
+  await delay();
   // because some events work on mousemove and not on mouseup
   stage.fire("mouseup", { evt: { offsetX: x + shiftX, offsetY: y + shiftY } });
   // looks like Konva needs some time to update image according to dpi
@@ -222,13 +240,31 @@ const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
 };
 const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
-  done({ width: Math.floor(stage.width()) - 1, height: Math.floor(stage.height()) - 1 });
+  done({ width: stage.width(), height: stage.height() });
 };
 const setZoom = (scale, x, y, done) => {
   Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
   setTimeout(() => {
     done();
   }, 30);
+};
+
+/**
+ * Count shapes on Konva, founded by selector
+ * @param {string|function} selector from Konva's finding methods params
+ * @param {function} done
+ */
+const countKonvaShapes = async done => {
+  const stage = window.Konva.stages[0];
+  const count = stage.find(node => {
+    return node.getType() === "Shape" && node.isVisible();
+  }).length;
+  done(count);
+};
+
+const switchRegionTreeView = (viewName, done) => {
+  Htx.annotationStore.selected.regionStore.setView(viewName);
+  done();
 };
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
@@ -271,8 +307,8 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);
 
-  const evt = new MouseEvent("mouseup");
-  evt.initMouseEvent("mouseup", true, true);
+  const evt = new MouseEvent('mouseup');
+  evt.initMouseEvent('mouseup', true, true);
   elem.dispatchEvent(evt);
 
   done();
@@ -322,6 +358,8 @@ module.exports = {
   getCanvasSize,
   setZoom,
   whereIsPixel,
+  countKonvaShapes,
+  switchRegionTreeView,
 
   serialize,
   selectText,

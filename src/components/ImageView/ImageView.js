@@ -9,6 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import { findClosestParent } from "../../utils/utilities";
 
 export default observer(
   class ImageView extends Component {
@@ -34,7 +35,10 @@ export default observer(
         // create regions over another regions with Cmd/Ctrl pressed
         (e.evt && (e.evt.metaKey || e.evt.ctrlKey)) ||
         e.target === e.target.getStage() ||
-        (e.target.parent && (e.target.parent.attrs.name === "ruler" || e.target.parent.attrs.name === "segmentation"))
+        findClosestParent(
+          e.target,
+          el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
+        )
       ) {
         window.addEventListener("mousemove", this.handleGlobalMouseMove);
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
@@ -103,6 +107,7 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
+
       cs.addErrors([
         errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
       ]);

@@ -1,4 +1,4 @@
-import { flatten, wrapArray } from "../../utils/utilities";
+import { wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
 
 /**
@@ -101,8 +101,13 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      const points = flatten(wrapArray(region.touches.filter(t => t.type === "add").map(t => Array.from(t.points))));
-      return imageRelatedBBox(region, Geometry.getBrushBBox(points));
+      return imageRelatedBBox(
+        region,
+        Geometry.scaleBBox(
+          Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
+          1 / region.layerRef.canvas.pixelRatio,
+        ),
+      );
     }
     default: {
       console.warn(`Unknown region type: ${region.type}`);

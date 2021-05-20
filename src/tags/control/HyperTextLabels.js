@@ -6,7 +6,7 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**

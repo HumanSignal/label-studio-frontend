@@ -3,6 +3,7 @@ import { Button } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
+import {EntityTab} from '../AnnotationTabs/AnnotationTabs';
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -85,16 +86,20 @@ export default class Grid extends Component {
     return (
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
-          {annotations.map((c, i) => (
-            <div style={{ display: c.hidden ? "none" : "unset" }} id={`c-${c.id}`}>
-              <h4 onClick={() => this.select(c)}>
-                {c.pk || c.id}
-                {c.type === "annotation" && c.createdBy ? ` by ${c.createdBy}` : null}
-                {c.type === "prediction" && c.createdBy ? ` from model (${c.createdBy})` : null}
-              </h4>
+          {annotations.filter(c => !c.hidden).map((c, i) => (
+            <div id={`c-${c.id}`} key={`anno-${c.id}`}>
+              <EntityTab
+                entity={c}
+                onClick={() => this.select(c)}
+                prediction={c.type === "prediction"}
+                bordered={false}
+                style={{height: 44}}
+              />
             </div>
           ))}
-          {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}
+          {renderNext && (
+            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />
+          )}
         </div>
         <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />
         <Button type="text" onClick={this.right} className={styles.right} icon={<RightCircleOutlined />} />

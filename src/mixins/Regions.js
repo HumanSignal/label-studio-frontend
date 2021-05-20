@@ -1,5 +1,6 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
+import { AnnotationMixin } from "./AnnotationMixin";
 
 const RegionsMixin = types
   .model({
@@ -16,6 +17,7 @@ const RegionsMixin = types
   .volatile(self => ({
     // selected: false,
     highlighted: false,
+    isDrawing: false,
   }))
   .views(self => ({
     get perRegionStates() {
@@ -31,10 +33,6 @@ const RegionsMixin = types
       return getParent(self);
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
@@ -42,6 +40,10 @@ const RegionsMixin = types
   .actions(self => ({
     setParentID(id) {
       self.parentID = id;
+    },
+
+    setDrawing(val) {
+      self.isDrawing = val;
     },
 
     moveTop(size) {},
@@ -162,6 +164,8 @@ const RegionsMixin = types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectRegion(tryToKeepStates = false) {
+      console.log("UNSELECT REGION", "you should not be here");
+      // eslint-disable-next-line no-constant-condition
       if (1) return;
       const annotation = self.annotation;
       const parent = self.parent;
@@ -188,7 +192,7 @@ const RegionsMixin = types
 
     onClickRegion() {
       const annotation = self.annotation;
-      if (!annotation.editable) return;
+      if (!annotation.editable || self.isDrawing) return;
 
       if (annotation.relationMode) {
         annotation.addRelation(self);
@@ -217,4 +221,4 @@ const RegionsMixin = types
     },
   }));
 
-export default RegionsMixin;
+export default types.compose(RegionsMixin, AnnotationMixin);
