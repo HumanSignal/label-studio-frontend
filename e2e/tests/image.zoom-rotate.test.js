@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate, DataTable, Data */
+/* global Feature, Scenario, DataTable, Data, locate */
 
 const { initLabelStudio, serialize } = require("./helpers");
 
@@ -52,7 +52,7 @@ const shapes = [
   },
   {
     shape: "Polygon",
-    action: "clickPointsKonva",
+    action: "clickPolygonPointsKonva",
     regions: [
       {
         params: [
@@ -165,11 +165,6 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
   const ZOOM = 3;
   AtImageView.setZoom(ZOOM, -100 * ZOOM, -100 * ZOOM);
   let hasPixel = await AtImageView.hasPixelColor(1, 1, BLUEVIOLET.rgbArray);
-  if (!hasPixel) {
-    // Debugging info
-    const points = await AtImageView.whereIsPixel(BLUEVIOLET.rgbArray);
-    console.log(`points`, JSON.stringify(points));
-  }
   assert.equal(hasPixel, true);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
@@ -178,11 +173,6 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
       ...rotateCoords([1, 1], degree, canvasSize.width, canvasSize.height).map(Math.round),
       BLUEVIOLET.rgbArray,
     );
-    if (!hasPixel) {
-      // Debugging info
-      const points = await AtImageView.whereIsPixel(BLUEVIOLET.rgbArray);
-      console.log(`points`, JSON.stringify(points));
-    }
     assert.equal(hasPixel, true);
   }
 });
