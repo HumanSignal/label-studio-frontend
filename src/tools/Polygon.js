@@ -1,74 +1,75 @@
 import { types } from "mobx-state-tree";
 
-import BaseTool from "./Base";
+import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
+import { MultipleClicksDrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
-  .model({
-    default: types.optional(types.boolean, true),
-    mode: types.optional(types.enumeration(["drawing", "viewing"]), "viewing"),
-  })
-  .views(self => ({
-    get getActivePolygon() {
-      const poly = self.getActiveShape;
+  .model("PolygonTool")
+  .views(self => {
+    const Super = {
+      createRegionOptions: self.createRegionOptions,
+      isIncorrectControl: self.isIncorrectControl,
+      isIncorrectLabel: self.isIncorrectLabel,
+    };
+    return {
+      get getActivePolygon() {
+        const poly = self.getActiveShape;
 
-      if (poly && poly.closed) return null;
-      if (poly === undefined) return null;
-      if (poly.type !== "polygonregion") return null;
+        if (poly && poly.closed) return null;
+        if (poly === undefined) return null;
+        if (poly.type !== "polygonregion") return null;
 
-      return poly;
-    },
+        return poly;
+      },
 
-    get tagTypes() {
-      return {
-        stateTypes: "polygonlabels",
-        controlTagTypes: ["polygonlabels", "polygon"],
-      };
-    },
+      get tagTypes() {
+        return {
+          stateTypes: "polygonlabels",
+          controlTagTypes: ["polygonlabels", "polygon"],
+        };
+      },
 
-    moreRegionParams(obj) {
-      return {
-        x: obj.value.points[0][0],
-        y: obj.value.points[0][1],
-      };
-    },
-  }))
-  .actions(self => ({
-    clickEv(ev, [x, y]) {
-      const control = self.control;
-      const current = self.getActivePolygon;
-      const withStates = self.tagTypes.stateTypes === control.type;
+      get defaultDimensions() {
+        return DEFAULT_DIMENSIONS.polygon;
+      },
 
-      if (withStates && !control.isSelected && current === null) return;
+      moreRegionParams(obj) {
+        return {
+          x: obj.value.points[0][0],
+          y: obj.value.points[0][1],
+        };
+      },
 
-      if (!current && !self.obj.checkLabels()) return;
-
-      // if there is a polygon in process of creation right now, but
-      // the user has clicked on the labels without first finishing
-      // it, we close it automatically and create a new one with new
-      // labels
-
-      // if (states.length && self.getActivePolygon) {
-      //   self.getActivePolygon.closePoly();
-      // }
-
-      if (current) {
-        current.addPoint(x, y);
-      } else {
-        const opts = {
+      createRegionOptions({ x, y }) {
+        return Super.createRegionOptions({
           points: [[x, y]],
           width: 10,
-          coordstype: "px",
-        };
+        });
+      },
 
-        self.obj.annotation.history.freeze();
-        const labels = { [control.valueType]: control.selectedValues?.() };
-        self.obj.annotation.createResult(opts, labels, control, self.obj);
-      }
+      isIncorrectControl() {
+        return Super.isIncorrectControl() && self.current() === null;
+      },
+      isIncorrectLabel() {
+        return !self.current() && Super.isIncorrectLabel();
+      },
+      canStart() {
+        return self.current() === null;
+      },
+
+      current() {
+        return self.getActivePolygon;
+      },
+    };
+  })
+  .actions(self => ({
+    closeCurrent() {
+      self.getCurrentArea().closePoly();
     },
   }));
 
-const Polygon = types.compose(ToolMixin, BaseTool, _Tool);
+const Polygon = types.compose(ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
 
 export { Polygon };
 
