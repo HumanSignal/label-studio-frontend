@@ -66,7 +66,7 @@ const results = [
     type: "labels",
     parentID: "abcdef",
     value: { start: 1, end: 40, labels: ["Words"], text: "But I don’t want to go among mad people" },
-  },
+  }
 ];
 
 const resultsWithoutText = removeTextFromResult(results);
@@ -97,7 +97,7 @@ Scenario("NERText", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, results);
+  assert.deepEqual(result, results);
 
   // Create a new annotation to create the same result from scratch
   I.click(".lsf-annotation-tabs__add");
@@ -112,7 +112,7 @@ Scenario("NERText", async function(I) {
 
   // id is auto-generated, so use already assigned
   newResult.id = result[0].id;
-  assert.deepStrictEqual(result, [newResult]);
+  assert.deepEqual(result, [newResult]);
 
   // delete this new annotation
   I.click(".lsf-button[aria-label=Delete]");
