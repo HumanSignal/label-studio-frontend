@@ -96,7 +96,7 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block name="main-view">
+          <Block name="main-view" key={as.selected?.id}>
             <Elem name="annotation">
               {Tree.renderItem(root)}
               {this.renderRelations(as.selected)}
