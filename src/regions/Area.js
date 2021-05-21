@@ -32,7 +32,7 @@ const Area = types.union(
       // for some deserializations
       if (sn.$treenode) return sn.$treenode.type;
       if (
-        sn.type !== "polygon" && // dirty hack to make it work with polygons, but may be the whole condition is not necessary at all
+        !sn.points && // dirty hack to make it work with polygons, but may be the whole condition is not necessary at all
         sn.value &&
         Object.values(sn.value).length <= 1
       )
