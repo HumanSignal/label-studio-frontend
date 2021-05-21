@@ -46,7 +46,7 @@ examples.forEach(example =>
     await I.amOnPage("/");
     await I.executeAsyncScript(initLabelStudio, params);
 
-    I.see(`${count} Region${count > 1 ? 's' : ''}`);
+    I.see(`${count} Region${(count === 0 || count > 1) ? 's' : ''}`);
 
     let restored;
 

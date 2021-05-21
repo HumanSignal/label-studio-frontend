@@ -9,7 +9,7 @@ import TimeTraveller from "../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
-import { delay } from "../utils/utilities";
+import { delay, isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
@@ -534,7 +534,7 @@ const Annotation = types
         value: resultValue,
       };
 
-      const area = self.areas.put({
+      const areaRaw = {
         id: guidGenerator(),
         object,
         // data for Model instance
@@ -542,7 +542,9 @@ const Annotation = types
         // for Model detection
         value: areaValue,
         results: [result],
-      });
+      };
+
+      const area = self.areas.put(areaRaw);
 
       if (!area.classification) getEnv(self).onEntityCreate(area);
 
@@ -594,12 +596,19 @@ const Annotation = types
 
         objAnnotation.forEach(obj => {
           if (obj["type"] !== "relation") {
-            const { id, value, type, ...data } = obj;
+            const { id, value: rawValue, type, ...data } = obj;
+
+            const {type: tagType} = self.names.get(obj.to_name) ?? {};
+
             // avoid duplicates of the same areas in different annotations/predictions
             const areaId = `${id || guidGenerator()}#${self.id}`;
             const resultId = `${data.from_name}@${areaId}`;
+            const value = self.prepareValue(rawValue, tagType);
+
+            console.log({rawValue, value});
 
             let area = self.areas.get(areaId);
+
             if (!area) {
               const areaSnapshot = {
                 id: areaId,
@@ -632,6 +641,32 @@ const Annotation = types
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
       }
+    },
+
+    prepareValue(value, type) {
+      switch (type) {
+        case "text":
+        case "hypertext":
+        case "richtext": {
+          const hasStartEnd = isDefined(value.start) && isDefined(value.end);
+          const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
+
+          if (hasStartEnd && lacksOffsets) {
+            return Object.assign({}, value, {
+              start: "",
+              end: "",
+              startOffset: Number(value.start),
+              endOffset: Number(value.end),
+              isText: true,
+            });
+          }
+          break;
+        }
+        default:
+          return value;
+      }
+
+      return value;
     },
   }));
 

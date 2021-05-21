@@ -68,7 +68,7 @@ const imageRelatedBBox = (region, bbox) => {
 const _detect = region => {
   switch (region.type) {
     case "textrange":
-    case "hypertextregion":
+    case "richtextregion":
     case "textarearegion":
     case "audioregion":
     case "paragraphs":

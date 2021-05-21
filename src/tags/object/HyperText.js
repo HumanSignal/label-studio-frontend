@@ -39,6 +39,7 @@ const TagAttrs = types.model("HyperTextModel", {
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
     window.LS_SECURE_MODE ? "no" : "yes",
   ),
+
   clickablelinks: false,
 
   highlightcolor: types.maybeNull(customTypes.color),
@@ -293,6 +294,5 @@ const HtxHyperText = inject("store")(observer(HtxHyperTextView));
 const HtxHyperTextPieceView = inject("store")(observer(HyperTextPieceView));
 
 Registry.addTag("hypertext", HyperTextModel, HtxHyperText);
-Registry.addObjectType(HyperTextModel);
 
 export { HyperTextModel, HtxHyperText };

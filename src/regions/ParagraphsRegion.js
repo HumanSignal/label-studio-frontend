@@ -1,4 +1,4 @@
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -11,7 +11,6 @@ import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
 import { ParagraphsModel } from "../tags/object/Paragraphs";
-import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
 
