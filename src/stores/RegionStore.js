@@ -111,6 +111,7 @@ export default types
   }))
   .actions(self => ({
     addRegion(region) {
+      console.log({region});
       self.regions.push(region);
       getEnv(self).onEntityCreate(region);
     },

@@ -6,7 +6,6 @@ import Constants from "../core/Constants";
 
 export const HighlightMixin = types
   .model()
-  .views(self => ({}))
   .actions(self => ({
     /**
      * Create highlights from the stored `Range`
@@ -19,6 +18,7 @@ export const HighlightMixin = types
       }
 
       const range = self._getRange();
+
       // Avoid rendering before view is ready
       if (!range) {
         console.warn("No range found to highlight");
@@ -247,7 +247,7 @@ const createSpanStylesheet = (identifier, color) => {
   let lastRuleIndex = 0;
 
   for (let ruleName in rules) {
-    if (!rules.hasOwnProperty(ruleName)) continue;
+    if (!Object.prototype.hasOwnProperty.call(rules, ruleName)) continue;
     if (supportInserion) stylesheet.insertRule(`${ruleName} { ${rules[ruleName]} } `, lastRuleIndex++);
     else stylesheet.addRule(ruleName, rules);
   }

@@ -4,8 +4,17 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { observer } from "mobx-react";
 import Utils from "../../../utils";
+import { isDefined } from "../../../utils/utilities";
 
 class RichTextPieceView extends Component {
+  constructor(props) {
+    super(props);
+
+    this.rootNodeRef = React.createRef();
+
+    this.rootRef = props.item.rootNodeRef;
+  }
+
   _onMouseUp = () => {
     const { item } = this.props;
     const states = item.activeStates();
@@ -83,6 +92,8 @@ class RichTextPieceView extends Component {
   _handleUpdate() {
     const { item } = this.props;
 
+    this.props.item.setRef(this.rootNodeRef);
+
     item.regs.forEach(richTextRegion => {
       try {
         richTextRegion.applyHighlight();
@@ -117,19 +128,21 @@ class RichTextPieceView extends Component {
     const { item, isText } = this.props;
 
     if (!item._value) return null;
+
     const eventHandlers = {
       onClickCapture: this._onRegionClick,
       onMouseUp: this._onMouseUp,
       onMouseOverCapture: this._onRegionMouseOver,
     };
 
+    const content = item._value || "";
     const newLineReplacement = "<br/>";
-    const val = (isText ? htmlEscape(item._value) : item._value).replace(/\n|\r/g, newLineReplacement);
+    const val = (isText ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
 
     return (
       <ObjectTag item={item}>
         <div
-          ref={item.rootNodeRef}
+          ref={this.rootNodeRef}
           style={{ overflow: "auto" }}
           data-update={item._update}
           className="htx-richtext"

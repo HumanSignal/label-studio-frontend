@@ -1,7 +1,7 @@
 import React from "react";
 
 import RegionsMixin from "../../../mixins/Regions";
-import { types, getRoot, getType } from "mobx-state-tree";
+import { types, getRoot, getType, flow } from "mobx-state-tree";
 import { restoreNewsnapshot } from "../../../core/Helpers";
 import ObjectBase from "../Base";
 import { RichTextRegionModel } from "../../../regions/RichTextRegion";
@@ -93,11 +93,14 @@ const Model = types
       return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     rootNodeRef: React.createRef(),
   }))
   .actions(self => ({
-    async updateValue(store) {
+    setRef(value) {
+      self.rootNodeRef = value;
+    },
+    updateValue: flow(function * (store) {
       const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
@@ -107,18 +110,18 @@ const Model = types
           const message = [WARNING_MESSAGES.dataTypeMistmatch(), WARNING_MESSAGES.badURL(url)];
           if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
 
-          Infomodal.error(message.map(t => <p>{t}</p>));
+          Infomodal.error(message.map((t, i) => <p key={i}>{t}</p>));
           self.setRemoteValue("");
           return;
         }
 
-        const response = await fetch(url);
+        const response = yield fetch(url);
         const { ok, status, statusText } = response;
 
         try {
           if (!ok) throw new Error(`${status} ${statusText}`);
 
-          self.setRemoteValue(await response.text());
+          self.setRemoteValue(yield response.text());
         } catch (error) {
           Infomodal.error(WARNING_MESSAGES.loadingError(url, error));
           self.setRemoteValue("");
@@ -126,7 +129,7 @@ const Model = types
       } else {
         self.setRemoteValue(value);
       }
-    },
+    }),
 
     setRemoteValue(val) {
       self.loaded = true;
@@ -163,6 +166,7 @@ const Model = types
         isText: self.type === "text",
       });
 
+
       if (self.valuetype === "url" && self.loaded === false) {
         self._regionsCache.push({ region, annotation: self.annotation });
         return;
@@ -178,6 +182,7 @@ const Model = types
 
     addRegion(range) {
       const states = self.getAvailableStates();
+      console.log({states});
       if (states.length === 0) return;
 
       const control = states[0];
@@ -198,48 +203,6 @@ const Model = types
       area.applyHighlight();
 
       return area;
-    },
-
-    fromStateJSON(obj, fromModel) {
-      if (fromModel.type === "textarea" || fromModel.type === "choices") {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-        return;
-      }
-
-      const tree = self._objectFromJSON(obj, fromModel);
-
-      self.createRegion(tree);
-    },
-
-    _objectFromJSON(obj, fromModel, { createRange } = {}) {
-      const { start, startOffset, end, endOffset, text } = obj.value;
-
-      const states = restoreNewsnapshot(fromModel);
-      const tree = {
-        pid: obj.id,
-        parentID: obj.parent_id === null ? "" : obj.parent_id,
-        startOffset: startOffset,
-        endOffset: endOffset,
-        start: start ?? "",
-        end: end ?? "",
-        text: text,
-        score: obj.score,
-        readonly: obj.readonly,
-        normalization: obj.normalization,
-        states: [states],
-      };
-
-      if (!startOffset && !endOffset) {
-        tree.startOffset = start;
-        tree.endOffset = end;
-        tree.start = "";
-        tree.end = "";
-        tree.isText = true;
-      }
-
-      states.fromStateJSON(obj);
-
-      return tree;
     },
   }));
 

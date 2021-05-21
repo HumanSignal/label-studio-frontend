@@ -10,6 +10,7 @@ import { HighlightMixin } from "../mixins/HighlightMixin";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Utils from "../utils";
+import { isDefined } from "../utils/utilities";
 
 const Model = types
   .model("RichTextRegionModel", {
@@ -55,7 +56,7 @@ const Model = types
         });
       }
 
-      if (self.object.savetextresult === "yes") {
+      if (self.object.savetextresult === "yes" && isDefined(self.text)) {
         res.value["text"] = self.text;
       }
 
@@ -91,14 +92,18 @@ const Model = types
         if (self.isText) {
           const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
           const range = document.createRange();
+
           range.setStart(startContainer.node, startContainer.position);
           range.setEnd(endContainer.node, endContainer.position);
+
+          self.text = range.toString();
+
           return range;
         }
 
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
-        if (rootNode) console.log(err);
+        if (rootNode) console.log(err, rootNode, [startOffset, endOffset]);
       }
 
       return undefined;

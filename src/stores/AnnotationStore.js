@@ -9,7 +9,7 @@ import TimeTraveller from "../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
-import { delay } from "../utils/utilities";
+import { delay, isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
@@ -640,12 +640,15 @@ const Annotation = types
     },
 
     prepareValue(value) {
-      if (value.start && value.end && !value.startOffset && !value.endOffset) {
+      const hasStartEnd = isDefined(value.start) && isDefined(value.end);
+      const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
+
+      if (hasStartEnd && lacksOffsets) {
         return Object.assign({}, value, {
           start: "",
           end: "",
-          startOffset: value.start,
-          endOffset: value.end,
+          startOffset: Number(value.start),
+          endOffset: Number(value.end),
           isText: true,
         });
       }
