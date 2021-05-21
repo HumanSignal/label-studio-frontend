@@ -96,7 +96,7 @@ const Model = types
           range.setStart(startContainer.node, startContainer.position);
           range.setEnd(endContainer.node, endContainer.position);
 
-          self.text = range.toString();
+          // self.text = range.toString();
 
           return range;
         }
