@@ -57,7 +57,7 @@ const results = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
-    value: { start: 233, end: 237, labels: ["Person"], text: "Alice" },
+    value: { start: 175, end: 180, labels: ["Person"], text: "Alice" },
   },
   {
     id: "qwerty",
@@ -128,7 +128,7 @@ Scenario("NERText", async function(I) {
 
   newResult.id = result[2].id;
   newResult.value.labels = ["Person"];
-  assert.deepStrictEqual(result, [...results, newResult]);
+  assert.deepEqual(result, [...results, newResult]);
 
   // @todo this hotkey doesn't work. why?
   // I.pressKey('R')
@@ -142,12 +142,12 @@ Scenario("NERText", async function(I) {
   I.see("Relations (1)");
 
   result = await I.executeScript(serialize);
-  assert.strictEqual(result.length, 4);
-  assert.deepStrictEqual(result[0].value, results[0].value);
-  assert.deepStrictEqual(result[1].value, results[1].value);
-  assert.strictEqual(result[3].type, "relation");
-  assert.strictEqual(result[3].from_id, result[0].id);
-  assert.strictEqual(result[3].to_id, result[2].id);
+  assert.equal(result.length, 4);
+  assert.deepEqual(result[0].value, results[0].value);
+  assert.deepEqual(result[1].value, results[1].value);
+  assert.equal(result[3].type, "relation");
+  assert.equal(result[3].from_id, result[0].id);
+  assert.equal(result[3].to_id, result[2].id);
 });
 
 Scenario("NER Text with text field missing", async function(I) {
@@ -165,7 +165,7 @@ Scenario("NER Text with text field missing", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, results);
+  assert.deepEqual(result, results);
 });
 
 // for security reasons text is not saved by default for valueType=url
@@ -185,7 +185,7 @@ Scenario("NER Text from url", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, resultsFromUrlWithoutText);
+  assert.deepEqual(result, resultsFromUrlWithoutText);
 });
 
 Scenario("NER Text from url with text saved", async function(I) {
@@ -204,7 +204,7 @@ Scenario("NER Text from url with text saved", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, resultsFromUrl);
+  assert.deepEqual(result, resultsFromUrl);
 });
 
 Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {

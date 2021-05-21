@@ -598,10 +598,14 @@ const Annotation = types
           if (obj["type"] !== "relation") {
             const { id, value: rawValue, type, ...data } = obj;
 
+            const {type: tagType} = self.names.get(obj.to_name) ?? {};
+
             // avoid duplicates of the same areas in different annotations/predictions
             const areaId = `${id || guidGenerator()}#${self.id}`;
             const resultId = `${data.from_name}@${areaId}`;
-            const value = self.prepareValue(rawValue);
+            const value = self.prepareValue(rawValue, tagType);
+
+            console.log({rawValue, value});
 
             let area = self.areas.get(areaId);
 
@@ -639,19 +643,29 @@ const Annotation = types
       }
     },
 
-    prepareValue(value) {
-      const hasStartEnd = isDefined(value.start) && isDefined(value.end);
-      const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
+    prepareValue(value, type) {
+      switch (type) {
+        case "text":
+        case "hypertext":
+        case "richtext": {
+          const hasStartEnd = isDefined(value.start) && isDefined(value.end);
+          const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
 
-      if (hasStartEnd && lacksOffsets) {
-        return Object.assign({}, value, {
-          start: "",
-          end: "",
-          startOffset: Number(value.start),
-          endOffset: Number(value.end),
-          isText: true,
-        });
+          if (hasStartEnd && lacksOffsets) {
+            return Object.assign({}, value, {
+              start: "",
+              end: "",
+              startOffset: Number(value.start),
+              endOffset: Number(value.end),
+              isText: true,
+            });
+          }
+          break;
+        }
+        default:
+          return value;
       }
+
       return value;
     },
   }));
