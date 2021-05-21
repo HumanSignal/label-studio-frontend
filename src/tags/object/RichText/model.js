@@ -48,7 +48,7 @@ const TagAttrs = types.model("RichTextModel", {
 
   /** Wether or not to save selected text to the serialized data */
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
-    window.LS_SECURE_MODE ? "no" : "yes",
+    window.LS_SECURE_MODE ? "no" : "none",
   ),
 
   selectionenabled: types.optional(types.boolean, true),
