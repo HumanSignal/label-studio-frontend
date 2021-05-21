@@ -51,6 +51,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote"; // esl
 import { Pairwise } from "../examples/pairwise";
 
 import { TimeSeries } from "../examples/timeseries";
+import { TimeSeriesSingle } from "../examples/timeseries_single";
 
 /**
  * Custom Data
