@@ -2,7 +2,6 @@ import { encode, decode } from "@thi.ng/rle-pack";
 
 import * as Colors from "./colors";
 import { colorToRGBAArray } from "./colors";
-import React from "react";
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {

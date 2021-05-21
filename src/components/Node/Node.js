@@ -1,3 +1,4 @@
+import React from "react";
 import { getType, getRoot } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
@@ -18,9 +19,7 @@ import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
 
 const NodeViews = {
-  TextRegionModel: ["Text", FontColorsOutlined, node => <span className={null}>{node.text.substring(0, 100)}</span>],
-
-  HyperTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
+  RichTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
 
   ParagraphsRegionModel: [
     "Paragraphs",

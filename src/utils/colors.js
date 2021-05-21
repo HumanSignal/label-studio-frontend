@@ -276,6 +276,36 @@ export function getScaleGradient(number) {
 }
 
 /**
+ * Removes alpha channel by merging the color with `base`
+ * @param {number} r Red channel
+ * @param {number} g Green channel
+ * @param {number} b Blue channel
+ * @param {number} a Alpha channel
+ * @param {[number, number, number, number]} base White by default
+ */
+export const removeAlpha = (r, g, b, a, base = [255, 255, 255, 1]) => {
+  const mix = [];
+
+  mix[3] = 1 - (1 - a) * (1 - base[3]); // alpha
+  mix[0] = Math.round((r * a) / mix[3] + (base[0] * base[3] * (1 - a)) / mix[3]); // red
+  mix[1] = Math.round((g * a) / mix[3] + (base[1] * base[3] * (1 - a)) / mix[3]); // green
+  mix[2] = Math.round((b * a) / mix[3] + (base[2] * base[3] * (1 - a)) / mix[3]); // blue
+
+  return mix;
+};
+
+/**
+ * Determine contrasting color for a given color
+ * Uses official W3C formula to make calculations
+ * @param {string} color
+ */
+export const contrastColor = color => {
+  const [r, g, b] = removeAlpha(...color.match(/([0-9.]{1,3})/g).map(Number));
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "rgb(0,0,0)" : "rgb(255,255,255)";
+};
+
+/*
  * Splits a color into an array of RGBA
  * @param {string} color
  */

@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario, locate, pause */
 
 const { initLabelStudio, serialize, selectText } = require("./helpers");
 
@@ -57,7 +57,7 @@ const results = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
-    value: { start: 43, end: 48, labels: ["Person"], text: "Alice" },
+    value: { start: 175, end: 180, labels: ["Person"], text: "Alice" },
   },
   {
     id: "qwerty",
@@ -66,7 +66,7 @@ const results = [
     type: "labels",
     parentID: "abcdef",
     value: { start: 1, end: 40, labels: ["Words"], text: "But I don’t want to go among mad people" },
-  },
+  }
 ];
 
 const resultsWithoutText = removeTextFromResult(results);
@@ -97,23 +97,22 @@ Scenario("NERText", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, results);
+  assert.deepEqual(result, results);
 
   // Create a new annotation to create the same result from scratch
   I.click(".lsf-annotation-tabs__add");
 
   I.pressKey("2");
-  I.doubleClick(".htx-text");
   I.executeAsyncScript(selectText, {
-    selector: '.htx-text span:nth-child(7)',
-    rangeStart: 51,
-    rangeEnd: 55,
+    selector: ".htx-richtext",
+    rangeStart: 233,
+    rangeEnd: 237,
   });
   result = await I.executeScript(serialize);
 
   // id is auto-generated, so use already assigned
   newResult.id = result[0].id;
-  assert.deepStrictEqual(result, [newResult]);
+  assert.deepEqual(result, [newResult]);
 
   // delete this new annotation
   I.click(".lsf-button[aria-label=Delete]");
@@ -121,31 +120,34 @@ Scenario("NERText", async function(I) {
 
   I.pressKey("1");
   I.executeAsyncScript(selectText, {
-    selector: '.htx-text span:nth-child(7)',
-    rangeStart: 51,
-    rangeEnd: 55,
+    selector: ".htx-richtext",
+    rangeStart: 233,
+    rangeEnd: 237,
   });
   result = await I.executeScript(serialize);
 
   newResult.id = result[2].id;
   newResult.value.labels = ["Person"];
-  assert.deepStrictEqual(result, [...results, newResult]);
+  assert.deepEqual(result, [...results, newResult]);
 
   // @todo this hotkey doesn't work. why?
-  // I.pressKey('r')
+  // I.pressKey('R')
+  I.wait(5);
   I.click(locate("li").withText("Alice"));
   I.click("Create Relation");
+  I.click(locate(".htx-highlight").withText("come"));
+  I.wait(1);
   I.click(locate(".htx-highlight").withText("come"));
 
   I.see("Relations (1)");
 
   result = await I.executeScript(serialize);
-  assert.strictEqual(result.length, 4);
-  assert.deepStrictEqual(result[0].value, results[0].value);
-  assert.deepStrictEqual(result[1].value, results[1].value);
-  assert.strictEqual(result[3].type, "relation");
-  assert.strictEqual(result[3].from_id, result[0].id);
-  assert.strictEqual(result[3].to_id, result[2].id);
+  assert.equal(result.length, 4);
+  assert.deepEqual(result[0].value, results[0].value);
+  assert.deepEqual(result[1].value, results[1].value);
+  assert.equal(result[3].type, "relation");
+  assert.equal(result[3].from_id, result[0].id);
+  assert.equal(result[3].to_id, result[2].id);
 });
 
 Scenario("NER Text with text field missing", async function(I) {
@@ -163,7 +165,7 @@ Scenario("NER Text with text field missing", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, results);
+  assert.deepEqual(result, results);
 });
 
 // for security reasons text is not saved by default for valueType=url
@@ -183,7 +185,7 @@ Scenario("NER Text from url", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, resultsFromUrlWithoutText);
+  assert.deepEqual(result, resultsFromUrlWithoutText);
 });
 
 Scenario("NER Text from url with text saved", async function(I) {
@@ -202,7 +204,7 @@ Scenario("NER Text from url with text saved", async function(I) {
 
   // restore saved result and check it back that it didn't change
   result = await I.executeScript(serialize);
-  assert.deepStrictEqual(result, resultsFromUrl);
+  assert.deepEqual(result, resultsFromUrl);
 });
 
 Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {

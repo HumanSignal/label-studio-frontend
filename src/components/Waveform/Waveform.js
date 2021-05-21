@@ -10,7 +10,6 @@ import styles from "./Waveform.module.scss";
 import globalStyles from "../../styles/global.module.scss";
 import { Slider, Row, Col, Select } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
-import InfoModal from "../Infomodal/Infomodal";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
 

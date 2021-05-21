@@ -269,12 +269,40 @@ const switchRegionTreeView = (viewName, done) => {
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
-const selectText = async ({selector, rangeStart, rangeEnd}, done) => {
-  const elem = document.querySelector(selector);
-  const range = new Range();
+const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
+  const findOnPosition = (root, position, byNode = false) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
-  range.setStart(elem.firstChild, rangeStart);
-  range.setEnd(elem.firstChild, rangeEnd);
+    let lastPosition = position;
+    let currentNode = walker.nextNode();
+
+    while (currentNode) {
+      if (currentNode.nodeType === Node.TEXT_NODE || currentNode.nodeName === "BR") {
+        let length = byNode ? 1 : currentNode.length;
+
+        if (length === undefined || length === null) {
+          length = 1;
+        }
+
+        if (length >= lastPosition) {
+          return { node: currentNode, position: lastPosition };
+        } else {
+          lastPosition -= length;
+        }
+      }
+
+      currentNode = walker.nextNode();
+    }
+  };
+
+  const elem = document.querySelector(selector);
+
+  const start = findOnPosition(elem, rangeStart);
+  const end = findOnPosition(elem, rangeEnd);
+
+  const range = new Range();
+  range.setStart(start.node, start.position);
+  range.setEnd(end.node, end.position);
 
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);

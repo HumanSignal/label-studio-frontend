@@ -165,7 +165,8 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
   const ZOOM = 3;
   AtImageView.setZoom(ZOOM, -100 * ZOOM, -100 * ZOOM);
   let hasPixel = await AtImageView.hasPixelColor(1, 1, BLUEVIOLET.rgbArray);
-  assert.equal(hasPixel, true);
+
+  assert.strictEqual(hasPixel, true);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
     degree += rotate === "right" ? 90 : -90;
@@ -173,6 +174,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
       ...rotateCoords([1, 1], degree, canvasSize.width, canvasSize.height).map(Math.round),
       BLUEVIOLET.rgbArray,
     );
-    assert.equal(hasPixel, true);
+
+    assert.strictEqual(hasPixel, true);
   }
 });

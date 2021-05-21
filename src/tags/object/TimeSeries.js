@@ -684,7 +684,6 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 });
 
 const HtxTimeSeriesViewRTS = ({ store, item }) => {
-  console.log("TS", item.brushRange, item);
   const ref = React.createRef();
 
   React.useEffect(() => {

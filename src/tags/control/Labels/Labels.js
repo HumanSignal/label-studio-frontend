@@ -51,7 +51,7 @@ const TagAttrs = types.model({
 const ModelAttrs = types.model({
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+  children: Types.unionArray(["label", "header", "view", "text", "hypertext", "richtext"]),
 
   visible: types.optional(types.boolean, true),
 });

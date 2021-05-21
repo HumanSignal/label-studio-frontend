@@ -535,6 +535,5 @@ const HtxText = inject("store")(observer(HtxTextView));
 const HtxTextPieceView = inject("store")(observer(TextPieceView));
 
 Registry.addTag("text", TextModel, HtxText);
-Registry.addObjectType(TextModel);
 
 export { TextModel, HtxText };
