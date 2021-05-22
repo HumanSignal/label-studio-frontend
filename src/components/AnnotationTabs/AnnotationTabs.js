@@ -4,9 +4,17 @@ import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./AnnotationTabs.styl";
-import { LsGrid, LsPlus, LsSparks } from "../../assets/icons";
+import { LsGrid, LsPlus, LsSparks, LsStar } from "../../assets/icons";
 
-export const EntityTab = observer(forwardRef(({ entity, selected, bordered = true, prediction = false, style, onClick }, ref) => {
+export const EntityTab = observer(forwardRef(({
+  entity,
+  selected,
+  style,
+  onClick,
+  bordered = true,
+  prediction = false,
+  displayGroundTruth = false,
+}, ref) => {
   const isUnsaved = (entity.userGenerate && !entity.sentUserGenerate) || entity.draftSelected;
 
   return (
@@ -30,7 +38,14 @@ export const EntityTab = observer(forwardRef(({ entity, selected, bordered = tru
           user={entity.user ?? {email: entity.createdBy}}
           mod={{prediction}}
         >{prediction && <LsSparks/>}</Elem>
-        ID {entity.pk ?? entity.id} {isUnsaved && "*"}
+
+        <Elem name="identifier">
+          ID {entity.pk ?? entity.id} {isUnsaved && "*"}
+        </Elem>
+
+        {displayGroundTruth && entity.ground_truth && (
+          <Elem name="ground-truth" tag={LsStar}/>
+        )}
       </Space>
     </Block>
   );
@@ -106,6 +121,7 @@ export const AnnotationTabs = observer(({
             entity={entity}
             selected={entity.selected}
             onClick={onAnnotationSelect}
+            displayGroundTruth={store.hasInterface("ground-truth")}
             prediction={entity.type === 'prediction'}
             ref={entity.selected ? selectedRef : undefined}
           />
