@@ -8,34 +8,39 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import { AnnotationHistory } from "./AnnotationHistory";
 import { Controls } from "./Controls";
-import "./CurrentAnnotation.styl";
+import "./CurrentEntity.styl";
 import { HistoryActions } from "./HistoryActions";
 import { DraftPanel } from "../DraftPanel/DraftPanel";
+import { GroundTruth } from "./GroundTruth";
 
 const injector = inject('store');
 
-export const CurrentAnnotation = injector(observer(({
+export const CurrentEntity = injector(observer(({
   store,
-  annotation,
+  entity,
   canDelete = true,
   showControls = true,
   showHistory = true,
+  showGroundTruth = false,
 }) => {
-  const isPrediction = annotation?.type === 'prediction';
-  const saved = !annotation.userGenerate || annotation.sentUserGenerate;
+  const isPrediction = entity?.type === 'prediction';
+  const saved = !entity.userGenerate || entity.sentUserGenerate;
 
-  return annotation ? (
+  return entity ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info" tag={Space} spread>
-        ID: {annotation.pk ?? annotation.id}
+        <Space size="small">
+          ID: {entity.pk ?? entity.id}
+          {showGroundTruth && <GroundTruth entity={entity}/>}
+        </Space>
 
         {store.hasInterface("annotations:add-new") && saved && (
-          <Tooltip title={`Create copy of this ${annotation.type}`}>
+          <Tooltip title={`Create copy of this ${entity.type}`}>
             <Button size="small" look="ghost" onClick={(ev) => {
               ev.preventDefault();
 
               const cs = store.annotationStore;
-              const c = cs.addAnnotationFromPrediction(annotation);
+              const c = cs.addAnnotationFromPrediction(entity);
 
               // this is here because otherwise React doesn't re-render the change in the tree
               window.setTimeout(function() {
@@ -51,7 +56,7 @@ export const CurrentAnnotation = injector(observer(({
       <Space spread style={{ margin: "8px 0" }}>
         {!isPrediction ? (
           <HistoryActions
-            history={annotation.history}
+            history={entity.history}
           />
         ) : (<div/>)}
 
@@ -69,7 +74,7 @@ export const CurrentAnnotation = injector(observer(({
                     body: "This action cannot be undone",
                     buttonLook: "destructive",
                     okText: "Proceed",
-                    onOk: () => annotation.list.deleteAnnotation(annotation),
+                    onOk: () => entity.list.deleteAnnotation(entity),
                   });
                 }}
                 style={{
@@ -95,12 +100,12 @@ export const CurrentAnnotation = injector(observer(({
       </Space>
 
       {showControls && (store.hasInterface("review") || !isPrediction) && (
-        <Controls annotation={annotation}/>
+        <Controls annotation={entity}/>
       )}
 
-      <DraftPanel item={annotation} />
+      <DraftPanel item={entity} />
 
-      {showHistory && !annotation.userGenerate && (
+      {showHistory && !entity.userGenerate && (
         <AnnotationHistory/>
       )}
     </Block>
