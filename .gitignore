@@ -10,6 +10,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+report.*.json
 
 # Dependency directory
 node_modules/

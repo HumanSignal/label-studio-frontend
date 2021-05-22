@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
@@ -49,11 +50,6 @@ const Model = types
     // regions: types.array(RectRegionModel),
     _value: types.optional(types.string, ""),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -71,7 +67,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, SeparatedControlMixin, TagAttrs, Validation, Model);
+const PolygonModel = types.compose("PolygonModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Validation, Model);
 
 const HtxView = () => null;
 

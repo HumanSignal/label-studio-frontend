@@ -1,5 +1,12 @@
+/* global Feature, Scenario, locate */
+
 const assert = require("assert");
 const { initLabelStudio, waitForImage, countKonvaShapes, switchRegionTreeView } = require("./helpers");
+
+const ALL_VISIBLE_SELECTOR = ".lsf-entities__visibility [aria-label=eye]";
+const ALL_HIDDEN_SELECTOR = ".lsf-entities__visibility [aria-label=eye-invisible]";
+const ONE_VISIBLE_SELECTOR = ".lsf-region-item__toggle [aria-label=eye]";
+const ONE_HIDDEN_SELECTOR = ".lsf-region-item__toggle [aria-label=eye-invisible]";
 
 const config = `
 <View>
@@ -48,11 +55,6 @@ const annotations = [
 Feature("Toggle image's regions visibility");
 
 Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
-  const ALL_VISIBLE_SELECTOR = "[class^=Entities_header] [aria-label=eye]";
-  const ALL_HIDDEN_SELECTOR = "[class^=Entities_header] [aria-label=eye-invisible]";
-  const ONE_VISIBLE_SELECTOR = "[class^=Entities_header] ~ .ant-tree [aria-label=eye]";
-  const ONE_HIDDEN_SELECTOR = "[class^=Entities_header] ~ .ant-tree [aria-label=eye-invisible]";
-
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -73,7 +75,7 @@ Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
         break;
     }
     let count = await I.executeAsyncScript(countKonvaShapes);
-    assert.equal(count, num);
+    assert.strictEqual(count, num);
   };
   const hideAll = () => {
     I.click(ALL_VISIBLE_SELECTOR);
@@ -92,7 +94,7 @@ Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
   I.waitForVisible("canvas", 3);
-  I.see("Regions (3)");
+  I.see("3 Regions");
   await checkVisible(3);
   hideOne();
   await checkVisible(2);
@@ -112,27 +114,20 @@ Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
   await checkVisible(0);
 });
 
-Scenario("Hiding of mass visibility switcher", (I, AtImageView) => {
-  const ALL_VISIBILITY_TOGGLE_SELECTOR = "[class^=Entities_header] [aria-label^=eye]";
-
+Scenario("Hiding bulk visibility toggle", (I, AtImageView) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
   I.waitForVisible("canvas", 3);
-  I.see("Regions (0)");
-  I.dontSeeElement(ALL_VISIBILITY_TOGGLE_SELECTOR);
+  I.see("0 Regions");
+  I.dontSeeElement(ALL_VISIBLE_SELECTOR);
   I.click(locate(".ant-tag").withText("Planet"));
   AtImageView.dragKonva(300, 300, 50, 50);
-  I.see("Regions (1)");
-  I.seeElement(ALL_VISIBILITY_TOGGLE_SELECTOR);
+  I.see("1 Region");
+  I.seeElement(ALL_VISIBLE_SELECTOR);
 });
 
 Scenario("Checking regions grouped by label", async (I, AtImageView) => {
-  const ALL_VISIBLE_SELECTOR = "[class^=Entities_treelabel] [aria-label=eye]";
-  const ALL_HIDDEN_SELECTOR = "[class^=Entities_treelabel] [aria-label=eye-invisible]";
-  const ONE_VISIBLE_SELECTOR = "[class^=Entities_treelabel] ~ div [aria-label=eye]";
-  const ONE_HIDDEN_SELECTOR = "[class^=Entities_treelabel] ~ div [aria-label=eye-invisible]";
-
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -153,7 +148,7 @@ Scenario("Checking regions grouped by label", async (I, AtImageView) => {
         break;
     }
     let count = await I.executeAsyncScript(countKonvaShapes);
-    assert.equal(count, num);
+    assert.strictEqual(count, num);
   };
   const hideAll = () => {
     I.click(ALL_VISIBLE_SELECTOR);

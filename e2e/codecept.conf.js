@@ -7,13 +7,14 @@ const headless = process.env.HEADLESS;
 // GIF=true yarn e2e:test:headless e2e/present_feature_test.js
 const recordVideo = process.env.GIF
   ? {
-      stepByStepReport: {
-        enabled: true,
-        deleteSuccessful: false,
-      },
-    }
+    stepByStepReport: {
+      enabled: true,
+      deleteSuccessful: false,
+    },
+  }
   : null;
 
+// eslint-disable-next-line no-undef
 exports.config = {
   tests: "./**/*.test.js",
   output: "./output",

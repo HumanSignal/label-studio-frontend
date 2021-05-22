@@ -122,6 +122,10 @@ export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export const isDefined = value => {
+  return value !== null && value !== undefined;
+};
+
 export function findClosestParent(el, predicate = () => true, parentGetter = el => el.parent) {
   while ((el = parentGetter(el))) {
     if (predicate(el)) {

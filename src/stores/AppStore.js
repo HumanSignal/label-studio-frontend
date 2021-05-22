@@ -8,9 +8,9 @@ import InfoModal from "../components/Infomodal/Infomodal";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
-import User from "./UserStore";
+import User, { UserExtended } from "./UserStore";
 import Utils from "../utils";
-import { delay } from "../utils/utilities";
+import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
 
 const hotkeys = Hotkey("AppStore");
@@ -97,9 +97,17 @@ export default types
      * Finish of labeling
      */
     labeledSuccess: types.optional(types.boolean, false),
+
+    /**
+     * Show or hide comments section
+     */
+    showComments: false,
+
+    users: types.optional(types.array(UserExtended), [])
   })
-  .volatile(self => ({
+  .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
+    initialized: false,
   }))
   .views(self => ({
     /**
@@ -107,6 +115,11 @@ export default types
      */
     get alert() {
       return getEnv(self).alert;
+    },
+
+    get hasSegmentation() {
+      const match = Array.from(self.annotationStore.names.values()).map(({type}) => !!type.match(/labels/));
+      return match.find(v => v === true) ?? false;
     },
   }))
   .actions(self => {
@@ -149,6 +162,10 @@ export default types
 
     function addInterface(name) {
       return self.interfaces.push(name);
+    }
+
+    function toggleComments(state) {
+      return (self.showComments = state);
     }
 
     /**
@@ -315,29 +332,53 @@ export default types
     }
 
     function submitAnnotation() {
-      const c = self.annotationStore.selected;
-      c.beforeSend();
+      const entity = self.annotationStore.selected;
+      entity.beforeSend();
 
-      if (!c.validate()) return;
+      if (!entity.validate()) return;
 
-      c.sendUserGenerate();
-      c.dropDraft();
-      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, c));
+      entity.sendUserGenerate();
+      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, entity));
+      entity.dropDraft();
     }
 
     function updateAnnotation() {
-      const c = self.annotationStore.selected;
-      c.beforeSend();
+      const entity = self.annotationStore.selected;
+      entity.beforeSend();
 
-      if (!c.validate()) return;
+      if (!entity.validate()) return;
 
-      c.dropDraft();
-      getEnv(self).onUpdateAnnotation(self, c);
-      !c.sentUserGenerate && c.sendUserGenerate();
+      getEnv(self).onUpdateAnnotation(self, entity);
+      entity.dropDraft();
+      !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
     function skipTask() {
       handleSubmittingFlag(() => getEnv(self).onSkipTask(self), "Error during skip, try again");
+    }
+
+    function acceptAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
+        const isDirty = entity.history.canUndo;
+        entity.dropDraft();
+        getEnv(self).onAcceptAnnotation(self, {isDirty, entity});
+      }, "Error during skip, try again");
+    }
+
+    function rejectAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
+        const isDirty = entity.history.canUndo;
+        entity.dropDraft();
+        getEnv(self).onRejectAnnotation(self, {isDirty, entity});
+      }, "Error during skip, try again");
     }
 
     /**
@@ -356,24 +397,54 @@ export default types
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ annotations, completions, predictions }) {
-      const cs = self.annotationStore;
-      cs.initRoot(self.config);
+    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+      const as = self.annotationStore;
+      as.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
-      predictions?.forEach(p => {
-        const obj = cs.addPrediction(p);
-        cs.selectPrediction(obj.id);
+      (predictions ?? []).forEach(p => {
+        const obj = as.addPrediction(p);
+        as.selectPrediction(obj.id);
         obj.deserializeAnnotation(p.result);
       });
-      [...(completions || []), ...(annotations || [])]?.forEach((c, i) => {
-        const obj = cs.addAnnotation(c);
-        cs.selectAnnotation(obj.id);
+
+      [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
+        const obj = as.addAnnotation(c);
+        as.selectAnnotation(obj.id);
         obj.deserializeAnnotation(c.draft || c.result);
         obj.reinitHistory();
       });
+
+      self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
+
+      if (!self.initialized) {
+        self.initialized = true;
+        getEnv(self).onStorageInitialized(self);
+      }
+    }
+
+    function setHistory(history = []) {
+      const as = self.annotationStore;
+
+      as.clearHistory();
+
+      (history ?? []).forEach(item => {
+        const fixed = isDefined(item.fixed_annotation_history_result);
+        const accepted = item.accepted;
+
+        const obj = as.addHistory({
+          ...item,
+          user: item.created_by,
+          createdDate: item.created_at,
+          acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
+        });
+
+        const result = item.previous_annotation_history_result ?? [];
+
+        obj.deserializeAnnotation(result);
+      });
     }
 
     return {
@@ -386,13 +457,17 @@ export default types
       assignConfig,
       resetState,
       initializeStore,
+      setHistory,
 
       skipTask,
       submitDraft,
       submitAnnotation,
       updateAnnotation,
+      acceptAnnotation,
+      rejectAnnotation,
 
       showModal,
+      toggleComments,
       toggleSettings,
       toggleDescription,
     };

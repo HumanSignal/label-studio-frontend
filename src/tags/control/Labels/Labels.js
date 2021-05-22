@@ -2,16 +2,18 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
-import InfoModal from "../../components/Infomodal/Infomodal";
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Tree from "../../core/Tree";
-import Types from "../../core/Types";
-import { LabelModel } from "./Label"; // eslint-disable-line no-unused-vars
-import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
-import { customTypes } from "../../core/CustomTypes";
+import InfoModal from "../../../components/Infomodal/Infomodal";
+import LabelMixin from "../../../mixins/LabelMixin";
+import Registry from "../../../core/Registry";
+import SelectedModelMixin from "../../../mixins/SelectedModel";
+import Tree from "../../../core/Tree";
+import Types from "../../../core/Types";
+import { LabelModel } from "../Label"; // eslint-disable-line no-unused-vars
+import { guidGenerator } from "../../../core/Helpers";
+import ControlBase from "../Base";
+import './Labels.styl';
+import { Block } from "../../../utils/bem";
+import { customTypes } from "../../../core/CustomTypes";
 
 /**
  * Labels tag, create a group of labels.
@@ -29,10 +31,10 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
  * @param {number} [maxUsages]               - Maximum available uses of the label
  * @param {boolean} [showInline=true]        - Show items in the same visual line
- * @param {float=} [opacity=0.6]          - Opacity of rectangle
- * @param {string=} [fillColor]           - Rectangle fill color
- * @param {string=} [strokeColor=#f48a42] - Stroke color
- * @param {number=} [strokeWidth=1]       - Width of the stroke
+ * @param {float=} [opacity=0.6]             - Opacity of rectangle
+ * @param {string=} [fillColor]              - Rectangle fill color
+ * @param {string=} [strokeColor=#f48a42]    - Stroke color
+ * @param {number=} [strokeWidth=1]          - Width of the stroke
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -61,7 +63,7 @@ const TagAttrs = types.model({
 const ModelAttrs = types.model({
   pid: types.optional(types.string, guidGenerator),
   type: "labels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+  children: Types.unionArray(["label", "header", "view", "text", "hypertext", "richtext"]),
 
   visible: types.optional(types.boolean, true),
 });
@@ -97,27 +99,14 @@ const LabelsModel = types.compose(
 );
 
 const HtxLabels = observer(({ item }) => {
-  const style = {
-    marginTop: "1em",
-    marginBottom: "1em",
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    flexFlow: "wrap",
-    marginLeft: "-5px",
-  };
-
-  if (!item.showinline) {
-    style["flexDirection"] = "column";
-    style["alignItems"] = "flex-start";
-    style["marginTop"] = "0";
-  }
-
-  if (!item.visible) {
-    style["display"] = "none";
-  }
-
-  return <div style={style}>{Tree.renderChildren(item)}</div>;
+  return (
+    <Block
+      name="labels"
+      mod={{hidden: !item.visible, inline: item.showinline}}
+    >
+      {Tree.renderChildren(item)}
+    </Block>
+  );
 });
 
 Registry.addTag("labels", LabelsModel, HtxLabels);

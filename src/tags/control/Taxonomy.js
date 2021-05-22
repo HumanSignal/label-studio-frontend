@@ -11,6 +11,7 @@ import { guidGenerator } from "../../core/Helpers";
 
 import DropdownTreeSelect from "react-dropdown-tree-select";
 import "react-dropdown-tree-select/dist/styles.css";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Taxonomy tag allows to select one or more hierarchical labels
@@ -49,10 +50,6 @@ const Model = types
     children: Types.unionArray(["choice"]),
   })
   .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get holdsState() {
       return true;
     },
@@ -128,7 +125,7 @@ const Model = types
     };
   });
 
-const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, VisibilityMixin);
+const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };

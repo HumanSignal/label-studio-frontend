@@ -4,6 +4,7 @@ import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
@@ -41,11 +42,6 @@ const Model = types
   .model({
     type: "rectangle",
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -57,7 +53,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose("RectangleModel", ControlBase, SeparatedControlMixin, TagAttrs, Model);
+const RectangleModel = types.compose("RectangleModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

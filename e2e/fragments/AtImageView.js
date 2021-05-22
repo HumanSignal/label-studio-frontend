@@ -1,8 +1,11 @@
+/* global inject */
 const { I } = inject();
+
 const {
   waitForImage,
   clickKonva,
   polygonKonva,
+  clickMultipleKonva,
   dragKonva,
   hasKonvaPixelColorAtPoint,
   whereIsPixel,
@@ -37,6 +40,13 @@ module.exports = {
    * @param {number[][]} points
    */
   clickPointsKonva(points) {
+    I.executeAsyncScript(clickMultipleKonva, points);
+  },
+  /**
+   * Click multiple times on the main Stage then close Polygon
+   * @param {number[][]} points
+   */
+  clickPolygonPointsKonva(points) {
     I.executeAsyncScript(polygonKonva, points);
   },
   /**

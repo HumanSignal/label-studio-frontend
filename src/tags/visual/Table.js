@@ -45,9 +45,6 @@ const HtxTable = inject("store")(
       { title: "Value", dataIndex: "value" },
     ];
 
-    console.log(item._value);
-    console.log(Object.keys(value));
-
     const dataSource = Object.keys(value).map(k => {
       let val = value[k];
 

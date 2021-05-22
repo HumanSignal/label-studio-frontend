@@ -176,11 +176,11 @@ const PolygonPointView = observer(({ item, name }) => {
   const startPointAttr =
     item.index === 0
       ? {
-          hitStrokeWidth: 12,
-          fill: style.strokecolor || item.primary,
-          onMouseOver: item.handleMouseOverStartPoint,
-          onMouseOut: item.handleMouseOutStartPoint,
-        }
+        hitStrokeWidth: 12,
+        fill: style.strokecolor || item.primary,
+        onMouseOver: item.handleMouseOverStartPoint,
+        onMouseOut: item.handleMouseOutStartPoint,
+      }
       : null;
 
   const dragOpts = {

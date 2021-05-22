@@ -10,6 +10,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Rating adds rating selection
@@ -51,10 +52,6 @@ const Model = types
     rating: types.maybeNull(types.number),
   })
   .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     selectedValues() {
       return self.rating;
     },
@@ -157,7 +154,7 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose("RatingModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin);
+const RatingModel = types.compose("RatingModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
 
 const HtxRating = inject("store")(
   observer(({ item, store }) => {

@@ -1,3 +1,5 @@
+/* global Feature Scenario locate */
+
 const { initLabelStudio, dragKonva, waitForImage, serialize } = require("../helpers");
 const assert = require("assert");
 
@@ -26,15 +28,15 @@ Scenario("Two RectangleLabels", async I => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 
-  I.waitForVisible("canvas", 3);
+  I.waitForVisible("canvas", 5);
   I.executeAsyncScript(waitForImage);
 
   I.click(locate(".ant-tag").withText("Plane"));
   I.executeAsyncScript(dragKonva, 300, 300, 50, 50);
   I.click(locate(".ant-tag").withText("Car"));
   I.executeAsyncScript(dragKonva, 100, 600, 400, -300);
-  I.see("Regions (2)");
+  I.see("2 Regions");
 
   const result = await I.executeScript(serialize);
-  assert.deepEqual(result.length, 2);
+  assert.deepStrictEqual(result.length, 2);
 });

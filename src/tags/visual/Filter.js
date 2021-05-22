@@ -5,6 +5,7 @@ import { Input } from "antd";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Add a filter search for a large number of labels.
@@ -44,10 +45,6 @@ const Model = types
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get toTag() {
       return self.annotation.names.get(self.toname);
     },
@@ -101,7 +98,7 @@ const Model = types
     },
   }));
 
-const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin);
+const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin, AnnotationMixin);
 
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;

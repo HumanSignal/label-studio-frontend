@@ -8,6 +8,10 @@
   align-items: center;
 }
 
+.ant-tree .ant-tree-node-content-wrapper {
+  padding: 0;
+}
+
 .ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected,
 .ant-tree .ant-tree-node-content-wrapper:hover {
   background: none;

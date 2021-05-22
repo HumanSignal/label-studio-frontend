@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature, Scenario, DataTable, Data, locate */
 
 const { initLabelStudio, serialize } = require("./helpers");
 
@@ -52,7 +52,7 @@ const shapes = [
   },
   {
     shape: "Polygon",
-    action: "clickPointsKonva",
+    action: "clickPolygonPointsKonva",
     regions: [
       {
         params: [
@@ -116,7 +116,7 @@ Data(shapesTable).Scenario("Simple rotation", async function(I, AtImageView, cur
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
   I.waitForVisible("canvas");
-  I.see("Regions (0)");
+  I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -153,7 +153,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
   I.waitForVisible("canvas");
-  I.see("Regions (0)");
+  I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -165,12 +165,8 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
   const ZOOM = 3;
   AtImageView.setZoom(ZOOM, -100 * ZOOM, -100 * ZOOM);
   let hasPixel = await AtImageView.hasPixelColor(1, 1, BLUEVIOLET.rgbArray);
-  if (!hasPixel) {
-    // Debugging info
-    const points = await AtImageView.whereIsPixel(BLUEVIOLET.rgbArray);
-    console.log(`points`, JSON.stringify(points));
-  }
-  assert.equal(hasPixel, true);
+
+  assert.strictEqual(hasPixel, true);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
     degree += rotate === "right" ? 90 : -90;
@@ -178,11 +174,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
       ...rotateCoords([1, 1], degree, canvasSize.width, canvasSize.height).map(Math.round),
       BLUEVIOLET.rgbArray,
     );
-    if (!hasPixel) {
-      // Debugging info
-      const points = await AtImageView.whereIsPixel(BLUEVIOLET.rgbArray);
-      console.log(`points`, JSON.stringify(points));
-    }
-    assert.equal(hasPixel, true);
+
+    assert.strictEqual(hasPixel, true);
   }
 });

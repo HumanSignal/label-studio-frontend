@@ -12,9 +12,22 @@
   z-index: 1;
 }
 
+.main-content-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .editor {
+  --main-bg-color: #FAFAFA;
+  --sticky-items-offset: 0px;
+  width: 100%;
+  height: 100%;
   min-width: 320px;
   margin: 0 auto;
+  display: flex;
+  align-items: stretch;
+  background-color: var(--main-bg-color);
 
   @include respond("phone") {
     width: 300px;
@@ -36,14 +49,10 @@
   min-width: 320px;
   display: flex;
   flex-flow: column;
-
-  & > div {
-    margin-bottom: 20px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
+  z-index: 100;
+  align-self: stretch;
+  background-color: #fff;
+  border-left: 1px solid rgba(#000, 0.1);
 
   @include respond("phone") {
     margin-left: 0;
@@ -82,9 +91,15 @@
 }
 
 .common {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex: 1;
+  display: grid;
+  grid-template-columns: calc(100% - 320px) 320px;
+  align-items: stretch;
+  max-width: 100%;
+
+  &.view-all {
+    grid-template-columns: 100%;
+  }
 }
 
 .commonbsp {
@@ -117,20 +132,17 @@ $gap: 30px;
 
 .grid {
   flex-grow: 1;
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-auto-columns: calc(50% - 15px);
+  grid-auto-flow: column;
+  grid-column-gap: $gap;
+  margin: 0 30px;
   overflow: auto;
-  margin-right: 20px + $gap;
   position: relative;
 }
 
 .grid > div > h4 {
   cursor: pointer;
-}
-
-.grid > div {
-  flex: 0 0 calc(50% - #{$gap});
-  margin-left: $gap;
 }
 
 .container {
@@ -155,7 +167,7 @@ $gap: 30px;
 }
 
 .container > button.right {
-  right: 20px;
+  right: 0;
 }
 
 .grid > div:global(.hover) {
