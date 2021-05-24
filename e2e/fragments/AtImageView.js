@@ -10,6 +10,8 @@ const {
   hasKonvaPixelColorAtPoint,
   whereIsPixel,
   getCanvasSize,
+  getImageSize,
+  getImageFrameSize,
   setZoom,
 } = require("../tests/helpers");
 
@@ -20,6 +22,16 @@ module.exports = {
 
   async getCanvasSize() {
     const sizes = await I.executeAsyncScript(getCanvasSize);
+    return sizes;
+  },
+
+  async getImageSize() {
+    const sizes = await I.executeAsyncScript(getImageSize);
+    return sizes;
+  },
+
+  async getImageFrameSize() {
+    const sizes = await I.executeAsyncScript(getImageFrameSize);
     return sizes;
   },
 

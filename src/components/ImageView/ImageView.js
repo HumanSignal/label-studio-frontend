@@ -178,8 +178,11 @@ export default observer(
       );
     }
 
+    lastOffsetWidth = -1;
     onResize = () => {
-      this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
+      if (this.lastOffsetWidth !== this.container.offsetWidth) {
+        this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
+      }
     };
 
     componentDidMount() {
@@ -188,6 +191,10 @@ export default observer(
 
     componentWillUnmount() {
       window.removeEventListener("resize", this.onResize);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+      this.onResize();
     }
 
     renderTools() {

@@ -242,6 +242,16 @@ const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
   done({ width: stage.width(), height: stage.height() });
 };
+const getImageSize = done => {
+  const image = window.document.querySelector('img[alt="LS"]');
+  const clientRect = image.getBoundingClientRect();
+  done({ width: clientRect.width, height: clientRect.height });
+};
+const getImageFrameSize = done => {
+  const image = window.document.querySelector('img[alt="LS"]').parentElement;
+  const clientRect = image.getBoundingClientRect();
+  done({ width: clientRect.width, height: clientRect.height });
+};
 const setZoom = (scale, x, y, done) => {
   Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
   setTimeout(() => {
@@ -307,8 +317,8 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);
 
-  const evt = new MouseEvent('mouseup');
-  evt.initMouseEvent('mouseup', true, true);
+  const evt = new MouseEvent("mouseup");
+  evt.initMouseEvent("mouseup", true, true);
   elem.dispatchEvent(evt);
 
   done();
@@ -356,6 +366,8 @@ module.exports = {
   dragKonva,
   hasKonvaPixelColorAtPoint,
   getCanvasSize,
+  getImageSize,
+  getImageFrameSize,
   setZoom,
   whereIsPixel,
   countKonvaShapes,
