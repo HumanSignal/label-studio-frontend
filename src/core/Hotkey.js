@@ -90,6 +90,7 @@ export const Hotkey = name => {
         if (prefix) comb = prefix + "+" + combs[i];
         else comb = combs[i];
 
+        // eslint-disable-next-line no-prototype-builtins
         if (!_hotkeys_map.hasOwnProperty(comb)) return comb;
       }
 

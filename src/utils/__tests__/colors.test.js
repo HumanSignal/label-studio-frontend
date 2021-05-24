@@ -1,3 +1,4 @@
+/* global describe, test, expect, it */
 import { hexToRGBA, colorToRGBA, convertToRGBA, stringToColor } from "../colors";
 
 const defaultRGBA = "rgba(255, 255, 255, 0.1)";
