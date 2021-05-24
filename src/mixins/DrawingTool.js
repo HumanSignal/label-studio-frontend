@@ -94,7 +94,7 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() && !self.isIncorrectLabel() && self.canStart();
+        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
       },
 
       startDrawing(x, y) {
