@@ -135,7 +135,6 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
 
     const watchRegionAppear = () => {
       const nodesExist = isDefined(startNode.getRegionElement()) && isDefined(endNode.getRegionElement());
-      console.log(nodesExist);
 
       if (render !== nodesExist) {
         setRender(nodesExist);
