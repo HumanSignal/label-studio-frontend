@@ -608,8 +608,6 @@ const Annotation = types
             const resultId = `${data.from_name}@${areaId}`;
             const value = self.prepareValue(rawValue, tagType);
 
-            console.log({rawValue, value});
-
             let area = self.areas.get(areaId);
 
             if (!area) {
