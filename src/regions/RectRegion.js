@@ -234,6 +234,12 @@ const HtxRectangleView = ({ item }) => {
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
         }}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+        }}
         onDragEnd={e => {
           const t = e.target;
 
@@ -284,8 +290,7 @@ const HtxRectangleView = ({ item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.annotation.editable) return;
-
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }

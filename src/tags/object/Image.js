@@ -258,7 +258,21 @@ const Model = types
 
     return { afterCreate, getToolsManager };
   })
-
+  .extend(self => {
+    let skipInteractions = false;
+    return {
+      views: {
+        getSkipInteractions() {
+          return skipInteractions;
+        },
+      },
+      actions: {
+        setSkipInteractions(value) {
+          skipInteractions = value;
+        },
+      },
+    };
+  })
   .actions(self => ({
     freezeHistory() {
       //self.annotation.history.freeze();

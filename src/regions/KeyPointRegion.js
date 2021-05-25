@@ -142,6 +142,12 @@ const HtxKeyPointView = ({ item }) => {
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
         name={item.id}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+        }}
         onDragEnd={e => {
           const t = e.target;
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
@@ -181,7 +187,7 @@ const HtxKeyPointView = ({ item }) => {
         onClick={e => {
           const stage = item.parent.stageRef;
 
-          if (!item.annotation.editable) return;
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";
