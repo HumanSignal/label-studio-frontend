@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { CurrentAnnotation } from "../CurrentAnnotation/CurrentAnnotation";
+import { CurrentEntity } from "../CurrentEntity/CurrentEntity";
 import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
@@ -13,11 +13,12 @@ export const AnnotationTab = observer(({ store }) => {
   return (
     <>
       {store.hasInterface("annotations:current") && (
-        <CurrentAnnotation
-          annotation={as.selected}
+        <CurrentEntity
+          entity={as.selected}
           showControls={store.hasInterface("controls")}
           canDelete={store.hasInterface("annotations:delete")}
           showHistory={store.hasInterface("annotations:history")}
+          showGroundTruth={store.hasInterface("ground-truth")}
         />
       )}
 

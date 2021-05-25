@@ -3,6 +3,7 @@ import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
 import { observer } from "mobx-react";
 import {
   StarOutlined,
+  StarFilled,
   DeleteOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -52,21 +53,30 @@ const Annotation = observer(({ item, store }) => {
     </Tooltip>
   );
 
-  let setHoney = () => (
-    <Tooltip placement="topLeft" title="Set this result as a ground truth">
-      <Button
-        size="small"
-        type="primary"
-        ghost={true}
-        onClick={ev => {
-          ev.preventDefault();
-          item.setGroundTruth(true);
-        }}
-      >
-        <StarOutlined />
-      </Button>
-    </Tooltip>
-  );
+  let setHoney = () => {
+    const title = item.ground_truth
+      ? "Unset this result as a ground truth"
+      : "Set this result as a ground truth";
+
+    return (
+      <Tooltip placement="topLeft" title={title}>
+        <Button
+          size="small"
+          look="link"
+          onClick={ev => {
+            ev.preventDefault();
+            item.setGroundTruth(!item.ground_truth);
+          }}
+        >
+          {item.ground_truth ? (
+            <StarFilled />
+          ) : (
+            <StarOutlined />
+          )}
+        </Button>
+      </Tooltip>
+    );
+  };
 
   const toggleVisibility = e => {
     e.preventDefault();
@@ -132,7 +142,7 @@ const Annotation = observer(({ item, store }) => {
 
     return (
       <div className={styles.buttons}>
-        {store.hasInterface("ground-truth") && (item.honeypot ? removeHoney() : setHoney())}
+        {store.hasInterface("ground-truth") && (item.ground_truth ? removeHoney() : setHoney())}
         &nbsp;
         {store.hasInterface("annotations:delete") && (
           <Tooltip placement="topLeft" title="Delete selected annotation">

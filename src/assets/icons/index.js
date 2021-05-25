@@ -8,3 +8,4 @@ export { default as LsGrid } from "./grid.svg";
 export { default as LsThumbsDown } from './thumbs_down.svg';
 export { default as LsThumbsUp } from './thumbs_up.svg';
 export { default as LsSettings } from './settings.svg';
+export { default as LsStar } from "./star.svg";

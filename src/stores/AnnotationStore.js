@@ -55,7 +55,7 @@ const Annotation = types
     sentUserGenerate: types.optional(types.boolean, false),
     localUpdate: types.optional(types.boolean, false),
 
-    honeypot: types.optional(types.boolean, false),
+    ground_truth: types.optional(types.boolean, false),
     skipped: false,
 
     history: types.optional(TimeTraveller, { targetPath: "../areas" }),
@@ -79,7 +79,10 @@ const Annotation = types
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
-    return sn;
+    return {
+      ...sn,
+      ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
+    };
   })
   .views(self => ({
     get store() {
@@ -131,7 +134,7 @@ const Annotation = types
     },
 
     setGroundTruth(value) {
-      self.honeypot = value;
+      self.ground_truth = value;
       getEnv(self).onGroundTruth(self.store, self, value);
     },
 
