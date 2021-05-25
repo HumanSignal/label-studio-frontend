@@ -183,6 +183,7 @@ export default observer(
     onResize = () => {
       if (this.lastOffsetWidth !== this.container.offsetWidth) {
         this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
+        this.lastOffsetWidth = this.container.offsetWidth;
       }
     };
 
