@@ -20,7 +20,7 @@ const Model = types
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
   .views(self => ({
-    get regionElement() {
+    getRegionElement() {
       return self.wsRegionElement(self._ws_region);
     },
 

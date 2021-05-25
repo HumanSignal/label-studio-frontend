@@ -31,7 +31,7 @@ const Model = types
     get parent() {
       return self.object;
     },
-    get regionElement() {
+    getRegionElement() {
       return self._spans?.[0];
     },
   }))
