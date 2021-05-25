@@ -31,7 +31,7 @@ const Model = types
     get parent() {
       return getParentOfType(self, TextAreaModel);
     },
-    get regionElement() {
+    getRegionElement() {
       return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
   }))
