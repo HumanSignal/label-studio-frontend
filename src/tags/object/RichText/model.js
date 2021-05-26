@@ -9,6 +9,7 @@ import Infomodal from "../../../components/Infomodal/Infomodal";
 import Utils from "../../../utils";
 import { customTypes } from "../../../core/CustomTypes";
 import { parseValue } from "../../../utils/data";
+import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -74,10 +75,6 @@ const Model = types
     get hasStates() {
       const states = self.states();
       return states && states.length > 0;
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
@@ -206,4 +203,4 @@ const Model = types
     },
   }));
 
-export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, Model, AnnotationMixin, ObjectBase);

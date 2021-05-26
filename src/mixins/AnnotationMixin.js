@@ -1,5 +1,4 @@
 import { getRoot, types } from "mobx-state-tree";
-import { isDefined } from "../utils/utilities";
 
 export const AnnotationMixin = types.model("AnnotationMixin", {
 
