@@ -132,7 +132,7 @@ const Model = types
           labels.selectedLabels.length === 1 &&
           self.selected &&
           region.results.length === 1 &&
-          !self.parent.allowempty
+          (!self.parent.allowempty || self.isEmpty)
         )
           return;
       }
@@ -153,8 +153,9 @@ const Model = types
       }
 
       if (self.isEmpty) {
+        let selected = self.selected;
         labels.unselectAll();
-        self.setSelected(!self.selected);
+        self.setSelected(!selected);
       } else {
         /**
          * Multiple
@@ -179,8 +180,14 @@ const Model = types
         }
       }
 
-      if (labels.allowempty) {
-        labels.findLabel().setSelected(!labels.selectedValues()?.length);
+      if (labels.allowempty && !self.isEmpty) {
+        if (sameObject) {
+          labels.findLabel().setSelected(!labels.selectedValues()?.length);
+        } else {
+          if (self.selected) {
+            labels.findLabel().setSelected(false);
+          }
+        }
       }
 
       region && sameObject && region.setValue(self.parent);
