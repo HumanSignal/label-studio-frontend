@@ -28,13 +28,15 @@ const Model = types
     get parent() {
       return self.object;
     },
-    get regionElement() {
-      return self._spans[0];
+    getRegionElement() {
+      return self._spans?.[0];
     },
   }))
   .actions(self => ({
     beforeDestroy() {
-      self.removeHighlight();
+      try{
+        self.removeHighlight();
+      } catch(e) {}
     },
 
     serialize() {

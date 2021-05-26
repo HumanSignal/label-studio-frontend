@@ -29,7 +29,7 @@ const Model = types
       return self.object;
     },
 
-    get regionElement() {
+    getRegionElement() {
       return self._brushRef;
     },
   }))

@@ -73,7 +73,7 @@ const _detect = region => {
     case "audioregion":
     case "paragraphs":
     case "timeseriesregion": {
-      return Geometry.getDOMBBox(region.regionElement);
+      return Geometry.getDOMBBox(region.getRegionElement());
     }
     case "rectangleregion": {
       return imageRelatedBBox(
