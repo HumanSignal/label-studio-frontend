@@ -154,6 +154,7 @@ const Result = types
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
     get emptyStyle() {
+      if (!self.from_name.findLabel) return null;
       const emptyLabel = self.from_name.findLabel(null);
       if (!emptyLabel) return null;
       const fillcolor = emptyLabel.background || emptyLabel.parent.fillcolor;
