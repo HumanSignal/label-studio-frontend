@@ -34,7 +34,9 @@ const Model = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      self.removeHighlight();
+      try{
+        self.removeHighlight();
+      } catch(e) {}
     },
 
     serialize() {

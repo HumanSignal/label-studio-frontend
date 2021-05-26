@@ -88,7 +88,9 @@ export const HighlightMixin = types
      * Remove stylesheet before removing the highlight itself
      */
     beforeDestroy() {
-      self._stylesheet.remove();
+      try {
+        self._stylesheet.remove();
+      } catch(e) {}
     },
 
     /**
