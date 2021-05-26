@@ -12,6 +12,7 @@ import User, { UserExtended } from "./UserStore";
 import Utils from "../utils";
 import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
+import { guidGenerator } from "../utils/unique";
 
 const hotkeys = Hotkey("AppStore");
 
@@ -45,6 +46,7 @@ export default types
     annotationStore: types.optional(AnnotationStore, {
       annotations: [],
       predictions: [],
+      history: [],
     }),
 
     /**
@@ -436,6 +438,7 @@ export default types
 
         const obj = as.addHistory({
           ...item,
+          pk: guidGenerator(),
           user: item.created_by,
           createdDate: item.created_at,
           acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",

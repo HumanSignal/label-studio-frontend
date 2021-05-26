@@ -2,9 +2,9 @@ import React, { Component } from "react";
 import { htmlEscape, matchesSelector } from "../../../utils/html";
 import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
-import { observer } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
-import { isDefined } from "../../../utils/utilities";
+import { fixMobxObserve } from "../TimeSeries/helpers";
 
 class RichTextPieceView extends Component {
   constructor(props) {
@@ -127,6 +127,8 @@ class RichTextPieceView extends Component {
   render() {
     const { item, isText } = this.props;
 
+    console.log({item});
+
     if (!item._value) return null;
 
     const eventHandlers = {
@@ -154,8 +156,10 @@ class RichTextPieceView extends Component {
   }
 }
 
-const RTPV = observer(RichTextPieceView);
+const storeInjector = inject("store");
 
-export const HtxRichText = ({ isText } = { isText: false }) => {
-  return props => <RTPV {...props} isText={isText} />;
+const RTPV = storeInjector(observer(RichTextPieceView));
+
+export const HtxRichText = ({ isText = false } = {}) => {
+  return storeInjector(observer(props => <RTPV {...props} isText={isText} />));
 };
