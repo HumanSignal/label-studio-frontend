@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { cast, types } from "mobx-state-tree";
 
 import InfoModal from "../../../components/Infomodal/Infomodal";
 import LabelMixin from "../../../mixins/LabelMixin";
@@ -79,11 +79,16 @@ const Model = LabelMixin.views(self => ({
     if (self.allowempty) {
       let empty = self.findLabel(null);
       if (!empty) {
-        self.children.unshift({
+        const emptyParams = {
           value: null,
           type: "label",
           background: defaultStyle.fillcolor,
-        });
+        };
+        if (self.children) {
+          self.children.unshift(emptyParams);
+        } else {
+          self.children = cast([emptyParams]);
+        }
         empty = self.children[0];
       }
       empty.setEmpty();
