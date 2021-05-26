@@ -11,9 +11,10 @@ import Types from "../../../core/Types";
 import { LabelModel } from "../Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../../core/Helpers";
 import ControlBase from "../Base";
-import './Labels.styl';
+import "./Labels.styl";
 import { Block } from "../../../utils/bem";
 import { customTypes } from "../../../core/CustomTypes";
+import { defaultStyle } from "../../../core/Constants";
 
 /**
  * Labels tag, create a group of labels.
@@ -53,6 +54,7 @@ const TagAttrs = types.model({
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
   fillopacity: types.optional(customTypes.range(), "0.6"),
+  allowempty: types.optional(types.boolean, false),
 });
 
 /**
@@ -73,6 +75,20 @@ const Model = LabelMixin.views(self => ({
     return self.choice === "single";
   },
 })).actions(self => ({
+  afterCreate() {
+    if (self.allowempty) {
+      let empty = self.findLabel(null);
+      if (!empty) {
+        self.children.unshift({
+          value: null,
+          type: "label",
+          background: defaultStyle.fillcolor,
+        });
+        empty = self.children[0];
+      }
+      empty.setEmpty();
+    }
+  },
   validate() {
     const regions = self.annotation.regionStore.regions;
 
@@ -100,10 +116,7 @@ const LabelsModel = types.compose(
 
 const HtxLabels = observer(({ item }) => {
   return (
-    <Block
-      name="labels"
-      mod={{hidden: !item.visible, inline: item.showinline}}
-    >
+    <Block name="labels" mod={{ hidden: !item.visible, inline: item.showinline }}>
       {Tree.renderChildren(item)}
     </Block>
   );

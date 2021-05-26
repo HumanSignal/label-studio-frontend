@@ -40,7 +40,11 @@ export const AreaMixin = types
 
     get style() {
       const styled = self.results.find(r => r.style);
-      return styled && styled.style;
+      if (styled && styled.style) {
+        return styled.style;
+      }
+      const emptyStyled = self.results.find(r => r.emptyStyle);
+      return emptyStyled && emptyStyled.emptyStyle;
     },
 
     // @todo may be slow, consider to add some code to annotation (un)select* methods
