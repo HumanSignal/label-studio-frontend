@@ -160,6 +160,17 @@ export const HighlightMixin = types
       self._spans.forEach(span => span.classList.remove(...classList));
     },
 
+    toggleHidden(e) {
+      self.hidden = !self.hidden;
+      if (self.hidden) {
+        self.addClass("__hidden");
+      } else {
+        self.removeClass("__hidden");
+      }
+
+      e?.stopPropagation();
+    },
+
     _hasSpans() {
       return (
         self._spans &&
@@ -186,6 +197,7 @@ const createSpanStylesheet = (identifier, color) => {
     active: "__active",
     highlighted: "__highlighted",
     collapsed: "__collapsed",
+    hidden: "__hidden",
   };
 
   const classNames = {
@@ -236,6 +248,17 @@ const createSpanStylesheet = (identifier, color) => {
     `,
     [`${classNames.highlighted} + ${classNames.highlighted}::before`]: `
       border-left: none;
+    `,
+    [`${className}.${stateClass.hidden}`]: `
+      border: none;
+      background: none;
+      padding: 0;
+    `,
+    [`${className}.${stateClass.hidden}::before`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.hidden}::after`]: `
+      display: none
     `,
   };
 
