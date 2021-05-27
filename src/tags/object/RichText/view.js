@@ -127,8 +127,6 @@ class RichTextPieceView extends Component {
   render() {
     const { item, isText } = this.props;
 
-    console.log({item});
-
     if (!item._value) return null;
 
     const eventHandlers = {
