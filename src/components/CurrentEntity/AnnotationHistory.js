@@ -32,7 +32,7 @@ export const AnnotationHistory = injector(observer(({
     <Block name="annotation-history">
       <HistoryItem
         user={createdBy}
-        date={createdDate}
+        extra="final"
         entity={selected}
         onClick={() => annotationStore.selectHistory(null)}
         selected={!isDefined(selectedHistory)}
@@ -62,7 +62,7 @@ export const AnnotationHistory = injector(observer(({
 }));
 AnnotationHistory.displayName = 'AnnotationHistory';
 
-const HistoryItem = observer(({entity, user, date, acceptedState, selected = false, selectable = true, onClick}) => {
+const HistoryItem = observer(({entity, user, date, extra, acceptedState, selected = false, selectable = true, onClick}) => {
   const isPrediction = entity?.type === 'prediction';
   return (
     <Block name="history-item" mod={{selected, disabled: !selectable}} onClick={onClick}>
@@ -92,6 +92,10 @@ const HistoryItem = observer(({entity, user, date, acceptedState, selected = fal
           {date ? (
             <Elem name="date">
               {formatDistanceToNow(new Date(date), { addSuffix: true })}
+            </Elem>
+          ) : extra ? (
+            <Elem name="date">
+              {extra}
             </Elem>
           ) : null}
         </Space>

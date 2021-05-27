@@ -114,6 +114,14 @@ const Annotation = types
       self.areas.forEach(a => a.results.forEach(r => results.push(r)));
       return results;
     },
+
+    get hasChanges() {
+      if (isDefined(self.resultSnapshot)) {
+        return self.resultSnapshot !== JSON.stringify(self.areas.toJSON());
+      }
+
+      return false;
+    }
   }))
   .volatile(self => ({
     hidden: false,
@@ -122,6 +130,7 @@ const Annotation = types
     autosaveDelay: 5000,
     isDraftSaving: false,
     versions: {},
+    resultSnapshot: "",
   }))
   .actions(self => ({
     reinitHistory() {
@@ -140,6 +149,10 @@ const Annotation = types
 
     sendUserGenerate() {
       self.sentUserGenerate = true;
+    },
+
+    saveSnapshot() {
+      self.resultSnapshot = JSON.stringify(self.areas.toJSON());
     },
 
     setLocalUpdate(value) {
@@ -638,6 +651,8 @@ const Annotation = types
             );
           }
         });
+
+        self.saveSnapshot();
       } catch (e) {
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
