@@ -6,13 +6,22 @@ import Constants from "../core/Constants";
 
 export const HighlightMixin = types
   .model()
+  .views(self => ({
+    get _hasSpans() {
+      return self._spans ? (
+        self._spans.reduce((res, span) => {
+          return res && !!span.parentNode;
+        }, true)
+      ) : false;
+    },
+  }))
   .actions(self => ({
     /**
      * Create highlights from the stored `Range`
      */
     applyHighlight() {
       // Avoid calling this method twice
-      if (self._hasSpans()) {
+      if (self._hasSpans) {
         console.warn("Spans already created");
         return;
       }
@@ -36,6 +45,14 @@ export const HighlightMixin = types
       });
 
       return self._spans;
+    },
+
+    updateSpans() {
+      if (self._hasSpans) {
+        self._spans.forEach(span => {
+          span.setAttribute("data-label", self.getLabels());
+        });
+      }
     },
 
     /**
@@ -127,7 +144,7 @@ export const HighlightMixin = types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.style.fillcolor;
+      let labelColor = (self.parent.highlightcolor || self.style?.fillcolor) ?? '#cccccc';
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
@@ -169,15 +186,6 @@ export const HighlightMixin = types
       }
 
       e?.stopPropagation();
-    },
-
-    _hasSpans() {
-      return (
-        self._spans &&
-        self._spans.reduce((res, span) => {
-          return res && !!span.parent;
-        }, true)
-      );
     },
   }));
 

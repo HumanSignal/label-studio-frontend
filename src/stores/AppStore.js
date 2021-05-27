@@ -446,6 +446,7 @@ export default types
           user: item.created_by,
           createdDate: item.created_at,
           acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
+          editable: false,
         });
 
         const result = item.previous_annotation_history_result ?? [];

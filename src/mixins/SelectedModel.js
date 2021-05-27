@@ -80,7 +80,7 @@ const SelectedModelMixin = types
       self.unselectAll();
       if (!value) return;
       const values = Array.isArray(value) ? value : [value];
-      values.map(v => self.findLabel(v)).forEach(label => label.setSelected(true));
+      values.map(v => self.findLabel(v)).forEach(label => label?.setSelected(true));
     },
   }));
 
