@@ -10,7 +10,7 @@ export const HighlightMixin = types
     get _hasSpans() {
       return self._spans ? (
         self._spans.reduce((res, span) => {
-          return res && !!span.parentNode;
+          return res && span.isConnected;
         }, true)
       ) : false;
     },
