@@ -5,6 +5,11 @@ import { isDefined } from "../utils/utilities";
 
 const SelectedModelMixin = types
   .model()
+  .volatile(self => {
+    return {
+      isSeparated: false,
+    };
+  })
   .views(self => ({
     get tiedChildren() {
       return Tree.filterChildrenOfType(self, self._child);
@@ -88,8 +93,8 @@ const SelectedModelMixin = types
     updateFromResult(value) {
       self.unselectAll();
       const values = Array.isArray(value) ? (value.length ? value : [null]) : [value];
-      if (value.length) {
-        values.map(v => self.findLabel(v)).forEach(label => label.setSelected(true));
+      if (values.length) {
+        values.map(v => self.findLabel(v)).forEach(label => label?.setSelected(true));
       } else if (self.allowempty) {
         self.findLabel(null)?.setSelected(true);
       }

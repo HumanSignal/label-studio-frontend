@@ -21,8 +21,7 @@ const BaseTool = types
   .views(self => {
     return {
       get isSeparated() {
-        // Maybe it's not a good, but the easiest way to find out that for now
-        return !self.control.children;
+        return self.control.isSeparated;
       },
       get viewClass() {
         return self.isSeparated && self.iconClass ? <ToolView item={self} /> : null;

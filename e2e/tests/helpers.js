@@ -44,6 +44,25 @@ const waitForImage = async done => {
 };
 
 /**
+ * Wait for all audio on the page to be loaded
+ * @param {function} done codecept async success handler
+ */
+const waitForAudio = async done => {
+  const audios = document.querySelectorAll("audio");
+  await Promise.all(
+    [...audios].map(audio => {
+      if (audio.readyState === 4) return true;
+      return new Promise(resolve => {
+        audio.addEventListener("durationchange", () => {
+          resolve(true);
+        });
+      });
+    }),
+  );
+  done();
+};
+
+/**
  * Float numbers can't be compared strictly, so convert any numbers or structures with numbers
  * to same structures but with rounded numbers (int for ints, fixed(2) for floats)
  * @param {*} data
@@ -350,9 +369,34 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
+function _isObject(value) {
+  var type = typeof value;
+  return value != null && (type == "object" || type == "function");
+}
+function _pickBy(obj, predicate, path = []) {
+  if (!_isObject(obj) || Array.isArray(obj)) return obj;
+  return Object.keys(obj).reduce((res, key) => {
+    const val = obj[key];
+    const fullPath = [...path, key];
+    if (predicate(val, key, fullPath)) {
+      res[key] = _pickBy(val, predicate, fullPath);
+    }
+    return res;
+  }, {});
+}
+function _not(predicate) {
+  return (...args) => {
+    return !predicate(...args);
+  };
+}
+function omitBy(object, predicate) {
+  return _pickBy(object, _not(predicate));
+}
+
 module.exports = {
   initLabelStudio,
   waitForImage,
+  waitForAudio,
   delay,
 
   getSizeConvertor,
@@ -375,4 +419,6 @@ module.exports = {
 
   serialize,
   selectText,
+
+  omitBy,
 };
