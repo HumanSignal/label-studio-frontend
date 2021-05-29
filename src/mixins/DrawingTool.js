@@ -292,7 +292,11 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
             );
             self.finishDrawing();
           } else {
-            self.nextPoint(x, y);
+            if (self.comparePointsWithThreshold(startPoint, { x, y })) {
+              self.finishDrawing();
+            } else {
+              self.nextPoint(x, y);
+            }
           }
         } else {
           if (!self.canStartDrawing()) return;

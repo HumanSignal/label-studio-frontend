@@ -25,6 +25,9 @@ exports.config = {
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
     },
+    MouseActions: {
+      require: "./helpers/MouseActions.js",
+    },
   },
   include: {
     I: "./steps_file.js",
