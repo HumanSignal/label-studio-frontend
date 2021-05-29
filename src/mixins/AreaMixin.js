@@ -1,6 +1,7 @@
 import { types, getParent, destroy } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Result from "../regions/Result";
+import { defaultStyle } from "../core/Constants";
 
 export const AreaMixin = types
   .model({
@@ -53,7 +54,7 @@ export const AreaMixin = types
     },
 
     getOneColor() {
-      return self.style?.fillcolor || "#ccc";
+      return (self.style || defaultStyle).fillcolor;
     },
   }))
   .volatile(self => ({

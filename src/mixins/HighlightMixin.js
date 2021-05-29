@@ -2,7 +2,7 @@ import { types, getRoot } from "mobx-state-tree";
 
 import Utils from "../utils";
 import { guidGenerator } from "../utils/unique";
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 
 export const HighlightMixin = types
   .model()
@@ -127,7 +127,7 @@ export const HighlightMixin = types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.style.fillcolor;
+      let labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
