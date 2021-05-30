@@ -1,8 +1,9 @@
 <View>
-  <Labels name="ner" toName="text">
-    <Label value="Person"></Label>
-    <Label value="Organization"></Label>
-    <Label value="Date"></Label>
+  <Labels name="label" toName="text">
+    <Label value="PER" background="red"/>
+    <Label value="ORG" background="darkorange"/>
+    <Label value="LOC" background="orange"/>
+    <Label value="MISC" background="green"/>
   </Labels>
-  <Text name="text" value="$text"/>
+  <Text name="text" value="$ner"/>
 </View>

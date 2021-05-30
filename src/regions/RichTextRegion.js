@@ -24,6 +24,9 @@ const Model = types
     text: types.maybeNull(types.string),
     isText: types.optional(types.boolean, false),
   })
+  .volatile((self) => ({
+    hideable: true,
+  }))
   .views(self => ({
     get parent() {
       return self.object;

@@ -6,13 +6,22 @@ import Constants, { defaultStyle } from "../core/Constants";
 
 export const HighlightMixin = types
   .model()
+  .views(self => ({
+    get _hasSpans() {
+      return self._spans ? (
+        self._spans.reduce((res, span) => {
+          return res && span.isConnected;
+        }, true)
+      ) : false;
+    },
+  }))
   .actions(self => ({
     /**
      * Create highlights from the stored `Range`
      */
     applyHighlight() {
       // Avoid calling this method twice
-      if (self._hasSpans()) {
+      if (self._hasSpans) {
         console.warn("Spans already created");
         return;
       }
@@ -36,6 +45,14 @@ export const HighlightMixin = types
       });
 
       return self._spans;
+    },
+
+    updateSpans() {
+      if (self._hasSpans) {
+        self._spans.forEach(span => {
+          span.setAttribute("data-label", self.getLabels());
+        });
+      }
     },
 
     /**
@@ -160,13 +177,15 @@ export const HighlightMixin = types
       self._spans.forEach(span => span.classList.remove(...classList));
     },
 
-    _hasSpans() {
-      return (
-        self._spans &&
-        self._spans.reduce((res, span) => {
-          return res && !!span.parent;
-        }, true)
-      );
+    toggleHidden(e) {
+      self.hidden = !self.hidden;
+      if (self.hidden) {
+        self.addClass("__hidden");
+      } else {
+        self.removeClass("__hidden");
+      }
+
+      e?.stopPropagation();
     },
   }));
 
@@ -186,6 +205,7 @@ const createSpanStylesheet = (identifier, color) => {
     active: "__active",
     highlighted: "__highlighted",
     collapsed: "__collapsed",
+    hidden: "__hidden",
   };
 
   const classNames = {
@@ -236,6 +256,17 @@ const createSpanStylesheet = (identifier, color) => {
     `,
     [`${classNames.highlighted} + ${classNames.highlighted}::before`]: `
       border-left: none;
+    `,
+    [`${className}.${stateClass.hidden}`]: `
+      border: none;
+      background: none;
+      padding: 0;
+    `,
+    [`${className}.${stateClass.hidden}::before`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.hidden}::after`]: `
+      display: none
     `,
   };
 

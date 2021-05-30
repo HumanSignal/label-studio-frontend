@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";

@@ -39,7 +39,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
         <Button disabled={disabled} look="primary" onClick={store.acceptAnnotation}>
-          {history.canUndo ? "Fix + Accept" : "Accept"}
+          {annotation.hasChanges ? "Fix + Accept" : "Accept"}
         </Button>
       </ButtonTooltip>
     );

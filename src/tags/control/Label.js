@@ -190,7 +190,12 @@ const Model = types
         }
       }
 
-      region && sameObject && region.setValue(self.parent);
+      if (region && sameObject) {
+        region.setValue(self.parent);
+
+        // hack to trigger RichText re-render the region
+        region.updateSpans?.();
+      }
     },
 
     setVisible(val) {

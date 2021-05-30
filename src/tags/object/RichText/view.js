@@ -4,7 +4,6 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
-import { fixMobxObserve } from "../TimeSeries/helpers";
 
 class RichTextPieceView extends Component {
   constructor(props) {
@@ -126,8 +125,6 @@ class RichTextPieceView extends Component {
 
   render() {
     const { item, isText } = this.props;
-
-    console.log({item});
 
     if (!item._value) return null;
 
