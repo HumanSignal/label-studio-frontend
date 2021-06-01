@@ -27,6 +27,9 @@ const Model = types
     text: types.maybeNull(types.string),
     states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
+  .volatile((self) => ({
+    hideable: true,
+  }))
   .views(self => ({
     get parent() {
       return self.object;

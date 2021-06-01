@@ -19,6 +19,9 @@ const Model = types
 
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
+  .volatile(self => ({
+    hideable: true
+  }))
   .views(self => ({
     getRegionElement() {
       return self.wsRegionElement(self._ws_region);
@@ -148,6 +151,12 @@ const Model = types
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
       self.updateColor(self.selected ? 0.8 : 0.3);
+    },
+
+    toggleHidden(e) {
+      self.hidden = !self.hidden;
+      self._ws_region.element.style.display = self.hidden ?  "none" : "block";
+      e?.stopPropagation();
     },
   }));
 
