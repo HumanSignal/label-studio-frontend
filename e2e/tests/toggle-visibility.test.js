@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario, locate, DataTable, Data */
 
 const assert = require("assert");
 const { initLabelStudio, waitForImage, countKonvaShapes, switchRegionTreeView } = require("./helpers");
@@ -52,7 +52,7 @@ const annotations = [
   },
 ];
 
-Feature("Toggle image's regions visibility");
+Feature("Toggle regions visibility");
 
 Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
   const checkVisible = async num => {
@@ -186,4 +186,43 @@ Scenario("Checking regions grouped by label", async (I, AtImageView) => {
   await checkVisible(2);
   hideAll();
   await checkVisible(0);
+});
+
+const examples = [
+  require("../examples/audio-regions"),
+  require("../examples/image-bboxes"),
+  require("../examples/image-ellipses"),
+  require("../examples/image-keypoints"),
+  require("../examples/image-polygons"),
+  require("../examples/ner-url"),
+  require("../examples/nested"),
+  require("../examples/text-html"),
+  require("../examples/text-paragraphs"),
+  require("../examples/timeseries-url-indexed"),
+];
+const examplesTable = new DataTable(["title", "config", "data", "result"]);
+examples.forEach(example => {
+  const { annotations, config, data, result = annotations[0].result, title } = example;
+  examplesTable.add([title, config, data, result]);
+});
+
+Data(examplesTable).Scenario("Check visibility switcher through all examples", (I, current)=> {
+  const { config, data, result, } = current;
+  const params = { annotations: [{ id: "test", result }], config, data };
+
+  const ids = [];
+  result.forEach(r => !ids.includes(r.id) && Object.keys(r.value).length > 1 && ids.push(r.id));
+
+  I.amOnPage("/");
+  I.executeAsyncScript(initLabelStudio, params);
+  const regionsCount = ids.length;
+  I.see(`${regionsCount} Region${(regionsCount === 0 || regionsCount > 1) ? 's' : ''}`);
+
+  if (regionsCount) {
+    I.seeElement(ALL_VISIBLE_SELECTOR);
+    I.seeNumberOfElements(ONE_VISIBLE_SELECTOR, regionsCount);
+    I.click(ALL_VISIBLE_SELECTOR);
+    I.seeElement(ALL_HIDDEN_SELECTOR);
+    I.seeNumberOfElements(ONE_HIDDEN_SELECTOR, regionsCount);
+  }
 });
