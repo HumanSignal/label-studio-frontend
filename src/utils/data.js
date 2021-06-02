@@ -1,4 +1,5 @@
 import { isString, escapeHtml } from "./utilities";
+var jp = require('jsonpath');
 
 /**
  * Simple way to retrieve linked data in `value` param from task
@@ -8,7 +9,12 @@ import { isString, escapeHtml } from "./utilities";
  */
 export const parseValue = (value, task) => {
   if (!value) return;
-  if (value[0] === "$") return task[value.substr(1)];
+  if (value[0] === "$") {
+    if (value.startsWith('$.')) {
+      return jp.value(task, value);
+    }
+    return task[value.substr(1)];
+  }
   return value ?? "";
 };
 

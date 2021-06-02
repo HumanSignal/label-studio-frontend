@@ -55,13 +55,14 @@ import { Pairwise } from "../examples/pairwise";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
+import { Repeater } from "../../examples/repeater";
 
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRegions;
+const data = Repeater;
 
 function getData(task) {
   if (task && task.data) {

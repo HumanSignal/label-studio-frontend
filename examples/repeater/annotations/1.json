@@ -1,0 +1,12 @@
+{
+    "annotations": [
+        {
+            "id": "1001",
+            "result": []
+        }
+    ],
+    "data": {
+    },
+    "id": 1,
+    "task_path": "../examples/repeater/tasks.json"
+}
