@@ -52,10 +52,10 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote"; // esl
  * Different
  */
 import { Pairwise } from "../examples/pairwise";
+import { Repeater } from "../examples/repeater"; // eslint-disable-line no-unused-vars
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
-import { Repeater } from "../../examples/repeater";
 
 /**
  * Custom Data
