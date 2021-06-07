@@ -3,6 +3,7 @@ import { types, getRoot } from "mobx-state-tree";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ControlBase from "./Base";
 
 /**
@@ -23,11 +24,11 @@ import ControlBase from "./Base";
  *   </View>
  * </View>
  * @name Pairwise
- * @param {string} name               - name of the element
- * @param {string} toName             - names of the elements you want to compare
- * @param {string} [selectionStyle]   - style of the selection
- * @params {string} [leftClass=left]  - class name of the left object
- * @params {string} [rightClass=left] - class name of the right object
+ * @param {string} name               - Name of the element
+ * @param {string} toName             - Names of the elements you want to compare, comma-separated
+ * @param {string} [selectionStyle]   - Style of the selection
+ * @params {string} [leftClass=left]  - Class name of the left object
+ * @params {string} [rightClass=left] - Class name of the right object
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -43,20 +44,16 @@ const Model = types
     selected: types.maybeNull(types.enumeration(["left", "right", "none"])),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get names() {
       return self.toname.split(",");
     },
 
     get left() {
-      return self.completion.names.get(self.names[0]);
+      return self.annotation.names.get(self.names[0]);
     },
 
     get right() {
-      return self.completion.names.get(self.names[1]);
+      return self.annotation.names.get(self.names[1]);
     },
 
     get valueType() {
@@ -64,7 +61,7 @@ const Model = types
     },
 
     get result() {
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => ({
@@ -75,7 +72,7 @@ const Model = types
       } else {
         if (result) result.setValue(selected);
         else {
-          self.completion.createResult({}, { selected }, self, self.name);
+          self.annotation.createResult({}, { selected }, self, self.name);
         }
       }
     },
@@ -124,8 +121,8 @@ const Model = types
       else self.setResult();
     },
 
-    completionAttached() {
-      // @todo completion attached in a weird way, so do that next tick, with fixed tree
+    annotationAttached() {
+      // @todo annotation attached in a weird way, so do that next tick, with fixed tree
       setTimeout(() => {
         self.left.addProp("onClick", self.selectLeft);
         self.right.addProp("onClick", self.selectRight);
@@ -134,7 +131,7 @@ const Model = types
     },
   }));
 
-const PairwiseModel = types.compose("PairwiseModel", TagAttrs, ControlBase, Model);
+const PairwiseModel = types.compose("PairwiseModel", TagAttrs, ControlBase, Model, AnnotationMixin);
 
 const HtxPairwise = () => {
   return null;

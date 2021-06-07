@@ -1,3 +1,4 @@
+/* global it, describe, expect, test */
 import { isString, isStringEmpty, isStringJSON, getUrl, toTimeString } from "../utilities";
 
 /**

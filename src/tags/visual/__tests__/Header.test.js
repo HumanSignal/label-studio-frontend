@@ -1,3 +1,4 @@
+/* global test, expect */
 import React from "react";
 import Enzyme, { render } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";

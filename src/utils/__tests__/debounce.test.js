@@ -1,3 +1,4 @@
+/* global jest, describe, it, expect, beforeEach, test */
 import { debounce } from "../debounce";
 
 jest.useFakeTimers();

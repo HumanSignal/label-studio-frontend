@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 export function Livewire() {}
 
 this.mousedown = function(event) {

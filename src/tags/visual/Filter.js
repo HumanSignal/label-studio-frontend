@@ -5,9 +5,10 @@ import { Input } from "antd";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Filter search for large amount of labels
+ * Add a filter search for a large number of labels.
  * @example
  * <View>
  *   <Filter name="filter" toName="ner"
@@ -20,10 +21,10 @@ import Registry from "../../core/Registry";
  *   <Text name="text" value="$text" />
  * </View>
  * @name Filter
- * @param {string} [placeholder]      - placeholder text of filter
- * @param {number} [minlength=4]      - size of filter
- * @param {string} [style]            - css style string
- * @param {string} [hotkey]           - hotkey to focus on filter text area
+ * @param {string} [placeholder="Quick Filter"]      - Placeholder text for filter
+ * @param {number} [minlength=3]      - Size of the filter
+ * @param {string} [style]            - CSS style of the string
+ * @param {string} [hotkey]           - Hotkey to use to focus on the filter text area
  */
 
 const TagAttrs = types.model({
@@ -44,12 +45,8 @@ const Model = types
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get toTag() {
-      return self.completion.names.get(self.toname);
+      return self.annotation.names.get(self.toname);
     },
   }))
   .actions(self => ({
@@ -101,7 +98,7 @@ const Model = types
     },
   }));
 
-const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin);
+const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin, AnnotationMixin);
 
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;

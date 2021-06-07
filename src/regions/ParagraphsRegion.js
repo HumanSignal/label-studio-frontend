@@ -1,17 +1,16 @@
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
-import { LabelsModel } from "../tags/control/Labels";
+import { LabelsModel } from "../tags/control/Labels/Labels";
 import { ParagraphLabelsModel } from "../tags/control/ParagraphLabels";
 import { TextAreaModel } from "../tags/control/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
 import { ParagraphsModel } from "../tags/object/Paragraphs";
-import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
 
@@ -28,12 +27,15 @@ const Model = types
     text: types.maybeNull(types.string),
     states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
+  .volatile((self) => ({
+    hideable: true,
+  }))
   .views(self => ({
     get parent() {
       return self.object;
     },
-    get regionElement() {
-      return self._spans[0];
+    getRegionElement() {
+      return self._spans?.[0];
     },
   }))
   .actions(self => ({

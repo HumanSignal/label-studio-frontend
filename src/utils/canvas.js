@@ -1,7 +1,7 @@
-import Konva from "konva";
 import { encode, decode } from "@thi.ng/rle-pack";
 
 import * as Colors from "./colors";
+import { colorToRGBAArray } from "./colors";
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
@@ -17,7 +17,7 @@ function imageData2Image(imagedata) {
 }
 
 // given the RLE array returns the DOM Image element with loaded image
-function RLE2Region(rle, image) {
+function RLE2Region(rle, image, { color }) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
@@ -28,7 +28,14 @@ function RLE2Region(rle, image) {
 
   const newdata = ctx.createImageData(nw, nh);
   newdata.data.set(decode(rle));
-
+  const rgb = colorToRGBAArray(color);
+  for (let i = newdata.data.length / 4; i--; ) {
+    if (newdata.data[i * 4 + 3]) {
+      newdata.data[i * 4] = rgb[0];
+      newdata.data[i * 4 + 1] = rgb[1];
+      newdata.data[i * 4 + 2] = rgb[2];
+    }
+  }
   ctx.putImageData(newdata, 0, 0);
 
   var new_image = new Image();
@@ -37,26 +44,65 @@ function RLE2Region(rle, image) {
 }
 
 // given the brush region return the RLE encoded array
-function Region2RLE(region, image, lineOpts) {
+function Region2RLE(region, image) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
+  const stage = region.object?.stageRef;
+  const parent = region.parent;
+  if (!stage) {
+    console.error(`Stage not found for area #${region.cleanId}`);
+    return;
+  }
 
-  const layer = Konva.stages[0].findOne(`#${region.cleanId}`);
+  const layer = stage.findOne(`#${region.cleanId}`);
   if (!layer) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
   }
   // hide labels on regions and show them later
   layer.find(".region-label").hide();
-  Konva.stages[0].drawScene();
+
+  const width = stage.getWidth(),
+    height = stage.getHeight(),
+    scaleX = stage.getScaleX(),
+    scaleY = stage.getScaleY(),
+    x = stage.getX(),
+    y = stage.getY(),
+    offsetX = stage.getOffsetX(),
+    offsetY = stage.getOffsetY(),
+    rotation = stage.getRotation();
+  stage
+    .setWidth(parent.stageWidth)
+    .setHeight(parent.stageHeight)
+    .setScaleX(1)
+    .setScaleY(1)
+    .setX(0)
+    .setY(0)
+    .setOffsetX(0)
+    .setOffsetY(0)
+    .setRotation(0);
+  stage.drawScene();
   // resize to original size
   const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
   const ctx = canvas.getContext("2d");
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
+  for (let i = data.data.length / 4; i--; ) {
+    data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
+  }
   layer.find(".region-label").show();
-  Konva.stages[0].drawScene();
+  stage
+    .setWidth(width)
+    .setHeight(height)
+    .setScaleX(scaleX)
+    .setScaleY(scaleY)
+    .setX(x)
+    .setY(y)
+    .setOffsetX(offsetX)
+    .setOffsetY(offsetY)
+    .setRotation(rotation);
+  stage.drawScene();
   const rle = encode(data.data, data.data.length);
 
   return rle;
@@ -132,7 +178,7 @@ const labelToSVG = (function() {
     svg.appendChild(svgText);
     document.body.appendChild(svg);
 
-    const textLen = svg.getBoundingClientRect().width;
+    const textLen = svgText.getBoundingClientRect().width;
     svg.remove();
 
     return textLen;

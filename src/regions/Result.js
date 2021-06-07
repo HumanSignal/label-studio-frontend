@@ -1,6 +1,7 @@
 import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 const Result = types
   .model("Result", {
@@ -85,10 +86,6 @@ const Result = types
       return getParent(self, 2);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get mainValue() {
       return self.value[self.from_name.valueType];
     },
@@ -101,7 +98,7 @@ const Result = types
     },
 
     get editable() {
-      return self.readonly === false && self.completion.editable === true;
+      return self.readonly === false && self.annotation.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
@@ -126,7 +123,7 @@ const Result = types
       if (control.visiblewhen === "choice-selected") {
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
-        const results = self.completion.results.filter(r => r.type === "choices" && r !== self);
+        const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
         if (tagName) {
           const result = results.find(r => r.from_name.name === tagName);
           if (!result) return false;
@@ -143,7 +140,7 @@ const Result = types
 
     get tag() {
       const value = self.mainValue;
-      if (!value) return null;
+      if (!value || !value.length) return null;
       if (!self.from_name.findLabel) return null;
       return self.from_name.findLabel(value[0]);
     },
@@ -154,6 +151,16 @@ const Result = types
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
       const { strokewidth, fillopacity, opacity } = self.tag.parent;
+      return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
+    get emptyStyle() {
+      if (!self.from_name.findLabel) return null;
+      const emptyLabel = self.from_name.findLabel(null);
+      if (!emptyLabel) return null;
+      const fillcolor = emptyLabel.background || emptyLabel.parent.fillcolor;
+      if (!fillcolor) return null;
+      const strokecolor = emptyLabel.background || emptyLabel.parent.strokecolor;
+      const { strokewidth, fillopacity, opacity } = emptyLabel.parent;
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
   }))
@@ -192,7 +199,7 @@ const Result = types
       const data = self.area ? self.area.serialize() : {};
       if (!data) return null;
       if (!self.isSubmitable) return null;
-      // cut off completion id
+      // cut off annotation id
       const id = self.area.cleanId;
       if (!data.value) data.value = {};
 
@@ -250,7 +257,7 @@ const Result = types
           })
           .filter(Boolean);
       } else {
-        const obj = self.completion.toNames.get(parent.name);
+        const obj = self.annotation.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;
 
         const tree = {
@@ -266,19 +273,19 @@ const Result = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
 
       self.unselectRegion();
 
-      self.completion.relationStore.deleteNodeRelation(self);
+      self.annotation.relationStore.deleteNodeRelation(self);
 
       if (self.type === "polygonregion") {
         self.destroyRegion();
       }
 
-      self.completion.regionStore.deleteRegion(self);
+      self.annotation.regionStore.deleteRegion(self);
 
-      self.completion.deleteRegion(self);
+      self.annotation.deleteRegion(self);
     },
 
     setHighlight(val) {
@@ -294,4 +301,4 @@ const Result = types
     },
   }));
 
-export default Result;
+export default types.compose(Result, AnnotationMixin);

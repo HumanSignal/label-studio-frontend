@@ -19,8 +19,11 @@ const Model = types
 
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
+  .volatile(self => ({
+    hideable: true
+  }))
   .views(self => ({
-    get regionElement() {
+    getRegionElement() {
       return self.wsRegionElement(self._ws_region);
     },
 
@@ -119,7 +122,7 @@ const Model = types
     onClick(wavesurfer) {
       // if (! self.editable) return;
 
-      if (!self.completion.relationMode) {
+      if (!self.annotation.relationMode) {
         // Object.values(wavesurfer.regions.list).forEach(r => {
         //   // r.update({ color: self.selectedregionbg });
         // });
@@ -131,14 +134,14 @@ const Model = types
     },
 
     onMouseOver() {
-      if (self.completion.relationMode) {
+      if (self.annotation.relationMode) {
         self.setHighlight(true);
         self._ws_region.element.style.cursor = Constants.RELATION_MODE_CURSOR;
       }
     },
 
     onMouseLeave() {
-      if (self.completion.relationMode) {
+      if (self.annotation.relationMode) {
         self.setHighlight(false);
         self._ws_region.element.style.cursor = Constants.MOVE_CURSOR;
       }
@@ -148,6 +151,12 @@ const Model = types
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
       self.updateColor(self.selected ? 0.8 : 0.3);
+    },
+
+    toggleHidden(e) {
+      self.hidden = !self.hidden;
+      self._ws_region.element.style.display = self.hidden ?  "none" : "block";
+      e?.stopPropagation();
     },
   }));
 

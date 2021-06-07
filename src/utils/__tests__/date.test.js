@@ -1,3 +1,4 @@
+/* global describe, test, expect */
 import { prettyDate, msToHMS } from "../date";
 
 describe("Helper function prettyDate", () => {

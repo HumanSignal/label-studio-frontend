@@ -1,6 +1,7 @@
 /* global Feature, Scenario */
 
 const { initLabelStudio, serialize } = require("./helpers");
+const Utils = require("../examples/utils");
 const examples = [
   require("../examples/audio-regions"),
   require("../examples/image-bboxes"),
@@ -32,11 +33,11 @@ function assertWithTolerance(actual, expected) {
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function(I) {
+  Scenario(example.title || "Noname smoke test", async function(I, AtImageView, AtAudioView) {
     // @todo optional predictions in example
-    const { completions, config, data, result = completions[0].result } = example;
-    const params = { completions: [{ id: "test", result }], config, data };
-
+    const { annotations, config, data, result = annotations[0].result } = example;
+    const params = { annotations: [{ id: "test", result }], config, data };
+    const configTree = Utils.parseXml(config);
     const ids = [];
     // add all unique ids from non-classification results
     // @todo some classifications will be reflected in Results list soon
@@ -46,35 +47,31 @@ examples.forEach(example =>
     await I.amOnPage("/");
     await I.executeAsyncScript(initLabelStudio, params);
 
-    I.see("Regions (" + count + ")");
+    I.see(`${count} Region${(count === 0 || count > 1) ? 's' : ''}`);
 
     let restored;
 
-    // repeatedly check if results are the same
-    // they should be in a correct case, so if they not — data still haven't been loaded
-    // so try again
-    for (let i = 10; i--; ) {
-      try {
-        I.wait(2);
-        // restore saved result and check it back that it didn't change
-        restored = await I.executeScript(serialize);
-        assertWithTolerance(restored, result);
-        break;
-      } catch (e) {}
+    if (Utils.xmlTreeHasTag(configTree, "Image")) {
+      AtImageView.waitForImage();
+      I.waitForVisible("canvas", 3);
+    }
+    if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
+      AtAudioView.waitForAudio();
     }
 
+    restored = await I.executeScript(serialize);
     assertWithTolerance(restored, result);
 
     if (count) {
-      I.click(".ant-tree-treenode");
+      I.click(".ant-list-item");
       // I.click('Delete Entity') - it founds something by tooltip, but not a button
       // so click the bin button in entity's info block
       I.click(".ls-entity-buttons span[aria-label=delete]");
-      I.see("Regions (" + (count - 1) + ")");
-      I.click("Reset");
-      I.see("Regions (" + count + ")");
+      I.see(`${count-1} Region${(count-1) > 1 ? 's' : ''}`);
+      I.click(".lsf-history__action[aria-label=Reset]");
+      I.see(`${count} Region${count > 1 ? 's' : ''}`);
       // Reset is undoable
-      I.click("Undo");
+      I.click(".lsf-history__action[aria-label=Undo]");
 
       // so after all these manipulations first region should be deleted
       restored = await I.executeScript(serialize);

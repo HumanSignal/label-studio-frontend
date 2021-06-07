@@ -6,7 +6,7 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import { PolygonModel } from "./Polygon";
 import ControlBase from "./Base";
 
@@ -21,14 +21,17 @@ import ControlBase from "./Base";
  *   </PolygonLabels>
  * </View>
  * @name PolygonLabels
- * @param {string} name                             - name of tag
- * @param {string} toName                           - name of image to label
- * @param {number} [opacity=0.6]                    - opacity of polygon
- * @param {string} [fillColor]                      - rectangle fill color, default is transparent
- * @param {string} [strokeColor]                    - stroke color
- * @param {number} [strokeWidth=1]                  - width of stroke
- * @param {small|medium|large} [pointSize=medium]   - size of polygon handle points
- * @param {rectangle|circle} [pointStyle=rectangle] - style of points
+ * @param {string} name                             - Name of tag
+ * @param {string} toName                           - Name of image to label
+ * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels
+ * @param {number} [maxUsages]                      - Maximum available uses of the label
+ * @param {boolean} [showInline=true]               - Show items in the same visual line
+ * @param {number} [opacity=0.6]                    - Opacity of polygon
+ * @param {string} [fillColor]                      - Polygon fill color
+ * @param {string} [strokeColor]                    - Stroke color
+ * @param {number} [strokeWidth=1]                  - Width of stroke
+ * @param {small|medium|large} [pointSize=medium]   - Size of polygon handle points
+ * @param {rectangle|circle} [pointStyle=rectangle] - Style of points
  */
 const TagAttrs = types.model({
   name: types.identifier,

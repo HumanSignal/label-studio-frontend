@@ -1,11 +1,12 @@
 import React from "react";
-import { Button, Tooltip } from "antd";
 import { observer, inject } from "mobx-react";
 import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
-import { DraftPanel } from "../Completions/Completions";
+import { DraftPanel } from "../Annotations/Annotations";
 import styles from "./Controls.module.scss";
+import { Button } from "../../common/Button/Button";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -48,13 +49,13 @@ export default inject("store")(
     /**
      * Check for Predict Menu
      */
-    if (!store.completionStore.predictSelect || store.explore) {
+    if (!store.annotationStore.predictSelect || store.explore) {
       const disabled = store.isSubmitting;
 
       if (store.hasInterface("skip")) {
         skipButton = (
           <Tooltip title="Cancel (skip) task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
-            <Button disabled={disabled} type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
+            <Button disabled={disabled} look="danger" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
               Skip {buttons.skip}
             </Button>
           </Tooltip>
@@ -66,9 +67,9 @@ export default inject("store")(
           <Tooltip title="Save results: [ Ctrl+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               disabled={disabled}
-              type="primary"
+              look="primary"
               icon={<CheckOutlined />}
-              onClick={store.submitCompletion}
+              onClick={store.submitAnnotation}
               className={styles.submit + " ls-submit-btn"}
             >
               Submit {buttons.submit}
@@ -82,9 +83,9 @@ export default inject("store")(
           <Tooltip title="Update this task: [ Alt+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               disabled={disabled}
-              type="primary"
+              look="primary"
               icon={<CheckCircleOutlined />}
-              onClick={store.updateCompletion}
+              onClick={store.updateAnnotation}
               className="ls-update-btn"
             >
               {sentUserGenerate || versions.result ? "Update" : "Submit"} {buttons.update}
@@ -93,7 +94,7 @@ export default inject("store")(
         );
       }
 
-      if (!store.hasInterface("completions:menu")) {
+      if (!store.hasInterface("annotations:menu")) {
         draftMenu = <DraftPanel item={item} />;
       }
     }
@@ -112,6 +113,6 @@ export default inject("store")(
       </div>
     );
 
-    return (item.type === "completion" || store.explore) && content;
+    return (item.type === "annotation" || store.explore) && content;
   }),
 );

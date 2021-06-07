@@ -9,24 +9,27 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { ChoicesModel } from "./Choices";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Choice tag represents a single choice
+ * Choice tag represents a single choice for annotations.
  *
  * @example
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single">
- *     <Choice value="Male" />
- *     <Choice value="Female" />
+ *     <Choice value="Man" />
+ *     <Choice value="Woman" />
+ *     <Choice value="Nonbinary" />
+ *     <Choice value="Other" />
  *   </Choices>
- *   <Text name="txt-1" value="John went to see Marry" />
+ *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choice
- * @param {string} value       - choice value
- * @param {boolean} [selected] - if this label should be preselected
- * @param {string} [alias]     - alias for the label
- * @param {style} [style]      - css style of the checkbox element
- * @param {string} [hotkey]    - hotkey
+ * @param {string} value       - Choice value
+ * @param {boolean} [selected] - Specify whether to preselect this label on the labeling interface
+ * @param {string} [alias]     - Alias for the label
+ * @param {style} [style]      - CSS style of the checkbox element
+ * @param {string} [hotkey]    - Hotkey for the selection
  */
 const TagAttrs = types.model({
   selected: types.optional(types.boolean, false),
@@ -51,12 +54,7 @@ const Model = types
     },
 
     get isSelect() {
-      console.log(self.parent.layout);
       return self.parent.layout === "select";
-    },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
     },
 
     get parent() {
@@ -96,7 +94,7 @@ const Model = types
     },
   }));
 
-const ChoiceModel = types.compose("ChoiceModel", TagAttrs, Model, ProcessAttrsMixin);
+const ChoiceModel = types.compose("ChoiceModel", TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
 class HtxChoiceView extends Component {
   render() {
@@ -118,7 +116,7 @@ class HtxChoiceView extends Component {
       checked: item.sel,
       disabled: item.parent.readonly,
       onChange: ev => {
-        if (!item.completion.editable) return;
+        if (!item.annotation.editable) return;
         item.toggleSelected();
         ev.nativeEvent.target.blur();
       },

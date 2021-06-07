@@ -6,7 +6,7 @@ import { types, getRoot } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 
 /**
- * Table tag, show object keys and values in a table
+ * Table tag, use to show object keys and values in a table.
  * @example
  * <View>
  *   <Table name="text-1" value="$text"></Table>
@@ -44,9 +44,6 @@ const HtxTable = inject("store")(
       { title: "Name", dataIndex: "type" },
       { title: "Value", dataIndex: "value" },
     ];
-
-    console.log(item._value);
-    console.log(Object.keys(value));
 
     const dataSource = Object.keys(value).map(k => {
       let val = value[k];

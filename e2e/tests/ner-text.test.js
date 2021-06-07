@@ -1,10 +1,10 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario, locate, pause */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { initLabelStudio, serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
-Feature("NER Text");
+Feature("NERText");
 
 function removeTextFromResult(result) {
   return result.map(({ value: { start, end, labels }, ...r }) => ({ ...r, value: { start, end, labels } }));
@@ -57,7 +57,7 @@ const results = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
-    value: { start: 43, end: 48, labels: ["Person"], text: "Alice" },
+    value: { start: 175, end: 180, labels: ["Person"], text: "Alice" },
   },
   {
     id: "qwerty",
@@ -66,7 +66,7 @@ const results = [
     type: "labels",
     parentID: "abcdef",
     value: { start: 1, end: 40, labels: ["Words"], text: "But I don’t want to go among mad people" },
-  },
+  }
 ];
 
 const resultsWithoutText = removeTextFromResult(results);
@@ -79,9 +79,9 @@ const newResult = {
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 
-Scenario("NER Text", async function(I) {
+Scenario("NERText", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: results }],
+    annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
     data: { text },
   };
@@ -99,32 +99,44 @@ Scenario("NER Text", async function(I) {
   result = await I.executeScript(serialize);
   assert.deepEqual(result, results);
 
-  // Create a new completion to create the same result from scratch
-  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  // Create a new annotation to create the same result from scratch
+  I.click(".lsf-annotation-tabs__add");
 
   I.pressKey("2");
-  I.doubleClick(".htx-text");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 233,
+    rangeEnd: 237,
+  });
   result = await I.executeScript(serialize);
 
   // id is auto-generated, so use already assigned
   newResult.id = result[0].id;
   assert.deepEqual(result, [newResult]);
 
-  // delete this new completion
-  I.click(locate(".ant-btn").withChild("[aria-label=delete]"));
-  I.click("Delete"); // approve
+  // delete this new annotation
+  I.click(".lsf-button[aria-label=Delete]");
+  I.click("Proceed"); // approve
 
   I.pressKey("1");
-  I.doubleClick(".htx-text");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 233,
+    rangeEnd: 237,
+  });
   result = await I.executeScript(serialize);
+
   newResult.id = result[2].id;
   newResult.value.labels = ["Person"];
   assert.deepEqual(result, [...results, newResult]);
 
   // @todo this hotkey doesn't work. why?
-  // I.pressKey('r')
+  // I.pressKey('R')
+  I.wait(5);
   I.click(locate("li").withText("Alice"));
   I.click("Create Relation");
+  I.click(locate(".htx-highlight").withText("come"));
+  I.wait(1);
   I.click(locate(".htx-highlight").withText("come"));
 
   I.see("Relations (1)");
@@ -140,7 +152,7 @@ Scenario("NER Text", async function(I) {
 
 Scenario("NER Text with text field missing", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsWithoutText }],
+    annotations: [{ id: "TestCmpl", result: resultsWithoutText }],
     config: configSimple,
     data: { text },
   };
@@ -159,7 +171,7 @@ Scenario("NER Text with text field missing", async function(I) {
 // for security reasons text is not saved by default for valueType=url
 Scenario("NER Text from url", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsFromUrl }],
+    annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
     data: { url },
   };
@@ -178,7 +190,7 @@ Scenario("NER Text from url", async function(I) {
 
 Scenario("NER Text from url with text saved", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsFromUrlWithoutText }],
+    annotations: [{ id: "TestCmpl", result: resultsFromUrlWithoutText }],
     config: configUrlSaveText,
     data: { url },
   };
@@ -197,7 +209,7 @@ Scenario("NER Text from url with text saved", async function(I) {
 
 Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: results }],
+    annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
     data: { url },
   };
@@ -219,7 +231,7 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function(I) {
 
 Scenario("NER Text with SECURE MODE", async function(I) {
   const params = {
-    completions: [{ id: "TestCmpl", result: resultsFromUrl }],
+    annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
     data: { url },
   };

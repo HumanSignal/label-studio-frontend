@@ -92,6 +92,7 @@ const Model = types
       self.updateAppearenceFromState();
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       if (degree === -90) p.y -= self.width;
@@ -164,35 +165,15 @@ const Model = types
     },
 
     serialize() {
-      const object = self.object;
-      const degree = (360 - self.parent.rotation) % 360;
-      let { x, y } = self.rotatePoint(self, degree, false);
-      if (degree === 270) y -= self.width;
-      if (degree === 90) x -= self.height;
-      if (degree === 180) {
-        x -= self.width;
-        y -= self.height;
-      }
-
-      const natural = self.rotateDimensions({ width: object.naturalWidth, height: object.naturalHeight }, degree);
-      const stage = self.rotateDimensions({ width: object.stageWidth, height: object.stageHeight }, degree);
-      const { width, height } = self.rotateDimensions(
-        {
-          width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
-          height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
-        },
-        degree,
-      );
-
       return {
-        original_width: natural.width,
-        original_height: natural.height,
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (x * 100) / stage.width,
-          y: (y * 100) / stage.height,
-          width,
-          height,
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
+          height: self.convertVDimensionToPerc(self.height),
           rotation: self.rotation,
         },
       };
@@ -253,6 +234,12 @@ const HtxRectangleView = ({ item }) => {
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
         }}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+        }}
         onDragEnd={e => {
           const t = e.target;
 
@@ -286,7 +273,7 @@ const HtxRectangleView = ({ item }) => {
         onMouseOver={e => {
           const stage = item.parent.stageRef;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
           } else {
@@ -297,15 +284,14 @@ const HtxRectangleView = ({ item }) => {
           const stage = item.parent.stageRef;
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(false);
           }
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.completion.editable) return;
-
-          if (store.completionStore.selected.relationMode) {
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
+          if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
 

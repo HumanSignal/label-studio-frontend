@@ -9,7 +9,7 @@ import { isString, escapeHtml } from "./utilities";
 export const parseValue = (value, task) => {
   if (!value) return;
   if (value[0] === "$") return task[value.substr(1)];
-  return value;
+  return value ?? "";
 };
 
 /**
@@ -69,8 +69,6 @@ export const parseCSV = (text, separator = "auto") => {
   );
   const split = text => text.trim().match(re);
 
-  const start = performance.now();
-
   // detect header; if it is omitted, use indices as a header names
   names = split(lines[0]);
   const secondLine = split(lines[1]);
@@ -109,8 +107,6 @@ export const parseCSV = (text, separator = "auto") => {
       result[names[i]].push(isNaN(val) ? row[i] : val);
     }
   }
-
-  console.log(`Parsed in ${performance.now() - start} ms`);
 
   return [result, names];
 };

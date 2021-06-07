@@ -10,6 +10,7 @@ import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Rating adds rating selection
@@ -21,16 +22,16 @@ import ControlBase from "./Base";
  * </View>
  *
  * @name Rating
- * @param {string} name Name of the element
- * @param {string} toName Name of the element that you want to label
- * @param {number} [maxRating=5] Maximum rating value
- * @param {number} [defaultValue=0] Default rating value
- * @param {string} [size=medium] One of: small, medium, large
- * @param {string} [icon=start] One of: star, heart, fire, smile
- * @param {string} hotkey HotKey for changing rating value
- * @param {boolean} [required=false]   - validation if rating is required
- * @param {string} [requiredMessage]   - message to show if validation fails
- * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
+ * @param {string} name                       - Name of the element
+ * @param {string} toName                     - Name of the element that you want to label
+ * @param {number} [maxRating=5]              - Maximum rating value
+ * @param {number} [defaultValue=0]           - Default rating value
+ * @param {small|medium|large} [size=medium]  - Rating icon size
+ * @param {star|heart|fire|smile} [icon=star] - Rating icon
+ * @param {string} hotkey                     - HotKey for changing rating value
+ * @param {boolean} [required=false]          - Whether rating validation is required
+ * @param {string} [requiredMessage]          - Message to show if validation fails
+ * @param {boolean} [perRegion]               - Use this tag to label regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -51,10 +52,6 @@ const Model = types
     rating: types.maybeNull(types.number),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     selectedValues() {
       return self.rating;
     },
@@ -71,12 +68,12 @@ const Model = types
 
     get result() {
       if (self.perregion) {
-        const area = self.completion.highlightedNode;
+        const area = self.annotation.highlightedNode;
         if (!area) return null;
 
-        return self.completion.results.find(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => ({
@@ -102,11 +99,11 @@ const Model = types
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
-          const area = self.completion.highlightedNode;
+          const area = self.annotation.highlightedNode;
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.completion.createResult({}, { rating: value }, self, self.toname);
+          self.annotation.createResult({}, { rating: value }, self, self.toname);
         }
       }
     },
@@ -157,7 +154,7 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose("RatingModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin);
+const RatingModel = types.compose("RatingModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
 
 const HtxRating = inject("store")(
   observer(({ item, store }) => {

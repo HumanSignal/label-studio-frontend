@@ -7,13 +7,14 @@ const headless = process.env.HEADLESS;
 // GIF=true yarn e2e:test:headless e2e/present_feature_test.js
 const recordVideo = process.env.GIF
   ? {
-      stepByStepReport: {
-        enabled: true,
-        deleteSuccessful: false,
-      },
-    }
+    stepByStepReport: {
+      enabled: true,
+      deleteSuccessful: false,
+    },
+  }
   : null;
 
+// eslint-disable-next-line no-undef
 exports.config = {
   tests: "./**/*.test.js",
   output: "./output",
@@ -24,9 +25,16 @@ exports.config = {
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
     },
+    MouseActions: {
+      require: "./helpers/MouseActions.js",
+    },
   },
   include: {
     I: "./steps_file.js",
+    LabelStudio: "./fragments/LabelStudio.js",
+    AtImageView: "./fragments/AtImageView.js",
+    AtAudioView: "./fragments/AtAudioView.js",
+    AtSidebar: "./fragments/AtSidebar.js",
   },
   bootstrap: null,
   mocha: {},

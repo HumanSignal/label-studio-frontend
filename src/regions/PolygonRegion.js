@@ -104,6 +104,15 @@ const Model = types
       self.insertPoint(insertIdx, point[0], point[1]);
     },
 
+    deletePoint(point) {
+      if (!self.points.includes(point)) return;
+      if (self.points.length <= 3) return;
+      if (self.selectedPoint === point) {
+        self.selectedPoint = null;
+      }
+      destroy(point);
+    },
+
     addPoint(x, y) {
       if (self.closed) return;
       self._addPoint(x, y);
@@ -132,6 +141,7 @@ const Model = types
       });
     },
 
+    // @todo not used
     // only px coordtype here
     rotate(degree = -90) {
       self.points.forEach(point => {
@@ -142,8 +152,9 @@ const Model = types
 
     closePoly() {
       self.closed = true;
+      self.setDrawing(false);
       self.selectRegion();
-      self.completion.history.unfreeze();
+      self.annotation.history.unfreeze();
     },
 
     canClose(x, y) {
@@ -194,7 +205,7 @@ const Model = types
         });
       }
 
-      if (!self.completion.sentUserGenerate && self.coordstype === "perc") {
+      if (!self.annotation.sentUserGenerate && self.coordstype === "perc") {
         self.points.forEach(p => {
           const x = (sw * p.x) / 100;
           const y = (sh * p.y) / 100;
@@ -206,30 +217,14 @@ const Model = types
 
     serialize() {
       if (self.points.length < 3) return null;
-
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-
-      const perc_points = self.points.map(p => {
-        const normalized = self.rotatePoint(p, degree, false);
-        const res_w = (normalized.x * 100) / width;
-        const res_h = (normalized.y * 100) / height;
-
-        return [res_w, res_h];
-      });
-
-      let res = {
-        value: {
-          points: perc_points,
-        },
-        original_width: natural.width,
-        original_height: natural.height,
+      return {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
+        value: {
+          points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+        },
       };
-
-      return res;
     },
   }));
 
@@ -420,7 +415,11 @@ const HtxPolygonView = ({ item }) => {
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       onDragStart={e => {
-        item.completion.setDragMode(true);
+        if (item.parent.getSkipInteractions()) {
+          e.currentTarget.stopDrag(e.evt);
+          return;
+        }
+        item.annotation.setDragMode(true);
 
         var arrX = item.points.map(p => p.x);
         var arrY = item.points.map(p => p.y);
@@ -444,12 +443,12 @@ const HtxPolygonView = ({ item }) => {
       onDragEnd={e => {
         const t = e.target;
 
-        item.completion.setDragMode(false);
+        item.annotation.setDragMode(false);
         if (!item.closed) item.closePoly();
 
-        item.completion.history.freeze();
+        item.annotation.history.freeze();
         item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
-        item.completion.history.unfreeze();
+        item.annotation.history.unfreeze();
 
         t.setAttr("x", 0);
         t.setAttr("y", 0);
@@ -457,7 +456,7 @@ const HtxPolygonView = ({ item }) => {
       onMouseOver={e => {
         const stage = item.parent.stageRef;
 
-        if (store.completionStore.selected.relationMode) {
+        if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
           stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
         } else {
@@ -468,13 +467,14 @@ const HtxPolygonView = ({ item }) => {
         const stage = item.parent.stageRef;
         stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
-        if (store.completionStore.selected.relationMode) {
+        if (store.annotationStore.selected.relationMode) {
           item.setHighlight(false);
         }
       }}
       onClick={e => {
         // create regions over another regions with Cmd/Ctrl pressed
-        if (e.evt.metaKey || e.evt.ctrlKey) return;
+        if (e.evt.metaKey || e.evt.ctrlKey || item.parent.getSkipInteractions()) return;
+        if (item.isDrawing) return;
 
         e.cancelBubble = true;
 
@@ -484,7 +484,7 @@ const HtxPolygonView = ({ item }) => {
 
         const stage = item.parent.stageRef;
 
-        if (store.completionStore.selected.relationMode) {
+        if (store.annotationStore.selected.relationMode) {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
         }
 

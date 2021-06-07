@@ -3,13 +3,14 @@ import { Button } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
+import {EntityTab} from '../AnnotationTabs/AnnotationTabs';
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
 Grid renders a container which remains untouched all the process.
-On every rerender it renders Item with next completion in the list.
-Rendered completion is cloned into the container. And index of "current" completion increases.
-This triggers next rerender with next completion until all the completions are rendered.
+On every rerender it renders Item with next annotation in the list.
+Rendered annotation is cloned into the container. And index of "current" annotation increases.
+This triggers next rerender with next annotation until all the annotations are rendered.
 */
 
 class Item extends Component {
@@ -54,7 +55,7 @@ export default class Grid extends Component {
     const step = (c.offsetWidth + gap) / 2;
     const current = (c.scrollLeft + delta) / step;
     const next = delta > 0 ? Math.ceil(current) : Math.floor(current);
-    const count = this.props.completions.length;
+    const count = this.props.annotations.length;
     if (next < 0 || next > count - 2) return;
     c.scrollTo({ left: next * step, top: 0, behavior: "smooth" });
   };
@@ -69,15 +70,15 @@ export default class Grid extends Component {
 
   select = c => {
     const { store } = this.props;
-    c.type === "completion" ? store.selectCompletion(c.id) : store.selectPrediction(c.id);
+    c.type === "annotation" ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
   render() {
     const i = this.state.item;
-    const { completions } = this.props;
-    const renderNext = i < completions.length;
+    const { annotations } = this.props;
+    const renderNext = i < annotations.length;
     if (renderNext) {
-      this.props.store._selectItem(completions[i]);
+      this.props.store._selectItem(annotations[i]);
     } else {
       this.props.store._unselectAll();
     }
@@ -85,16 +86,20 @@ export default class Grid extends Component {
     return (
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
-          {completions.map((c, i) => (
-            <div style={{ display: c.hidden ? "none" : "unset" }} id={`c-${c.id}`}>
-              <h4 onClick={() => this.select(c)}>
-                {c.pk || c.id}
-                {c.type === "completion" && c.createdBy ? ` by ${c.createdBy}` : null}
-                {c.type === "prediction" && c.createdBy ? ` from model (${c.createdBy})` : null}
-              </h4>
+          {annotations.filter(c => !c.hidden).map((c, i) => (
+            <div id={`c-${c.id}`} key={`anno-${c.id}`}>
+              <EntityTab
+                entity={c}
+                onClick={() => this.select(c)}
+                prediction={c.type === "prediction"}
+                bordered={false}
+                style={{height: 44}}
+              />
             </div>
           ))}
-          {renderNext && <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />}
+          {renderNext && (
+            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />
+          )}
         </div>
         <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />
         <Button type="text" onClick={this.right} className={styles.right} icon={<RightCircleOutlined />} />

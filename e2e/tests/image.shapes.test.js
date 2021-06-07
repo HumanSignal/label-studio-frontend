@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature */
 
 const {
   initLabelStudio,
@@ -29,7 +29,7 @@ const WIDTH = 706;
 const HEIGHT = 882;
 const convertToImageSize = getSizeConvertor(WIDTH, HEIGHT);
 
-const completionEmpty = {
+const annotationEmpty = {
   id: "1000",
   result: [],
 };
@@ -126,12 +126,13 @@ const shapes = [
   },
 ];
 
+// eslint-disable-next-line no-undef
 xScenario("Simple shapes on Image", async function(I) {
   for (let shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),
       data: { image: IMAGE },
-      completions: [completionEmpty],
+      annotations: [annotationEmpty],
     };
 
     I.amOnPage("/");
@@ -139,7 +140,7 @@ xScenario("Simple shapes on Image", async function(I) {
     // canvas won't be initialized fully before the image loads
     await I.executeAsyncScript(waitForImage);
     I.waitForVisible("canvas");
-    I.see("Regions (0)");
+    I.see("0 Regions");
 
     for (let region of shape.regions) {
       // draw the shape using corresponding helper and params

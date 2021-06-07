@@ -10,13 +10,14 @@ import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
 import Types from "../../core/Types";
 import Utils from "../../utils";
+import { parseValue } from "../../utils/data";
 import { guidGenerator } from "../../core/Helpers";
-import { runTemplate } from "../../core/Template";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Label tag represents a single label
+ * Label tag represents a single label.
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
@@ -26,17 +27,17 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
- * @param {string} value                    - value of the label
- * @param {boolean} [selected=false]        - if this label should be preselected
- * @param {number} [maxUsages]              - maximum available usages
- * @param {string} [hotkey]                 - hotkey, if not specified then will be automatically generated
- * @param {string} [alias]                  - label alias
- * @param {boolean} [showAlias=false]       - show alias inside label text
- * @param {string} [aliasStyle=opacity:0.6] - alias CSS style
- * @param {string} [size=medium]            - size of text in the label
- * @param {string} [background]             - background color of an active label
- * @param {string} [selectedColor]          - color of text in an active label
- * @param {symbol|word} [granularity]       - control per symbol or word selection (only for Text)
+ * @param {string} value                    - Value of the label
+ * @param {boolean} [selected=false]        - Whether to preselect this label
+ * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
+ * @param {string} [alias]                  - Label alias
+ * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
+ * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
+ * @param {string} [size=medium]            - Size of text in the label
+ * @param {string} [background=#36B37E]     - Background color of an active label
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -61,17 +62,18 @@ const Model = types
     visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
   })
+  .volatile(self => {
+    return {
+      isEmpty: false,
+    };
+  })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get maxUsages() {
       return Number(self.maxusages || self.parent.maxusages);
     },
 
     usedAlready() {
-      const regions = self.completion.regionStore.regions;
+      const regions = self.annotation.regionStore.regions;
       // count all the usages among all the regions
       const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
       return used;
@@ -97,6 +99,9 @@ const Model = types
     },
   }))
   .actions(self => ({
+    setEmpty() {
+      self.isEmpty = true;
+    },
     /**
      * Select label
      */
@@ -104,12 +109,12 @@ const Model = types
       // here we check if you click on label from labels group
       // connected to the region on the same object tag that is
       // right now highlighted, and if that region is readonly
-      const region = self.completion.highlightedNode;
+      const region = self.annotation.highlightedNode;
       const sameObject = region && region.parent.name === self.parent.toname;
       if (region && region.readonly === true && sameObject) return;
 
       // one more check if that label can be selected
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
 
       // don't select if it can not be used
       if (!self.selected && !self.canBeUsed()) {
@@ -121,15 +126,21 @@ const Model = types
 
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
-      // not going to endup without the label(s) at all
+      // not going to endup without results at all
       if (region && sameObject) {
-        if (labels.selectedLabels.length === 1 && self.selected) return;
+        if (
+          labels.selectedLabels.length === 1 &&
+          self.selected &&
+          region.results.length === 1 &&
+          (!self.parent.allowempty || self.isEmpty)
+        )
+          return;
       }
 
       // if we are going to select label and it would be the first in this labels group
       if (!labels.selectedLabels.length && !self.selected) {
         // unselect labels from other groups of labels connected to this obj
-        self.completion.toNames
+        self.annotation.toNames
           .get(labels.toname)
           .filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name)
           .forEach(tag => tag.unselectAll && tag.unselectAll());
@@ -137,34 +148,54 @@ const Model = types
         // unselect other tools if they exist and selected
         const tool = Object.values(self.parent.tools || {})[0];
         if (tool && tool.manager.findSelectedTool() !== tool) {
-          tool.manager.unselectAll();
-          tool.setSelected(true);
+          tool.manager.selectTool(tool, true);
         }
       }
 
-      /**
-       * Multiple
-       */
-      if (!labels.shouldBeUnselected) {
-        self.setSelected(!self.selected);
-      }
-
-      /**
-       * Single
-       */
-      if (labels.shouldBeUnselected) {
+      if (self.isEmpty) {
+        let selected = self.selected;
+        labels.unselectAll();
+        self.setSelected(!selected);
+      } else {
         /**
-         * Current not selected
+         * Multiple
          */
-        if (!self.selected) {
-          labels.unselectAll();
+        if (!labels.shouldBeUnselected) {
           self.setSelected(!self.selected);
-        } else {
-          labels.unselectAll();
+        }
+
+        /**
+         * Single
+         */
+        if (labels.shouldBeUnselected) {
+          /**
+           * Current not selected
+           */
+          if (!self.selected) {
+            labels.unselectAll();
+            self.setSelected(!self.selected);
+          } else {
+            labels.unselectAll();
+          }
         }
       }
 
-      region && sameObject && region.setValue(self.parent);
+      if (labels.allowempty && !self.isEmpty) {
+        if (sameObject) {
+          labels.findLabel().setSelected(!labels.selectedValues()?.length);
+        } else {
+          if (self.selected) {
+            labels.findLabel().setSelected(false);
+          }
+        }
+      }
+
+      if (region && sameObject) {
+        region.setValue(self.parent);
+
+        // hack to trigger RichText re-render the region
+        region.updateSpans?.();
+      }
     },
 
     setVisible(val) {
@@ -192,12 +223,11 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj) || "";
-      self._updateBackgroundColor(self._value);
+      self._value = parseValue(self.value, store.task.dataObj) || "∅";
     },
   }));
 
-const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
+const LabelModel = types.compose("LabelModel", TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

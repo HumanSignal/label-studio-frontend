@@ -1,15 +1,20 @@
+/* global LSF_VERSION */
+
 import { types, getEnv } from "mobx-state-tree";
 
-import CompletionStore from "./CompletionStore";
-import Hotkey from "../core/Hotkey";
+import AnnotationStore from "./AnnotationStore";
+import { Hotkey } from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
-import User from "./UserStore";
+import User, { UserExtended } from "./UserStore";
 import Utils from "../utils";
-import { delay } from "../utils/utilities";
+import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
+import { guidGenerator } from "../utils/unique";
+
+const hotkeys = Hotkey("AppStore");
 
 export default types
   .model("AppStore", {
@@ -36,11 +41,12 @@ export default types
     explore: types.optional(types.boolean, false),
 
     /**
-     * Completions Store
+     * Annotations Store
      */
-    completionStore: types.optional(CompletionStore, {
-      completions: [],
+    annotationStore: types.optional(AnnotationStore, {
+      annotations: [],
       predictions: [],
+      history: [],
     }),
 
     /**
@@ -93,13 +99,29 @@ export default types
      * Finish of labeling
      */
     labeledSuccess: types.optional(types.boolean, false),
+
+    /**
+     * Show or hide comments section
+     */
+    showComments: false,
+
+    users: types.optional(types.array(UserExtended), [])
   })
+  .volatile(() => ({
+    version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
+    initialized: false,
+  }))
   .views(self => ({
     /**
      * Get alert
      */
     get alert() {
       return getEnv(self).alert;
+    },
+
+    get hasSegmentation() {
+      const match = Array.from(self.annotationStore.names.values()).map(({type}) => !!type.match(/labels/));
+      return match.find(v => v === true) ?? false;
     },
   }))
   .actions(self => {
@@ -144,6 +166,10 @@ export default types
       return self.interfaces.push(name);
     }
 
+    function toggleComments(state) {
+      return (self.showComments = state);
+    }
+
     /**
      * Function
      */
@@ -151,28 +177,31 @@ export default types
       // important thing to detect Area atomatically: it hasn't access to store, only via global
       window.Htx = self;
 
+      // Unbind previous keys in case LS was re-initialized
+      hotkeys.unbindAll();
+
       /**
        * Hotkey for submit
        */
-      Hotkey.addKey("ctrl+enter", self.submitCompletion, "Submit a task");
+      if (self.hasInterface("submit")) hotkeys.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask, "Skip a task");
+      if (self.hasInterface("skip")) hotkeys.addKey("ctrl+space", self.skipTask, "Skip a task");
 
       /**
-       * Hotkey for update completion
+       * Hotkey for update annotation
        */
-      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion, "Update a task");
+      if (self.hasInterface("update")) hotkeys.addKey("alt+enter", self.updateAnnotation, "Update a task");
 
       /**
        * Hotkey for delete
        */
-      Hotkey.addKey(
+      hotkeys.addKey(
         "command+backspace, ctrl+backspace",
         function() {
-          const { selected } = self.completionStore;
+          const { selected } = self.annotationStore;
           if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
             selected.deleteAllRegions();
           }
@@ -181,10 +210,10 @@ export default types
       );
 
       // create relation
-      Hotkey.addKey(
+      hotkeys.addKey(
         "r",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           if (c && c.highlightedNode && !c.relationMode) {
             c.startRelationMode(c.highlightedNode);
           }
@@ -193,34 +222,34 @@ export default types
       );
 
       // unselect region
-      Hotkey.addKey("u", function() {
-        const c = self.completionStore.selected;
+      hotkeys.addKey("u", function() {
+        const c = self.annotationStore.selected;
         if (c && !c.relationMode) {
           c.unselectAll();
         }
       });
 
-      Hotkey.addKey("h", function() {
-        const c = self.completionStore.selected;
+      hotkeys.addKey("h", function() {
+        const c = self.annotationStore.selected;
         if (c && c.highlightedNode && !c.relationMode) {
           c.highlightedNode.toggleHidden();
         }
       });
 
-      Hotkey.addKey("command+z, ctrl+z", function() {
-        const { history } = self.completionStore.selected;
+      hotkeys.addKey("command+z, ctrl+z", function() {
+        const { history } = self.annotationStore.selected;
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey("command+shift+z, ctrl+shift+z", function() {
-        const { history } = self.completionStore.selected;
+      hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
+        const { history } = self.annotationStore.selected;
         history && history.canRedo && history.redo();
       });
 
-      Hotkey.addKey(
+      hotkeys.addKey(
         "escape",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           if (c && c.relationMode) {
             c.stopRelationMode();
           } else if (c && c.highlightedNode) {
@@ -230,10 +259,10 @@ export default types
         "Unselect region, exit relation mode",
       );
 
-      Hotkey.addKey(
+      hotkeys.addKey(
         "backspace",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           if (c && c.highlightedNode) {
             c.highlightedNode.deleteRegion();
           }
@@ -241,10 +270,10 @@ export default types
         "Delete selected region",
       );
 
-      Hotkey.addKey(
+      hotkeys.addKey(
         "alt+tab",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
           c && c.regionStore.selectNext();
         },
         "Circle through entities",
@@ -268,7 +297,7 @@ export default types
     }
 
     function assignConfig(config) {
-      const cs = self.completionStore;
+      const cs = self.annotationStore;
       self.config = config;
       cs.initRoot(self.config);
     }
@@ -304,65 +333,126 @@ export default types
         .then(() => self.setFlags({ isSubmitting: false }));
     }
 
-    function submitCompletion() {
-      const c = self.completionStore.selected;
-      c.beforeSend();
+    function submitAnnotation() {
+      const entity = self.annotationStore.selected;
+      entity.beforeSend();
 
-      if (!c.validate()) return;
+      if (!entity.validate()) return;
 
-      c.sendUserGenerate();
-      c.dropDraft();
-      handleSubmittingFlag(() => getEnv(self).onSubmitCompletion(self, c));
+      entity.sendUserGenerate();
+      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, entity));
+      entity.dropDraft();
+      entity.saveSnapshot();
     }
 
-    function updateCompletion() {
-      const c = self.completionStore.selected;
-      c.beforeSend();
+    function updateAnnotation() {
+      const entity = self.annotationStore.selected;
+      entity.beforeSend();
 
-      if (!c.validate()) return;
+      if (!entity.validate()) return;
 
-      c.dropDraft();
-      getEnv(self).onUpdateCompletion(self, c);
-      !c.sentUserGenerate && c.sendUserGenerate();
+      getEnv(self).onUpdateAnnotation(self, entity);
+      entity.dropDraft();
+      entity.saveSnapshot();
+      !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
     function skipTask() {
       handleSubmittingFlag(() => getEnv(self).onSkipTask(self), "Error during skip, try again");
     }
 
-    /**
-     * Reset completion store
-     */
-    function resetState() {
-      self.completionStore = CompletionStore.create({ completions: [] });
+    function acceptAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+        entity.beforeSend();
+        if (!entity.validate()) return;
 
-      // const c = self.completionStore.addInitialCompletion();
+        const isDirty = entity.history.canUndo;
+        entity.dropDraft();
+        getEnv(self).onAcceptAnnotation(self, {isDirty, entity});
+        entity.saveSnapshot();
+      }, "Error during skip, try again");
+    }
 
-      // self.completionStore.selectCompletion(c.id);
+    function rejectAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
+        const isDirty = entity.history.canUndo;
+        entity.dropDraft();
+        getEnv(self).onRejectAnnotation(self, {isDirty, entity});
+        entity.saveSnapshot();
+      }, "Error during skip, try again");
     }
 
     /**
-     * Function to initilaze completion store
-     * Given completions and predictions
+     * Reset annotation store
      */
-    function initializeStore({ completions, predictions }) {
-      const cs = self.completionStore;
-      cs.initRoot(self.config);
+    function resetState() {
+      self.annotationStore = AnnotationStore.create({ annotations: [] });
+
+      // const c = self.annotationStore.addInitialAnnotation();
+
+      // self.annotationStore.selectAnnotation(c.id);
+    }
+
+    /**
+     * Function to initilaze annotation store
+     * Given annotations and predictions
+     * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
+     */
+    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+      const as = self.annotationStore;
+      as.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
-      predictions?.forEach(p => {
-        const obj = cs.addPrediction(p);
-        cs.selectPrediction(obj.id);
-        obj.deserializeCompletion(p.result);
+      (predictions ?? []).forEach(p => {
+        const obj = as.addPrediction(p);
+        as.selectPrediction(obj.id);
+        obj.deserializeAnnotation(p.result);
       });
-      completions?.forEach((c, i) => {
-        const obj = cs.addCompletion(c);
-        cs.selectCompletion(obj.id);
-        obj.deserializeCompletion(c.draft || c.result);
+
+      [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
+        const obj = as.addAnnotation(c);
+        as.selectAnnotation(obj.id);
+        obj.deserializeAnnotation(c.draft || c.result);
         obj.reinitHistory();
       });
+
+      self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
+
+      if (!self.initialized) {
+        self.initialized = true;
+        getEnv(self).onStorageInitialized(self);
+      }
+    }
+
+    function setHistory(history = []) {
+      const as = self.annotationStore;
+
+      as.clearHistory();
+
+      (history ?? []).forEach(item => {
+        const fixed = isDefined(item.fixed_annotation_history_result);
+        const accepted = item.accepted;
+
+        const obj = as.addHistory({
+          ...item,
+          pk: guidGenerator(),
+          user: item.created_by,
+          createdDate: item.created_at,
+          acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
+          editable: false,
+        });
+
+        const result = item.previous_annotation_history_result ?? [];
+
+        obj.deserializeAnnotation(result);
+      });
     }
 
     return {
@@ -375,13 +465,17 @@ export default types
       assignConfig,
       resetState,
       initializeStore,
+      setHistory,
 
       skipTask,
       submitDraft,
-      submitCompletion,
-      updateCompletion,
+      submitAnnotation,
+      updateAnnotation,
+      acceptAnnotation,
+      rejectAnnotation,
 
       showModal,
+      toggleComments,
       toggleSettings,
       toggleDescription,
     };

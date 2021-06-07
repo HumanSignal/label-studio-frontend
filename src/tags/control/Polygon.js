@@ -5,23 +5,25 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
- * Polygon is used to add polygons to an image without label selection. It's useful when you have only one label.
+ * Use the Polygon tag to add polygons to an image without selecting a label. It's useful when you have only one label.
  * @example
  * <View>
  *   <Polygon name="rect-1" toName="img-1" />
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Polygon
- * @param {string} name                           - name of tag
- * @param {string} toname                         - name of image to label
- * @param {number} [opacity=0.6]                  - opacity of polygon
- * @param {string} [fillColor]                    - rectangle fill color, default is transparent
- * @param {string} [strokeColor]                  - stroke color
- * @param {number} [strokeWidth=1]                - width of stroke
- * @param {small|medium|large} [pointSize=medium] - size of polygon handle points
- * @param {rectangle|circle} [pointStyle=circle]  - style of points
+ * @param {string} name                           - Name of tag
+ * @param {string} toname                         - Name of image to label
+ * @param {number} [opacity=0.6]                  - Opacity of polygon
+ * @param {string} [fillColor=transparent]        - Polygon fill color
+ * @param {string} [strokeColor=#f48a42]          - Stroke color
+ * @param {number} [strokeWidth=3]                - Width of stroke
+ * @param {small|medium|large} [pointSize=small]  - Size of polygon handle points
+ * @param {rectangle|circle} [pointStyle=circle]  - Style of points
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -48,11 +50,6 @@ const Model = types
     // regions: types.array(RectRegionModel),
     _value: types.optional(types.string, ""),
   })
-  .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -70,7 +67,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model);
+const PolygonModel = types.compose("PolygonModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Validation, Model);
 
 const HtxView = () => null;
 

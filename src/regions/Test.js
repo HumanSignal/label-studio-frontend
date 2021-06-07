@@ -16,7 +16,7 @@ export const ImageRegion = types.compose(
     })
     .actions(self => ({
       draw() {
-        console.log("DRAW", self.id);
+        // console.log("DRAW", self.id);
       },
     })),
 );
@@ -31,7 +31,7 @@ export const TextRegion = types.compose(
     })
     .actions(self => ({
       select() {
-        console.log("SELECT", self.id);
+        // console.log("SELECT", self.id);
       },
     })),
 );

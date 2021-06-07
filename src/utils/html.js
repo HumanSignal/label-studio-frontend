@@ -63,8 +63,7 @@ function documentForward(node) {
 }
 
 function isTextNode(node) {
-  const TEXT_NODE = 3;
-  return node.nodeType === TEXT_NODE;
+  return node.nodeType === Node.TEXT_NODE;
 }
 
 function firstLeaf(node) {
@@ -121,6 +120,11 @@ function documentReverse(node) {
   return node.previousSibling;
 }
 
+/**
+ * Split text node into two nodes following each other
+ * @param {Text} node
+ * @param {number} offset
+ */
 function splitText(node, offset) {
   let tail = node.cloneNode(false);
   tail.deleteData(0, offset);
@@ -212,6 +216,10 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   return results;
 }
 
+/**
+ *
+ * @param {Range} range
+ */
 function splitBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
 
@@ -341,6 +349,74 @@ function removeSpans(spans) {
 
   norm.forEach(n => n.normalize());
 }
+
+/**
+ * Checks if element of one of it's descendants match given selector
+ * @param {HTMLElement} element Element to match
+ * @param {string} selector CSS selector
+ */
+export const matchesSelector = (element, selector) => {
+  return element.matches(selector) || element.closest(selector) !== null;
+};
+
+/**
+ * Find a node by xpath
+ * @param {string} xpath
+ * @param {Node} root
+ */
+export const findByXpath = (xpath, root = document) => {
+  if (root !== document && xpath[0] !== ".") {
+    xpath = `.${xpath}`;
+  }
+
+  return document.evaluate(xpath, root, null, XPathResult.ANY_TYPE, null).iterateNext();
+};
+
+export const htmlEscape = string => {
+  const matchHtmlRegExp = /["'&<>]/;
+  const str = "" + string;
+  const match = matchHtmlRegExp.exec(str);
+
+  if (!match) {
+    return str;
+  }
+
+  let escape;
+  let html = "";
+  let index = 0;
+  let lastIndex = 0;
+
+  for (index = match.index; index < str.length; index++) {
+    switch (str.charCodeAt(index)) {
+      case 34: // "
+        escape = "&quot;";
+        break;
+      case 38: // &
+        escape = "&amp;";
+        break;
+      case 39: // '
+        escape = "&#39;";
+        break;
+      case 60: // <
+        escape = "&lt;";
+        break;
+      case 62: // >
+        escape = "&gt;";
+        break;
+      default:
+        continue;
+    }
+
+    if (lastIndex !== index) {
+      html += str.substring(lastIndex, index);
+    }
+
+    lastIndex = index + 1;
+    html += escape;
+  }
+
+  return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
+};
 
 function findNodeAt(context, at) {
   for (let node = context.firstChild, l = 0; node; ) {

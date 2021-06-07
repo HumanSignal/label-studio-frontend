@@ -1,5 +1,6 @@
 import { types, getRoot } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
+import { AnnotationMixin } from "./AnnotationMixin";
 
 const ToolMixin = types
   .model({
@@ -18,10 +19,6 @@ const ToolMixin = types
       return self._control;
     },
 
-    get completion() {
-      return getRoot(self.control).completionStore.selected;
-    },
-
     get viewClass() {
       return null;
     },
@@ -31,13 +28,13 @@ const ToolMixin = types
       const activeStates = states
         ? states.filter(c => c.isSelected)
         : // .filter(
-          //   c =>
-          //     c.type === IMAGE_CONSTANTS.rectanglelabels ||
-          //     c.type === IMAGE_CONSTANTS.keypointlabels ||
-          //     c.type === IMAGE_CONSTANTS.polygonlabels ||
-          //     c.type === IMAGE_CONSTANTS.brushlabels,
-          // )
-          null;
+      //   c =>
+      //     c.type === IMAGE_CONSTANTS.rectanglelabels ||
+      //     c.type === IMAGE_CONSTANTS.keypointlabels ||
+      //     c.type === IMAGE_CONSTANTS.polygonlabels ||
+      //     c.type === IMAGE_CONSTANTS.brushlabels,
+      // )
+        null;
 
       return activeStates ? activeStates.map(s => cloneNode(s)) : null;
     },
@@ -52,13 +49,16 @@ const ToolMixin = types
     },
 
     get getSelectedShape() {
-      return self.control.completion.highlightedNode;
+      return self.control.annotation.highlightedNode;
     },
   }))
   .actions(self => ({
     setSelected(val) {
       self.selected = val;
+      self.afterUpdateSelected();
     },
+
+    afterUpdateSelected() {},
 
     event(name, ev, args) {
       const fn = name + "Ev";
@@ -69,7 +69,7 @@ const ToolMixin = types
       let r;
       let states = [];
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
       fm.fromStateJSON(obj);
 
       // workaround to prevent perregion textarea from duplicating
@@ -132,4 +132,4 @@ const ToolMixin = types
     },
   }));
 
-export default ToolMixin;
+export default types.compose(ToolMixin, AnnotationMixin);

@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import { observer } from "mobx-react";
 import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";
+import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
 import AutoSizer from "react-virtualized-auto-sizer";
 
@@ -129,18 +128,36 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * rootRef: React.RefObject<HTMLElement>
  * }}
  */
-const RelationItemObserver = observer(({ relation, ...rest }) => {
-  const { node1: startNode, node2: endNode } = relation;
+const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }) => {
+  const [render, setRender] = useState(startNode.getRegionElement() && endNode.getRegionElement());
 
-  return (
+  useEffect(() => {
+    let timer;
+
+    const watchRegionAppear = () => {
+      const nodesExist = isDefined(startNode.getRegionElement()) && isDefined(endNode.getRegionElement());
+
+      if (render !== nodesExist) {
+        setRender(nodesExist);
+      } else if(render === false) {
+        timer = setTimeout(watchRegionAppear, 30);
+      }
+    };
+
+    timer = setTimeout(watchRegionAppear, 30);
+
+    return () => clearTimeout(timer);
+  }, [startNode, endNode, render]);
+
+  return render ? (
     <RelationItem id={relation.id} startNode={startNode} endNode={endNode} direction={relation.direction} {...rest} />
-  );
+  ) : null;
 });
 
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
   rootNode = React.createRef();
-  state = { shouldRender: false, souldRenderConnections: Math.random() };
+  state = { shouldRender: false, shouldRenderConnections: Math.random() };
 
   componentDidUpdate() {
     if (this.rootNode.current && !this.state.shouldRender) {
@@ -181,19 +198,20 @@ class RelationsOverlay extends PureComponent {
           key={relation.id}
           relation={relation}
           rootRef={this.rootNode}
+          startNode={relation.node1}
+          endNode={relation.node2}
           labels={relation.relations?.selectedValues()}
           dimm={hasHighlight && !highlighted}
           highlight={highlighted}
           visible={highlighted || visible}
-          shouldUpdate={this.state.souldRenderConnections}
+          shouldUpdate={this.state.shouldRenderConnections}
         />
       );
     });
   }
 
   onResize = () => {
-    console.log("UI resized");
-    this.setState({ souldRenderConnections: Math.random() });
+    this.setState({ shouldRenderConnections: Math.random() });
   };
 }
 

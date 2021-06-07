@@ -1,9 +1,11 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * Rectangle is used to add rectangle (Bounding Box) to an image without label selection. It's useful when you have
@@ -14,13 +16,13 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Rectangle
- * @param {string} name                   - name of the element
- * @param {string} toName                 - name of the image to label
- * @param {float=} [opacity=0.6]          - opacity of rectangle
- * @param {string=} [fillColor]           - rectangle fill color, default is transparent
- * @param {string=} [strokeColor=#f48a42] - stroke color
- * @param {number=} [strokeWidth=1]       - width of the stroke
- * @param {boolean=} [canRotate=true]     - show or hide rotation handle
+ * @param {string} name                   - Name of the element
+ * @param {string} toName                 - Name of the image to label
+ * @param {float=} [opacity=0.6]          - Opacity of rectangle
+ * @param {string=} [fillColor]           - Rectangle fill color
+ * @param {string=} [strokeColor=#f48a42] - Stroke color
+ * @param {number=} [strokeWidth=1]       - Width of the stroke
+ * @param {boolean=} [canRotate=true]     - Show or hide rotation control
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -40,11 +42,6 @@ const Model = types
   .model({
     type: "rectangle",
   })
-  .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -56,7 +53,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose("RectangleModel", ControlBase, TagAttrs, Model);
+const RectangleModel = types.compose("RectangleModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

@@ -11,6 +11,7 @@ import { guidGenerator } from "../../core/Helpers";
 
 import DropdownTreeSelect from "react-dropdown-tree-select";
 import "react-dropdown-tree-select/dist/styles.css";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Taxonomy tag allows to select one or more hierarchical labels
@@ -28,11 +29,11 @@ import "react-dropdown-tree-select/dist/styles.css";
  *     </Choice>
  *     <Choice value="Offline" />
  *   </Taxonomy>
- *   <Text name="text" value="You never believe what he did to the country" />
+ *   <Text name="text" value="You'd never believe what he did to the country" />
  * </View>
  * @name Taxonomy
- * @param {string} name                - name of the group
- * @param {string} toName              - name of the element that you want to label
+ * @param {string} name                - Name of the group
+ * @param {string} toName              - Name of the element that you want to label
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -49,10 +50,6 @@ const Model = types
     children: Types.unionArray(["choice"]),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get holdsState() {
       return true;
     },
@@ -63,12 +60,12 @@ const Model = types
 
     get result() {
       if (self.perregion) {
-        const area = self.completion.highlightedNode;
+        const area = self.annotation.highlightedNode;
         if (!area) return null;
 
-        return self.completion.results.find(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.completion.results.find(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => {
@@ -94,11 +91,11 @@ const Model = types
           self.result.area.setValue(self);
         } else {
           if (self.perregion) {
-            const area = self.completion.highlightedNode;
+            const area = self.annotation.highlightedNode;
             if (!area) return null;
             area.setValue(self);
           } else {
-            self.completion.createResult({}, { taxonomy: selected }, self, self.toname);
+            self.annotation.createResult({}, { taxonomy: selected }, self, self.toname);
           }
         }
       },
@@ -128,7 +125,7 @@ const Model = types
     };
   });
 
-const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, VisibilityMixin);
+const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };

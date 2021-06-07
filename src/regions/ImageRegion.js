@@ -1,6 +1,7 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 // @todo remove file
 const RegionMixin = types
@@ -32,12 +33,8 @@ const RegionMixin = types
       return getParent(self);
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get editable() {
-      return self.readonly === false && self.completion.editable === true;
+      return self.readonly === false && self.annotation.editable === true;
     },
 
     get labelsState() {
@@ -142,7 +139,7 @@ const RegionMixin = types
           })
           .filter(Boolean);
       } else {
-        const obj = self.completion.toNames.get(parent.name);
+        const obj = self.annotation.toNames.get(parent.name);
         const control = obj.length ? obj[0] : obj;
 
         const tree = {
@@ -186,9 +183,9 @@ const RegionMixin = types
 
     selectRegion() {
       self.selected = true;
-      self.completion.setHighlightedNode(self);
+      self.annotation.setHighlightedNode(self);
 
-      self.completion.loadRegionState(self);
+      self.annotation.loadRegionState(self);
     },
 
     /**
@@ -196,42 +193,42 @@ const RegionMixin = types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
     unselectRegion(tryToKeepStates = false) {
-      const completion = self.completion;
+      const annotation = self.annotation;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
 
-      if (completion.relationMode) {
-        completion.stopRelationMode();
+      if (annotation.relationMode) {
+        annotation.stopRelationMode();
       }
       if (parent.setSelected) {
         parent.setSelected(undefined);
       }
 
       self.selected = false;
-      completion.setHighlightedNode(null);
+      annotation.setHighlightedNode(null);
 
       self.afterUnselectRegion();
 
       if (!keepStates) {
-        completion.unloadRegionState(self);
+        annotation.unloadRegionState(self);
       }
     },
 
     afterUnselectRegion() {},
 
     onClickRegion() {
-      const completion = self.completion;
-      if (!completion.editable) return;
+      const annotation = self.annotation;
+      if (!annotation.editable) return;
 
-      if (completion.relationMode) {
-        completion.addRelation(self);
-        completion.stopRelationMode();
-        completion.regionStore.unselectAll();
+      if (annotation.relationMode) {
+        annotation.addRelation(self);
+        annotation.stopRelationMode();
+        annotation.regionStore.unselectAll();
       } else {
         if (self.selected) {
           self.unselectRegion(true);
         } else {
-          completion.regionStore.unselectAll();
+          annotation.regionStore.unselectAll();
           self.selectRegion();
         }
       }
@@ -241,19 +238,19 @@ const RegionMixin = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.completion.editable) return;
+      if (!self.annotation.editable) return;
 
       self.unselectRegion();
 
-      self.completion.relationStore.deleteNodeRelation(self);
+      self.annotation.relationStore.deleteNodeRelation(self);
 
       if (self.type === "polygonregion") {
         self.destroyRegion();
       }
 
-      self.completion.regionStore.deleteRegion(self);
+      self.annotation.regionStore.deleteRegion(self);
 
-      self.completion.deleteRegion(self);
+      self.annotation.deleteRegion(self);
     },
 
     setHighlight(val) {
@@ -269,4 +266,4 @@ const RegionMixin = types
     },
   }));
 
-export default RegionMixin;
+export default types.compose(RegionMixin, AnnotationMixin);
