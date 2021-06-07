@@ -14,31 +14,31 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
 const WARNING_MESSAGES = {
-  dataTypeMistmatch: () => "You should not put text directly in your task data if you use valueType=url.",
+  dataTypeMistmatch: () => "Do not put text directly in task data if you use valueType=url.",
   badURL: url => `URL (${url}) is not valid.`,
-  secureMode: () => 'In SECURE MODE valueType set to "url" by default.',
+  secureMode: () => 'In SECURE MODE valueType is set to "url" by default.',
   loadingError: (url, error) => `Loading URL (${url}) unsuccessful: ${error}`,
 };
 
 /**
- * RichText tag shows text or html and allows labeling
+ * RichText tag shows text or HTML and allows labeling
  * @example
  * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
  * @example
  * <Text name="text-1" value="$url" valueType="url" highlightColor="#ff0000" />
  * @example
- * <HyperText name="text-1" value="$hmtl" highlightColor="#ff0000" />
+ * <HyperText name="text-1" value="$html" highlightColor="#ff0000" />
  * @name Text
  * @param {string} name                                   - name of the element
  * @param {string} value                                  - value of the element
  * @param {url|text} [valueType=url|text]                – source of the data
- * @param {boolean} [saveTextResult=true]                 – wether or not to save selected text to the serialized data
+ * @param {boolean} [saveTextResult=true]                 – whether or not to save selected text to the serialized data
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
- * @param {boolan} [clickableLinks=false]                 – allow to open resources from links
+ * @param {boolean} [clickableLinks=false]                 – allow annotator to open resources from links
  * @param {string} [highlightColor]                       - hex string with highlight color, if not provided uses the labels color
- * @param {boolean} [showLabels=true]                     - show labels next to the region
- * @param {none|base64|base64unicode} [encoding]          - decode value from encoded string
- * @param {symbol|word|sentence|paragrap} [granularity]   - control selection granularity
+ * @param {boolean} [showLabels=true]                     - whether or not to show labels next to the region
+ * @param {none|base64|base64unicode} [encoding]          - decode value from an encoded string
+ * @param {symbol|word|sentence|paragraph} [granularity]   - control region selection granularity
  */
 const TagAttrs = types.model("RichTextModel", {
   name: types.identifier,
@@ -47,7 +47,7 @@ const TagAttrs = types.model("RichTextModel", {
   /** Defines the type of data to be shown */
   valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
 
-  /** Wether or not to save selected text to the serialized data */
+  /** Whether or not to save selected text to the serialized data */
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
     window.LS_SECURE_MODE ? "no" : "none",
   ),
