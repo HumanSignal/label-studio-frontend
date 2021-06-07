@@ -75,6 +75,7 @@ export default types
     addEventsToSpans(spans) {
       const addEvent = s => {
         s.onmouseover = function(ev) {
+          if (self.hidden) return;
           if (self.annotation.relationMode) {
             self.toggleHighlight();
             s.style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -86,10 +87,12 @@ export default types
         };
 
         s.onmouseout = function() {
+          if (self.hidden) return;
           self.setHighlight(false);
         };
 
         s.onmousedown = function(ev) {
+          if (self.hidden) return;
           // if we click to already selected span (=== this)
           // skip it to allow another span to be selected
           if (self.parent._currentSpan !== this) {
@@ -99,6 +102,7 @@ export default types
         };
 
         s.onclick = function(ev) {
+          if (self.hidden) return;
           // set above in `onmousedown`, can be nulled when new region created
           if (self.parent._currentSpan !== this) return;
           // reset for the case we just created new relation
@@ -148,7 +152,7 @@ export default types
           if (bottom) span.style.borderBottom = s;
         };
 
-        if (self.highlighted) {
+        if (self.highlighted && !self.hidden) {
           const h = Constants.HIGHLIGHTED_CSS_BORDER;
           set(fspan, h, { right: false });
           set(lspan, h, { left: false });
@@ -163,4 +167,21 @@ export default types
         }
       }
     },
+
+    toggleHidden(e) {
+      self.hidden = !self.hidden;
+      self.setHighlight(self.highlighted);
+      if (self.hidden) {
+        self.updateSpansColor("transparent", 0);
+        if (self._spans) {
+          self._spans.forEach(span => {
+            span.style.cursor = Constants.DEFAULT_CURSOR;
+          });
+        }
+      } else {
+        self.updateAppearenceFromState();
+      }
+      e?.stopPropagation();
+    },
+
   }));

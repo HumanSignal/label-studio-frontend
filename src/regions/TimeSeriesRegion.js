@@ -24,6 +24,9 @@ const Model = types
     end: types.union(types.number, types.string),
     instant: false,
   })
+  .volatile((self) => ({
+    hideable: true,
+  }))
   .views(self => ({
     get parent() {
       return self.object;
