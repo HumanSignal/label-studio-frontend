@@ -607,7 +607,8 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
       .attr("height", focusHeight)
       .attr("x", r => x(r.start))
       .attr("width", r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
-      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3));
+      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3))
+      .style("display", r => r.hidden ? "none" : "block");
     rSelection.exit().remove();
   };
 
@@ -678,7 +679,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
     node && drawRegions(regions);
   });
 
-  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style?.fillcolor));
+  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.hidden, r.style?.fillcolor));
 
   return <div className="htx-timeseries-overview" ref={ref} />;
 });

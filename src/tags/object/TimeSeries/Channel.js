@@ -267,6 +267,9 @@ class ChannelD3 extends React.Component {
       .each(function(r, i) {
         const group = d3.select(this);
         const selection = group.selectAll(".selection");
+
+        group.style("display", r.hidden ?  "none" : "block");
+
         const color = getRegionColor(r);
         if (r.instant) {
           selection
@@ -702,7 +705,7 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.style?.fillcolor));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.hidden, r.style?.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div className="htx-timeseries-channel" ref={this.ref} />;
