@@ -106,7 +106,6 @@ module.exports = {
    * @param y
    * @param shiftX
    * @param shiftY
-   * @returns {Promise<void>}
    */
   drawByDrag(x, y, shiftX, shiftY) {
     I.moveMouse(this._stageBBox.x + x, this._stageBBox.y + y);
@@ -117,7 +116,7 @@ module.exports = {
   /**
    * Click through the list of points on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.lookForStage();
+   * async AtImageView.loolookkForStage();
    * AtImageView.drawByClickingPoints([[50,50],[100,50],[100,100],[50,100],[50,50]]);
    * @param {number[][]} points
    */
@@ -150,5 +149,10 @@ module.exports = {
     }
     I.pressMouseUp();
   },
-  drawPoint(x, y) {},
+  clickAt(x, y) {
+    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+  },
+  drawByClick(x, y) {
+    this.clickAt(x, y);
+  },
 };

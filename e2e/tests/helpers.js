@@ -373,6 +373,7 @@ function _isObject(value) {
   var type = typeof value;
   return value != null && (type == "object" || type == "function");
 }
+
 function _pickBy(obj, predicate, path = []) {
   if (!_isObject(obj) || Array.isArray(obj)) return obj;
   return Object.keys(obj).reduce((res, key) => {
@@ -384,13 +385,19 @@ function _pickBy(obj, predicate, path = []) {
     return res;
   }, {});
 }
+
 function _not(predicate) {
   return (...args) => {
     return !predicate(...args);
   };
 }
+
 function omitBy(object, predicate) {
   return _pickBy(object, _not(predicate));
+}
+
+function hasSelectedRegion(done) {
+  done(!!Htx.annotationStore.selected.highlightedNode);
 }
 
 module.exports = {
@@ -416,6 +423,7 @@ module.exports = {
   whereIsPixel,
   countKonvaShapes,
   switchRegionTreeView,
+  hasSelectedRegion,
 
   serialize,
   selectText,
