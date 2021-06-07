@@ -340,6 +340,10 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
+function hasSelectedRegion(done) {
+  done(!!Htx.annotationStore.selected.highlightedNode);
+}
+
 module.exports = {
   initLabelStudio,
   waitForImage,
@@ -360,6 +364,7 @@ module.exports = {
   whereIsPixel,
   countKonvaShapes,
   switchRegionTreeView,
+  hasSelectedRegion,
 
   serialize,
   selectText,
