@@ -30,12 +30,13 @@ const _Tool = types
 
       //if (!self.obj.checkLabels()) return;
 
-      self.createRegion({
+      const keyPoint = self.createRegion({
         x: x,
         y: y,
         width: Number(c.strokewidth),
         coordstype: "px",
       });
+      keyPoint.setDrawing(false);
     },
   }));
 

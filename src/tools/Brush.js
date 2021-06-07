@@ -110,6 +110,7 @@ const _Tool = types
       mouseupEv() {
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
+        brush.setDrawing(false);
         brush.endPath();
         self.obj.annotation.selectArea(brush);
       },

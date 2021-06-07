@@ -420,7 +420,7 @@ const HtxBrushView = ({ item, meta }) => {
           }
         }}
         onClick={e => {
-          if (item.getSkipInteractions()) return;
+          if (item.parent.getSkipInteractions()) return;
           if (store.annotationStore.selected.relationMode) {
             item.onClickRegion();
             return;
