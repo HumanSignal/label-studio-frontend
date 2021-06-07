@@ -86,7 +86,7 @@ const _Tool = types
       // },
 
       updateCursor() {
-        if (!self.selected) return;
+        if (!self.selected || !self.obj.stageRef) return;
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
