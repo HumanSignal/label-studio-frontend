@@ -43,6 +43,8 @@ import './App.styl';
  * App
  */
 class App extends Component {
+  relationsRef = React.createRef();
+
   renderSuccess() {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }
@@ -96,7 +98,11 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block name="main-view" key={(as.selectedHistory ?? as.selected)?.id}>
+          <Block
+            key={(as.selectedHistory ?? as.selected)?.id}
+            name="main-view"
+            onScrollCapture={this._notifyScroll}
+          >
             <Elem name="annotation">
               {Tree.renderItem(root)}
               {this.renderRelations(as.selected)}
@@ -125,7 +131,7 @@ class App extends Component {
 
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
-    return <RelationsOverlay key={guidGenerator()} store={store} />;
+    return <RelationsOverlay key={guidGenerator()} store={store} ref={this.relationsRef} />;
   }
 
   render() {
@@ -202,6 +208,12 @@ class App extends Component {
       </div>
     );
   }
+
+  _notifyScroll = () => {
+    if (this.relationsRef.current) {
+      this.relationsRef.current.onResize();
+    }
+  };
 }
 
 export default observer(App);
