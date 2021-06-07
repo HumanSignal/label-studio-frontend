@@ -4,6 +4,7 @@ import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 const TagAttrs = types.model({
   name: types.identifier,
@@ -38,7 +39,7 @@ const Model = types
     },
   }));
 
-const BrushModel = types.compose("BrushModel", TagAttrs, Model, ControlBase, AnnotationMixin);
+const BrushModel = types.compose("BrushModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

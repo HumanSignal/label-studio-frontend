@@ -79,9 +79,14 @@ const DrawingTool = types
       },
       createRegion(opts) {
         const control = self.control;
-        const labels = { [control.valueType]: control.selectedValues?.() };
-        currentArea = self.obj.annotation.createResult(opts, labels, control, self.obj);
+        const resultValue = control.getResultValue();
+        currentArea = self.obj.annotation.createResult(opts, resultValue, control, self.obj);
         currentArea.setDrawing(true);
+        const activeStates = self.obj.activeStates();
+        activeStates.forEach(state => {
+          currentArea.setValue(state);
+        });
+        return currentArea;
       },
 
       beforeCommitDrawing() {
@@ -89,7 +94,7 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() && !self.isIncorrectLabel() && self.canStart();
+        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
       },
 
       startDrawing(x, y) {
@@ -234,21 +239,51 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
   .actions(self => {
     let startPoint = { x: 0, y: 0 };
     let clickCount = 0;
+    let lastPoint = { x: -1, y: -1 };
+    let lastEvent = 0;
+    const MOUSE_DOWN_EVENT = 1;
+    const MOUSE_UP_EVENT = 2;
+    const CLICK_EVENT = 3;
+    let lastClickTs = 0;
     return {
       nextPoint(x, y) {
         self.getCurrentArea().addPoint(x, y);
+        clickCount++;
       },
       closeCurrent() {
         console.error("MultipleClicksMixin model needs to implement closeCurrent method in actions");
       },
       finishDrawing(x, y) {
         if (!self.isDrawing) return;
+        clickCount = 0;
         self.closeCurrent();
         self.mode = "viewing";
       },
+      mousedownEv(ev, [x, y]) {
+        lastPoint = { x, y };
+        lastEvent = MOUSE_DOWN_EVENT;
+      },
+      mouseupEv(ev, [x, y]) {
+        if (lastEvent === MOUSE_DOWN_EVENT && self.comparePointsWithThreshold(lastPoint, { x, y })) {
+          self._clickEv(ev, [x, y]);
+          lastEvent = MOUSE_UP_EVENT;
+        }
+        lastPoint = { x: -1, y: -1 };
+      },
       clickEv(ev, [x, y]) {
+        if (lastEvent !== MOUSE_UP_EVENT) {
+          self._clickEv(ev, [x, y]);
+        }
+        lastEvent = CLICK_EVENT;
+        lastPoint = { x: -1, y: -1 };
+      },
+      _clickEv(ev, [x, y]) {
         if (self.current()) {
-          if (clickCount === 1 && self.comparePointsWithThreshold(startPoint, { x, y })) {
+          if (
+            clickCount === 1 &&
+            self.comparePointsWithThreshold(startPoint, { x, y }) &&
+            ev.timeStamp - lastClickTs < 350
+          ) {
             // dblclick
             self.nextPoint(x + self.defaultDimensions.length, y);
             self.nextPoint(
@@ -257,12 +292,17 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
             );
             self.finishDrawing();
           } else {
-            self.nextPoint(x, y);
+            if (self.comparePointsWithThreshold(startPoint, { x, y })) {
+              self.finishDrawing();
+            } else {
+              self.nextPoint(x, y);
+            }
           }
         } else {
           if (!self.canStartDrawing()) return;
           startPoint = { x, y };
           clickCount = 1;
+          lastClickTs = ev.timeStamp;
           self.startDrawing(x, y);
         }
       },

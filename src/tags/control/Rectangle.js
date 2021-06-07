@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * Rectangle is used to add rectangle (Bounding Box) to an image without label selection. It's useful when you have
@@ -52,7 +53,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose("RectangleModel", ControlBase, TagAttrs, Model, AnnotationMixin);
+const RectangleModel = types.compose("RectangleModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

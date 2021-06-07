@@ -178,3 +178,36 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
     assert.strictEqual(hasPixel, true);
   }
 });
+
+const windowSizesTable = new DataTable(["width", "height"]);
+windowSizesTable.add([1280, 720]);
+windowSizesTable.add([1920, 1080]);
+windowSizesTable.add([800, 480]);
+windowSizesTable.add([1017, 970]);
+
+Data(windowSizesTable).Scenario("Rotation with different window sizes", async function(I, AtImageView, current) {
+  const params = {
+    config: getConfigWithShape("Rectangle"),
+    data: { image: IMAGE },
+  };
+  I.amOnPage("/");
+  I.resizeWindow(current.width, current.height);
+  await I.executeAsyncScript(initLabelStudio, params);
+  AtImageView.waitForImage();
+  I.waitForVisible("canvas");
+  I.see("0 Regions");
+  const canvasSize = await AtImageView.getCanvasSize();
+  const imageSize = await AtImageView.getImageFrameSize();
+  const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
+  let degree = 0;
+  assert(Math.abs(canvasSize.width - imageSize.width) < 1);
+  assert(Math.abs(canvasSize.height - imageSize.height) < 1);
+  for (let rotate of rotationQueue) {
+    I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
+    degree += rotate === "right" ? 90 : -90;
+    const rotatedCanvasSize = await AtImageView.getCanvasSize();
+    const rotatedImageSize = await AtImageView.getImageFrameSize();
+    assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
+    assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
+  }
+});

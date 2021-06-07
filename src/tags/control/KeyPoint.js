@@ -1,10 +1,11 @@
-import { types } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * KeyPoint is used to add a keypoint to an image without label selection. It's useful when you have only one label.
@@ -45,7 +46,7 @@ const Model = types
     },
 
     get annotation() {
-      return Types.getParentOfTypeString(self, "Annotation");
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({
@@ -59,7 +60,7 @@ const Model = types
     },
   }));
 
-const KeyPointModel = types.compose("KeyPointModel", TagAttrs, Model, ControlBase);
+const KeyPointModel = types.compose("KeyPointModel", ControlBase, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

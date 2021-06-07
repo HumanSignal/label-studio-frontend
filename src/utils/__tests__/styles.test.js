@@ -1,3 +1,4 @@
+/* global describe, it, expect */
 import { styleToProp } from "../styles";
 
 describe("styleToProp should works well", () => {

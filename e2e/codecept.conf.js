@@ -31,7 +31,10 @@ exports.config = {
   },
   include: {
     I: "./steps_file.js",
+    LabelStudio: "./fragments/LabelStudio.js",
     AtImageView: "./fragments/AtImageView.js",
+    AtAudioView: "./fragments/AtAudioView.js",
+    AtSidebar: "./fragments/AtSidebar.js",
   },
   bootstrap: null,
   mocha: {},

@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import Utils from "../../../utils";
+import { defaultStyle } from "../../../core/Constants";
 
 export const line = (x, y) =>
   d3
@@ -24,7 +25,7 @@ export const sparseValues = (values, max = 1e6) => {
 };
 
 export const getRegionColor = (region, alpha = 1) => {
-  const color = region.style?.fillcolor || "grey";
+  const color = (region.style || defaultStyle).fillcolor;
   return Utils.Colors.convertToRGBA(color, alpha);
 };
 

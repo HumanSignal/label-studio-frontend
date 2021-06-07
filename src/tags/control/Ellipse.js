@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * Ellipse
@@ -56,7 +57,7 @@ const Model = types
     },
   }));
 
-const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase, AnnotationMixin);
+const EllipseModel = types.compose("EllipseModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

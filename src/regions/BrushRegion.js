@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Line, Group, Layer, Image, Shape } from "react-konva";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Group, Layer, Image, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot, isAlive, cast, addDisposer } from "mobx-state-tree";
+import { types, getParent, getRoot, isAlive, cast } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -13,7 +13,7 @@ import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
-import { reaction } from "mobx";
+import { defaultStyle } from "../core/Constants";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -130,7 +130,8 @@ const Model = types
       return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
     },
     get colorParts() {
-      return colorToRGBAArray(self.style?.strokecolor);
+      const style = self.style || self.tag || defaultStyle;
+      return colorToRGBAArray(style.strokecolor);
     },
     get strokeColor() {
       return rgbArrayToHex(self.colorParts);
@@ -146,17 +147,6 @@ const Model = types
       lastPointY = -1;
     return {
       afterCreate() {
-        addDisposer(
-          self,
-          reaction(
-            () => self.layerRef,
-            () => {
-              if (self.layerRef) {
-                self.layerRef.canvas._canvas.style.opacity = self.opacity;
-              }
-            },
-          ),
-        );
         // if ()
         // const newdata = ctx.createImageData(750, 937);
         // newdata.data.set(decode(item._rle));
@@ -170,6 +160,9 @@ const Model = types
 
       setLayerRef(ref) {
         self.layerRef = ref;
+        if (self.layerRef) {
+          self.layerRef.canvas._canvas.style.opacity = self.opacity;
+        }
       },
 
       prepareCoords([x, y]) {
@@ -427,6 +420,7 @@ const HtxBrushView = ({ item, meta }) => {
           }
         }}
         onClick={e => {
+          if (item.parent.getSkipInteractions()) return;
           if (store.annotationStore.selected.relationMode) {
             item.onClickRegion();
             return;

@@ -116,4 +116,4 @@ const NodeMinimal = observer(({ node }) => {
   );
 });
 
-export { Node, NodeMinimal };
+export { Node, NodeMinimal, NodeViews };

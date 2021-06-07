@@ -588,11 +588,52 @@ const Annotation = types
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      json.forEach(obj => {
+      return json.filter(obj => {
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
+
+        // Clear non-existent labels
+        if (obj.type.endsWith("labels")) {
+          const keys = Object.keys(obj.value);
+          for (const key of keys) {
+            if (key.endsWith("labels")) {
+              if (self.names.has(obj.from_name)) {
+                const labelsContainer = self.names.get(obj.from_name);
+                const value = obj.value[key];
+                if (value && value.length) {
+                  obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                }
+              }
+              if (
+                !self.names.has(obj.from_name) ||
+                (!obj.value[key].length && !self.names.get(obj.from_name).allowempty)
+              ) {
+                delete obj.value[key];
+                if (self.names.has(obj.to_name)) {
+                  // Redirect references to existent tool
+                  const targetObject = self.names.get(obj.to_name);
+                  const states = targetObject.states();
+                  if (states?.length) {
+                    const altToolsControllerType = obj.type.replace(/labels$/, "");
+                    const sameLabelsType = obj.type;
+                    const simpleLabelsType = "labels";
+                    for (const altType of [altToolsControllerType, sameLabelsType, simpleLabelsType]) {
+                      const state = states.find(state => state.type === altType);
+                      if (state) {
+                        obj.type = altType;
+                        obj.from_name = state.name;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        return self.names.has(obj.from_name) && self.names.has(obj.to_name);
       });
-      return json;
     },
 
     /**
@@ -614,7 +655,7 @@ const Annotation = types
           if (obj["type"] !== "relation") {
             const { id, value: rawValue, type, ...data } = obj;
 
-            const {type: tagType} = self.names.get(obj.to_name) ?? {};
+            const { type: tagType } = self.names.get(obj.to_name) ?? {};
 
             // avoid duplicates of the same areas in different annotations/predictions
             const areaId = `${id || guidGenerator()}#${self.id}`;
@@ -711,7 +752,7 @@ export default types
 
     get viewingAll() {
       return self.viewingAllAnnotations || self.viewingAllPredictions;
-    }
+    },
   }))
   .actions(self => {
     function toggleViewingAll() {
@@ -892,7 +933,6 @@ export default types
         pk: pk && String(pk),
         root: self.root,
       };
-
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
       if (options.user) node.user = options.user;
 

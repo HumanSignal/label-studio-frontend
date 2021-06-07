@@ -1,6 +1,7 @@
 /* global Feature, Scenario */
 
 const { initLabelStudio, serialize } = require("./helpers");
+const Utils = require("../examples/utils");
 const examples = [
   require("../examples/audio-regions"),
   require("../examples/image-bboxes"),
@@ -32,11 +33,11 @@ function assertWithTolerance(actual, expected) {
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function(I) {
+  Scenario(example.title || "Noname smoke test", async function(I, AtImageView, AtAudioView) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
-
+    const configTree = Utils.parseXml(config);
     const ids = [];
     // add all unique ids from non-classification results
     // @todo some classifications will be reflected in Results list soon
@@ -50,19 +51,15 @@ examples.forEach(example =>
 
     let restored;
 
-    // repeatedly check if results are the same
-    // they should be in a correct case, so if they not — data still haven't been loaded
-    // so try again
-    for (let i = 10; i--; ) {
-      try {
-        I.wait(2);
-        // restore saved result and check it back that it didn't change
-        restored = await I.executeScript(serialize);
-        assertWithTolerance(restored, result);
-        break;
-      } catch (e) {}
+    if (Utils.xmlTreeHasTag(configTree, "Image")) {
+      AtImageView.waitForImage();
+      I.waitForVisible("canvas", 3);
+    }
+    if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
+      AtAudioView.waitForAudio();
     }
 
+    restored = await I.executeScript(serialize);
     assertWithTolerance(restored, result);
 
     if (count) {

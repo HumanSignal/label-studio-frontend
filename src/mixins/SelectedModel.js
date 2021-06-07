@@ -1,9 +1,15 @@
 import { types } from "mobx-state-tree";
 
 import Tree from "../core/Tree";
+import { isDefined } from "../utils/utilities";
 
 const SelectedModelMixin = types
   .model()
+  .volatile(self => {
+    return {
+      isSeparated: false,
+    };
+  })
   .views(self => ({
     get tiedChildren() {
       return Tree.filterChildrenOfType(self, self._child);
@@ -35,7 +41,13 @@ const SelectedModelMixin = types
     },
 
     selectedValues() {
-      return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
+      return self.selectedLabels.map(c => (c.alias ? c.alias : c.value)).filter(val => isDefined(val));
+    },
+
+    getResultValue() {
+      return {
+        [self.valueType]: self.selectedValues(),
+      };
     },
 
     // return labels that are selected and have an alias only
@@ -48,7 +60,9 @@ const SelectedModelMixin = types
     },
 
     findLabel(value) {
-      return self.tiedChildren.find(c => c.alias === value || c.value === value);
+      return self.tiedChildren.find(
+        c => (c.alias === value && isDefined(value)) || c.value === value || (!isDefined(c.value) && !isDefined(value)),
+      );
     },
   }))
   .actions(self => ({
@@ -78,9 +92,12 @@ const SelectedModelMixin = types
      */
     updateFromResult(value) {
       self.unselectAll();
-      if (!value) return;
-      const values = Array.isArray(value) ? value : [value];
-      values.map(v => self.findLabel(v)).forEach(label => label?.setSelected(true));
+      const values = Array.isArray(value) ? (value.length ? value : [null]) : [value];
+      if (values.length) {
+        values.map(v => self.findLabel(v)).forEach(label => label?.setSelected(true));
+      } else if (self.allowempty) {
+        self.findLabel(null)?.setSelected(true);
+      }
     },
   }));
 

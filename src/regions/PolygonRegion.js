@@ -415,6 +415,10 @@ const HtxPolygonView = ({ item }) => {
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       onDragStart={e => {
+        if (item.parent.getSkipInteractions()) {
+          e.currentTarget.stopDrag(e.evt);
+          return;
+        }
         item.annotation.setDragMode(true);
 
         var arrX = item.points.map(p => p.x);
@@ -469,7 +473,8 @@ const HtxPolygonView = ({ item }) => {
       }}
       onClick={e => {
         // create regions over another regions with Cmd/Ctrl pressed
-        if (e.evt.metaKey || e.evt.ctrlKey) return;
+        if (e.evt.metaKey || e.evt.ctrlKey || item.parent.getSkipInteractions()) return;
+        if (item.isDrawing) return;
 
         e.cancelBubble = true;
 

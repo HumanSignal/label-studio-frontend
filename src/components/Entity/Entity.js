@@ -17,7 +17,7 @@ import "./Entity.styl";
 const { Paragraph, Text } = Typography;
 
 const renderLabels = element => {
-  return (
+  return element.selectedLabels?.length ? (
     <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
       {element.selectedLabels.map(label => {
@@ -30,7 +30,7 @@ const renderLabels = element => {
         );
       })}
     </Text>
-  );
+  ) : null;
 };
 
 const renderResult = result => {

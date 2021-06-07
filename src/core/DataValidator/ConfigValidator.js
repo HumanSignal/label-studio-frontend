@@ -198,7 +198,7 @@ const validateAttributes = (child, model, fieldsToSkip) => {
   const properties = Object.keys(model.properties);
 
   for (let key of properties) {
-    if (!child.hasOwnProperty(key)) continue;
+    if (!{}.hasOwnProperty.call(child, key)) continue;
     if (fieldsToSkip.includes(key)) continue;
     const value = child[key];
     const modelProperty = model.properties[key.toLowerCase()];
