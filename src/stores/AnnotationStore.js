@@ -116,11 +116,30 @@ const Annotation = types
     },
 
     get hasChanges() {
+      // Dirty hack to force MST track changes
+      self.areas.toJSON();
+
       if (isDefined(self.resultSnapshot)) {
-        return self.resultSnapshot !== JSON.stringify(self.areas.toJSON());
+        const changed = self.resultSnapshot !== self.currentSnapshot;
+
+        return changed;
       }
 
       return false;
+    },
+
+    get currentSnapshot() {
+      return JSON.stringify(self.serialized.map(({value}) => value));
+    },
+
+    get serialized() {
+      // Dirty hack to force MST track changes
+      self.areas.toJSON();
+
+      return self.results
+        .map(r => r.serialize())
+        .filter(Boolean)
+        .concat(self.relationStore.serializeAnnotation());
     }
   }))
   .volatile(self => ({
@@ -152,7 +171,7 @@ const Annotation = types
     },
 
     saveSnapshot() {
-      self.resultSnapshot = JSON.stringify(self.areas.toJSON());
+      self.resultSnapshot = self.currentSnapshot;
     },
 
     setLocalUpdate(value) {
@@ -384,8 +403,6 @@ const Annotation = types
         return;
       }
 
-      console.info("autosave initialized");
-
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
         () => {
@@ -579,10 +596,7 @@ const Annotation = types
     },
 
     serializeAnnotation() {
-      return self.results
-        .map(r => r.serialize())
-        .filter(Boolean)
-        .concat(self.relationStore.serializeAnnotation());
+      return self.serialized;
     },
 
     // Some annotations may be created with wrong assumptions
