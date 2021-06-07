@@ -31,6 +31,7 @@ import { ImageMultilabel } from "../examples/image_multilabel";
 import { ImageEllipselabels } from "../examples/image_ellipses";
 import { ImagePolygons } from "../examples/image_polygons";
 import { ImageSegmentation } from "../examples/image_segmentation";
+import { ImageTools } from "../examples/image_tools";
 
 /**
  * HTML

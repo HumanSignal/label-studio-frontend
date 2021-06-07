@@ -19,9 +19,8 @@ const ToolView = observer(({ item }) => {
       selected={item.selected}
       icon={"tool"}
       onClick={ev => {
-        const cur = item.selected;
-        item.manager.unselectAll();
-        item.setSelected(!cur);
+        const sel = item.selected;
+        item.manager.selectTool(item, !sel);
       }}
       onChange={val => {
         item.setThreshold(val);

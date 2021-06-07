@@ -8,6 +8,7 @@ import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -16,12 +17,11 @@ const ToolView = observer(({ item }) => {
       icon={<HighlightOutlined />}
       onClick={ev => {
         const sel = item.selected;
-        item.manager.unselectAll();
-
-        item.setSelected(!sel);
+        item.manager.selectTool(item, !sel);
       }}
       onChange={val => {
         item.setStroke(val);
+        item.manager.selectTool(item, true);
       }}
     />
   );
@@ -85,14 +85,8 @@ const _Tool = types
       //   }
       // },
 
-      createRegion(opts) {
-        const control = self.control;
-        const labels = { [control.valueType]: control.selectedValues?.() };
-        return self.obj.annotation.createResult(opts, labels, control, self.obj);
-      },
-
       updateCursor() {
-        if (!self.selected) return;
+        if (!self.selected || !self.obj.stageRef) return;
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
@@ -103,7 +97,6 @@ const _Tool = types
 
       setStroke(val) {
         self.strokeWidth = val;
-        self.updateCursor();
       },
 
       afterUpdateSelected() {
@@ -117,6 +110,7 @@ const _Tool = types
       mouseupEv() {
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
+        brush.setDrawing(false);
         brush.endPath();
         self.obj.annotation.selectArea(brush);
       },
@@ -156,26 +150,25 @@ const _Tool = types
 
           self.addPoint(x, y);
         } else {
-          if (c.isSelected) {
-            self.mode = "drawing";
+          if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
+          self.mode = "drawing";
 
-            brush = self.createRegion({
-              touches: [],
-              coordstype: "px",
-            });
+          brush = self.createRegion({
+            touches: [],
+            coordstype: "px",
+          });
 
-            brush.beginPath({
-              type: "add",
-              strokeWidth: self.strokeWidth || c.strokeWidth,
-            });
+          brush.beginPath({
+            type: "add",
+            strokeWidth: self.strokeWidth || c.strokeWidth,
+          });
 
-            self.addPoint(x, y);
-          }
+          self.addPoint(x, y);
         }
       },
     };
   });
 
-const Brush = types.compose(ToolMixin, BaseTool, _Tool);
+const Brush = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Brush };

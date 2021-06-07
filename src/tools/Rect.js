@@ -4,6 +4,7 @@ import BaseTool, { DEFAULT_DIMENSIONS, MIN_SIZE } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
   .model("RectTool")
@@ -17,6 +18,12 @@ const _Tool = types
           stateTypes: "rectanglelabels",
           controlTagTypes: ["rectanglelabels", "rectangle"],
         };
+      },
+      get viewTooltip() {
+        return "Rectangle region";
+      },
+      get iconComponent() {
+        return NodeViews.RectRegionModel[1];
       },
       get defaultDimensions() {
         return DEFAULT_DIMENSIONS.rect;

@@ -90,7 +90,7 @@ export const Hotkey = name => {
         if (prefix) comb = prefix + "+" + combs[i];
         else comb = combs[i];
 
-        if (!_hotkeys_map.hasOwnProperty(comb)) return comb;
+        if (!{}.hasOwnProperty.call(_hotkeys_map, comb)) return comb;
       }
 
       return null;

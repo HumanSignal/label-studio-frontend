@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { cast, types } from "mobx-state-tree";
 
 import InfoModal from "../../../components/Infomodal/Infomodal";
 import LabelMixin from "../../../mixins/LabelMixin";
@@ -11,8 +11,10 @@ import Types from "../../../core/Types";
 import { LabelModel } from "../Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../../core/Helpers";
 import ControlBase from "../Base";
-import './Labels.styl';
+import "./Labels.styl";
 import { Block } from "../../../utils/bem";
+import { customTypes } from "../../../core/CustomTypes";
+import { defaultStyle } from "../../../core/Constants";
 
 /**
  * Labels tag, create a group of labels.
@@ -30,6 +32,10 @@ import { Block } from "../../../utils/bem";
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
  * @param {number} [maxUsages]               - Maximum available uses of the label
  * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {float=} [opacity=0.6]             - Opacity of rectangle
+ * @param {string=} [fillColor]              - Rectangle fill color
+ * @param {string=} [strokeColor=#f48a42]    - Stroke color
+ * @param {number=} [strokeWidth=1]          - Width of the stroke
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -41,6 +47,14 @@ const TagAttrs = types.model({
 
   // TODO this will move away from here
   groupdepth: types.maybeNull(types.string),
+
+  opacity: types.optional(customTypes.range(), "0.6"),
+  fillcolor: types.optional(customTypes.color, "#f48a42"),
+
+  strokewidth: types.optional(types.string, "1"),
+  strokecolor: types.optional(customTypes.color, "#f48a42"),
+  fillopacity: types.optional(customTypes.range(), "0.6"),
+  allowempty: types.optional(types.boolean, false),
 });
 
 /**
@@ -61,6 +75,25 @@ const Model = LabelMixin.views(self => ({
     return self.choice === "single";
   },
 })).actions(self => ({
+  afterCreate() {
+    if (self.allowempty) {
+      let empty = self.findLabel(null);
+      if (!empty) {
+        const emptyParams = {
+          value: null,
+          type: "label",
+          background: defaultStyle.fillcolor,
+        };
+        if (self.children) {
+          self.children.unshift(emptyParams);
+        } else {
+          self.children = cast([emptyParams]);
+        }
+        empty = self.children[0];
+      }
+      empty.setEmpty();
+    }
+  },
   validate() {
     const regions = self.annotation.regionStore.regions;
 
@@ -88,10 +121,7 @@ const LabelsModel = types.compose(
 
 const HtxLabels = observer(({ item }) => {
   return (
-    <Block
-      name="labels"
-      mod={{hidden: !item.visible, inline: item.showinline}}
-    >
+    <Block name="labels" mod={{ hidden: !item.visible, inline: item.showinline }}>
       {Tree.renderChildren(item)}
     </Block>
   );

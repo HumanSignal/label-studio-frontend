@@ -6,6 +6,7 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * Use the Polygon tag to add polygons to an image without selecting a label. It's useful when you have only one label.
@@ -66,7 +67,7 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model, AnnotationMixin);
+const PolygonModel = types.compose("PolygonModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Validation, Model);
 
 const HtxView = () => null;
 

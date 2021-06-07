@@ -16,8 +16,7 @@ const ToolView = observer(({ item }) => {
         tooltip="Move position"
         onClick={ev => {
           const sel = item.selected;
-          item.manager.unselectAll();
-          item.setSelected(!sel);
+          item.manager.selectTool(item, !sel);
           if (item.selected) {
             const stage = item.obj.stageRef;
             stage.container().style.cursor = "all-scroll";

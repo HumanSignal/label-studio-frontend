@@ -682,6 +682,7 @@ const MagicWand = (function() {
               dir = inner ? 2 : 6; // start direction
               current = previous = first = { x: x, y: y };
               second = null;
+              // eslint-disable-next-line no-constant-condition
               while (true) {
                 dest[current.y * w + current.x] = label; // mark label for the current point
                 // bypass all the neighbors around the current point in a clockwise

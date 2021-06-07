@@ -5,6 +5,7 @@ import { types, getParent, hasParent } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
 import Types from "../core/Types";
+import { defaultStyle } from "../core/Constants";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -156,8 +157,8 @@ const PolygonPoint = types
 
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
-  const style = item.parent.style;
 
+  const style = item.parent.style || item.parent.tag || defaultStyle;
   const sizes = {
     small: 4,
     medium: 8,
@@ -175,11 +176,11 @@ const PolygonPointView = observer(({ item, name }) => {
   const startPointAttr =
     item.index === 0
       ? {
-          hitStrokeWidth: 12,
-          fill: style.strokecolor || item.primary,
-          onMouseOver: item.handleMouseOverStartPoint,
-          onMouseOut: item.handleMouseOutStartPoint,
-        }
+        hitStrokeWidth: 12,
+        fill: style.strokecolor || item.primary,
+        onMouseOver: item.handleMouseOverStartPoint,
+        onMouseOut: item.handleMouseOutStartPoint,
+      }
       : null;
 
   const dragOpts = {
@@ -238,6 +239,7 @@ const PolygonPointView = observer(({ item, name }) => {
           item.parent.deletePoint(item);
         }}
         onClick={ev => {
+          if (item.parent.isDrawing && item.parent.points.length === 1) return;
           // don't unselect polygon on point click
           ev.evt.preventDefault();
           ev.cancelBubble = true;

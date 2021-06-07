@@ -258,7 +258,21 @@ const Model = types
 
     return { afterCreate, getToolsManager };
   })
-
+  .extend(self => {
+    let skipInteractions = false;
+    return {
+      views: {
+        getSkipInteractions() {
+          return skipInteractions;
+        },
+      },
+      actions: {
+        setSkipInteractions(value) {
+          skipInteractions = value;
+        },
+      },
+    };
+  })
   .actions(self => ({
     freezeHistory() {
       //self.annotation.history.freeze();
@@ -368,6 +382,10 @@ const Model = types
 
     setStageRef(ref) {
       self.stageRef = ref;
+
+      const currentTool = self.getToolsManager().findSelectedTool();
+      currentTool?.updateCursor?.();
+      
       // Konva updates ref repeatedly and this breaks brush scaling
       if (self.initialWidth > 1) return;
       self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;

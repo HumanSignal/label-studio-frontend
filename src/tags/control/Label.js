@@ -62,6 +62,11 @@ const Model = types
     visible: types.optional(types.boolean, true),
     _value: types.optional(types.string, ""),
   })
+  .volatile(self => {
+    return {
+      isEmpty: false,
+    };
+  })
   .views(self => ({
     get maxUsages() {
       return Number(self.maxusages || self.parent.maxusages);
@@ -94,6 +99,9 @@ const Model = types
     },
   }))
   .actions(self => ({
+    setEmpty() {
+      self.isEmpty = true;
+    },
     /**
      * Select label
      */
@@ -118,9 +126,15 @@ const Model = types
 
       // check if there is a region selected and if it is and user
       // is changing the label we need to make sure that region is
-      // not going to endup without the label(s) at all
+      // not going to endup without results at all
       if (region && sameObject) {
-        if (labels.selectedLabels.length === 1 && self.selected) return;
+        if (
+          labels.selectedLabels.length === 1 &&
+          self.selected &&
+          region.results.length === 1 &&
+          (!self.parent.allowempty || self.isEmpty)
+        )
+          return;
       }
 
       // if we are going to select label and it would be the first in this labels group
@@ -134,30 +148,45 @@ const Model = types
         // unselect other tools if they exist and selected
         const tool = Object.values(self.parent.tools || {})[0];
         if (tool && tool.manager.findSelectedTool() !== tool) {
-          tool.manager.unselectAll();
-          tool.setSelected(true);
+          tool.manager.selectTool(tool, true);
         }
       }
 
-      /**
-       * Multiple
-       */
-      if (!labels.shouldBeUnselected) {
-        self.setSelected(!self.selected);
+      if (self.isEmpty) {
+        let selected = self.selected;
+        labels.unselectAll();
+        self.setSelected(!selected);
+      } else {
+        /**
+         * Multiple
+         */
+        if (!labels.shouldBeUnselected) {
+          self.setSelected(!self.selected);
+        }
+
+        /**
+         * Single
+         */
+        if (labels.shouldBeUnselected) {
+          /**
+           * Current not selected
+           */
+          if (!self.selected) {
+            labels.unselectAll();
+            self.setSelected(!self.selected);
+          } else {
+            labels.unselectAll();
+          }
+        }
       }
 
-      /**
-       * Single
-       */
-      if (labels.shouldBeUnselected) {
-        /**
-         * Current not selected
-         */
-        if (!self.selected) {
-          labels.unselectAll();
-          self.setSelected(!self.selected);
+      if (labels.allowempty && !self.isEmpty) {
+        if (sameObject) {
+          labels.findLabel().setSelected(!labels.selectedValues()?.length);
         } else {
-          labels.unselectAll();
+          if (self.selected) {
+            labels.findLabel().setSelected(false);
+          }
         }
       }
 
@@ -194,12 +223,11 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = parseValue(self.value, store.task.dataObj);
-      self._updateBackgroundColor(self._value);
+      self._value = parseValue(self.value, store.task.dataObj) || "∅";
     },
   }));
 
-const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
+const LabelModel = types.compose("LabelModel", TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {

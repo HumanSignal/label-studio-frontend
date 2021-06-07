@@ -1,3 +1,4 @@
+/* global test, expect */
 import TaskStore from "../TaskStore";
 
 test("Task Store with string", () => {

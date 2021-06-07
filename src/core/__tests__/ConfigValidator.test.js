@@ -1,3 +1,4 @@
+/* global it, expect */
 import Tree from "../Tree";
 import "../../tags/object/Image";
 import "../../tags/object/HyperText";

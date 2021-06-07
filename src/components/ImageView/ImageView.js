@@ -25,6 +25,7 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
+      item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
 
       // item.freezeHistory();
       const p = e.target.getParent();
@@ -178,8 +179,12 @@ export default observer(
       );
     }
 
+    lastOffsetWidth = -1;
     onResize = () => {
-      this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
+      if (this.lastOffsetWidth !== this.container.offsetWidth) {
+        this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
+        this.lastOffsetWidth = this.container.offsetWidth;
+      }
     };
 
     componentDidMount() {
@@ -188,6 +193,10 @@ export default observer(
 
     componentWillUnmount() {
       window.removeEventListener("resize", this.onResize);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+      this.onResize();
     }
 
     renderTools() {

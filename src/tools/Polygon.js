@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { MultipleClicksDrawingTool } from "../mixins/DrawingTool";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
   .model("PolygonTool")
@@ -28,6 +29,13 @@ const _Tool = types
           stateTypes: "polygonlabels",
           controlTagTypes: ["polygonlabels", "polygon"],
         };
+      },
+
+      get viewTooltip() {
+        return "Polygon region";
+      },
+      get iconComponent() {
+        return NodeViews.PolygonRegionModel[1];
       },
 
       get defaultDimensions() {

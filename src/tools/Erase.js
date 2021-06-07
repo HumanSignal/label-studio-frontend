@@ -8,6 +8,7 @@ import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -16,9 +17,7 @@ const ToolView = observer(({ item }) => {
       onClick={ev => {
         const sel = item.selected;
 
-        item.manager.unselectAll();
-
-        item.setSelected(!sel);
+        item.manager.selectTool(item, !sel);
       }}
       icon={<ScissorOutlined />}
     />
@@ -36,7 +35,7 @@ const _Tool = types
     let brush;
     return {
       updateCursor() {
-        if (!self.selected) return;
+        if (!self.selected || !self.obj.stageRef) return;
         const val = 24;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
@@ -98,6 +97,6 @@ const _Tool = types
     };
   });
 
-const Erase = types.compose(ToolMixin, _Tool, BaseTool);
+const Erase = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Erase };

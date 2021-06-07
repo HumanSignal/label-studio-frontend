@@ -44,6 +44,25 @@ const waitForImage = async done => {
 };
 
 /**
+ * Wait for all audio on the page to be loaded
+ * @param {function} done codecept async success handler
+ */
+const waitForAudio = async done => {
+  const audios = document.querySelectorAll("audio");
+  await Promise.all(
+    [...audios].map(audio => {
+      if (audio.readyState === 4) return true;
+      return new Promise(resolve => {
+        audio.addEventListener("durationchange", () => {
+          resolve(true);
+        });
+      });
+    }),
+  );
+  done();
+};
+
+/**
  * Float numbers can't be compared strictly, so convert any numbers or structures with numbers
  * to same structures but with rounded numbers (int for ints, fixed(2) for floats)
  * @param {*} data
@@ -242,6 +261,16 @@ const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
   done({ width: stage.width(), height: stage.height() });
 };
+const getImageSize = done => {
+  const image = window.document.querySelector('img[alt="LS"]');
+  const clientRect = image.getBoundingClientRect();
+  done({ width: clientRect.width, height: clientRect.height });
+};
+const getImageFrameSize = done => {
+  const image = window.document.querySelector('img[alt="LS"]').parentElement;
+  const clientRect = image.getBoundingClientRect();
+  done({ width: clientRect.width, height: clientRect.height });
+};
 const setZoom = (scale, x, y, done) => {
   Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
   setTimeout(() => {
@@ -307,8 +336,8 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);
 
-  const evt = new MouseEvent('mouseup');
-  evt.initMouseEvent('mouseup', true, true);
+  const evt = new MouseEvent("mouseup");
+  evt.initMouseEvent("mouseup", true, true);
   elem.dispatchEvent(evt);
 
   done();
@@ -340,6 +369,33 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
+function _isObject(value) {
+  var type = typeof value;
+  return value != null && (type == "object" || type == "function");
+}
+
+function _pickBy(obj, predicate, path = []) {
+  if (!_isObject(obj) || Array.isArray(obj)) return obj;
+  return Object.keys(obj).reduce((res, key) => {
+    const val = obj[key];
+    const fullPath = [...path, key];
+    if (predicate(val, key, fullPath)) {
+      res[key] = _pickBy(val, predicate, fullPath);
+    }
+    return res;
+  }, {});
+}
+
+function _not(predicate) {
+  return (...args) => {
+    return !predicate(...args);
+  };
+}
+
+function omitBy(object, predicate) {
+  return _pickBy(object, _not(predicate));
+}
+
 function hasSelectedRegion(done) {
   done(!!Htx.annotationStore.selected.highlightedNode);
 }
@@ -347,6 +403,7 @@ function hasSelectedRegion(done) {
 module.exports = {
   initLabelStudio,
   waitForImage,
+  waitForAudio,
   delay,
 
   getSizeConvertor,
@@ -360,6 +417,8 @@ module.exports = {
   dragKonva,
   hasKonvaPixelColorAtPoint,
   getCanvasSize,
+  getImageSize,
+  getImageFrameSize,
   setZoom,
   whereIsPixel,
   countKonvaShapes,
@@ -368,4 +427,6 @@ module.exports = {
 
   serialize,
   selectText,
+
+  omitBy,
 };

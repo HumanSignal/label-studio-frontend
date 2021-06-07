@@ -1,7 +1,7 @@
 import { types, getRoot } from "mobx-state-tree";
 
 import Utils from "../utils";
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 import { highlightRange } from "../utils/html";
 
 export default types
@@ -45,7 +45,7 @@ export default types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.style?.fillcolor;
+      let labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
