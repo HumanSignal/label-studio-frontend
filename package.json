@@ -87,6 +87,7 @@
     "react-rating": "^1.6.2",
     "react-sortable-hoc": "^1.11.0",
     "react-test-renderer": "^16.13.1",
+    "react-virtualized-auto-sizer": "^1.0.3",
     "sass": "^1.32.12",
     "sass-loader": "^11.0.1",
     "size-limit": "^4.6.0",

@@ -3,6 +3,7 @@ import React, { PureComponent, useEffect } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -158,16 +159,10 @@ class RelationsOverlay extends PureComponent {
   rootNode = React.createRef();
   state = { shouldRender: false, shouldRenderConnections: Math.random() };
 
-  componentDidMount() {
-    if (this.rootNode.current) {
+  componentDidUpdate() {
+    if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
     }
-
-    window.addEventListener("resize", this.onResize);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.onResize);
   }
 
   render() {
@@ -185,9 +180,13 @@ class RelationsOverlay extends PureComponent {
     };
 
     return (
-      <svg ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-        {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
-      </svg>
+      <AutoSizer onResize={this.onResize}>
+        {() => (
+          <svg className="relations-overlay" ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
+            {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
+          </svg>
+        )}
+      </AutoSizer>
     );
   }
 
@@ -216,9 +215,18 @@ class RelationsOverlay extends PureComponent {
   };
 }
 
-const RelationsOverlayObserver = observer(({ store }) => {
-  const { relations, showConnections, highlighted } = store;
-  return <RelationsOverlay relations={Array.from(relations)} visible={showConnections} highlighted={highlighted} />;
-});
+const RelationsOverlayObserver = observer(
+  React.forwardRef(({ store }, ref) => {
+    const { relations, showConnections, highlighted } = store;
+    return (
+      <RelationsOverlay
+        ref={ref}
+        relations={Array.from(relations)}
+        visible={showConnections}
+        highlighted={highlighted}
+      />
+    );
+  }),
+);
 
 export { RelationsOverlayObserver as RelationsOverlay };
