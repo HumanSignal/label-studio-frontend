@@ -181,10 +181,11 @@ export default observer(
 
     lastOffsetWidth = -1;
     onResize = () => {
-      if (this.lastOffsetWidth !== this.container.offsetWidth) {
-        this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
-        this.lastOffsetWidth = this.container.offsetWidth;
-      }
+      if (this.container.offsetWidth <= 1) return;
+      if (this.lastOffsetWidth === this.container.offsetWidth) return;
+
+      this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
+      this.lastOffsetWidth = this.container.offsetWidth;
     };
 
     componentDidMount() {
