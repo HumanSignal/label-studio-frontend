@@ -385,7 +385,7 @@ const Model = types
 
       const currentTool = self.getToolsManager().findSelectedTool();
       currentTool?.updateCursor?.();
-      
+
       // Konva updates ref repeatedly and this breaks brush scaling
       if (self.initialWidth > 1) return;
       self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;

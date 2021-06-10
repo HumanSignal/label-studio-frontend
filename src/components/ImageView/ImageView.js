@@ -9,7 +9,25 @@ import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
-import { findClosestParent } from "../../utils/utilities";
+import { chunks, findClosestParent } from "../../utils/utilities";
+import Konva from "konva";
+
+Konva.showWarnings = false;
+
+const Regions = React.memo(({regions}) => {
+  // return (
+  //   <Layer>
+  //     {regions.map(Tree.renderItem)}
+  //   </Layer>
+  // );
+  const chunkSize = Math.ceil(regions.length / 10);
+
+  return chunks(regions, chunkSize).map((chunk, i) => (
+    <Layer name={`chunk-${i}`} key={`chunk-${i}`}>
+      {chunk.map((el) => Tree.renderItem(el))}
+    </Layer>
+  ));
+});
 
 export default observer(
   class ImageView extends Component {
@@ -272,6 +290,17 @@ export default observer(
         imgStyle["transform"] = imgTransform.join(" ");
       }
 
+      const brushRegions = [];
+      const shapeRegions = [];
+
+      regions.forEach(s => {
+        if (s.type === "brushregion") {
+          brushRegions.push(s);
+        } else {
+          shapeRegions.push(s);
+        }
+      });
+
       return (
         <ObjectTag
           item={item}
@@ -312,29 +341,37 @@ export default observer(
               className={"image-element"}
               width={item.stageComponentSize.width}
               height={item.stageComponentSize.height}
-              scaleX={item.stageScale}
-              scaleY={item.stageScale}
+              scaleX={1}
+              scaleY={1}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
-              onClick={this.handleOnClick}
               offsetX={item.stageTranslate.x}
               offsetY={item.stageTranslate.y}
               rotation={item.rotation}
+              onClick={this.handleOnClick}
               onMouseDown={this.handleMouseDown}
               onMouseMove={this.handleMouseMove}
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-              {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
-              {selected && selected.type === "brushregion" && Tree.renderItem(selected)}
-              <Layer name="shapes">
-                {regions.filter(s => s.type !== "brushregion").map(Tree.renderItem)}
-                {selected && selected.type !== "brushregion" && Tree.renderItem(selected)}
-                {selected?.editable && (
-                  <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-                )}
-              </Layer>
+
+              {brushRegions.length > 0 && (
+                <Regions regions={brushRegions}/>
+              )}
+
+              {shapeRegions.length > 0 && (
+                <Regions regions={shapeRegions}/>
+              )}
+
+              {selected && (
+                <Layer name="selected">
+                  {Tree.renderItem(selected)}
+                  {selected.type !== 'brushregion' && selected.editable && (
+                    <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
+                  )}
+                </Layer>
+              )}
             </Stage>
           )}
 
