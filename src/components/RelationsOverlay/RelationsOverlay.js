@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { PureComponent, useEffect } from "react";
+import { createRef, forwardRef, PureComponent, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
@@ -56,7 +56,7 @@ const RelationConnector = ({ id, command, color, direction, highlight }) => {
 
 const RelationLabel = ({ label, position }) => {
   const [x, y] = position;
-  const textRef = React.createRef();
+  const textRef = useRef();
   const [background, setBackground] = useState({ width: 0, height: 0, x: 0, y: 0 });
 
   const groupAttributes = {
@@ -129,13 +129,25 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * }}
  */
 const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }) => {
-  const [render, setRender] = useState(startNode.getRegionElement() && endNode.getRegionElement());
+  const nodes = useMemo(() => {
+    const start = startNode.getRegionElement
+      ? startNode.getRegionElement()
+      : startNode;
+
+    const end = endNode.getRegionElement
+      ? endNode.getRegionElement()
+      : endNode;
+
+    return [start, end];
+  }, [startNode, endNode]);
+
+  const [render, setRender] = useState(nodes[0] && nodes[1]);
 
   useEffect(() => {
     let timer;
 
     const watchRegionAppear = () => {
-      const nodesExist = isDefined(startNode.getRegionElement()) && isDefined(endNode.getRegionElement());
+      const nodesExist = isDefined(nodes[0]) && isDefined(nodes[1]);
 
       if (render !== nodesExist) {
         setRender(nodesExist);
@@ -147,7 +159,7 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
     timer = setTimeout(watchRegionAppear, 30);
 
     return () => clearTimeout(timer);
-  }, [startNode, endNode, render]);
+  }, [nodes, render]);
 
   return render ? (
     <RelationItem id={relation.id} startNode={startNode} endNode={endNode} direction={relation.direction} {...rest} />
@@ -156,7 +168,7 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
 
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
-  rootNode = React.createRef();
+  rootNode = createRef();
   state = { shouldRender: false, shouldRenderConnections: Math.random() };
 
   componentDidUpdate() {
@@ -216,7 +228,7 @@ class RelationsOverlay extends PureComponent {
 }
 
 const RelationsOverlayObserver = observer(
-  React.forwardRef(({ store }, ref) => {
+  forwardRef(({ store }, ref) => {
     const { relations, showConnections, highlighted } = store;
     return (
       <RelationsOverlay
