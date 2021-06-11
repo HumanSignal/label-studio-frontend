@@ -37,7 +37,7 @@ const Model = types
   .actions(self => ({
     serialize() {
       let res = {
-        original_length: self.object._ws.getDuration(),
+        original_length: self.object._ws?.getDuration(),
         value: {
           start: self.start,
           end: self.end,
