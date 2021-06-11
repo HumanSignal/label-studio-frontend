@@ -342,8 +342,8 @@ export default observer(
               className={"image-element"}
               width={item.stageComponentSize.width}
               height={item.stageComponentSize.height}
-              scaleX={1}
-              scaleY={1}
+              scaleX={item.stageScale}
+              scaleY={item.stageScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               offsetX={item.stageTranslate.x}
