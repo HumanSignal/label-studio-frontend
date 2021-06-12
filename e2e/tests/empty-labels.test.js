@@ -35,7 +35,6 @@ examples.forEach(example => {
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
-      I.waitForVisible("canvas", 5);
     }
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
@@ -69,7 +68,6 @@ examples.forEach(example => {
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
-      I.waitForVisible("canvas", 5);
     }
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
@@ -201,7 +199,6 @@ Scenario(`Consistency of empty labels`, async ({I, LabelStudio, AtSidebar, AtIma
   LabelStudio.init(params);
   AtSidebar.seeRegions(0);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 5);
   I.click(locate(".ant-tag").withText("[1]"));
   AtImageView.dragKonva(200, 200, 100, 100);
   const shapesNum = await AtImageView.countKonvaShapes();

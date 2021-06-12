@@ -53,8 +53,8 @@ examples.forEach(example =>
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
-      I.waitForVisible("canvas", 5);
     }
+
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
     }

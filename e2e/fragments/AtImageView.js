@@ -19,6 +19,7 @@ module.exports = {
 
   waitForImage() {
     I.executeAsyncScript(Helpers.waitForImage);
+    I.waitForVisible("canvas", 5);
   },
 
   async getCanvasSize() {

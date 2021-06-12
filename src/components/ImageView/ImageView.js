@@ -469,7 +469,6 @@ export default observer(
       }
 
       const {brushRegions, shapeRegions} = splitRegions(regions);
-      console.log({brushRegions, shapeRegions});
 
       return (
         <ObjectTag
@@ -540,6 +539,12 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
+              {regions.length === 0 && (
+                <Layer>
+                  <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
+                </Layer>
+              )}
+
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
               {brushRegions.length > 0 && (

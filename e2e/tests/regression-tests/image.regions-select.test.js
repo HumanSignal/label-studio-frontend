@@ -127,7 +127,6 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 5);
   I.see("0 Regions");
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
