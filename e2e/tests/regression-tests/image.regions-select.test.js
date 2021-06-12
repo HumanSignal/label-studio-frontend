@@ -118,7 +118,7 @@ function convertParamsToPixels(params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function(I, AtImageView, current) {
+Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },

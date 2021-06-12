@@ -24,7 +24,7 @@ const data = {
 
 Feature("Two or more same named tools referred same image").tag("@regress");
 
-Scenario("Two RectangleLabels", async I => {
+Scenario("Two RectangleLabels", async ({I}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 

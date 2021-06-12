@@ -57,7 +57,7 @@ const annotationWithPerRegion = {
 const image =
   "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
 
-Scenario("Check Rect region for Image", async function(I) {
+Scenario("Check Rect region for Image", async function({I}) {
   const params = {
     config,
     data: { image },
@@ -79,7 +79,7 @@ Scenario("Check Rect region for Image", async function(I) {
   I.dontSee("Labels:");
 });
 
-Scenario("Image with perRegion tags", async function(I) {
+Scenario("Image with perRegion tags", async function({I}) {
   let result;
   const params = {
     config: perRegionConfig,

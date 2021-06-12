@@ -165,7 +165,7 @@ const createShape = {
   },
 };
 
-Scenario("Creating regions by various gestures", async function(I, AtImageView) {
+Scenario("Creating regions by various gestures", async function({I, AtImageView}) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },

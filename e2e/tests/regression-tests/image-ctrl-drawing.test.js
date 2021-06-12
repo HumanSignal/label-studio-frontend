@@ -111,7 +111,7 @@ const createShape = {
   },
 };
 
-Scenario("Drawing with ctrl pressed", async function(I, LabelStudio, AtSidebar, AtImageView) {
+Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar, AtImageView}) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape), `strokewidth="5"`),
     data: { image: IMAGE },
@@ -168,7 +168,7 @@ Scenario("Drawing with ctrl pressed", async function(I, LabelStudio, AtSidebar, 
   }
 });
 
-Scenario("How it works without ctrl", async function(I, LabelStudio, AtSidebar, AtImageView) {
+Scenario("How it works without ctrl", async function({I, LabelStudio, AtSidebar, AtImageView}) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },

@@ -48,7 +48,7 @@ const results = [
   },
 ];
 
-Scenario("NER labeling for HyperText", async function(I) {
+Scenario("NER labeling for HyperText", async function({I}) {
   const params = {
     config: configSimple,
     data: { text },
