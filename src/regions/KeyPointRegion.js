@@ -13,6 +13,7 @@ import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 const Model = types
   .model({
@@ -105,9 +106,6 @@ const KeyPointRegionModel = types.compose(
 );
 
 const HtxKeyPointView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
   const x = item.x;
@@ -197,7 +195,7 @@ const HtxKeyPointView = ({ item }) => {
   );
 };
 
-const HtxKeyPoint = observer(HtxKeyPointView);
+const HtxKeyPoint = AliveRegion(HtxKeyPointView);
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
 Registry.addRegionType(

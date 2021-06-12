@@ -15,6 +15,7 @@ import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -199,9 +200,6 @@ const EllipseRegionModel = types.compose(
 );
 
 const HtxEllipseView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
   const colors = useRegionColors(item);
@@ -309,7 +307,7 @@ const HtxEllipseView = ({ item }) => {
   );
 };
 
-const HtxEllipse = observer(HtxEllipseView);
+const HtxEllipse = AliveRegion(HtxEllipseView);
 
 Registry.addTag("ellipseregion", EllipseRegionModel, HtxEllipse);
 Registry.addRegionType(EllipseRegionModel, "image");

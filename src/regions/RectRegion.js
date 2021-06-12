@@ -17,6 +17,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import chroma from 'chroma-js';
 import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 chroma;
 
@@ -195,9 +196,6 @@ const RectRegionModel = types.compose(
 );
 
 const HtxRectangleView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
   const colors = useRegionColors(item);
@@ -304,7 +302,7 @@ const HtxRectangleView = ({ item }) => {
   );
 };
 
-const HtxRectangle = observer(HtxRectangleView);
+const HtxRectangle = AliveRegion(HtxRectangleView);
 
 Registry.addTag("rectangleregion", RectRegionModel, HtxRectangle);
 Registry.addRegionType(RectRegionModel, "image");

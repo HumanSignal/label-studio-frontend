@@ -16,6 +16,7 @@ import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 const Model = types
   .model({
@@ -306,9 +307,6 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
   const colors = useRegionColors(item, {
@@ -515,7 +513,7 @@ const HtxPolygonView = ({ item }) => {
   );
 };
 
-const HtxPolygon = observer(HtxPolygonView);
+const HtxPolygon = AliveRegion(HtxPolygonView);
 
 Registry.addTag("polygonregion", PolygonRegionModel, HtxPolygon);
 Registry.addRegionType(PolygonRegionModel, "image", value => !!value.points);
