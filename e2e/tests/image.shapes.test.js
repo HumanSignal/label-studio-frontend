@@ -139,7 +139,7 @@ xScenario("Simple shapes on Image", async function({I}) {
     await I.executeAsyncScript(initLabelStudio, params);
     // canvas won't be initialized fully before the image loads
     await I.executeAsyncScript(waitForImage);
-    I.waitForVisible("canvas");
+    I.waitForVisible("canvas", 5);
     I.see("0 Regions");
 
     for (let region of shape.regions) {

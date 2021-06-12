@@ -174,7 +174,7 @@ Scenario("Creating regions by various gestures", async function({I, AtImageView}
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
+  I.waitForVisible("canvas", 5);
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   const convertToImageSize = getSizeConvertor(canvasSize.width, canvasSize.height);

@@ -93,7 +93,7 @@ Scenario("Checking mass toggling of visibility", async ({I, AtImageView}) => {
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 3);
+  I.waitForVisible("canvas", 5);
   I.see("3 Regions");
   await checkVisible(3);
   hideOne();
@@ -118,7 +118,7 @@ Scenario("Hiding bulk visibility toggle", ({I, AtImageView}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 3);
+  I.waitForVisible("canvas", 5);
   I.see("0 Regions");
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
   I.click(locate(".ant-tag").withText("Planet"));
@@ -166,7 +166,7 @@ Scenario("Checking regions grouped by label", async ({I, AtImageView}) => {
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 3);
+  I.waitForVisible("canvas", 5);
   I.executeAsyncScript(switchRegionTreeView, "labels");
   I.see("Labels");
   await checkVisible(3);

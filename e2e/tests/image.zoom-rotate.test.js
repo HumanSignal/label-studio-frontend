@@ -115,7 +115,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, cu
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
+  I.waitForVisible("canvas", 5);
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
@@ -152,7 +152,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({I, AtImageView, curr
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
+  I.waitForVisible("canvas", 5);
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
@@ -194,7 +194,7 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   I.resizeWindow(current.width, current.height);
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
+  I.waitForVisible("canvas", 5);
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();
