@@ -1,3 +1,5 @@
+import chroma from "chroma-js";
+
 let gradients = [
   "#c22525",
   "#c13025",
@@ -348,4 +350,14 @@ export function rgbArrayToHex(value) {
 
 export function rgbaArrayToRGBA(rgba) {
   return `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]}, ${rgba[3]})`;
+}
+
+export function over(color, bgColor = "white") {
+  color = chroma(color);
+  bgColor = chroma(bgColor);
+  const k1 = color.alpha();
+  const k2 = bgColor.alpha() * (1 - k1);
+  const k12 = k1 + k2;
+  const bgRGB = bgColor.rgb() || [];
+  return chroma([...color.rgb().map((c, idx) => (k1 * c + k2 * bgRGB[idx]) / k12), k12]);
 }

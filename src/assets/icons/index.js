@@ -9,3 +9,8 @@ export { default as LsThumbsDown } from './thumbs_down.svg';
 export { default as LsThumbsUp } from './thumbs_up.svg';
 export { default as LsSettings } from './settings.svg';
 export { default as LsStar } from "./star.svg";
+export { default as LsVisible } from "./visible.svg";
+export { default as LsInvisible } from "./invisible.svg";
+export { default as LsChevron } from "./chevron.svg";
+export { default as LsExpand } from "./expand.svg";
+export { default as LsCollapse } from "./collapse.svg";

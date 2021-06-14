@@ -1,7 +1,8 @@
-import { types, getParent, destroy } from "mobx-state-tree";
+import { types, getParent, destroy, clone } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Result from "../regions/Result";
 import { defaultStyle } from "../core/Constants";
+import { PER_REGION_MODES } from "./PerRegion";
 
 export const AreaMixin = types
   .model({
@@ -20,7 +21,11 @@ export const AreaMixin = types
     },
 
     get labeling() {
-      return self.results.find(r => r.type.endsWith("labels"));
+      return self.results.find(r => r.type.endsWith("labels") && r.hasValue);
+    },
+
+    get texting() {
+      return self.results.find(r => r.type === "textarea" && r.hasValue);
     },
 
     get tag() {
@@ -33,6 +38,16 @@ export const AreaMixin = types
 
     get perRegionTags() {
       return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
+    },
+
+    get perRegionDescControls() {
+      return self.perRegionTags.filter(tag => tag.displaymode === PER_REGION_MODES.REGION_LIST);
+    },
+
+    getLabelText(joinstr) {
+      const label = self.labeling;
+      const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, " ");
+      return text || label?.getSelectedString(joinstr);
     },
 
     get parent() {

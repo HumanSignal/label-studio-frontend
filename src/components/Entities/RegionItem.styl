@@ -1,16 +1,69 @@
 .region-item
-  height 32px
-  display flex
-  align-items center
-  font-size 14px
-  line-height 22px
-  width 100%
-  padding-right 8px
+  width: 100%
+
+  &__header
+    height 32px
+    display flex
+    align-items center
+    font-size 14px
+    line-height 22px
+    width 100%
+    padding 0 8px
 
   &__counter
     flex none
-    width 42px
+    width 24px
     display flex
-    color #4F00FF
+    color #999
     align-items center
     justify-content center
+
+    ~/_hidden &
+      opacity: 0.4;
+
+  &__title
+    ~/_hidden &
+      opacity: 0.4;
+
+  &__id
+    color: var(--labelColor);
+
+    ~/_hidden &
+      opacity: 0.4;
+
+  &__score
+    ~/_hidden &
+      opacity: 0.4;
+
+  &__toggle
+    width: 24px
+    flex: 0 0 24px;
+    padding: 0 !important
+    text-align: center;
+
+  &__desc
+    position relative
+    background #f7f7f7
+    padding 7px 32px 7px 12px
+    border-top: 1px solid #e5e5e5;
+    border-bottom-left-radius 5px
+    border-bottom-right-radius 5px
+
+    ~/_hidden &
+      background: #fff;;
+
+    &_empty
+      display none
+
+    &_collapsed
+      height: 36px
+      overflow hidden
+
+  &__collapse
+    position absolute
+    width: 24px
+    height: 24px
+    top: 6px
+    right: 8px
+    opacity 0.25
+    padding: 0

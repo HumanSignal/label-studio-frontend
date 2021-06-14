@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
-import { DownOutlined } from "@ant-design/icons";
+import {LsChevron} from "../../assets/icons";
 import { RegionItem } from "./RegionItem";
 
 export const RegionTree = observer(({ regionStore }) => {
@@ -49,7 +49,7 @@ export const RegionTree = observer(({ regionStore }) => {
       blockNode={true}
       defaultExpandAll={true}
       autoExpandParent={true}
-      switcherIcon={<DownOutlined />}
+      switcherIcon={<LsChevron opacity="0.25"/>}
       onDragStart={({ event, node }) => {
         if (node.classification) {
           event.preventDefault();

@@ -203,6 +203,7 @@ const HtxRectangleView = ({ item }) => {
     strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
 
+  const fill = item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null;
   return (
     <Fragment>
       <Rect
@@ -300,7 +301,7 @@ const HtxRectangleView = ({ item }) => {
         }}
         draggable={item.editable}
       />
-      <LabelOnRect item={item} />
+      <LabelOnRect item={item} color={fill} strokewidth={strokewidth} />
     </Fragment>
   );
 };

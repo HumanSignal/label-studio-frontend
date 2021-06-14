@@ -7,7 +7,7 @@ import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
 import { LabelsModel } from "../tags/control/Labels/Labels";
 import { ParagraphLabelsModel } from "../tags/control/ParagraphLabels";
-import { TextAreaModel } from "../tags/control/TextArea";
+import { TextAreaModel } from "../tags/control/TextArea/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
 import { RatingModel } from "../tags/control/Rating";
 import { ParagraphsModel } from "../tags/object/Paragraphs";

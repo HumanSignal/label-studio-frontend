@@ -46,6 +46,8 @@
   flex-wrap: nowrap;
   position: relative;
   padding: 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
 
   & > *:not(:last-child),
   & [role="img"] {
@@ -53,11 +55,7 @@
   }
 
   &.flat {
-    margin-left: -16px;
-  }
 
-  &.hidden {
-    opacity: 0.3;
   }
 
   & button.hidden,
@@ -73,14 +71,15 @@
 
   &:hover,
   &.selected {
-    background-color: rgba(#000, 0.05);
+    background-color: var(--labelBgColor);
 
     .node {
-      color: #000;
+      color: var(--labelColor, #000);
     }
   }
 
   &.selected {
+    border-color: var(--labelColor, #000);
     .node {
       font-weight: 500;
     }

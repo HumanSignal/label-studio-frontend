@@ -493,7 +493,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       draggable={item.editable}
     >
-      <LabelOnPolygon item={item} />
+      <LabelOnPolygon item={item} color={style.strokecolor} />
 
       {item.mouseOverStartPoint}
 

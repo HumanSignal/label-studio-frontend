@@ -14,11 +14,7 @@ import { Block, Elem } from "../../utils/bem";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import "./Entities.styl";
 import { Button } from "../../common/Button/Button";
-
-import {
-  EyeInvisibleOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import { LsInvisible, LsVisible } from "../../assets/icons";
 
 export default observer(({ regionStore }) => {
   const { classifications, regions } = regionStore;
@@ -64,7 +60,7 @@ export default observer(({ regionStore }) => {
                 type="link"
                 onClick={toggleVisibility}
                 mod={{hidden: regionStore.isAllHidden}}
-                icon={regionStore.isAllHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                icon={regionStore.isAllHidden ? <LsInvisible /> : <LsVisible />}
               />
             ) : null}
 

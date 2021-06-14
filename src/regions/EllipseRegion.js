@@ -211,6 +211,8 @@ const HtxEllipseView = ({ item }) => {
     strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
   }
 
+  const fill = item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null;
+
   return (
     <Fragment>
       <Ellipse
@@ -218,7 +220,7 @@ const HtxEllipseView = ({ item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
+        fill={fill}
         stroke={strokecolor}
         strokeWidth={+strokewidth}
         strokeScaleEnabled={false}
@@ -309,7 +311,7 @@ const HtxEllipseView = ({ item }) => {
         }}
         draggable={item.editable}
       />
-      <LabelOnEllipse item={item} />
+      <LabelOnEllipse item={item} color={fill} strokewidth={+strokewidth}/>
     </Fragment>
   );
 };

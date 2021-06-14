@@ -442,7 +442,7 @@ const HtxBrushView = ({ item, meta }) => {
 
         <Group scaleX={item.scaleX} scaleY={item.scaleY}>
           <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
-          <LabelOnMask item={item} />
+          <LabelOnMask item={item} color={item.strokeColor}/>
         </Group>
 
         <Image

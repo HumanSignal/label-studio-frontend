@@ -14,6 +14,8 @@ class _Registry {
     this.views_models = {};
 
     this.tools = {};
+
+    this.perRegionViews = {};
   }
 
   addTag(tag, model, view) {
@@ -98,6 +100,16 @@ class _Registry {
     }
 
     return model;
+  }
+
+  addPerRegionView(tag, mode, view) {
+    const tagViews = this.perRegionViews[tag] || {};
+    tagViews[mode] = view;
+    this.perRegionViews[tag] = tagViews;
+  }
+
+  getPerRegionView(tag, mode) {
+    return this.perRegionViews[tag]?.[mode];
   }
 }
 

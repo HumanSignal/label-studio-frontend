@@ -17,6 +17,7 @@ import {
 import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
+import Constants from "../../core/Constants";
 
 const NodeViews = {
   RichTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
@@ -79,22 +80,22 @@ const Node = observer(({ className, node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  let [, Icon, getContent] = NodeViews[name];
-
-  if (node.labelsState) {
-    const aliases = node.labelsState.selectedAliases;
-    if (aliases.length)
-      Icon = function() {
-        return <span className={styles.alias}>{aliases.join(",")}</span>;
-      };
-  }
+  const label = node.labeling;
+  const text = label?.mainValue || Constants.EMPTY_LABEL;
 
   return (
     <span className={[styles.node, className].filter(Boolean).join(" ")}>
-      <Icon />
-      {getContent(node)}
+      {text}
     </span>
   );
+});
+
+const NodeIcon = observer(({ node }) => {
+  const name = getType(node).name;
+  if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
+
+  const Icon = NodeViews[name][1];
+  return <Icon />;
 });
 
 const NodeMinimal = observer(({ node }) => {
@@ -116,4 +117,4 @@ const NodeMinimal = observer(({ node }) => {
   );
 });
 
-export { Node, NodeMinimal, NodeViews };
+export { Node, NodeIcon, NodeMinimal, NodeViews };

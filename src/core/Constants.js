@@ -1,8 +1,8 @@
 export const defaultStyle = {
-  fillcolor: "orange",
+  fillcolor: "#666",
   fillopacity: 0.6,
-  strokecolor: "orange",
-  strokewidth: 5,
+  strokecolor: "#666",
+  strokewidth: 1,
   opacity: 0.6,
 };
 
@@ -13,6 +13,7 @@ export default {
 
   // labels
   LABEL_BACKGROUND: "#36B37E",
+  EMPTY_LABEL: "blank",
 
   RELATION_BACKGROUND: "#fff",
 

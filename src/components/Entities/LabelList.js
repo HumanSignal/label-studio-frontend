@@ -4,6 +4,7 @@ import { Tree } from "antd";
 import { LabelItem } from "./LabelItem";
 import { RegionItem } from "./RegionItem";
 import { observer } from "mobx-react";
+import { LsChevron } from "../../assets/icons";
 
 export const LabelList = observer(({ regionStore }) => {
   const treeData = regionStore.asLabelsTree((item, idx, isLabel, children) => {
@@ -25,7 +26,7 @@ export const LabelList = observer(({ regionStore }) => {
       blockNode={true}
       defaultExpandAll={true}
       autoExpandParent={true}
-      switcherIcon={<DownOutlined />}
+      switcherIcon={<LsChevron opacity="0.25" />}
     />
   );
 });
