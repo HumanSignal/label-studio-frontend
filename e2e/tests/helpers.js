@@ -239,6 +239,8 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
  */
 const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
   const stage = window.Konva.stages[0];
+  let result = false;
+
   const areEqualRGB = (a, b) => {
     for (let i = 3; i--; ) {
       if (Math.abs(a[i] - b[i]) > tolerance) {
@@ -247,16 +249,42 @@ const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
     }
     return true;
   };
+
   for (let layer of stage.getLayers()) {
     const rgba = layer.getContext().getImageData(x, y, 1, 1).data;
-    if (areEqualRGB(rgbArray, rgba)) {
-      done(true);
-      return;
-    }
+    if (!areEqualRGB(rgbArray, rgba)) continue;
+
+    result = true;
   }
-  done(false);
+
+  done(result);
   return;
 };
+
+const areEqualRGB = (a, b, tolerance) => {
+  for (let i = 3; i--; ) {
+    if (Math.abs(a[i] - b[i]) > tolerance) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const getKonvaPixelColorFromPoint = (x, y, done) => {
+  const stage = window.Konva.stages[0];
+  let colors = [];
+
+  for (let layer of stage.getLayers()) {
+    const context = layer.getContext();
+    const ratio = context.canvas.pixelRatio;
+    const rgba = context.getImageData(x * ratio, y * ratio, 1, 1).data;
+
+    colors.push(rgba);
+  }
+
+  done(colors);
+};
+
 const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
   done({ width: stage.width(), height: stage.height() });
@@ -415,7 +443,9 @@ module.exports = {
   clickMultipleKonva,
   polygonKonva,
   dragKonva,
+  areEqualRGB,
   hasKonvaPixelColorAtPoint,
+  getKonvaPixelColorFromPoint,
   getCanvasSize,
   getImageSize,
   getImageFrameSize,

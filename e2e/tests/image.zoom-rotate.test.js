@@ -134,7 +134,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, cu
       ...rotateCoords([100, 100], degree, canvasSize.width, canvasSize.height).map(Math.round),
       BLUEVIOLET.rgbArray,
     );
-    assert.equal(hasPixel, true);
+    assert.strictEqual(hasPixel, true);
     const result = await I.executeScript(serialize);
     for (let i = 0; i < standard.length; i++) {
       assert.deepEqual(standard[i].result, result[i].result);

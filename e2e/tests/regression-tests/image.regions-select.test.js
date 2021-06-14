@@ -139,8 +139,8 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   if (current.shape === "Brush") {
     I.click(locate("button.ant-btn-primary").withDescendant(".anticon.anticon-highlight"));
   }
+
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);
   const selected = await I.executeAsyncScript(hasSelectedRegion);
-  console.log("selected", selected);
   assert.strictEqual(selected, true);
 });
