@@ -64,6 +64,10 @@ const SelectedModelMixin = types
         c => (c.alias === value && isDefined(value)) || c.value === value || (!isDefined(c.value) && !isDefined(value)),
       );
     },
+
+    get emptyLabel() {
+      return self.allowempty ? self.findLabel(null) : null;
+    }
   }))
   .actions(self => ({
     /**

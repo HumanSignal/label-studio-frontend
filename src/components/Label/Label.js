@@ -7,6 +7,7 @@ import * as Color from "../../utils/colors";
 
 export const Label = ({ className, style, color, empty = false, hidden = false, selected = false, margins=false, onClick, children, hotkey }) => {
   const styles = useMemo(() => {
+    if (!color) return null;
     const background = Color.over(chroma(color).alpha(0.15), "white");
     return {
       ...(style ?? {}), ...asVars({

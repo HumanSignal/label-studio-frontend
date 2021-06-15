@@ -20,9 +20,9 @@ export const LabelItem = observer(({ item, regions, regionStore }) => {
     <Block name="list-item" tag={List.Item} key={item.id} style={vars}>
       <Space spread>
         <Elem name="title">
-          <Label color={color} empty={item.isEmpty}>
+          {!item.isNotLabel ? <Label color={color} empty={item.isEmpty}>
             {item._value}
-          </Label>
+          </Label> : <>Not labeled</>}
           <Elem name="counter">
             {`${count} Region${(count === 0 || count > 1) ? "s" : ""}`}
           </Elem>

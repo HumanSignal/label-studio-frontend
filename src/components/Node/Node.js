@@ -80,12 +80,11 @@ const Node = observer(({ className, node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  const label = node.labeling;
-  const text = label?.mainValue || Constants.EMPTY_LABEL;
+  const labelName = node.labelName;
 
   return (
     <span className={[styles.node, className].filter(Boolean).join(" ")}>
-      {text}
+      {labelName}
     </span>
   );
 });

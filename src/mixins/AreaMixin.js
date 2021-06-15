@@ -24,6 +24,10 @@ export const AreaMixin = types
       return self.results.find(r => r.type.endsWith("labels") && r.hasValue);
     },
 
+    get emptyLabel() {
+      return self.results.find(r => r.from_name?.emptyLabel)?.from_name?.emptyLabel;
+    },
+
     get texting() {
       return self.results.find(r => r.type === "textarea" && r.hasValue);
     },
@@ -42,6 +46,10 @@ export const AreaMixin = types
 
     get perRegionDescControls() {
       return self.perRegionTags.filter(tag => tag.displaymode === PER_REGION_MODES.REGION_LIST);
+    },
+
+    get labelName() {
+      return self.labeling?.mainValue || self.emptyLabel?._value;
     },
 
     getLabelText(joinstr) {
