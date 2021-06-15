@@ -14,6 +14,7 @@ import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
 import { defaultStyle } from "../core/Constants";
+import { AliveRegion } from "./AliveRegion";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -333,7 +334,7 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
   return <Shape sceneFunc={sceneFunc} hitFunc={hitFunc} />;
 });
 
-const HtxBrushView = ({ item, meta }) => {
+const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
   useMemo(() => {
     if (!item.rle) return;
@@ -375,9 +376,8 @@ const HtxBrushView = ({ item, meta }) => {
     }
   }, []);
 
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
   highlightedRef.current = item.highlighted;
+
   return (
     <Layer
       id={item.cleanId}
@@ -458,7 +458,7 @@ const HtxBrushView = ({ item, meta }) => {
   );
 };
 
-const HtxBrush = observer(HtxBrushView);
+const HtxBrush = AliveRegion(HtxBrushView);
 
 Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
 Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);

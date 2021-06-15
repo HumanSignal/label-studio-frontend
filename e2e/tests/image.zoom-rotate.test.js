@@ -106,7 +106,7 @@ shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-Data(shapesTable).Scenario("Simple rotation", async function(I, AtImageView, current) {
+Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -115,7 +115,6 @@ Data(shapesTable).Scenario("Simple rotation", async function(I, AtImageView, cur
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
@@ -135,7 +134,7 @@ Data(shapesTable).Scenario("Simple rotation", async function(I, AtImageView, cur
       ...rotateCoords([100, 100], degree, canvasSize.width, canvasSize.height).map(Math.round),
       BLUEVIOLET.rgbArray,
     );
-    assert.equal(hasPixel, true);
+    assert.strictEqual(hasPixel, true);
     const result = await I.executeScript(serialize);
     for (let i = 0; i < standard.length; i++) {
       assert.deepEqual(standard[i].result, result[i].result);
@@ -143,7 +142,7 @@ Data(shapesTable).Scenario("Simple rotation", async function(I, AtImageView, cur
   }
 });
 
-Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, current) {
+Data(shapesTable).Scenario("Rotate zoomed", async function({I, AtImageView, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -152,7 +151,6 @@ Data(shapesTable).Scenario("Rotate zoomed", async function(I, AtImageView, curre
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
@@ -185,7 +183,7 @@ windowSizesTable.add([1920, 1080]);
 windowSizesTable.add([800, 480]);
 windowSizesTable.add([1017, 970]);
 
-Data(windowSizesTable).Scenario("Rotation with different window sizes", async function(I, AtImageView, current) {
+Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({I, AtImageView, current}) {
   const params = {
     config: getConfigWithShape("Rectangle"),
     data: { image: IMAGE },
@@ -194,7 +192,6 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   I.resizeWindow(current.width, current.height);
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
   I.see("0 Regions");
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();

@@ -111,7 +111,7 @@ const createShape = {
   },
 };
 
-Scenario("Drawing with ctrl pressed", async function(I, LabelStudio, AtSidebar, AtImageView) {
+Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar, AtImageView}) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape), `strokewidth="5"`),
     data: { image: IMAGE },
@@ -120,7 +120,6 @@ Scenario("Drawing with ctrl pressed", async function(I, LabelStudio, AtSidebar, 
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
@@ -146,7 +145,6 @@ Scenario("Drawing with ctrl pressed", async function(I, LabelStudio, AtSidebar, 
     const [outerRegion, innerRegion] = regionPair;
     LabelStudio.init(params);
     AtImageView.waitForImage();
-    I.waitForVisible("canvas");
     AtSidebar.seeRegions(0);
     I.say(`Drawing ${innerRegion.shape} on ${outerRegion.shape}`);
     await AtImageView.lookForStage();
@@ -168,7 +166,7 @@ Scenario("Drawing with ctrl pressed", async function(I, LabelStudio, AtSidebar, 
   }
 });
 
-Scenario("How it works without ctrl", async function(I, LabelStudio, AtSidebar, AtImageView) {
+Scenario("How it works without ctrl", async function({I, LabelStudio, AtSidebar, AtImageView}) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
@@ -177,7 +175,6 @@ Scenario("How it works without ctrl", async function(I, LabelStudio, AtSidebar, 
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
@@ -204,7 +201,6 @@ Scenario("How it works without ctrl", async function(I, LabelStudio, AtSidebar, 
     const [outerRegion, innerRegion] = regionPair;
     LabelStudio.init(params);
     AtImageView.waitForImage();
-    I.waitForVisible("canvas");
     AtSidebar.seeRegions(0);
     I.say(`Drawing ${innerRegion.shape} on ${outerRegion.shape}`);
     I.pressKey("u");

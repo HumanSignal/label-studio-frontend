@@ -12,8 +12,6 @@ const options = {
   compress: true,
   hot: true,
   inline: true,
-  quiet: false,
-  noInfo: true,
   public: `http://localhost:${port}`,
   contentBase: path.join(__dirname, "public"),
   historyApiFallback: {
@@ -22,6 +20,7 @@ const options = {
 };
 
 webpackDevServer.addDevServerEntrypoints(config, options);
+
 const compiler = webpack(config);
 const server = new webpackDevServer(compiler, options);
 

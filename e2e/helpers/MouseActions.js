@@ -1,5 +1,4 @@
-/* global codeceptjs */
-const { Helper } = codeceptjs;
+const Helper = require('@codeceptjs/helper');
 
 class MouseActions extends Helper {
   clickAt(x, y, buttonName = "left") {

@@ -29,10 +29,10 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "0.6"),
+  opacity: types.optional(customTypes.range(), "0.2"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
-  strokewidth: types.optional(types.string, "3"),
+  strokewidth: types.optional(types.string, "2"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
 
   pointsize: types.optional(types.string, "small"),
@@ -67,7 +67,15 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Validation, Model);
+const PolygonModel = types.compose(
+  "PolygonModel",
+  ControlBase,
+  AnnotationMixin,
+  SeparatedControlMixin,
+  TagAttrs,
+  Validation,
+  Model
+);
 
 const HtxView = () => null;
 

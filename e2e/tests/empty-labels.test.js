@@ -18,7 +18,7 @@ function isLabels(val, key) {
 examples.forEach(example => {
   let { annotations, config, data, result = annotations[0].result, title } = example;
 
-  Scenario(`Nonexistent label -> ${title}`, async (I, LabelStudio, AtSidebar, AtImageView, AtAudioView) => {
+  Scenario(`Nonexistent label -> ${title}`, async ({I, LabelStudio, AtSidebar, AtImageView, AtAudioView}) => {
     let { result = annotations[0].result } = example;
     result = result.filter(res => isLabelType(res.type));
     const params = { annotations: [{ id: "test", result: result }], data };
@@ -35,7 +35,6 @@ examples.forEach(example => {
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
-      I.waitForVisible("canvas", 3);
     }
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
@@ -50,7 +49,7 @@ examples.forEach(example => {
     }
   });
 
-  Scenario(`Different from_name -> ${title}`, async (I, LabelStudio, AtSidebar, AtImageView, AtAudioView) => {
+  Scenario(`Different from_name -> ${title}`, async ({I, LabelStudio, AtSidebar, AtImageView, AtAudioView}) => {
     let { result = annotations[0].result } = example;
     result = result.filter(res => isLabelType(res.type));
     const params = { annotations: [{ id: "test", result: result }], data };
@@ -69,7 +68,6 @@ examples.forEach(example => {
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
-      I.waitForVisible("canvas", 3);
     }
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
@@ -87,7 +85,7 @@ examples.forEach(example => {
     }
   });
 
-  Scenario(`Nonexistent from_name -> ${title}`, async (I, LabelStudio, AtSidebar) => {
+  Scenario(`Nonexistent from_name -> ${title}`, async ({I, LabelStudio, AtSidebar}) => {
     const params = { annotations: [{ id: "test", result: result }], data };
     const configTree = Utils.parseXml(config);
     Utils.xmlFilterNodes(configTree, node => {
@@ -107,7 +105,7 @@ examples.forEach(example => {
 const SINGLE_TYPE = "single";
 const MULTIPLE_TYPE = "multiple";
 [SINGLE_TYPE, MULTIPLE_TYPE].forEach(type => {
-  Scenario(`Making labels empty -> choice="${type}"`, async (I, LabelStudio, AtSidebar, AtAudioView) => {
+  Scenario(`Making labels empty -> choice="${type}"`, async ({I, LabelStudio, AtSidebar, AtAudioView}) => {
     async function expectSelectedLabels(expectedNum) {
       let selectedLabelsNum = await I.grabNumberOfVisibleElements(locate(".ant-tag[style*='border-color']"));
       assert.strictEqual(selectedLabelsNum, expectedNum);
@@ -186,8 +184,8 @@ const MULTIPLE_TYPE = "multiple";
   });
 });
 
-Scenario(`Consistency of empty labels`, async (I, LabelStudio, AtSidebar, AtImageView, AtAudioView) => {
-  const { annotations, config, data, result = annotations[0].result } = require("../examples/image-bboxes");
+Scenario(`Consistency of empty labels`, async ({I, LabelStudio, AtSidebar, AtImageView}) => {
+  const { config, data } = require("../examples/image-bboxes");
   const params = { annotations: [{ id: "test", result: [] }], data };
   const configTree = Utils.parseXml(config);
   Utils.xmlForEachNode(configTree, node => {
@@ -201,7 +199,6 @@ Scenario(`Consistency of empty labels`, async (I, LabelStudio, AtSidebar, AtImag
   LabelStudio.init(params);
   AtSidebar.seeRegions(0);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 1);
   I.click(locate(".ant-tag").withText("[1]"));
   AtImageView.dragKonva(200, 200, 100, 100);
   const shapesNum = await AtImageView.countKonvaShapes();

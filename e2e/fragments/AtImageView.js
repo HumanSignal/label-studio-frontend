@@ -19,6 +19,7 @@ module.exports = {
 
   waitForImage() {
     I.executeAsyncScript(Helpers.waitForImage);
+    I.waitForVisible("canvas", 5);
   },
 
   async getCanvasSize() {
@@ -83,9 +84,11 @@ module.exports = {
    * @param {number} tolerance
    */
   async hasPixelColor(x, y, rgbArray, tolerance = 3) {
-    const hasPixel = await I.executeAsyncScript(Helpers.hasKonvaPixelColorAtPoint, x, y, rgbArray, tolerance);
+    const colorPixels = await I.executeAsyncScript(Helpers.getKonvaPixelColorFromPoint, x, y);
+    const hasPixel = Helpers.areEqualRGB(rgbArray, colorPixels, tolerance);
     return hasPixel;
   },
+
   // Only for debugging
   async whereIsPixel(rgbArray, tolerance = 3) {
     const points = await I.executeAsyncScript(Helpers.whereIsPixel, rgbArray, tolerance);

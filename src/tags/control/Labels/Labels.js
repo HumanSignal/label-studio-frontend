@@ -48,12 +48,12 @@ const TagAttrs = types.model({
   // TODO this will move away from here
   groupdepth: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "0.6"),
+  opacity: types.optional(customTypes.range(), "1"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
-  fillopacity: types.optional(customTypes.range(), "0.6"),
+  fillopacity: types.optional(customTypes.range(), "0.2"),
   allowempty: types.optional(types.boolean, false),
 });
 
