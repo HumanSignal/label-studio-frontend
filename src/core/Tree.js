@@ -248,7 +248,7 @@ function treeToModel(html) {
  * Render items of tree
  * @param {*} el
  */
-function renderItem(el) {
+function renderItem(el, includeKey = true) {
   const type = getType(el);
   const identifierAttribute = type.identifierAttribute;
   const typeName = type.name;
@@ -258,7 +258,7 @@ function renderItem(el) {
     throw new Error(`No view for model: ${typeName}`);
   }
   const key = el[identifierAttribute] || guidGenerator();
-  return <View key={key} item={el} />;
+  return <View key={includeKey ? key : undefined} item={el} />;
 }
 
 /**

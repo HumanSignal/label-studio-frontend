@@ -12,6 +12,8 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 const Model = types
   .model({
@@ -104,32 +106,21 @@ const KeyPointRegionModel = types.compose(
 );
 
 const HtxKeyPointView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
   const x = item.x;
   const y = item.y;
-  const style = item.style || item.tag || defaultStyle;
 
-  const props = {};
+  const colors = useRegionColors(item);
 
-  props["opacity"] = +style.opacity;
-
-  if (style.fillcolor) {
-    props["fill"] = style.fillcolor;
-  }
-
-  props["stroke"] = style.strokecolor;
-  props["strokeWidth"] = +style.strokewidth;
-  props["strokeScaleEnabled"] = false;
-  props["shadowBlur"] = 0;
-
-  if (item.highlighted || item.selected) {
-    props["stroke"] = Constants.HIGHLIGHTED_STROKE_COLOR;
-    props["strokeWidth"] = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const props = {
+    opacity: 1,
+    fill: colors.fillColor,
+    stroke: colors.strokeColor,
+    strokeWidth: colors.strokeWidth,
+    strokeScaleEnabled: false,
+    shadowBlur: 0,
+  };
 
   return (
     <Fragment>
@@ -204,7 +195,7 @@ const HtxKeyPointView = ({ item }) => {
   );
 };
 
-const HtxKeyPoint = observer(HtxKeyPointView);
+const HtxKeyPoint = AliveRegion(HtxKeyPointView);
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
 Registry.addRegionType(

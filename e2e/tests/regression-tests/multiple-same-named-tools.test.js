@@ -24,11 +24,11 @@ const data = {
 
 Feature("Two or more same named tools referred same image").tag("@regress");
 
-Scenario("Two RectangleLabels", async I => {
+Scenario("Two RectangleLabels", async ({I, AtImageView}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 
-  I.waitForVisible("canvas", 5);
+  AtImageView.waitForImage();
   I.executeAsyncScript(waitForImage);
 
   I.click(locate(".ant-tag").withText("Plane"));

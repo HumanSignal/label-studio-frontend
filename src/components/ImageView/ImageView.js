@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
 import { Stage, Layer, Group, Line } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
@@ -9,13 +9,150 @@ import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
-import { findClosestParent } from "../../utils/utilities";
+import { chunks, findClosestParent } from "../../utils/utilities";
+import Konva from "konva";
+import { observe } from "mobx";
+import { guidGenerator } from "../../utils/unique";
+
+Konva.showWarnings = false;
+
+const splitRegions = (regions) => {
+  const brushRegions = [];
+  const shapeRegions = [];
+  const l = regions.length;
+  let i = 0;
+
+  for(i; i < l; i++) {
+    const region = regions[i];
+
+    if (region.type === "brushregion") {
+      brushRegions.push(region);
+    } else {
+      shapeRegions.push(region);
+    }
+  }
+
+  return {
+    brushRegions,
+    shapeRegions,
+  };
+};
+
+const Region = memo(({region}) => {
+  return Tree.renderItem(region, false);
+});
+
+const RegionsLayer = memo(({regions, name, useLayers}) => {
+  const content = regions.map((el) => (
+    <Region key={`region-${el.id}`} region={el}/>
+  ));
+
+  return useLayers === false ? (
+    content
+  ) : (
+    <Layer name={name}>
+      {content}
+    </Layer>
+  );
+});
+
+const Regions = memo(({regions, useLayers}) => {
+  const chunkSize = Math.ceil(regions.length / 15);
+
+  return chunks(regions, chunkSize).map((chunk, i) => (
+    <RegionsLayer
+      key={`chunk-${i}`}
+      name={`chunk-${i}`}
+      regions={chunk}
+      useLayers={useLayers}
+    />
+  ));
+});
+
+const Crosshair = memo(forwardRef(({width, height}, ref) => {
+  const [pointsV, setPointsV] = useState([50, 0, 50, height]);
+  const [pointsH, setPointsH] = useState([0, 100, width, 100]);
+  const [x, setX] = useState(100);
+  const [y, setY] = useState(50);
+
+  const [visible, setVisible] = useState(false);
+  const strokeWidth = 1;
+  const dashStyle = [3,3];
+
+  if (ref) {
+    ref.current = {
+      updatePointer(newX, newY) {
+        if (newX !== x) {
+          setX(newX);
+          setPointsV([newX, 0, newX, height]);
+        }
+
+        if (newY !== y) {
+          setY(newY);
+          setPointsH([0, newY, width, newY]);
+        }
+      },
+      updateVisibility(visibility) {
+        setVisible(visibility);
+      }
+    };
+  }
+
+  return (
+    <Layer
+      name="crosshair"
+      listening={false}
+      opacity={visible ? 0.6 : 0}
+    >
+      <Group>
+        <Line
+          name="v-white"
+          points={pointsH}
+          stroke="#fff"
+          strokeWidth={strokeWidth}
+        />
+        <Line
+          name="v-black"
+          points={pointsH}
+          stroke="#000"
+          strokeWidth={strokeWidth}
+          dash={dashStyle}
+        />
+      </Group>
+      <Group>
+        <Line
+          name="h-white"
+          points={pointsV}
+          stroke="#fff"
+          strokeWidth={strokeWidth}
+        />
+        <Line
+          name="h-black"
+          points={pointsV}
+          stroke="#000"
+          strokeWidth={strokeWidth}
+          dash={dashStyle}
+        />
+      </Group>
+    </Layer>
+  );
+}));
 
 export default observer(
   class ImageView extends Component {
     // stored position of canvas before creating region
     canvasX;
     canvasY;
+    lastOffsetWidth = -1;
+    propsObserverDispose = [];
+    state = {
+      imgStyle: {},
+      ratio: 1,
+      pointer: [0, 0]
+    }
+
+    imageRef = createRef();
+    crosshairRef = createRef();
 
     handleOnClick = e => {
       const { item } = this.props;
@@ -96,14 +233,23 @@ export default observer(
 
       item.freezeHistory();
 
+      this.updateCrosshair(e);
+
       if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
         e.evt.preventDefault();
         const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
-        return item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
+        item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
       }
     };
+
+    updateCrosshair = (e) => {
+      if (this.crosshairRef.current) {
+        const {x, y} = e.currentTarget.getPointerPosition();
+        this.crosshairRef.current.updatePointer(x, y);
+      }
+    }
 
     handleError = () => {
       const { item, store } = this.props;
@@ -179,7 +325,6 @@ export default observer(
       );
     }
 
-    lastOffsetWidth = -1;
     onResize = () => {
       if (this.container.offsetWidth <= 1) return;
       if (this.lastOffsetWidth === this.container.offsetWidth) return;
@@ -190,14 +335,94 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
+
+      if (this.props.item && isAlive(this.props.item)) {
+        this.updateImageTransform();
+        this.observerObjectUpdate();
+      }
     }
 
     componentWillUnmount() {
       window.removeEventListener("resize", this.onResize);
+      this.propsObserverDispose.forEach(dispose => dispose());
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps) {
       this.onResize();
+
+      if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
+        this.observerObjectUpdate();
+      }
+    }
+
+    observerObjectUpdate(){
+      this.propsObserverDispose.forEach(dispose => dispose());
+      this.propsObserverDispose = [
+        'width',
+        'brightnessGrade',
+        'contrastGrade',
+        'zoomScale',
+        'resize',
+        'rotation',
+        'naturalWidth',
+        'naturalHeight',
+        'zoomingPositionY',
+        'zoomingPositionX',
+      ].map((prop) => {
+        return observe(this.props.item, prop, this.updateImageTransform, true);
+      });
+    }
+
+    updateImageTransform = () => {
+      const { item } = this.props;
+
+      let ratio = 1;
+
+      const imgStyle = {
+        width: item.width,
+        transformOrigin: "left top",
+        transform: 'none',
+        filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
+      };
+
+      const imgTransform = [];
+
+      if (item.zoomScale !== 1) {
+        const { zoomingPositionX, zoomingPositionY } = item;
+        imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
+        imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
+      }
+
+      if (item.rotation) {
+        const translate = {
+          90: `0, -100%`,
+          180: `-100%, -100%`,
+          270: `-100%, 0`,
+        };
+
+        // there is a top left origin already set for zoom; so translate+rotate
+        imgTransform.push(`rotate(${item.rotation}deg)`);
+        imgTransform.push(`translate(${translate[item.rotation] || "0, 0"})`);
+
+        if ([90, 270].includes(item.rotation)) {
+          // we can not rotate img itself, so we change container's size via css margin hack, ...
+          ratio = item.naturalWidth / item.naturalHeight;
+          // ... prepare image size for transform rotation and use position: absolute
+          imgStyle.width = `${ratio * 100}%`;
+        }
+      }
+
+      if (imgTransform?.length > 0) {
+        imgStyle.transform = imgTransform.join(" ");
+      }
+
+      if (this.imageRef.current) {
+        Object.assign(this.imageRef.current.style, imgStyle);
+      }
+
+      if (this.state.ratio !== ratio) {
+        this.setState({ ratio });
+      }
     }
 
     renderTools() {
@@ -211,7 +436,9 @@ export default observer(
           {item
             .getToolsManager()
             .allTools()
-            .map(tool => tool.viewClass)}
+            .map(tool => {
+              return <Fragment key={guidGenerator()}>{tool.viewClass}</Fragment>;
+            })}
         </div>
       );
     }
@@ -229,49 +456,19 @@ export default observer(
       const selected = item.selectedShape;
       const regions = item.regs.filter(r => r !== selected);
       const cb = item.controlButton();
-      let filler = null;
-      let containerClassName = styles.container;
       const containerStyle = {};
 
-      const imgStyle = {
-        width: item.width,
-        transformOrigin: "left top",
-        filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
-      };
-      const imgTransform = [];
+      let containerClassName = styles.container;
+
+      if (this.state.ratio !== 1) {
+        containerClassName += " " + styles.rotated;
+      }
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle["maxWidth"] = item.maxwidth;
       }
 
-      if (item.zoomScale !== 1) {
-        let { zoomingPositionX, zoomingPositionY } = item;
-        imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
-        imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
-      }
-
-      if (item.rotation) {
-        const translate = {
-          90: `0, -100%`,
-          180: `-100%, -100%`,
-          270: `-100%, 0`,
-        };
-        // there is a top left origin already set for zoom; so translate+rotate
-        imgTransform.push(`rotate(${item.rotation}deg)`);
-        imgTransform.push(`translate(${translate[item.rotation] || "0, 0"})`);
-        if ([90, 270].includes(item.rotation)) {
-          // we can not rotate img itself, so we change container's size via css margin hack, ...
-          const ratio = item.naturalWidth / item.naturalHeight;
-          filler = <div className={styles.filler} style={{ marginTop: `${ratio * 100}%` }} />;
-          containerClassName += " " + styles.rotated;
-          // ... prepare image size for transform rotation and use position: absolute
-          imgStyle.width = `${ratio * 100}%`;
-        }
-      }
-
-      if (imgTransform.length) {
-        imgStyle["transform"] = imgTransform.join(" ");
-      }
+      const {brushRegions, shapeRegions} = splitRegions(regions);
 
       return (
         <ObjectTag
@@ -290,12 +487,17 @@ export default observer(
             className={containerClassName}
             style={containerStyle}
           >
-            {filler}
+            {this.state.ratio !== 1 && (
+              <div
+                className={styles.filler}
+                style={{ marginTop: `${this.state.ratio * 100}%` }}
+              />
+            )}
             <img
               ref={ref => {
                 item.setImageRef(ref);
+                this.imageRef.current = ref;
               }}
-              style={imgStyle}
               src={item._value}
               onLoad={item.updateImageSize}
               onError={this.handleError}
@@ -317,25 +519,69 @@ export default observer(
               scaleY={item.stageScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
-              onClick={this.handleOnClick}
               offsetX={item.stageTranslate.x}
               offsetY={item.stageTranslate.y}
               rotation={item.rotation}
+              onClick={this.handleOnClick}
+              onMouseEnter={() => {
+                if (this.crosshairRef.current) {
+                  this.crosshairRef.current.updateVisibility(true);
+                }
+              }}
+              onMouseLeave={() => {
+                if (this.crosshairRef.current) {
+                  this.crosshairRef.current.updateVisibility(false);
+                }
+              }}
+              onDragMove={this.updateCrosshair}
               onMouseDown={this.handleMouseDown}
               onMouseMove={this.handleMouseMove}
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
+              {regions.length === 0 && (
+                <Layer>
+                  <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
+                </Layer>
+              )}
+
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
-              {regions.filter(s => s.type === "brushregion").map(Tree.renderItem)}
-              {selected && selected.type === "brushregion" && Tree.renderItem(selected)}
-              <Layer name="shapes">
-                {regions.filter(s => s.type !== "brushregion").map(Tree.renderItem)}
-                {selected && selected.type !== "brushregion" && Tree.renderItem(selected)}
-                {selected?.editable && (
-                  <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-                )}
-              </Layer>
+
+              {brushRegions.length > 0 && (
+                <Regions
+                  name="brushes"
+                  regions={brushRegions}
+                  useLayers={false}
+                />
+              )}
+
+              {shapeRegions.length > 0 && (
+                <Regions
+                  name="shapes"
+                  regions={shapeRegions}
+                />
+              )}
+
+              {selected && (
+                (selected.type === 'brushregion') ? (
+                  Tree.renderItem(selected)
+                ) : (
+                  <Layer name="selected">
+                    {Tree.renderItem(selected)}
+                    {selected.type !== 'brushregion' && selected.editable && (
+                      <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
+                    )}
+                  </Layer>
+                )
+              )}
+
+              {item.crosshair && (
+                <Crosshair
+                  ref={this.crosshairRef}
+                  width={item.stageComponentSize.width}
+                  height={item.stageComponentSize.height}
+                />
+              )}
             </Stage>
           )}
 

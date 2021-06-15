@@ -14,6 +14,8 @@ import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
+import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -57,7 +59,7 @@ const Model = types
 
     fill: true,
     fillColor: Constants.FILL_COLOR,
-    fillOpacity: 0.6,
+    fillOpacity: 0.2,
 
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
@@ -198,18 +200,9 @@ const EllipseRegionModel = types.compose(
 );
 
 const HtxEllipseView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
-  const style = item.style || item.tag || defaultStyle;
-  let { strokecolor, strokewidth } = style;
-
-  if (item.highlighted) {
-    strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-    strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const colors = useRegionColors(item);
 
   return (
     <Fragment>
@@ -218,14 +211,14 @@ const HtxEllipseView = ({ item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
-        stroke={strokecolor}
-        strokeWidth={+strokewidth}
+        fill={colors.fillColor}
+        stroke={colors.strokeColor}
+        strokeWidth={colors.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}
-        opacity={+style.opacity}
+        opacity={1}
         rotation={item.rotation}
         name={item.id}
         onTransformEnd={e => {
@@ -314,7 +307,7 @@ const HtxEllipseView = ({ item }) => {
   );
 };
 
-const HtxEllipse = observer(HtxEllipseView);
+const HtxEllipse = AliveRegion(HtxEllipseView);
 
 Registry.addTag("ellipseregion", EllipseRegionModel, HtxEllipse);
 Registry.addRegionType(EllipseRegionModel, "image");

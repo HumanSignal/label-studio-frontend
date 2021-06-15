@@ -26,6 +26,7 @@ import { TranscribeAudio } from "../examples/transcribe_audio";
  * Image
  */
 import { ImageBbox } from "../examples/image_bbox";
+import { ImageBboxLarge } from "../examples/image_bbox_large";
 import { ImageKeyPoint } from "../examples/image_keypoints";
 import { ImageMultilabel } from "../examples/image_multilabel";
 import { ImageEllipselabels } from "../examples/image_ellipses";

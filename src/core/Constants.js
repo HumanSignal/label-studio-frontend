@@ -1,8 +1,8 @@
 export const defaultStyle = {
-  fillcolor: "orange",
-  fillopacity: 0.6,
-  strokecolor: "orange",
-  strokewidth: 5,
+  fillcolor: "gray",
+  fillopacity: 0.2,
+  strokecolor: "gray",
+  strokewidth: 3,
   opacity: 0.6,
 };
 
