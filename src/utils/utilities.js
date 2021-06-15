@@ -138,3 +138,14 @@ export function findClosestParent(el, predicate = () => true, parentGetter = el 
 export function clamp(x, min, max) {
   return Math.min(max, Math.max(min, x));
 }
+
+export const chunks = (source, chunkSize) => {
+  const result = [];
+  let i,j;
+
+  for (i=0,j=source.length; i<j; i+=chunkSize) {
+    result.push(source.slice(i,i+chunkSize));
+  }
+
+  return result;
+};

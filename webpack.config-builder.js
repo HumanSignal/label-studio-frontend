@@ -16,7 +16,7 @@ const BUILD = {
   NO_CHUNKS: isDevelopment || !!process.env.BUILD_NO_CHUNKS,
   NO_HASH: isDevelopment || process.env.BUILD_NO_HASH,
   MODULE: !isDevelopment && !!process.env.BUILD_MODULE,
-  DYAGNOSTICS: !!process.env.BUILD_DYAGNOSTICS,
+  DIAGNOSTICS: !!process.env.BUILD_DIAGNOSTICS,
 };
 
 const dirPrefix = {
@@ -174,6 +174,7 @@ const devServer = () => {
           compress: true,
           hot: true,
           port: 9000,
+          stats: "normal",
           contentBase: path.join(__dirname, "public"),
           historyApiFallback: {
             index: "./public/index.html",
@@ -209,7 +210,7 @@ if (BUILD.NO_CHUNKS) {
   }));
 }
 
-if (BUILD.DYAGNOSTICS) {
+if (BUILD.DIAGNOSTICS) {
   plugins.unshift(
     new SpeedMeasurePlugin()
   )
@@ -217,10 +218,10 @@ if (BUILD.DYAGNOSTICS) {
 
 const sourceMap = isDevelopment ? "cheap-module-source-map" : "source-map";
 
-module.exports = () => ({
+module.exports = ({withDevServer = true} = {}) => ({
   mode: DEFAULT_NODE_ENV || "development",
   devtool: sourceMap,
-  ...devServer(),
+  ...(withDevServer ? devServer() : {}),
   entry: path.resolve(__dirname, "src/index.js"),
   output: {
     path: path.resolve(__dirname, "build"),
@@ -240,9 +241,7 @@ module.exports = () => ({
     maxEntrypointSize: Infinity,
     maxAssetSize: 1000000,
   },
-  cache: {
-    type: 'memory',
-  },
+  stats: "normal",
   module: {
     rules: [
       {

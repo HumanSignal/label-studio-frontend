@@ -118,7 +118,7 @@ function convertParamsToPixels(params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function(I, AtImageView, current) {
+Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -127,7 +127,6 @@ Data(shapesTable).Scenario("Selecting after creation", async function(I, AtImage
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.waitForVisible("canvas");
   I.see("0 Regions");
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
@@ -140,8 +139,8 @@ Data(shapesTable).Scenario("Selecting after creation", async function(I, AtImage
   if (current.shape === "Brush") {
     I.click(locate("button.ant-btn-primary").withDescendant(".anticon.anticon-highlight"));
   }
+
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);
   const selected = await I.executeAsyncScript(hasSelectedRegion);
-  console.log("selected", selected);
   assert.strictEqual(selected, true);
 });

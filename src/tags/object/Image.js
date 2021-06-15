@@ -39,10 +39,11 @@ import { clamp } from "../../utils/utilities";
  * @param {boolean=} [grid=false]             - Show grid
  * @param {number=} [gridSize=30]             - Specify size of the grid
  * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid, opacity is 0.15
- * @param {boolean} [zoomControl=false]       - Whether to show zoom controls in toolbar
- * @param {boolean} [brightnessControl=false] - Whether to show brightness control in toolbar
- * @param {boolean} [contrastControl=false]   - Whether to show contrast control in toolbar
- * @param {boolean} [rotateControl=false]     - Whether to show rotate control in toolbar
+ * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
+ * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
+ * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
+ * @param {boolean} [crosshair=false]         – Show crosshair cursor
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -66,6 +67,7 @@ const TagAttrs = types.model({
   brightnesscontrol: types.optional(types.boolean, false),
   contrastcontrol: types.optional(types.boolean, false),
   rotatecontrol: types.optional(types.boolean, false),
+  crosshair: types.optional(types.boolean, false),
 });
 
 const IMAGE_CONSTANTS = {
@@ -385,7 +387,7 @@ const Model = types
 
       const currentTool = self.getToolsManager().findSelectedTool();
       currentTool?.updateCursor?.();
-      
+
       // Konva updates ref repeatedly and this breaks brush scaling
       if (self.initialWidth > 1) return;
       self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;

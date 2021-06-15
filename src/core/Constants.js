@@ -1,8 +1,8 @@
 export const defaultStyle = {
   fillcolor: "#666",
-  fillopacity: 0.6,
+  fillopacity: 0.2,
   strokecolor: "#666",
-  strokewidth: 1,
+  strokewidth: 3,
   opacity: 0.6,
 };
 
