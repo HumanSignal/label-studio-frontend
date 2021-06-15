@@ -1,7 +1,7 @@
 /* global Feature, Scenario, locate, DataTable, Data */
 
 const assert = require("assert");
-const { initLabelStudio, waitForImage, countKonvaShapes, switchRegionTreeView } = require("./helpers");
+const { initLabelStudio, countKonvaShapes, switchRegionTreeView } = require("./helpers");
 
 const ALL_VISIBLE_SELECTOR = ".lsf-entities__visibility [aria-label=eye]";
 const ALL_HIDDEN_SELECTOR = ".lsf-entities__visibility [aria-label=eye-invisible]";
@@ -54,7 +54,7 @@ const annotations = [
 
 Feature("Toggle regions visibility");
 
-Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
+Scenario("Checking mass toggling of visibility", async ({I, AtImageView}) => {
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -93,7 +93,6 @@ Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 3);
   I.see("3 Regions");
   await checkVisible(3);
   hideOne();
@@ -114,11 +113,10 @@ Scenario("Checking mass toggling of visibility", async (I, AtImageView) => {
   await checkVisible(0);
 });
 
-Scenario("Hiding bulk visibility toggle", (I, AtImageView) => {
+Scenario("Hiding bulk visibility toggle", ({I, AtImageView}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 3);
   I.see("0 Regions");
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
   I.click(locate(".ant-tag").withText("Planet"));
@@ -127,7 +125,7 @@ Scenario("Hiding bulk visibility toggle", (I, AtImageView) => {
   I.seeElement(ALL_VISIBLE_SELECTOR);
 });
 
-Scenario("Checking regions grouped by label", async (I, AtImageView) => {
+Scenario("Checking regions grouped by label", async ({I, AtImageView}) => {
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -166,7 +164,6 @@ Scenario("Checking regions grouped by label", async (I, AtImageView) => {
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
-  I.waitForVisible("canvas", 3);
   I.executeAsyncScript(switchRegionTreeView, "labels");
   I.see("Labels");
   await checkVisible(3);
@@ -206,7 +203,7 @@ examples.forEach(example => {
   examplesTable.add([title, config, data, result]);
 });
 
-Data(examplesTable).Scenario("Check visibility switcher through all examples", (I, current)=> {
+Data(examplesTable).Scenario("Check visibility switcher through all examples", ({I, current})=> {
   const { config, data, result, } = current;
   const params = { annotations: [{ id: "test", result }], config, data };
 

@@ -15,6 +15,8 @@ import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 const Model = types
   .model({
@@ -305,29 +307,33 @@ function removeHoverAnchor({ layer }) {
 }
 
 const HtxPolygonView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
-  const style = item.style || item.tag || defaultStyle;
+  const colors = useRegionColors(item, {
+    useStrokeAsFill: true,
+  });
 
   /**
    * Render line between 2 points
    */
-  function renderLine({ points, idx1, idx2 }) {
+  function renderLine({ points, idx1, idx2, closed }) {
     const name = `border_${idx1}_${idx2}`;
-    let { strokecolor, strokewidth } = style;
-
-    if (item.highlighted) {
-      strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-      strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
-    }
 
     if (!item.closed && idx2 === 0) return null;
 
     const insertIdx = idx1 + 1; // idx1 + 1 or idx2
     const flattenedPoints = getFlattenedPoints([points[idx1], points[idx2]]);
+
+    const lineProps = closed ? {
+      stroke: 'transparent',
+      strokeWidth: colors.strokeWidth,
+      strokeScaleEnabled: false,
+    } : {
+      stroke: colors.strokeColor,
+      strokeWidth: colors.strokeWidth,
+      strokeScaleEnabled: false,
+    };
+
     return (
       <Group
         key={name}
@@ -341,25 +347,24 @@ const HtxPolygonView = ({ item }) => {
         onMouseLeave={e => item.handleMouseLeave({ e })}
       >
         <Line
+          lineJoin="round"
+          opacity={1}
           points={flattenedPoints}
-          stroke={strokecolor}
-          opacity={+style.opacity}
-          lineJoin="bevel"
-          strokeWidth={+strokewidth}
-          strokeScaleEnabled={false}
+          hitStrokeWidth={20}
+          {...lineProps}
         />
       </Group>
     );
   }
 
-  function renderLines(points) {
+  function renderLines(points, closed) {
     const name = "borders";
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
-          return renderLine({ points, idx1, idx2 });
+          return renderLine({ points, idx1, idx2, closed });
         })}
       </Group>
     );
@@ -367,14 +372,18 @@ const HtxPolygonView = ({ item }) => {
 
   function renderPoly(points) {
     const name = "poly";
+    const flattenedPoints = getFlattenedPoints(points);
     return (
       <Group key={name} name={name}>
         <Line
-          lineJoin="bevel"
-          points={getFlattenedPoints(points)}
-          fill={style.strokecolor}
+          lineJoin="round"
+          lineCap="square"
+          stroke={colors.strokeColor}
+          strokeWidth={colors.strokeWidth}
+          strokeScaleEnabled={false}
+          points={flattenedPoints}
+          fill={colors.fillColor}
           closed={true}
-          opacity={0.2}
         />
       </Group>
     );
@@ -498,13 +507,13 @@ const HtxPolygonView = ({ item }) => {
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? renderPoly(item.points) : null}
-      {item.points ? renderLines(item.points) : null}
+      {item.points ? renderLines(item.points, item.closed) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>
   );
 };
 
-const HtxPolygon = observer(HtxPolygonView);
+const HtxPolygon = AliveRegion(HtxPolygonView);
 
 Registry.addTag("polygonregion", PolygonRegionModel, HtxPolygon);
 Registry.addRegionType(PolygonRegionModel, "image", value => !!value.points);

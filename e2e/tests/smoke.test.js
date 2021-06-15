@@ -33,7 +33,7 @@ function assertWithTolerance(actual, expected) {
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function(I, AtImageView, AtAudioView) {
+  Scenario(example.title || "Noname smoke test", async function({I, AtImageView, AtAudioView}) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
@@ -53,8 +53,8 @@ examples.forEach(example =>
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
-      I.waitForVisible("canvas", 3);
     }
+
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
     }

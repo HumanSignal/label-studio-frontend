@@ -26,7 +26,7 @@ import ControlBase from "./Base";
  * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels
  * @param {number} [maxUsages]                      - Maximum available uses of the label
  * @param {boolean} [showInline=true]               - Show items in the same visual line
- * @param {number} [opacity=0.6]                    - Opacity of polygon
+ * @param {number} [opacity=0.2]                    - Opacity of polygon
  * @param {string} [fillColor]                      - Polygon fill color
  * @param {string} [strokeColor]                    - Stroke color
  * @param {number} [strokeWidth=1]                  - Width of stroke

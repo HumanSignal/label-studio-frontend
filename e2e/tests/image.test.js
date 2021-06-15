@@ -57,7 +57,7 @@ const annotationWithPerRegion = {
 const image =
   "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
 
-Scenario("Check Rect region for Image", async function(I) {
+Scenario("Check Rect region for Image", async function({I, AtImageView}) {
   const params = {
     config,
     data: { image },
@@ -67,7 +67,7 @@ Scenario("Check Rect region for Image", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  I.waitForVisible("canvas", 5);
+  AtImageView.waitForImage();
   I.executeAsyncScript(waitForImage);
   I.see("1 Region");
   // select first and only region
@@ -79,7 +79,7 @@ Scenario("Check Rect region for Image", async function(I) {
   I.dontSee("Labels:");
 });
 
-Scenario("Image with perRegion tags", async function(I) {
+Scenario("Image with perRegion tags", async function({I, AtImageView}) {
   let result;
   const params = {
     config: perRegionConfig,
@@ -90,7 +90,7 @@ Scenario("Image with perRegion tags", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  I.waitForVisible("canvas", 5);
+  AtImageView.waitForImage();
   I.executeAsyncScript(waitForImage);
   I.see("1 Region");
   // select first and only region
