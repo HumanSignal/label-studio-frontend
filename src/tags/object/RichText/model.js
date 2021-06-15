@@ -69,7 +69,6 @@ const Model = types
   .model("RichTextModel", {
     type: "richtext",
     _value: types.optional(types.string, ""),
-    _update: types.optional(types.number, 1),
   })
   .views(self => ({
     get hasStates() {
@@ -155,6 +154,10 @@ const Model = types
         if (self.valuetype === "url") self.savetextresult = "no";
         else if (self.valuetype === "text") self.savetextresult = "yes";
       }
+    },
+
+    needsUpdate() {
+      self.regs.forEach(region => region.applyHighlight());
     },
 
     createRegion(regionData) {
