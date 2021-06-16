@@ -25,7 +25,7 @@ const RegionItemDesc = observer(({ item }) => {
     e.preventDefault();
     e.stopPropagation();
   }, []);
-  const controls = item.perRegionDescControls;
+  const controls = item.perRegionDescControls || [];
   return <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }}>
     {controls.map((tag, idx) => {
       const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
@@ -92,7 +92,7 @@ export const RegionItem = observer(({ item, idx, flat }) => {
     return () => {
       if (!vars) {
         const color = item.getOneColor();
-        vars = asVars({ labelColor: color, labelBgColor: Color.over(chroma(color).alpha(0.15), "white") });
+        vars = color ? asVars({ labelColor: color, labelBgColor: Color.over(chroma(color).alpha(0.15), "white") }) : null;
       }
       return vars;
     };

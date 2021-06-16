@@ -35,6 +35,7 @@ exports.config = {
     AtImageView: "./fragments/AtImageView.js",
     AtAudioView: "./fragments/AtAudioView.js",
     AtSidebar: "./fragments/AtSidebar.js",
+    AtLabels: "./fragments/AtLabels.js",
   },
   bootstrap: null,
   mocha: {},

@@ -101,7 +101,7 @@ Scenario("Check simple nested Choices for Text", async function({I}) {
   assert.deepEqual(result[1].value, { choices: ["Emotional"] });
 });
 
-Scenario("check good nested Choice for Text", async function({I}) {
+Scenario("check good nested Choice for Text", async function({I, AtLabels}) {
   const params = {
     config: configComplicated,
     data: { reviewText },
@@ -114,7 +114,7 @@ Scenario("check good nested Choice for Text", async function({I}) {
   I.see("Laughter");
   I.click("Laughter");
 
-  const personTag = locate(".ant-tag").withText("Person");
+  const personTag = AtLabels.locateLabel("Person");
   I.seeElement(personTag);
   I.click(personTag);
   I.executeAsyncScript(selectText, {

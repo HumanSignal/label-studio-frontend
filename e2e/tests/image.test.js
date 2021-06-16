@@ -71,7 +71,7 @@ Scenario("Check Rect region for Image", async function({I, AtImageView}) {
   I.executeAsyncScript(waitForImage);
   I.see("1 Region");
   // select first and only region
-  I.click(locate("li").withText("Rectangle"));
+  I.click(locate('[aria-label="block"]'));
   I.see("Labels:");
 
   // click on region's rect on the canvas
@@ -94,7 +94,7 @@ Scenario("Image with perRegion tags", async function({I, AtImageView}) {
   I.executeAsyncScript(waitForImage);
   I.see("1 Region");
   // select first and only region
-  I.click(locate("li").withText("Rectangle"));
+  I.click(locate('[aria-label="block"]'));
   I.see("Labels:");
 
   // check that there is deserialized text for this region; and without doubles

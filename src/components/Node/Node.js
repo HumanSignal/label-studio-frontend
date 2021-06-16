@@ -28,12 +28,12 @@ const NodeViews = {
     node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
   ],
 
-  AudioRegionModel: ["Audio", AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
+  AudioRegionModel: ["Audio", AudioOutlined, node => null],
 
   TimeSeriesRegionModel: [
     "TimeSeries",
     LineChartOutlined,
-    node => `TS ${node.object.formatTime(node.start)} - ${node.object.formatTime(node.end)}`,
+    node => null,
   ],
 
   TextAreaRegionModel: ["Input", MessageOutlined, node => <span style={{ color: "#5a5a5a" }}>{node._value}</span>],
@@ -41,50 +41,43 @@ const NodeViews = {
   RectRegionModel: [
     "Rect",
     BlockOutlined,
-    node => {
-      const w = node.width * node.scaleX;
-      const h = node.height * node.scaleY;
-      return `Rectangle ${w.toFixed(2)} x ${h.toFixed(2)}`;
-    },
+    node => null,
   ],
 
-  PolygonRegionModel: ["Polygon", GatewayOutlined, () => `Polygon`],
+  PolygonRegionModel: ["Polygon", GatewayOutlined, () => null],
 
   EllipseRegionModel: [
     "Ellipse",
     Loading3QuartersOutlined,
-    node => {
-      const radiusX = node.radiusX * node.scaleX;
-      const radiusY = node.radiusY * node.scaleY;
-      const rotation = node.rotation;
-      return `Ellipse ${radiusX.toFixed(2)} x ${radiusY.toFixed(2)}, θ = ${rotation.toFixed(2)}°,
-        center = (${node.x.toFixed(2)}, ${node.y.toFixed(2)})`;
-    },
+    node => null,
   ],
 
   // @todo add coords
   KeyPointRegionModel: [
     "KeyPoint",
     EyeOutlined,
-    node => `KeyPoint ${node.relativeX.toFixed(2)}, ${node.relativeY.toFixed(2)}`,
+    node => null,
   ],
 
-  BrushRegionModel: ["Brush", HighlightOutlined, () => `Brush`],
+  BrushRegionModel: ["Brush", HighlightOutlined, () => null],
 
-  ChoicesModel: ["Classification", ApartmentOutlined, () => `Classification`],
+  ChoicesModel: ["Classification", ApartmentOutlined, () => null],
 
-  TextAreaModel: ["Input", MessageOutlined, () => `Input`],
+  TextAreaModel: ["Input", MessageOutlined, () => null],
 };
 
 const Node = observer(({ className, node }) => {
   const name = getType(node).name;
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
+  let [, , getContent] = NodeViews[name];
   const labelName = node.labelName;
 
   return (
     <span className={[styles.node, className].filter(Boolean).join(" ")}>
       {labelName}
+      {" "}
+      {getContent(node)}
     </span>
   );
 });

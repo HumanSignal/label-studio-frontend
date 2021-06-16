@@ -24,16 +24,16 @@ const data = {
 
 Feature("Two or more same named tools referred same image").tag("@regress");
 
-Scenario("Two RectangleLabels", async ({I, AtImageView}) => {
+Scenario("Two RectangleLabels", async ({I, AtImageView, AtLabels}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 
   AtImageView.waitForImage();
   I.executeAsyncScript(waitForImage);
 
-  I.click(locate(".ant-tag").withText("Plane"));
+  AtLabels.clickLabel("Plane");
   I.executeAsyncScript(dragKonva, 300, 300, 50, 50);
-  I.click(locate(".ant-tag").withText("Car"));
+  AtLabels.clickLabel("Car");
   I.executeAsyncScript(dragKonva, 100, 600, 400, -300);
   I.see("2 Regions");
 

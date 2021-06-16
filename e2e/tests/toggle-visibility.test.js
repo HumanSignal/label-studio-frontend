@@ -3,10 +3,10 @@
 const assert = require("assert");
 const { initLabelStudio, countKonvaShapes, switchRegionTreeView } = require("./helpers");
 
-const ALL_VISIBLE_SELECTOR = ".lsf-entities__visibility [aria-label=eye]";
-const ALL_HIDDEN_SELECTOR = ".lsf-entities__visibility [aria-label=eye-invisible]";
-const ONE_VISIBLE_SELECTOR = ".lsf-region-item__toggle [aria-label=eye]";
-const ONE_HIDDEN_SELECTOR = ".lsf-region-item__toggle [aria-label=eye-invisible]";
+const ALL_VISIBLE_SELECTOR = ".lsf-entities__visibility:not(.lsf-entities__visibility_hidden)";
+const ALL_HIDDEN_SELECTOR = ".lsf-entities__visibility.lsf-entities__visibility_hidden";
+const ONE_VISIBLE_SELECTOR = ".lsf-region-item__toggle.lsf-region-item__toggle_active";
+const ONE_HIDDEN_SELECTOR = ".lsf-region-item__toggle:not(.lsf-region-item__toggle_active)";
 
 const config = `
 <View>
@@ -113,13 +113,13 @@ Scenario("Checking mass toggling of visibility", async ({I, AtImageView}) => {
   await checkVisible(0);
 });
 
-Scenario("Hiding bulk visibility toggle", ({I, AtImageView}) => {
+Scenario("Hiding bulk visibility toggle", ({I, AtImageView, AtLabels}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
   I.see("0 Regions");
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
-  I.click(locate(".ant-tag").withText("Planet"));
+  AtLabels.clickLabel("Planet");
   AtImageView.dragKonva(300, 300, 50, 50);
   I.see("1 Region");
   I.seeElement(ALL_VISIBLE_SELECTOR);
