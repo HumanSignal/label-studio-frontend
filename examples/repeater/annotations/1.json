@@ -2,7 +2,30 @@
     "annotations": [
         {
             "id": "1001",
-            "result": []
+            "result": [
+                {
+                    "value": {
+                        "choices": [
+                            "New Intent"
+                        ]
+                    },
+                    "id": "tH8nXMb0T_",
+                    "from_name": "utterance_action",
+                    "to_name": "user_0",
+                    "type": "choices"
+                },
+                {
+                    "value": {
+                        "choices": [
+                            "Training"
+                        ]
+                    },
+                    "id": "Ebt-uQHhwa",
+                    "from_name": "utterance_action",
+                    "to_name": "user_1",
+                    "type": "choices"
+                }
+            ]
         }
     ],
     "data": {
