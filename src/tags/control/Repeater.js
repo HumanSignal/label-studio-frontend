@@ -76,14 +76,15 @@ const Model = types
 const RepaterModel = types.compose("RepaterModel", TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
 
-function CloneTreeWithIndex(node, store, idxcount) {
+function RenderDuplicateTree(props) {
+  const {tree, idx, store} = props;
   function cloneAndReplaceKeys(node) {
     let copy = {};
     for (let key in node) {
       if (key === 'children') {
         copy.children = node.children.map(c => cloneAndReplaceKeys(c));
       } else if (typeof node[key] === 'string') {
-        copy[key] = node[key].replace('{{idx}}', idxcount);
+        copy[key] = node[key].replace('{{idx}}', idx);
       } else {
         copy[key] = node[key];
       }
@@ -93,7 +94,7 @@ function CloneTreeWithIndex(node, store, idxcount) {
     return copy;
   }
 
-  const clonedSnapshot = cloneAndReplaceKeys(node['$treenode']['_initialSnapshot']);
+  const clonedSnapshot = cloneAndReplaceKeys(tree['$treenode']['_initialSnapshot']);
   const cloned =  Registry.getModelByTag("view").create({
     id: guidGenerator(),
     tagName: "View",
@@ -107,35 +108,24 @@ function CloneTreeWithIndex(node, store, idxcount) {
     }
   });
 
-  cloned.$treenode._parent = node.$treenode._parent;
+  cloned.$treenode._parent = tree.$treenode._parent;
 
-  return cloned;
+  return Tree.renderChildren(cloned);
 }
+const DuplicatedTree = inject("store")(observer(RenderDuplicateTree));
 
 
-
-function renderDuplicateTree(item, idx, store) {
-
-  let clone = CloneTreeWithIndex(item, store, idx);
-
-  return (
-    <div key={idx}>
-      {Tree.renderChildren(clone)}
-    </div>
-  );
-} 
-
-const HtxListView = ({ store, item }) => {
+const HtxRepeater = ({ item }) => {
   return (
     <div>
-      {item.iterateOver.map((e, idx) => renderDuplicateTree(item, idx, store))}
+      {item.iterateOver.map((_e, idx) => 
+        <DuplicatedTree key={idx} tree={item} idx={idx} />
+      )}
     </div>
   );
 };
 
-const HtxList = inject("store")(observer(HtxListView));
 
-
-Registry.addTag("repeater", RepaterModel, HtxList);
+Registry.addTag("repeater", RepaterModel, /*inject("store")*/(HtxRepeater));
 
 export { RepaterModel };
