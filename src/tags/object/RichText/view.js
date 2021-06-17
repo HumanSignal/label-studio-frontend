@@ -143,7 +143,6 @@ class RichTextPieceView extends Component {
         <div
           ref={this.rootNodeRef}
           style={{ overflow: "auto" }}
-          data-update={item._update}
           className="htx-richtext"
           dangerouslySetInnerHTML={{ __html: val }}
           {...eventHandlers}
