@@ -38,6 +38,7 @@ import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 import { Block, Elem } from "../../utils/bem";
 import './App.styl';
+import { DraftPanel } from "../DraftPanel/DraftPanel";
 
 /**
  * App
@@ -201,6 +202,10 @@ class App extends Component {
                   </SidebarTabs>
                 )}
               </div>
+            )}
+
+            {as.selected && (
+              <DraftPanel item={as.selected} />
             )}
           </div>
         </Provider>

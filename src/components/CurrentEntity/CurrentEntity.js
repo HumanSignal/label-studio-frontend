@@ -103,8 +103,6 @@ export const CurrentEntity = injector(observer(({
         <Controls annotation={entity}/>
       )}
 
-      <DraftPanel item={entity} />
-
       {showHistory && !entity.userGenerate && (
         <AnnotationHistory/>
       )}
