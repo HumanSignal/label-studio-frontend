@@ -127,7 +127,7 @@ const shapes = [
 ];
 
 // eslint-disable-next-line no-undef
-xScenario("Simple shapes on Image", async function({I, AtImageView}) {
+xScenario("Simple shapes on Image", async function({I, AtImageView, AtSidebar}) {
   for (let shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),
@@ -140,7 +140,7 @@ xScenario("Simple shapes on Image", async function({I, AtImageView}) {
     // canvas won't be initialized fully before the image loads
     await I.executeAsyncScript(waitForImage);
     AtImageView.waitForImage();
-    I.see("0 Regions");
+    AtSidebar.seeRegions(0);
 
     for (let region of shape.regions) {
       // draw the shape using corresponding helper and params

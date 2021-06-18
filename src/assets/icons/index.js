@@ -14,3 +14,4 @@ export { default as LsInvisible } from "./invisible.svg";
 export { default as LsChevron } from "./chevron.svg";
 export { default as LsExpand } from "./expand.svg";
 export { default as LsCollapse } from "./collapse.svg";
+export { default as LsDate } from "./date.svg";

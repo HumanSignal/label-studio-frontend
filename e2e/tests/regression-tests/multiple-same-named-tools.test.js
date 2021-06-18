@@ -24,7 +24,7 @@ const data = {
 
 Feature("Two or more same named tools referred same image").tag("@regress");
 
-Scenario("Two RectangleLabels", async ({I, AtImageView, AtLabels}) => {
+Scenario("Two RectangleLabels", async ({I, AtImageView, AtLabels, AtSidebar}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 
@@ -35,7 +35,7 @@ Scenario("Two RectangleLabels", async ({I, AtImageView, AtLabels}) => {
   I.executeAsyncScript(dragKonva, 300, 300, 50, 50);
   AtLabels.clickLabel("Car");
   I.executeAsyncScript(dragKonva, 100, 600, 400, -300);
-  I.see("2 Regions");
+  AtSidebar.seeRegions(2);
 
   const result = await I.executeScript(serialize);
   assert.deepStrictEqual(result.length, 2);

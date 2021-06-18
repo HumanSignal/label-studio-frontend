@@ -101,7 +101,7 @@ Scenario("Check simple nested Choices for Text", async function({I}) {
   assert.deepEqual(result[1].value, { choices: ["Emotional"] });
 });
 
-Scenario("check good nested Choice for Text", async function({I, AtLabels}) {
+Scenario("check good nested Choice for Text", async function({I, AtLabels, AtSidebar}) {
   const params = {
     config: configComplicated,
     data: { reviewText },
@@ -122,7 +122,7 @@ Scenario("check good nested Choice for Text", async function({I, AtLabels}) {
     rangeStart: 51,
     rangeEnd: 55,
   });
-  I.see("1 Region");
+  AtSidebar.seeRegions(1);
   I.dontSee("Female");
 
   // the only element of regions tree list
@@ -130,7 +130,7 @@ Scenario("check good nested Choice for Text", async function({I, AtLabels}) {
   // select this region
   I.click(regionInList);
 
-  I.see("1 Region");
+  AtSidebar.seeRegions(1);
   I.see("More details"); // View with visibleWhen
 
   I.click("Female");

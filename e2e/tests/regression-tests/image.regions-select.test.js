@@ -118,7 +118,7 @@ function convertParamsToPixels(params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, current}) {
+Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -127,7 +127,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {

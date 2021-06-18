@@ -292,7 +292,7 @@ const HtxRectangleView = ({ item }) => {
           item.onClickRegion();
         }}
       />
-      <LabelOnRect item={item} color={colors.fillColor} strokewidth={colors.strokeWidth} />
+      <LabelOnRect item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth} />
     </Fragment>
   );
 };

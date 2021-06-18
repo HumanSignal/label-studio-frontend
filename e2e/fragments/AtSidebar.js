@@ -3,11 +3,16 @@ const { I } = inject();
 
 module.exports = {
   _sideBarLocator: locate(".lsf-sidebar-tabs"),
+  _regionsCounterLocator: locate(".lsf-entities__counter"),
   seeRegions(count) {
-    I.see(`${count} Region${count === 0 || count > 1 ? "s" : ""}`, this._sideBarLocator);
+    I.see(count ? `Regions\n\u00A0${count}`: "Regions", this._sideBarLocator);
   },
   dontSeeRegions(count) {
-    I.dontSee(`${count} Region${count === 0 || count > 1 ? "s" : ""}`, this._sideBarLocator);
+    if (count) {
+      I.dontSee(`Regions\n\u00A0${count}`, this._sideBarLocator);
+    } else {
+      I.dontSeeElement(this._regionsCounterLocator);
+    }
   },
   locate(locator) {
     return locate(this._sideBarLocator).find(locator);

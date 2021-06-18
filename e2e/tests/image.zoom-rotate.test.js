@@ -106,7 +106,7 @@ shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, current}) {
+Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -115,7 +115,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, cu
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -142,7 +142,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, cu
   }
 });
 
-Data(shapesTable).Scenario("Rotate zoomed", async function({I, AtImageView, current}) {
+Data(shapesTable).Scenario("Rotate zoomed", async function({I, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -151,7 +151,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({I, AtImageView, curr
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -183,7 +183,7 @@ windowSizesTable.add([1920, 1080]);
 windowSizesTable.add([800, 480]);
 windowSizesTable.add([1017, 970]);
 
-Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({I, AtImageView, current}) {
+Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({I, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape("Rectangle"),
     data: { image: IMAGE },
@@ -192,7 +192,7 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   I.resizeWindow(current.width, current.height);
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];

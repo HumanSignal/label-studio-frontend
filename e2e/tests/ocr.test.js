@@ -138,7 +138,7 @@ const REGIONS = [
     "height": 4.536489151873767
   }
 ];
-Scenario.only("Drawing multiple blank regions and then attaching labels", async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtSidebar }) => {
+Scenario("Drawing multiple blank regions and then attaching labels", async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
   LabelStudio.init({ config: createConfig( ), data });
   AtImageView.waitForImage();
