@@ -58,7 +58,7 @@ const TAG_PATH = "M13.47,2.52c-0.27-0.27-0.71-0.27-1.59-0.27h-0.64c-1.51,0-2.26,
 const OCR_PATH = "M13,1v2H6C4.11,3,3.17,3,2.59,3.59C2,4.17,2,5.11,2,7v2c0,1.89,0,2.83,0.59,3.41C3.17,13,4.11,13,6,13h7v2h1V1H13z M6,9.5C5.17,9.5,4.5,8.83,4.5,8S5.17,6.5,6,6.5S7.5,7.17,7.5,8S6.83,9.5,6,9.5z M11,9.5c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5S11.83,9.5,11,9.5z";
 
 
-const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale = 1, color, maxWidth, onClickLabel, adjacent = false, isTexting = false }) => {
+const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoomScale = 1, color, maxWidth, onClickLabel, onMouseEnterLabel, onMouseLeaveLabel, adjacent = false, isTexting = false }) => {
   const fontSize = 13;
   const height = 20;
   const ss = showScore && score;
@@ -116,15 +116,11 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale = 1, 
     context.closePath();
     context.fillStrokeShape(shape);
   }, [adjacent, isSticking, maxWidth]);
-  const mouseEnterHandler = useCallback((e)=>{
-  }, []);
-  const mouseLeaveHandler = useCallback((e)=>{
-  }, []);
   return (
-    <Group strokeScaleEnabled={false} opacity={0.8}>
+    <Group strokeScaleEnabled={false} x={x} y={y} rotation={rotation}>
       {ss && (
 
-        <Label x={x} y={y - height * scale} scaleX={scale} scaleY={scale} onClick={e=>{return false;}}>
+        <Label y={-height * scale} scaleX={scale} scaleY={scale} onClick={e=>{return false;}}>
           <Tag fill={Utils.Colors.getScaleGradient(score)} cornerRadius={2}/>
           <Text
             text={score.toFixed(2)}
@@ -135,10 +131,10 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale = 1, 
       )}
       {showLabels && (
         <>
-          <Label x={x + paddingLeft * scale + scoreSpace * scale} y={y - height * scale} scaleX={scale} scaleY={scale} 
+          <Label x={paddingLeft * scale + scoreSpace * scale} y={-height * scale} scaleX={scale} scaleY={scale}
             onClick={onClickLabel}
-            onMouseEnter={onClickLabel ? mouseEnterHandler : null}
-            onMouseLeave={onClickLabel ? mouseLeaveHandler : null}
+            onMouseEnter={onClickLabel ? onMouseEnterLabel : null}
+            onMouseLeave={onClickLabel ? onMouseLeaveLabel : null}
           >
             <Tag fill={color} cornerRadius={4} sceneFunc={tagSceneFunc} offsetX={paddingLeft}/>
             <Text ref={setTextEl} text={text}
@@ -153,8 +149,8 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, zoomScale = 1, 
               padding={0}/>
           </Label>
           <Path
-            x={x + 2 * scale + scoreSpace * scale}
-            y={y + 2 * scale - height * scale}
+            x={2 * scale + scoreSpace * scale}
+            y={2 * scale - height * scale}
             scaleX={scale} scaleY={scale}
             fill={Constants.SHOW_LABEL_FILL}
             data={isTexting ? OCR_PATH : TAG_PATH}
@@ -203,6 +199,7 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
       showLabels={getRoot(item).settings.showLabels}
       showScore={getRoot(item).settings.showLabels}
       zoomScale={item.parent.zoomScale}
+      rotation={item.rotation}
       color={color}
       maxWidth={item.width + strokewidth}
       adjacent
