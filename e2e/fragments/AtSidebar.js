@@ -9,7 +9,13 @@ module.exports = {
   dontSeeRegions(count) {
     I.dontSee(`${count} Region${count === 0 || count > 1 ? "s" : ""}`, this._sideBarLocator);
   },
+  locate(locator) {
+    return locate(this._sideBarLocator).find(locator);
+  },
   see(text) {
     I.see(text, this._sideBarLocator);
   },
+  seeElement(locator) {
+    I.seeElement(this.locate(locator));
+  }
 };

@@ -112,9 +112,10 @@ const DrawingTool = types
         } else {
           self.annotation.history.unfreeze();
           // Needs some delay for avoiding catching click if this method is called on mouseup
+          let area = currentArea;
+          currentArea = null;
           setTimeout(() => {
-            currentArea.setDrawing(false);
-            currentArea = null;
+            area.setDrawing(false);
           }, 0);
           // self.obj.annotation.highlightedNode.unselectRegion(true);
         }
