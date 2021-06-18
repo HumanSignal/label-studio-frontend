@@ -55,7 +55,11 @@ export const AreaMixin = types
     getLabelText(joinstr) {
       const label = self.labeling;
       const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, " ");
-      return text || label?.getSelectedString(joinstr);
+      const labelNames = label?.getSelectedString(joinstr);
+      const labelText = [];
+      if (labelNames) labelText.push(labelNames);
+      if (text) labelText.push(text);
+      return labelText.join(": ");
     },
 
     get parent() {

@@ -2,7 +2,7 @@ export const defaultStyle = {
   fillcolor: "#666",
   fillopacity: 0.2,
   strokecolor: "#666",
-  strokewidth: 3,
+  strokewidth: 1,
   opacity: 0.6,
 };
 

@@ -204,7 +204,7 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
       showScore={getRoot(item).settings.showLabels}
       zoomScale={item.parent.zoomScale}
       color={color}
-      maxWidth={item.width}
+      maxWidth={item.width + strokewidth}
       adjacent
       onClickLabel={item.onClickLabel}
     />

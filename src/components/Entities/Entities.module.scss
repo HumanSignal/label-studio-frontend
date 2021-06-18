@@ -69,20 +69,13 @@
     }
   }
 
-  &:hover,
-  &.selected {
+  &:hover {
     background-color: var(--labelBgColor);
-
-    .node {
-      color: var(--labelColor, #000);
-    }
   }
 
   &.selected {
-    border-color: var(--labelColor, #000);
-    .node {
-      font-weight: 500;
-    }
+    //noinspection CssInvalidFunction
+    box-shadow: 0 0 0 4px var(--labelBgColor, rgba(0,0,0,0.2));
   }
 
   &_label {

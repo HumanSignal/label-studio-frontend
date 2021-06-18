@@ -1,10 +1,8 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
-import { observer } from "mobx-react";
 import { types, getRoot, isAlive } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -190,7 +188,7 @@ const HtxKeyPointView = ({ item }) => {
         {...props}
         draggable={item.editable}
       />
-      <LabelOnKP item={item} />
+      <LabelOnKP item={item} color={colors.strokeColor}/>
     </Fragment>
   );
 };

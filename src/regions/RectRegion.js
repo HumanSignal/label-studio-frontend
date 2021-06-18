@@ -1,9 +1,8 @@
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment } from "react";
 import { Rect } from "react-konva";
-import { observer } from "mobx-react";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
-import Constants, { defaultStyle } from "../core/Constants";
+import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";

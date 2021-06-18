@@ -15,7 +15,6 @@ import { useCallback, useMemo, useState } from "react";
 import { asVars } from "../../utils/styles";
 import { PER_REGION_MODES } from "../../mixins/PerRegion";
 import Registry from "../../core/Registry";
-import * as Color from "../../utils/colors";
 import chroma from "chroma-js";
 
 const RegionItemDesc = observer(({ item }) => {
@@ -92,7 +91,7 @@ export const RegionItem = observer(({ item, idx, flat }) => {
     return () => {
       if (!vars) {
         const color = item.getOneColor();
-        vars = color ? asVars({ labelColor: color, labelBgColor: Color.over(chroma(color).alpha(0.15), "white") }) : null;
+        vars = color ? asVars({ labelColor: color, labelBgColor: chroma(color).alpha(0.15) }) : null;
       }
       return vars;
     };

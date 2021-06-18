@@ -1,14 +1,12 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
-import { observer } from "mobx-react";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
-import Constants, { defaultStyle } from "../core/Constants";
+import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
@@ -302,7 +300,7 @@ const HtxEllipseView = ({ item }) => {
         }}
         draggable={item.editable}
       />
-      <LabelOnEllipse item={item} color={colors.fillColor} strokewidth={colors.strokeWidth}/>
+      <LabelOnEllipse item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth}/>
     </Fragment>
   );
 };
