@@ -130,6 +130,7 @@ const Model = types.model({
         (!self.parent.allowempty || self.isEmpty)
       )
         return;
+      if (self.parent.type !== "labels" && !self.parent.type.includes(region?.results[0].type)) return;
     }
 
     // if we are going to select label and it would be the first in this labels group

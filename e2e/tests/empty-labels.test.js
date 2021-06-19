@@ -98,7 +98,7 @@ examples.forEach(example => {
     LabelStudio.init(params);
     AtSidebar.see("Update");
     AtSidebar.dontSeeRegions(regionsCount);
-    AtSidebar.dontSeeRegions(0);
+    AtSidebar.dontSeeRegions();
   });
 });
 
