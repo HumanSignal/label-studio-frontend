@@ -115,23 +115,6 @@ const Annotation = types
       return results;
     },
 
-    get hasChanges() {
-      // Dirty hack to force MST track changes
-      self.areas.toJSON();
-
-      if (isDefined(self.resultSnapshot)) {
-        const changed = self.resultSnapshot !== self.currentSnapshot;
-
-        return changed;
-      }
-
-      return false;
-    },
-
-    get currentSnapshot() {
-      return JSON.stringify(self.serialized.map(({value}) => value));
-    },
-
     get serialized() {
       // Dirty hack to force MST track changes
       self.areas.toJSON();
@@ -168,10 +151,6 @@ const Annotation = types
 
     sendUserGenerate() {
       self.sentUserGenerate = true;
-    },
-
-    saveSnapshot() {
-      self.resultSnapshot = self.currentSnapshot;
     },
 
     setLocalUpdate(value) {
@@ -707,7 +686,6 @@ const Annotation = types
           }
         });
 
-        self.saveSnapshot();
       } catch (e) {
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
