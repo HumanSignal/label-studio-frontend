@@ -931,8 +931,6 @@ export default types
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
       if (options.user) node.user = options.user;
 
-      //
-      console.log('creating annotation');
       return node;
     }
 
@@ -943,7 +941,9 @@ export default types
       const item = createItem(options);
       self.predictions.unshift(item);
 
-      return self.predictions[0];
+      const record = self.predictions[0];
+
+      return record;
     }
 
     function addAnnotation(options = {}) {
@@ -951,14 +951,20 @@ export default types
 
       const item = createItem(options);
 
-      item.version = { result: options.result, draft: options.draft };
-      if (item.version.draft) {
-        item.draft = item.version.draft;
+      item.versions = {
+        result: options.result,
+        draft: options.draft
+      };
+
+      if (options.draft) {
+        item.draft = Utils.UDate.currentISODate();
       }
 
       self.annotations.unshift(item);
 
-      return self.annotations[0];
+      const record = self.annotations[0];
+
+      return record;
     }
 
 
@@ -969,7 +975,9 @@ export default types
 
       self.history.push(item);
 
-      return self.history[self.history.length - 1];
+      const record = self.history[self.history.length - 1];
+
+      return record;
     }
 
     function clearHistory() {
