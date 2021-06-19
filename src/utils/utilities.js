@@ -149,3 +149,14 @@ export const chunks = (source, chunkSize) => {
 
   return result;
 };
+
+export const userDisplayName = (user) => {
+  const firstName = user.first_name ?? user.firstName;
+  const lastName = user.last_name ?? user.lastName;
+
+  return (firstName || lastName)
+    ? [firstName, lastName].filter(n => !!n).join(" ").trim()
+    : (user.username)
+      ? user.username
+      : user.email;
+};
