@@ -27,6 +27,15 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
 
   const disabled = store.isSubmitting || historySelected;
 
+  console.log({
+    userGenerate,
+    sentUserGenerate,
+    versions,
+    explore: store.explore,
+    submit: store.hasInterface("submit"),
+    update: store.hasInterface("update"),
+  });
+
   if (isReview) {
     buttons.push(
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">

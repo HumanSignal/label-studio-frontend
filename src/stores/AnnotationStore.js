@@ -951,18 +951,14 @@ export default types
 
       const item = createItem(options);
 
-      item.versions = {
-        result: options.result,
-        draft: options.draft
-      };
-
-      if (options.draft) {
-        item.draft = Utils.UDate.currentISODate();
-      }
-
       self.annotations.unshift(item);
 
       const record = self.annotations[0];
+
+      record.addVersions({
+        result: options.result,
+        draft: options.draft
+      });
 
       return record;
     }
