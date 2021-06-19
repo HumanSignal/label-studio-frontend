@@ -96,6 +96,7 @@
     "speed-measure-webpack-plugin": "^1.5.0",
     "stream-browserify": "^3.0.0",
     "string.prototype.matchall": "^4.0.2",
+    "strman": "^2.0.1",
     "stylus": "^0.54.8",
     "stylus-loader": "^5.0.0",
     "svg.js": "^2.7.0",
