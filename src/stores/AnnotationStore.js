@@ -41,9 +41,9 @@ const Annotation = types
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
-    user: types.maybeNull(types.safeReference(UserExtended, {
+    user: types.optional(types.maybeNull(types.safeReference(UserExtended, {
       acceptsUndefined: false,
-    })),
+    })), null),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
