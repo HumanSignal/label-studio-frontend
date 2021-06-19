@@ -1,4 +1,4 @@
-/* global Feature, Scenario, DataTable, Data, locate */
+/* global Feature, DataTable, Data, locate */
 
 const { initLabelStudio, hasSelectedRegion } = require("../helpers");
 
@@ -20,21 +20,6 @@ const getConfigWithShape = (shape, props = "") => `
         <Label value="Test" background="${BLUEVIOLET.color}"></Label>
     </${shape}Labels>
   </View>`;
-
-const hScaleCoords = ([x, y], w, h) => {
-  const ratio = w / h;
-  return [x * ratio, y * ratio];
-};
-const rotateCoords = (point, degree, w, h) => {
-  const [x, y] = point;
-  if (!degree) return point;
-
-  degree = (360 + degree) % 360;
-  if (degree === 90) return hScaleCoords([h - y - 1, x], w, h);
-  if (degree === 270) return hScaleCoords([y, w - x - 1], w, h);
-  if (Math.abs(degree) === 180) return [w - x - 1, h - y - 1];
-  return [x, y];
-};
 
 const shapes = [
   {

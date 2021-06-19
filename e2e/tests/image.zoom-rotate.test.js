@@ -1,4 +1,4 @@
-/* global Feature, Scenario, DataTable, Data, locate */
+/* global Feature, DataTable, Data, locate */
 
 const { initLabelStudio, serialize } = require("./helpers");
 
@@ -196,12 +196,10 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
-  let degree = 0;
   assert(Math.abs(canvasSize.width - imageSize.width) < 1);
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
-    degree += rotate === "right" ? 90 : -90;
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
     assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);

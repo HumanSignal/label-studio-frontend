@@ -1,11 +1,9 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario */
 
 const assert = require("assert");
 
 Feature("OCR scenarios");
 
-// maxsubmissions="3"
-// rows="2"
 const createConfig = ({ shapes = ["Rectangle"], textareaProps = "" } = {}) => {
   return `<View>
     <Image name="image" value="$image" zoomcontrol="true"></Image>

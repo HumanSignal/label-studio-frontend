@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate, DataTable, Data */
+/* global Feature, Scenario, DataTable, Data */
 
 const assert = require("assert");
 const { initLabelStudio, countKonvaShapes, switchRegionTreeView } = require("./helpers");
