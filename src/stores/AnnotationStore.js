@@ -581,7 +581,7 @@ const Annotation = types
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      return json.filter(obj => {
+      return (json ?? []).filter(obj => {
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
 
@@ -640,7 +640,7 @@ const Annotation = types
           objAnnotation = JSON.parse(objAnnotation);
         }
 
-        objAnnotation = self.fixBrokenAnnotation(objAnnotation);
+        objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
 
         self._initialAnnotationObj = objAnnotation;
 
