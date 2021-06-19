@@ -24,7 +24,6 @@ export const AnnotationHistory = injector(observer(({
   annotationStore,
   selected,
   createdBy,
-  createdDate,
   selectedHistory,
   history
 }) => {
@@ -37,6 +36,7 @@ export const AnnotationHistory = injector(observer(({
         onClick={() => annotationStore.selectHistory(null)}
         selected={!isDefined(selectedHistory)}
       />
+
       {history.length > 0 && (
         <>
           <Elem name="divider" title="Review history"/>
@@ -46,7 +46,7 @@ export const AnnotationHistory = injector(observer(({
             return (
               <HistoryItem
                 key={`h-${id}`}
-                user={user}
+                user={user ?? {email: annotation?.createdBy}}
                 date={createdDate}
                 acceptedState={annotation.acceptedState}
                 selected={selectedHistory?.id === annotation.id}
