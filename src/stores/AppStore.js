@@ -342,7 +342,6 @@ export default types
       entity.sendUserGenerate();
       handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, entity));
       entity.dropDraft();
-      entity.saveSnapshot();
     }
 
     function updateAnnotation() {
@@ -353,7 +352,6 @@ export default types
 
       getEnv(self).onUpdateAnnotation(self, entity);
       entity.dropDraft();
-      entity.saveSnapshot();
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
@@ -370,7 +368,6 @@ export default types
         const isDirty = entity.history.canUndo;
         entity.dropDraft();
         getEnv(self).onAcceptAnnotation(self, {isDirty, entity});
-        entity.saveSnapshot();
       }, "Error during skip, try again");
     }
 
@@ -383,7 +380,6 @@ export default types
         const isDirty = entity.history.canUndo;
         entity.dropDraft();
         getEnv(self).onRejectAnnotation(self, {isDirty, entity});
-        entity.saveSnapshot();
       }, "Error during skip, try again");
     }
 
