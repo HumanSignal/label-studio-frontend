@@ -174,6 +174,7 @@ export default types
      * Function
      */
     function afterCreate() {
+      console.log(self.users.map(u => u.toJSON()));
       // important thing to detect Area atomatically: it hasn't access to store, only via global
       window.Htx = self;
 

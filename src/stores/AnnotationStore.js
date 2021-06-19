@@ -41,7 +41,9 @@ const Annotation = types
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
-    user: types.optional(types.maybeNull(types.reference(UserExtended)), null),
+    user: types.maybeNull(types.safeReference(UserExtended, {
+      acceptsUndefined: false,
+    })),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
@@ -907,7 +909,7 @@ export default types
       return self.root;
     }
 
-    function addItem(options) {
+    function createItem(options) {
       const { user, config } = self.store;
 
       if (!self.root) initRoot(config);
@@ -930,38 +932,44 @@ export default types
       if (options.user) node.user = options.user;
 
       //
-      return Annotation.create(node);
+      console.log('creating annotation');
+      return node;
     }
 
     function addPrediction(options = {}) {
       options.editable = false;
       options.type = "prediction";
 
-      const item = addItem(options);
+      const item = createItem(options);
       self.predictions.unshift(item);
 
-      return item;
+      return self.predictions[0];
     }
 
     function addAnnotation(options = {}) {
       options.type = "annotation";
 
-      const item = addItem(options);
-      item.addVersions({ result: options.result, draft: options.draft });
+      const item = createItem(options);
+
+      item.version = { result: options.result, draft: options.draft };
+      if (item.version.draft) {
+        item.draft = item.version.draft;
+      }
+
       self.annotations.unshift(item);
 
-      return item;
+      return self.annotations[0];
     }
 
 
     function addHistory(options = {}) {
       options.type = "history";
 
-      const item = addItem(options);
+      const item = createItem(options);
 
       self.history.push(item);
 
-      return item;
+      return self.history[self.history.length - 1];
     }
 
     function clearHistory() {
