@@ -41,7 +41,7 @@ const Annotation = types
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
-    user: types.optional(types.maybeNull(types.late(() => types.reference(UserExtended))), null),
+    user: types.optional(types.maybeNull(types.reference(UserExtended)), null),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
