@@ -20,6 +20,11 @@ export class EventInvoker {
     }
   }
 
+  removeAll(eventName: string) {
+    const eventMap = this.getEventMap(eventName);
+    eventMap.clear();
+  }
+
   invoke(eventName: string, ...args: any[]) {
     const eventMap = this.getEventMap(eventName);
 
