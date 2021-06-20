@@ -66,6 +66,7 @@ const createShape = {
       points.push([x + width, y]);
       points.push([x + width, y + height]);
       points.push([x, y + height]);
+      points.push([x, y]);
       return {
         ...opts,
         action: "drawByClickingPoints",
