@@ -36,8 +36,12 @@ export class LabelStudio {
     this.events.on(...args);
   }
 
-  off(...args){
-    this.events.off(...args);
+  off(eventName, callback){
+    if (isDefined(callback)) {
+      this.events.off(eventName, callback);
+    } else {
+      this.events.removeAll(eventName);
+    }
   }
 
   async createApp() {
