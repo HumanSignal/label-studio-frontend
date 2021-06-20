@@ -33,8 +33,8 @@ export const EntityTab = observer(forwardRef(({
         <Elem
           name="userpic"
           tag={Userpic}
+          showUsername
           username={prediction ? entity.createdBy : null}
-          showUsername={prediction}
           user={entity.user ?? {email: entity.createdBy}}
           mod={{prediction}}
         >{prediction && <LsSparks/>}</Elem>
