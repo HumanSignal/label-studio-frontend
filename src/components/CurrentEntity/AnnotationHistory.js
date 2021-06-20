@@ -72,7 +72,7 @@ const HistoryItem = observer(({entity, user, date, extra, acceptedState, selecte
             tag={Userpic}
             user={user}
             name="userpic"
-            showUsername={isPrediction}
+            showUsername
             username={isPrediction ? entity.createdBy : null}
             mod={{prediction: isPrediction}}
           >{isPrediction && <LsSparks/>}</Elem>
