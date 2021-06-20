@@ -79,7 +79,6 @@ const Annotation = types
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
-    console.log({sn});
     let user = sn.user ?? sn.completed_by ?? undefined;
 
     if (user && typeof user !== 'number') {
