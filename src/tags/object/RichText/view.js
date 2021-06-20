@@ -124,7 +124,7 @@ class RichTextPieceView extends Component {
   }
 
   render() {
-    const { item, isText } = this.props;
+    const { item } = this.props;
 
     if (!item._value) return null;
 
@@ -136,7 +136,7 @@ class RichTextPieceView extends Component {
 
     const content = item._value || "";
     const newLineReplacement = "<br/>";
-    const val = (isText ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
+    const val = (item.type === 'text' ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
 
     return (
       <ObjectTag item={item}>
@@ -154,8 +154,8 @@ class RichTextPieceView extends Component {
 
 const storeInjector = inject("store");
 
-const RTPV = storeInjector(observer(RichTextPieceView));
-
 export const HtxRichText = ({ isText = false } = {}) => {
-  return storeInjector(observer(props => <RTPV {...props} isText={isText} />));
+  return storeInjector(observer(props => {
+    return <RichTextPieceView {...props} isText={isText} />;
+  }));
 };
