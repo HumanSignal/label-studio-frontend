@@ -113,7 +113,7 @@ export default types
     addRegion(region) {
       console.log({region});
       self.regions.push(region);
-      getEnv(self).onEntityCreate(region);
+      getEnv(self).events.invoke('entityCreate', region);
     },
 
     toggleSortOrder() {
@@ -156,7 +156,7 @@ export default types
         }
       }
 
-      getEnv(self).onEntityDelete(region);
+      getEnv(self).events.invoke('entityDelete', region);
       self.initHotkeys();
     },
 

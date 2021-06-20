@@ -154,7 +154,7 @@ const Annotation = types
 
     setGroundTruth(value) {
       self.ground_truth = value;
-      getEnv(self).onGroundTruth(self.store, self, value);
+      getEnv(self).events.invoke('groundTruth', self.store, self, value);
     },
 
     sendUserGenerate() {
@@ -332,7 +332,7 @@ const Annotation = types
       const children = regions.filter(r => r.parentID === region.id);
       children && children.forEach(r => r.setParentID(region.parentID));
 
-      if (!region.classification) getEnv(self).onEntityDelete(region);
+      if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
 
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
@@ -377,7 +377,7 @@ const Annotation = types
     },
 
     async startAutosave() {
-      if (!getEnv(self).onSubmitDraft) return;
+      if (!getEnv(self).events.hasEvent('submitDraft')) return;
       if (self.type !== "annotation") return;
 
       // some async tasks should be performed after deserialization
@@ -566,7 +566,7 @@ const Annotation = types
 
       const area = self.areas.put(areaRaw);
 
-      if (!area.classification) getEnv(self).onEntityCreate(area);
+      if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
 
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
@@ -834,7 +834,7 @@ export default types
       c.editable = true;
       c.setupHotKeys();
 
-      getEnv(self).onSelectAnnotation(c, selected);
+      getEnv(self).events.invoke('selectAnnotation', c, selected);
 
       return c;
     }
@@ -846,7 +846,7 @@ export default types
     }
 
     function deleteAnnotation(annotation) {
-      getEnv(self).onDeleteAnnotation(self.store, annotation);
+      getEnv(self).events.invoke('deleteAnnotation', self.store, annotation);
 
       /**
        * MST destroy annotation

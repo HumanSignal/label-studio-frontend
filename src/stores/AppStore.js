@@ -279,7 +279,7 @@ export default types
         "Circle through entities",
       );
 
-      getEnv(self).onLabelStudioLoad(self);
+      getEnv(self).events.invoke('labelStudioLoad', self);
     }
 
     /**
@@ -312,9 +312,9 @@ export default types
 
     function submitDraft(c) {
       return new Promise(resolve => {
-        const fn = getEnv(self).onSubmitDraft;
-        if (!fn) return resolve();
-        const res = fn(self, c);
+        const events = getEnv(self).events;
+        if (!events.hasEvent('submitDraft')) return resolve();
+        const res = events.invokeFirst('submitDraft', self, c);
         if (res && res.then) res.then(resolve);
         else resolve(res);
       });
@@ -340,7 +340,9 @@ export default types
       if (!entity.validate()) return;
 
       entity.sendUserGenerate();
-      handleSubmittingFlag(() => getEnv(self).onSubmitAnnotation(self, entity));
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke('submitAnnotation', self, entity);
+      });
       entity.dropDraft();
     }
 
@@ -350,13 +352,15 @@ export default types
 
       if (!entity.validate()) return;
 
-      getEnv(self).onUpdateAnnotation(self, entity);
+      getEnv(self).events.invoke('updateAnnotation', self, entity);
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
     function skipTask() {
-      handleSubmittingFlag(() => getEnv(self).onSkipTask(self), "Error during skip, try again");
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke('skipTask', self);
+      }, "Error during skip, try again");
     }
 
     function acceptAnnotation() {
@@ -367,7 +371,7 @@ export default types
 
         const isDirty = entity.history.canUndo;
         entity.dropDraft();
-        getEnv(self).onAcceptAnnotation(self, {isDirty, entity});
+        getEnv(self).events.invoke('acceptAnnotation', self, {isDirty, entity});
       }, "Error during skip, try again");
     }
 
@@ -379,7 +383,7 @@ export default types
 
         const isDirty = entity.history.canUndo;
         entity.dropDraft();
-        getEnv(self).onRejectAnnotation(self, {isDirty, entity});
+        getEnv(self).events.invoke('rejectAnnotation', self, {isDirty, entity});
       }, "Error during skip, try again");
     }
 
@@ -423,7 +427,7 @@ export default types
 
       if (!self.initialized) {
         self.initialized = true;
-        getEnv(self).onStorageInitialized(self);
+        getEnv(self).events.invoke('storageInitialized', self);
       }
     }
 
