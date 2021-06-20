@@ -184,7 +184,7 @@ const polygonKonva = async (points, done) => {
       stage.fire("click", {
         evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
       });
-      await delay();
+      await delay(50);
     }
 
     // this works in 50% runs for no reason; maybe some async lazy calculations
@@ -195,7 +195,7 @@ const polygonKonva = async (points, done) => {
     const firstPoint = lastPoint.parent.find("Circle")[0];
     // for closing the Polygon we should place cursor over the first point
     firstPoint.fire("mouseover");
-    await delay();
+    await delay(100);
     // and only after that we can click on it
     firstPoint.fire("click", { evt: { preventDefault: () => {} } });
     done();

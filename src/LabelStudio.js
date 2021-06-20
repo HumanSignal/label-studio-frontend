@@ -65,7 +65,6 @@ export class LabelStudio {
   }
 
   supportLgacyEvents(options) {
-    console.log({legacyEvents});
     const keys = Object.keys(legacyEvents);
 
     keys.forEach(key => {
