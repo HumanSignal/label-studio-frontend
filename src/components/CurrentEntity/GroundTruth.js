@@ -12,7 +12,7 @@ export const GroundTruth = observer(({entity}) => {
     ? "Unset this result as a ground truth"
     : "Set this result as a ground truth";
 
-  return (!entity.skipped) && (
+  return (!entity.skipped && !entity.userGenerate) && (
     <Block name="ground-truth">
       <Tooltip placement="topLeft" title={title}>
         <Elem
