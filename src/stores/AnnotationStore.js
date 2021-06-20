@@ -152,9 +152,25 @@ const Annotation = types
       self.editable = val;
     },
 
-    setGroundTruth(value) {
+    setGroundTruth(value, ivokeEvent = true) {
+      const root = getRoot(self);
+
+      if (root && root !== self && ivokeEvent) {
+        const as = root.annotationStore;
+        const assignGroundTruths = p => {
+          if (self !== p) p.setGroundTruth(false, false);
+        };
+
+        as.predictions.forEach(assignGroundTruths);
+        as.annotations.forEach(assignGroundTruths);
+      }
+
       self.ground_truth = value;
-      getEnv(self).events.invoke('groundTruth', self.store, self, value);
+
+      if (ivokeEvent) {
+        getEnv(self).events.invoke('groundTruth', self.store, self, value);
+        console.log('invoked');
+      }
     },
 
     sendUserGenerate() {
