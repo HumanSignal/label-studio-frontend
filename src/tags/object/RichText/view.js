@@ -154,8 +154,10 @@ class RichTextPieceView extends Component {
 
 const storeInjector = inject("store");
 
+const RPTV = storeInjector(observer(RichTextPieceView));
+
 export const HtxRichText = ({ isText = false } = {}) => {
   return storeInjector(observer(props => {
-    return <RichTextPieceView {...props} isText={isText} />;
+    return <RPTV {...props} isText={isText} />;
   }));
 };
