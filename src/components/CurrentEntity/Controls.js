@@ -4,6 +4,7 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
 import "./Controls.styl";
+import { IconBan } from "../../assets/icons";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -43,6 +44,12 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
           {history.canUndo ? "Fix + Accept" : "Accept"}
         </Button>
       </ButtonTooltip>
+    );
+  } else if (annotation.skipped) {
+    buttons.push(
+      <Elem name="skipped-info" key="skipped">
+        <IconBan color="#d00" /> Annotation skipped
+      </Elem>
     );
   } else {
     if (store.hasInterface("skip")) {
