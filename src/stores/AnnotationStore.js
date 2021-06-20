@@ -41,9 +41,7 @@ const Annotation = types
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
-    user: types.optional(types.maybeNull(types.safeReference(UserExtended, {
-      acceptsUndefined: false,
-    })), null),
+    user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
@@ -81,9 +79,16 @@ const Annotation = types
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
+    console.log({sn});
+    let user = sn.user ?? sn.completed_by ?? undefined;
+
+    if (user && typeof user !== 'number') {
+      user = user.id;
+    }
+
     return {
       ...sn,
-      user: sn.user ?? sn.completed_by ?? undefined,
+      user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
     };
   })
