@@ -1,6 +1,4 @@
 <View>
-    <Text name="text" value="$text"></Text>   <!-- its not necassry but it crashes in example without, see also timeseries -->
-
    <Repeater on="$utterances" indexFlag="{{idx}}">
       <View>
         <Text name="user_{{idx}}" value="$.utterances[{{idx}}].text" />

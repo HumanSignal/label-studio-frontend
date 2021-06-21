@@ -1,5 +1,5 @@
 import React from "react";
-import { getType, getParentOfType, clone } from "mobx-state-tree";
+import { getType, getParentOfType } from "mobx-state-tree";
 import xml2js from "xml2js";
 import { variableNotation } from "./Template";
 
