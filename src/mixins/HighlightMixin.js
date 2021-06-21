@@ -9,9 +9,7 @@ export const HighlightMixin = types
   .views(self => ({
     get _hasSpans() {
       return self._spans ? (
-        self._spans.reduce((res, span) => {
-          return res && span.isConnected;
-        }, true)
+        self._spans.every(span => span.isConnected)
       ) : false;
     },
   }))
@@ -224,6 +222,7 @@ const createSpanStylesheet = (identifier, color) => {
     [className]: `
       background-color: var(${variables.color});
       cursor: var(${variables.cursor}, pointer);
+      border: 1px dashed transparent;
     `,
     [`${className}[data-label]::after`]: `
       padding: 2px 2px;
@@ -239,23 +238,7 @@ const createSpanStylesheet = (identifier, color) => {
     `,
     [classNames.highlighted]: `
       position: relative;
-    `,
-    [`${classNames.highlighted}::before`]: `
-      top: -1px;
-      left: -1px;
-      right: -1px;
-      bottom: -1px;
-      content: '';
-      position: absolute;
-      pointer-events: none;
-      box-sizing: border-box;
-      border: 1px dashed rgb(0, 174, 255);
-    `,
-    [`${classNames.highlighted}.${stateClass.collapsed}::before`]: `
-      border-right: none;
-    `,
-    [`${classNames.highlighted} + ${classNames.highlighted}::before`]: `
-      border-left: none;
+      border-color: rgb(0, 174, 255);
     `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;

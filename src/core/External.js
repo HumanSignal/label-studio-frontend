@@ -65,6 +65,8 @@ function onRejectAnnotation(store, entity){}
  */
 function onStorageInitialized(ls) {}
 
+function onSubmitDraft(entity) {}
+
 export default {
   onDeleteAnnotation,
   onEntityCreate,
@@ -73,6 +75,7 @@ export default {
   onLabelStudioLoad,
   onSkipTask,
   onSubmitAnnotation,
+  onSubmitDraft,
   onTaskLoad,
   onUpdateAnnotation,
   onSelectAnnotation,
