@@ -71,7 +71,6 @@ const Model = types
       "timeseries",
       "audioplus",
       "list",
-      "repeater",
       "dialog",
       "textarea",
       "pairwise",

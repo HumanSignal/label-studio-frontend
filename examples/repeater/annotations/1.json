@@ -10,7 +10,7 @@
                         ]
                     },
                     "id": "tH8nXMb0T_",
-                    "from_name": "utterance_action",
+                    "from_name": "utterance_action_0",
                     "to_name": "user_0",
                     "type": "choices"
                 },
@@ -21,7 +21,7 @@
                         ]
                     },
                     "id": "Ebt-uQHhwa",
-                    "from_name": "utterance_action",
+                    "from_name": "utterance_action_1",
                     "to_name": "user_1",
                     "type": "choices"
                 }
