@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { observer, inject } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -76,8 +76,8 @@ const Model = types
 const RepaterModel = types.compose("RepaterModel", TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
 
-function RenderDuplicateTree(props) {
-  const {tree, idx, store} = props;
+function cloneMobxStateTree({tree, idx, store}) {
+
   function cloneAndReplaceKeys(node) {
     let copy = {};
     for (let key in node) {
@@ -109,6 +109,13 @@ function RenderDuplicateTree(props) {
   });
 
   cloned.$treenode._parent = tree.$treenode._parent;
+
+  return cloned;
+}
+
+
+function RenderDuplicateTree(props) {
+  let cloned = useMemo(() => cloneMobxStateTree(props), [props.tree, props.idx]);
 
   return Tree.renderChildren(cloned);
 }
