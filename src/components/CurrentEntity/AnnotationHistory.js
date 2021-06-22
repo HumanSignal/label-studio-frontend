@@ -4,7 +4,7 @@ import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
-import { isDefined } from "../../utils/utilities";
+import { isDefined, userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
 
 const injector = inject(({store}) => {
@@ -31,7 +31,7 @@ export const AnnotationHistory = injector(observer(({
     <Block name="annotation-history">
       <HistoryItem
         user={createdBy}
-        extra="final"
+        // extra="final"
         entity={selected}
         onClick={() => annotationStore.selectHistory(null)}
         selected={!isDefined(selectedHistory)}
@@ -63,6 +63,7 @@ export const AnnotationHistory = injector(observer(({
 AnnotationHistory.displayName = 'AnnotationHistory';
 
 const HistoryItem = observer(({entity, user, date, extra, acceptedState, selected = false, selectable = true, onClick}) => {
+  console.log(user);
   const isPrediction = entity?.type === 'prediction';
   return (
     <Block name="history-item" mod={{selected, disabled: !selectable}} onClick={onClick}>
@@ -76,9 +77,8 @@ const HistoryItem = observer(({entity, user, date, extra, acceptedState, selecte
             username={isPrediction ? entity.createdBy : null}
             mod={{prediction: isPrediction}}
           >{isPrediction && <LsSparks/>}</Elem>
-          {isPrediction ? entity.createdBy : user.username}
+          {isPrediction ? entity.createdBy : userDisplayName(user)}
         </Space>
-
 
         <Space size="small">
           {(acceptedState === 'accepted') ? (

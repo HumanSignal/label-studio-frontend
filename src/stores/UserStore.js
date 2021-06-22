@@ -26,6 +26,10 @@ const UserStore = types
     /**
      * Personal key of user
      */
+    id: types.maybeNull(types.integer),
+    /**
+     * Personal key of user
+     */
     pk: types.maybeNull(types.integer),
     /**
      * Name of user

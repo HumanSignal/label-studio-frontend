@@ -606,6 +606,7 @@ const Annotation = types
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
       return (json ?? []).filter(obj => {
+        if (obj.type === 'relation') return true;
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
 
@@ -971,6 +972,10 @@ export default types
       options.type = "annotation";
 
       const item = createItem(options);
+
+      if (item.userGenerate) {
+        item.completed_by = getRoot(self).user?.id ?? undefined;
+      }
 
       self.annotations.unshift(item);
 

@@ -33,7 +33,7 @@ export class EventInvoker {
     }
   }
 
-  invokeOne(eventName: string, ...args: any[]) {
+  invokeFirst(eventName: string, ...args: any[]) {
     const eventMap = this.getEventMap(eventName);
 
     if (eventMap.size > 0) {
