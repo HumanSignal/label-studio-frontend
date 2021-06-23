@@ -13,6 +13,7 @@ import { Tag } from "../../common/Tag/Tag";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./Entity.styl";
+import { PER_REGION_MODES } from "../../mixins/PerRegion";
 
 const { Paragraph, Text } = Typography;
 
@@ -38,7 +39,7 @@ const renderResult = result => {
     return renderLabels(result);
   } else if (result.type === "rating") {
     return <Paragraph>Rating: {result.mainValue}</Paragraph>;
-  } else if (result.type === "textarea") {
+  } else if (result.type === "textarea" && !(result.from_name.perregion && result.from_name.displaymode === PER_REGION_MODES.REGION_LIST)) {
     return (
       <Paragraph className={styles.row}>
         <Text>Text: </Text>
