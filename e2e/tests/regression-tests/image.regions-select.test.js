@@ -126,6 +126,6 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   }
 
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);
-  const selected = await I.executeAsyncScript(hasSelectedRegion);
-  assert.strictEqual(selected, true);
+  I.seeElement(locate(".ant-list-item[class*='selected--']"));
+  I.seeElement(locate(".lsf-entity"));
 });
