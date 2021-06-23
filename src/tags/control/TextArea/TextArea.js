@@ -53,8 +53,7 @@ const TagAttrs = types.model({
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
-  transcription: false,
-  autofocus: false,
+  transcription: false
 });
 
 const Model = types.model({
@@ -243,7 +242,6 @@ const HtxTextArea = observer(({ item }) => {
     className: "is-search",
     label: item.label,
     placeholder: item.placeholder,
-    autoFocus: item.autofocus,
     onChange: ev => {
       const { value } = ev.target;
       item.setValue(value);
