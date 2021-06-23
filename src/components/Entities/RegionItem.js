@@ -17,7 +17,7 @@ import { PER_REGION_MODES } from "../../mixins/PerRegion";
 import Registry from "../../core/Registry";
 import chroma from "chroma-js";
 
-const RegionItemDesc = observer(({ item }) => {
+const RegionItemDesc = observer(({ item, setDraggable }) => {
   const [collapsed, setCollapsed] = useState(false);
   const toggleCollapsed = useCallback((e) => {
     setCollapsed(val => !val);
@@ -25,7 +25,7 @@ const RegionItemDesc = observer(({ item }) => {
     e.stopPropagation();
   }, []);
   const controls = item.perRegionDescControls || [];
-  return <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }}>
+  return <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable(false);}} onMouseLeave={()=>{setDraggable(true);}}>
     {controls.map((tag, idx) => {
       const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
       return View ? <View key={idx} item={tag} area={item} collapsed={collapsed} setCollapsed={setCollapsed}/> : null;
@@ -36,7 +36,7 @@ const RegionItemDesc = observer(({ item }) => {
   </Elem>;
 });
 
-const RegionItemContent = observer(({ idx, item }) => {
+const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   return (
     <Block name="region-item" mod={{ hidden : item.hidden}}>
       <Elem name="header" tag="div">
@@ -80,12 +80,12 @@ const RegionItemContent = observer(({ idx, item }) => {
 
         </Space>
       </Elem>
-      <RegionItemDesc item={item}/>
+      <RegionItemDesc item={item} setDraggable={setDraggable}/>
     </Block>
   );
 });
 
-export const RegionItem = observer(({ item, idx, flat }) => {
+export const RegionItem = observer(({ item, idx, flat, setDraggable}) => {
   const getVars = useMemo(()=>{
     let vars;
     return () => {
@@ -117,7 +117,7 @@ export const RegionItem = observer(({ item, idx, flat }) => {
       onMouseOut={() => item.setHighlight(false)}
       style={vars}
     >
-      <RegionItemContent idx={idx} item={item}/>
+      <RegionItemContent idx={idx} item={item} setDraggable={setDraggable}/>
     </List.Item>
   );
 });
