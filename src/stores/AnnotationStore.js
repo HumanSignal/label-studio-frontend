@@ -585,7 +585,7 @@ const Annotation = types
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
           // and some may be already deleted (i.e. bboxes)
-          setTimeout(() => isAlive(area) && self.selectArea(area));
+          setTimeout(() => isAlive(area) && self.selectArea(area) && area.requestPerRegionFocus());
         }
       } else {
         // unselect labels after use, but consider "keep labels selected" settings
