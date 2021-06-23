@@ -53,7 +53,7 @@ export const AreaMixin = types
     },
 
     get labelName() {
-      return self.labeling?.mainValue || self.emptyLabel?._value;
+      return self.labeling?.mainValue?.[0] || self.emptyLabel?._value;
     },
 
     getLabelText(joinstr) {
