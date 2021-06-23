@@ -382,6 +382,12 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
     }
   }, [isActive, shouldFocus]);
 
+  useEffect(()=>{
+    if (collapsed && item._value) {
+      submitValue();
+    }
+  }, [collapsed]);
+
   const props = {
     ref: mainInputRef,
     value: value,
