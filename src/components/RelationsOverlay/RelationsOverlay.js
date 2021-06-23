@@ -129,17 +129,14 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * }}
  */
 const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }) => {
-  const nodes = useMemo(() => {
-    const start = startNode.getRegionElement
+  const nodes = [
+    startNode.getRegionElement
       ? startNode.getRegionElement()
-      : startNode;
-
-    const end = endNode.getRegionElement
+      : startNode,
+    endNode.getRegionElement
       ? endNode.getRegionElement()
-      : endNode;
-
-    return [start, end];
-  }, [startNode, endNode]);
+      : endNode
+  ];
 
   const [render, setRender] = useState(nodes[0] && nodes[1]);
 
@@ -227,11 +224,14 @@ class RelationsOverlay extends PureComponent {
   };
 }
 
+const RelationObserverView = observer(RelationsOverlay);
+
 const RelationsOverlayObserver = observer(
   forwardRef(({ store }, ref) => {
     const { relations, showConnections, highlighted } = store;
+
     return (
-      <RelationsOverlay
+      <RelationObserverView
         ref={ref}
         relations={Array.from(relations)}
         visible={showConnections}

@@ -41,7 +41,7 @@ const Annotation = types
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
-    user: types.optional(types.maybeNull(types.reference(UserExtended)), null),
+    user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
@@ -79,9 +79,17 @@ const Annotation = types
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
+    let user = sn.user ?? sn.completed_by ?? undefined;
+
+    if (user && typeof user !== 'number') {
+      user = user.id;
+    }
+
     return {
       ...sn,
+      user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
+      skipped: sn.skipped || sn.was_cancelled,
     };
   })
   .views(self => ({
@@ -115,23 +123,6 @@ const Annotation = types
       return results;
     },
 
-    get hasChanges() {
-      // Dirty hack to force MST track changes
-      self.areas.toJSON();
-
-      if (isDefined(self.resultSnapshot)) {
-        const changed = self.resultSnapshot !== self.currentSnapshot;
-
-        return changed;
-      }
-
-      return false;
-    },
-
-    get currentSnapshot() {
-      return JSON.stringify(self.serialized.map(({value}) => value));
-    },
-
     get serialized() {
       // Dirty hack to force MST track changes
       self.areas.toJSON();
@@ -161,17 +152,29 @@ const Annotation = types
       self.editable = val;
     },
 
-    setGroundTruth(value) {
+    setGroundTruth(value, ivokeEvent = true) {
+      const root = getRoot(self);
+
+      if (root && root !== self && ivokeEvent) {
+        const as = root.annotationStore;
+        const assignGroundTruths = p => {
+          if (self !== p) p.setGroundTruth(false, false);
+        };
+
+        as.predictions.forEach(assignGroundTruths);
+        as.annotations.forEach(assignGroundTruths);
+      }
+
       self.ground_truth = value;
-      getEnv(self).onGroundTruth(self.store, self, value);
+
+      if (ivokeEvent) {
+        getEnv(self).events.invoke('groundTruth', self.store, self, value);
+        console.log('invoked');
+      }
     },
 
     sendUserGenerate() {
       self.sentUserGenerate = true;
-    },
-
-    saveSnapshot() {
-      self.resultSnapshot = self.currentSnapshot;
     },
 
     setLocalUpdate(value) {
@@ -345,7 +348,7 @@ const Annotation = types
       const children = regions.filter(r => r.parentID === region.id);
       children && children.forEach(r => r.setParentID(region.parentID));
 
-      if (!region.classification) getEnv(self).onEntityDelete(region);
+      if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
 
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
@@ -390,7 +393,7 @@ const Annotation = types
     },
 
     async startAutosave() {
-      if (!getEnv(self).onSubmitDraft) return;
+      if (!getEnv(self).events.hasEvent('submitDraft')) return;
       if (self.type !== "annotation") return;
 
       // some async tasks should be performed after deserialization
@@ -579,7 +582,7 @@ const Annotation = types
 
       const area = self.areas.put(areaRaw);
 
-      if (!area.classification) getEnv(self).onEntityCreate(area);
+      if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
 
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
@@ -602,7 +605,8 @@ const Annotation = types
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      return json.filter(obj => {
+      return (json ?? []).filter(obj => {
+        if (obj.type === 'relation') return true;
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
 
@@ -661,7 +665,7 @@ const Annotation = types
           objAnnotation = JSON.parse(objAnnotation);
         }
 
-        objAnnotation = self.fixBrokenAnnotation(objAnnotation);
+        objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
 
         self._initialAnnotationObj = objAnnotation;
 
@@ -707,7 +711,6 @@ const Annotation = types
           }
         });
 
-        self.saveSnapshot();
       } catch (e) {
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
@@ -848,7 +851,7 @@ export default types
       c.editable = true;
       c.setupHotKeys();
 
-      getEnv(self).onSelectAnnotation(c, selected);
+      getEnv(self).events.invoke('selectAnnotation', c, selected);
 
       return c;
     }
@@ -860,7 +863,7 @@ export default types
     }
 
     function deleteAnnotation(annotation) {
-      getEnv(self).onDeleteAnnotation(self.store, annotation);
+      getEnv(self).events.invoke('deleteAnnotation', self.store, annotation);
 
       /**
        * MST destroy annotation
@@ -928,7 +931,7 @@ export default types
       return self.root;
     }
 
-    function addItem(options) {
+    function createItem(options) {
       const { user, config } = self.store;
 
       if (!self.root) initRoot(config);
@@ -950,39 +953,53 @@ export default types
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
       if (options.user) node.user = options.user;
 
-      //
-      return Annotation.create(node);
+      return node;
     }
 
     function addPrediction(options = {}) {
       options.editable = false;
       options.type = "prediction";
 
-      const item = addItem(options);
+      const item = createItem(options);
       self.predictions.unshift(item);
 
-      return item;
+      const record = self.predictions[0];
+
+      return record;
     }
 
     function addAnnotation(options = {}) {
       options.type = "annotation";
 
-      const item = addItem(options);
-      item.addVersions({ result: options.result, draft: options.draft });
+      const item = createItem(options);
+
+      if (item.userGenerate) {
+        item.completed_by = getRoot(self).user?.id ?? undefined;
+      }
+
       self.annotations.unshift(item);
 
-      return item;
+      const record = self.annotations[0];
+
+      record.addVersions({
+        result: options.result,
+        draft: options.draft
+      });
+
+      return record;
     }
 
 
     function addHistory(options = {}) {
       options.type = "history";
 
-      const item = addItem(options);
+      const item = createItem(options);
 
       self.history.push(item);
 
-      return item;
+      const record = self.history[self.history.length - 1];
+
+      return record;
     }
 
     function clearHistory() {

@@ -4,7 +4,7 @@ import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./AnnotationTabs.styl";
-import { LsGrid, LsPlus, LsSparks, LsStar } from "../../assets/icons";
+import { LsGrid, LsPlus, LsSparks, LsStar, IconBan } from "../../assets/icons";
 
 export const EntityTab = observer(forwardRef(({
   entity,
@@ -33,8 +33,8 @@ export const EntityTab = observer(forwardRef(({
         <Elem
           name="userpic"
           tag={Userpic}
+          showUsername
           username={prediction ? entity.createdBy : null}
-          showUsername={prediction}
           user={entity.user ?? {email: entity.createdBy}}
           mod={{prediction}}
         >{prediction && <LsSparks/>}</Elem>
@@ -45,6 +45,10 @@ export const EntityTab = observer(forwardRef(({
 
         {displayGroundTruth && entity.ground_truth && (
           <Elem name="ground-truth" tag={LsStar}/>
+        )}
+
+        {entity.skipped && (
+          <Elem name="skipped" tag={IconBan} />
         )}
       </Space>
     </Block>

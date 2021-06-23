@@ -1,3 +1,5 @@
+import { toCamelCase } from "strman";
+
 /**
  * Internal helper to check if parameter is a string
  * @param {*} value
@@ -148,4 +150,25 @@ export const chunks = (source, chunkSize) => {
   }
 
   return result;
+};
+
+export const userDisplayName = (user) => {
+  const firstName = user.firstName ?? user.firstName;
+  const lastName = user.lastName ?? user.lastName;
+
+  return (firstName || lastName)
+    ? [firstName, lastName].filter(n => !!n).join(" ").trim()
+    : (user.username)
+      ? user.username
+      : user.email;
+};
+
+export const camelizeKeys = (object) => {
+  return Object.fromEntries(Object.entries(object).map(([key, value]) => {
+    if (Object.prototype.toString.call(value) === '[object Object]') {
+      return [toCamelCase(key), camelizeKeys(value)];
+    } else {
+      return [toCamelCase(key), value];
+    }
+  }));
 };
