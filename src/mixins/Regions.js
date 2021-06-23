@@ -37,6 +37,11 @@ const RegionsMixin = types
     get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
+
+    get isCompleted() {
+      return !self.isDrawing;
+    }
+
   }))
   .actions(self => {
     let deferredSelectId;
