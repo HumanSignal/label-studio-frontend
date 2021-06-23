@@ -63,6 +63,7 @@ const Model = types.model({
 
   _value: types.optional(types.string, ""),
   children: Types.unionArray(["shortcut"]),
+  focusable: true,
 }).views(self => ({
   get valueType() {
     return "text";
@@ -225,11 +226,11 @@ const TextAreaModel = types.compose(
   "TextAreaModel",
   ControlBase,
   TagAttrs,
-  Model,
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
   AnnotationMixin,
+  Model
 );
 
 const HtxTextArea = observer(({ item }) => {
@@ -353,6 +354,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const rows = parseInt(item.rows);
   const isTextArea = rows > 1;
   const isActive = item.area === area;
+  const shouldFocus = area.perRegionFocusTarget === item && area.perRegionFocusRequest;
   const value = isActive ? item._value : "";
   const result = area.results.find(r => r.from_name === item);
 
@@ -377,10 +379,10 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const mainInputRef = useRef();
   const firstResultInputRef = useRef();
   useEffect(() => {
-    if (isActive) {
+    if (isActive && shouldFocus) {
       (mainInputRef.current || firstResultInputRef.current)?.focus?.();
     }
-  }, [isActive]);
+  }, [isActive, shouldFocus]);
 
   const props = {
     ref: mainInputRef,

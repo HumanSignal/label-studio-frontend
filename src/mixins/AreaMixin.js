@@ -48,6 +48,10 @@ export const AreaMixin = types
       return self.perRegionTags.filter(tag => tag.displaymode === PER_REGION_MODES.REGION_LIST);
     },
 
+    get perRegionFocusTarget() {
+      return self.perRegionTags.find(tag => tag.isVisible !== false && tag.focusable);
+    },
+
     get labelName() {
       return self.labeling?.mainValue || self.emptyLabel?._value;
     },

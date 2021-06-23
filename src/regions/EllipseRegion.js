@@ -296,7 +296,7 @@ const HtxEllipseView = ({ item }) => {
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
         draggable={item.editable}
       />

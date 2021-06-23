@@ -183,7 +183,7 @@ const HtxKeyPointView = ({ item }) => {
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
         {...props}
         draggable={item.editable}

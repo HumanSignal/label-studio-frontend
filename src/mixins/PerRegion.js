@@ -13,7 +13,8 @@ const PerRegionMixin = types
   .model({
     perregion: types.optional(types.boolean, false),
     whenlabelvalue: types.maybeNull(types.string),
-    displaymode: types.optional(types.enumeration(Object.values(PER_REGION_MODES)), PER_REGION_MODES.TAG)
+    displaymode: types.optional(types.enumeration(Object.values(PER_REGION_MODES)), PER_REGION_MODES.TAG),
+    focusable: false,
   })
   .views(self => ({
     perRegionVisible() {
