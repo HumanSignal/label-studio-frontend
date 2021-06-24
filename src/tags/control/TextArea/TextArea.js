@@ -62,7 +62,11 @@ const Model = types.model({
 
   _value: types.optional(types.string, ""),
   children: Types.unionArray(["shortcut"]),
-  focusable: true,
+
+}).volatile(self => {
+  return {
+    focusable: true,
+  };
 }).views(self => ({
   get valueType() {
     return "text";
@@ -376,13 +380,15 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
 
   const mainInputRef = useRef();
   const firstResultInputRef = useRef();
+  const lastFocusRequest = useRef(0);
   useEffect(() => {
-    if (isActive && shouldFocus) {
+    if (isActive && shouldFocus && lastFocusRequest.current < area.perRegionFocusRequest) {
       (mainInputRef.current || firstResultInputRef.current)?.focus?.();
+      lastFocusRequest.current = area.perRegionFocusRequest;
     }
   }, [isActive, shouldFocus]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (collapsed && item._value) {
       submitValue();
     }

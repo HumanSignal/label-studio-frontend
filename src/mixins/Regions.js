@@ -18,7 +18,7 @@ const RegionsMixin = types
     // selected: false,
     highlighted: false,
     isDrawing: false,
-    perRegionFocusRequest: types.optional(types.maybeNull(types.number), null),
+    perRegionFocusRequest: null,
   }))
   .views(self => ({
     get perRegionStates() {

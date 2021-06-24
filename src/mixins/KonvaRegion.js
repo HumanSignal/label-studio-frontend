@@ -19,7 +19,10 @@ export const KonvaRegionMixin = types.model({}).actions(self => {
           deferredSelectId = null;
           annotation.selectArea(self);
         } else {
-          deferredSelectId = setTimeout(() => {self._selectArea();}, 300);
+          deferredSelectId = setTimeout(() => {
+            self._selectArea();
+            deferredSelectId = null;
+          }, 300);
         }
       }
     },
