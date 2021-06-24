@@ -11,7 +11,7 @@ import { Block, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
 import "./RegionItem.styl";
 import { Space } from "../../common/Space/Space";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { asVars } from "../../utils/styles";
 import { PER_REGION_MODES } from "../../mixins/PerRegion";
 import Registry from "../../core/Registry";
@@ -37,8 +37,14 @@ const RegionItemDesc = observer(({ item, setDraggable }) => {
 });
 
 const RegionItemContent = observer(({ idx, item, setDraggable }) => {
+  const itemElRef = useRef();
+  useEffect(()=>{
+    if (item.selected) {
+      itemElRef.current?.scrollIntoView();
+    }
+  }, [item.selected]);
   return (
-    <Block name="region-item" mod={{ hidden : item.hidden}}>
+    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden}}>
       <Elem name="header" tag="div">
         <Elem name="counter">{isDefined(idx) ? idx + 1 : ""}</Elem>
 
@@ -96,6 +102,7 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable}) => {
       return vars;
     };
   }, [isAlive(item) && item.getOneColor()]);
+
   if (!isAlive(item)) return null;
 
   const as = getRoot(item).annotationStore;
