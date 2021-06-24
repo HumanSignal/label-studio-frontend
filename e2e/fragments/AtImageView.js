@@ -13,6 +13,7 @@ module.exports = {
   },
 
   async lookForStage() {
+    I.scrollPageToTop();
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
     this._stageBBox = bbox;
   },

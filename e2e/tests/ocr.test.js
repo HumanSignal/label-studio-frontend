@@ -41,10 +41,11 @@ Scenario("Basic scenario", async ({ I, LabelStudio, AtImageView, AtSettings, AtL
   AtSidebar.seeRegions(1);
   AtSidebar.seeElement("[placeholder=\"Recognized Text\"]");
   const Text = "The \"H3\" header";
+  I.pressKey("Enter");
   for (const key of "The \"H3\" header") {
     I.pressKey(key);
   }
-  I.pressKey(["Shift", "Enter"]);
+  I.pressKey("Enter");
   const results = await LabelStudio.serialize();
   const hasText = results.find(result => (result && result.value && result.value.text && result.value.text[0] === Text));
   assert(hasText, true);
