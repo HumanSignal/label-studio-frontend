@@ -411,10 +411,14 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   if (isTextArea) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if (e.key === "Enter" && e.shiftKey && item.allowsubmit && item._value) {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
-        submitValue();
+        if (item.allowsubmit && item._value) {
+          submitValue();
+        } else {
+          e.target?.blur?.();
+        }
       }
     };
   }
