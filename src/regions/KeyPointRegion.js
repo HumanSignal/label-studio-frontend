@@ -12,6 +12,7 @@ import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 const Model = types
   .model({
@@ -100,6 +101,7 @@ const KeyPointRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 

@@ -16,6 +16,7 @@ import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 const Model = types
   .model({
@@ -235,6 +236,7 @@ const PolygonRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 

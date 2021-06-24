@@ -15,6 +15,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -187,6 +188,7 @@ const RectRegionModel = types.compose(
   NormalizationMixin,
   DisabledMixin,
   AreaMixin,
+  KonvaRegionMixin,
   Model,
 );
 

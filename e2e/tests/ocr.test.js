@@ -156,7 +156,7 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
   AtSidebar.seeRegions(regions.length);
   I.say("Labeling");
   for (let [idx, region] of Object.entries(regions)) {
-    AtImageView.clickAt(region.x + region.width / 2, region.y + region.height / 2);
+    AtImageView.dblClickAt(region.x + region.width / 2, region.y + region.height / 2);
     AtLabels.clickLabel(region.label);
     if (region.text) {
       I.fillField(AtSidebar.locate(".lsf-region-item").withText(`${+idx+1}`).find(".lsf-textarea-tag__input"), region.text);

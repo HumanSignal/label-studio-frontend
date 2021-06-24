@@ -14,6 +14,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -194,6 +195,7 @@ const EllipseRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   DisabledMixin,
+  KonvaRegionMixin,
   Model,
 );
 

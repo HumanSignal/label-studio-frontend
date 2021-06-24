@@ -198,28 +198,20 @@ const RegionsMixin = types
 
       afterUnselectRegion() {},
 
-      onClickRegion(e) {
+      onClickRegion() {
         const annotation = self.annotation;
         if (!annotation.editable || self.isDrawing) return;
-        e.cancelBubble = true;
 
         if (annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
-          if (deferredSelectId) {
-            clearTimeout(deferredSelectId);
-            self.requestPerRegionFocus();
-            deferredSelectId = null;
-            annotation.selectArea(self);
-          } else {
-            deferredSelectId = setTimeout(()=>{self._deferredSelectArea();}, 300);
-          }
+          self._selectArea();
         }
       },
 
-      _deferredSelectArea() {
+      _selectArea() {
         this.cancelPerRegionFocus();
         deferredSelectId = null;
         const annotation = self.annotation;

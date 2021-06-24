@@ -159,6 +159,11 @@ module.exports = {
     I.scrollPageToTop();
     I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
   },
+  dblClickAt(x, y) {
+    I.scrollPageToTop();
+    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+  },
   drawByClick(x, y) {
     I.scrollPageToTop();
     this.clickAt(x, y);

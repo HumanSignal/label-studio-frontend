@@ -15,6 +15,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
 import { defaultStyle } from "../core/Constants";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -283,6 +284,7 @@ const BrushRegionModel = types.compose(
   RegionsMixin,
   NormalizationMixin,
   AreaMixin,
+  KonvaRegionMixin,
   Model,
 );
 
