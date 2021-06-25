@@ -135,11 +135,11 @@ const Model = types
       self.radiusX = radiusX;
       self.radiusY = radiusY;
 
-      self.relativeX = (x / self.parent.stageWidth) * 100;
-      self.relativeY = (y / self.parent.stageHeight) * 100;
+      self.relativeX = (x / self.parent?.stageWidth) * 100;
+      self.relativeY = (y / self.parent?.stageHeight) * 100;
 
-      self.relativeRadiusX = (radiusX / self.parent.stageWidth) * 100;
-      self.relativeRadiusY = (radiusY / self.parent.stageHeight) * 100;
+      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * 100;
+      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * 100;
 
       self.rotation = (rotation + 360) % 360;
     },
@@ -203,6 +203,7 @@ const HtxEllipseView = ({ item }) => {
   const { store } = item;
 
   const colors = useRegionColors(item);
+  const stage = item.parent.stageRef;
 
   return (
     <Fragment>
@@ -272,7 +273,6 @@ const HtxEllipseView = ({ item }) => {
           return { x, y };
         })}
         onMouseOver={e => {
-          const stage = item.parent.stageRef;
 
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
@@ -282,7 +282,6 @@ const HtxEllipseView = ({ item }) => {
           }
         }}
         onMouseOut={e => {
-          const stage = item.parent.stageRef;
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
           if (store.annotationStore.selected.relationMode) {
@@ -290,7 +289,6 @@ const HtxEllipseView = ({ item }) => {
           }
         }}
         onClick={e => {
-          const stage = item.parent.stageRef;
           if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
