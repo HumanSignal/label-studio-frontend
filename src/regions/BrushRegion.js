@@ -379,6 +379,7 @@ const HtxBrushView = ({ item }) => {
   }, []);
 
   highlightedRef.current = item.highlighted;
+  const stage = item.parent.stageRef;
 
   return (
     <Layer
@@ -401,8 +402,6 @@ const HtxBrushView = ({ item }) => {
           }
         }}
         onMouseOver={e => {
-          const stage = item.parent.stageRef;
-
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
@@ -416,8 +415,7 @@ const HtxBrushView = ({ item }) => {
             item.setHighlight(false);
           }
 
-          if (!item.parent.getToolsManager().findSelectedTool()) {
-            const stage = item.parent.stageRef;
+          if (!item.parent?.getToolsManager().findSelectedTool()) {
             stage.container().style.cursor = "default";
           }
         }}
@@ -429,8 +427,6 @@ const HtxBrushView = ({ item }) => {
           }
 
           if (item.parent.getToolsManager().findSelectedTool()) return;
-
-          const stage = item.parent.stageRef;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";

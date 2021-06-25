@@ -122,6 +122,8 @@ const HtxKeyPointView = ({ item }) => {
     shadowBlur: 0,
   };
 
+  const stage = item.parent.stageRef;
+
   return (
     <Fragment>
       <Circle
@@ -158,8 +160,6 @@ const HtxKeyPointView = ({ item }) => {
           return { x, y };
         })}
         onMouseOver={e => {
-          const stage = item.parent.stageRef;
-
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
@@ -168,7 +168,6 @@ const HtxKeyPointView = ({ item }) => {
           }
         }}
         onMouseOut={e => {
-          const stage = item.parent.stageRef;
           stage.container().style.cursor = "default";
 
           if (store.annotationStore.selected.relationMode) {
@@ -176,8 +175,6 @@ const HtxKeyPointView = ({ item }) => {
           }
         }}
         onClick={e => {
-          const stage = item.parent.stageRef;
-
           if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {

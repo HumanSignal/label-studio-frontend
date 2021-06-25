@@ -421,6 +421,8 @@ const HtxPolygonView = ({ item }) => {
     minY = 0,
     maxY = 0;
 
+  const stage = item.parent.stageRef;
+
   return (
     <Group
       key={item.id ? item.id : guidGenerator(5)}
@@ -464,8 +466,6 @@ const HtxPolygonView = ({ item }) => {
         t.setAttr("y", 0);
       }}
       onMouseOver={e => {
-        const stage = item.parent.stageRef;
-
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
           stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -474,7 +474,6 @@ const HtxPolygonView = ({ item }) => {
         }
       }}
       onMouseOut={e => {
-        const stage = item.parent.stageRef;
         stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
         if (store.annotationStore.selected.relationMode) {
@@ -491,8 +490,6 @@ const HtxPolygonView = ({ item }) => {
         // if (!item.editable) return;
 
         if (!item.closed) return;
-
-        const stage = item.parent.stageRef;
 
         if (store.annotationStore.selected.relationMode) {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
