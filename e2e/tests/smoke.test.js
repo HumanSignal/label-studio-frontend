@@ -82,6 +82,6 @@ examples.forEach(example =>
     }
     I.click("Create Copy");
     I.seeElement(locate(".lsf-entity-tab").at(2));
-    I.see(`${count} Region${(count === 0 || count > 1) ? 's' : ''}`);
+    AtSidebar.seeRegions(count);
   }),
 );
