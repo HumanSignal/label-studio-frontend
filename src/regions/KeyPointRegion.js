@@ -1,10 +1,8 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
-import { observer } from "mobx-react";
 import { types, getRoot, isAlive } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -14,6 +12,7 @@ import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 const Model = types
   .model({
@@ -102,6 +101,7 @@ const KeyPointRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 
@@ -182,12 +182,12 @@ const HtxKeyPointView = ({ item }) => {
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
         {...props}
         draggable={item.editable}
       />
-      <LabelOnKP item={item} />
+      <LabelOnKP item={item} color={colors.strokeColor}/>
     </Fragment>
   );
 };

@@ -2,52 +2,109 @@ import { Badge, List } from "antd";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 import { Button } from "../../common/Button/Button";
-import { Node } from "../Node/Node";
+import { Node, NodeIcon } from "../Node/Node";
+import { LsVisible, LsInvisible, LsExpand, LsCollapse } from "../../assets/icons";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
-import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Block, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
 import "./RegionItem.styl";
+import { Space } from "../../common/Space/Space";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { asVars } from "../../utils/styles";
+import { PER_REGION_MODES } from "../../mixins/PerRegion";
+import Registry from "../../core/Registry";
+import chroma from "chroma-js";
 
-const RegionItemContent = observer(({ idx, item }) => {
+const RegionItemDesc = observer(({ item, setDraggable }) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const toggleCollapsed = useCallback((e) => {
+    setCollapsed(val => !val);
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+  const controls = item.perRegionDescControls || [];
+  return <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable(false);}} onMouseLeave={()=>{setDraggable(true);}}>
+    <Elem name="controls">
+      {controls.map((tag, idx) => {
+        const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
+        return View ? <View key={idx} item={tag} area={item} collapsed={collapsed} setCollapsed={setCollapsed}/> : null;
+      })}
+    </Elem>
+    <Elem name="collapse" tag={Button} size="small" type="text" onClick={toggleCollapsed}>
+      {collapsed ? <LsExpand/> : <LsCollapse/>}
+    </Elem>
+  </Elem>;
+});
+
+const RegionItemContent = observer(({ idx, item, setDraggable }) => {
+  const itemElRef = useRef();
+  useEffect(()=>{
+    if (item.selected) {
+      itemElRef.current?.scrollIntoView();
+    }
+  }, [item.selected]);
   return (
-    <Block name="region-item">
-      <Elem name="counter">{isDefined(idx) ? idx + 1 : ""}</Elem>
+    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden}}>
+      <Elem name="header" tag="div">
+        <Elem name="counter">{isDefined(idx) ? idx + 1 : ""}</Elem>
 
-      <Node node={item} className={styles.node} />
+        <Elem name="title" tag={Node} node={item} mix={styles.node}/>
 
-      {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }} />}
+        <Space size="small">
+          <Elem
+            tag="span"
+            name="id"
+          >
+            <NodeIcon node={item}/>
+          </Elem>
 
-      {item.hideable && (
-        <Elem
-          tag={Button}
-          name="toggle"
-          size="small"
-          type="text"
-          mod={{ active: !item.hidden }}
-          icon={item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-          onClick={item.toggleHidden}
-        />
-      )}
+          {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }}/>}
 
-      {item.score && (
-        <Elem
-          tag="span"
-          name="score"
-          style={{
-            color: Utils.Colors.getScaleGradient(item.score),
-          }}
-        >
-          {item.score.toFixed(2)}
-        </Elem>
-      )}
+          {item.score && (
+            <Elem
+              tag="span"
+              name="score"
+              style={{
+                color: Utils.Colors.getScaleGradient(item.score),
+              }}
+            >
+              {item.score.toFixed(2)}
+            </Elem>
+          )}
+
+          {item.hideable && (
+            <Elem
+              tag={Button}
+              name="toggle"
+              size="small"
+              type="text"
+              mod={{ active: !item.hidden }}
+              icon={item.hidden ? <LsInvisible/> : <LsVisible/>}
+              onClick={item.toggleHidden}
+            />
+          )}
+
+        </Space>
+      </Elem>
+      <RegionItemDesc item={item} setDraggable={setDraggable}/>
     </Block>
   );
 });
 
-export const RegionItem = observer(({ item, idx, flat }) => {
+export const RegionItem = observer(({ item, idx, flat, setDraggable}) => {
+  const getVars = useMemo(()=>{
+    let vars;
+    return () => {
+      if (!vars) {
+        const color = item.getOneColor();
+        vars = color ? asVars({ labelColor: color, labelBgColor: chroma(color).alpha(0.15) }) : null;
+      }
+      return vars;
+    };
+  }, [isAlive(item) && item.getOneColor()]);
+
   if (!isAlive(item)) return null;
 
   const as = getRoot(item).annotationStore;
@@ -59,6 +116,7 @@ export const RegionItem = observer(({ item, idx, flat }) => {
     item.selected && styles.selected,
   ].filter(Boolean);
 
+  const vars = getVars();
   return (
     <List.Item
       key={item.id}
@@ -66,8 +124,9 @@ export const RegionItem = observer(({ item, idx, flat }) => {
       onClick={() => anno.selectArea(item)}
       onMouseOver={() => item.setHighlight(true)}
       onMouseOut={() => item.setHighlight(false)}
+      style={vars}
     >
-      <RegionItemContent idx={idx} item={item} />
+      <RegionItemContent idx={idx} item={item} setDraggable={setDraggable}/>
     </List.Item>
   );
 });

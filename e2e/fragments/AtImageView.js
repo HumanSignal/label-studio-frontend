@@ -13,6 +13,7 @@ module.exports = {
   },
 
   async lookForStage() {
+    I.scrollPageToTop();
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
     this._stageBBox = bbox;
   },
@@ -111,6 +112,7 @@ module.exports = {
    * @param shiftY
    */
   drawByDrag(x, y, shiftX, shiftY) {
+    I.scrollPageToTop();
     I.moveMouse(this._stageBBox.x + x, this._stageBBox.y + y);
     I.pressMouseDown();
     I.moveMouse(this._stageBBox.x + x + shiftX, this._stageBBox.y + y + shiftY, 3);
@@ -124,6 +126,7 @@ module.exports = {
    * @param {number[][]} points
    */
   drawByClickingPoints(points) {
+    I.scrollPageToTop();
     for (const point of points) {
       I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
     }
@@ -138,6 +141,7 @@ module.exports = {
    * @param {number} parameter - parameter for mode
    */
   drawThroughPoints(points, mode = "steps", parameter = 1) {
+    I.scrollPageToTop();
     const calcSteps = {
       steps: () => parameter,
       rate: (p1, p2) => Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2)) / parameter,
@@ -153,9 +157,16 @@ module.exports = {
     I.pressMouseUp();
   },
   clickAt(x, y) {
+    I.scrollPageToTop();
+    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+  },
+  dblClickAt(x, y) {
+    I.scrollPageToTop();
+    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
     I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
   },
   drawByClick(x, y) {
+    I.scrollPageToTop();
     this.clickAt(x, y);
   },
 };

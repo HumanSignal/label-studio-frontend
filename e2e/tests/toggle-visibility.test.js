@@ -1,12 +1,12 @@
-/* global Feature, Scenario, locate, DataTable, Data */
+/* global Feature, Scenario, DataTable, Data */
 
 const assert = require("assert");
 const { initLabelStudio, countKonvaShapes, switchRegionTreeView } = require("./helpers");
 
-const ALL_VISIBLE_SELECTOR = ".lsf-entities__visibility [aria-label=eye]";
-const ALL_HIDDEN_SELECTOR = ".lsf-entities__visibility [aria-label=eye-invisible]";
-const ONE_VISIBLE_SELECTOR = ".lsf-region-item__toggle [aria-label=eye]";
-const ONE_HIDDEN_SELECTOR = ".lsf-region-item__toggle [aria-label=eye-invisible]";
+const ALL_VISIBLE_SELECTOR = ".lsf-entities__visibility:not(.lsf-entities__visibility_hidden)";
+const ALL_HIDDEN_SELECTOR = ".lsf-entities__visibility.lsf-entities__visibility_hidden";
+const ONE_VISIBLE_SELECTOR = ".lsf-region-item__toggle.lsf-region-item__toggle_active";
+const ONE_HIDDEN_SELECTOR = ".lsf-region-item__toggle:not(.lsf-region-item__toggle_active)";
 
 const config = `
 <View>
@@ -54,7 +54,7 @@ const annotations = [
 
 Feature("Toggle regions visibility");
 
-Scenario("Checking mass toggling of visibility", async ({I, AtImageView}) => {
+Scenario("Checking mass toggling of visibility", async ({I, AtImageView, AtSidebar}) => {
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -93,7 +93,7 @@ Scenario("Checking mass toggling of visibility", async ({I, AtImageView}) => {
   await I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
-  I.see("3 Regions");
+  AtSidebar.seeRegions(3);
   await checkVisible(3);
   hideOne();
   await checkVisible(2);
@@ -113,15 +113,15 @@ Scenario("Checking mass toggling of visibility", async ({I, AtImageView}) => {
   await checkVisible(0);
 });
 
-Scenario("Hiding bulk visibility toggle", ({I, AtImageView}) => {
+Scenario("Hiding bulk visibility toggle", ({I, AtImageView, AtLabels, AtSidebar}) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
-  I.click(locate(".ant-tag").withText("Planet"));
+  AtLabels.clickLabel("Planet");
   AtImageView.dragKonva(300, 300, 50, 50);
-  I.see("1 Region");
+  AtSidebar.seeRegions(1);
   I.seeElement(ALL_VISIBLE_SELECTOR);
 });
 
@@ -203,7 +203,7 @@ examples.forEach(example => {
   examplesTable.add([title, config, data, result]);
 });
 
-Data(examplesTable).Scenario("Check visibility switcher through all examples", ({I, current})=> {
+Data(examplesTable).Scenario("Check visibility switcher through all examples", ({I, AtSidebar, current})=> {
   const { config, data, result, } = current;
   const params = { annotations: [{ id: "test", result }], config, data };
 
@@ -213,7 +213,7 @@ Data(examplesTable).Scenario("Check visibility switcher through all examples", (
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
   const regionsCount = ids.length;
-  I.see(`${regionsCount} Region${(regionsCount === 0 || regionsCount > 1) ? 's' : ''}`);
+  AtSidebar.seeRegions(regionsCount);
 
   if (regionsCount) {
     I.seeElement(ALL_VISIBLE_SELECTOR);

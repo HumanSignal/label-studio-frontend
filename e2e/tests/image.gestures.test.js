@@ -165,7 +165,7 @@ const createShape = {
   },
 };
 
-Scenario("Creating regions by various gestures", async function({I, AtImageView}) {
+Scenario("Creating regions by various gestures", async function({I, AtImageView, AtSidebar}) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
@@ -174,7 +174,7 @@ Scenario("Creating regions by various gestures", async function({I, AtImageView}
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const convertToImageSize = getSizeConvertor(canvasSize.width, canvasSize.height);
   const cellSize = { width: 100, height: 100 };

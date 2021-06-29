@@ -66,6 +66,7 @@ const DrawingTool = types
       },
 
       comparePointsWithThreshold(p1, p2, threshold = { x: MIN_SIZE.X, y: MIN_SIZE.Y }) {
+        if (!p1 || !p2) return;
         if (typeof threshold === "number") threshold = { x: threshold, y: threshold };
         return Math.abs(p1.x - p2.x) < threshold.x && Math.abs(p1.y - p2.y) < threshold.y;
       },
@@ -111,9 +112,10 @@ const DrawingTool = types
         } else {
           self.annotation.history.unfreeze();
           // Needs some delay for avoiding catching click if this method is called on mouseup
+          let area = currentArea;
+          currentArea = null;
           setTimeout(() => {
-            currentArea.setDrawing(false);
-            currentArea = null;
+            area.setDrawing(false);
           }, 0);
           // self.obj.annotation.highlightedNode.unselectRegion(true);
         }
@@ -137,7 +139,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
     const TWO_CLICKS_MODE = 2;
     let currentMode = DEFAULT_MODE;
     let modeAfterMouseMove = DEFAULT_MODE;
-    let startPoint = { x: 0, y: 0 };
+    let startPoint = null;
     let endPoint = { x: 0, y: 0 };
     const Super = {
       finishDrawing: self.finishDrawing,
@@ -164,6 +166,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
       },
 
       finishDrawing(x, y) {
+        startPoint = null;
         Super.finishDrawing(x, y);
         currentMode = DEFAULT_MODE;
         modeAfterMouseMove = DEFAULT_MODE;
@@ -178,7 +181,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
       },
 
       mousemoveEv(ev, [x, y]) {
-        if (currentMode === DEFAULT_MODE) {
+        if (currentMode === DEFAULT_MODE && startPoint) {
           if (!self.comparePointsWithThreshold(startPoint, { x, y })) {
             currentMode = modeAfterMouseMove;
             if ([DRAG_MODE, TWO_CLICKS_MODE].includes(currentMode)) {
@@ -206,7 +209,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
 
       clickEv(ev, [x, y]) {
         if (!self.canStartDrawing()) return;
-        if (!self.comparePointsWithThreshold(startPoint, endPoint)) return;
+        if (startPoint && endPoint && !self.comparePointsWithThreshold(startPoint, endPoint)) return;
         if (currentMode === DEFAULT_MODE) {
           modeAfterMouseMove = TWO_CLICKS_MODE;
         } else if (self.isDrawing && currentMode === TWO_CLICKS_MODE) {

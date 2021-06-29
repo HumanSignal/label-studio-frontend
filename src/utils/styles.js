@@ -30,3 +30,11 @@ export function styleToProp(styles) {
       {},
     );
 }
+
+export function asVars(obj) {
+  if (!obj) return null;
+  return Object.entries(obj).reduce((vars, [key, val]) => {
+    vars[`--${key}`] = val;
+    return vars;
+  }, {});
+}

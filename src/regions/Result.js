@@ -106,6 +106,9 @@ const Result = types
     },
 
     get selectedLabels() {
+      if (self.mainValue?.length === 0 && self.from_name.allowempty) {
+        return self.from_name.findLabel(null);
+      }
       return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
     },
 
@@ -153,9 +156,9 @@ const Result = types
       const { strokewidth, fillopacity, opacity } = self.tag.parent;
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
+
     get emptyStyle() {
-      if (!self.from_name.findLabel) return null;
-      const emptyLabel = self.from_name.findLabel(null);
+      const emptyLabel = self.from_name.emptyLabel;
       if (!emptyLabel) return null;
       const fillcolor = emptyLabel.background || emptyLabel.parent.fillcolor;
       if (!fillcolor) return null;

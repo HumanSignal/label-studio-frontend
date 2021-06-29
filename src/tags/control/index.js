@@ -15,7 +15,7 @@ import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
 import { TaxonomyModel } from "./Taxonomy";
-import { TextAreaModel } from "./TextArea";
+import { TextAreaModel } from "./TextArea/TextArea";
 import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 import { ParagraphLabelsModel } from "./ParagraphLabels";
 

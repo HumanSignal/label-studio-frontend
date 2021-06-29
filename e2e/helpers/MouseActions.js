@@ -5,7 +5,7 @@ class MouseActions extends Helper {
     const { Puppeteer } = this.helpers;
     const { page } = Puppeteer;
     const { mouse } = page;
-    return mouse.click(x, y, { button: buttonName });
+    return mouse.click(x, y, { button: buttonName, delay: 80 });
   }
   pressMouseDown(buttonName = "left") {
     const { Puppeteer } = this.helpers;

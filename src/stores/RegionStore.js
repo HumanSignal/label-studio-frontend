@@ -82,26 +82,30 @@ export default types
 
     asLabelsTree(enrich) {
       // collect all label states into two maps
-      const labels = {};
+      let labels = {};
       const map = {};
       self.regions.forEach(r => {
-        const l = r.labeling;
-        if (l) {
-          const selected = l.selectedLabels;
-          selected &&
-            selected.forEach(s => {
-              labels[s._value] = s;
-              if (s._value in map) map[s._value].push(r);
-              else map[s._value] = [r];
-            });
+        const selectedLabels = r.labeling?.selectedLabels || r.emptyLabel && [r.emptyLabel];
+        if (selectedLabels) {
+          selectedLabels.forEach(s => {
+            const key = `${s.value}#${s.id}`;
+            labels[key] = s;
+            if (key in map) map[key].push(r);
+            else map[key] = [r];
+          });
+        } else {
+          const key = `_empty`;
+          labels = {[key]: {id: key, isNotLabel: true}, ...labels};
+          if (key in map) map[key].push(r);
+          else map[key] = [r];
         }
       });
 
       // create the tree
       let idx = 0;
-      const tree = Object.keys(labels).map(lname => {
-        const el = enrich(labels[lname], idx, true, map[lname]);
-        el["children"] = map[lname].map(r => enrich(r, idx++));
+      const tree = Object.keys(labels).map(key => {
+        const el = enrich(labels[key], idx, true, map[key]);
+        el["children"] = map[key].map(r => enrich(r, idx++));
 
         return el;
       });

@@ -473,7 +473,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          className={item.images.length > 1 && styles.withGallery}
+          className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
           style={{
             position: "relative",
             display: "flex",
@@ -491,7 +491,7 @@ export default observer(
             {this.state.ratio !== 1 && (
               <div
                 className={styles.filler}
-                style={{ marginTop: `${this.state.ratio * 100}%` }}
+                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
               />
             )}
             <img

@@ -10,6 +10,7 @@ export default observer(
       return (
         <Fragment>
           <Slider
+            value={this.props.value}
             defaultValue={this.props.default || 15}
             max={this.props.max || 50}
             min={1}

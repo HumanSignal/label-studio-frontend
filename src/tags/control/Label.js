@@ -1,10 +1,8 @@
 import ColorScheme from "pleasejs";
 import React from "react";
-import { Tag } from "antd";
-import { getRoot, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { observer, inject } from "mobx-react";
 
-import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
@@ -15,6 +13,7 @@ import { guidGenerator } from "../../core/Helpers";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { Label } from "../../components/Label/Label";
 
 /**
  * Label tag represents a single label.
@@ -55,220 +54,189 @@ const TagAttrs = types.model({
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
 });
 
-const Model = types
-  .model({
-    id: types.optional(types.identifier, guidGenerator),
-    type: "label",
-    visible: types.optional(types.boolean, true),
-    _value: types.optional(types.string, ""),
-  })
-  .volatile(self => {
-    return {
-      isEmpty: false,
-    };
-  })
-  .views(self => ({
-    get maxUsages() {
-      return Number(self.maxusages || self.parent.maxusages);
-    },
+const Model = types.model({
+  id: types.optional(types.identifier, guidGenerator),
+  type: "label",
+  visible: types.optional(types.boolean, true),
+  _value: types.optional(types.string, ""),
+}).volatile(self => {
+  return {
+    isEmpty: false,
+  };
+}).views(self => ({
+  get maxUsages() {
+    return Number(self.maxusages || self.parent.maxusages);
+  },
 
-    usedAlready() {
-      const regions = self.annotation.regionStore.regions;
-      // count all the usages among all the regions
-      const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
-      return used;
-    },
+  usedAlready() {
+    const regions = self.annotation.regionStore.regions;
+    // count all the usages among all the regions
+    const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
+    return used;
+  },
 
-    canBeUsed() {
-      if (!self.maxUsages) return true;
-      return self.usedAlready() < self.maxUsages;
-    },
+  canBeUsed() {
+    if (!self.maxUsages) return true;
+    return self.usedAlready() < self.maxUsages;
+  },
 
-    get parent() {
-      return Types.getParentOfTypeString(self, [
-        "LabelsModel",
-        "EllipseLabelsModel",
-        "RectangleLabelsModel",
-        "PolygonLabelsModel",
-        "KeyPointLabelsModel",
-        "BrushLabelsModel",
-        "HyperTextLabelsModel",
-        "TimeSeriesLabelsModel",
-        "ParagraphLabelsModel",
-      ]);
-    },
-  }))
-  .actions(self => ({
-    setEmpty() {
-      self.isEmpty = true;
-    },
-    /**
-     * Select label
-     */
-    toggleSelected() {
-      // here we check if you click on label from labels group
-      // connected to the region on the same object tag that is
-      // right now highlighted, and if that region is readonly
-      const region = self.annotation.highlightedNode;
-      const sameObject = region && region.parent.name === self.parent.toname;
-      if (region && region.readonly === true && sameObject) return;
+  get parent() {
+    return Types.getParentOfTypeString(self, [
+      "LabelsModel",
+      "EllipseLabelsModel",
+      "RectangleLabelsModel",
+      "PolygonLabelsModel",
+      "KeyPointLabelsModel",
+      "BrushLabelsModel",
+      "HyperTextLabelsModel",
+      "TimeSeriesLabelsModel",
+      "ParagraphLabelsModel",
+    ]);
+  },
+})).actions(self => ({
+  setEmpty() {
+    self.isEmpty = true;
+  },
+  /**
+   * Select label
+   */
+  toggleSelected() {
+    // here we check if you click on label from labels group
+    // connected to the region on the same object tag that is
+    // right now highlighted, and if that region is readonly
+    const region = self.annotation.highlightedNode;
+    const sameObject = region && region.parent.name === self.parent.toname;
+    if (region && region.readonly === true && sameObject) return;
 
-      // one more check if that label can be selected
-      if (!self.annotation.editable) return;
+    // one more check if that label can be selected
+    if (!self.annotation.editable) return;
 
-      // don't select if it can not be used
-      if (!self.selected && !self.canBeUsed()) {
-        InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
+    // don't select if it can not be used
+    if (!self.selected && !self.canBeUsed()) {
+      InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
+      return;
+    }
+
+    const labels = self.parent;
+
+    // check if there is a region selected and if it is and user
+    // is changing the label we need to make sure that region is
+    // not going to endup without results at all
+    if (region && sameObject) {
+      if (
+        labels.selectedLabels.length === 1 &&
+        self.selected &&
+        region.results.length === 1 &&
+        (!self.parent.allowempty || self.isEmpty)
+      )
         return;
+      if (self.parent.type !== "labels" && !self.parent.type.includes(region?.results[0].type)) return;
+    }
+
+    // if we are going to select label and it would be the first in this labels group
+    if (!labels.selectedLabels.length && !self.selected) {
+      // unselect labels from other groups of labels connected to this obj
+      self.annotation.toNames.get(labels.toname).
+        filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name).
+        forEach(tag => tag.unselectAll && tag.unselectAll());
+
+      // unselect other tools if they exist and selected
+      const tool = Object.values(self.parent.tools || {})[0];
+      if (tool && tool.manager.findSelectedTool() !== tool) {
+        tool.manager.selectTool(tool, true);
+      }
+    }
+
+    if (self.isEmpty) {
+      let selected = self.selected;
+      labels.unselectAll();
+      self.setSelected(!selected);
+    } else {
+      /**
+       * Multiple
+       */
+      if (!labels.shouldBeUnselected) {
+        self.setSelected(!self.selected);
       }
 
-      const labels = self.parent;
-
-      // check if there is a region selected and if it is and user
-      // is changing the label we need to make sure that region is
-      // not going to endup without results at all
-      if (region && sameObject) {
-        if (
-          labels.selectedLabels.length === 1 &&
-          self.selected &&
-          region.results.length === 1 &&
-          (!self.parent.allowempty || self.isEmpty)
-        )
-          return;
-      }
-
-      // if we are going to select label and it would be the first in this labels group
-      if (!labels.selectedLabels.length && !self.selected) {
-        // unselect labels from other groups of labels connected to this obj
-        self.annotation.toNames
-          .get(labels.toname)
-          .filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name)
-          .forEach(tag => tag.unselectAll && tag.unselectAll());
-
-        // unselect other tools if they exist and selected
-        const tool = Object.values(self.parent.tools || {})[0];
-        if (tool && tool.manager.findSelectedTool() !== tool) {
-          tool.manager.selectTool(tool, true);
-        }
-      }
-
-      if (self.isEmpty) {
-        let selected = self.selected;
-        labels.unselectAll();
-        self.setSelected(!selected);
-      } else {
+      /**
+       * Single
+       */
+      if (labels.shouldBeUnselected) {
         /**
-         * Multiple
+         * Current not selected
          */
-        if (!labels.shouldBeUnselected) {
+        if (!self.selected) {
+          labels.unselectAll();
           self.setSelected(!self.selected);
-        }
-
-        /**
-         * Single
-         */
-        if (labels.shouldBeUnselected) {
-          /**
-           * Current not selected
-           */
-          if (!self.selected) {
-            labels.unselectAll();
-            self.setSelected(!self.selected);
-          } else {
-            labels.unselectAll();
-          }
-        }
-      }
-
-      if (labels.allowempty && !self.isEmpty) {
-        if (sameObject) {
-          labels.findLabel().setSelected(!labels.selectedValues()?.length);
         } else {
-          if (self.selected) {
-            labels.findLabel().setSelected(false);
-          }
+          labels.unselectAll();
         }
       }
+    }
 
-      if (region && sameObject) {
-        region.setValue(self.parent);
-
-        // hack to trigger RichText re-render the region
-        region.updateSpans?.();
+    if (labels.allowempty && !self.isEmpty) {
+      if (sameObject) {
+        labels.findLabel().setSelected(!labels.selectedValues()?.length);
+      } else {
+        if (self.selected) {
+          labels.findLabel().setSelected(false);
+        }
       }
-    },
+    }
 
-    setVisible(val) {
-      self.visible = val;
-    },
+    if (region && sameObject) {
+      region.setValue(self.parent);
 
-    /**
-     *
-     * @param {boolean} value
-     */
-    setSelected(value) {
-      self.selected = value;
-    },
+      // hack to trigger RichText re-render the region
+      region.updateSpans?.();
+    }
+  },
 
-    onHotKey() {
-      return self.toggleSelected();
-    },
+  setVisible(val) {
+    self.visible = val;
+  },
 
-    _updateBackgroundColor(val) {
-      if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
-    },
+  /**
+   *
+   * @param {boolean} value
+   */
+  setSelected(value) {
+    self.selected = value;
+  },
 
-    afterCreate() {
-      self._updateBackgroundColor(self._value || self.value);
-    },
+  onHotKey() {
+    return self.toggleSelected();
+  },
 
-    updateValue(store) {
-      self._value = parseValue(self.value, store.task.dataObj) || "∅";
-    },
-  }));
+  _updateBackgroundColor(val) {
+    if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
+  },
+
+  afterCreate() {
+    self._updateBackgroundColor(self._value || self.value);
+  },
+
+  updateValue(store) {
+    self._value = parseValue(self.value, store.task.dataObj) || Constants.EMPTY_LABEL;
+  },
+}));
 
 const LabelModel = types.compose("LabelModel", TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
-    const bg = item.background;
-    const labelStyle = {
-      borderLeftWidth: 3,
-      borderLeftColor: bg,
-      backgroundColor: item.selected ? bg : "#e8e8e8",
-      color: item.selected ? item.selectedcolor : "#333333",
-      cursor: "pointer",
-      margin: "5px",
-    };
+    const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
-    if (!item.visible) {
-      labelStyle["display"] = "none";
-    }
-
-    if (item.selected) {
-      labelStyle.borderTopColor = bg;
-      labelStyle.borderBottomColor = bg;
-      labelStyle.borderRightColor = bg;
-    }
-
-    return (
-      <Tag
-        onClick={ev => {
-          item.toggleSelected();
-          return false;
-        }}
-        style={labelStyle}
-        size={item.size}
-      >
-        {item._value}
-        {item.showalias === true && item.alias && (
-          <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
-        )}
-        {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
-          store.settings.enableHotkeys &&
-          item.hotkey && <Hint>[{item.hotkey}]</Hint>}
-      </Tag>
-    );
+    return <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={ev => {
+      item.toggleSelected();
+      return false;
+    }}>
+      {item._value}
+      {item.showalias === true && item.alias && (
+        <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
+      )}
+    </Label>;
   }),
 );
 
