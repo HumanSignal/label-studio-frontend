@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { initLabelStudio, serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
@@ -80,7 +80,7 @@ const configComplicated = `
 const reviewText =
   "Not much to write about here, but it does exactly what it's supposed to. filters out the pop sounds. now my recordings are much more crisp. it is one of the lowest prices pop filters on amazon so might as well buy it, they honestly work the same despite their pricing,";
 
-Scenario("Check simple nested Choices for Text", async function(I) {
+Scenario("Check simple nested Choices for Text", async function({I}) {
   const params = {
     config: configSimple,
     data: { reviewText },
@@ -101,7 +101,7 @@ Scenario("Check simple nested Choices for Text", async function(I) {
   assert.deepEqual(result[1].value, { choices: ["Emotional"] });
 });
 
-Scenario("check good nested Choice for Text", async function(I) {
+Scenario("check good nested Choice for Text", async function({I}) {
   const params = {
     config: configComplicated,
     data: { reviewText },
@@ -117,16 +117,20 @@ Scenario("check good nested Choice for Text", async function(I) {
   const personTag = locate(".ant-tag").withText("Person");
   I.seeElement(personTag);
   I.click(personTag);
-  I.doubleClick(".htx-text");
-  I.see("Regions (1)");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 51,
+    rangeEnd: 55,
+  });
+  I.see("1 Region");
   I.dontSee("Female");
 
   // the only element of regions tree list
-  const regionInList = locate(".ant-tree").find(".ant-tree-treenode");
+  const regionInList = locate(".lsf-entities__regions").find(".ant-list-item");
   // select this region
   I.click(regionInList);
 
-  I.see("Regions (1)");
+  I.see("1 Region");
   I.see("More details"); // View with visibleWhen
 
   I.click("Female");

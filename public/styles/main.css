@@ -4,31 +4,29 @@ body {
   padding: 0;
 }
 
-#label-studio {
-  margin-left: 20px;
-  margin-right: 20px;
-}
-
 .footer {
+  flex: none;
   text-align: center;
-  margin: 0 auto;
   bottom: 0;
   left: 0;
   right: 0;
-  margin-bottom: 14px;
-  margin-top: 14px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #header {
   background-color: #fff;
-  height: 60px;
+  height: 48px;
+  flex: none;
   display: flex;
   align-items: center;
-  padding: 0px 20px 0px 40px;
+  justify-content: space-between;
+  padding: 0px 16px;
   z-index: 100;
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 3px;
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.1) inset;
   width: 100%;
-  margin-bottom: 60px;
 }
 
 #header a {
@@ -39,9 +37,7 @@ body {
 
 #logo img {
   vertical-align: middle;
-  margin-right: 6px;
-  width: 40px;
-  height: 40px;
+  height: 28px;
 }
 
 #logo {
@@ -49,7 +45,7 @@ body {
   font-size: 1.5em;
   line-height: 40px;
   color: #273849;
-  font-family: "Dosis", "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  font-family: "Roboto", Arial, sans-serif;
   font-weight: 500;
   display: flex;
 }
@@ -58,7 +54,6 @@ body {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  position: absolute;
   right: 30px;
   line-height: 40px;
   display: flex;
@@ -80,6 +75,9 @@ body {
 }
 
 #ls-container {
-  margin-left: 3em;
-  margin-right: 3em;
+  flex: 1;
+}
+
+#label-studio {
+  height: 100%;
 }

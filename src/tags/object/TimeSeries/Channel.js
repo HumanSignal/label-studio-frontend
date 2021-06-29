@@ -122,8 +122,8 @@ class ChannelD3 extends React.Component {
 
   changeWidth = () => {
     const offsetWidth = this.ref.current.offsetWidth;
-    console.log("WIDTH", offsetWidth);
     const { margin } = this.props.item.parent;
+
     if (offsetWidth) {
       const width = offsetWidth - margin.left - margin.right;
       this.setState({ width });
@@ -267,6 +267,9 @@ class ChannelD3 extends React.Component {
       .each(function(r, i) {
         const group = d3.select(this);
         const selection = group.selectAll(".selection");
+
+        group.style("display", r.hidden ?  "none" : "block");
+
         const color = getRegionColor(r);
         if (r.instant) {
           selection
@@ -603,17 +606,6 @@ class ChannelD3 extends React.Component {
     const left = Math.max(0, Math.floor((this.zoomStep * (current[0] - all[0])) / (all[1] - all[0])));
     const right = Math.max(0, Math.floor((this.zoomStep * (current[1] - all[0])) / (all[1] - all[0])));
     const translate = all[0] - current[0];
-    console.log("SOME MATH", {
-      left,
-      right,
-      xDomain: [...range],
-      pDomain: this.plotX.domain(),
-      xRange: current,
-      all,
-      scale,
-      translate,
-      use: this.useOptimizedData,
-    });
 
     let translateY = 0;
     let scaleY = 1;
@@ -713,7 +705,7 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.style?.fillcolor));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.hidden, r.style?.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div className="htx-timeseries-channel" ref={this.ref} />;

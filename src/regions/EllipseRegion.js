@@ -14,6 +14,8 @@ import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
+import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -57,7 +59,7 @@ const Model = types
 
     fill: true,
     fillColor: Constants.FILL_COLOR,
-    fillOpacity: 0.6,
+    fillOpacity: 0.2,
 
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
@@ -113,6 +115,7 @@ const Model = types
       }
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
@@ -169,29 +172,15 @@ const Model = types
     },
 
     serialize() {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = self.object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-      const { width: radiusX, height: radiusY } = self.rotateDimensions(
-        {
-          width: (self.radiusX * (self.scaleX || 1) * 100) / self.object.stageWidth, //  * (self.scaleX || 1)
-          height: (self.radiusY * (self.scaleY || 1) * 100) / self.object.stageHeight,
-        },
-        degree,
-      );
-
-      const { x, y } = self.rotatePoint(self, degree, false);
-
       const res = {
-        original_width: natural.width,
-        original_height: natural.height,
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (x * 100) / width,
-          y: (y * 100) / height,
-          radiusX,
-          radiusY,
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          radiusX: self.convertHDimensionToPerc(self.radiusX),
+          radiusY: self.convertVDimensionToPerc(self.radiusY),
           rotation: self.rotation,
         },
       };
@@ -211,18 +200,9 @@ const EllipseRegionModel = types.compose(
 );
 
 const HtxEllipseView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
-  const style = item.style || item.tag || defaultStyle;
-  let { strokecolor, strokewidth } = style;
-
-  if (item.highlighted) {
-    strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-    strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const colors = useRegionColors(item);
 
   return (
     <Fragment>
@@ -231,14 +211,14 @@ const HtxEllipseView = ({ item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
-        stroke={strokecolor}
-        strokeWidth={+strokewidth}
+        fill={colors.fillColor}
+        stroke={colors.strokeColor}
+        strokeWidth={colors.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}
-        opacity={+style.opacity}
+        opacity={1}
         rotation={item.rotation}
         name={item.id}
         onTransformEnd={e => {
@@ -254,6 +234,12 @@ const HtxEllipseView = ({ item }) => {
 
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
+        }}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
         }}
         onDragEnd={e => {
           const t = e.target;
@@ -305,7 +291,7 @@ const HtxEllipseView = ({ item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.annotation.editable) return;
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -321,7 +307,7 @@ const HtxEllipseView = ({ item }) => {
   );
 };
 
-const HtxEllipse = observer(HtxEllipseView);
+const HtxEllipse = AliveRegion(HtxEllipseView);
 
 Registry.addTag("ellipseregion", EllipseRegionModel, HtxEllipse);
 Registry.addRegionType(EllipseRegionModel, "image");

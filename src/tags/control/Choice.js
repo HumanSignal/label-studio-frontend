@@ -9,6 +9,7 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { ChoicesModel } from "./Choices";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * Choice tag represents a single choice for annotations.
@@ -53,12 +54,7 @@ const Model = types
     },
 
     get isSelect() {
-      console.log(self.parent.layout);
       return self.parent.layout === "select";
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get parent() {
@@ -98,7 +94,7 @@ const Model = types
     },
   }));
 
-const ChoiceModel = types.compose("ChoiceModel", TagAttrs, Model, ProcessAttrsMixin);
+const ChoiceModel = types.compose("ChoiceModel", TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
 class HtxChoiceView extends Component {
   render() {

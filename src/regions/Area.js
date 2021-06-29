@@ -4,10 +4,9 @@ import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { AudioRegionModel } from "./AudioRegion";
-import { TextRegionModel } from "./TextRegion";
-import { HyperTextRegionModel } from "./HyperTextRegion";
 import { PolygonRegionModel } from "./PolygonRegion";
 import { EllipseRegionModel } from "./EllipseRegion";
+import { RichTextRegionModel } from "./RichTextRegion";
 import { BrushRegionModel } from "./BrushRegion";
 import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
 import { ParagraphsRegionModel } from "./ParagraphsRegion";
@@ -31,7 +30,12 @@ const Area = types.union(
     dispatcher(sn) {
       // for some deserializations
       if (sn.$treenode) return sn.$treenode.type;
-      if (sn.value && Object.values(sn.value).length <= 1) return ClassificationArea;
+      if (
+        !sn.points && // dirty hack to make it work with polygons, but may be the whole condition is not necessary at all
+        sn.value &&
+        Object.values(sn.value).length <= 1
+      )
+        return ClassificationArea;
       // may be a tag itself or just its name
       const objectName = sn.object.name || sn.object;
       // we have to use current config to detect Object tag by name
@@ -44,11 +48,10 @@ const Area = types.union(
     },
   },
   AudioRegionModel,
-  TextRegionModel,
-  HyperTextRegionModel,
   ParagraphsRegionModel,
   TimeSeriesRegionModel,
   RectRegionModel,
+  RichTextRegionModel,
   KeyPointRegionModel,
   EllipseRegionModel,
   PolygonRegionModel,

@@ -24,8 +24,6 @@ function getState(task) {
  * LS will render in this part
  */
 function rootElement(element) {
-  const el = document.createElement("div");
-
   let root;
 
   if (typeof element === "string") {
@@ -35,9 +33,8 @@ function rootElement(element) {
   }
 
   root.innerHTML = "";
-  root.appendChild(el);
 
-  return el;
+  return root;
 }
 
 /**
@@ -66,13 +63,16 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
-    onSubmitDraft: params.onSubmitDraft || External.onSubmitDraft,
+    onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
     onSelectAnnotation: params.onSelectAnnotation || External.onSelectAnnotation,
+    onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
+    onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
+    onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
   };
 
   return options;

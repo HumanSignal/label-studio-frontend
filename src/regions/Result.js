@@ -1,6 +1,7 @@
 import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 const Result = types
   .model("Result", {
@@ -85,10 +86,6 @@ const Result = types
       return getParent(self, 2);
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get mainValue() {
       return self.value[self.from_name.valueType];
     },
@@ -143,7 +140,7 @@ const Result = types
 
     get tag() {
       const value = self.mainValue;
-      if (!value) return null;
+      if (!value || !value.length) return null;
       if (!self.from_name.findLabel) return null;
       return self.from_name.findLabel(value[0]);
     },
@@ -154,6 +151,16 @@ const Result = types
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
       const { strokewidth, fillopacity, opacity } = self.tag.parent;
+      return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
+    get emptyStyle() {
+      if (!self.from_name.findLabel) return null;
+      const emptyLabel = self.from_name.findLabel(null);
+      if (!emptyLabel) return null;
+      const fillcolor = emptyLabel.background || emptyLabel.parent.fillcolor;
+      if (!fillcolor) return null;
+      const strokecolor = emptyLabel.background || emptyLabel.parent.strokecolor;
+      const { strokewidth, fillopacity, opacity } = emptyLabel.parent;
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
   }))
@@ -294,4 +301,4 @@ const Result = types
     },
   }));
 
-export default Result;
+export default types.compose(Result, AnnotationMixin);

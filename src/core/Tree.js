@@ -159,7 +159,7 @@ function treeToModel(html) {
     return res;
   })();
 
-  function findHT(node) {
+  function findHT() {
     htseen = htseen + 1;
     return hypertexts[htseen];
   }
@@ -248,15 +248,17 @@ function treeToModel(html) {
  * Render items of tree
  * @param {*} el
  */
-function renderItem(el) {
-  const typeName = getType(el).name;
+function renderItem(el, includeKey = true) {
+  const type = getType(el);
+  const identifierAttribute = type.identifierAttribute;
+  const typeName = type.name;
   const View = Registry.getViewByModel(typeName);
 
   if (!View) {
     throw new Error(`No view for model: ${typeName}`);
   }
-
-  return <View key={guidGenerator()} item={el} />;
+  const key = el[identifierAttribute] || guidGenerator();
+  return <View key={includeKey ? key : undefined} item={el} />;
 }
 
 /**
@@ -304,7 +306,9 @@ function findParentOfType(obj, classes) {
     try {
       const p = getParentOfType(obj, c);
       if (p) return p;
-    } catch (err) {}
+    } catch (err) {
+      console.err(err);
+    }
   }
 
   return null;

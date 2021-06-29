@@ -1,3 +1,5 @@
+import { toCamelCase } from "strman";
+
 /**
  * Internal helper to check if parameter is a string
  * @param {*} value
@@ -121,3 +123,52 @@ export function wrapArray(value) {
 export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export const isDefined = value => {
+  return value !== null && value !== undefined;
+};
+
+export function findClosestParent(el, predicate = () => true, parentGetter = el => el.parent) {
+  while ((el = parentGetter(el))) {
+    if (predicate(el)) {
+      return el;
+    }
+  }
+  return null;
+}
+
+export function clamp(x, min, max) {
+  return Math.min(max, Math.max(min, x));
+}
+
+export const chunks = (source, chunkSize) => {
+  const result = [];
+  let i,j;
+
+  for (i=0,j=source.length; i<j; i+=chunkSize) {
+    result.push(source.slice(i,i+chunkSize));
+  }
+
+  return result;
+};
+
+export const userDisplayName = (user) => {
+  const firstName = user.firstName ?? user.firstName;
+  const lastName = user.lastName ?? user.lastName;
+
+  return (firstName || lastName)
+    ? [firstName, lastName].filter(n => !!n).join(" ").trim()
+    : (user.username)
+      ? user.username
+      : user.email;
+};
+
+export const camelizeKeys = (object) => {
+  return Object.fromEntries(Object.entries(object).map(([key, value]) => {
+    if (Object.prototype.toString.call(value) === '[object Object]') {
+      return [toCamelCase(key), camelizeKeys(value)];
+    } else {
+      return [toCamelCase(key), value];
+    }
+  }));
+};

@@ -12,6 +12,8 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 const Model = types
   .model({
@@ -52,6 +54,7 @@ const Model = types
       }
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       self.setPosition(p.x, p.y);
@@ -80,27 +83,16 @@ const Model = types
     },
 
     serialize() {
-      const object = self.object;
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-
-      const { x, y } = self.rotatePoint(self, degree, false);
-
-      const res = {
-        original_width: natural.width,
-        original_height: natural.height,
+      return {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
-
         value: {
-          x: (x * 100) / width,
-          y: (y * 100) / height,
-          width: (self.width * 100) / width, //  * (self.scaleX || 1)
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
         },
       };
-
-      return res;
     },
   }));
 
@@ -114,32 +106,21 @@ const KeyPointRegionModel = types.compose(
 );
 
 const HtxKeyPointView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
   const x = item.x;
   const y = item.y;
-  const style = item.style || item.tag || defaultStyle;
 
-  const props = {};
+  const colors = useRegionColors(item);
 
-  props["opacity"] = +style.opacity;
-
-  if (style.fillcolor) {
-    props["fill"] = style.fillcolor;
-  }
-
-  props["stroke"] = style.strokecolor;
-  props["strokeWidth"] = +style.strokewidth;
-  props["strokeScaleEnabled"] = false;
-  props["shadowBlur"] = 0;
-
-  if (item.highlighted || item.selected) {
-    props["stroke"] = Constants.HIGHLIGHTED_STROKE_COLOR;
-    props["strokeWidth"] = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const props = {
+    opacity: 1,
+    fill: colors.fillColor,
+    stroke: colors.strokeColor,
+    strokeWidth: colors.strokeWidth,
+    strokeScaleEnabled: false,
+    shadowBlur: 0,
+  };
 
   return (
     <Fragment>
@@ -152,6 +133,12 @@ const HtxKeyPointView = ({ item }) => {
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
         name={item.id}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+        }}
         onDragEnd={e => {
           const t = e.target;
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
@@ -191,7 +178,7 @@ const HtxKeyPointView = ({ item }) => {
         onClick={e => {
           const stage = item.parent.stageRef;
 
-          if (!item.annotation.editable) return;
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";
@@ -208,7 +195,7 @@ const HtxKeyPointView = ({ item }) => {
   );
 };
 
-const HtxKeyPoint = observer(HtxKeyPointView);
+const HtxKeyPoint = AliveRegion(HtxKeyPointView);
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
 Registry.addRegionType(

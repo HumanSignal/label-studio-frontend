@@ -10,8 +10,7 @@ const parentImagePropsWatch = {
 
 const obtainWatcher = node => {
   switch (node.type) {
-    case "textregion":
-    case "hypertextregion":
+    case "richtextregion":
     case "audioregion":
     case "paragraphs":
       return DOMWatcher;
@@ -24,7 +23,7 @@ const obtainWatcher = node => {
     case "keypointregion":
       return createPropertyWatcher(["x", "y", "hidden", parentImagePropsWatch]);
     case "brushregion":
-      return createPropertyWatcher(["needsUpdate", "hidden", parentImagePropsWatch]);
+      return createPropertyWatcher(["needsUpdate", "hidden", "touchesLength", parentImagePropsWatch]);
     case "timeseriesregion":
       return createPropertyWatcher(["start", "end", { parent: ["zoomedRange"] }]);
     default:

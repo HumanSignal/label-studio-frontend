@@ -5,6 +5,8 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * Use the Polygon tag to add polygons to an image without selecting a label. It's useful when you have only one label.
@@ -27,10 +29,10 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "0.6"),
+  opacity: types.optional(customTypes.range(), "0.2"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
-  strokewidth: types.optional(types.string, "3"),
+  strokewidth: types.optional(types.string, "2"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
 
   pointsize: types.optional(types.string, "small"),
@@ -48,11 +50,6 @@ const Model = types
     // regions: types.array(RectRegionModel),
     _value: types.optional(types.string, ""),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -70,7 +67,15 @@ const Model = types
     },
   }));
 
-const PolygonModel = types.compose("PolygonModel", ControlBase, TagAttrs, Validation, Model);
+const PolygonModel = types.compose(
+  "PolygonModel",
+  ControlBase,
+  AnnotationMixin,
+  SeparatedControlMixin,
+  TagAttrs,
+  Validation,
+  Model
+);
 
 const HtxView = () => null;
 

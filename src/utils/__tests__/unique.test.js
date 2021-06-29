@@ -1,3 +1,4 @@
+/* global it, expect */
 import { guidGenerator } from "../unique";
 
 it("Random ID generate", () => {

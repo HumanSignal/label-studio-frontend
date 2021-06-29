@@ -1,5 +1,6 @@
 import { types, getParent, getRoot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
+import { AnnotationMixin } from "./AnnotationMixin";
 
 const RegionsMixin = types
   .model({
@@ -16,6 +17,7 @@ const RegionsMixin = types
   .volatile(self => ({
     // selected: false,
     highlighted: false,
+    isDrawing: false,
   }))
   .views(self => ({
     get perRegionStates() {
@@ -31,10 +33,6 @@ const RegionsMixin = types
       return getParent(self);
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
@@ -42,6 +40,10 @@ const RegionsMixin = types
   .actions(self => ({
     setParentID(id) {
       self.parentID = id;
+    },
+
+    setDrawing(val) {
+      self.isDrawing = val;
     },
 
     moveTop(size) {},
@@ -56,6 +58,7 @@ const RegionsMixin = types
 
     // "web" degree is opposite to mathematical, -90 is 90 actually
     // swapSizes = true when canvas is already rotated at this moment
+    // @todo not used
     rotatePoint(point, degree, swapSizes = true) {
       const { x, y } = point;
       if (!degree) return { x, y };
@@ -76,9 +79,26 @@ const RegionsMixin = types
       return { x, y };
     },
 
+    // @todo not used
     rotateDimensions({ width, height }, degree) {
       if ((degree + 360) % 180 === 0) return { width, height };
       return { width: height, height: width };
+    },
+
+    convertXToPerc(x) {
+      return (x * 100) / self.parent.stageWidth;
+    },
+
+    convertYToPerc(y) {
+      return (y * 100) / self.parent.stageHeight;
+    },
+
+    convertHDimensionToPerc(hd) {
+      return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+    },
+
+    convertVDimensionToPerc(vd) {
+      return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
     },
 
     // update region appearence based on it's current states, for
@@ -145,6 +165,7 @@ const RegionsMixin = types
      */
     unselectRegion(tryToKeepStates = false) {
       console.log("UNSELECT REGION", "you should not be here");
+      // eslint-disable-next-line no-constant-condition
       if (1) return;
       const annotation = self.annotation;
       const parent = self.parent;
@@ -171,7 +192,7 @@ const RegionsMixin = types
 
     onClickRegion() {
       const annotation = self.annotation;
-      if (!annotation.editable) return;
+      if (!annotation.editable || self.isDrawing) return;
 
       if (annotation.relationMode) {
         annotation.addRelation(self);
@@ -200,4 +221,4 @@ const RegionsMixin = types
     },
   }));
 
-export default RegionsMixin;
+export default types.compose(RegionsMixin, AnnotationMixin);

@@ -2,6 +2,8 @@ import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
+import { NodeViews } from "../components/Node/Node";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
   .model({
@@ -14,30 +16,31 @@ const _Tool = types
         controlTagTypes: ["keypointlabels", "keypoint"],
       };
     },
+    get viewTooltip() {
+      return "Key point region";
+    },
+    get iconComponent() {
+      return NodeViews.KeyPointRegionModel[1];
+    },
   }))
   .actions(self => ({
-    createRegion(opts) {
-      const control = self.control;
-      const labels = { [control.valueType]: control.selectedValues?.() };
-      self.obj.annotation.createResult(opts, labels, control, self.obj);
-    },
-
     clickEv(ev, [x, y]) {
       const c = self.control;
       if (c.type === "keypointlabels" && !c.isSelected) return;
 
-      if (!self.obj.checkLabels()) return;
+      //if (!self.obj.checkLabels()) return;
 
-      self.createRegion({
+      const keyPoint = self.createRegion({
         x: x,
         y: y,
         width: Number(c.strokewidth),
         coordstype: "px",
       });
+      keyPoint.setDrawing(false);
     },
   }));
 
-const KeyPoint = types.compose(ToolMixin, BaseTool, _Tool);
+const KeyPoint = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
 
 // Registry.addTool("keypoint", KeyPoint);
 

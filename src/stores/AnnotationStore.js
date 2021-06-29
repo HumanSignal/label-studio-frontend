@@ -9,7 +9,7 @@ import TimeTraveller from "../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
-import { delay } from "../utils/utilities";
+import { delay, isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
@@ -17,6 +17,7 @@ import { errorBuilder } from "../core/DataValidator/ConfigValidator";
 import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
+import { UserExtended } from "./UserStore";
 
 const hotkeys = Hotkey("Annotations");
 
@@ -30,16 +31,21 @@ const Annotation = types
     pk: types.maybeNull(types.string),
 
     selected: types.optional(types.boolean, false),
-    type: types.enumeration(["annotation", "prediction"]),
+    type: types.enumeration(["annotation", "prediction", "history"]),
+    acceptedState: types.optional(
+      types.maybeNull(
+        types.enumeration(['fixed', 'accepted', 'rejected'])
+      ), null
+    ),
 
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
+    user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
 
-    draft: false,
     // @todo use types.Date
     draftSaved: types.maybe(types.string),
 
@@ -49,7 +55,7 @@ const Annotation = types
     sentUserGenerate: types.optional(types.boolean, false),
     localUpdate: types.optional(types.boolean, false),
 
-    honeypot: types.optional(types.boolean, false),
+    ground_truth: types.optional(types.boolean, false),
     skipped: false,
 
     history: types.optional(TimeTraveller, { targetPath: "../areas" }),
@@ -72,8 +78,19 @@ const Annotation = types
     highlightedNode: types.maybeNull(types.safeReference(AllRegionsType)),
   })
   .preProcessSnapshot(sn => {
-    sn.draft = Boolean(sn.draft);
-    return sn;
+    // sn.draft = Boolean(sn.draft);
+    let user = sn.user ?? sn.completed_by ?? undefined;
+
+    if (user && typeof user !== 'number') {
+      user = user.id;
+    }
+
+    return {
+      ...sn,
+      user,
+      ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
+      skipped: sn.skipped || sn.was_cancelled,
+    };
   })
   .views(self => ({
     get store() {
@@ -105,10 +122,25 @@ const Annotation = types
       self.areas.forEach(a => a.results.forEach(r => results.push(r)));
       return results;
     },
+
+    get serialized() {
+      // Dirty hack to force MST track changes
+      self.areas.toJSON();
+
+      return self.results
+        .map(r => r.serialize())
+        .filter(Boolean)
+        .concat(self.relationStore.serializeAnnotation());
+    }
   }))
   .volatile(self => ({
     hidden: false,
+    draftId: 0,
+    draftSelected: false,
+    autosaveDelay: 5000,
+    isDraftSaving: false,
     versions: {},
+    resultSnapshot: "",
   }))
   .actions(self => ({
     reinitHistory() {
@@ -120,9 +152,25 @@ const Annotation = types
       self.editable = val;
     },
 
-    setGroundTruth(value) {
-      self.honeypot = value;
-      getEnv(self).onGroundTruth(self.store, self, value);
+    setGroundTruth(value, ivokeEvent = true) {
+      const root = getRoot(self);
+
+      if (root && root !== self && ivokeEvent) {
+        const as = root.annotationStore;
+        const assignGroundTruths = p => {
+          if (self !== p) p.setGroundTruth(false, false);
+        };
+
+        as.predictions.forEach(assignGroundTruths);
+        as.annotations.forEach(assignGroundTruths);
+      }
+
+      self.ground_truth = value;
+
+      if (ivokeEvent) {
+        getEnv(self).events.invoke('groundTruth', self.store, self, value);
+        console.log('invoked');
+      }
     },
 
     sendUserGenerate() {
@@ -145,7 +193,7 @@ const Annotation = types
       self.hidden = visible === undefined ? !self.hidden : !visible;
     },
 
-    setHighlightedNode(node) {
+    setHighlightedNode() {
       // moved to selectArea and others
     },
 
@@ -300,7 +348,7 @@ const Annotation = types
       const children = regions.filter(r => r.parentID === region.id);
       children && children.forEach(r => r.setParentID(region.parentID));
 
-      if (!region.classification) getEnv(self).onEntityDelete(region);
+      if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
 
       self.relationStore.deleteNodeRelation(region);
       if (region.type === "polygonregion") {
@@ -323,10 +371,11 @@ const Annotation = types
 
     addVersions(versions) {
       self.versions = { ...self.versions, ...versions };
+      if (versions.draft) self.setDraftSelected();
     },
 
     toggleDraft() {
-      const isDraft = self.draft;
+      const isDraft = self.draftSelected;
       if (!isDraft && !self.versions.draft) return;
       self.autosave.flush();
       self.pauseAutosave();
@@ -334,17 +383,17 @@ const Annotation = types
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
         self.deserializeAnnotation(self.versions.result);
-        self.draft = false;
+        self.draftSelected = false;
       } else {
         self.deserializeAnnotation(self.versions.draft);
-        self.draft = true;
+        self.draftSelected = true;
       }
       self.updateObjects();
       self.startAutosave();
     },
 
     async startAutosave() {
-      if (!getEnv(self).onSubmitDraft) return;
+      if (!getEnv(self).events.hasEvent('submitDraft')) return;
       if (self.type !== "annotation") return;
 
       // some async tasks should be performed after deserialization
@@ -357,23 +406,21 @@ const Annotation = types
         return;
       }
 
-      console.info("autosave initialized");
-
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
-        snapshot => {
+        () => {
           if (self.autosave.paused) return;
 
           const result = self.serializeAnnotation();
           // if this is new annotation and no regions added yet
           if (!self.pk && !result.length) return;
 
-          self.setDraft(true);
+          self.setDraftSelected();
           self.versions.draft = result;
 
           self.store.submitDraft(self).then(self.onDraftSaved);
         },
-        5000,
+        self.autosaveDelay,
         { leading: false },
       );
 
@@ -390,8 +437,12 @@ const Annotation = types
       self.autosave && self.autosave.cancel && self.autosave.cancel();
     },
 
-    setDraft(flag) {
-      self.draft = flag;
+    setDraftId(id) {
+      self.draftId = id;
+    },
+
+    setDraftSelected(selected = true) {
+      self.draftSelected = selected;
     },
 
     onDraftSaved() {
@@ -401,7 +452,8 @@ const Annotation = types
     dropDraft() {
       if (!self.autosave) return;
       self.autosave.cancel();
-      self.draft = false;
+      self.draftId = 0;
+      self.draftSelected = false;
       self.draftSaved = undefined;
       self.versions.draft = undefined;
     },
@@ -518,7 +570,7 @@ const Annotation = types
         value: resultValue,
       };
 
-      const area = self.areas.put({
+      const areaRaw = {
         id: guidGenerator(),
         object,
         // data for Model instance
@@ -526,9 +578,11 @@ const Annotation = types
         // for Model detection
         value: areaValue,
         results: [result],
-      });
+      };
 
-      if (!area.classification) getEnv(self).onEntityCreate(area);
+      const area = self.areas.put(areaRaw);
+
+      if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
 
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
@@ -545,20 +599,59 @@ const Annotation = types
     },
 
     serializeAnnotation() {
-      return self.results
-        .map(r => r.serialize())
-        .filter(Boolean)
-        .concat(self.relationStore.serializeAnnotation());
+      return self.serialized;
     },
 
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      json.forEach(obj => {
+      return (json ?? []).filter(obj => {
+        if (obj.type === 'relation') return true;
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
+
+        // Clear non-existent labels
+        if (obj.type.endsWith("labels")) {
+          const keys = Object.keys(obj.value);
+          for (const key of keys) {
+            if (key.endsWith("labels")) {
+              if (self.names.has(obj.from_name)) {
+                const labelsContainer = self.names.get(obj.from_name);
+                const value = obj.value[key];
+                if (value && value.length) {
+                  obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                }
+              }
+              if (
+                !self.names.has(obj.from_name) ||
+                (!obj.value[key].length && !self.names.get(obj.from_name).allowempty)
+              ) {
+                delete obj.value[key];
+                if (self.names.has(obj.to_name)) {
+                  // Redirect references to existent tool
+                  const targetObject = self.names.get(obj.to_name);
+                  const states = targetObject.states();
+                  if (states?.length) {
+                    const altToolsControllerType = obj.type.replace(/labels$/, "");
+                    const sameLabelsType = obj.type;
+                    const simpleLabelsType = "labels";
+                    for (const altType of [altToolsControllerType, sameLabelsType, simpleLabelsType]) {
+                      const state = states.find(state => state.type === altType);
+                      if (state) {
+                        obj.type = altType;
+                        obj.from_name = state.name;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        return self.names.has(obj.from_name) && self.names.has(obj.to_name);
       });
-      return json;
     },
 
     /**
@@ -572,26 +665,33 @@ const Annotation = types
           objAnnotation = JSON.parse(objAnnotation);
         }
 
-        objAnnotation = self.fixBrokenAnnotation(objAnnotation);
+        objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
 
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
           if (obj["type"] !== "relation") {
-            const { id, value, type, ...data } = obj;
+            const { id, value: rawValue, type, ...data } = obj;
+
+            const { type: tagType } = self.names.get(obj.to_name) ?? {};
+
             // avoid duplicates of the same areas in different annotations/predictions
             const areaId = `${id || guidGenerator()}#${self.id}`;
             const resultId = `${data.from_name}@${areaId}`;
+            const value = self.prepareValue(rawValue, tagType);
 
             let area = self.areas.get(areaId);
+
             if (!area) {
-              area = self.areas.put({
+              const areaSnapshot = {
                 id: areaId,
                 object: data.to_name,
                 ...data,
                 ...value,
                 value,
-              });
+              };
+
+              area = self.areas.put(areaSnapshot);
             }
 
             area.addResult({ ...data, id: resultId, type, value });
@@ -610,16 +710,44 @@ const Annotation = types
             );
           }
         });
+
       } catch (e) {
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
       }
+    },
+
+    prepareValue(value, type) {
+      switch (type) {
+        case "text":
+        case "hypertext":
+        case "richtext": {
+          const hasStartEnd = isDefined(value.start) && isDefined(value.end);
+          const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
+
+          if (hasStartEnd && lacksOffsets) {
+            return Object.assign({}, value, {
+              start: "",
+              end: "",
+              startOffset: Number(value.start),
+              endOffset: Number(value.end),
+              isText: true,
+            });
+          }
+          break;
+        }
+        default:
+          return value;
+      }
+
+      return value;
     },
   }));
 
 export default types
   .model("AnnotationStore", {
     selected: types.maybeNull(types.reference(Annotation)),
+    selectedHistory: types.maybeNull(types.safeReference(Annotation)),
 
     root: Types.allModelsTypes(),
     names: types.map(types.reference(Types.allModelsTypes())),
@@ -627,6 +755,7 @@ export default types
 
     annotations: types.array(Annotation),
     predictions: types.array(Annotation),
+    history: types.array(Annotation),
 
     viewingAllAnnotations: types.optional(types.boolean, false),
     viewingAllPredictions: types.optional(types.boolean, false),
@@ -636,6 +765,10 @@ export default types
   .views(self => ({
     get store() {
       return getRoot(self);
+    },
+
+    get viewingAll() {
+      return self.viewingAllAnnotations || self.viewingAllPredictions;
     },
   }))
   .actions(self => {
@@ -718,7 +851,7 @@ export default types
       c.editable = true;
       c.setupHotKeys();
 
-      getEnv(self).onSelectAnnotation(c, selected);
+      getEnv(self).events.invoke('selectAnnotation', c, selected);
 
       return c;
     }
@@ -730,7 +863,7 @@ export default types
     }
 
     function deleteAnnotation(annotation) {
-      getEnv(self).onDeleteAnnotation(self.store, annotation);
+      getEnv(self).events.invoke('deleteAnnotation', self.store, annotation);
 
       /**
        * MST destroy annotation
@@ -798,7 +931,7 @@ export default types
       return self.root;
     }
 
-    function addItem(options) {
+    function createItem(options) {
       const { user, config } = self.store;
 
       if (!self.root) initRoot(config);
@@ -817,31 +950,65 @@ export default types
         pk: pk && String(pk),
         root: self.root,
       };
-
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
+      if (options.user) node.user = options.user;
 
-      //
-      return Annotation.create(node);
+      return node;
     }
 
     function addPrediction(options = {}) {
       options.editable = false;
       options.type = "prediction";
 
-      const item = addItem(options);
+      const item = createItem(options);
       self.predictions.unshift(item);
 
-      return item;
+      const record = self.predictions[0];
+
+      return record;
     }
 
     function addAnnotation(options = {}) {
       options.type = "annotation";
 
-      const item = addItem(options);
-      item.addVersions({ result: options.result, draft: options.draft });
+      const item = createItem(options);
+
+      if (item.userGenerate) {
+        item.completed_by = getRoot(self).user?.id ?? undefined;
+      }
+
       self.annotations.unshift(item);
 
-      return item;
+      const record = self.annotations[0];
+
+      record.addVersions({
+        result: options.result,
+        draft: options.draft
+      });
+
+      return record;
+    }
+
+
+    function addHistory(options = {}) {
+      options.type = "history";
+
+      const item = createItem(options);
+
+      self.history.push(item);
+
+      const record = self.history[self.history.length - 1];
+
+      return record;
+    }
+
+    function clearHistory() {
+      self.history.forEach(item => destroy(item));
+      self.history.length = 0;
+    }
+
+    function selectHistory(item) {
+      self.selectedHistory = item;
     }
 
     function addAnnotationFromPrediction(prediction) {
@@ -921,6 +1088,9 @@ export default types
       addPrediction,
       addAnnotation,
       addAnnotationFromPrediction,
+      addHistory,
+      clearHistory,
+      selectHistory,
 
       addErrors,
       validate,

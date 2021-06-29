@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useMemo } from "react";
 import { Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { types, getRoot, isAlive } from "mobx-state-tree";
@@ -8,13 +8,14 @@ import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
+import { useRegionColors } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -51,11 +52,11 @@ const Model = types
     scaleX: 1,
     scaleY: 1,
 
-    opacity: 0.6,
+    opacity: 1,
 
     fill: true,
     fillColor: "#ff8800", // Constants.FILL_COLOR,
-    fillOpacity: 0.6,
+    fillOpacity: 0.2,
 
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
@@ -92,6 +93,7 @@ const Model = types
       self.updateAppearenceFromState();
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
       if (degree === -90) p.y -= self.width;
@@ -164,35 +166,15 @@ const Model = types
     },
 
     serialize() {
-      const object = self.object;
-      const degree = (360 - self.parent.rotation) % 360;
-      let { x, y } = self.rotatePoint(self, degree, false);
-      if (degree === 270) y -= self.width;
-      if (degree === 90) x -= self.height;
-      if (degree === 180) {
-        x -= self.width;
-        y -= self.height;
-      }
-
-      const natural = self.rotateDimensions({ width: object.naturalWidth, height: object.naturalHeight }, degree);
-      const stage = self.rotateDimensions({ width: object.stageWidth, height: object.stageHeight }, degree);
-      const { width, height } = self.rotateDimensions(
-        {
-          width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
-          height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
-        },
-        degree,
-      );
-
       return {
-        original_width: natural.width,
-        original_height: natural.height,
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (x * 100) / stage.width,
-          y: (y * 100) / stage.height,
-          width,
-          height,
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
+          height: self.convertVDimensionToPerc(self.height),
           rotation: self.rotation,
         },
       };
@@ -210,17 +192,9 @@ const RectRegionModel = types.compose(
 );
 
 const HtxRectangleView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
-  const style = item.style || item.tag || defaultStyle;
-  let { strokecolor, strokewidth } = style;
-  if (item.highlighted) {
-    strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-    strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const colors = useRegionColors(item);
 
   return (
     <Fragment>
@@ -229,15 +203,16 @@ const HtxRectangleView = ({ item }) => {
         y={item.y}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
-        stroke={strokecolor}
-        strokeWidth={+strokewidth}
+        fill={colors.fillColor}
+        stroke={colors.strokeColor}
+        strokeWidth={colors.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}
-        opacity={+style.opacity}
+        opacity={1}
         rotation={item.rotation}
+        draggable={item.editable}
         name={item.id}
         onTransformEnd={e => {
           const t = e.target;
@@ -252,6 +227,12 @@ const HtxRectangleView = ({ item }) => {
 
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
+        }}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
         }}
         onDragEnd={e => {
           const t = e.target;
@@ -303,8 +284,7 @@ const HtxRectangleView = ({ item }) => {
         }}
         onClick={e => {
           const stage = item.parent.stageRef;
-          if (!item.annotation.editable) return;
-
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
@@ -312,14 +292,13 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion();
         }}
-        draggable={item.editable}
       />
       <LabelOnRect item={item} />
     </Fragment>
   );
 };
 
-const HtxRectangle = observer(HtxRectangleView);
+const HtxRectangle = AliveRegion(HtxRectangleView);
 
 Registry.addTag("rectangleregion", RectRegionModel, HtxRectangle);
 Registry.addRegionType(RectRegionModel, "image");

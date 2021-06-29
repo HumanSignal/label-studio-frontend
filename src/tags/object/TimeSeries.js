@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import React from "react";
 import * as d3 from "d3";
 import { observer, inject } from "mobx-react";
@@ -28,6 +26,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import PersistentStateMixin from "../../mixins/PersistentState";
 
 import "./TimeSeries/Channel";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * TimeSeries tag can be used to label time series data.
@@ -60,7 +59,7 @@ import "./TimeSeries/Channel";
  * @param {string} [timeColumn] Column name or index that provides temporal values. If your time series data has no temporal column then one is automatically generated.
  * @param {string} [timeFormat] Pattern used to parse values inside timeColumn, parsing is provided by d3, and follows `strftime` implementation
  * @param {string} [timeDisplayFormat] Format used to display temporal value. Can be a number or a date. If a temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
- * @param {string} [sep=","] Separator for you CSV file. 
+ * @param {string} [sep=","] Separator for you CSV file.
  * @param {string} [overviewChannels] Comma-separated list of channel names or indexes displayed in overview.
  * @param {boolean} [fixedScale=false] Whether to scale y-axis to the maximum to fit all the values. If false, current view scales to fit only the displayed values.
  */
@@ -110,10 +109,6 @@ const Model = types
 
     get store() {
       return getRoot(self);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get regs() {
@@ -612,7 +607,8 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
       .attr("height", focusHeight)
       .attr("x", r => x(r.start))
       .attr("width", r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
-      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3));
+      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3))
+      .style("display", r => r.hidden ? "none" : "block");
     rSelection.exit().remove();
   };
 
@@ -683,13 +679,12 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
     node && drawRegions(regions);
   });
 
-  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.style?.fillcolor));
+  item.regs.map(r => fixMobxObserve(r.start, r.end, r.selected, r.hidden, r.style?.fillcolor));
 
   return <div className="htx-timeseries-overview" ref={ref} />;
 });
 
 const HtxTimeSeriesViewRTS = ({ store, item }) => {
-  console.log("TS", item.brushRange, item);
   const ref = React.createRef();
 
   React.useEffect(() => {
@@ -716,7 +711,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model);
+const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model, AnnotationMixin);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);

@@ -1,9 +1,11 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
  * Rectangle is used to add rectangle (Bounding Box) to an image without label selection. It's useful when you have
@@ -26,12 +28,12 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "0.6"),
+  opacity: types.optional(customTypes.range(), "1"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
-  fillopacity: types.optional(customTypes.range(), "0.6"),
+  fillopacity: types.optional(customTypes.range(), "0.2"),
 
   canrotate: types.optional(types.boolean, true),
 });
@@ -40,11 +42,6 @@ const Model = types
   .model({
     type: "rectangle",
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => ({
     fromStateJSON() {},
 
@@ -56,7 +53,7 @@ const Model = types
     },
   }));
 
-const RectangleModel = types.compose("RectangleModel", ControlBase, TagAttrs, Model);
+const RectangleModel = types.compose("RectangleModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
 
 const HtxView = () => {
   return null;

@@ -1,6 +1,5 @@
 import CursorPlugin from "wavesurfer.js/dist/plugin/wavesurfer.cursor";
 import React from "react";
-import ReactDOM from "react-dom";
 import throttle from "lodash.throttle";
 import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
@@ -10,7 +9,6 @@ import styles from "./Waveform.module.scss";
 import globalStyles from "../../styles/global.module.scss";
 import { Slider, Row, Col, Select } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
-import InfoModal from "../Infomodal/Infomodal";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
 
@@ -231,10 +229,6 @@ export default class Waveform extends React.Component {
   };
 
   componentDidMount() {
-    this.$el = ReactDOM.findDOMNode(this);
-
-    this.$waveform = this.$el.querySelector("#wave");
-
     let wavesurferConfigure = {
       container: this.$waveform,
       waveColor: this.state.colors.waveColor,
@@ -387,6 +381,10 @@ export default class Waveform extends React.Component {
     this.hotkeys.unbindAll();
   }
 
+  setWaveformRef = node => {
+    this.$waveform = node;
+  };
+
   render() {
     const self = this;
 
@@ -394,7 +392,7 @@ export default class Waveform extends React.Component {
 
     return (
       <div>
-        <div id="wave" className={styles.wave} />
+        <div id="wave" ref={this.setWaveformRef} className={styles.wave} />
 
         <div id="timeline" />
 

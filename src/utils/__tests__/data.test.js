@@ -1,3 +1,4 @@
+/* global describe, test, expect */
 import { timeFormat } from "d3";
 import { parseCSV } from "../data";
 
