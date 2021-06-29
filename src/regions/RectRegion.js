@@ -1,9 +1,8 @@
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment } from "react";
 import { Rect } from "react-konva";
-import { observer } from "mobx-react";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
-import Constants, { defaultStyle } from "../core/Constants";
+import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
@@ -16,6 +15,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -188,6 +188,7 @@ const RectRegionModel = types.compose(
   NormalizationMixin,
   DisabledMixin,
   AreaMixin,
+  KonvaRegionMixin,
   Model,
 );
 
@@ -287,10 +288,10 @@ const HtxRectangleView = ({ item }) => {
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
       />
-      <LabelOnRect item={item} />
+      <LabelOnRect item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth} />
     </Fragment>
   );
 };

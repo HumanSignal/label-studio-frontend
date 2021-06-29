@@ -1,10 +1,10 @@
 import { Spin, Tree } from "antd";
 import { observer } from "mobx-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
-import { DownOutlined } from "@ant-design/icons";
+import {LsChevron} from "../../assets/icons";
 import { RegionItem } from "./RegionItem";
 
 export const RegionTree = observer(({ regionStore }) => {
@@ -16,6 +16,11 @@ export const RegionTree = observer(({ regionStore }) => {
   useEffect(() => {
     setTimeout(renderNow);
   }, [renderNow]);
+  
+  const canDrag = useRef(true);
+  const setDraggable = useCallback((isDraggable)=>{
+    canDrag.current = isDraggable;
+  }, []);
 
   if (deferred)
     return (
@@ -28,14 +33,14 @@ export const RegionTree = observer(({ regionStore }) => {
   const regions = regionStore.asTree((item, idx) => {
     return {
       key: item.id,
-      title: <RegionItem item={item} idx={idx} flat={isFlat} />,
+      title: <RegionItem item={item} idx={idx} flat={isFlat} setDraggable={setDraggable}/>,
     };
   });
 
   const classifications = regionStore.classifications.map(item => ({
     classification: true,
     key: item.id,
-    title: <RegionItem item={item} flat />,
+    title: <RegionItem item={item} flat  setDraggable={setDraggable} />,
   }));
 
   const treeData = [...classifications, ...regions];
@@ -49,9 +54,9 @@ export const RegionTree = observer(({ regionStore }) => {
       blockNode={true}
       defaultExpandAll={true}
       autoExpandParent={true}
-      switcherIcon={<DownOutlined />}
+      switcherIcon={<LsChevron opacity="0.25"/>}
       onDragStart={({ event, node }) => {
-        if (node.classification) {
+        if (node.classification || !canDrag.current) {
           event.preventDefault();
           event.stopPropagation();
           return false;

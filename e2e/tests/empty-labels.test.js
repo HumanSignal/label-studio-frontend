@@ -1,4 +1,4 @@
-/* global Feature, Scenario, DataTable, Data, locate */
+/* global Feature, Scenario, locate */
 
 const Helpers = require("./helpers");
 const Asserts = require("../utils/asserts");
@@ -98,30 +98,30 @@ examples.forEach(example => {
     LabelStudio.init(params);
     AtSidebar.see("Update");
     AtSidebar.dontSeeRegions(regionsCount);
-    AtSidebar.dontSeeRegions(0);
+    AtSidebar.dontSeeRegions();
   });
 });
 
 const SINGLE_TYPE = "single";
 const MULTIPLE_TYPE = "multiple";
 [SINGLE_TYPE, MULTIPLE_TYPE].forEach(type => {
-  Scenario(`Making labels empty -> choice="${type}"`, async ({I, LabelStudio, AtSidebar, AtAudioView}) => {
+  Scenario(`Making labels empty -> choice="${type}"`, async ({I, LabelStudio, AtSidebar, AtAudioView, AtLabels}) => {
     async function expectSelectedLabels(expectedNum) {
-      let selectedLabelsNum = await I.grabNumberOfVisibleElements(locate(".ant-tag[style*='border-color']"));
+      let selectedLabelsNum = await I.grabNumberOfVisibleElements(AtLabels.locateSelected());
       assert.strictEqual(selectedLabelsNum, expectedNum);
     }
     async function clickLabelWithLengthExpection(labelNumber, expectedLength, expectSelectedNum) {
-      I.click(locate(".ant-tag").withText(`[${labelNumber}]`));
+      AtLabels.clickLabel(`${labelNumber}`);
       let restored = await LabelStudio.serialize();
       assert.strictEqual(restored[0].value.labels.length, expectedLength);
       await expectSelectedLabels(expectSelectedNum);
       I.pressKey("u");
       await expectSelectedLabels(0);
-      I.click(locate("li").withText("Audio"));
+      I.click(locate(".lsf-region-item"));
       await expectSelectedLabels(expectSelectedNum);
     }
     async function clickLabelWithSelectedExpection(labelNumber, expectSelectedNum) {
-      I.click(locate(".ant-tag").withText(`[${labelNumber}]`));
+      AtLabels.clickLabel(`${labelNumber}`);
       await expectSelectedLabels(expectSelectedNum);
     }
 
@@ -144,8 +144,8 @@ const MULTIPLE_TYPE = "multiple";
     AtAudioView.waitForAudio();
     AtSidebar.seeRegions(regionsCount);
 
-    I.click(locate("li").withText("Audio"));
-    I.click(locate(".ant-tag").withText("[1]"));
+    I.click(locate(".lsf-region-item"));
+    AtLabels.clickLabel("1");
 
     let restored = await LabelStudio.serialize();
     Asserts.notDeepEqualWithTolerance(result[0], restored[0]);
@@ -184,7 +184,7 @@ const MULTIPLE_TYPE = "multiple";
   });
 });
 
-Scenario(`Consistency of empty labels`, async ({I, LabelStudio, AtSidebar, AtImageView}) => {
+Scenario(`Consistency of empty labels`, async ({I, LabelStudio, AtSidebar, AtImageView, AtLabels}) => {
   const { config, data } = require("../examples/image-bboxes");
   const params = { annotations: [{ id: "test", result: [] }], data };
   const configTree = Utils.parseXml(config);
@@ -199,7 +199,7 @@ Scenario(`Consistency of empty labels`, async ({I, LabelStudio, AtSidebar, AtIma
   LabelStudio.init(params);
   AtSidebar.seeRegions(0);
   AtImageView.waitForImage();
-  I.click(locate(".ant-tag").withText("[1]"));
+  AtLabels.clickLabel("1");
   AtImageView.dragKonva(200, 200, 100, 100);
   const shapesNum = await AtImageView.countKonvaShapes();
   assert.strictEqual(shapesNum, 1);

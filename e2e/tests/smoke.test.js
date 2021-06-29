@@ -33,7 +33,7 @@ function assertWithTolerance(actual, expected) {
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function({I, AtImageView, AtAudioView}) {
+  Scenario(example.title || "Noname smoke test", async function({I, AtImageView, AtAudioView, AtSidebar}) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
@@ -47,7 +47,7 @@ examples.forEach(example =>
     await I.amOnPage("/");
     await I.executeAsyncScript(initLabelStudio, params);
 
-    I.see(`${count} Region${(count === 0 || count > 1) ? 's' : ''}`);
+    AtSidebar.seeRegions(count);
 
     let restored;
 
@@ -67,9 +67,9 @@ examples.forEach(example =>
       // I.click('Delete Entity') - it founds something by tooltip, but not a button
       // so click the bin button in entity's info block
       I.click(".ls-entity-buttons span[aria-label=delete]");
-      I.see(`${count-1} Region${(count-1) > 1 ? 's' : ''}`);
+      AtSidebar.seeRegions(count-1);
       I.click(".lsf-history__action[aria-label=Reset]");
-      I.see(`${count} Region${count > 1 ? 's' : ''}`);
+      AtSidebar.seeRegions(count);
       // Reset is undoable
       I.click(".lsf-history__action[aria-label=Undo]");
 
@@ -82,6 +82,6 @@ examples.forEach(example =>
     }
     I.click("Create Copy");
     I.seeElement(locate(".lsf-entity-tab").at(2));
-    I.see(`${count} Region${(count === 0 || count > 1) ? 's' : ''}`);
+    AtSidebar.seeRegions(count);
   }),
 );

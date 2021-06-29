@@ -1,14 +1,12 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
-import { observer } from "mobx-react";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
-import Constants, { defaultStyle } from "../core/Constants";
+import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import Utils from "../utils";
 import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
@@ -16,6 +14,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -196,6 +195,7 @@ const EllipseRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   DisabledMixin,
+  KonvaRegionMixin,
   Model,
 );
 
@@ -296,11 +296,11 @@ const HtxEllipseView = ({ item }) => {
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
         draggable={item.editable}
       />
-      <LabelOnEllipse item={item} />
+      <LabelOnEllipse item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth}/>
     </Fragment>
   );
 };

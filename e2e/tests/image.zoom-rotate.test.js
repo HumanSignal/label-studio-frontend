@@ -1,6 +1,6 @@
-/* global Feature, Scenario, DataTable, Data, locate */
+/* global Feature, DataTable, Data, locate, Scenario */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { serialize } = require("./helpers");
 
 const assert = require("assert");
 
@@ -106,16 +106,16 @@ shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, current}) {
+Data(shapesTable).Scenario("Simple rotation", async function({I, LabelStudio, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
   };
 
   I.amOnPage("/");
-  await I.executeAsyncScript(initLabelStudio, params);
+  LabelStudio.init(params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -142,16 +142,16 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, AtImageView, cu
   }
 });
 
-Data(shapesTable).Scenario("Rotate zoomed", async function({I, AtImageView, current}) {
+Data(shapesTable).Scenario("Rotate zoomed", async function({I, LabelStudio, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
   };
 
   I.amOnPage("/");
-  await I.executeAsyncScript(initLabelStudio, params);
+  LabelStudio.init(params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
     I.pressKey("u");
@@ -183,28 +183,88 @@ windowSizesTable.add([1920, 1080]);
 windowSizesTable.add([800, 480]);
 windowSizesTable.add([1017, 970]);
 
-Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({I, AtImageView, current}) {
+Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({I, LabelStudio, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape("Rectangle"),
     data: { image: IMAGE },
   };
   I.amOnPage("/");
   I.resizeWindow(current.width, current.height);
-  await I.executeAsyncScript(initLabelStudio, params);
+  LabelStudio.init(params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
-  let degree = 0;
   assert(Math.abs(canvasSize.width - imageSize.width) < 1);
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
-    degree += rotate === "right" ? 90 : -90;
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
     assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
     assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
+  }
+});
+
+const twoColumnsConfigs = [`<View>
+    <View style="display:flex;align-items:start;gap:8px;flex-direction:{{direction}}">
+        <RectangleLabels name="label" toName="image" showInline="{{showInline}}">
+            <Label value="Label 1" background="#2C7873"/>
+            <Label value="Label 2" background="#7232F2"/>
+        </RectangleLabels>
+        <Image name="image" value="$image" zoom="true" rotateControl="true"/>
+    </View>
+</View>`, `<View>
+    <View style="display:flex;align-items:start;gap:8px;flex-direction:{{direction}}">
+        <RectangleLabels name="label" toName="image" showInline="{{showInline}}">
+            <Label value="Label 1" background="#2C7873"/>
+            <Label value="Label 2" background="#7232F2"/>
+        </RectangleLabels>
+        <View style="flex: 100 0 1%; width: 100%">
+            <Image name="image" value="$image" zoom="true" rotateControl="true"/>
+        </View>
+    </View>
+</View>`];
+const directions = ["column", "row", "column-reverse", "row-reverse"];
+Scenario("Rotation in the two columns template", async function({I, LabelStudio, AtImageView, AtSidebar, AtSettings}) {
+  I.amOnPage("/");
+  let isVerticalLayout = false;
+  for (const config of twoColumnsConfigs) {
+    for (const inline of [true, false]) {
+      for (const reversed of [true, false]) {
+
+        const direction = (inline ? "column" : "row") + (reversed ? "-reverse" : "");
+        const params = {
+          config: config.replace("{{direction}}", direction).replace("{{showInline}}",`${inline}`),
+          data: { image: IMAGE },
+        };
+
+        LabelStudio.init(params);
+        AtImageView.waitForImage();
+        AtSidebar.seeRegions(0);
+        I.click(locate("button").withDescendant(`[aria-label='rotate-right']`));
+        let rotatedCanvasSize,rotatedImageSize;
+        rotatedCanvasSize = await AtImageView.getCanvasSize();
+        rotatedImageSize = await AtImageView.getImageFrameSize();
+        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
+        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
+        AtSettings.open();
+        isVerticalLayout = !isVerticalLayout;
+        AtSettings.setLayoutSettings({
+          [AtSettings.LAYOUT_SETTINGS.VERTICAL_LAYOUT]: isVerticalLayout
+        });
+        AtSettings.close();
+        rotatedCanvasSize = await AtImageView.getCanvasSize();
+        rotatedImageSize = await AtImageView.getImageFrameSize();
+        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
+        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
+        I.click(locate("button").withDescendant(`[aria-label='rotate-right']`));
+        rotatedCanvasSize = await AtImageView.getCanvasSize();
+        rotatedImageSize = await AtImageView.getImageFrameSize();
+        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
+        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
+      }
+    }
   }
 });

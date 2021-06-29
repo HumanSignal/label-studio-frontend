@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 /// <reference types='codeceptjs' />
 type steps_file = typeof import('./steps_file.js');
 

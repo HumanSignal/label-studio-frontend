@@ -1,40 +1,53 @@
 import { Menu } from "antd";
 import { observer } from "mobx-react";
-import { CalendarOutlined, ThunderboltOutlined } from "@ant-design/icons";
+import { ThunderboltOutlined } from "@ant-design/icons";
+import React from "react";
+import { LsDate } from "../../assets/icons";
+import { Block, Elem } from "../../utils/bem";
+import "./SortMenu.styl";
+
+export const SortMenuIcon = ({sortKey}) => {
+  switch (sortKey) {
+    case "date":
+      return <LsDate />;
+    case "score":
+      return <ThunderboltOutlined />;
+    default:
+      return null;
+  }
+};
 
 export const SortMenu = observer(({ regionStore }) => {
   return (
-    <Menu selectedKeys={[regionStore.sort]}>
+    <Block name="sort-menu" tag={Menu} selectedKeys={[regionStore.sort]}>
       <Menu.Item key="date">
-        <div
+        <Elem name="option-inner"
           onClick={ev => {
             regionStore.setSort("date");
             ev.preventDefault();
             return false;
           }}
-          style={{ width: "135px", display: "flex", justifyContent: "space-between" }}
         >
-          <span>
-            <CalendarOutlined /> Date
-          </span>
+          <Elem name="title">
+            <Elem name="icon" tag="span"><SortMenuIcon sortKey="date" /></Elem> Date
+          </Elem>
           <span>{regionStore.sort === "date" && (regionStore.sortOrder === "asc" ? "↓" : "↑")}</span>
-        </div>
+        </Elem>
       </Menu.Item>
       <Menu.Item key="score">
-        <div
+        <Elem name="option-inner"
           onClick={ev => {
             regionStore.setSort("score");
             ev.preventDefault();
             return false;
           }}
-          style={{ width: "135px", display: "flex", justifyContent: "space-between" }}
         >
-          <span>
-            <ThunderboltOutlined /> Score
-          </span>
+          <Elem name="title">
+            <Elem name="icon" tag="span"><SortMenuIcon sortKey="score" /></Elem> Score
+          </Elem>
           <span>{regionStore.sort === "score" && (regionStore.sortOrder === "asc" ? "↓" : "↑")}</span>
-        </div>
+        </Elem>
       </Menu.Item>
-    </Menu>
+    </Block>
   );
 });

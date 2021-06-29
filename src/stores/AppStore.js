@@ -221,6 +221,18 @@ export default types
         "Create relation when region is selected",
       );
 
+      // Focus fist focusable perregion when region is selected
+      hotkeys.addKey(
+        "enter",
+        function(e) {
+          e.preventDefault();
+          const c = self.annotationStore.selected;
+          if (c && c.highlightedNode && !c.relationMode) {
+            c.highlightedNode.requestPerRegionFocus();
+          }
+        }
+      );
+
       // unselect region
       hotkeys.addKey("u", function() {
         const c = self.annotationStore.selected;

@@ -13,6 +13,7 @@ import { DrawingTool } from "../mixins/DrawingTool";
 const ToolView = observer(({ item }) => {
   return (
     <SliderTool
+      value={item.strokeWidth}
       selected={item.selected}
       icon={<HighlightOutlined />}
       onClick={ev => {

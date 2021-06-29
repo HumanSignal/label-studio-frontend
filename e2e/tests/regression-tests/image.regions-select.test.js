@@ -1,4 +1,4 @@
-/* global Feature, Scenario, DataTable, Data, locate */
+/* global Feature, DataTable, Data, locate */
 
 const { initLabelStudio, hasSelectedRegion } = require("../helpers");
 
@@ -20,21 +20,6 @@ const getConfigWithShape = (shape, props = "") => `
         <Label value="Test" background="${BLUEVIOLET.color}"></Label>
     </${shape}Labels>
   </View>`;
-
-const hScaleCoords = ([x, y], w, h) => {
-  const ratio = w / h;
-  return [x * ratio, y * ratio];
-};
-const rotateCoords = (point, degree, w, h) => {
-  const [x, y] = point;
-  if (!degree) return point;
-
-  degree = (360 + degree) % 360;
-  if (degree === 90) return hScaleCoords([h - y - 1, x], w, h);
-  if (degree === 270) return hScaleCoords([y, w - x - 1], w, h);
-  if (Math.abs(degree) === 180) return [w - x - 1, h - y - 1];
-  return [x, y];
-};
 
 const shapes = [
   {
@@ -118,7 +103,7 @@ function convertParamsToPixels(params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, current}) {
+Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, AtSidebar, current}) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -127,7 +112,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
   AtImageView.waitForImage();
-  I.see("0 Regions");
+  AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
   for (let region of current.regions) {
@@ -141,6 +126,6 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   }
 
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);
-  const selected = await I.executeAsyncScript(hasSelectedRegion);
-  assert.strictEqual(selected, true);
+  I.seeElement(locate(".ant-list-item[class*='selected--']"));
+  I.seeElement(locate(".lsf-entity"));
 });

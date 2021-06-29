@@ -2,13 +2,6 @@
 
 const Helpers = require("../helpers");
 const Asserts = require("../../utils/asserts");
-const assert = require("assert");
-
-const DEFAULT_DIMENSIONS = {
-  rect: { width: 30, height: 30 },
-  ellipse: { radius: 30 },
-  polygon: { length: 30 },
-};
 
 Feature("Creating regions over other regions").tag("@regress");
 

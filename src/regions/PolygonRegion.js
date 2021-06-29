@@ -1,10 +1,9 @@
 import Konva from "konva";
 import React from "react";
 import { Group, Line } from "react-konva";
-import { observer } from "mobx-react";
-import { types, destroy, detach, getRoot, isAlive } from "mobx-state-tree";
+import { types, destroy, detach, getRoot } from "mobx-state-tree";
 
-import Constants, { defaultStyle } from "../core/Constants";
+import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -17,6 +16,7 @@ import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 const Model = types
   .model({
@@ -236,6 +236,7 @@ const PolygonRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 
@@ -495,11 +496,11 @@ const HtxPolygonView = ({ item }) => {
         }
 
         item.setHighlight(false);
-        item.onClickRegion();
+        item.onClickRegion(e);
       }}
       draggable={item.editable}
     >
-      <LabelOnPolygon item={item} />
+      <LabelOnPolygon item={item} color={colors.strokeColor} />
 
       {item.mouseOverStartPoint}
 

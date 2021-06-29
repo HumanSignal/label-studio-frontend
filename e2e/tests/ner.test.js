@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario */
 
 const { initLabelStudio, serialize } = require("./helpers");
 

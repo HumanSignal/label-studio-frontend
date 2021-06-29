@@ -57,7 +57,7 @@ const annotationWithPerRegion = {
 const image =
   "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
 
-Scenario("Check Rect region for Image", async function({I, AtImageView}) {
+Scenario("Check Rect region for Image", async function({I, AtImageView, AtSidebar}) {
   const params = {
     config,
     data: { image },
@@ -69,9 +69,9 @@ Scenario("Check Rect region for Image", async function({I, AtImageView}) {
 
   AtImageView.waitForImage();
   I.executeAsyncScript(waitForImage);
-  I.see("1 Region");
+  AtSidebar.seeRegions(1);
   // select first and only region
-  I.click(locate("li").withText("Rectangle"));
+  I.click(locate('[aria-label="block"]'));
   I.see("Labels:");
 
   // click on region's rect on the canvas
@@ -79,7 +79,7 @@ Scenario("Check Rect region for Image", async function({I, AtImageView}) {
   I.dontSee("Labels:");
 });
 
-Scenario("Image with perRegion tags", async function({I, AtImageView}) {
+Scenario("Image with perRegion tags", async function({I, AtImageView, AtSidebar}) {
   let result;
   const params = {
     config: perRegionConfig,
@@ -92,9 +92,9 @@ Scenario("Image with perRegion tags", async function({I, AtImageView}) {
 
   AtImageView.waitForImage();
   I.executeAsyncScript(waitForImage);
-  I.see("1 Region");
+  AtSidebar.seeRegions(1);
   // select first and only region
-  I.click(locate("li").withText("Rectangle"));
+  I.click(locate('[aria-label="block"]'));
   I.see("Labels:");
 
   // check that there is deserialized text for this region; and without doubles

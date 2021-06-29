@@ -46,6 +46,8 @@
   flex-wrap: nowrap;
   position: relative;
   padding: 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
 
   & > *:not(:last-child),
   & [role="img"] {
@@ -53,11 +55,7 @@
   }
 
   &.flat {
-    margin-left: -16px;
-  }
 
-  &.hidden {
-    opacity: 0.3;
   }
 
   & button.hidden,
@@ -71,19 +69,13 @@
     }
   }
 
-  &:hover,
-  &.selected {
-    background-color: rgba(#000, 0.05);
-
-    .node {
-      color: #000;
-    }
+  &:hover {
+    background-color: var(--labelBgColor);
   }
 
   &.selected {
-    .node {
-      font-weight: 500;
-    }
+    //noinspection CssInvalidFunction
+    box-shadow: 0 0 0 4px var(--labelBgColor, rgba(0,0,0,0.2));
   }
 
   &_label {
