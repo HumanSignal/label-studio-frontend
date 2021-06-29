@@ -473,7 +473,13 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          className={styles.wrapper}
+          className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
         >
           <div
             ref={node => {
@@ -579,8 +585,21 @@ export default observer(
               )}
             </Stage>
           )}
-
           {this.renderTools()}
+          {item.images.length > 1 && (
+            <div className={styles.gallery}>
+              {item.images.map((src, i) => (
+                <img
+                  alt=""
+                  key={src}
+                  src={src}
+                  className={i === item.currentImage && styles.active}
+                  height="60"
+                  onClick={() => item.setCurrentImage(i)}
+                />
+              ))}
+            </div>
+          )}
         </ObjectTag>
       );
     }

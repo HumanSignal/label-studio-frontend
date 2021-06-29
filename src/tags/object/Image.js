@@ -13,6 +13,7 @@ import { PolygonRegionModel } from "../../regions/PolygonRegion";
 import { RectRegionModel } from "../../regions/RectRegion";
 import { EllipseRegionModel } from "../../regions/EllipseRegion";
 import { customTypes } from "../../core/CustomTypes";
+import { parseValue } from "../../utils/data";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 
@@ -87,7 +88,6 @@ const IMAGE_CONSTANTS = {
 const Model = types
   .model({
     type: "image",
-    _value: types.optional(types.string, ""),
 
     // tools: types.array(BaseTool),
 
@@ -153,9 +153,32 @@ const Model = types
     ),
   })
   .volatile(self => ({
+    currentImage: 0,
     stageRatio: 1,
   }))
   .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
+
+    get parsedValue() {
+      return parseValue(self.value, self.store.task.dataObj);
+    },
+
+    // @todo the name is for backward compatibility; change the name later
+    get _value() {
+      const value = self.parsedValue;
+      if (Array.isArray(value)) return value[self.currentImage];
+      return value;
+    },
+
+    get images() {
+      const value = self.parsedValue;
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return [value];
+    },
+
     /**
      * @return {boolean}
      */
@@ -302,6 +325,10 @@ const Model = types
 
     setGridSize(value) {
       self.gridSize = value;
+    },
+
+    setCurrentImage(i) {
+      self.currentImage = i;
     },
 
     /**
@@ -558,7 +585,7 @@ const Model = types
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
+const ImageModel = types.compose("ImageModel", TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 const HtxImage = inject("store")(ImageView);
 
