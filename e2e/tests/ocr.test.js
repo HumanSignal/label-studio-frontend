@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature, Scenario, session */
 
 const assert = require("assert");
 
@@ -170,4 +170,15 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
       assert(hasText, true);
     }
   }
+  session('Deserialization', () => {
+    I.amOnPage('/');
+    LabelStudio.init({ config: createConfig( ), data, annotations: [{ id: "test", result: results }]});
+    AtImageView.waitForImage();
+    AtSidebar.seeRegions(regions.length);
+    for (let [idx, region] of Object.entries(regions)) {
+      if (region.text) {
+        I.seeInField(AtSidebar.locate(".lsf-region-item").withText(`${+idx+1}`).find(".lsf-textarea-tag__input"), region.text);
+      }
+    }
+  });
 });
