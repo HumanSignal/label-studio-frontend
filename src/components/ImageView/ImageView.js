@@ -473,12 +473,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          style={{
-            position: "relative",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-          }}
+          className={styles.wrapper}
         >
           <div
             ref={node => {
@@ -490,7 +485,7 @@ export default observer(
             {this.state.ratio !== 1 && (
               <div
                 className={styles.filler}
-                style={{ marginTop: `${this.state.ratio * 100}%` }}
+                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
               />
             )}
             <img

@@ -20,6 +20,13 @@
   margin: 0.3rem 0;
 }
 
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .container {
   overflow: hidden;
 
