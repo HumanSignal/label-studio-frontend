@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature, Scenario, locate */
 
 const { initLabelStudio, serialize } = require("./helpers");
 const Utils = require("../examples/utils");
@@ -80,5 +80,8 @@ examples.forEach(example =>
         result.filter(r => r.id !== ids[0]),
       );
     }
+    I.click("Create Copy");
+    I.seeElement(locate(".lsf-entity-tab").at(2));
+    I.see(`${count} Region${(count === 0 || count > 1) ? 's' : ''}`);
   }),
 );
