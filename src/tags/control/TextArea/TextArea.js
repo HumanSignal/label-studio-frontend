@@ -328,6 +328,15 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
     },
     onFocus,
   };
+  if (isTextarea) {
+    inputProps.onKeyDown = e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.target?.blur?.();
+      }
+    };
+  }
   return <Elem name="item">
     <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
     <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/>
@@ -406,6 +415,11 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
       const { value } = ev.target;
       item.setValue(value);
     },
+    onFocus: ev => {
+      if (!area.isSelected) {
+        area.annotation.selectArea(area);
+      }
+    }
   };
 
   if (isTextArea) {
@@ -429,7 +443,8 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
-  const showSubmit = !result || item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions);
+  const showSubmit = !result || !result?.mainValue?.length || !item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions);
+
   if (!isAlive(item) || !isAlive(area)) return null;
   return (
     <Block name="textarea-tag" mod={{ mode: item.mode }}>
