@@ -11,6 +11,7 @@
   font-size 14px
   line-height @height
   background-color var(--background)
+  color #333
   border-left-style solid
   border-left-width 4px
   border-left-color var(--color)
@@ -36,11 +37,13 @@
     background-color var(--color)
 
   &_selected
-    box-shadow: 0px 0px 0px 3px var(--color);
+    background-color var(--color)
+    color white
+  &_selected &__hotkey
+    color white
 
   &__text
     position relative
-    color var(--color)
     white-space nowrap
   &__hotkey
     position relative
