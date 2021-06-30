@@ -392,7 +392,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const lastFocusRequest = useRef(0);
   useEffect(() => {
     if (isActive && shouldFocus && lastFocusRequest.current < area.perRegionFocusRequest) {
-      (mainInputRef.current || firstResultInputRef.current)?.focus?.();
+      (mainInputRef.current || firstResultInputRef.current)?.focus({ cursor: 'end' });
       lastFocusRequest.current = area.perRegionFocusRequest;
     }
   }, [isActive, shouldFocus]);
