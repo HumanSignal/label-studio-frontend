@@ -56,10 +56,8 @@ const RegionsLayer = memo(({regions, name, useLayers}) => {
   );
 });
 
-const Regions = memo(({regions, useLayers}) => {
-  const chunkSize = Math.ceil(regions.length / 15);
-
-  return chunks(regions, chunkSize).map((chunk, i) => (
+const Regions = memo(({regions, useLayers = true}) => {
+  return chunks(regions, 15).map((chunk, i) => (
     <RegionsLayer
       key={`chunk-${i}`}
       name={`chunk-${i}`}
