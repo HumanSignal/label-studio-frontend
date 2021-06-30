@@ -415,6 +415,11 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
       const { value } = ev.target;
       item.setValue(value);
     },
+    onFocus: ev => {
+      if (!area.isSelected) {
+        area.annotation.selectArea(area);
+      }
+    }
   };
 
   if (isTextArea) {
