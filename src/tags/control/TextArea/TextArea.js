@@ -328,6 +328,15 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
     },
     onFocus,
   };
+  if (isTextarea) {
+    inputProps.onKeyDown = e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.target?.blur?.();
+      }
+    };
+  }
   return <Elem name="item">
     <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
     <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/>
