@@ -42,7 +42,10 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   const itemElRef = useRef();
   useEffect(()=>{
     if (item.selected) {
-      itemElRef.current?.scrollIntoView();
+      const el = itemElRef.current;
+      if (!el) return;
+      const scroll = el.scrollIntoViewIfNeeded || el.scrollIntoView;
+      scroll.call(el);
     }
   }, [item.selected]);
   return (
