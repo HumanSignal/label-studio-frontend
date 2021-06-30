@@ -438,7 +438,8 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
-  const showSubmit = !result || item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions);
+  const showSubmit = !result || !result?.mainValue?.length || !item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions);
+
   if (!isAlive(item) || !isAlive(area)) return null;
   return (
     <Block name="textarea-tag" mod={{ mode: item.mode }}>
