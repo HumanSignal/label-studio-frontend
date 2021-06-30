@@ -330,7 +330,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
   };
   if (isTextarea) {
     inputProps.onKeyDown = e => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
         e.target?.blur?.();
@@ -425,7 +425,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   if (isTextArea) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
         if (item.allowsubmit && item._value) {
@@ -443,14 +443,16 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const itemStyle = {};
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
-  const showSubmit = !result || !result?.mainValue?.length || !item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions);
+  const showSubmit = !result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions));
 
   if (!isAlive(item) || !isAlive(area)) return null;
   return (
     <Block name="textarea-tag" mod={{ mode: item.mode }}>
+      {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
+
       {showSubmit && (
         <Elem name="form"
-          tag={Form} mod={{ hidden: collapsed }}
+          tag={Form}
           onFinish={ev => {
             if (item.allowsubmit && item._value) {
               submitValue();
@@ -461,8 +463,6 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
           <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} />
         </Elem>
       )}
-
-      {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
     </Block>
   );
 });
