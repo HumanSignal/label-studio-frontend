@@ -339,12 +339,12 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
 const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
   useMemo(() => {
-    if (!item.rle) return;
+    if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
     img.onload = () => {
       setImage(img);
     };
-  }, [item.rle, item.parent, item.strokeColor]);
+  }, [item.rle, item.parent, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
 
   const imageHitFunc = useCallback(
     (context, shape) => {
@@ -362,7 +362,7 @@ const HtxBrushView = ({ item }) => {
         context.putImageData(imageData, 0, 0);
       }
     },
-    [image, item.parent.stageWidth, item.parent.stageHeight],
+    [image, item.parent?.stageWidth, item.parent?.stageHeight],
   );
   const { store } = item;
 
@@ -378,8 +378,10 @@ const HtxBrushView = ({ item }) => {
     }
   }, []);
 
+  if (!item.parent) return null;
+
   highlightedRef.current = item.highlighted;
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
 
   return (
     <Layer
