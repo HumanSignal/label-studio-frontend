@@ -3,11 +3,17 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { DEFAULT_DIMENSIONS, MIN_SIZE } from "../tools/Base";
+import { guidGenerator } from "../utils/unique";
 
 const DrawingTool = types
   .model("DrawingTool", {
     default: true,
     mode: types.optional(types.enumeration(["drawing", "viewing"]), "viewing"),
+  })
+  .volatile(self => {
+    return {
+      currentArea: null
+    };
   })
   .views(self => {
     return {
@@ -30,8 +36,14 @@ const DrawingTool = types
       get isDrawing() {
         return self.mode === "drawing";
       },
+      get getActiveShape() {
+        return self.currentArea;
+      },
+      getCurrentArea() {
+        return self.currentArea;
+      },
       current() {
-        return self.getActiveShape;
+        return self.currentArea;
       },
       canStart() {
         return !self.isDrawing;
@@ -73,21 +85,31 @@ const DrawingTool = types
     };
   })
   .actions(self => {
-    let currentArea;
     return {
-      getCurrentArea() {
-        return currentArea;
-      },
       createRegion(opts) {
         const control = self.control;
         const resultValue = control.getResultValue();
-        currentArea = self.obj.annotation.createResult(opts, resultValue, control, self.obj);
-        currentArea.setDrawing(true);
+        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control);
+        self.currentArea.setDrawing(true);
+        self.applyActiveStates(self.currentArea);
+        return self.currentArea;
+      },
+      commitRegion() {
+        const {currentArea, control, obj} = self;
+        const newArea = self.annotation.createResult(currentArea.serialize().value, currentArea.results[0].value.toJSON(), control, obj);
+        self.applyActiveStates(newArea);
+        self.deleteRegion();
+        return newArea;
+      },
+      deleteRegion() {
+        self.currentArea = null;
+        self.obj.deleteDrawingRegion();
+      },
+      applyActiveStates(area) {
         const activeStates = self.obj.activeStates();
         activeStates.forEach(state => {
-          currentArea.setValue(state);
+          area.setValue(state);
         });
-        return currentArea;
       },
 
       beforeCommitDrawing() {
@@ -104,19 +126,13 @@ const DrawingTool = types
         self.createRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing(x, y) {
-        const s = self.getActiveShape;
-
         if (!self.beforeCommitDrawing()) {
-          self.annotation.removeArea(s);
+          self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
         } else {
+          self.commitRegion();
           self.annotation.history.unfreeze();
           // Needs some delay for avoiding catching click if this method is called on mouseup
-          let area = currentArea;
-          currentArea = null;
-          setTimeout(() => {
-            area.setDrawing(false);
-          }, 0);
           // self.obj.annotation.highlightedNode.unselectRegion(true);
         }
         self.mode = "viewing";
