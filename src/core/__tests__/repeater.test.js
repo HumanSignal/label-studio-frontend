@@ -51,7 +51,6 @@ it("Should replace child three {{idx}} with current itteration of index", () => 
 
   expect(textTag1.value).toBe("$.utterances[0].text");
   expect(textTag2.value).toBe("$.utterances[1].text");
-
 });
 
 it("Should support custom index flags", () => {
@@ -67,6 +66,5 @@ it("Should support custom index flags", () => {
 
   expect(textTag.name).toBe("user_0");
   expect(textTag.value).toBe("$.utterances[0].text");
-
 });
 
