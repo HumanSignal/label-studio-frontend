@@ -324,15 +324,12 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
             ev.timeStamp - lastClickTs < 350
           ) {
             // dblclick
-            self.nextPoint(x + self.defaultDimensions.length, y);
-            self.nextPoint(
-              x + self.defaultDimensions.length / 2,
-              y + Math.sin(Math.PI / 3) * self.defaultDimensions.length,
-            );
-            self.finishDrawing();
+            self.drawDefault();
           } else {
             if (self.comparePointsWithThreshold(startPoint, { x, y })) {
-              self.finishDrawing();
+              if (clickCount >= 3) {
+                self.finishDrawing();
+              }
             } else {
               self.nextPoint(x, y);
             }
@@ -346,6 +343,16 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
           self.listenForClose();
         }
       },
+
+      drawDefault() {
+        const {x,y} = startPoint;
+        self.nextPoint(x + self.defaultDimensions.length, y);
+        self.nextPoint(
+          x + self.defaultDimensions.length / 2,
+          y + Math.sin(Math.PI / 3) * self.defaultDimensions.length,
+        );
+        self.finishDrawing();
+      }
     };
   });
 
