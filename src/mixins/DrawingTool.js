@@ -86,7 +86,7 @@ const DrawingTool = types
   })
   .actions(self => {
     return {
-      createRegion(opts) {
+      createDrawingRegion(opts) {
         const control = self.control;
         const resultValue = control.getResultValue();
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control);
@@ -94,12 +94,24 @@ const DrawingTool = types
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
       },
-      commitRegion() {
+      commitDrawingRegion() {
         const {currentArea, control, obj} = self;
-        const newArea = self.annotation.createResult(currentArea.serialize().value, currentArea.results[0].value.toJSON(), control, obj);
+        const source = currentArea.toJSON();
+        const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
+          value[key] = source[key];
+          return value;
+        }, {coordstype: "px"});
+        const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
         self.applyActiveStates(newArea);
         self.deleteRegion();
         return newArea;
+      },
+      createRegion(opts) {
+        const control = self.control;
+        const resultValue = control.getResultValue();
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj);
+        self.applyActiveStates(self.currentArea);
+        return self.currentArea;
       },
       deleteRegion() {
         self.currentArea = null;
@@ -123,23 +135,26 @@ const DrawingTool = types
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        self.createRegion(self.createRegionOptions({ x, y }));
+        self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing(x, y) {
         if (!self.beforeCommitDrawing()) {
           self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
         } else {
-          self.commitRegion();
-          self.annotation.history.unfreeze();
-          // Needs some delay for avoiding catching click if this method is called on mouseup
-          // self.obj.annotation.highlightedNode.unselectRegion(true);
+          // It takes time to finish drawing before commit the region
+          setTimeout(()=>{
+            self._finishDrawing();
+          });
         }
-        self.mode = "viewing";
       },
+      _finishDrawing() {
+        self.commitDrawingRegion();
+        self.annotation.history.unfreeze();
+        self.mode = "viewing";
+      }
     };
   });
-
 const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
   .views(self => ({
     get defaultDimensions() {
@@ -269,6 +284,9 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         self.getCurrentArea().addPoint(x, y);
         clickCount++;
       },
+      listenForClose() {
+        console.error("MultipleClicksMixin model needs to implement closeCurrent method in actions");
+      },
       closeCurrent() {
         console.error("MultipleClicksMixin model needs to implement closeCurrent method in actions");
       },
@@ -276,7 +294,9 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         if (!self.isDrawing) return;
         clickCount = 0;
         self.closeCurrent();
-        self.mode = "viewing";
+        setTimeout(()=>{
+          self._finishDrawing();
+        });
       },
       mousedownEv(ev, [x, y]) {
         lastPoint = { x, y };
@@ -323,6 +343,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
           clickCount = 1;
           lastClickTs = ev.timeStamp;
           self.startDrawing(x, y);
+          self.listenForClose();
         }
       },
     };
