@@ -47,7 +47,7 @@ const DebugComponent = ({ store }) => {
   }, []);
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <br />
       <h2>Debug</h2>
       <div>

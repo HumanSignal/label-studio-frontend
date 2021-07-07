@@ -26,7 +26,7 @@
   min-width: 320px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: stretch;
   background-color: var(--main-bg-color);
 
