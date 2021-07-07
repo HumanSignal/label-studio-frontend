@@ -1040,6 +1040,7 @@ export default types
 
       selectAnnotation(c.id);
       c.deserializeAnnotation(s);
+      c.updateObjects();
 
       return c;
     }
