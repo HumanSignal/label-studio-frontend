@@ -21,6 +21,7 @@ import { Dialogue } from "../examples/phrases";
 import { AudioClassification } from "../examples/audio_classification";
 import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
+import { VideoRegions } from "../examples/video";
 
 /**
  * Image
@@ -60,7 +61,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = RichTextPlainRemote;
+const data = VideoRegions;
 
 function getData(task) {
   if (task && task.data) {

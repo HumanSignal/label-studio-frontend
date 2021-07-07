@@ -4,5 +4,6 @@ import { ImageModel } from "./Image";
 import { RichTextModel } from "./RichText";
 import { TimeSeriesModel } from "./TimeSeries";
 import { ParagraphsModel } from "./Paragraphs";
+import { VideoModel } from "./Video";
 
-export { AudioModel, AudioPlusModel, ImageModel, ParagraphsModel, TimeSeriesModel, RichTextModel };
+export { AudioModel, AudioPlusModel, ImageModel, ParagraphsModel, TimeSeriesModel, RichTextModel, VideoModel };
