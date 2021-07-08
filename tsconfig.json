@@ -1,34 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "esnext",
+    "module": "commonjs",
     "allowJs": false,
     "checkJs": false,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "strict": true,
-    "rootDirs": [
-      "./src"
-    ],
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
+    "rootDirs": ["./src"],
+    "typeRoots": ["./types", "./node_modules/@types"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowSyntheticDefaultImports": true,
-    "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true
-  },
-  "include": [
-    "src"
-  ]
+  }
 }
