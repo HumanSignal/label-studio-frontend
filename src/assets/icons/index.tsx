@@ -16,3 +16,7 @@ export { default as LsChevron } from "./chevron.svg";
 export { default as LsExpand } from "./expand.svg";
 export { default as LsCollapse } from "./collapse.svg";
 export { default as LsDate } from "./date.svg";
+
+export { default as IconPlayerPause } from "./player/pause.svg";
+export { default as IconPlayerPlay } from "./player/play.svg";
+export { default as IconPlayerStep } from "./player/step.svg";
