@@ -166,13 +166,13 @@ function treeToModel(html, store) {
   }
 
   function cloneXmlTreeAndReplaceKeys(root, idx, indexFlag = "{{idx}}") {
-    function recurseiveClone(node) {
+    function recursiveClone(node) {
       let copy = {};
       for (let key in node) {
         if (key === '$$') {
-          copy["$$"] = node["$$"].map(c => recurseiveClone(c));
+          copy["$$"] = node["$$"].map(c => recursiveClone(c));
         } else if (key === '$') {
-          copy["$"] = recurseiveClone(node["$"]);
+          copy["$"] = recursiveClone(node["$"]);
         } else if (typeof node[key] === 'string') {
           copy[key] = node[key].replace(indexFlag, idx);
         } else {
@@ -184,7 +184,7 @@ function treeToModel(html, store) {
     }
 
 
-    return recurseiveClone(root);
+    return recursiveClone(root);
   }
 
 
