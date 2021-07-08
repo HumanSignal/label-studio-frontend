@@ -190,6 +190,12 @@ const Controls = ({ item, video }) => {
   );
 };
 
+function onPlayPause(e) {
+  e.preventDefault();
+  const video = e.target;
+  video.paused ? video.play() : video.pause();
+}
+
 const HtxVideoView = ({ store, item }) => {
   if (!item._value) return null;
   const [mounted, setMounted] = useState(false);
@@ -203,7 +209,7 @@ const HtxVideoView = ({ store, item }) => {
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
       <Block name="video">
-        <video src={item._value} ref={item.ref} />
+        <video src={item._value} ref={item.ref} onClick={onPlayPause} />
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
     </ObjectTag>
