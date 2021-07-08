@@ -883,7 +883,7 @@ export default types
     }
 
     function showError(err) {
-      self.addErrors([errorBuilder.generalError(err)]);
+      if (err) self.addErrors([errorBuilder.generalError(err)]);
       // we have to return at least empty View to display interface
       return (self.root = ViewModel.create({ id: "error" }));
     }
@@ -901,7 +901,7 @@ export default types
         rootModel = Tree.treeToModel(config);
       } catch (e) {
         console.error(e);
-        // return showError(e);
+        return showError(e);
       }
       const modelClass = Registry.getModelByTag(rootModel.type);
       // hacky way to get all the available object tag names
@@ -1090,7 +1090,7 @@ export default types
     };
 
     const validate = (validatorName, data) => {
-      self._validator.validate(validatorName, data);
+      return self._validator.validate(validatorName, data);
     };
 
     return {

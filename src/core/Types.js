@@ -1,4 +1,4 @@
-import { types, getType, getParent } from "mobx-state-tree";
+import { types, getType, getParent, isRoot } from "mobx-state-tree";
 
 import Registry from "./Registry";
 
@@ -26,11 +26,20 @@ const oneOfTags = _oneOf(Registry.getModelByTag, "Not expecting tag: ");
 const tagsArray = _mixedArray(oneOfTags);
 
 function unionArray(arr) {
-  return types.maybeNull(types.array(oneOfTags(arr)));
+  const type = types.maybeNull(types.array(oneOfTags(arr)));
+  type.value = arr;
+  return type;
 }
 
 function unionTag(arr) {
   return types.maybeNull(types.enumeration("unionTag", arr));
+}
+
+function tagsTypes(arr) {
+  const type = types.frozen(arr.map(val => val.toLowerCase()));
+  type.describe = ()=>`(${arr.join("|")})`;
+  type.value = arr;
+  return type;
 }
 
 function allModelsTypes() {
@@ -71,7 +80,24 @@ function getParentOfTypeString(node, str) {
 
     if (str.find(c => c === name)) return parent;
 
-    parent = getParent(parent);
+    parent = isRoot(parent) ? null : getParent(parent);
+  }
+
+  return null;
+}
+
+function getParentTagOfTypeString(node, str) {
+  // same as getParentOfType but checks models .name instead of type
+  let parent = getParent(node);
+
+  if (!Array.isArray(str)) str = [str];
+
+  while (parent) {
+    let parentType = parent.type;
+
+    if (str.find(c => c === parentType)) return parent;
+
+    parent = isRoot(parent) ? null : getParent(parent);
   }
 
   return null;
@@ -80,4 +106,4 @@ function getParentOfTypeString(node, str) {
 const oneOfTools = _oneOf(Registry.getTool, "Not expecting tool: ");
 const toolsArray = _mixedArray(oneOfTools);
 
-export default { unionArray, allModelsTypes, unionTag, isType, getParentOfTypeString, tagsArray, toolsArray };
+export default { unionArray, allModelsTypes, unionTag, tagsTypes, isType, getParentOfTypeString, getParentTagOfTypeString, tagsArray, toolsArray };
