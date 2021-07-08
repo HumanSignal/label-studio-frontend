@@ -1,5 +1,5 @@
 import { isString, escapeHtml } from "./utilities";
-import jsonpath from 'jsonpath';
+import get from "lodash.get";
 
 /**
  * Simple way to retrieve linked data in `value` param from task
@@ -10,10 +10,7 @@ import jsonpath from 'jsonpath';
 export const parseValue = (value, task) => {
   if (!value) return;
   if (value[0] === "$") {
-    if (value.startsWith('$.')) {
-      return jsonpath.value(task, value);
-    }
-    return task[value.substr(1)];
+    return get(task, value.substr(1));
   }
   return value ?? "";
 };
