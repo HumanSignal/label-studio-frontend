@@ -1,3 +1,4 @@
+import { Tooltip } from "antd";
 import { observer, inject } from "mobx-react";
 import { types } from "mobx-state-tree";
 import React, { useEffect, useRef, useState } from "react";
@@ -104,9 +105,11 @@ const PlayPause = ({ video }) => {
   }, [video]);
 
   return (
-    <Elem name="play" onClick={onPlayPause}>
-      {paused ? <IconPlayerPlay /> : <IconPlayerPause />}
-    </Elem>
+    <Tooltip title="Play/Pause [alt+space]" placement="bottomLeft">
+      <Elem name="play" onClick={onPlayPause}>
+        {paused ? <IconPlayerPlay /> : <IconPlayerPause />}
+      </Elem>
+    </Tooltip>
   );
 };
 
@@ -132,12 +135,16 @@ const FrameStep = ({ video }) => {
 
   return (
     <>
-      <Elem name="frame" onClick={onBackward}>
-        <IconPlayerStep style={{ transform: "rotate(180deg)" }} />
-      </Elem>
-      <Elem name="frame" onClick={onForward}>
-        <IconPlayerStep />
-      </Elem>
+      <Tooltip title="One Frame Back [alt+left]" placement="bottomLeft">
+        <Elem name="frame" onClick={onBackward}>
+          <IconPlayerStep style={{ transform: "rotate(180deg)" }} />
+        </Elem>
+      </Tooltip>
+      <Tooltip title="One Frame Forward [alt+right]" placement="bottomLeft">
+        <Elem name="frame" onClick={onForward}>
+          <IconPlayerStep />
+        </Elem>
+      </Tooltip>
     </>
   );
 };
