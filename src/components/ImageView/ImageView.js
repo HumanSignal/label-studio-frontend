@@ -324,6 +324,7 @@ export default observer(
     }
 
     onResize = () => {
+      if (!this.container) return;
       if (this.container.offsetWidth <= 1) return;
       if (this.lastOffsetWidth === this.container.offsetWidth) return;
 

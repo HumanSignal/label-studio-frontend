@@ -234,6 +234,7 @@ function treeToModel(html) {
       charsAsChildren: true,
     },
     function(err, result) {
+      if (err) throw err;
       document = result;
     },
   );

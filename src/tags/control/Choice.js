@@ -1,15 +1,15 @@
 import React, { Component } from "react";
 import { Checkbox, Radio, Form } from "antd";
 import { observer, inject } from "mobx-react";
-import { types, getParentOfType, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
-import { ChoicesModel } from "./Choices";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { TagParentMixin } from "../../mixins/TagParentMixin";
 
 /**
  * Choice tag represents a single choice for annotations.
@@ -46,19 +46,16 @@ const Model = types
     _value: types.optional(types.string, ""),
     // hierarchical Choices used for Taxonomy
     children: Types.unionArray(["choice"]),
+    parentTypes: Types.tagsTypes(["Choices"]),
   })
   .views(self => ({
     get isCheckbox() {
-      const choice = self.parent.choice;
+      const choice = self.parent?.choice;
       return choice === "multiple" || choice === "single";
     },
 
     get isSelect() {
-      return self.parent.layout === "select";
-    },
-
-    get parent() {
-      return getParentOfType(self, ChoicesModel);
+      return self.parent?.layout === "select";
     },
 
     // to conform Label's maxUsages check
@@ -94,7 +91,7 @@ const Model = types
     },
   }));
 
-const ChoiceModel = types.compose("ChoiceModel", TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
+const ChoiceModel = types.compose("ChoiceModel", TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
 class HtxChoiceView extends Component {
   render() {
@@ -114,7 +111,7 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent.readonly,
+      disabled: item.parent?.readonly,
       onChange: ev => {
         if (!item.annotation.editable) return;
         item.toggleSelected();
