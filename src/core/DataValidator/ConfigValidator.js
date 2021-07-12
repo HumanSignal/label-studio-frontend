@@ -51,6 +51,19 @@ export const errorBuilder = {
   },
 
   /**
+   * Occurrs when tag has not expected parent tag at any level
+   */
+  parentTagUnexpected(modelName, field, value, validType) {
+    return {
+      modelName,
+      field,
+      value,
+      validType,
+      error: "ERR_PARENT_TAG_UNEXPECTED",
+    };
+  },
+
+  /**
    * Occurrs when attribute value has wrong type
    */
   badAttributeValueType(modelName, field, value, validType) {
@@ -119,21 +132,22 @@ const getTypeDescription = (type, withNullType = true) => {
  * @param {string} parent
  * @returns {object[]}
  */
-const flattenTree = (tree, parent = null) => {
+const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
   const result = [];
   if (!tree.children) return [];
 
   for (let child of tree.children) {
     /* Create a child without children and
     assign id of the parent for quick mathcing */
-    const flatChild = { ...child, parent: parent?.id ?? null };
+    const parentTypes = [...parentParentTypes, ...(parent?.type ? [parent?.type] : [])];
+    const flatChild = { ...child, parent: parent?.id ?? null, parentTypes };
     delete flatChild.children;
 
     result.push(flatChild);
 
     /* Recursively add children if exist */
     if (child.children instanceof Array) {
-      result.push(...flattenTree(child, child));
+      result.push(...flattenTree(child, child, parentTypes));
     }
   }
 
@@ -188,6 +202,21 @@ const validateToNameTag = (element, model, flatTree) => {
 };
 
 /**
+ * Validates parent of tag
+ * Checks that parent tag has the right type
+ * @param {Object} element
+ * @param {Object} model
+ * @param {Object[]} flatTree
+ */
+const validateParentTag = (element, model) => {
+  const parentTypes = model.properties.parentTypes?.value;
+  if (!parentTypes || element.parentTypes.find(elementParentType => parentTypes.find(type => elementParentType === type.toLowerCase()))) {
+    return null;
+  }
+  return errorBuilder.parentTagUnexpected(model.name, "parent", element.tagName, model.properties.parentTypes);
+};
+
+/**
  * Validate other tag attributes other than name and toName
  * @param {Object} child
  * @param {import("mobx-state-tree").IModelType} model
@@ -227,7 +256,7 @@ export class ConfigValidator {
    */
   static validate(root) {
     const flatTree = flattenTree(root);
-    const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags"];
+    const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags", "parentTypes"];
     const validationResult = [];
 
     for (let child of flatTree) {
@@ -239,6 +268,10 @@ export class ConfigValidator {
       // Validate toName attribute
       const toNameValidation = validateToNameTag(child, model, flatTree);
       if (toNameValidation !== null) validationResult.push(toNameValidation);
+
+      // Validate by parentUnexpected parent tag
+      const parentValidation = validateParentTag(child, model, flatTree);
+      if (parentValidation !== null) validationResult.push(parentValidation);
 
       validationResult.push(...validateAttributes(child, model, propertiesToSkip));
     }

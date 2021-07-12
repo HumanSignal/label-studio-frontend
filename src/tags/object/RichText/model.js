@@ -111,10 +111,9 @@ const Model = types
           return;
         }
 
-        const response = yield fetch(url);
-        const { ok, status, statusText } = response;
-
         try {
+          const response = yield fetch(url);
+          const { ok, status, statusText } = response;
           if (!ok) throw new Error(`${status} ${statusText}`);
 
           self.setRemoteValue(yield response.text());

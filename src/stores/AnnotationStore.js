@@ -882,11 +882,27 @@ export default types
       }
     }
 
+    function showError(err) {
+      if (err) self.addErrors([errorBuilder.generalError(err)]);
+      // we have to return at least empty View to display interface
+      return (self.root = ViewModel.create({ id: "error" }));
+    }
+
     function initRoot(config) {
       if (self.root) return;
 
+      if (!config) {
+        return (self.root = ViewModel.create({id:"empty"}));
+      }
+
       // convert config to mst model
-      const rootModel = Tree.treeToModel(config);
+      let rootModel;
+      try {
+        rootModel = Tree.treeToModel(config);
+      } catch (e) {
+        console.error(e);
+        return showError(e);
+      }
       const modelClass = Registry.getModelByTag(rootModel.type);
       // hacky way to get all the available object tag names
       const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
@@ -898,9 +914,7 @@ export default types
         self.root = modelClass.create(rootModel);
       } catch (e) {
         console.error(e);
-        self.addErrors([errorBuilder.generalError(e)]);
-        // we have to return at least empty View to display interface
-        return (self.root = ViewModel.create({ id: "error" }));
+        return showError(e);
       }
 
       Tree.traverseTree(self.root, node => {
@@ -1077,7 +1091,7 @@ export default types
     };
 
     const validate = (validatorName, data) => {
-      self._validator.validate(validatorName, data);
+      return self._validator.validate(validatorName, data);
     };
 
     return {

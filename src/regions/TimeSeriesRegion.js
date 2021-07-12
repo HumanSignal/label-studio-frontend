@@ -32,6 +32,12 @@ const Model = types
       return self.object;
     },
 
+    // Do not remove this annotation getter until saving/updating annotation in LS will work without errors
+    get annotation() {
+      const root = getRoot(self);
+      return root !== self ? root.annotationStore?.selected : null;
+    },
+
     getRegionElement() {
       return self._brushRef;
     },
@@ -118,8 +124,8 @@ const TimeSeriesRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
-  Model,
   AnnotationMixin,
+  Model
 );
 
 Registry.addTag("timeseriesregion", TimeSeriesRegionModel, () => {});

@@ -24,10 +24,10 @@ const Model = types
     endOffset: types.integer,
     end: types.string,
 
-    text: types.maybeNull(types.string),
     states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .volatile((self) => ({
+    text: "",
     hideable: true,
   }))
   .views(self => ({

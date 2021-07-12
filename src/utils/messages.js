@@ -31,6 +31,12 @@ export default {
       .join(", ")}</b>`;
   },
 
+  ERR_PARENT_TAG_UNEXPECTED: ({ validType, value }) => {
+    return `Tag <b>${value}</b> must be a child of one of the tags <b>${[]
+      .concat(validType)
+      .join(", ")}</b>.`;
+  },
+
   ERR_BAD_TYPE: ({ modelName, field, validType }) => {
     return `Attribute <b>${field}</b> of tag <b>${modelName}</b> has invalid type. Valid types are: <b>${validType}</b>.`;
   },

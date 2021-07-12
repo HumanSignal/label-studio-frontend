@@ -6,7 +6,6 @@ import { observer, inject } from "mobx-react";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
-import Types from "../../core/Types";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
 import { guidGenerator } from "../../core/Helpers";
@@ -14,6 +13,8 @@ import InfoModal from "../../components/Infomodal/Infomodal";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { Label } from "../../components/Label/Label";
+import { TagParentMixin } from "../../mixins/TagParentMixin";
+import Types from "../../core/Types";
 
 /**
  * Label tag represents a single label.
@@ -59,13 +60,24 @@ const Model = types.model({
   type: "label",
   visible: types.optional(types.boolean, true),
   _value: types.optional(types.string, ""),
+  parentTypes: Types.tagsTypes([
+    "Labels",
+    "EllipseLabels",
+    "RectangleLabels",
+    "PolygonLabels",
+    "KeyPointLabels",
+    "BrushLabels",
+    "HyperTextLabels",
+    "TimeSeriesLabels",
+    "ParagraphLabels"
+  ])
 }).volatile(self => {
   return {
-    isEmpty: false,
+    isEmpty: false
   };
 }).views(self => ({
   get maxUsages() {
-    return Number(self.maxusages || self.parent.maxusages);
+    return Number(self.maxusages || self.parent?.maxusages);
   },
 
   usedAlready() {
@@ -78,21 +90,7 @@ const Model = types.model({
   canBeUsed() {
     if (!self.maxUsages) return true;
     return self.usedAlready() < self.maxUsages;
-  },
-
-  get parent() {
-    return Types.getParentOfTypeString(self, [
-      "LabelsModel",
-      "EllipseLabelsModel",
-      "RectangleLabelsModel",
-      "PolygonLabelsModel",
-      "KeyPointLabelsModel",
-      "BrushLabelsModel",
-      "HyperTextLabelsModel",
-      "TimeSeriesLabelsModel",
-      "ParagraphLabelsModel",
-    ]);
-  },
+  }
 })).actions(self => ({
   setEmpty() {
     self.isEmpty = true;
@@ -105,7 +103,7 @@ const Model = types.model({
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
     const region = self.annotation.highlightedNode;
-    const sameObject = region && region.parent.name === self.parent.toname;
+    const sameObject = region && region.parent?.name === self.parent?.toname;
     if (region && region.readonly === true && sameObject) return;
 
     // one more check if that label can be selected
@@ -127,10 +125,10 @@ const Model = types.model({
         labels.selectedLabels.length === 1 &&
         self.selected &&
         region.results.length === 1 &&
-        (!self.parent.allowempty || self.isEmpty)
+        (!self.parent?.allowempty || self.isEmpty)
       )
         return;
-      if (self.parent.type !== "labels" && !self.parent.type.includes(region?.results[0].type)) return;
+      if (self.parent?.type !== "labels" && !self.parent?.type.includes(region?.results[0].type)) return;
     }
 
     // if we are going to select label and it would be the first in this labels group
@@ -141,7 +139,7 @@ const Model = types.model({
         forEach(tag => tag.unselectAll && tag.unselectAll());
 
       // unselect other tools if they exist and selected
-      const tool = Object.values(self.parent.tools || {})[0];
+      const tool = Object.values(self.parent?.tools || {})[0];
       if (tool && tool.manager.findSelectedTool() !== tool) {
         tool.manager.selectTool(tool, true);
       }
@@ -222,7 +220,7 @@ const Model = types.model({
   },
 }));
 
-const LabelModel = types.compose("LabelModel", TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
+const LabelModel = types.compose("LabelModel", TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
