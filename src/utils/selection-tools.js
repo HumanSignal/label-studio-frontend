@@ -186,17 +186,25 @@ const applyTextGranularity = (selection, granularity) => {
  * @param {number} offset
  */
 const textNodeLookup = (commonContainer, node, offset, direction) => {
-  const startNode = node === commonContainer ? findOnPosition(node, offset, true).node : node;
+  const startNode = node === commonContainer ? node.childNodes[offset] : node;
 
   if (isTextNode(startNode)) return startNode;
 
-  let textNode = startNode;
+  const walker = document.createTreeWalker(commonContainer, NodeFilter.SHOW_ALL);
+  let currentNode = walker.nextNode();
+  let lastTextNode;
 
-  while (!isTextNode(textNode)) {
-    textNode = direction === "forward" ? textNode.nextSibling : textNode.previousSibling;
+  while (currentNode && currentNode !== startNode) {
+    if (isTextNode(currentNode)) lastTextNode = currentNode;
+    currentNode = walker.nextNode();
   }
 
-  return textNode;
+  if (currentNode && direction === "backward") return lastTextNode;
+
+  while (currentNode) {
+    if (isTextNode(currentNode)) return currentNode;
+    currentNode = walker.nextNode();
+  }
 };
 
 /**
@@ -366,7 +374,7 @@ export const findNodesBetween = (startNode, endNode, root) => {
   // Also we iterate over Text nodes only natively. That's
   // the only type of nodes we need to highlight.
   // No additional checks, long live TreeWalker :)
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   // Flag indicates that we're somwhere between `startNode` and `endNode`
   let inRange = false;
@@ -378,7 +386,7 @@ export const findNodesBetween = (startNode, endNode, root) => {
 
   while (currentNode) {
     if (currentNode === startNode) inRange = true;
-    if (inRange) nodes.push(currentNode);
+    if (inRange && currentNode.nodeType === Node.TEXT_NODE) nodes.push(currentNode);
     if (inRange && currentNode === endNode) break;
     currentNode = walker.nextNode();
   }
@@ -436,22 +444,22 @@ export const findRange = (start, end, root) => {
  * @param {Node} root
  * @param {number} position
  */
-export const findOnPosition = (root, position, byNode = false) => {
+export const findOnPosition = (root, position) => {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
-  let lastPosition = position;
+  let lastPosition = 0;
   let currentNode = walker.nextNode();
 
   while (currentNode) {
     const isText = currentNode.nodeType === Node.TEXT_NODE;
     const isBR = currentNode.nodeName === "BR";
     if (isText || isBR) {
-      const length = byNode ? 1 : currentNode.length ?? 1;
+      const length = currentNode.length ?? 1;
 
-      if (length >= lastPosition) {
-        return { node: currentNode, position: lastPosition };
+      if (length + lastPosition >= position) {
+        return { node: currentNode, position: isBR ? 0 : position - lastPosition };
       } else {
-        lastPosition -= length;
+        lastPosition += length;
       }
     }
 
