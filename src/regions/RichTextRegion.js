@@ -75,7 +75,7 @@ const Model = types
     _getRange() {
       const rootNode = self._getRootNode();
 
-      if (self._cachedRegion === undefined || !rootNode.contains(self._cachedRegion.commonAncestorContainer)) {
+      if (self._cachedRegion === undefined || (rootNode && !rootNode.contains(self._cachedRegion.commonAncestorContainer))) {
         return (self._cachedRegion = self._createNativeRange());
       }
 
