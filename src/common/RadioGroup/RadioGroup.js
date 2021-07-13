@@ -4,7 +4,7 @@ import "./RadioGroup.styl";
 
 const RadioContext = React.createContext();
 
-export const RadioGroup = ({ size, value, defaultValue, onChange, children }) => {
+export const RadioGroup = ({ size, value, defaultValue, onChange, children, ...props }) => {
   const [currentValue, setCurrentValue] = useState(defaultValue);
 
   const onRadioChange = e => {
@@ -20,7 +20,7 @@ export const RadioGroup = ({ size, value, defaultValue, onChange, children }) =>
         defaultValue: defaultValue,
       }}
     >
-      <div className={cn("radio-group").mod({ size })}>
+      <div className={cn("radio-group").mod({ size })} style={props.style}>
         <div className={cn("radio-group").elem("buttons")}>{children}</div>
       </div>
     </RadioContext.Provider>

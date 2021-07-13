@@ -31,7 +31,11 @@ export const AnnotationTab = observer(({ store }) => {
       ) : null}
 
       {hasSegmentation && (
-        <Entities store={store} regionStore={annotation.regionStore} />
+        <Entities
+          store={store}
+          annotation={annotation}
+          regionStore={annotation.regionStore}
+        />
       )}
 
       {hasSegmentation && (
