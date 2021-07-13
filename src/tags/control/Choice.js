@@ -46,7 +46,7 @@ const Model = types
     _value: types.optional(types.string, ""),
     // hierarchical Choices used for Taxonomy
     children: Types.unionArray(["choice"]),
-    parentTypes: Types.tagsTypes(["Choices"]),
+    parentTypes: Types.tagsTypes(["Choices", "Taxonomy"]),
   })
   .views(self => ({
     get isCheckbox() {

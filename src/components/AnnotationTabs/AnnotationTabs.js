@@ -92,6 +92,8 @@ export const AnnotationTabs = observer(({
   if (showPredictions) list.push(...as.predictions);
   if (showAnnotations) list.push(...as.annotations);
 
+  const tabsDisabled = !showPredictions && !showAnnotations && !allowViewAll && !allowCreateNew;
+
   useEffect(() => {
     if (selectedRef.current) {
       const list = listRef.current;
@@ -105,7 +107,7 @@ export const AnnotationTabs = observer(({
     }
   }, [store.annotationStore.selected, selectedRef, listRef]);
 
-  return visible ? (
+  return (visible && !tabsDisabled) ? (
     <Block
       name="annotation-tabs"
       mod={{ viewAll: allowViewAll, addNew: allowCreateNew }}
