@@ -448,7 +448,7 @@ export const findOnPosition = (root, position, byNode = false) => {
     if (isText || isBR) {
       const length = byNode ? 1 : currentNode.length ?? 1;
 
-      if (length >= lastPosition && !isBR) {
+      if (length >= lastPosition) {
         return { node: currentNode, position: lastPosition };
       } else {
         lastPosition -= length;
