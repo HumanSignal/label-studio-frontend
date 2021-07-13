@@ -50,6 +50,8 @@ const DrawingTool = types
     };
     return {
       event(name, ev, args) {
+        // filter right clicks and middle clicks and shift pressed
+        if (ev.button > 0 || ev.shiftKey) return;
         let fn = name + "Ev";
         if (typeof self[fn] !== "undefined") self[fn].call(self, ev, args);
 
