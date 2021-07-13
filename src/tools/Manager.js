@@ -35,6 +35,8 @@ class ToolsManager {
       this.unselectAll();
       if (tool.setSelected) tool.setSelected(true);
     } else {
+      const drawingTool = this.findDrawingTool();
+      if (drawingTool) return this.selectTool(drawingTool, true);
       if (tool.setSelected) tool.setSelected(false);
     }
   }
@@ -57,6 +59,10 @@ class ToolsManager {
 
   findSelectedTool() {
     return Object.values(this.tools).find(t => t.selected);
+  }
+
+  findDrawingTool() {
+    return Object.values(this.tools).find(t => t.isDrawing);
   }
 
   event(name, ev, ...args) {
