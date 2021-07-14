@@ -26,8 +26,11 @@ class ToolsManager {
       if (typeof t.selected !== "undefined") t.setSelected(false);
     });
 
-    const stage = this.obj.stageRef;
-    stage.container().style.cursor = "default";
+    const stage = this.obj?.stageRef;
+
+    if (stage) {
+      stage.container().style.cursor = "default";
+    }
   }
 
   selectTool(tool, value) {
