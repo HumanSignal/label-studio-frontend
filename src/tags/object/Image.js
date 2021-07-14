@@ -513,6 +513,10 @@ const Model = types
 
     // convert screen coords to image coords considering zoom
     fixZoomedCoords([x, y]) {
+      if (!self.stageRef) {
+        return [x, y];
+      }
+
       // good official way, but maybe a bit slower and with repeating cloning
       const p = self.stageRef
         .getAbsoluteTransform()
