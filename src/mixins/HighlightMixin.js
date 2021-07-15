@@ -79,7 +79,7 @@ export const HighlightMixin = types
       self.annotation.setHighlightedNode(self);
       self.annotation.loadRegionState(self);
 
-      self.addClass(self._stylesheet.state.active);
+      self.addClass(stateClass.active);
 
       const first = self._spans[0];
 
@@ -187,6 +187,15 @@ export const HighlightMixin = types
     },
   }));
 
+
+
+const stateClass = {
+  active: "__active",
+  highlighted: "__highlighted",
+  collapsed: "__collapsed",
+  hidden: "__hidden",
+};
+
 /**
  * Creates a separate stylesheet for every region
  * @param {string} identifier GUID identifier of a region
@@ -197,13 +206,6 @@ const createSpanStylesheet = (identifier, color) => {
   const variables = {
     color: `--background-color-${identifier}`,
     cursor: `--cursor-style-${identifier}`,
-  };
-
-  const stateClass = {
-    active: "__active",
-    highlighted: "__highlighted",
-    collapsed: "__collapsed",
-    hidden: "__hidden",
   };
 
   const classNames = {
