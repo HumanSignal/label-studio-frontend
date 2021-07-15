@@ -230,7 +230,6 @@ const PolygonPointView = observer(({ item, name }) => {
         radius={w}
         fill={fill}
         stroke="black"
-        hitStrokeWidth={20}
         strokeWidth={stroke[item.size]}
         dragOnTop={false}
         strokeScaleEnabled={false}
