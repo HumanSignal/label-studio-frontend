@@ -81,7 +81,7 @@ export const HighlightMixin = types
 
       self.addClass(stateClass.active);
 
-      const first = self._spans[0];
+      const first = self._spans?.[0];
 
       if (first) return;
 
