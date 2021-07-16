@@ -160,7 +160,7 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
-      item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
+      item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey || e.evt.shiftKey || e.evt.button > 0));
 
       // item.freezeHistory();
       const p = e.target.getParent();
