@@ -13,6 +13,7 @@ import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
+import {LoadingOutlined} from "@ant-design/icons";
 
 Konva.showWarnings = false;
 
@@ -501,12 +502,11 @@ export default observer(
               src={item._value}
               onLoad={item.updateImageSize}
               onError={this.handleError}
-              onClick={this.handleOnClick}
               alt="LS"
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-          {item.stageWidth <= 1 ? null : (
+          {item.stageWidth <= 1 ? (item.hasTools?<div className={styles.loading}><LoadingOutlined /></div>:null) : (
             <Stage
               ref={ref => {
                 item.setStageRef(ref);

@@ -208,6 +208,10 @@ const Model = types
       return self.zoomScale * self.stageRatio;
     },
 
+    get hasTools() {
+      return !!self.getToolsManager().allTools()?.length;
+    },
+
     /**
      * @return {object}
      */
