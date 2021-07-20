@@ -71,11 +71,11 @@ const Model = types
     toggleSelected() {
       const choices = self.parent;
 
-      choices.shouldBeUnselected && choices.resetSelected();
+      choices.shouldBeUnselected && choices.resetSelected?.();
 
       self.setSelected(!self.sel);
 
-      choices.updateResult();
+      choices.updateResult?.();
     },
 
     setVisible(val) {
