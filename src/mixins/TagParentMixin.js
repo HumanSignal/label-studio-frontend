@@ -9,5 +9,3 @@ export const TagParentMixin = types.model("AnnotationMixin",
     return Types.getParentTagOfTypeString(self, self.parentTypes);
   },
 }));
-
-console.log(`TagParentMixin.properties.parentTypes.describe();`, TagParentMixin.properties.parentTypes.describe());
