@@ -12,7 +12,7 @@ export const KonvaRegionMixin = types.model({}).actions(self => {
     onClickRegion(e) {
       const annotation = self.annotation;
       if (!annotation.editable || self.isDrawing) return;
-      e.cancelBubble = true;
+      if (e) e.cancelBubble = true;
 
       if (annotation.relationMode) {
         annotation.addRelation(self);
