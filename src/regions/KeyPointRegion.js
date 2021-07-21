@@ -43,6 +43,7 @@ const Model = types
         // deserialization
         self.relativeX = self.x;
         self.relativeY = self.y;
+        self.checkSizes();
       } else {
         // creation
         const { stageWidth: width, stageHeight: height } = self.parent;

@@ -84,7 +84,7 @@ const Model = types
         self.relativeWidth = self.width;
         self.relativeHeight = self.height;
       }
-
+      self.checkSizes();
       self.updateAppearenceFromState();
     },
 

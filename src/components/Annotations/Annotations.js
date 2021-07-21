@@ -27,9 +27,9 @@ export const DraftPanel = observer(({ item }) => {
   }
   return (
     <div>
-      <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
+      <Tooltip placement="topLeft" title={item.draftSelected ? "switch to submitted result" : "switch to current draft"}>
         <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
-          {item.draft ? "draft" : "submitted"}
+          {item.draftSelected ? "draft" : "submitted"}
         </Button>
       </Tooltip>
       {saved}
