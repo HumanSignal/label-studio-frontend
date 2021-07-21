@@ -497,6 +497,7 @@ const Model = types
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
+      self.setReady(true);
       setTimeout(self.annotation.reinitHistory, 0);
     },
 

@@ -340,6 +340,7 @@ export default observer(
         this.updateImageTransform();
         this.observerObjectUpdate();
       }
+      this.updateReadyStatus();
     }
 
     componentWillUnmount() {
@@ -353,6 +354,14 @@ export default observer(
       if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
         this.observerObjectUpdate();
       }
+      this.updateReadyStatus();
+    }
+
+    updateReadyStatus() {
+      const {item} = this.props;
+      const {imageRef} = this;
+      if (!item || !isAlive(item) || !imageRef.current) return;
+      if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
 
     observerObjectUpdate(){
