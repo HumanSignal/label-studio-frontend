@@ -27,6 +27,23 @@
   justify-content: space-between;
 }
 
+.loading {
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  background: rgba(125,125,125,.15);
+  font-size: 24px;
+}
+
 .container {
   overflow: hidden;
 

@@ -53,8 +53,8 @@ const Model = types
           index,
         }));
       }
-
       if (self.points.length > 2) self.closed = true;
+      self.checkSizes();
     },
 
     /**

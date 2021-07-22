@@ -56,12 +56,28 @@ export class BoundingBox {
 }
 
 const imageRelatedBBox = (region, bbox) => {
-  const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
-  const scaledBBox = Geometry.scaleBBox(bbox, region.parent.zoomScale);
+  const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
+  return Geometry.clampBBox({
+    ...bbox,
+    x: imageBbox.x + bbox.x,
+    y: imageBbox.y + bbox.y,
+  },
+  {x:0, y:0},
+  {x:region.parent.stageWidth, y:region.parent.stageHeight}
+  );
+};
+
+const stageRelatedBBox = (region, bbox) => {
+  const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
+  const transformedBBox = Geometry.clampBBox(
+    Geometry.modifyBBoxCoords(bbox, region.parent.zoomOriginalCoords),
+    {x:0, y:0},
+    {x:region.parent.stageWidth, y:region.parent.stageHeight}
+  );
   return {
-    ...scaledBBox,
-    x: imageBbox.x + scaledBBox.x,
-    y: imageBbox.y + scaledBBox.y,
+    ...transformedBBox,
+    x: imageBbox.x + transformedBBox.x,
+    y: imageBbox.y + transformedBBox.y,
   };
 };
 
@@ -76,19 +92,19 @@ const _detect = region => {
       return Geometry.getDOMBBox(region.getRegionElement());
     }
     case "rectangleregion": {
-      return imageRelatedBBox(
+      return stageRelatedBBox(
         region,
         Geometry.getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
       );
     }
     case "ellipseregion": {
-      return imageRelatedBBox(
+      return stageRelatedBBox(
         region,
         Geometry.getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
       );
     }
     case "polygonregion": {
-      return imageRelatedBBox(region, Geometry.getPolygonBBox(region.points));
+      return stageRelatedBBox(region, Geometry.getPolygonBBox(region.points));
     }
     case "keypointregion": {
       const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
@@ -96,17 +112,14 @@ const _detect = region => {
       return {
         x: region.x * scale + imageBbox.x - 2,
         y: region.y * scale + imageBbox.y - 2,
-        width: 4,
-        height: 4,
+        width: region.width,
+        height: region.width,
       };
     }
     case "brushregion": {
       return imageRelatedBBox(
         region,
-        Geometry.scaleBBox(
-          Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
-          1 / region.layerRef.canvas.pixelRatio,
-        ),
+        Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
       );
     }
     default: {

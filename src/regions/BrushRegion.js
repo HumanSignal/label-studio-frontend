@@ -450,6 +450,10 @@ const HtxBrushView = ({ item }) => {
           sceneFunc={item.highlighted ? null : () => {}}
           hitFunc={() => {}}
           {...highlight}
+          scaleX={1/item.parent.stageScale}
+          scaleY={1/item.parent.stageScale}
+          x={-item.parent.zoomingPositionX/item.parent.stageScale}
+          y={-item.parent.zoomingPositionY/item.parent.stageScale}
           width={item.parent.stageWidth}
           height={item.parent.stageHeight}
         />

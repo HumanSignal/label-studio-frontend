@@ -4,6 +4,7 @@ import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
 import {EntityTab} from '../AnnotationTabs/AnnotationTabs';
+import { observe } from "mobx";
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -15,8 +16,17 @@ This triggers next rerender with next annotation until all the annotations are r
 
 class Item extends Component {
   componentDidMount() {
-    // ~2 ticks for canvas to be rendered and resized completely
-    setTimeout(this.props.onFinish, 32);
+    Promise.all(this.props.annotation.objects.map(o => {
+      return o.isReady || new Promise(resolve => {
+        let dispose = observe(o, "isReady", ()=>{
+          dispose();
+          resolve();
+        });
+      });
+    })).then(()=>{
+      // ~2 ticks for canvas to be rendered and resized completely
+      setTimeout(this.props.onFinish, 32);
+    });
   }
 
   render() {
@@ -98,7 +108,7 @@ export default class Grid extends Component {
             </div>
           ))}
           {renderNext && (
-            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} />
+            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} annotation={this.props.store.selected}/>
           )}
         </div>
         <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />

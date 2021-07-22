@@ -40,6 +40,12 @@ const DrawingTool = types
         console.warn("Drawing tool model needs to implement defaultDimentions getter in views");
         return {};
       },
+      get MIN_SIZE() {
+        return {
+          X: MIN_SIZE.X / self.obj.stageScale,
+          Y: MIN_SIZE.Y / self.obj.stageScale,
+        };
+      }
     };
   })
   .actions(self => {
@@ -67,7 +73,7 @@ const DrawingTool = types
         }
       },
 
-      comparePointsWithThreshold(p1, p2, threshold = { x: MIN_SIZE.X, y: MIN_SIZE.Y }) {
+      comparePointsWithThreshold(p1, p2, threshold = { x: self.MIN_SIZE.X, y: self.MIN_SIZE.Y }) {
         if (!p1 || !p2) return;
         if (typeof threshold === "number") threshold = { x: threshold, y: threshold };
         return Math.abs(p1.x - p2.x) < threshold.x && Math.abs(p1.y - p2.y) < threshold.y;
@@ -130,8 +136,8 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
   .views(self => ({
     get defaultDimensions() {
       return {
-        width: MIN_SIZE.X,
-        height: MIN_SIZE.Y,
+        width: self.MIN_SIZE.X,
+        height: self.MIN_SIZE.Y,
       };
     },
   }))

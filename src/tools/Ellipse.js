@@ -44,7 +44,7 @@ const _Tool = types
   .actions(self => ({
     beforeCommitDrawing() {
       const s = self.getActiveShape;
-      return s.radiusX > MIN_SIZE.X && s.radiusY > MIN_SIZE.Y;
+      return s.radiusX > self.MIN_SIZE.X && s.radiusY > self.MIN_SIZE.Y;
     },
   }));
 
