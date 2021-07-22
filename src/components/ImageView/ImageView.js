@@ -13,6 +13,7 @@ import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
+import {LoadingOutlined} from "@ant-design/icons";
 
 Konva.showWarnings = false;
 
@@ -339,6 +340,7 @@ export default observer(
         this.updateImageTransform();
         this.observerObjectUpdate();
       }
+      this.updateReadyStatus();
     }
 
     componentWillUnmount() {
@@ -352,6 +354,14 @@ export default observer(
       if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
         this.observerObjectUpdate();
       }
+      this.updateReadyStatus();
+    }
+
+    updateReadyStatus() {
+      const {item} = this.props;
+      const {imageRef} = this;
+      if (!item || !isAlive(item) || !imageRef.current) return;
+      if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
 
     observerObjectUpdate(){
@@ -501,12 +511,11 @@ export default observer(
               src={item._value}
               onLoad={item.updateImageSize}
               onError={this.handleError}
-              onClick={this.handleOnClick}
               alt="LS"
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-          {item.stageWidth <= 1 ? null : (
+          {item.stageWidth <= 1 ? (item.hasTools?<div className={styles.loading}><LoadingOutlined /></div>:null) : (
             <Stage
               ref={ref => {
                 item.setStageRef(ref);

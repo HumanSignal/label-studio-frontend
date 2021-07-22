@@ -8,6 +8,11 @@ const ObjectBase = types
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
   })
+  .volatile(self => {
+    return {
+      isReady: true
+    };
+  })
   .views(self => ({
     findRegion(params) {
       let obj = null;
@@ -26,6 +31,9 @@ const ObjectBase = types
       const objectsToReturn = self.regions.map(r => r.toStateJSON());
       return objectsToReturn;
     },
+    setReady(value) {
+      self.isReady = value;
+    }
   }))
   .actions(self => {
     let props = {};

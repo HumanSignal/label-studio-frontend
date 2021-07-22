@@ -14,6 +14,7 @@
  * y3: number,
  * y4: number}} RectCoordinates Represents 4 corners coordinates of rectangle
  */
+import { clamp } from "../../utils/utilities";
 
 export class Geometry {
   /**
@@ -136,18 +137,33 @@ export class Geometry {
     };
   }
 
+  static modifyBBoxCoords(bbox, modifier = x=>x) {
+    let p1 = modifier([bbox.x, bbox.y]);
+    let p2 = modifier([bbox.width + bbox.x, bbox.height + bbox.y]);
+
+    return {
+      ...bbox,
+      x: Math.min(p1[0], p2[0]),
+      y: Math.min(p1[1], p2[1]),
+      width: Math.abs(p2[0] - p1[0]),
+      height: Math.abs(p2[1] - p1[1]),
+    };
+  }
+
   /**
    * Add padding to BBox
    * @param {BBox} bbox BBox to pad
    * @param {number} padding Padding size
    */
   static padding(bbox, padding = 0) {
+    const paddingX = bbox.width < 1 ? 0 : padding;
+    const paddingY = bbox.height < 1 ? 0 : padding;
     return {
       ...bbox,
-      x: bbox.x - padding,
-      y: bbox.y - padding,
-      width: bbox.width + padding * 2,
-      height: bbox.height + padding * 2,
+      x: bbox.x - paddingX,
+      y: bbox.y - paddingY,
+      width: bbox.width + paddingX * 2,
+      height: bbox.height + paddingY * 2,
     };
   }
 
@@ -283,6 +299,17 @@ export class Geometry {
       }, []),
     );
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+  }
+
+  static clampBBox(bbox, min, max) {
+    let p1 = [clamp(bbox.x, min.x, max.x), clamp(bbox.y, min.y, max.y)];
+    let p2 = [clamp(bbox.width + bbox.x, min.x, max.x), clamp(bbox.height + bbox.y, min.y, max.y)];
+    return {
+      x: p1[0],
+      y: p1[1],
+      width: p2[0] - p1[0],
+      height: p2[1] - p1[1],
+    };
   }
 
   /**
