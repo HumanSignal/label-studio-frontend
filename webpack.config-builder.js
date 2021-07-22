@@ -7,6 +7,16 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 
+const workingDirectory = process.env.WORK_DIR
+  ? path.resolve(__dirname, process.env.WORK_DIR)
+  : path.resolve(__dirname, "build");
+
+if (workingDirectory) {
+  console.log(`Working directory set as ${workingDirectory}`)
+}
+
+const customDistDir = !!process.env.WORK_DIR;
+
 const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.NODE_ENV || "development";
 
 const isDevelopment = DEFAULT_NODE_ENV !== "production";
@@ -20,8 +30,8 @@ const BUILD = {
 };
 
 const dirPrefix = {
-  js: isDevelopment ? "" : "static/js/",
-  css: isDevelopment ? "" : "static/css/",
+  js: customDistDir ? "js/" : isDevelopment ? "" : "static/js/",
+  css: customDistDir ? "css/" : isDevelopment ? "" : "static/css/",
 };
 
 const LOCAL_ENV = {
@@ -224,7 +234,7 @@ module.exports = ({withDevServer = true} = {}) => ({
   ...(withDevServer ? devServer() : {}),
   entry: path.resolve(__dirname, "src/index.js"),
   output: {
-    path: path.resolve(__dirname, "build"),
+    path: path.resolve(workingDirectory),
     filename: "main.js",
     ...output(),
   },
