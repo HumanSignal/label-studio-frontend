@@ -210,12 +210,15 @@ const plugins = [
 
 if (!BUILD.NO_SERVER) {
   plugins.push(
-    new webpack.ProgressPlugin(),
     new HtmlWebPackPlugin({
       title: "Label Studio Frontend",
       template: "public/index.html",
     })
   )
+}
+
+if (!BUILD.MODULE) {
+  plugins.push(new webpack.ProgressPlugin());
 }
 
 if (BUILD.NO_CHUNKS) {
