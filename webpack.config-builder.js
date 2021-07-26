@@ -22,6 +22,7 @@ const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.N
 const isDevelopment = DEFAULT_NODE_ENV !== "production";
 
 const BUILD = {
+  NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION,
   NO_MINIMIZE: isDevelopment || !!process.env.BUILD_NO_MINIMIZATION,
   NO_CHUNKS: isDevelopment || !!process.env.BUILD_NO_CHUNKS,
   NO_HASH: isDevelopment || process.env.BUILD_NO_HASH,
@@ -180,20 +181,18 @@ const cssLoader = (withLocalIdent = true) => {
 };
 
 const devServer = () => {
-  return process.env.NODE_ENV === "development"
-    ? {
-        devServer: {
-          compress: true,
-          hot: true,
-          port: 9000,
-          stats: "normal",
-          contentBase: path.join(__dirname, "public"),
-          historyApiFallback: {
-            index: "./public/index.html",
-          },
-        },
-      }
-    : {};
+  return (process.env.NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
+    devServer: {
+      compress: true,
+      hot: true,
+      port: 9000,
+      stats: "normal",
+      contentBase: path.join(__dirname, "public"),
+      historyApiFallback: {
+        index: "./public/index.html",
+      },
+    },
+  } : {};
 };
 
 const plugins = [
@@ -207,12 +206,17 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
-  new webpack.ProgressPlugin(),
-  new HtmlWebPackPlugin({
-    title: "Label Studio Frontend",
-    template: "public/index.html",
-  }),
 ];
+
+if (isDevelopment && !BUILD.NO_SERVER) {
+  plugins.push(
+    new webpack.ProgressPlugin(),
+    new HtmlWebPackPlugin({
+      title: "Label Studio Frontend",
+      template: "public/index.html",
+    })
+  )
+}
 
 if (BUILD.NO_CHUNKS) {
   babelLoader.options.plugins.unshift("babel-plugin-remove-webpack")
