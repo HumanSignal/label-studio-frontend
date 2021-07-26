@@ -80,6 +80,18 @@ const Model = types
     },
   }))
   .actions(self => ({
+    needsUpdate() {
+      self.handleNewRegions();
+    },
+
+    handleNewRegions() {
+      if (!self._ws) return;
+      self.regs.map(reg => {
+        if (reg._ws_region) return;
+        self.createWsRegion(reg);
+      });
+    },
+
     onHotKey(e) {
       e && e.preventDefault();
       self._ws.playPause();
@@ -204,25 +216,17 @@ const Model = types
       self.playing = !self.playing;
     },
 
+    createWsRegion(region) {
+      const r = self._ws.addRegion(region.wsRegionOptions);
+      region._ws_region = r;
+      region.updateAppearenceFromState();
+    },
+
     onLoad(ws) {
       self._ws = ws;
 
-      self.regs.forEach(obj => {
-        const reg = {
-          id: obj.id,
-          start: obj.start,
-          end: obj.end,
-          color: "orange",
-        };
-
-        if (obj.readonly) {
-          reg.drag = false;
-          reg.resize = false;
-        }
-
-        const r = self._ws.addRegion(reg);
-        obj._ws_region = r;
-        obj.updateAppearenceFromState();
+      self.regs.forEach(reg => {
+        self.createWsRegion(reg);
       });
     },
 
