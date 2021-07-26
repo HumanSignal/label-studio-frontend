@@ -208,7 +208,7 @@ const plugins = [
   new webpack.EnvironmentPlugin(LOCAL_ENV),
 ];
 
-if (isDevelopment && !BUILD.NO_SERVER) {
+if (!BUILD.NO_SERVER) {
   plugins.push(
     new webpack.ProgressPlugin(),
     new HtmlWebPackPlugin({
