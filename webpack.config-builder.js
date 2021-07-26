@@ -54,14 +54,16 @@ const babelOptimizeOptions = () => {
 const optimizer = () => {
   const result = {
     minimize: true,
-    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
+    minimizer: [],
     runtimeChunk: true,
-    splitChunks: {
-      cacheGroups: {
-        default: true,
-      }
-    }
   };
+
+  if (process.env.NODE_ENV === 'production') {
+    result.minimizer.push(
+      new TerserPlugin(),
+      new CssMinimizerPlugin(),
+    )
+  }
 
   if (BUILD.NO_MINIMIZE) {
     result.minimize = false;
