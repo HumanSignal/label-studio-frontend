@@ -123,6 +123,7 @@ const DrawingTool = types
       deleteRegion() {
         self.currentArea = null;
         self.obj.deleteDrawingRegion();
+        self._resetState();
       },
       applyActiveStates(area) {
         const activeStates = self.obj.activeStates();
@@ -157,6 +158,9 @@ const DrawingTool = types
       },
       _finishDrawing() {
         self.commitDrawingRegion();
+        self._resetState();
+      },
+      _resetState(){
         self.annotation.history.unfreeze();
         self.mode = "viewing";
       }
