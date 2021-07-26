@@ -120,6 +120,7 @@
     "build:no-hash": "BUILD_NO_HASH=true BUILD_NO_CHUNKS=true npm run build",
     "build:module": "BUILD_MODULE=true npm run build:no-hash",
     "build": "npx webpack",
+    "watch": "npx webpack --watch",
     "copy-examples": "bash scripts/copy.sh",
     "eject": "react-scripts eject",
     "docs:generate": "node scripts/create-docs.js",
@@ -141,7 +142,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run test"
+      "pre-commit": "lint-staged && npm run test",
+      "post-checkout": "bash scripts/copy.sh"
     }
   },
   "lint-staged": {

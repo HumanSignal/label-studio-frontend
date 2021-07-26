@@ -17,10 +17,6 @@ const ToolView = observer(({ item }) => {
         onClick={ev => {
           const sel = item.selected;
           item.manager.selectTool(item, !sel);
-          if (item.selected) {
-            const stage = item.obj.stageRef;
-            stage.container().style.cursor = "all-scroll";
-          }
         }}
       />
       <BasicToolView
@@ -53,6 +49,16 @@ const _Tool = types
   .actions(self => ({
     mouseupEv() {
       self.mode = "viewing";
+    },
+
+    updateCursor() {
+      if (!self.selected || !self.obj.stageRef) return;
+      const stage = self.obj.stageRef;
+      stage.container().style.cursor = "all-scroll";
+    },
+
+    afterUpdateSelected() {
+      self.updateCursor();
     },
 
     handleDrag(ev) {

@@ -94,7 +94,7 @@ const Model = types
           break;
         }
       }
-
+      self.checkSizes();
       self.updateAppearenceFromState();
     },
 

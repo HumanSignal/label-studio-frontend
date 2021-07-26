@@ -7,11 +7,22 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 
+const workingDirectory = process.env.WORK_DIR
+  ? path.resolve(__dirname, process.env.WORK_DIR)
+  : path.resolve(__dirname, "build");
+
+if (workingDirectory) {
+  console.log(`Working directory set as ${workingDirectory}`)
+}
+
+const customDistDir = !!process.env.WORK_DIR;
+
 const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.NODE_ENV || "development";
 
 const isDevelopment = DEFAULT_NODE_ENV !== "production";
 
 const BUILD = {
+  NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION,
   NO_MINIMIZE: isDevelopment || !!process.env.BUILD_NO_MINIMIZATION,
   NO_CHUNKS: isDevelopment || !!process.env.BUILD_NO_CHUNKS,
   NO_HASH: isDevelopment || process.env.BUILD_NO_HASH,
@@ -20,8 +31,8 @@ const BUILD = {
 };
 
 const dirPrefix = {
-  js: isDevelopment ? "" : "static/js/",
-  css: isDevelopment ? "" : "static/css/",
+  js: customDistDir ? "js/" : isDevelopment ? "" : "static/js/",
+  css: customDistDir ? "css/" : isDevelopment ? "" : "static/css/",
 };
 
 const LOCAL_ENV = {
@@ -44,14 +55,16 @@ const babelOptimizeOptions = () => {
 const optimizer = () => {
   const result = {
     minimize: true,
-    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
+    minimizer: [],
     runtimeChunk: true,
-    splitChunks: {
-      cacheGroups: {
-        default: true,
-      }
-    }
   };
+
+  if (process.env.NODE_ENV === 'production') {
+    result.minimizer.push(
+      new TerserPlugin(),
+      new CssMinimizerPlugin(),
+    )
+  }
 
   if (BUILD.NO_MINIMIZE) {
     result.minimize = false;
@@ -168,20 +181,18 @@ const cssLoader = (withLocalIdent = true) => {
 };
 
 const devServer = () => {
-  return process.env.NODE_ENV === "development"
-    ? {
-        devServer: {
-          compress: true,
-          hot: true,
-          port: 9000,
-          stats: "normal",
-          contentBase: path.join(__dirname, "public"),
-          historyApiFallback: {
-            index: "./public/index.html",
-          },
-        },
-      }
-    : {};
+  return (process.env.NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
+    devServer: {
+      compress: true,
+      hot: true,
+      port: 9000,
+      stats: "normal",
+      contentBase: path.join(__dirname, "public"),
+      historyApiFallback: {
+        index: "./public/index.html",
+      },
+    },
+  } : {};
 };
 
 const plugins = [
@@ -195,12 +206,20 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
-  new webpack.ProgressPlugin(),
-  new HtmlWebPackPlugin({
-    title: "Label Studio Frontend",
-    template: "public/index.html",
-  }),
 ];
+
+if (!BUILD.NO_SERVER) {
+  plugins.push(
+    new HtmlWebPackPlugin({
+      title: "Label Studio Frontend",
+      template: "public/index.html",
+    })
+  )
+}
+
+if (!BUILD.MODULE) {
+  plugins.push(new webpack.ProgressPlugin());
+}
 
 if (BUILD.NO_CHUNKS) {
   babelLoader.options.plugins.unshift("babel-plugin-remove-webpack")
@@ -224,7 +243,7 @@ module.exports = ({withDevServer = true} = {}) => ({
   ...(withDevServer ? devServer() : {}),
   entry: path.resolve(__dirname, "src/index.js"),
   output: {
-    path: path.resolve(__dirname, "build"),
+    path: path.resolve(workingDirectory),
     filename: "main.js",
     ...output(),
   },

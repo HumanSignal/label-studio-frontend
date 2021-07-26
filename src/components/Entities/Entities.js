@@ -12,9 +12,14 @@ import { Block, Elem } from "../../utils/bem";
 import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
 import "./Entities.styl";
 import { Button } from "../../common/Button/Button";
-import { LsInvisible, LsVisible } from "../../assets/icons";
+import { LsInvisible, LsRemove, LsTrash, LsVisible } from "../../assets/icons";
+import { confirm } from "../../common/Modal/Modal";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
-export default observer(({ regionStore }) => {
+export default observer(({
+  regionStore,
+  annotation,
+}) => {
   const { classifications, regions } = regionStore;
   const count = regions.length + (regionStore.view === "regions" ? classifications.length : 0);
 
@@ -27,16 +32,41 @@ export default observer(({ regionStore }) => {
   return (
     <Block name="entities">
       <Elem name="source">
-        <RadioGroup
-          size="small"
-          value={regionStore.view}
-          onChange={e => {
-            regionStore.setView(e.target.value);
-          }}
-        >
-          <RadioGroup.Button value="regions">Regions{count ? <Elem name="counter">&nbsp;{count}</Elem> : null}</RadioGroup.Button>
-          <RadioGroup.Button value="labels">Labels</RadioGroup.Button>
-        </RadioGroup>
+        <Space spread>
+          <RadioGroup
+            size="small"
+            value={regionStore.view}
+            style={{ width: 240 }}
+            onChange={e => {
+              regionStore.setView(e.target.value);
+            }}
+          >
+            <RadioGroup.Button value="regions">Regions{count ? <Elem name="counter">&nbsp;{count}</Elem> : null}</RadioGroup.Button>
+            <RadioGroup.Button value="labels">Labels</RadioGroup.Button>
+          </RadioGroup>
+
+          <Tooltip title="Delete All Regions">
+            <Button
+              size="small"
+              look="danger"
+              type="text"
+              aria-label="Delete All Regions"
+              icon={<LsTrash/>}
+              style={{
+                height: 36,
+                width: 36,
+                padding: 0,
+              }}
+              onClick={() => {
+                confirm({
+                  title: "Removing all regions",
+                  body: "Do you want to delete all annotated regions?",
+                  buttonLook: "destructive",
+                  onOk: () => annotation.deleteAllRegions(),
+                });
+              }}/>
+          </Tooltip>
+        </Space>
       </Elem>
 
       {count ? <Elem name="header">

@@ -26,8 +26,11 @@ class ToolsManager {
       if (typeof t.selected !== "undefined") t.setSelected(false);
     });
 
-    const stage = this.obj.stageRef;
-    stage.container().style.cursor = "default";
+    const stage = this.obj?.stageRef;
+
+    if (stage) {
+      stage.container().style.cursor = "default";
+    }
   }
 
   selectTool(tool, value) {
@@ -35,6 +38,8 @@ class ToolsManager {
       this.unselectAll();
       if (tool.setSelected) tool.setSelected(true);
     } else {
+      const drawingTool = this.findDrawingTool();
+      if (drawingTool) return this.selectTool(drawingTool, true);
       if (tool.setSelected) tool.setSelected(false);
     }
   }
@@ -57,6 +62,10 @@ class ToolsManager {
 
   findSelectedTool() {
     return Object.values(this.tools).find(t => t.selected);
+  }
+
+  findDrawingTool() {
+    return Object.values(this.tools).find(t => t.isDrawing);
   }
 
   event(name, ev, ...args) {

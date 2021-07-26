@@ -105,7 +105,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
     relation.onChange(() => forceUpdate({}));
     return () => relation.destroy();
   }, []);
-
+  if (start.width < 1 || start.height < 1 || end.width < 1 || end.height < 1) return null;
   return (
     <g opacity={dimm && !highlight ? 0.5 : 1} visibility={hideConnection ? "hidden" : "visible"}>
       <RelationItemRect {...start} />

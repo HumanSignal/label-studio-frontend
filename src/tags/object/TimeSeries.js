@@ -491,7 +491,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 
   const focusHeight = 60;
   const { margin, keyColumn: idX } = item;
-  const width = fullWidth - margin.left - margin.right;
+  const width = Math.max(fullWidth - margin.left - margin.right, 0);
   // const data = store.task.dataObj;
   let keys = item.children.map(c => c.columnName);
   if (item.overviewchannels) {
@@ -711,7 +711,7 @@ const HtxTimeSeriesViewRTS = ({ store, item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, TagAttrs, Model, AnnotationMixin);
+const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, AnnotationMixin, TagAttrs, Model);
 const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);

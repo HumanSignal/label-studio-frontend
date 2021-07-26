@@ -82,6 +82,7 @@ const Model = types
       "timeserieslabels",
       "paragraphs",
       "paragraphlabels",
+      "video",
     ]),
   });
 

@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { DEFAULT_DIMENSIONS, MIN_SIZE } from "../tools/Base";
-import { guidGenerator } from "../utils/unique";
 
 const DrawingTool = types
   .model("DrawingTool", {
@@ -52,6 +51,12 @@ const DrawingTool = types
         console.warn("Drawing tool model needs to implement defaultDimentions getter in views");
         return {};
       },
+      get MIN_SIZE() {
+        return {
+          X: MIN_SIZE.X / self.obj.stageScale,
+          Y: MIN_SIZE.Y / self.obj.stageScale,
+        };
+      }
     };
   })
   .actions(self => {
@@ -62,6 +67,8 @@ const DrawingTool = types
     };
     return {
       event(name, ev, args) {
+        // filter right clicks and middle clicks and shift pressed
+        if (ev.button > 0 || ev.shiftKey) return;
         let fn = name + "Ev";
         if (typeof self[fn] !== "undefined") self[fn].call(self, ev, args);
 
@@ -77,7 +84,7 @@ const DrawingTool = types
         }
       },
 
-      comparePointsWithThreshold(p1, p2, threshold = { x: MIN_SIZE.X, y: MIN_SIZE.Y }) {
+      comparePointsWithThreshold(p1, p2, threshold = { x: self.MIN_SIZE.X, y: self.MIN_SIZE.Y }) {
         if (!p1 || !p2) return;
         if (typeof threshold === "number") threshold = { x: threshold, y: threshold };
         return Math.abs(p1.x - p2.x) < threshold.x && Math.abs(p1.y - p2.y) < threshold.y;
@@ -155,12 +162,13 @@ const DrawingTool = types
       }
     };
   });
+
 const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
   .views(self => ({
     get defaultDimensions() {
       return {
-        width: MIN_SIZE.X,
-        height: MIN_SIZE.Y,
+        width: self.MIN_SIZE.X,
+        height: self.MIN_SIZE.Y,
       };
     },
   }))
@@ -272,7 +280,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
   }))
   .actions(self => {
     let startPoint = { x: 0, y: 0 };
-    let clickCount = 0;
+    let pointsCount = 0;
     let lastPoint = { x: -1, y: -1 };
     let lastEvent = 0;
     const MOUSE_DOWN_EVENT = 1;
@@ -282,17 +290,17 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     return {
       nextPoint(x, y) {
         self.getCurrentArea().addPoint(x, y);
-        clickCount++;
+        pointsCount++;
       },
       listenForClose() {
-        console.error("MultipleClicksMixin model needs to implement closeCurrent method in actions");
+        console.error("MultipleClicksMixin model needs to implement listenForClose method in actions");
       },
       closeCurrent() {
         console.error("MultipleClicksMixin model needs to implement closeCurrent method in actions");
       },
       finishDrawing(x, y) {
         if (!self.isDrawing) return;
-        clickCount = 0;
+        pointsCount = 0;
         self.closeCurrent();
         setTimeout(()=>{
           self._finishDrawing();
@@ -319,7 +327,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
       _clickEv(ev, [x, y]) {
         if (self.current()) {
           if (
-            clickCount === 1 &&
+            pointsCount === 1 &&
             self.comparePointsWithThreshold(startPoint, { x, y }) &&
             ev.timeStamp - lastClickTs < 350
           ) {
@@ -327,7 +335,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
             self.drawDefault();
           } else {
             if (self.comparePointsWithThreshold(startPoint, { x, y })) {
-              if (clickCount >= 3) {
+              if (pointsCount > 2) {
                 self.finishDrawing();
               }
             } else {
@@ -337,7 +345,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         } else {
           if (!self.canStartDrawing()) return;
           startPoint = { x, y };
-          clickCount = 1;
+          pointsCount = 1;
           lastClickTs = ev.timeStamp;
           self.startDrawing(x, y);
           self.listenForClose();

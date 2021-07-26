@@ -115,6 +115,7 @@ const TimeTraveller = types
       reset() {
         // just apply zero state; it would be added as a new hisory item
         applySnapshot(targetStore, self.history[self.createdIdx]);
+        triggerHandlers();
       },
     };
   });
