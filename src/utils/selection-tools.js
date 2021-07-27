@@ -218,12 +218,14 @@ const fixRange = range => {
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
+    if (!startContainer) return null;
     range.setStart(startContainer, 0);
   }
 
   if (!isTextNode(endContainer)) {
     endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward");
-    range.setEnd(endContainer, endContainer.length);
+    if (!endContainer) return null;
+    range.setEnd(endContainer, 0);
   }
 
   return range;
