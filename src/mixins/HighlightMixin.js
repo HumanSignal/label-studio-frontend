@@ -82,8 +82,7 @@ export const HighlightMixin = types
       self.addClass(stateClass.active);
 
       const first = self._spans?.[0];
-
-      if (first) return;
+      if (!first) return;
 
       if (first.scrollIntoViewIfNeeded) {
         first.scrollIntoViewIfNeeded();
