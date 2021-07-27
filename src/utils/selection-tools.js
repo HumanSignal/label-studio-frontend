@@ -225,7 +225,8 @@ const fixRange = range => {
   if (!isTextNode(endContainer)) {
     endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward");
     if (!endContainer) return null;
-    range.setEnd(endContainer, 0);
+    const isIncluded = !!range.toString().match(endContainer.wholeText)?.length;
+    range.setEnd(endContainer, isIncluded ? endContainer.length : 0);
   }
 
   return range;
