@@ -1,3 +1,5 @@
+import { clamp } from "./utilities";
+
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 const isText = text => text && /[\w']/i.test(text);
@@ -449,6 +451,7 @@ export const findOnPosition = (root, position) => {
 
   let lastPosition = 0;
   let currentNode = walker.nextNode();
+  let nextNode = walker.nextNode();
 
   while (currentNode) {
     const isText = currentNode.nodeType === Node.TEXT_NODE;
@@ -456,13 +459,14 @@ export const findOnPosition = (root, position) => {
     if (isText || isBR) {
       const length = currentNode.length ?? 1;
 
-      if (length + lastPosition >= position) {
-        return { node: currentNode, position: isBR ? 0 : position - lastPosition };
+      if (length + lastPosition >= position || !nextNode) {
+        return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
       } else {
         lastPosition += length;
       }
     }
 
-    currentNode = walker.nextNode();
+    currentNode = nextNode;
+    nextNode = walker.nextNode();
   }
 };
