@@ -3,6 +3,7 @@ import { clamp } from "./utilities";
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 const isText = text => text && /[\w']/i.test(text);
+const isSpace = text => text && /[\s\t]/i.test(text);
 
 const destructSelection = selection => {
   const range = selection.getRangeAt(0);
@@ -33,6 +34,7 @@ const destructSelection = selection => {
  */
 const wordBoundarySelection = (selection, boundary) => {
   const {
+    range: originalRange,
     startOffset,
     startContainer,
     endOffset,
@@ -47,37 +49,54 @@ const wordBoundarySelection = (selection, boundary) => {
   let currentRange;
 
   // It's easier to operate the selection when it's collapsed
-  selection.collapse(startContainer, startOffset);
+  selection.collapse(endContainer, endOffset);
+  // Looking for maximum displacement
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===1) {
+    selection.modify("move", "backward", boundary);
+  }
+  // Going back to find minimum displacement
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)<1) {
+    currentRange = selection.getRangeAt(0);
+    Object.assign(resultRange, {
+      startContainer: currentRange.startContainer,
+      startOffset: currentRange.startOffset,
+    });
+    selection.modify("move", "forward", boundary);
+  }
+  // Clean spaces
 
-  if (!isText(firstSymbol)) {
-    if (isText(prevSymbol)) {
-      selection.modify("move", "backward", boundary);
-    } else {
-      selection.modify("move", "forward", boundary);
-    }
-  } else if (isText(prevSymbol)) {
+  selection.collapse(resultRange.startContainer, resultRange.startOffset);
+  currentRange = selection.getRangeAt(0);
+  do {
+    selection.collapse(currentRange.endContainer, currentRange.endOffset);
+    selection.modify("extend", "forward", "character");
+    currentRange = selection.getRangeAt(0);
+  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  Object.assign(resultRange, {
+    endContainer: currentRange.startContainer,
+    endOffset: currentRange.startOffset,
+  });
+
+  selection.collapse(startContainer, startOffset);
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)===-1) {
+    selection.modify("move", "forward", boundary);
+  }
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)>-1) {
+    currentRange = selection.getRangeAt(0);
+    Object.assign(resultRange, {
+      endContainer: currentRange.endContainer,
+      endOffset: currentRange.endOffset,
+    });
     selection.modify("move", "backward", boundary);
   }
 
+  selection.collapse(resultRange.endContainer, resultRange.endOffset);
   currentRange = selection.getRangeAt(0);
-  Object.assign(resultRange, {
-    startContainer: currentRange.startContainer,
-    startOffset: currentRange.startOffset,
-  });
-
-  selection.collapse(endContainer, endOffset);
-
-  if (!isText(lastSymbol)) {
-    if (isText(nextSymbol)) {
-      selection.modify("move", "forward", boundary);
-    } else {
-      selection.modify("move", "backward", boundary);
-    }
-  } else if (isText(nextSymbol)) {
-    selection.modify("move", "forward", boundary);
-  }
-
-  currentRange = selection.getRangeAt(0);
+  do {
+    selection.collapse(currentRange.startContainer, currentRange.startOffset);
+    selection.modify("extend", "backward", "character");
+    currentRange = selection.getRangeAt(0);
+  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
   Object.assign(resultRange, {
     endContainer: currentRange.endContainer,
     endOffset: currentRange.endOffset,
