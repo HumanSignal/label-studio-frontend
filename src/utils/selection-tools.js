@@ -458,8 +458,8 @@ export const removeRange = spans => {
  */
 export const findRange = (start, end, root) => {
   return {
-    startContainer: findOnPosition(root, start),
-    endContainer: findOnPosition(root, end),
+    startContainer: findOnPosition(root, start, "right"),
+    endContainer: findOnPosition(root, end, "left"),
   };
 };
 
@@ -468,7 +468,7 @@ export const findRange = (start, end, root) => {
  * @param {Node} root
  * @param {number} position
  */
-export const findOnPosition = (root, position) => {
+export const findOnPosition = (root, position, borderSide = "left") => {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   let lastPosition = 0;
@@ -482,6 +482,9 @@ export const findOnPosition = (root, position) => {
       const length = currentNode.length ?? 1;
 
       if (length + lastPosition >= position || !nextNode) {
+        if (borderSide === "right" && length + lastPosition === position && nextNode) {
+          return { node: nextNode, position: 0 };
+        }
         return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
       } else {
         lastPosition += length;
