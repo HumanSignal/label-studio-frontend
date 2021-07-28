@@ -32,17 +32,13 @@ const destructSelection = selection => {
  *
  * @param {Selection} selection
  */
-const wordBoundarySelection = (selection, boundary) => {
+const findBoundarySelection = (selection, boundary) => {
   const {
     range: originalRange,
     startOffset,
     startContainer,
     endOffset,
-    endContainer,
-    firstSymbol,
-    prevSymbol,
-    lastSymbol,
-    nextSymbol,
+    endContainer
   } = destructSelection(selection);
 
   const resultRange = {};
@@ -111,6 +107,54 @@ const wordBoundarySelection = (selection, boundary) => {
   return selection;
 };
 
+const closestBoundarySelection = (selection, boundary) => {
+  const {
+    range: originalRange,
+    startOffset,
+    startContainer,
+    endOffset,
+    endContainer
+  } = destructSelection(selection);
+
+  const resultRange = {};
+  let currentRange;
+
+  // It's easier to operate the selection when it's collapsed
+  selection.collapse(startContainer, startOffset);
+  selection.modify("move", "forward", "character");
+  selection.modify("move", "backward", boundary);
+  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===1) {
+    selection.collapse(startContainer, startOffset);
+    selection.modify("move", "backward", boundary);
+  }
+  currentRange = selection.getRangeAt(0);
+  Object.assign(resultRange, {
+    startContainer: currentRange.startContainer,
+    startOffset: currentRange.startOffset,
+  });
+
+  selection.collapse(endContainer, endOffset);
+  selection.modify("move", "backward", "character");
+  selection.modify("move", "forward", boundary);
+  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===-1) {
+    selection.collapse(endContainer, endOffset);
+    selection.modify("move", "forward", boundary);
+  }
+  currentRange = selection.getRangeAt(0);
+  Object.assign(resultRange, {
+    endContainer: currentRange.endContainer,
+    endOffset: currentRange.endOffset,
+  });
+
+  selection.removeAllRanges();
+  const range = new Range();
+  range.setStart(resultRange.startContainer, resultRange.startOffset);
+  range.setEnd(resultRange.endContainer, resultRange.endOffset);
+  selection.addRange(range);
+
+  return selection;
+};
+
 const boundarySelection = (selection, boundary) => {
   const wordBoundary = boundary !== "symbol";
   const {
@@ -125,7 +169,11 @@ const boundarySelection = (selection, boundary) => {
   } = destructSelection(selection);
 
   if (wordBoundary) {
-    wordBoundarySelection(selection, boundary);
+    if (boundary.endsWith("boundary")) {
+      closestBoundarySelection(selection, boundary);
+    } else {
+      findBoundarySelection(selection, boundary);
+    }
   } else {
     if (!isText(firstSymbol) || isText(prevSymbol)) {
       const newRange = selection.getRangeAt(0);
