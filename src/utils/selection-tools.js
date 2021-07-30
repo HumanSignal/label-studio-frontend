@@ -28,6 +28,39 @@ const destructSelection = selection => {
   };
 };
 
+const trimSelectionLeft = (selection) => {
+  const resultRange = selection.getRangeAt(0);
+  selection.removeAllRanges();
+  selection.collapse(resultRange.startContainer, resultRange.startOffset);
+  let currentRange = selection.getRangeAt(0);
+  do {
+    selection.collapse(currentRange.endContainer, currentRange.endOffset);
+    selection.modify("extend", "forward", "character");
+    currentRange = selection.getRangeAt(0);
+  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  resultRange.setStart(currentRange.startContainer, currentRange.startOffset);
+  selection.removeAllRanges();
+  selection.addRange(resultRange);
+};
+const trimSelectionRight = (selection) => {
+  const resultRange = selection.getRangeAt(0);
+  selection.removeAllRanges();
+  selection.collapse(resultRange.endContainer, resultRange.endOffset);
+  let currentRange = selection.getRangeAt(0);
+  do {
+    selection.collapse(currentRange.startContainer, currentRange.startOffset);
+    selection.modify("extend", "backward", "character");
+    currentRange = selection.getRangeAt(0);
+  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  resultRange.setEnd(currentRange.endContainer, currentRange.endOffset);
+  selection.removeAllRanges();
+  selection.addRange(resultRange);
+};
+const trimSelection = (selection) => {
+  trimSelectionLeft(selection);
+  trimSelectionRight(selection);
+};
+
 /**
  *
  * @param {Selection} selection
@@ -59,19 +92,6 @@ const findBoundarySelection = (selection, boundary) => {
     });
     selection.modify("move", "forward", boundary);
   }
-  // Clean spaces
-
-  selection.collapse(resultRange.startContainer, resultRange.startOffset);
-  currentRange = selection.getRangeAt(0);
-  do {
-    selection.collapse(currentRange.endContainer, currentRange.endOffset);
-    selection.modify("extend", "forward", "character");
-    currentRange = selection.getRangeAt(0);
-  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
-  Object.assign(resultRange, {
-    endContainer: currentRange.startContainer,
-    endOffset: currentRange.startOffset,
-  });
 
   selection.collapse(startContainer, startOffset);
   while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)===-1) {
@@ -86,24 +106,12 @@ const findBoundarySelection = (selection, boundary) => {
     selection.modify("move", "backward", boundary);
   }
 
-  selection.collapse(resultRange.endContainer, resultRange.endOffset);
-  currentRange = selection.getRangeAt(0);
-  do {
-    selection.collapse(currentRange.startContainer, currentRange.startOffset);
-    selection.modify("extend", "backward", "character");
-    currentRange = selection.getRangeAt(0);
-  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
-  Object.assign(resultRange, {
-    endContainer: currentRange.endContainer,
-    endOffset: currentRange.endOffset,
-  });
-
   selection.removeAllRanges();
   const range = new Range();
   range.setStart(resultRange.startContainer, resultRange.startOffset);
   range.setEnd(resultRange.endContainer, resultRange.endOffset);
   selection.addRange(range);
-
+  trimSelection(selection);
   return selection;
 };
 
@@ -200,6 +208,7 @@ export const captureSelection = (
   },
 ) => {
   const selection = window.getSelection();
+  trimSelection(selection);
   const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
