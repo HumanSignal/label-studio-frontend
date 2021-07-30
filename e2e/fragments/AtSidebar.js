@@ -29,6 +29,9 @@ module.exports = {
   see(text) {
     I.see(text, this._sideBarLocator);
   },
+  dontSee(text) {
+    I.dontSee(text, this._sideBarLocator);
+  },
   seeElement(locator) {
     I.seeElement(this.locate(locator));
   },
