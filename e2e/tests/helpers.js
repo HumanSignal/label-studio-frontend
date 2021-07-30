@@ -339,7 +339,7 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
       const isText = currentNode.nodeType === Node.TEXT_NODE;
       const isBR = currentNode.nodeName === "BR";
       if (isText || isBR) {
-        const length = currentNode.length ?? 1;
+        const length = currentNode.length ? currentNode.length : 1;
 
         if (length + lastPosition >= position || !nextNode) {
           if (borderSide === "right" && length + lastPosition === position && nextNode) {
