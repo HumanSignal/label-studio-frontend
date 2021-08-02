@@ -31,6 +31,7 @@ jobs:
     - run: npm run build:module
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
+        NODE_ENV: 'production'
 
     # run http-server with build in background (will be killed after job ends)
     # do this only for master branch (so only for push event)
