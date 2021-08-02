@@ -1,92 +1,15 @@
 import { Tooltip } from "antd";
-import { observer, inject } from "mobx-react";
-import { types } from "mobx-state-tree";
 import React, { useEffect, useRef, useState } from "react";
 
-import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../assets/icons";
-import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
-import ObjectTag from "../../components/Tags/Object";
-import { Hotkey } from "../../core/Hotkey";
-import Registry from "../../core/Registry";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import { Elem, Block } from "../../utils/bem";
-import ObjectBase from "./Base";
+import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
+import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
+import ObjectTag from "../../../components/Tags/Object";
+import { Hotkey } from "../../../core/Hotkey";
+import { Elem, Block } from "../../../utils/bem";
 
-import "./Video/Video.styl";
+import "./Video.styl";
 
 const hotkeys = Hotkey();
-
-/**
- * Video tag plays a simple video file.
- * @example
- * <View>
- *   <Video name="video" value="$video" />
- * </View>
- * @example
- * <!-- Video classification -->
- * <View>
- *   <Video name="video" value="$video" />
- *   <Choices name="ch" toName="video">
- *     <Choice value="Positive" />
- *     <Choice value="Negative" />
- *   </Choices>
- * </View>
- * @example
- * <!-- Video transcription -->
- * <View>
- *   <Video name="video" value="$video" />
- *   <TextArea name="ta" toName="video" />
- * </View>
- * @name Video
- * @param {string} name Name of the element
- * @param {string} value URL of the video
- */
-
-const TagAttrs = types.model({
-  name: types.identifier,
-  value: types.maybeNull(types.string),
-  zoom: types.optional(types.boolean, false),
-  volume: types.optional(types.boolean, false),
-  speed: types.optional(types.boolean, false),
-  hotkey: types.maybeNull(types.string),
-});
-
-const Model = types
-  .model({
-    type: "video",
-    _value: types.optional(types.string, ""),
-    playing: types.optional(types.boolean, false),
-    height: types.optional(types.string, "20"),
-  })
-  .volatile(self => ({
-    errors: [],
-    ref: React.createRef(),
-  }))
-  .actions(self => ({
-    handlePlay() {
-      self.playing = !self.playing;
-    },
-
-    onHotKey() {
-      self._ws.playPause();
-      return false;
-    },
-
-    onLoad(ws) {
-      self._ws = ws;
-    },
-
-    onError(error) {
-      self.errors = [error];
-    },
-
-    wsCreated(ws) {
-      self._ws = ws;
-    },
-  }));
-
-const VideoModel = types.compose("VideoModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
 
 const PlayPause = ({ video }) => {
   const [paused, setPaused] = useState(true);
@@ -113,8 +36,8 @@ const PlayPause = ({ video }) => {
   );
 };
 
-const FrameStep = ({ video }) => {
-  const frameRate = 1 / 25;
+const FrameStep = ({ item, video }) => {
+  const frameRate = +(item.framerate ?? 1 / 25);
   const onForward = () => { video.pause(); video.currentTime += frameRate; };
   const onBackward = () => { video.pause(); video.currentTime -= frameRate; };
 
@@ -128,6 +51,7 @@ const FrameStep = ({ video }) => {
       onBackward();
     });
     return () => {
+      console.log("removing video hotkeys");
       hotkeys.removeKey("alt+right");
       hotkeys.removeKey("alt+left");
     };
@@ -183,7 +107,7 @@ const Controls = ({ item, video }) => {
   return (
     <Elem name="controls">
       <PlayPause video={video} />
-      <FrameStep video={video} />
+      <FrameStep item={item} video={video} />
       <Progress video={video} />
       <Sound />
     </Elem>
@@ -216,9 +140,4 @@ const HtxVideoView = ({ store, item }) => {
   );
 };
 
-const HtxVideo = inject("store")(observer(HtxVideoView));
-
-Registry.addTag("video", VideoModel, HtxVideo);
-Registry.addObjectType(VideoModel);
-
-export { VideoModel, HtxVideo };
+export { HtxVideoView };
