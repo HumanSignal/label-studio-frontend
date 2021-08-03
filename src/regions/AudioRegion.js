@@ -33,6 +33,21 @@ const Model = types
 
       return el;
     },
+
+    get wsRegionOptions() {
+      const reg = {
+        id: self.id,
+        start: self.start,
+        end: self.end,
+        color: "orange",
+      };
+
+      if (self.readonly) {
+        reg.drag = false;
+        reg.resize = false;
+      }
+      return reg;
+    }
   }))
   .actions(self => ({
     serialize() {
