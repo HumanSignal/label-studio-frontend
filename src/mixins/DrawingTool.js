@@ -9,6 +9,11 @@ const DrawingTool = types
     default: true,
     mode: types.optional(types.enumeration(["drawing", "viewing"]), "viewing"),
   })
+  .volatile(self => {
+    return {
+      currentArea: null
+    };
+  })
   .views(self => {
     return {
       createRegionOptions(opts) {
@@ -30,8 +35,14 @@ const DrawingTool = types
       get isDrawing() {
         return self.mode === "drawing";
       },
+      get getActiveShape() {
+        return self.currentArea;
+      },
+      getCurrentArea() {
+        return self.currentArea;
+      },
       current() {
-        return self.getActiveShape;
+        return self.currentArea;
       },
       canStart() {
         return !self.isDrawing;
@@ -81,21 +92,44 @@ const DrawingTool = types
     };
   })
   .actions(self => {
-    let currentArea;
     return {
-      getCurrentArea() {
-        return currentArea;
+      createDrawingRegion(opts) {
+        const control = self.control;
+        const resultValue = control.getResultValue();
+        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control);
+        self.currentArea.setDrawing(true);
+        self.applyActiveStates(self.currentArea);
+        return self.currentArea;
+      },
+      commitDrawingRegion() {
+        const {currentArea, control, obj} = self;
+        const source = currentArea.toJSON();
+        const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
+          value[key] = source[key];
+          return value;
+        }, {coordstype: "px"});
+        const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
+        self.applyActiveStates(newArea);
+        self.deleteRegion();
+        return newArea;
       },
       createRegion(opts) {
         const control = self.control;
         const resultValue = control.getResultValue();
-        currentArea = self.obj.annotation.createResult(opts, resultValue, control, self.obj);
-        currentArea.setDrawing(true);
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj);
+        self.applyActiveStates(self.currentArea);
+        return self.currentArea;
+      },
+      deleteRegion() {
+        self.currentArea = null;
+        self.obj.deleteDrawingRegion();
+        self._resetState();
+      },
+      applyActiveStates(area) {
         const activeStates = self.obj.activeStates();
         activeStates.forEach(state => {
-          currentArea.setValue(state);
+          area.setValue(state);
         });
-        return currentArea;
       },
 
       beforeCommitDrawing() {
@@ -109,26 +143,27 @@ const DrawingTool = types
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        self.createRegion(self.createRegionOptions({ x, y }));
+        self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing(x, y) {
-        const s = self.getActiveShape;
-
         if (!self.beforeCommitDrawing()) {
-          self.annotation.removeArea(s);
+          self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
         } else {
-          self.annotation.history.unfreeze();
-          // Needs some delay for avoiding catching click if this method is called on mouseup
-          let area = currentArea;
-          currentArea = null;
-          setTimeout(() => {
-            area.setDrawing(false);
-          }, 0);
-          // self.obj.annotation.highlightedNode.unselectRegion(true);
+          // It takes time to finish drawing before commit the region
+          setTimeout(()=>{
+            self._finishDrawing();
+          });
         }
-        self.mode = "viewing";
       },
+      _finishDrawing() {
+        self.commitDrawingRegion();
+        self._resetState();
+      },
+      _resetState(){
+        self.annotation.history.unfreeze();
+        self.mode = "viewing";
+      }
     };
   });
 
@@ -261,6 +296,9 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;
       },
+      listenForClose() {
+        console.error("MultipleClicksMixin model needs to implement listenForClose method in actions");
+      },
       closeCurrent() {
         console.error("MultipleClicksMixin model needs to implement closeCurrent method in actions");
       },
@@ -268,7 +306,9 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         if (!self.isDrawing) return;
         pointsCount = 0;
         self.closeCurrent();
-        self.mode = "viewing";
+        setTimeout(()=>{
+          self._finishDrawing();
+        });
       },
       mousedownEv(ev, [x, y]) {
         lastPoint = { x, y };
@@ -296,12 +336,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
             ev.timeStamp - lastClickTs < 350
           ) {
             // dblclick
-            self.nextPoint(x + self.defaultDimensions.length, y);
-            self.nextPoint(
-              x + self.defaultDimensions.length / 2,
-              y + Math.sin(Math.PI / 3) * self.defaultDimensions.length,
-            );
-            self.finishDrawing();
+            self.drawDefault();
           } else {
             if (self.comparePointsWithThreshold(startPoint, { x, y })) {
               if (pointsCount > 2) {
@@ -317,8 +352,19 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
           pointsCount = 1;
           lastClickTs = ev.timeStamp;
           self.startDrawing(x, y);
+          self.listenForClose();
         }
       },
+
+      drawDefault() {
+        const {x,y} = startPoint;
+        self.nextPoint(x + self.defaultDimensions.length, y);
+        self.nextPoint(
+          x + self.defaultDimensions.length / 2,
+          y + Math.sin(Math.PI / 3) * self.defaultDimensions.length,
+        );
+        self.finishDrawing();
+      }
     };
   });
 
