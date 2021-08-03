@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+
 /**
  * Load custom example
  * @param {object} params
@@ -327,35 +328,38 @@ const switchRegionTreeView = (viewName, done) => {
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
-  const findOnPosition = (root, position, byNode = false) => {
+  const findOnPosition = (root, position, borderSide = "left") => {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
-    let lastPosition = position;
+    let lastPosition = 0;
     let currentNode = walker.nextNode();
+    let nextNode = walker.nextNode();
 
     while (currentNode) {
-      if (currentNode.nodeType === Node.TEXT_NODE || currentNode.nodeName === "BR") {
-        let length = byNode ? 1 : currentNode.length;
+      const isText = currentNode.nodeType === Node.TEXT_NODE;
+      const isBR = currentNode.nodeName === "BR";
+      if (isText || isBR) {
+        const length = currentNode.length ? currentNode.length : 1;
 
-        if (length === undefined || length === null) {
-          length = 1;
-        }
-
-        if (length >= lastPosition) {
-          return { node: currentNode, position: lastPosition };
+        if (length + lastPosition >= position || !nextNode) {
+          if (borderSide === "right" && length + lastPosition === position && nextNode) {
+            return { node: nextNode, position: 0 };
+          }
+          return { node: currentNode, position: isBR ? 0 : Math.min(Math.max(position - lastPosition, 0), length) };
         } else {
-          lastPosition -= length;
+          lastPosition += length;
         }
       }
 
-      currentNode = walker.nextNode();
+      currentNode = nextNode;
+      nextNode = walker.nextNode();
     }
   };
 
   const elem = document.querySelector(selector);
 
-  const start = findOnPosition(elem, rangeStart);
-  const end = findOnPosition(elem, rangeEnd);
+  const start = findOnPosition(elem, rangeStart, "right");
+  const end = findOnPosition(elem, rangeEnd, "left");
 
   const range = new Range();
   range.setStart(start.node, start.position);

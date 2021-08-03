@@ -26,7 +26,7 @@ class RichTextPieceView extends Component {
 
     Utils.Selection.captureSelection(
       ({ selectionText, range }) => {
-        if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
+        if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
           return;
         }
 

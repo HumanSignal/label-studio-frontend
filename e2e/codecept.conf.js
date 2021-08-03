@@ -28,15 +28,20 @@ exports.config = {
     MouseActions: {
       require: "./helpers/MouseActions.js",
     },
+    Selection: {
+      require: "./helpers/Selection.js",
+    },
   },
   include: {
     I: "./steps_file.js",
     LabelStudio: "./fragments/LabelStudio.js",
     AtImageView: "./fragments/AtImageView.js",
     AtAudioView: "./fragments/AtAudioView.js",
+    AtRichText: "./fragments/AtRichText.js",
     AtSidebar: "./fragments/AtSidebar.js",
     AtLabels: "./fragments/AtLabels.js",
-    AtSettings: "./fragments/AtSettings.js"
+    AtSettings: "./fragments/AtSettings.js",
+    ErrorsCollector: "./fragments/ErrorsCollector.js"
   },
   bootstrap: null,
   mocha: {},
