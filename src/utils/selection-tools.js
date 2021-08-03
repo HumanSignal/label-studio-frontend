@@ -1,6 +1,9 @@
+import { clamp } from "./utilities";
+
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 const isText = text => text && /[\w']/i.test(text);
+const isSpace = text => text && /[\s\t]/i.test(text);
 
 const destructSelection = selection => {
   const range = selection.getRangeAt(0);
@@ -25,20 +28,100 @@ const destructSelection = selection => {
   };
 };
 
+const trimSelectionLeft = (selection) => {
+  const resultRange = selection.getRangeAt(0);
+  selection.removeAllRanges();
+  selection.collapse(resultRange.startContainer, resultRange.startOffset);
+  let currentRange = selection.getRangeAt(0);
+  do {
+    selection.collapse(currentRange.endContainer, currentRange.endOffset);
+    selection.modify("extend", "forward", "character");
+    currentRange = selection.getRangeAt(0);
+  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  resultRange.setStart(currentRange.startContainer, currentRange.startOffset);
+  selection.removeAllRanges();
+  selection.addRange(resultRange);
+};
+const trimSelectionRight = (selection) => {
+  const resultRange = selection.getRangeAt(0);
+  selection.removeAllRanges();
+  selection.collapse(resultRange.endContainer, resultRange.endOffset);
+  let currentRange = selection.getRangeAt(0);
+  do {
+    selection.collapse(currentRange.startContainer, currentRange.startOffset);
+    selection.modify("extend", "backward", "character");
+    currentRange = selection.getRangeAt(0);
+  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  resultRange.setEnd(currentRange.endContainer, currentRange.endOffset);
+  selection.removeAllRanges();
+  selection.addRange(resultRange);
+};
+const trimSelection = (selection) => {
+  trimSelectionLeft(selection);
+  trimSelectionRight(selection);
+};
+
 /**
  *
  * @param {Selection} selection
  */
-const wordBoundarySelection = (selection, boundary) => {
+const findBoundarySelection = (selection, boundary) => {
   const {
+    range: originalRange,
     startOffset,
     startContainer,
     endOffset,
-    endContainer,
-    firstSymbol,
-    prevSymbol,
-    lastSymbol,
-    nextSymbol,
+    endContainer
+  } = destructSelection(selection);
+
+  const resultRange = {};
+  let currentRange;
+
+  // It's easier to operate the selection when it's collapsed
+  selection.collapse(endContainer, endOffset);
+  // Looking for maximum displacement
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===1) {
+    selection.modify("move", "backward", boundary);
+  }
+  // Going back to find minimum displacement
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)<1) {
+    currentRange = selection.getRangeAt(0);
+    Object.assign(resultRange, {
+      startContainer: currentRange.startContainer,
+      startOffset: currentRange.startOffset,
+    });
+    selection.modify("move", "forward", boundary);
+  }
+
+  selection.collapse(startContainer, startOffset);
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)===-1) {
+    selection.modify("move", "forward", boundary);
+  }
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)>-1) {
+    currentRange = selection.getRangeAt(0);
+    Object.assign(resultRange, {
+      endContainer: currentRange.endContainer,
+      endOffset: currentRange.endOffset,
+    });
+    selection.modify("move", "backward", boundary);
+  }
+
+  selection.removeAllRanges();
+  const range = new Range();
+  range.setStart(resultRange.startContainer, resultRange.startOffset);
+  range.setEnd(resultRange.endContainer, resultRange.endOffset);
+  selection.addRange(range);
+  trimSelection(selection);
+  return selection;
+};
+
+const closestBoundarySelection = (selection, boundary) => {
+  const {
+    range: originalRange,
+    startOffset,
+    startContainer,
+    endOffset,
+    endContainer
   } = destructSelection(selection);
 
   const resultRange = {};
@@ -46,17 +129,12 @@ const wordBoundarySelection = (selection, boundary) => {
 
   // It's easier to operate the selection when it's collapsed
   selection.collapse(startContainer, startOffset);
-
-  if (!isText(firstSymbol)) {
-    if (isText(prevSymbol)) {
-      selection.modify("move", "backward", boundary);
-    } else {
-      selection.modify("move", "forward", boundary);
-    }
-  } else if (isText(prevSymbol)) {
+  selection.modify("move", "forward", "character");
+  selection.modify("move", "backward", boundary);
+  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===1) {
+    selection.collapse(startContainer, startOffset);
     selection.modify("move", "backward", boundary);
   }
-
   currentRange = selection.getRangeAt(0);
   Object.assign(resultRange, {
     startContainer: currentRange.startContainer,
@@ -64,17 +142,12 @@ const wordBoundarySelection = (selection, boundary) => {
   });
 
   selection.collapse(endContainer, endOffset);
-
-  if (!isText(lastSymbol)) {
-    if (isText(nextSymbol)) {
-      selection.modify("move", "forward", boundary);
-    } else {
-      selection.modify("move", "backward", boundary);
-    }
-  } else if (isText(nextSymbol)) {
+  selection.modify("move", "backward", "character");
+  selection.modify("move", "forward", boundary);
+  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===-1) {
+    selection.collapse(endContainer, endOffset);
     selection.modify("move", "forward", boundary);
   }
-
   currentRange = selection.getRangeAt(0);
   Object.assign(resultRange, {
     endContainer: currentRange.endContainer,
@@ -104,7 +177,11 @@ const boundarySelection = (selection, boundary) => {
   } = destructSelection(selection);
 
   if (wordBoundary) {
-    wordBoundarySelection(selection, boundary);
+    if (boundary.endsWith("boundary")) {
+      closestBoundarySelection(selection, boundary);
+    } else {
+      findBoundarySelection(selection, boundary);
+    }
   } else {
     if (!isText(firstSymbol) || isText(prevSymbol)) {
       const newRange = selection.getRangeAt(0);
@@ -131,6 +208,7 @@ export const captureSelection = (
   },
 ) => {
   const selection = window.getSelection();
+  trimSelection(selection);
   const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
@@ -216,12 +294,15 @@ const fixRange = range => {
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
+    if (!startContainer) return null;
     range.setStart(startContainer, 0);
   }
 
   if (!isTextNode(endContainer)) {
     endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward");
-    range.setEnd(endContainer, endContainer.length);
+    if (!endContainer) return null;
+    const isIncluded = !!range.toString().match(endContainer.wholeText)?.length;
+    range.setEnd(endContainer, isIncluded ? endContainer.length : 0);
   }
 
   return range;
@@ -434,8 +515,8 @@ export const removeRange = spans => {
  */
 export const findRange = (start, end, root) => {
   return {
-    startContainer: findOnPosition(root, start),
-    endContainer: findOnPosition(root, end),
+    startContainer: findOnPosition(root, start, "right"),
+    endContainer: findOnPosition(root, end, "left"),
   };
 };
 
@@ -444,11 +525,12 @@ export const findRange = (start, end, root) => {
  * @param {Node} root
  * @param {number} position
  */
-export const findOnPosition = (root, position) => {
+export const findOnPosition = (root, position, borderSide = "left") => {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   let lastPosition = 0;
   let currentNode = walker.nextNode();
+  let nextNode = walker.nextNode();
 
   while (currentNode) {
     const isText = currentNode.nodeType === Node.TEXT_NODE;
@@ -456,13 +538,17 @@ export const findOnPosition = (root, position) => {
     if (isText || isBR) {
       const length = currentNode.length ?? 1;
 
-      if (length + lastPosition >= position) {
-        return { node: currentNode, position: isBR ? 0 : position - lastPosition };
+      if (length + lastPosition >= position || !nextNode) {
+        if (borderSide === "right" && length + lastPosition === position && nextNode) {
+          return { node: nextNode, position: 0 };
+        }
+        return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
       } else {
         lastPosition += length;
       }
     }
 
-    currentNode = walker.nextNode();
+    currentNode = nextNode;
+    nextNode = walker.nextNode();
   }
 };
