@@ -111,6 +111,16 @@ export function escapeHtml(unsafe) {
 }
 
 /**
+ * Compares two arrays; order matters
+ * @template T
+ * @param {T[]} arr1 array 1
+ * @param {T[]} arr2 array 2
+ */
+export function isArraysEqual(arr1, arr2) {
+  return arr1.length === arr2.length && arr1.every((value, index) => arr2[index] === value);
+}
+
+/**
  * Convert any value to an array
  * @template T
  * @param {T} value
