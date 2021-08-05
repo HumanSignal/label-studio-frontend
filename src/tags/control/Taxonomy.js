@@ -1,17 +1,19 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
-
-import Registry from "../../core/Registry";
-import VisibilityMixin from "../../mixins/Visibility";
-import ControlBase from "./Base";
-import Types from "../../core/Types";
-import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
-import { guidGenerator } from "../../core/Helpers";
-
+import { types } from "mobx-state-tree";
 import DropdownTreeSelect from "react-dropdown-tree-select";
-import "react-dropdown-tree-select/dist/styles.css";
+
+import Infomodal from "../../components/Infomodal/Infomodal";
+import { guidGenerator } from "../../core/Helpers";
+import Registry from "../../core/Registry";
+import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import RequiredMixin from "../../mixins/Required";
+import VisibilityMixin from "../../mixins/Visibility";
+import { isArraysEqual } from "../../utils/utilities";
+import ControlBase from "./Base";
+
+import "react-dropdown-tree-select/dist/styles.css";
 
 /**
  * Taxonomy tag allows to select one or more hierarchical labels
@@ -32,12 +34,18 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   <Text name="text" value="You'd never believe what he did to the country" />
  * </View>
  * @name Taxonomy
- * @param {string} name                - Name of the group
- * @param {string} toName              - Name of the element that you want to label
+ * @param {string} name                - Name of the element
+ * @param {string} toName              - Name of the element that you want to classify
+ * @param {boolean} [leafsOnly=false]  - Allow to select only leaf nodes of taxonomy
+ * @param {number} [maxUsages]         - Maximum available usages
+ * @param {boolean} [required=false]   - Whether taxonomy validation is required
+ * @param {string} [requiredMessage]   - Message to show if validation fails
  */
 const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
+  leafsonly: types.optional(types.boolean, false),
+  maxusages: types.maybeNull(types.string),
 });
 
 const Model = types
@@ -49,6 +57,9 @@ const Model = types
     type: "taxonomy",
     children: Types.unionArray(["choice"]),
   })
+  .volatile(() => ({
+    maxUsagesReached: false,
+  }))
   .views(self => ({
     get holdsState() {
       return true;
@@ -68,64 +79,83 @@ const Model = types
       return self.annotation.results.find(r => r.from_name === self);
     },
   }))
-  .actions(self => {
+  .extend(self => {
     // RDTS is uncontrolled component, so it handles selected values by itself.
     // We store path for selected items and store them separately for serialization.
     // It shall not trigger rerender every time, so it's not observable.
     let selected = [];
 
     return {
-      needsUpdate() {
-        if (self.result) selected = self.result.mainValue;
-        else selected = [];
+      views: {
+        get holdsState() {
+          return selected.length > 0;
+        },
       },
+      actions: {
+        requiredModal() {
+          Infomodal.warning(self.requiredmessage || `Taxonomy "${self.name}" is required.`);
+        },
 
-      selectedValues() {
-        return selected;
-      },
+        needsUpdate() {
+          if (self.result) selected = self.result.mainValue;
+          else selected = [];
+          self.maxUsagesReached = selected.length >= self.maxusages;
+        },
 
-      onChange(node, checked) {
-        selected = checked.map(s => s.path);
+        selectedValues() {
+          return selected;
+        },
 
-        if (self.result) {
-          self.result.area.setValue(self);
-        } else {
-          if (self.perregion) {
-            const area = self.annotation.highlightedNode;
-            if (!area) return null;
-            area.setValue(self);
+        onChange(node, checked) {
+          selected = checked.map(s => s.path);
+          self.maxUsagesReached = selected.length >= self.maxusages;
+
+          if (self.result) {
+            self.result.area.setValue(self);
           } else {
-            self.annotation.createResult({}, { taxonomy: selected }, self, self.toname);
+            if (self.perregion) {
+              const area = self.annotation.highlightedNode;
+              if (!area) return null;
+              area.setValue(self);
+            } else {
+              self.annotation.createResult({}, { taxonomy: selected }, self, self.toname);
+            }
           }
-        }
-      },
+        },
 
-      traverse(root) {
-        const visitNode = function(node, parents = []) {
-          const label = node.value;
-          const path = [...parents, label];
-          const obj = {
-            label,
-            path,
+        traverse(root) {
+          const maxusages = self.maxusages;
+          const visitNode = function(node, parents = []) {
+            const label = node.value;
+            const path = [...parents, label];
             // @todo this check is heavy for long lists, optimize
             // search through last items in every stored path
             // if it's not saved as selected RDTS should handle it by its own, so undefined
-            checked: selected.some(p => p.length && p[p.length - 1] === label) || undefined,
+            const checked = selected.some(p => isArraysEqual(p, path)) || undefined;
+            const maxUsagesReached = !checked && maxusages && selected.length >= maxusages;
+            // disable checkbox and hide it via styles if this node is not a leaf (=have children)
+            const leafsOnly = self.leafsonly && !!node.children;
+            const disabled = maxUsagesReached || leafsOnly;
+            const obj = { label, path, checked, disabled };
+
+            if (node.children) {
+              obj.children = node.children.map(n => visitNode(n, path));
+            }
+
+            return obj;
           };
 
-          if (node.children) {
-            obj.children = node.children.map(n => visitNode(n, path));
-          }
-
-          return obj;
-        };
-
-        return Array.isArray(root) ? root.map(n => visitNode(n)) : visitNode(root);
+          return Array.isArray(root) ? root.map(n => visitNode(n)) : visitNode(root);
+        },
       },
     };
   });
 
-const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, VisibilityMixin, AnnotationMixin);
+const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, VisibilityMixin, AnnotationMixin);
+
+function searchPredicate(node, searchTerm = "") {
+  return !node.disabled && node.label?.toLowerCase().includes(searchTerm.toLowerCase());
+}
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
@@ -133,10 +163,13 @@ const HtxTaxonomy = observer(({ item }) => {
   return (
     <div style={{ ...style }}>
       <DropdownTreeSelect
+        key={item.maxUsagesReached}
+        mode={item.leafsonly ? "hierarchical" : "multiSelect"}
         data={item.traverse(item.children)}
         onChange={item.onChange}
         texts={{ placeholder: "Click to add..." }}
         inlineSearchInput
+        searchPredicate={searchPredicate}
         showPartiallySelected
       />
     </div>
