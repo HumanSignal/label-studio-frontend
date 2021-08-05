@@ -618,7 +618,7 @@ const Annotation = types
               if (self.names.has(obj.from_name)) {
                 const labelsContainer = self.names.get(obj.from_name);
                 const value = obj.value[key];
-                if (value && value.length) {
+                if (value && value.length && labelsContainer.type.endsWith("labels")) {
                   const filteredValue = value.filter(labelName => !!labelsContainer.findLabel(labelName));
                   if (filteredValue.length !== value.length) {
                     obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
