@@ -6,6 +6,7 @@ import { types, getParent, hasParent, getRoot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Types from "../core/Types";
 import { defaultStyle } from "../core/Constants";
+import { useRegionColors } from "../hooks/useRegionColor";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -158,7 +159,7 @@ const PolygonPoint = types
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
 
-  const style = item.parent.style || item.parent.tag || defaultStyle;
+  const colors = useRegionColors(item.parent);
   const sizes = {
     small: 4,
     medium: 8,
@@ -177,7 +178,7 @@ const PolygonPointView = observer(({ item, name }) => {
     item.index === 0
       ? {
         hitStrokeWidth: 12,
-        fill: style.strokecolor || item.primary,
+        fill: colors.strokeColor || item.primary,
         onMouseOver: item.handleMouseOverStartPoint,
         onMouseOut: item.handleMouseOutStartPoint,
       }
