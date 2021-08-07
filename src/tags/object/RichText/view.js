@@ -102,12 +102,17 @@ class RichTextPieceView extends Component {
 
     if (initial) {
       item.regs.forEach((richTextRegion) => {
-        const root = this.rootNodeRef.current;
-        const { start, startOffset, end, endOffset } = richTextRegion;
-        const range = xpath.toRange(start, startOffset, end, endOffset, root);
-        const [soff, eoff] = rangeToGlobalOffset(range, root);
+        try {
 
-        richTextRegion.updateGlobalOffsets(soff, eoff);
+          const root = this.rootNodeRef.current;
+          const { start, startOffset, end, endOffset } = richTextRegion;
+          const range = xpath.toRange(start, startOffset, end, endOffset, root);
+          const [soff, eoff] = rangeToGlobalOffset(range, root);
+
+          richTextRegion.updateGlobalOffsets(soff, eoff);
+        } catch (e) {
+          console.warn(e);
+        }
       });
     }
 
