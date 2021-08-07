@@ -105,19 +105,7 @@ class RichTextPieceView extends Component {
         const root = this.rootNodeRef.current;
         const { start, startOffset, end, endOffset } = richTextRegion;
         const range = xpath.toRange(start, startOffset, end, endOffset, root);
-        const [soff, eoff] = [
-          Utils.HTML.toGlobalOffset(root, range.startContainer, range.startOffset),
-          Utils.HTML.toGlobalOffset(root, range.endContainer, range.endOffset),
-        ];
-
-        const [soff1, eoff1] = rangeToGlobalOffset(range, root);
-
-        console.group(richTextRegion.text);
-        console.log({ start, end, startOffset, endOffset });
-        console.log(range);
-        console.log({ soff, eoff });
-        console.log({ soff1, eoff1 });
-        console.groupEnd(richTextRegion.text);
+        const [soff, eoff] = rangeToGlobalOffset(range, root);
 
         richTextRegion.updateGlobalOffsets(soff, eoff);
       });

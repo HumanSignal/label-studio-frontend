@@ -12,7 +12,7 @@ import { parseValue } from "../../../utils/data";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { observe, reaction } from "mobx";
 import * as xpath from "xpath-range";
-import { findRangeNative } from "../../../utils/selection-tools";
+import { findRangeNative, rangeToGlobalOffset } from "../../../utils/selection-tools";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -232,11 +232,7 @@ const Model = types
 
       area._range = range._range;
 
-      const { startContainer, startOffset, endContainer, endOffset } = range._range;
-      const [soff, eoff] = [
-        Utils.HTML.toGlobalOffset(self.rootNodeRef.current, startContainer, startOffset),
-        Utils.HTML.toGlobalOffset(self.rootNodeRef.current, endContainer, endOffset),
-      ];
+      const [soff, eoff] = rangeToGlobalOffset(range._range, self.rootNodeRef.current);
 
       if (range.isText) {
         area.updateOffsets(soff, eoff);

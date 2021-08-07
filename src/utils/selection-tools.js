@@ -634,25 +634,3 @@ const findGlobalOffset = (node, position, root) => {
 
   return globalPosition;
 };
-
-
-// const toGlobalOffset = (container, element, len) => {
-//   let pos = 0;
-//   const count = node => {
-//     if (node === element) {
-//       return pos;
-//     }
-//     if (node.nodeName === "#text") pos = pos + node.length;
-//     if (node.nodeName === "BR") pos = pos + 1;
-
-//     for (var i = 0; i <= node.childNodes.length; i++) {
-//       const n = node.childNodes[i];
-//       if (n) {
-//         const res = count(n);
-//         if (res !== undefined) return res;
-//       }
-//     }
-//   };
-
-//   return len + count(container);
-// };
