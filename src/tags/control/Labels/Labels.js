@@ -14,9 +14,7 @@ import "./Labels.styl";
 import { Block } from "../../../utils/bem";
 import { customTypes } from "../../../core/CustomTypes";
 import { defaultStyle } from "../../../core/Constants";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { LabelModel } from "../Label";
+import "../Label";
 
 /**
  * Labels tag, create a group of labels.

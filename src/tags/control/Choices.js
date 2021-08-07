@@ -15,6 +15,8 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
+import "./Choice";
+
 const { Option } = Select;
 
 /**
