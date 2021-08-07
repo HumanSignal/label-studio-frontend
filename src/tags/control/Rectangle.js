@@ -43,13 +43,14 @@ const Model = types
     type: "rectangle",
   })
   .actions(self => ({
-    fromStateJSON() {},
+    fromStateJSON () {},
 
-    afterCreate() {
+    afterCreate () {
       const rect = Tools.Rect.create({ activeShape: null });
+
       rect._control = self;
 
-      self.tools = { rect: rect };
+      self.tools = { rect };
     },
   }));
 

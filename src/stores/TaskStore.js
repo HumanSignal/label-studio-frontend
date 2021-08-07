@@ -27,7 +27,7 @@ const TaskStore = types
     data: types.maybeNull(types.string),
   })
   .views(self => ({
-    get app() {
+    get app () {
       return getParent(self);
     },
 
@@ -35,7 +35,7 @@ const TaskStore = types
      * Return JSON with task data
      * @returns {object}
      */
-    get dataObj() {
+    get dataObj () {
       if (Utilities.Checkers.isStringJSON(self.data)) {
         return JSON.parse(self.data);
       } else if (typeof self.data === "object") {

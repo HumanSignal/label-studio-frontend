@@ -9,7 +9,7 @@ import styles from "./Hint.module.scss";
  * @param {ant} children
  */
 export default class Hint extends Component {
-  render() {
+  render () {
     let style;
     let localClass = `${styles.main}`;
 

@@ -24,7 +24,7 @@ const data = {
 
 Feature("Two or more same named tools referred same image").tag("@regress");
 
-Scenario("Two RectangleLabels", async ({I, AtImageView, AtLabels, AtSidebar}) => {
+Scenario("Two RectangleLabels", async ({ I, AtImageView, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
 
@@ -38,5 +38,6 @@ Scenario("Two RectangleLabels", async ({I, AtImageView, AtLabels, AtSidebar}) =>
   AtSidebar.seeRegions(2);
 
   const result = await I.executeScript(serialize);
+
   assert.deepStrictEqual(result.length, 2);
 });

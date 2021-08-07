@@ -2,7 +2,7 @@ import { types } from "mobx-state-tree";
 
 export const PER_REGION_MODES = {
   TAG: "tag",
-  REGION_LIST: "region-list"
+  REGION_LIST: "region-list",
 };
 
 /*
@@ -13,16 +13,17 @@ const PerRegionMixin = types
     perregion: types.optional(types.boolean, false),
     whenlabelvalue: types.maybeNull(types.string),
     displaymode: types.optional(types.enumeration(Object.values(PER_REGION_MODES)), PER_REGION_MODES.TAG),
-  }).volatile(self => {
+  }).volatile(() => {
     return {
       focusable: false,
     };
-  }
+  },
   ).views(self => ({
-    perRegionVisible() {
+    perRegionVisible () {
       if (!self.perregion) return true;
 
       const region = self.annotation.highlightedNode;
+
       if (!region) {
         // no region is selected return hidden
         return false;
@@ -37,6 +38,6 @@ const PerRegionMixin = types
       return true;
     },
   }))
-  .actions(self => ({}));
+  .actions(() => ({}));
 
 export default PerRegionMixin;

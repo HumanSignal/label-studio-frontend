@@ -4,15 +4,15 @@ import { MIN_SIZE } from "../../tools/Base";
 import { fixRectToFit, getBoundingBoxAfterChanges } from "../../utils/image";
 
 export default class TransformerComponent extends Component {
-  componentDidMount() {
+  componentDidMount () {
     this.checkNode();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     this.checkNode();
   }
 
-  checkNode() {
+  checkNode () {
     if (!this.transformer) return;
 
     // here we need to manually attach or detach Transformer node
@@ -29,6 +29,7 @@ export default class TransformerComponent extends Component {
 
     const selectedNode = stage.findOne("." + selectedShape.id);
     // do nothing if selected node is already attached
+
     if (selectedNode === this.transformer.node()) {
       return;
     }
@@ -70,7 +71,7 @@ export default class TransformerComponent extends Component {
     }
   };
 
-  render() {
+  render () {
     if (!this.props.selectedShape.supportsTransform) return null;
 
     return (

@@ -5,7 +5,7 @@ export const errorBuilder = {
   /**
    * Occurrs when attribute is not provided at all
    */
-  required(modelName, field) {
+  required (modelName, field) {
     return {
       modelName,
       field,
@@ -16,7 +16,7 @@ export const errorBuilder = {
   /**
    * Occurrs when tag is not in our Registry
    */
-  unknownTag(modelName, field, value) {
+  unknownTag (modelName, field, value) {
     return {
       modelName,
       field,
@@ -28,7 +28,7 @@ export const errorBuilder = {
   /**
    * Occurrs when tag is not on the tree
    */
-  tagNotFound(modelName, field, value) {
+  tagNotFound (modelName, field, value) {
     return {
       modelName,
       field,
@@ -40,7 +40,7 @@ export const errorBuilder = {
   /**
    * Occurrs when referenced tag cannot be controlled by particular control tag
    */
-  tagUnsupported(modelName, field, value, validType) {
+  tagUnsupported (modelName, field, value, validType) {
     return {
       modelName,
       field,
@@ -53,7 +53,7 @@ export const errorBuilder = {
   /**
    * Occurrs when tag has not expected parent tag at any level
    */
-  parentTagUnexpected(modelName, field, value, validType) {
+  parentTagUnexpected (modelName, field, value, validType) {
     return {
       modelName,
       field,
@@ -66,7 +66,7 @@ export const errorBuilder = {
   /**
    * Occurrs when attribute value has wrong type
    */
-  badAttributeValueType(modelName, field, value, validType) {
+  badAttributeValueType (modelName, field, value, validType) {
     return {
       modelName,
       field,
@@ -76,7 +76,7 @@ export const errorBuilder = {
     };
   },
 
-  internalError(error) {
+  internalError (error) {
     return {
       error: "ERR_INTERNAL",
       value: String(error).substr(0, 1000),
@@ -85,7 +85,7 @@ export const errorBuilder = {
     };
   },
 
-  generalError(error) {
+  generalError (error) {
     return {
       error: "ERR_GENERAL",
       value: String(error).substr(0, 1000),
@@ -94,7 +94,7 @@ export const errorBuilder = {
     };
   },
 
-  loadingError(error, url, attrWithUrl, message = messages.ERR_LOADING_HTTP) {
+  loadingError (error, url, attrWithUrl, message = messages.ERR_LOADING_HTTP) {
     console.log("ERR", error, error.code);
     return {
       error: "ERR_GENERAL",
@@ -120,6 +120,7 @@ const getTypeDescription = (type, withNullType = true) => {
   // Remove optional null
   if (withNullType === false) {
     const index = description.indexOf("null?");
+
     if (index >= 0) description.splice(index, 1);
   }
 
@@ -134,6 +135,7 @@ const getTypeDescription = (type, withNullType = true) => {
  */
 const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
   const result = [];
+
   if (!tree.children) return [];
 
   for (let child of tree.children) {
@@ -141,6 +143,7 @@ const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
     assign id of the parent for quick mathcing */
     const parentTypes = [...parentParentTypes, ...(parent?.type ? [parent?.type] : [])];
     const flatChild = { ...child, parent: parent?.id ?? null, parentTypes };
+
     delete flatChild.children;
 
     result.push(flatChild);
@@ -210,6 +213,7 @@ const validateToNameTag = (element, model, flatTree) => {
  */
 const validateParentTag = (element, model) => {
   const parentTypes = model.properties.parentTypes?.value;
+
   if (!parentTypes || element.parentTypes.find(elementParentType => parentTypes.find(type => elementParentType === type.toLowerCase()))) {
     return null;
   }
@@ -254,7 +258,7 @@ export class ConfigValidator {
    * Validate node attributes and compatibility with other nodes
    * @param {*} node
    */
-  static validate(root) {
+  static validate (root) {
     const flatTree = flattenTree(root);
     const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags", "parentTypes"];
     const validationResult = [];
@@ -263,14 +267,17 @@ export class ConfigValidator {
       const model = Registry.getModelByTag(child.type);
       // Validate name attribute
       const nameValidation = validateNameTag(child, model);
+
       if (nameValidation !== null) validationResult.push(nameValidation);
 
       // Validate toName attribute
       const toNameValidation = validateToNameTag(child, model, flatTree);
+
       if (toNameValidation !== null) validationResult.push(toNameValidation);
 
       // Validate by parentUnexpected parent tag
       const parentValidation = validateParentTag(child, model, flatTree);
+
       if (parentValidation !== null) validationResult.push(parentValidation);
 
       validationResult.push(...validateAttributes(child, model, propertiesToSkip));

@@ -21,7 +21,7 @@ export const EntityTab = observer(forwardRef(({
     <Block
       name="entity-tab"
       ref={ref}
-      mod={{selected, bordered}}
+      mod={{ selected, bordered }}
       style={style}
       onClick={e => {
         e.preventDefault();
@@ -35,8 +35,8 @@ export const EntityTab = observer(forwardRef(({
           tag={Userpic}
           showUsername
           username={prediction ? entity.createdBy : null}
-          user={entity.user ?? {email: entity.createdBy}}
-          mod={{prediction}}
+          user={entity.user ?? { email: entity.createdBy }}
+          mod={{ prediction }}
         >{prediction && <LsSparks/>}</Elem>
 
         <Elem name="identifier">
@@ -74,10 +74,11 @@ export const AnnotationTabs = observer(({
         as.selectAnnotation(entity.id);
       }
     }
-  }, [as],);
+  }, [as]);
 
   const onCreateAnnotation = useCallback(() => {
     const c = as.addAnnotation({ userGenerate: true });
+
     as.selectAnnotation(c.id);
   }, [as]);
 
@@ -135,7 +136,7 @@ export const AnnotationTabs = observer(({
       </Elem>
 
       {allowViewAll && (
-        <Elem tag="button" name="all" mod={{active: as.viewingAll}} onClick={onToggleVisibility}>
+        <Elem tag="button" name="all" mod={{ active: as.viewingAll }} onClick={onToggleVisibility}>
           <LsGrid/>
         </Elem>
       )}

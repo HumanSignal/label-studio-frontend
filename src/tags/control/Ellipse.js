@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
@@ -43,17 +43,19 @@ const Model = types
     type: "ellipse",
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
   }))
   .actions(self => ({
-    afterCreate() {
+    afterCreate () {
       const ellipse = Tools.Ellipse.create({ activeShape: null });
+
       ellipse._control = self;
 
-      self.tools = { ellipse: ellipse };
+      self.tools = { ellipse };
     },
   }));
 

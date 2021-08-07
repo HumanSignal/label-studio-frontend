@@ -10,7 +10,7 @@ const AudioControls = ({ item, store }) => {
     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1em" }}>
       <Button
         type="primary"
-        onClick={ev => {
+        onClick={() => {
           item._ws.playPause();
         }}
       >

@@ -20,14 +20,14 @@ const ClassificationArea = types.compose(
       object: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
       classification: true,
     })
-    .actions(self => ({
+    .actions(() => ({
       serialize: () => ({}),
     })),
 );
 
 const Area = types.union(
   {
-    dispatcher(sn) {
+    dispatcher (sn) {
       // for some deserializations
       if (sn.$treenode) return sn.$treenode.type;
       if (
@@ -43,6 +43,7 @@ const Area = types.union(
       // provide value to detect Area by data
       const available = Registry.getAvailableAreas(tag.type, sn);
       // union of all available Areas for this Object type
+
       if (!available.length) return ClassificationArea;
       return types.union(...available, ClassificationArea);
     },

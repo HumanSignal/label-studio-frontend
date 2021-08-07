@@ -4,7 +4,6 @@ import { parseCSV } from "../data";
 
 const now = +new Date();
 const dateISO = timeFormat("%Y-%m-%d %H:%M:%S");
-const dateUS = timeFormat("%m/%d/%Y %I:%M:%S %p");
 const minute = 60 * 1000;
 const data = {
   timestamp: [now, now + minute, now + minute * 2],
@@ -25,6 +24,7 @@ describe("parseCSV; csv with header", () => {
       `${now + minute},125,0.02`,
       `${now + minute * 2},135,0.04`,
     ].join("\n");
+
     expect(parseCSV(csv)).toStrictEqual(data);
   });
 
@@ -35,6 +35,7 @@ describe("parseCSV; csv with header", () => {
       `${now + minute}\t125\t0.02`,
       `${now + minute * 2}\t135\t0.04`,
     ].join("\n");
+
     expect(parseCSV(csv)).toStrictEqual(data);
   });
 
@@ -46,6 +47,7 @@ describe("parseCSV; csv with header", () => {
       `${now + minute * 2};135;0.04;F`,
     ].join("\n");
     const expected = { ...data };
+
     expected.gender = ["M", "F", "F"];
     expect(parseCSV(csv)).toStrictEqual(expected);
   });
@@ -57,6 +59,7 @@ describe("parseCSV; csv with header", () => {
       `${dateISO(now + minute)};125;0.02;F`,
       `${dateISO(now + minute * 2)};135;0.04;F`,
     ].join("\n");
+
     expect(() => parseCSV(csv)).toThrow("You can provide correct");
   });
 
@@ -68,6 +71,7 @@ describe("parseCSV; csv with header", () => {
       `${dateISO(now + minute * 2)},135,0.04,F`,
     ].join("\n");
     const expected = { ...data };
+
     expected.time = expected.timestamp.map(dateISO);
     delete expected.timestamp;
     expected.gender = ["M", "F", "F"];
@@ -78,11 +82,13 @@ describe("parseCSV; csv with header", () => {
 describe("parseCSV; headless csv", () => {
   test("Numbers, commas, auto separator", () => {
     const csv = [`${now},123,0.01`, `${now + minute},125,0.02`, `${now + minute * 2},135,0.04`].join("\n");
+
     expect(parseCSV(csv)).toStrictEqual(dataHeadless);
   });
 
   test("Numbers, tabs, auto separator", () => {
     const csv = [`${now}\t123\t0.01`, `${now + minute}\t125\t0.02`, `${now + minute * 2}\t135\t0.04`].join("\n");
+
     expect(parseCSV(csv)).toStrictEqual(dataHeadless);
   });
 
@@ -93,6 +99,7 @@ describe("parseCSV; headless csv", () => {
       `${dateISO(now + minute * 2)},135,0.04,F`,
     ].join("\n");
     const expected = { ...dataHeadless };
+
     expected["0"] = expected["0"].map(dateISO);
     expected["3"] = ["M", "F", "F"];
     expect(parseCSV(csv, ",")).toStrictEqual(expected);
@@ -101,6 +108,7 @@ describe("parseCSV; headless csv", () => {
   test("Empty values", () => {
     const csv = ["123,0.01,M", "125,,F", "135,0.04,"].join("\n");
     const expected = { "0": [123, 125, 135], "1": [0.01, 0, 0.04], "2": ["M", "F", 0] };
+
     expect(parseCSV(csv, ",")).toStrictEqual(expected);
   });
 });

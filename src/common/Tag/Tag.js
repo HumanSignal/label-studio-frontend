@@ -5,6 +5,7 @@ import "./Tag.styl";
 
 const prepareColor = (colorString, solid) => {
   const baseColor = color(colorString);
+
   return solid ? {
     color: color.contrast(baseColor, '#fff') > 4.5 ? '#fff' : '#000',
     background: baseColor,

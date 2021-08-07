@@ -43,7 +43,7 @@ export const CurrentEntity = injector(observer(({
               const c = cs.addAnnotationFromPrediction(entity);
 
               // this is here because otherwise React doesn't re-render the change in the tree
-              window.setTimeout(function() {
+              window.setTimeout(function () {
                 store.annotationStore.selectAnnotation(c.id);
               }, 50);
             }}>

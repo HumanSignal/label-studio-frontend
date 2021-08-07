@@ -5,7 +5,7 @@ const INPUT_SCOPE = "__input__";
 
 let _hotkeys_desc = {};
 
-keymaster.filter = function(event) {
+keymaster.filter = function (event) {
   if (keymaster.getScope() === "__none__") return;
 
   const tag = (event.target || event.srcElement).tagName;
@@ -15,7 +15,7 @@ keymaster.filter = function(event) {
   return true;
 };
 
-export const Hotkey = name => {
+export const Hotkey = () => {
   let _hotkeys_map = {};
 
   return {
@@ -24,7 +24,7 @@ export const Hotkey = name => {
      * @param {*} key
      * @param {*} func
      */
-    addKey(key, func, desc, scope = DEFAULT_SCOPE) {
+    addKey (key, func, desc, scope = DEFAULT_SCOPE) {
       if (_hotkeys_map[key]) {
         return;
       }
@@ -47,9 +47,9 @@ export const Hotkey = name => {
      * Given a key temp overwrites the function, the overwrite is removed
      * after the returning function is called
      */
-    overwriteKey(key, func) {}, // eslint-disable-line no-unused-vars
+    overwriteKey () {}, // eslint-disable-line no-unused-vars
 
-    removeKey(key, scope = DEFAULT_SCOPE) {
+    removeKey (key, scope = DEFAULT_SCOPE) {
       scope
         .split(",")
         .map(s => s.trim())
@@ -62,14 +62,14 @@ export const Hotkey = name => {
       delete _hotkeys_desc[key];
     },
 
-    getKeys() {
+    getKeys () {
       return Object.keys(_hotkeys_map);
     },
 
     /**
      * Unbund all hotkeys
      */
-    unbindAll() {
+    unbindAll () {
       for (let key of Object.keys(_hotkeys_map)) {
         keymaster.unbind(key);
       }
@@ -80,13 +80,14 @@ export const Hotkey = name => {
     /**
      * Create combination
      */
-    makeComb() {
+    makeComb () {
       let prefix = null;
       let st = "1234567890qwetasdfgzxcvbyiopjklnm";
       let combs = st.split("");
 
       for (var i = 0; i <= combs.length; i++) {
         let comb;
+
         if (prefix) comb = prefix + "+" + combs[i];
         else comb = combs[i];
 
@@ -102,7 +103,7 @@ Hotkey.DEFAULT_SCOPE = DEFAULT_SCOPE;
 
 Hotkey.INPUT_SCOPE = INPUT_SCOPE;
 
-Hotkey.keysDescipritions = function() {
+Hotkey.keysDescipritions = function () {
   return _hotkeys_desc;
 };
 
@@ -110,7 +111,7 @@ Hotkey.keysDescipritions = function() {
  * Set scope of hotkeys
  * @param {*} scope
  */
-Hotkey.setScope = function(scope) {
+Hotkey.setScope = function (scope) {
   keymaster.setScope(scope);
 };
 

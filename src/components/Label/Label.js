@@ -8,6 +8,7 @@ export const Label = ({ className, style, color, empty = false, hidden = false, 
   const styles = useMemo(() => {
     if (!color) return null;
     const background = chroma(color).alpha(0.15);
+
     return {
       ...(style ?? {}), ...asVars({
         color,

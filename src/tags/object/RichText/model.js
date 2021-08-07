@@ -1,8 +1,7 @@
 import React from "react";
 
 import RegionsMixin from "../../../mixins/Regions";
-import { types, getRoot, getType, flow } from "mobx-state-tree";
-import { restoreNewsnapshot } from "../../../core/Helpers";
+import { types, getType, flow } from "mobx-state-tree";
 import ObjectBase from "../Base";
 import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Infomodal from "../../../components/Infomodal/Infomodal";
@@ -10,7 +9,7 @@ import Utils from "../../../utils";
 import { customTypes } from "../../../core/CustomTypes";
 import { parseValue } from "../../../utils/data";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import { observe, reaction } from "mobx";
+import { observe } from "mobx";
 import * as xpath from "xpath-range";
 import { findRangeNative, rangeToGlobalOffset } from "../../../utils/selection-tools";
 

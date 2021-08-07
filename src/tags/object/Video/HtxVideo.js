@@ -13,6 +13,7 @@ const hotkeys = Hotkey();
 
 const PlayPause = ({ video }) => {
   const [paused, setPaused] = useState(true);
+
   useEffect(() => {
     video.onplay = () => setPaused(false);
     video.onpause = () => setPaused(true);
@@ -76,9 +77,11 @@ const FrameStep = ({ item, video }) => {
 const Progress = ({ video }) => {
   const progressRef = useRef();
   const timeRef = useRef();
+
   useEffect(() => {
     video.ontimeupdate = () => {
       const percent = video.currentTime / video.duration;
+
       timeRef.current.style.left = (percent * 100) + "%";
     };
   }, [video]);
@@ -89,9 +92,11 @@ const Progress = ({ video }) => {
       const bar = progressRef.current;
       const box = bar.getBoundingClientRect();
       const percent = (e.clientX - box.left) / bar.offsetWidth;
+
       video.currentTime = video.duration * percent;
     }
   };
+
   return (
     <Elem name="progress" onMouseMove={onSeek} onMouseDown={onSeek} ref={progressRef}>
       <Elem name="current-time" style={{ left: progress * 100 + "%" }} ref={timeRef} />
@@ -114,15 +119,17 @@ const Controls = ({ item, video }) => {
   );
 };
 
-function onPlayPause(e) {
+function onPlayPause (e) {
   e.preventDefault();
   const video = e.target;
+
   video.paused ? video.play() : video.pause();
 }
 
-const HtxVideoView = ({ store, item }) => {
+const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     if (item.ref.current) setMounted(true);
   }, [item.ref.current]);

@@ -1,6 +1,6 @@
 import Konva from "konva";
 
-export function reverseCoordinates(r1, r2) {
+export function reverseCoordinates (r1, r2) {
   let r1X = r1.x,
     r1Y = r1.y,
     r2X = r2.x,
@@ -29,7 +29,7 @@ export function reverseCoordinates(r1, r2) {
  * @param {object} canvas
  * @param {object} shape
  */
-export function canvasToBinaryMatrix(canvas, shape) {
+export function canvasToBinaryMatrix (canvas, shape) {
   let currentLayer = canvas.stageRef.getLayers().filter(layer => layer.attrs.id === shape.id);
 
   let canv = currentLayer[0].canvas.context;
@@ -63,7 +63,7 @@ export function canvasToBinaryMatrix(canvas, shape) {
  * @param {{ x: number, y: number, width: number, height: number }} rect
  * @param {Konva.Transform} transform
  */
-export function getBoundingBoxAfterTransform(rect, transform) {
+export function getBoundingBoxAfterTransform (rect, transform) {
   const points = [
     { x: rect.x, y: rect.y },
     { x: rect.x + rect.width, y: rect.y },
@@ -71,8 +71,10 @@ export function getBoundingBoxAfterTransform(rect, transform) {
     { x: rect.x, y: rect.y + rect.height },
   ];
   let minX, minY, maxX, maxY;
+
   points.forEach(point => {
     var transformed = transform.point(point);
+
     if (minX === undefined) {
       minX = maxX = transformed.x;
       minY = maxY = transformed.y;
@@ -96,8 +98,9 @@ export function getBoundingBoxAfterTransform(rect, transform) {
  * @param {{ x: number, y: number }} shiftPoint
  * @param {number} degRotation
  */
-export function getBoundingBoxAfterChanges(rect, shiftPoint, degRotation = 0) {
+export function getBoundingBoxAfterChanges (rect, shiftPoint, degRotation = 0) {
   const transform = new Konva.Transform();
+
   transform.translate(shiftPoint.x, shiftPoint.y);
   transform.rotate((degRotation * Math.PI) / 180);
   return getBoundingBoxAfterTransform(rect, transform);
@@ -109,7 +112,7 @@ export function getBoundingBoxAfterChanges(rect, shiftPoint, degRotation = 0) {
  * @param {number} stageWidth
  * @param {number} stageHeight
  */
-export function fixRectToFit(rect, stageWidth, stageHeight) {
+export function fixRectToFit (rect, stageWidth, stageHeight) {
   let { x, y, width, height } = rect;
 
   if (x < 0) {

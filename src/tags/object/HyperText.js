@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
-import { types, getType, getRoot } from "mobx-state-tree";
+import { types, getType } from "mobx-state-tree";
 
 import Utils from "../../utils";
 import ObjectBase from "./Base";
@@ -55,21 +55,23 @@ const Model = types
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    get regs() {
+    get regs () {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates() {
+    activeStates () {
       const states = self.states();
+
       return states
         ? states.filter(
           s => s.isSelected && (getType(s).name === "HyperTextLabelsModel" || getType(s).name === "RatingModel"),
@@ -78,15 +80,15 @@ const Model = types
     },
   }))
   .actions(self => ({
-    needsUpdate() {
+    needsUpdate () {
       self._update = self._update + 1;
     },
 
-    updateValue(store) {
+    updateValue (store) {
       self._value = parseValue(self.value, store.task.dataObj);
     },
 
-    createRegion(p) {
+    createRegion (p) {
       const r = HyperTextRegionModel.create({
         pid: p.id,
         ...p,
@@ -100,13 +102,15 @@ const Model = types
       return r;
     },
 
-    addRegion(range) {
+    addRegion (range) {
       const states = self.getAvailableStates();
+
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+
       area._range = range._range;
       return area;
     },
@@ -116,7 +120,7 @@ const Model = types
      * @param {*} obj
      * @param {*} fromModel
      */
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj, fromModel) {
       const { start, startOffset, end, endOffset, text } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
@@ -128,11 +132,11 @@ const Model = types
       const tree = {
         pid: obj.id,
         parentID: obj.parent_id === null ? "" : obj.parent_id,
-        startOffset: startOffset,
-        endOffset: endOffset,
-        start: start,
-        end: end,
-        text: text,
+        startOffset,
+        endOffset,
+        start,
+        end,
+        text,
         score: obj.score,
         readonly: obj.readonly,
         normalization: obj.normalization,
@@ -150,7 +154,7 @@ const Model = types
 const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxHyperTextView extends Component {
-  render() {
+  render () {
     const { item, store } = this.props;
 
     if (!item._value) return null;
@@ -160,12 +164,12 @@ class HtxHyperTextView extends Component {
 }
 
 class HyperTextPieceView extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
     this.myRef = React.createRef();
   }
 
-  captureDocumentSelection() {
+  captureDocumentSelection () {
     var i,
       self = this,
       ranges = [],
@@ -183,6 +187,7 @@ class HyperTextPieceView extends Component {
 
       try {
         var normedRange = xpath.fromRange(r, self.myRef.current);
+
         splitBoundaries(r);
 
         normedRange._range = r;
@@ -195,7 +200,9 @@ class HyperTextPieceView extends Component {
         } else {
           ranges.push(normedRange);
         }
-      } catch (err) {}
+      } catch (err) {
+        console.warn(err);
+      }
     }
 
     // BrowserRange#normalize() modifies the DOM structure and deselects the
@@ -206,9 +213,10 @@ class HyperTextPieceView extends Component {
     return ranges;
   }
 
-  onMouseUp(ev) {
+  onMouseUp () {
     const item = this.props.item;
     const states = item.activeStates();
+
     if (!states || states.length === 0) return;
 
     var selectedRanges = this.captureDocumentSelection();
@@ -218,17 +226,19 @@ class HyperTextPieceView extends Component {
     item._currentSpan = null;
 
     const htxRange = item.addRegion(selectedRanges[0]);
+
     if (htxRange) {
       const spans = htxRange.createSpans();
+
       htxRange.addEventsToSpans(spans);
     }
   }
 
-  _handleUpdate() {
+  _handleUpdate () {
     const root = this.myRef.current;
     const { item } = this.props;
 
-    item.regs.forEach(function(r) {
+    item.regs.forEach(function (r) {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -245,6 +255,7 @@ class HyperTextPieceView extends Component {
 
         r._range = range;
         const spans = r.createSpans();
+
         r.addEventsToSpans(spans);
       } catch (err) {
         console.log(r);
@@ -253,7 +264,7 @@ class HyperTextPieceView extends Component {
 
     if (!item.clickablelinks) {
       Array.from(this.myRef.current.getElementsByTagName("a")).forEach(a => {
-        a.addEventListener("click", function(ev) {
+        a.addEventListener("click", function (ev) {
           ev.preventDefault();
           return false;
         });
@@ -261,18 +272,19 @@ class HyperTextPieceView extends Component {
     }
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     this._handleUpdate();
   }
 
-  componentDidMount() {
+  componentDidMount () {
     this._handleUpdate();
   }
 
-  render() {
+  render () {
     const { item, store } = this.props;
 
     let val = parseValue(item.value, store.task.dataObj);
+
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 

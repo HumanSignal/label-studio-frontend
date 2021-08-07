@@ -8,7 +8,7 @@ import { IconBan } from "../../assets/icons";
 
 const TOOLTIP_DELAY = 0.8;
 
-const ButtonTooltip = inject("store")(observer(({store, title, children}) => {
+const ButtonTooltip = inject("store")(observer(({ store, title, children }) => {
   return (
     <Tooltip
       title={title}
@@ -20,7 +20,7 @@ const ButtonTooltip = inject("store")(observer(({store, title, children}) => {
   );
 }));
 
-export const Controls = inject("store")(observer(({store, annotation}) => {
+export const Controls = inject("store")(observer(({ store, annotation }) => {
   const isReview = store.hasInterface("review");
   const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
@@ -35,7 +35,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
         <Button disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
           Reject
         </Button>
-      </ButtonTooltip>
+      </ButtonTooltip>,
     );
 
     buttons.push(
@@ -43,13 +43,13 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
         <Button disabled={disabled} look="primary" onClick={store.acceptAnnotation}>
           {history.canUndo ? "Fix + Accept" : "Accept"}
         </Button>
-      </ButtonTooltip>
+      </ButtonTooltip>,
     );
   } else if (annotation.skipped) {
     buttons.push(
       <Elem name="skipped-info" key="skipped">
         <IconBan color="#d00" /> Annotation skipped
-      </Elem>
+      </Elem>,
     );
   } else {
     if (store.hasInterface("skip")) {
@@ -58,7 +58,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
           <Button disabled={disabled} look="danger" onClick={store.skipTask}>
             Skip
           </Button>
-        </ButtonTooltip>
+        </ButtonTooltip>,
       );
     }
 
@@ -67,6 +67,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
         ? "Empty annotations denied in this project"
         : "Save results: [ Ctrl+Enter ]";
       // span is to display tooltip for disabled button
+
       buttons.push(
         <ButtonTooltip key="submit" title={title}>
           <Elem name="tooltip-wrapper">
@@ -74,7 +75,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
               Submit
             </Button>
           </Elem>
-        </ButtonTooltip>
+        </ButtonTooltip>,
       );
     }
 
@@ -84,7 +85,7 @@ export const Controls = inject("store")(observer(({store, annotation}) => {
           <Button disabled={disabled || submitDisabled} look="primary" onClick={store.updateAnnotation}>
             {sentUserGenerate || versions.result ? "Update" : "Submit"}
           </Button>
-        </ButtonTooltip>
+        </ButtonTooltip>,
       );
     }
   }

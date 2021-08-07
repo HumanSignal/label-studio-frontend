@@ -8,6 +8,7 @@ import { Modal } from "./ModalPopup";
 const standaloneModal = props => {
   const modalRef = createRef();
   const rootDiv = document.createElement("div");
+
   rootDiv.className = cn("modal-holder").toClassName();
 
   document.body.appendChild(rootDiv);
@@ -30,10 +31,10 @@ const standaloneModal = props => {
   renderModal(props, true);
 
   return {
-    update(newProps) {
+    update (newProps) {
       renderModal({ ...props, ...(newProps ?? {}) }, false);
     },
-    close() {
+    close () {
       modalRef.current.hide();
     },
   };

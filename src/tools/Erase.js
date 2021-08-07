@@ -14,7 +14,7 @@ const ToolView = observer(({ item }) => {
   return (
     <BasicTool
       selected={item.selected}
-      onClick={ev => {
+      onClick={() => {
         const sel = item.selected;
 
         item.manager.selectTool(item, !sel);
@@ -27,14 +27,15 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({})
   .views(self => ({
-    get viewClass() {
+    get viewClass () {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => {
     let brush;
+
     return {
-      updateCursor() {
+      updateCursor () {
         if (!self.selected || !self.obj.stageRef) return;
         const val = 24;
         const stage = self.obj.stageRef;
@@ -44,21 +45,21 @@ const _Tool = types
         stage.container().style.cursor = cursor.join("");
       },
 
-      afterUpdateSelected() {
+      afterUpdateSelected () {
         self.updateCursor();
       },
 
-      addPoint(x, y) {
+      addPoint (x, y) {
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv() {
+      mouseupEv () {
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
         brush.endPath();
       },
 
-      mousemoveEv(ev, [x, y]) {
+      mousemoveEv (ev, [x, y]) {
         if (self.mode !== "drawing") return;
         if (
           !findClosestParent(
@@ -70,12 +71,13 @@ const _Tool = types
           return;
 
         const shape = self.getSelectedShape;
+
         if (shape && shape.type === "brushregion") {
           self.addPoint(x, y);
         }
       },
 
-      mousedownEv(ev, [x, y]) {
+      mousedownEv (ev, [x, y]) {
         if (
           !findClosestParent(
             ev.target,

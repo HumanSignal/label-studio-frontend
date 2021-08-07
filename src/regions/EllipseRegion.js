@@ -37,7 +37,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
 
@@ -67,12 +67,12 @@ const Model = types
     hideable: true,
   }))
   .views(self => ({
-    get store() {
+    get store () {
       return getRoot(self);
     },
   }))
   .actions(self => ({
-    afterCreate() {
+    afterCreate () {
       self.startX = self.x;
       self.startY = self.y;
 
@@ -88,6 +88,7 @@ const Model = types
         }
         case "px": {
           const { stageWidth, stageHeight } = self.parent;
+
           if (stageWidth && stageHeight) {
             self.setPosition(self.x, self.y, self.radiusX, self.radiusY, self.rotation);
           }
@@ -99,7 +100,7 @@ const Model = types
     },
 
     // @todo not used
-    coordsInside(x, y) {
+    coordsInside (x, y) {
       // check if x and y are inside the rectangle
       const a = self.radiusX;
       const b = self.radiusY;
@@ -112,6 +113,7 @@ const Model = types
 
       //going to system where our ellipse has angle 0 to X-Axis via rotate matrix
       const theta = self.rotation;
+
       rel_x = rel_x * Math.cos(Math.unit(theta, "deg")) - rel_y * Math.sin(Math.unit(theta, "deg"));
       rel_y = rel_x * Math.sin(Math.unit(theta, "deg")) + rel_y * Math.cos(Math.unit(theta, "deg"));
 
@@ -125,8 +127,9 @@ const Model = types
     },
 
     // @todo not used
-    rotate(degree) {
+    rotate (degree) {
       const p = self.rotatePoint(self, degree);
+
       self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
     },
 
@@ -138,7 +141,7 @@ const Model = types
      * @param {number} radiusY
      * @param {number} rotation
      */
-    setPosition(x, y, radiusX, radiusY, rotation) {
+    setPosition (x, y, radiusX, radiusY, rotation) {
       self.x = x;
       self.y = y;
       self.radiusX = radiusX;
@@ -153,16 +156,16 @@ const Model = types
       self.rotation = (rotation + 360) % 360;
     },
 
-    setScale(x, y) {
+    setScale (x, y) {
       self.scaleX = x;
       self.scaleY = y;
     },
 
-    setFill(color) {
+    setFill (color) {
       self.fill = color;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
+    updateImageSize (wp, hp, sw, sh) {
       self.sw = sw;
       self.sh = sh;
 
@@ -180,7 +183,7 @@ const Model = types
       }
     },
 
-    serialize() {
+    serialize () {
       const res = {
         original_width: self.parent.naturalWidth,
         original_height: self.parent.naturalHeight,
@@ -282,7 +285,7 @@ const HtxEllipseView = ({ item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
+        onMouseOver={() => {
 
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
@@ -291,7 +294,7 @@ const HtxEllipseView = ({ item }) => {
             stage.container().style.cursor = Constants.POINTER_CURSOR;
           }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
           if (store.annotationStore.selected.relationMode) {

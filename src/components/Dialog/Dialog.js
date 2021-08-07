@@ -5,7 +5,7 @@ import { Tag } from "antd";
 import styles from "./Dialog.module.scss";
 
 export default class DialogView extends React.Component {
-  render() {
+  render () {
     let selectedStyle = `${styles.block}`;
     let hint;
     let bgColor;

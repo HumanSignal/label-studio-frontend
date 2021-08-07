@@ -1,6 +1,6 @@
 import { types } from "mobx-state-tree";
 
-import BaseTool, { DEFAULT_DIMENSIONS, MIN_SIZE } from "./Base";
+import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
@@ -12,23 +12,24 @@ const _Tool = types
     const Super = {
       createRegionOptions: self.createRegionOptions,
     };
+
     return {
-      get tagTypes() {
+      get tagTypes () {
         return {
           stateTypes: "rectanglelabels",
           controlTagTypes: ["rectanglelabels", "rectangle"],
         };
       },
-      get viewTooltip() {
+      get viewTooltip () {
         return "Rectangle region";
       },
-      get iconComponent() {
+      get iconComponent () {
         return NodeViews.RectRegionModel[1];
       },
-      get defaultDimensions() {
+      get defaultDimensions () {
         return DEFAULT_DIMENSIONS.rect;
       },
-      createRegionOptions({ x, y }) {
+      createRegionOptions ({ x, y }) {
         return Super.createRegionOptions({
           x,
           y,
@@ -39,8 +40,9 @@ const _Tool = types
     };
   })
   .actions(self => ({
-    beforeCommitDrawing() {
+    beforeCommitDrawing () {
       const s = self.getActiveShape;
+
       return s.width > self.MIN_SIZE.X  && s.height * self.MIN_SIZE.Y;
     },
   }));

@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
@@ -44,29 +44,30 @@ const Model = types
     selected: types.maybeNull(types.enumeration(["left", "right", "none"])),
   })
   .views(self => ({
-    get names() {
+    get names () {
       return self.toname.split(",");
     },
 
-    get left() {
+    get left () {
       return self.annotation.names.get(self.names[0]);
     },
 
-    get right() {
+    get right () {
       return self.annotation.names.get(self.names[1]);
     },
 
-    get valueType() {
+    get valueType () {
       return "selected";
     },
 
-    get result() {
+    get result () {
       return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => ({
-    updateResult() {
+    updateResult () {
       const { result, selected } = self;
+
       if (selected === "none") {
         if (result) result.area.removeResult(result);
       } else {
@@ -77,23 +78,23 @@ const Model = types
       }
     },
 
-    setResult(dir = "none") {
+    setResult (dir = "none") {
       self.selected = dir;
       self.left.addProp("style", dir === "left" ? self._selection : {});
       self.right.addProp("style", dir === "right" ? self._selection : {});
     },
 
-    selectLeft() {
+    selectLeft () {
       self.setResult(self.selected === "left" ? "none" : "left");
       self.updateResult();
     },
 
-    selectRight() {
+    selectRight () {
       self.setResult(self.selected === "right" ? "none" : "right");
       self.updateResult();
     },
 
-    afterCreate() {
+    afterCreate () {
       if (self.names.length !== 2 || self.names[0] === self.names[1]) {
         InfoModal.error(
           `Incorrect toName parameter on Pairwise, should be two names separated by the comma: name1,name2`,
@@ -101,8 +102,10 @@ const Model = types
       }
 
       let selection = {};
+
       if (self.selectionstyle) {
         const s = Tree.cssConverter(self.selectionstyle);
+
         for (let key in s) {
           selection[key] = s[key];
         }
@@ -116,12 +119,12 @@ const Model = types
       self._selection = selection;
     },
 
-    needsUpdate() {
+    needsUpdate () {
       if (self.result) self.setResult(self.result.value.selected);
       else self.setResult();
     },
 
-    annotationAttached() {
+    annotationAttached () {
       // @todo annotation attached in a weird way, so do that next tick, with fixed tree
       setTimeout(() => {
         self.left.addProp("onClick", self.selectLeft);

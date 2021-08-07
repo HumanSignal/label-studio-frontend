@@ -12,6 +12,7 @@ describe("Hint", () => {
         Test
       </Hint>,
     );
+
     expect(shallowToJson(output)).toMatchSnapshot();
   });
 });

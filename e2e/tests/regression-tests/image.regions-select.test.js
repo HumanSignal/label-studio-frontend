@@ -1,8 +1,6 @@
 /* global Feature, DataTable, Data, locate */
 
-const { initLabelStudio, hasSelectedRegion } = require("../helpers");
-
-const assert = require("assert");
+const { initLabelStudio } = require("../helpers");
 
 Feature("Select region by click on it");
 
@@ -33,7 +31,7 @@ const shapes = [
             [5, 55],
             [55, 55],
             [55, 5],
-            [5, 5]
+            [5, 5],
           ],
         ],
       },
@@ -54,7 +52,7 @@ const shapes = [
     regions: [
       {
         params: [30, 30, 25, 25],
-      }
+      },
     ],
   },
   {
@@ -64,7 +62,7 @@ const shapes = [
     regions: [
       {
         params: [30, 30],
-      }
+      },
     ],
   },
   {
@@ -88,11 +86,12 @@ const shapes = [
   },
 ];
 const shapesTable = new DataTable(["shape", "props", "action", "regions"]);
+
 shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-function convertParamsToPixels(params, canvasSize, key = "width") {
+function convertParamsToPixels (params, canvasSize, key = "width") {
   if (Array.isArray(params)) {
     for (const idx in params) {
       params[idx] = convertParamsToPixels(params[idx], canvasSize, idx % 2 ? "height" : "width");
@@ -103,7 +102,7 @@ function convertParamsToPixels(params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImageView, AtSidebar, current}) {
+Data(shapesTable).Scenario("Selecting after creation", async function ({ I, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -115,6 +114,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({I, AtImag
   AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
+
   for (let region of current.regions) {
     I.pressKey("u");
     I.pressKey("1");

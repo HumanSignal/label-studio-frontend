@@ -8,6 +8,7 @@ const toJSON = (annotation) => {
   const result = annotation.serializeAnnotation();
   const draft = annotation.versions.draft;
   const json = { id, result };
+
   if (draft) json.draft = draft;
   return json;
 };
@@ -27,22 +28,27 @@ const DebugComponent = ({ store }) => {
     store.assignTask({ data });
     store.initializeStore({ annotations, predictions: [] });
     const cs = store.annotationStore;
+
     if (cs.annotations.length) cs.selectAnnotation(cs.annotations[0].id);
   }, []);
 
   const serializeCurrent = useCallback(() => {
     const input = refAnnotations.current;
+
     if (!input) return;
     const annotation = store.annotationStore.selected;
     const json = [toJSON(annotation)];
+
     input.value = JSON.stringify(json, null, 2);
   }, []);
 
   const serializeAll = useCallback(() => {
     const input = refAnnotations.current;
+
     if (!input) return;
     const { annotations, predictions } = store.annotationStore;
     const json = [...annotations, ...predictions].map(toJSON);
+
     input.value = JSON.stringify(json, null, 2);
   }, []);
 

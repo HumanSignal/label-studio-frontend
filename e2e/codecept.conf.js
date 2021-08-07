@@ -41,7 +41,7 @@ exports.config = {
     AtSidebar: "./fragments/AtSidebar.js",
     AtLabels: "./fragments/AtLabels.js",
     AtSettings: "./fragments/AtSettings.js",
-    ErrorsCollector: "./fragments/ErrorsCollector.js"
+    ErrorsCollector: "./fragments/ErrorsCollector.js",
   },
   bootstrap: null,
   mocha: {},

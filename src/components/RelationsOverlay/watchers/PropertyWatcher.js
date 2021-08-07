@@ -3,7 +3,7 @@ import { debounce } from "../../../utils/debounce";
 
 export const createPropertyWatcher = props => {
   return class {
-    constructor(root, element, callback) {
+    constructor (root, element, callback) {
       this.root = root;
       this.element = element;
       this.callback = callback;
@@ -11,7 +11,7 @@ export const createPropertyWatcher = props => {
       this.handleUpdate();
     }
 
-    handleUpdate() {
+    handleUpdate () {
       this.disposers = this._watchProperties(this.element, props, []);
     }
 
@@ -19,11 +19,11 @@ export const createPropertyWatcher = props => {
       this.callback();
     }, 10);
 
-    destroy() {
+    destroy () {
       this.disposers.forEach(dispose => dispose());
     }
 
-    _watchProperties(element, propsList, disposers) {
+    _watchProperties (element, propsList, disposers) {
       return propsList.reduce((res, property) => {
         if (typeof property !== "string") {
           Object.keys(property).forEach(propertyName => {

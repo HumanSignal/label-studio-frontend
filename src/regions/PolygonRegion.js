@@ -29,25 +29,25 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
   }))
   .views(self => ({
-    get store() {
+    get store () {
       return getRoot(self);
     },
   }))
   .actions(self => ({
-    afterCreate() {
+    afterCreate () {
       if (!self.points.length) return;
       if (!self.points[0].id) {
         self.points = self.points.map(([x, y], index) => ({
           id: guidGenerator(),
-          x: x,
-          y: y,
+          x,
+          y,
           size: self.pointSize,
           style: self.pointStyle,
           index,
@@ -62,12 +62,12 @@ const Model = types
      * Handler for mouse on start point of Polygon
      * @param {boolean} val
      */
-    setMouseOverStartPoint(value) {
+    setMouseOverStartPoint (value) {
       self.mouseOverStartPoint = value;
     },
 
     // @todo not used
-    setSelectedPoint(point) {
+    setSelectedPoint (point) {
       if (self.selectedPoint) {
         self.selectedPoint.selected = false;
       }
@@ -76,7 +76,7 @@ const Model = types
       self.selectedPoint = point;
     },
 
-    handleMouseMove({ e, flattenedPoints }) {
+    handleMouseMove ({ e, flattenedPoints }) {
       const { offsetX, offsetY } = e.evt;
       const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
       const [x, y] = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
@@ -88,11 +88,11 @@ const Model = types
       moveHoverAnchor({ point: [x, y], group, layer, zoom });
     },
 
-    handleMouseLeave({ e }) {
+    handleMouseLeave ({ e }) {
       removeHoverAnchor({ layer: e.currentTarget.getLayer() });
     },
 
-    handleLineClick({ e, flattenedPoints, insertIdx }) {
+    handleLineClick ({ e, flattenedPoints, insertIdx }) {
       if (!self.closed || !self.selected) return;
 
       e.cancelBubble = true;
@@ -106,7 +106,7 @@ const Model = types
       self.insertPoint(insertIdx, point[0], point[1]);
     },
 
-    deletePoint(point) {
+    deletePoint (point) {
       if (!self.points.includes(point)) return;
       if (self.points.length <= 3) return;
       if (self.selectedPoint === point) {
@@ -115,28 +115,29 @@ const Model = types
       destroy(point);
     },
 
-    addPoint(x, y) {
+    addPoint (x, y) {
       if (self.closed) return;
       self._addPoint(x, y);
     },
 
-    insertPoint(insertIdx, x, y) {
+    insertPoint (insertIdx, x, y) {
       const p = {
         id: guidGenerator(),
-        x: x,
-        y: y,
+        x,
+        y,
         size: self.pointSize,
         style: self.pointStyle,
         index: self.points.length,
       };
+
       self.points.splice(insertIdx, 0, p);
     },
 
-    _addPoint(x, y) {
+    _addPoint (x, y) {
       self.points.push({
         id: guidGenerator(),
-        x: x,
-        y: y,
+        x,
+        y,
         size: self.pointSize,
         style: self.pointStyle,
         index: self.points.length,
@@ -145,18 +146,19 @@ const Model = types
 
     // @todo not used
     // only px coordtype here
-    rotate(degree = -90) {
+    rotate (degree = -90) {
       self.points.forEach(point => {
         const p = self.rotatePoint(point, degree);
+
         point._movePoint(p.x, p.y);
       });
     },
 
-    closePoly() {
+    closePoly () {
       self.closed = true;
     },
 
-    canClose(x, y) {
+    canClose (x, y) {
       if (self.points.length < 2) return false;
 
       const p1 = self.points[0];
@@ -172,12 +174,12 @@ const Model = types
       }
     },
 
-    destroyRegion() {
+    destroyRegion () {
       detach(self.points);
       destroy(self.points);
     },
 
-    afterUnselectRegion() {
+    afterUnselectRegion () {
       if (self.selectedPoint) {
         self.selectedPoint.selected = false;
       }
@@ -185,16 +187,16 @@ const Model = types
       // self.points.forEach(p => p.computeOffset());
     },
 
-    setScale(x, y) {
+    setScale (x, y) {
       self.scaleX = x;
       self.scaleY = y;
     },
 
-    updateOffset() {
+    updateOffset () {
       self.points.map(p => p.computeOffset());
     },
 
-    updateImageSize(wp, hp, sw, sh) {
+    updateImageSize (wp, hp, sw, sh) {
       if (self.coordstype === "px") {
         self.points.forEach(p => {
           const x = (sw * p.relativeX) / 100;
@@ -208,13 +210,14 @@ const Model = types
         self.points.forEach(p => {
           const x = (sw * p.x) / 100;
           const y = (sh * p.y) / 100;
+
           self.coordstype = "px";
           p._movePoint(x, y);
         });
       }
     },
 
-    serialize() {
+    serialize () {
       if (self.points.length < 3) return null;
       return {
         original_width: self.parent.naturalWidth,
@@ -243,7 +246,7 @@ const PolygonRegionModel = types.compose(
  * @param {number} cursorX coordinates of cursor X
  * @param {number} cursorY coordinates of cursor Y
  */
-function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
+function getAnchorPoint ({ flattenedPoints, cursorX, cursorY }) {
   const [point1X, point1Y, point2X, point2Y] = flattenedPoints;
   const y =
     ((point2X - point1X) * (point2X * point1Y - point1X * point2Y) +
@@ -259,21 +262,22 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
   return [x, y];
 }
 
-function getFlattenedPoints(points) {
+function getFlattenedPoints (points) {
   const p = points.map(p => [p.x, p.y]);
-  return p.reduce(function(flattenedPoints, point) {
+
+  return p.reduce(function (flattenedPoints, point) {
     return flattenedPoints.concat(point);
   }, []);
 }
 
-function getHoverAnchor({ layer }) {
+function getHoverAnchor ({ layer }) {
   return layer.findOne(".hoverAnchor");
 }
 
 /**
  * Create new anchor for current polygon
  */
-function createHoverAnchor({ point, group, layer, zoom }) {
+function createHoverAnchor ({ point, group, layer, zoom }) {
   const hoverAnchor = new Konva.Circle({
     name: "hoverAnchor",
     x: point[0],
@@ -292,13 +296,15 @@ function createHoverAnchor({ point, group, layer, zoom }) {
   return hoverAnchor;
 }
 
-function moveHoverAnchor({ point, group, layer, zoom }) {
+function moveHoverAnchor ({ point, group, layer, zoom }) {
   const hoverAnchor = getHoverAnchor({ layer }) || createHoverAnchor({ point, group, layer, zoom });
+
   hoverAnchor.to({ x: point[0], y: point[1], duration: 0 });
 }
 
-function removeHoverAnchor({ layer }) {
+function removeHoverAnchor ({ layer }) {
   const hoverAnchor = getHoverAnchor({ layer });
+
   if (!hoverAnchor) return;
   hoverAnchor.destroy();
   layer.draw();
@@ -314,7 +320,7 @@ const HtxPolygonView = ({ item }) => {
   /**
    * Render line between 2 points
    */
-  function renderLine({ points, idx1, idx2, closed }) {
+  function renderLine ({ points, idx1, idx2, closed }) {
     const name = `border_${idx1}_${idx2}`;
 
     if (!item.closed && idx2 === 0) return null;
@@ -355,22 +361,25 @@ const HtxPolygonView = ({ item }) => {
     );
   }
 
-  function renderLines(points, closed) {
+  function renderLines (points, closed) {
     const name = "borders";
+
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
+
           return renderLine({ points, idx1, idx2, closed });
         })}
       </Group>
     );
   }
 
-  function renderPoly(points) {
+  function renderPoly (points) {
     const name = "poly";
     const flattenedPoints = getFlattenedPoints(points);
+
     return (
       <Group key={name} name={name}>
         <Line
@@ -387,7 +396,7 @@ const HtxPolygonView = ({ item }) => {
     );
   }
 
-  function renderCircle({ points, idx }) {
+  function renderCircle ({ points, idx }) {
     const name = `anchor_${points.length}_${idx}`;
     const point = points[idx];
 
@@ -396,8 +405,9 @@ const HtxPolygonView = ({ item }) => {
     }
   }
 
-  function renderCircles(points) {
+  function renderCircles (points) {
     const name = "anchors";
+
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => renderCircle({ points, idx }))}
@@ -405,7 +415,7 @@ const HtxPolygonView = ({ item }) => {
     );
   }
 
-  function minMax(items) {
+  function minMax (items) {
     return items.reduce((acc, val) => {
       acc[0] = acc[0] === undefined || val < acc[0] ? val : acc[0];
       acc[1] = acc[1] === undefined || val > acc[1] ? val : acc[1];
@@ -447,7 +457,7 @@ const HtxPolygonView = ({ item }) => {
         if (maxY + y > sh) y = sh - maxY;
         if (maxX + x > sw) x = sw - maxX;
 
-        return { x: x, y: y };
+        return { x, y };
       })}
       onDragEnd={e => {
         const t = e.target;
@@ -462,7 +472,7 @@ const HtxPolygonView = ({ item }) => {
         t.setAttr("x", 0);
         t.setAttr("y", 0);
       }}
-      onMouseOver={e => {
+      onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
           stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -470,7 +480,7 @@ const HtxPolygonView = ({ item }) => {
           stage.container().style.cursor = Constants.POINTER_CURSOR;
         }
       }}
-      onMouseOut={e => {
+      onMouseOut={() => {
         stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
         if (store.annotationStore.selected.relationMode) {

@@ -46,7 +46,7 @@ export const isStringJSON = value => {
  * @param {*} i
  * @param {*} text
  */
-export function getUrl(i, text) {
+export function getUrl (i, text) {
   const stringToTest = text.slice(i);
   const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g; // eslint-disable-line no-useless-escape
   const match = myRegexp.exec(stringToTest);
@@ -60,37 +60,39 @@ export function getUrl(i, text) {
  * @param {number} ms
  * @returns {string}
  */
-export function toTimeString(ms) {
+export function toTimeString (ms) {
   if (typeof ms === "number") {
     return new Date(ms).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
   }
 }
 
-export function flatten(arr) {
-  return arr.reduce(function(flat, toFlatten) {
+export function flatten (arr) {
+  return arr.reduce(function (flat, toFlatten) {
     return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
   }, []);
 }
 
-export function hashCode(str) {
+export function hashCode (str) {
   var hash = 0;
+
   if (str.length === 0) {
     return hash + "";
   }
   for (var i = 0; i < str.length; i++) {
     var char = str.charCodeAt(i);
+
     hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return hash + "";
 }
 
-export function atobUnicode(str) {
+export function atobUnicode (str) {
   // Going backwards: from bytestream, to percent-encoding, to original string.
   return decodeURIComponent(
     atob(str)
       .split("")
-      .map(function(c) {
+      .map(function (c) {
         return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
       })
       .join(""),
@@ -101,7 +103,7 @@ export function atobUnicode(str) {
  * Makes string safe to use inside dangerouslySetInnerHTML
  * @param {string} unsafe
  */
-export function escapeHtml(unsafe) {
+export function escapeHtml (unsafe) {
   return unsafe
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -116,7 +118,7 @@ export function escapeHtml(unsafe) {
  * @param {T[]} arr1 array 1
  * @param {T[]} arr2 array 2
  */
-export function isArraysEqual(arr1, arr2) {
+export function isArraysEqual (arr1, arr2) {
   return arr1.length === arr2.length && arr1.every((value, index) => arr2[index] === value);
 }
 
@@ -126,11 +128,11 @@ export function isArraysEqual(arr1, arr2) {
  * @param {T} value
  * @returns {T[]}
  */
-export function wrapArray(value) {
+export function wrapArray (value) {
   return [].concat(...[value]);
 }
 
-export function delay(ms = 0) {
+export function delay (ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -138,7 +140,7 @@ export const isDefined = value => {
   return value !== null && value !== undefined;
 };
 
-export function findClosestParent(el, predicate = () => true, parentGetter = el => el.parent) {
+export function findClosestParent (el, predicate = () => true, parentGetter = el => el.parent) {
   while ((el = parentGetter(el))) {
     if (predicate(el)) {
       return el;
@@ -147,7 +149,7 @@ export function findClosestParent(el, predicate = () => true, parentGetter = el 
   return null;
 }
 
-export function clamp(x, min, max) {
+export function clamp (x, min, max) {
   return Math.min(max, Math.max(min, x));
 }
 

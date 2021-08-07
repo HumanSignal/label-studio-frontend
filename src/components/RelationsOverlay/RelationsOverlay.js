@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { createRef, forwardRef, PureComponent, useEffect, useMemo, useRef } from "react";
+import { createRef, forwardRef, PureComponent, useEffect, useRef } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
@@ -73,6 +73,7 @@ const RelationLabel = ({ label, position }) => {
   useEffect(() => {
     const textElement = textRef.current;
     const bbox = textElement.getBBox();
+
     setBackground({
       x: bbox.x - 5,
       y: bbox.y - 3,
@@ -135,7 +136,7 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
       : startNode,
     endNode.getRegionElement
       ? endNode.getRegionElement()
-      : endNode
+      : endNode,
   ];
 
   const [render, setRender] = useState(nodes[0] && nodes[1]);
@@ -168,13 +169,13 @@ class RelationsOverlay extends PureComponent {
   rootNode = createRef();
   state = { shouldRender: false, shouldRenderConnections: Math.random() };
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
     }
   }
 
-  render() {
+  render () {
     const { relations, visible, highlighted } = this.props;
     const hasHighlight = !!highlighted;
 
@@ -199,9 +200,10 @@ class RelationsOverlay extends PureComponent {
     );
   }
 
-  renderRelations(relations, visible, hasHighlight, highlightedRelation) {
+  renderRelations (relations, visible, hasHighlight, highlightedRelation) {
     return relations.map(relation => {
       const highlighted = highlightedRelation === relation;
+
       return (
         <RelationItemObserver
           key={relation.id}

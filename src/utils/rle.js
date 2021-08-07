@@ -2,7 +2,7 @@
  * Run Length Encode
  * @param {array} arr
  */
-function RLEencode(arr) {
+function RLEencode (arr) {
   var encoding = [];
   var prev, count, i;
 
@@ -23,7 +23,7 @@ function RLEencode(arr) {
  * Run Length Decode
  * @param {array} arr
  */
-function RLEdecode(encoded) {
+function RLEdecode (encoded) {
   let uncompressed = new Uint8ClampedArray();
   let test = [];
 

@@ -11,7 +11,7 @@ const { Block, Elem } = BemWithSpecifiContext();
 export class Modal extends Component {
   modalRef = createRef();
 
-  constructor(props) {
+  constructor (props) {
     super(props);
 
     this.state = {
@@ -23,17 +23,17 @@ export class Modal extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount () {
     if (this.props.animateAppearance) {
       setTimeout(() => this.show(), 30);
     }
   }
 
-  setBody(body) {
+  setBody (body) {
     this.setState({ body });
   }
 
-  show(onShow) {
+  show (onShow) {
     return new Promise(resolve => {
       this.setState({ visible: true }, async () => {
         onShow?.();
@@ -43,7 +43,7 @@ export class Modal extends Component {
     });
   }
 
-  async hide(onHidden) {
+  async hide (onHidden) {
     return new Promise(resolve => {
       this.transition("disappear", () => {
         this.setState({ visible: false }, () => {
@@ -55,7 +55,7 @@ export class Modal extends Component {
     });
   }
 
-  render() {
+  render () {
     if (!this.state.visible) return null;
 
     const bare = this.props.bare;
@@ -107,7 +107,7 @@ export class Modal extends Component {
     }
   };
 
-  transition(type, onFinish) {
+  transition (type, onFinish) {
     return aroundTransition(this.modalRef.current, {
       transition: async () =>
         new Promise(resolve => {
@@ -131,7 +131,7 @@ export class Modal extends Component {
     });
   }
 
-  get transitionClass() {
+  get transitionClass () {
     switch (this.state.transition) {
       case "before-appear":
         return "before-appear";
@@ -147,9 +147,10 @@ export class Modal extends Component {
     return null;
   }
 
-  get body() {
+  get body () {
     if (this.state.body) {
       const Content = this.state.body;
+
       return Content instanceof Function ? <Content /> : Content;
     } else {
       return this.props.children;

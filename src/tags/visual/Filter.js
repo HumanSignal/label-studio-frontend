@@ -1,5 +1,5 @@
 import React from "react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { Input } from "antd";
 
@@ -45,12 +45,12 @@ const Model = types
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get toTag() {
+    get toTag () {
       return self.annotation.names.get(self.toname);
     },
   }))
   .actions(self => ({
-    applyFilter() {
+    applyFilter () {
       let value = self._value;
       const tch = self.toTag.tiedChildren;
 
@@ -63,6 +63,7 @@ const Model = types
 
       tch.forEach(ch => {
         let chval = ch._value;
+
         if (!self.casesensetive) chval = chval.toLowerCase();
 
         if (chval.indexOf(value) !== -1) ch.setVisible(true);
@@ -70,14 +71,15 @@ const Model = types
       });
     },
 
-    applyFilterEv(e) {
+    applyFilterEv (e) {
       let { value } = e.target;
+
       self._value = value;
 
       self.applyFilter();
     },
 
-    onHotKey() {
+    onHotKey () {
       if (self._ref) {
         self._ref.focus();
       }
@@ -85,12 +87,13 @@ const Model = types
       return false;
     },
 
-    setInputRef(ref) {
+    setInputRef (ref) {
       self._ref = ref;
     },
 
-    selectFirstElement() {
+    selectFirstElement () {
       const selected = self.toTag.selectFirstVisible();
+
       if (selected && self.cleanup) {
         self._value = "";
         self.applyFilter();

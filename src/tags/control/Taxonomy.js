@@ -61,17 +61,18 @@ const Model = types
     maxUsagesReached: false,
   }))
   .views(self => ({
-    get holdsState() {
+    get holdsState () {
       return true;
     },
 
-    get valueType() {
+    get valueType () {
       return "taxonomy";
     },
 
-    get result() {
+    get result () {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
+
         if (!area) return null;
 
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
@@ -87,26 +88,26 @@ const Model = types
 
     return {
       views: {
-        get holdsState() {
+        get holdsState () {
           return selected.length > 0;
         },
       },
       actions: {
-        requiredModal() {
+        requiredModal () {
           Infomodal.warning(self.requiredmessage || `Taxonomy "${self.name}" is required.`);
         },
 
-        needsUpdate() {
+        needsUpdate () {
           if (self.result) selected = self.result.mainValue;
           else selected = [];
           self.maxUsagesReached = selected.length >= self.maxusages;
         },
 
-        selectedValues() {
+        selectedValues () {
           return selected;
         },
 
-        onChange(node, checked) {
+        onChange (node, checked) {
           selected = checked.map(s => s.path);
           self.maxUsagesReached = selected.length >= self.maxusages;
 
@@ -115,6 +116,7 @@ const Model = types
           } else {
             if (self.perregion) {
               const area = self.annotation.highlightedNode;
+
               if (!area) return null;
               area.setValue(self);
             } else {
@@ -123,9 +125,9 @@ const Model = types
           }
         },
 
-        traverse(root) {
+        traverse (root) {
           const maxusages = self.maxusages;
-          const visitNode = function(node, parents = []) {
+          const visitNode = function (node, parents = []) {
             const label = node.value;
             const path = [...parents, label];
             // @todo this check is heavy for long lists, optimize
@@ -153,7 +155,7 @@ const Model = types
 
 const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, VisibilityMixin, AnnotationMixin);
 
-function searchPredicate(node, searchTerm = "") {
+function searchPredicate (node, searchTerm = "") {
   return !node.disabled && node.label?.toLowerCase().includes(searchTerm.toLowerCase());
 }
 

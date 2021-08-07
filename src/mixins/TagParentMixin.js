@@ -5,7 +5,7 @@ export const TagParentMixin = types.model("AnnotationMixin",
   {
     parentTypes: Types.tagsTypes([]),
   }).views((self) => ({
-  get parent() {
+  get parent () {
     return Types.getParentTagOfTypeString(self, self.parentTypes);
   },
 }));

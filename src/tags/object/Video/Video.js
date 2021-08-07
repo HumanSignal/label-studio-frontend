@@ -44,7 +44,7 @@ const Model = types
     type: "video",
     _value: types.optional(types.string, ""),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     errors: [],
     ref: React.createRef(),
   }));

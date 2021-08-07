@@ -207,10 +207,10 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
-  // new ESLintPlugin({
-  //   // fix: true,
-  //   failOnError: false,
-  // }),
+  new ESLintPlugin({
+    fix: isDevelopment,
+    failOnError: isDevelopment,
+  }),
 ];
 
 if (!BUILD.NO_SERVER) {

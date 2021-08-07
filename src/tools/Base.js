@@ -9,7 +9,7 @@ const ToolView = observer(({ item }) => {
       selected={item.selected}
       icon={item.iconClass}
       tooltip={item.viewTooltip}
-      onClick={ev => {
+      onClick={() => {
         item.manager.selectTool(item, !item.selected);
       }}
     />
@@ -20,28 +20,29 @@ const BaseTool = types
   .model("BaseTool", {})
   .views(self => {
     return {
-      get isSeparated() {
+      get isSeparated () {
         return self.control.isSeparated;
       },
-      get viewClass() {
+      get viewClass () {
         return self.isSeparated && self.iconClass ? <ToolView item={self} /> : null;
       },
-      get viewTooltip() {
+      get viewTooltip () {
         return null;
       },
-      get iconClass() {
+      get iconClass () {
         if (self.iconComponent) {
           const Icon = self.iconComponent;
+
           return <Icon />;
         }
         return null;
       },
-      get iconComponent() {
+      get iconComponent () {
         return null;
       },
     };
   })
-  .actions(self => ({}));
+  .actions(() => ({}));
 
 export const MIN_SIZE = { X: 3, Y: 3 };
 

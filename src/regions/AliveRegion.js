@@ -3,7 +3,8 @@ import { isAlive } from "mobx-state-tree";
 
 export const AliveRegion = (RegionComponent) => {
   const ObservableRegion = observer(RegionComponent);
-  return observer(({item, ...rest}) => {
+
+  return observer(({ item, ...rest }) => {
     return isAlive(item) && !item.hidden ? <ObservableRegion item={item} {...rest} /> : null;
   });
 };

@@ -69,41 +69,43 @@ const Model = types.model({
     "BrushLabels",
     "HyperTextLabels",
     "TimeSeriesLabels",
-    "ParagraphLabels"
-  ])
-}).volatile(self => {
+    "ParagraphLabels",
+  ]),
+}).volatile(() => {
   return {
-    isEmpty: false
+    isEmpty: false,
   };
 }).views(self => ({
-  get maxUsages() {
+  get maxUsages () {
     return Number(self.maxusages || self.parent?.maxusages);
   },
 
-  usedAlready() {
+  usedAlready () {
     const regions = self.annotation.regionStore.regions;
     // count all the usages among all the regions
     const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
+
     return used;
   },
 
-  canBeUsed() {
+  canBeUsed () {
     if (!self.maxUsages) return true;
     return self.usedAlready() < self.maxUsages;
-  }
+  },
 })).actions(self => ({
-  setEmpty() {
+  setEmpty () {
     self.isEmpty = true;
   },
   /**
    * Select label
    */
-  toggleSelected() {
+  toggleSelected () {
     // here we check if you click on label from labels group
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
     const region = self.annotation.highlightedNode;
     const sameObject = region && region.parent?.name === self.parent?.toname;
+
     if (region && region.readonly === true && sameObject) return;
 
     // one more check if that label can be selected
@@ -140,6 +142,7 @@ const Model = types.model({
 
       // unselect other tools if they exist and selected
       const tool = Object.values(self.parent?.tools || {})[0];
+
       if (tool && tool.manager.findSelectedTool() !== tool) {
         tool.manager.selectTool(tool, true);
       }
@@ -147,6 +150,7 @@ const Model = types.model({
 
     if (self.isEmpty) {
       let selected = self.selected;
+
       labels.unselectAll();
       self.setSelected(!selected);
     } else {
@@ -191,7 +195,7 @@ const Model = types.model({
     }
   },
 
-  setVisible(val) {
+  setVisible (val) {
     self.visible = val;
   },
 
@@ -199,23 +203,23 @@ const Model = types.model({
    *
    * @param {boolean} value
    */
-  setSelected(value) {
+  setSelected (value) {
     self.selected = value;
   },
 
-  onHotKey() {
+  onHotKey () {
     return self.toggleSelected();
   },
 
-  _updateBackgroundColor(val) {
+  _updateBackgroundColor (val) {
     if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
   },
 
-  afterCreate() {
+  afterCreate () {
     self._updateBackgroundColor(self._value || self.value);
   },
 
-  updateValue(store) {
+  updateValue (store) {
     self._value = parseValue(self.value, store.task.dataObj) || Constants.EMPTY_LABEL;
   },
 }));
@@ -226,15 +230,17 @@ const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
     const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
-    return <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={ev => {
-      item.toggleSelected();
-      return false;
-    }}>
-      {item._value}
-      {item.showalias === true && item.alias && (
-        <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
-      )}
-    </Label>;
+    return (
+      <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
+        item.toggleSelected();
+        return false;
+      }}>
+        {item._value}
+        {item.showalias === true && item.alias && (
+          <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
+        )}
+      </Label>
+    );
   }),
 );
 

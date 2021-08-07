@@ -1,6 +1,6 @@
 module.exports = {
   plugins: [
-    "codeceptjs"
+    "codeceptjs",
   ],
   rules: {
     "codeceptjs/no-exclusive-tests": "error",

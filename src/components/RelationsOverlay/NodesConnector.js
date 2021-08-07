@@ -33,7 +33,7 @@ const obtainWatcher = node => {
 
 const createShape = (node, root) => {
   return new RelationShape({
-    root: root,
+    root,
     element: node,
     watcher: obtainWatcher(node),
   });
@@ -47,12 +47,13 @@ const connect = (relation, root) => {
     direction: relation.direction,
     start: createShape(relation.startNode, root),
     end: createShape(relation.endNode, root),
-    onChange(callback) {
+    onChange (callback) {
       const onChangedCallback = debounce(callback, 50);
+
       this.start.onUpdate(onChangedCallback);
       this.end.onUpdate(onChangedCallback);
     },
-    destroy() {
+    destroy () {
       this.start.destroy();
       this.end.destroy();
     },
@@ -70,6 +71,7 @@ const calculateBBox = (shape, root) => {
 
   return bboxList.map(bbox => {
     const padded = Geometry.padding(bbox, 3);
+
     return {
       ...padded,
       x: padded.x - x,
@@ -124,6 +126,7 @@ const calculateSidePath = ({ x1, y1, w1, h1, x2, y2, w2, h2, limit }) => {
     xs2 = x2;
     ys2 = y2 + h2 * 0.5;
     const left = Math.min(xs1, xs2) - limit;
+
     l1 = Math.min(left, xs1 - limit);
     l2 = Math.min(left, xs2 - limit);
   } else {
@@ -132,6 +135,7 @@ const calculateSidePath = ({ x1, y1, w1, h1, x2, y2, w2, h2, limit }) => {
     xs2 = x2 + w2;
     ys2 = y2 + h2 * 0.5;
     const left = Math.max(xs1, xs2) + limit;
+
     l1 = Math.max(left, xs1 + limit);
     l2 = Math.max(left, xs2 + limit);
   }

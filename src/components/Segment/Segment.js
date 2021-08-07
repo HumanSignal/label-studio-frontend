@@ -7,13 +7,15 @@ import styles from "./Segment.module.scss";
  * Segment Component
  */
 export default class Segment extends React.Component {
-  componentDidMount() {
+  componentDidMount () {
     const { annotation } = this.props;
+
     if (annotation) annotation.updateObjects();
   }
 
-  render() {
+  render () {
     let cn = styles.block;
+
     if (this.props.className) cn = cn + " " + this.props.className;
 
     return <div className={cn}>{this.props.children}</div>;

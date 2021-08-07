@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
@@ -88,7 +88,7 @@ const Model = types
 
 const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
-const HtxView = observer(({ item, store }) => {
+const HtxView = observer(({ item }) => {
   let style = {};
 
   if (item.display === "inline") {

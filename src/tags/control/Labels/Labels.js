@@ -8,7 +8,6 @@ import Registry from "../../../core/Registry";
 import SelectedModelMixin from "../../../mixins/SelectedModel";
 import Tree from "../../../core/Tree";
 import Types from "../../../core/Types";
-import { LabelModel } from "../Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../../core/Helpers";
 import ControlBase from "../Base";
 import "./Labels.styl";
@@ -71,19 +70,21 @@ const ModelAttrs = types.model({
 });
 
 const Model = LabelMixin.views(self => ({
-  get shouldBeUnselected() {
+  get shouldBeUnselected () {
     return self.choice === "single";
   },
 })).actions(self => ({
-  afterCreate() {
+  afterCreate () {
     if (self.allowempty) {
       let empty = self.findLabel(null);
+
       if (!empty) {
         const emptyParams = {
           value: null,
           type: "label",
           background: defaultStyle.fillcolor,
         };
+
         if (self.children) {
           self.children.unshift(emptyParams);
         } else {
@@ -94,7 +95,7 @@ const Model = LabelMixin.views(self => ({
       empty.setEmpty();
     }
   },
-  validate() {
+  validate () {
     const regions = self.annotation.regionStore.regions;
 
     for (let r of regions) {

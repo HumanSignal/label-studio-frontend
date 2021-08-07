@@ -1,6 +1,6 @@
 import React from "react";
 import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectBase from "./Base";
@@ -54,11 +54,11 @@ const Model = types
     playing: types.optional(types.boolean, false),
     height: types.optional(types.string, "20"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     errors: [],
   }))
   .actions(self => ({
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
@@ -68,24 +68,24 @@ const Model = types
       }
     },
 
-    handlePlay() {
+    handlePlay () {
       self.playing = !self.playing;
     },
 
-    onHotKey() {
+    onHotKey () {
       self._ws.playPause();
       return false;
     },
 
-    onLoad(ws) {
+    onLoad (ws) {
       self._ws = ws;
     },
 
-    onError(error) {
+    onError (error) {
       self.errors = [error];
     },
 
-    wsCreated(ws) {
+    wsCreated (ws) {
       self._ws = ws;
     },
   }));

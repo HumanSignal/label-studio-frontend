@@ -21,7 +21,7 @@ export class Geometry {
    * Returns RAD angle to normalized degrees meaning that it will always fit 0-360 range
    * @param {number} angle Angle in RAD
    */
-  static normalizeAngle(angle) {
+  static normalizeAngle (angle) {
     return ((angle + 360) % 360) * (Math.PI / 180);
   }
 
@@ -30,8 +30,9 @@ export class Geometry {
    * @param {Points} points Input points
    * @returns {Points} Array of two (x,y) coordinates representing a BBox
    */
-  static getPointsBBox(points) {
+  static getPointsBBox (points) {
     const minmax = [null, null, null, null];
+
     points.forEach((num, i) => {
       const pos = Math.round(i / 2) * 2 - i;
 
@@ -54,9 +55,10 @@ export class Geometry {
    * @param {Points} point1
    * @param {Points} point2
    */
-  static distance(point1, point2) {
+  static distance (point1, point2) {
     const [x1, y1] = point1;
     const [x2, y2] = point2;
+
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   }
 
@@ -65,11 +67,12 @@ export class Geometry {
    * @param {BBox} bbox
    * @returns {RectCoordinates}
    */
-  static toRectCoordinates(bbox) {
+  static toRectCoordinates (bbox) {
     const { x: x1, y: y1, width, height } = bbox;
     const [x2, y2] = [x1 + width, y1];
     const [x3, y3] = [x1 + width, y1 + height];
     const [x4, y4] = [x1, y1 + height];
+
     return { x1, x2, x3, x4, y1, y2, y3, y4 };
   }
 
@@ -78,7 +81,7 @@ export class Geometry {
    * @param {RectCoordinates} rect
    * @returns {BBox}
    */
-  static convertToRectBBox(rect) {
+  static convertToRectBBox (rect) {
     return {
       x: rect.x1,
       y: rect.y1,
@@ -92,7 +95,7 @@ export class Geometry {
    * @param {BBox[]} rectsList1
    * @param {BBox[]} rectsList2
    */
-  static closestRects(rectsList1, rectsList2) {
+  static closestRects (rectsList1, rectsList2) {
     const result = rectsList1
       .reduce((res, rect1) => {
         const bbox1 = this.toRectCoordinates(rect1);
@@ -127,7 +130,7 @@ export class Geometry {
    * @param {number} scale Scale factor
    * @returns {BBox} Scaled BBox
    */
-  static scaleBBox(bbox, scale = 1) {
+  static scaleBBox (bbox, scale = 1) {
     return {
       ...bbox,
       x: bbox.x * scale,
@@ -137,7 +140,7 @@ export class Geometry {
     };
   }
 
-  static modifyBBoxCoords(bbox, modifier = x=>x) {
+  static modifyBBoxCoords (bbox, modifier = x=>x) {
     let p1 = modifier([bbox.x, bbox.y]);
     let p2 = modifier([bbox.width + bbox.x, bbox.height + bbox.y]);
 
@@ -155,9 +158,10 @@ export class Geometry {
    * @param {BBox} bbox BBox to pad
    * @param {number} padding Padding size
    */
-  static padding(bbox, padding = 0) {
+  static padding (bbox, padding = 0) {
     const paddingX = bbox.width < 1 ? 0 : padding;
     const paddingY = bbox.height < 1 ? 0 : padding;
+
     return {
       ...bbox,
       x: bbox.x - paddingX,
@@ -176,7 +180,7 @@ export class Geometry {
    * @param {number} angle Angle in RAD
    * @returns {BBox[]} Dimensions of bounding box
    */
-  static getEllipseBBox(x, y, rx, ry, angle) {
+  static getEllipseBBox (x, y, rx, ry, angle) {
     const angleRad = this.normalizeAngle(angle);
     const major = Math.max(rx, ry) * 2;
     const minor = Math.min(rx, ry) * 2;
@@ -193,6 +197,7 @@ export class Geometry {
 
     const getYLimits = () => {
       const t = Math.atan(((minor / 2) * 1.0) / Math.tan(angleRad) / (major / 2));
+
       return [t, t + Math.PI]
         .map(t => {
           return y + (minor / 2) * Math.sin(t) * Math.cos(angleRad) + (major / 2) * Math.cos(t) * Math.sin(angleRad);
@@ -217,7 +222,7 @@ export class Geometry {
    * @param {number} angle Angle in RAD
    * @returns {BBox[]} Dimensions of bounding box
    */
-  static getRectBBox(x, y, width, height, angle) {
+  static getRectBBox (x, y, width, height, angle) {
     const angleRad = this.normalizeAngle(angle);
 
     const rotate = (x1, y1) => [
@@ -241,9 +246,10 @@ export class Geometry {
    * @param {Points} points
    * @return {BBox[]}
    */
-  static getPolygonBBox(points) {
+  static getPolygonBBox (points) {
     const coords = points.reduce((res, point) => [...res, point.x, point.y], []);
     const [x1, y1, x2, y2] = this.getPointsBBox(coords);
+
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
   }
 
@@ -252,8 +258,9 @@ export class Geometry {
    * @param {Points} points
    * @return {BBox[]}
    */
-  static getBrushBBox(points) {
+  static getBrushBBox (points) {
     const [x1, y1, x2, y2] = this.getPointsBBox(points);
+
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
   }
 
@@ -264,13 +271,15 @@ export class Geometry {
    * @param {Number} height
    * @return {BBox}
    */
-  static getImageDataBBox(imageData, w, h) {
+  static getImageDataBBox (imageData, w, h) {
     if (imageData.length !== w * h * 4) return null;
     let min = { x: w, y: h },
       max = { x: 0, y: 0 };
+
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         let alphaIndex = 4 * (y * w + x) + 3;
+
         if (imageData[alphaIndex]) {
           if (min.x > x) min.x = x;
           if (min.y > y) min.y = y;
@@ -286,7 +295,7 @@ export class Geometry {
    * @param {...BBox} bboxes Bboxes to merge
    * @return {BBox}
    */
-  static combineBBoxes(...bboxes) {
+  static combineBBoxes (...bboxes) {
     const [x1, y1, x2, y2] = this.getPointsBBox(
       bboxes.reduce((points, bbox) => {
         if (bbox && bbox.x && bbox.y) {
@@ -298,12 +307,14 @@ export class Geometry {
         return points;
       }, []),
     );
+
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
   }
 
-  static clampBBox(bbox, min, max) {
+  static clampBBox (bbox, min, max) {
     let p1 = [clamp(bbox.x, min.x, max.x), clamp(bbox.y, min.y, max.y)];
     let p2 = [clamp(bbox.width + bbox.x, min.x, max.x), clamp(bbox.height + bbox.y, min.y, max.y)];
+
     return {
       x: p1[0],
       y: p1[1],
@@ -318,7 +329,7 @@ export class Geometry {
    * @param {boolean} single Should return all possible BBoxes or not
    * @return {BBox[]}
    */
-  static getDOMBBox(domNode, single = false) {
+  static getDOMBBox (domNode, single = false) {
     if (!domNode) return null;
 
     const bboxes = domNode.getClientRects();

@@ -19,22 +19,22 @@ const Model = types
 
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
-  .volatile(self => ({
-    hideable: true
+  .volatile(() => ({
+    hideable: true,
   }))
   .views(self => ({
-    getRegionElement() {
+    getRegionElement () {
       return self.wsRegionElement(self._ws_region);
     },
 
-    wsRegionElement(wsRegion) {
+    wsRegionElement (wsRegion) {
       const elID = wsRegion.id;
       let el = document.querySelector(`[data-id="${elID}"]`);
 
       return el;
     },
 
-    get wsRegionOptions() {
+    get wsRegionOptions () {
       const reg = {
         id: self.id,
         start: self.start,
@@ -47,10 +47,10 @@ const Model = types
         reg.resize = false;
       }
       return reg;
-    }
+    },
   }))
   .actions(self => ({
-    serialize() {
+    serialize () {
       let res = {
         original_length: self.object._ws?.getDuration(),
         value: {
@@ -62,23 +62,25 @@ const Model = types
       return res;
     },
 
-    updateColor(alpha = 1) {
+    updateColor (alpha = 1) {
       const color = Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
       // eslint-disable-next-line no-unused-expressions
+
       self._ws_region?.update({ color });
     },
 
-    updateAppearenceFromState() {
+    updateAppearenceFromState () {
       if (self._ws_region?.update) {
         self.applyCSSClass(self._ws_region);
       }
     },
 
-    applyCSSClass(wsRegion) {
+    applyCSSClass (wsRegion) {
       self.updateColor(0.3);
 
       const settings = getRoot(self).settings;
       const el = self.wsRegionElement(wsRegion);
+
       if (!el) return;
       const classes = [el.className, "htx-highlight", "htx-highlight-last"];
 
@@ -89,6 +91,7 @@ const Model = types
           labels: self.labeling?.mainValue,
           score: self.score,
         });
+
         classes.push(cssCls);
       }
       el.className = classes.filter(Boolean).join(" ");
@@ -97,15 +100,17 @@ const Model = types
     /**
      * Select audio region
      */
-    selectRegion() {
+    selectRegion () {
       self.updateColor(0.8);
 
       const el = self.wsRegionElement(self._ws_region);
+
       if (el) {
         // scroll object tag but don't scroll the document
         const container = window.document.scrollingElement;
         const top = container.scrollTop;
         const left = container.scrollLeft;
+
         el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
         window.document.scrollingElement.scrollTo(left, top);
       }
@@ -114,11 +119,11 @@ const Model = types
     /**
      * Unselect audio region
      */
-    afterUnselectRegion() {
+    afterUnselectRegion () {
       self.updateColor(0.3);
     },
 
-    setHighlight(val) {
+    setHighlight (val) {
       self.highlighted = val;
 
       if (val) {
@@ -130,11 +135,11 @@ const Model = types
       }
     },
 
-    beforeDestroy() {
+    beforeDestroy () {
       if (self._ws_region) self._ws_region.remove();
     },
 
-    onClick(wavesurfer) {
+    onClick () {
       // if (! self.editable) return;
 
       if (!self.annotation.relationMode) {
@@ -148,27 +153,27 @@ const Model = types
       self.onClickRegion();
     },
 
-    onMouseOver() {
+    onMouseOver () {
       if (self.annotation.relationMode) {
         self.setHighlight(true);
         self._ws_region.element.style.cursor = Constants.RELATION_MODE_CURSOR;
       }
     },
 
-    onMouseLeave() {
+    onMouseLeave () {
       if (self.annotation.relationMode) {
         self.setHighlight(false);
         self._ws_region.element.style.cursor = Constants.MOVE_CURSOR;
       }
     },
 
-    onUpdateEnd(wavesurfer) {
+    onUpdateEnd () {
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
       self.updateColor(self.selected ? 0.8 : 0.3);
     },
 
-    toggleHidden(e) {
+    toggleHidden (e) {
       self.hidden = !self.hidden;
       self._ws_region.element.style.display = self.hidden ?  "none" : "block";
       e?.stopPropagation();

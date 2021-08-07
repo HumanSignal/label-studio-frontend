@@ -11,7 +11,7 @@ export const Tooltip = forwardRef(({
   defaultVisible,
   mouseEnterDelay = 0,
   enabled = true,
-  style
+  style,
 }, ref) => {
   if (!children || Array.isArray(children)) {
     throw new Error("Tooltip does accept a single child only");
@@ -35,14 +35,14 @@ export const Tooltip = forwardRef(({
     visible => {
       if (tooltipElement.current) {
         aroundTransition(tooltipElement.current, {
-          beforeTransition() {
+          beforeTransition () {
             setVisibility(visible ? "before-appear" : "before-disappear");
           },
-          transition() {
+          transition () {
             if (visible) calculatePosition();
             setVisibility(visible ? "appear" : "disappear");
           },
-          afterTransition() {
+          afterTransition () {
             setVisibility(visible ? "visible" : null);
             if (visible === false) setInjected(false);
           },
@@ -89,7 +89,7 @@ export const Tooltip = forwardRef(({
   const clone = cloneElement(child, {
     ...child.props,
     ref: triggerElement,
-    onMouseEnter(e) {
+    onMouseEnter (e) {
       if (enabled === false) return;
 
       setTimeout(() => {
@@ -97,7 +97,7 @@ export const Tooltip = forwardRef(({
         child.props.onMouseEnter?.(e);
       }, mouseEnterDelay);
     },
-    onMouseLeave(e) {
+    onMouseLeave (e) {
       if (enabled === false) return;
 
       performAnimation(false);

@@ -6,7 +6,7 @@ import styles from "./Styles.module.scss";
 
 export default observer(
   class SliderTool extends Component {
-    render() {
+    render () {
       return (
         <Fragment>
           <Slider

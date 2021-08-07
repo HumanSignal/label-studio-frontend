@@ -23,23 +23,25 @@ const Relation = types
     showMeta: types.optional(types.boolean, false),
   })
   .views(self => ({
-    get parent() {
+    get parent () {
       return getParentOfType(self, RelationStore);
     },
 
-    get hasRelations() {
+    get hasRelations () {
       const r = self.relations;
+
       return r && r.children && r.children.length > 0;
     },
   }))
   .actions(self => ({
-    afterAttach() {
+    afterAttach () {
       const root = getRoot(self);
       const c = root.annotationStore.selected;
 
       // find <Relations> tag in the tree
       let relations = null;
-      c.traverseTree(function(node) {
+
+      c.traverseTree(function (node) {
         if (node.type === "relations") {
           relations = node;
           return TRAVERSE_SKIP;
@@ -51,7 +53,7 @@ const Relation = types
       }
     },
 
-    rotateDirection() {
+    rotateDirection () {
       const d = ["left", "right", "bi"];
       let idx = d.findIndex(item => item === self.direction);
 
@@ -61,7 +63,7 @@ const Relation = types
       self.direction = d[idx];
     },
 
-    toggleHighlight() {
+    toggleHighlight () {
       if (self.node1 === self.node2) {
         self.node1.toggleHighlight();
       } else {
@@ -70,11 +72,11 @@ const Relation = types
       }
     },
 
-    toggleMeta() {
+    toggleMeta () {
       self.showMeta = !self.showMeta;
     },
 
-    setSelfHighlight(highlighted = false) {
+    setSelfHighlight (highlighted = false) {
       if (highlighted) {
         self.parent.setHighlight(self);
       } else {
@@ -90,7 +92,7 @@ const RelationStore = types
     highlighted: types.maybeNull(types.safeReference(Relation)),
   })
   .views(self => ({
-    get relations() {
+    get relations () {
       // @todo fix undo/redo with relations
       // currently undo/redo doesn't consider relations at all,
       // so some relations can temporarily lose nodes they are connected to during undo/redo
@@ -98,7 +100,7 @@ const RelationStore = types
     },
   }))
   .actions(self => ({
-    findRelations(node1, node2) {
+    findRelations (node1, node2) {
       const id1 = node1.id || node1;
       const id2 = node2?.id || node2;
 
@@ -113,11 +115,11 @@ const RelationStore = types
       });
     },
 
-    nodesRelated(node1, node2) {
+    nodesRelated (node1, node2) {
       return self.findRelations(node1, node2).length > 0;
     },
 
-    addRelation(node1, node2) {
+    addRelation (node1, node2) {
       if (self.nodesRelated(node1, node2)) return;
 
       const rl = Relation.create({ node1, node2 });
@@ -128,17 +130,18 @@ const RelationStore = types
       return rl;
     },
 
-    deleteRelation(rl) {
+    deleteRelation (rl) {
       destroy(rl);
     },
 
-    deleteNodeRelation(node) {
+    deleteNodeRelation (node) {
       // lookup $node and delete it's relation
       const rl = self.findRelations(node);
+
       rl.length && rl.forEach(self.deleteRelation);
     },
 
-    serializeAnnotation() {
+    serializeAnnotation () {
       return self.relations.map(r => {
         const s = {
           from_id: r.node1.cleanId,
@@ -153,26 +156,28 @@ const RelationStore = types
       });
     },
 
-    deserializeRelation(node1, node2, direction, labels) {
+    deserializeRelation (node1, node2, direction, labels) {
       const rl = self.addRelation(node1, node2);
+
       rl.direction = direction;
 
       if (rl.relations && labels)
         labels.forEach(l => {
           const r = rl.relations.findRelation(l);
+
           if (r) r.setSelected(true);
         });
     },
 
-    toggleConnections() {
+    toggleConnections () {
       self.showConnections = !self.showConnections;
     },
 
-    setHighlight(relation) {
+    setHighlight (relation) {
       self.highlighted = relation;
     },
 
-    removeHighlight() {
+    removeHighlight () {
       self.highlighted = null;
     },
   }));

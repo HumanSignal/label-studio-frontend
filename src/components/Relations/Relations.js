@@ -29,6 +29,7 @@ const RelationMeta = observer(({ rl }) => {
         defaultValue={selected}
         onChange={(val) => {
           const values = wrapArray(val);
+
           r.unselectAll();
           values.forEach(v => r.findRelation(v).setSelected(true));
         }}

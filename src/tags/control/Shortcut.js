@@ -38,16 +38,17 @@ const Model = types
     hotkeyScope: Hotkey.INPUT_SCOPE,
   }))
   .actions(self => ({
-    onClick() {
+    onClick () {
       const textarea = getParent(self, 2);
 
       if (textarea.onShortcut) textarea.onShortcut(self.value);
     },
 
-    onHotKey(event) {
+    onHotKey (event) {
       const textarea = getParent(self, 2);
       const name = (event.target || event.srcElement).name;
       // fired on a wrong element
+
       if (textarea.name !== name) return;
       return self.onClick();
     },
@@ -66,7 +67,7 @@ const HtxShortcutView = inject("store")(
 
     return (
       <Tag
-        onClick={ev => {
+        onClick={() => {
           item.onClick();
           return false;
         }}

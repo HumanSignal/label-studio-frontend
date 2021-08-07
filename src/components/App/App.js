@@ -45,23 +45,23 @@ import './App.styl';
 class App extends Component {
   relationsRef = React.createRef();
 
-  renderSuccess() {
+  renderSuccess () {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }
 
-  renderNoAnnotation() {
+  renderNoAnnotation () {
     return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
   }
 
-  renderNothingToLabel() {
+  renderNothingToLabel () {
     return <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />;
   }
 
-  renderNoAccess() {
+  renderNoAccess () {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
   }
 
-  renderConfigValidationException(store) {
+  renderConfigValidationException (store) {
     return (
       <Block name="main-view">
         <Elem name="annotation">
@@ -76,11 +76,11 @@ class App extends Component {
     );
   }
 
-  renderLoader() {
+  renderLoader () {
     return <Result icon={<Spin size="large" />} />;
   }
 
-  _renderAll(obj) {
+  _renderAll (obj) {
     if (obj.length === 1) return <Segment annotation={obj[0]}>{[Tree.renderItem(obj[0].root)]}</Segment>;
 
     return (
@@ -94,7 +94,7 @@ class App extends Component {
     );
   }
 
-  _renderUI(root, as) {
+  _renderUI (root, as) {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
@@ -120,21 +120,23 @@ class App extends Component {
     );
   }
 
-  renderAllAnnotations() {
+  renderAllAnnotations () {
     const cs = this.props.store.annotationStore;
+
     return <Grid store={cs} annotations={[...cs.annotations, ...cs.predictions]} root={cs.root} />;
   }
 
-  renderAllPredictions() {
+  renderAllPredictions () {
     return this._renderAll(this.props.store.annotationStore.predictions);
   }
 
-  renderRelations(selectedStore) {
+  renderRelations (selectedStore) {
     const store = selectedStore.relationStore;
+
     return <RelationsOverlay key={guidGenerator()} store={store} ref={this.relationsRef} />;
   }
 
-  render() {
+  render () {
     const { store } = this.props;
     const as = store.annotationStore;
     const root = as.selected && as.selected.root;
@@ -193,7 +195,7 @@ class App extends Component {
                     <SidebarPage name="annotation" title="Annotation">
                       <AnnotationTab store={store} />
                     </SidebarPage>
-                    {this.props.panels.map(({name, title, Component}) => (
+                    {this.props.panels.map(({ name, title, Component }) => (
                       <SidebarPage key={name} name={name} title={title}>
                         <Component/>
                       </SidebarPage>

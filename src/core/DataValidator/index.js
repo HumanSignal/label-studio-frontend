@@ -6,7 +6,7 @@ import { ConfigValidator } from "./ConfigValidator";
 const DATA_VALIDATORS = {
   CONFIG: ConfigValidator,
   RESULT: {
-    validate() {
+    validate () {
       return [];
     },
   },
@@ -26,7 +26,7 @@ export const ValidationError = types
     validType: types.maybeNull(ValidType),
   })
   .views(self => ({
-    get identifier() {
+    get identifier () {
       return [self.modelName, self.field, self.error, self.value]
         .concat(...[self.validType])
         .filter(el => el !== null)
@@ -38,7 +38,7 @@ export class DataValidator {
   /**@type {Set<ErrorCallback>} */
   callbacks = new Set();
 
-  addErrorCallback(callback) {
+  addErrorCallback (callback) {
     if (!this.callbacks.has(callback)) {
       this.callbacks.add(callback);
       return true;
@@ -46,7 +46,7 @@ export class DataValidator {
     return false;
   }
 
-  removeErrorCallback(callback) {
+  removeErrorCallback (callback) {
     if (this.callbacks.has(callback)) {
       this.callbacks.delete(callback);
       return true;
@@ -59,7 +59,7 @@ export class DataValidator {
    * @param {keyof typeof DATA_VALIDATORS} validatorName
    * @param {Object} data
    */
-  validate(validatorName, data) {
+  validate (validatorName, data) {
     const validator = DATA_VALIDATORS[validatorName];
     let errors = [];
 

@@ -6,7 +6,7 @@ import styles from "./Styles.module.scss";
 
 export default observer(
   class BasicToolView extends Component {
-    render() {
+    render () {
       return (
         <Tooltip title={this.props.tooltip} placement="left">
           <Button

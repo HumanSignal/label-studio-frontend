@@ -1,8 +1,7 @@
-import { getRoot, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
-import Types from "../../core/Types";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
@@ -40,16 +39,18 @@ const Model = types
     // tools: types.array(BaseTool)
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
-    }
+    },
   }))
   .actions(self => ({
-    fromStateJSON(obj) {},
+    fromStateJSON () {},
 
-    afterCreate() {
+    afterCreate () {
       const kp = Tools.KeyPoint.create();
+
       kp._control = self;
 
       self.tools = { keypoint: kp };
