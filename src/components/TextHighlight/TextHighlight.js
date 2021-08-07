@@ -10,7 +10,7 @@ import EmojiNode from "./EmojiNode";
 import styles from "./TextHighlight.module.scss";
 
 class TextHighlight extends Component {
-  constructor() {
+  constructor () {
     super();
 
     this.dismissMouseUp = 0;
@@ -19,7 +19,7 @@ class TextHighlight extends Component {
   /**
    * Return first ok element
    */
-  getRange(charIndex) {
+  getRange (charIndex) {
     if (this.props.ranges && this.props.ranges.length) {
       return this.props.ranges.find(range => charIndex >= range.start && charIndex <= range.end);
     }
@@ -28,13 +28,13 @@ class TextHighlight extends Component {
   /**
    * Function when the user mouse is over an highlighted text
    */
-  onMouseOverHighlightedWord(range, visible) {
+  onMouseOverHighlightedWord (range, visible) {
     if (visible && this.props.onMouseOverHighlightedWord) {
       this.props.onMouseOverHighlightedWord(range);
     }
   }
 
-  getLetterNode(charIndex, range) {
+  getLetterNode (charIndex, range) {
     /**
      * Current symbol
      */
@@ -76,7 +76,7 @@ class TextHighlight extends Component {
     );
   }
 
-  getEmojiNode(charIndex, range) {
+  getEmojiNode (charIndex, range) {
     let arrOverlap = [];
 
     if (this.props.ranges) {
@@ -102,7 +102,7 @@ class TextHighlight extends Component {
     );
   }
 
-  getUrlNode(charIndex, range, url) {
+  getUrlNode (charIndex, range, url) {
     let arrOverlap = [];
 
     if (this.props.ranges) {
@@ -128,7 +128,7 @@ class TextHighlight extends Component {
     );
   }
 
-  mouseEvent() {
+  mouseEvent () {
     if (!this.props.enabled) {
       return false;
     }
@@ -222,15 +222,15 @@ class TextHighlight extends Component {
    *
    * @param {*} event
    */
-  onMouseUp(event) {
+  onMouseUp () {
     this.mouseEvent.bind(this)();
   }
 
-  onMouseDown(event) {
+  onMouseDown () {
     // console.log(event)
   }
 
-  onMouseEnter(event) {
+  onMouseEnter () {
     // console.log(event)
   }
 
@@ -238,7 +238,7 @@ class TextHighlight extends Component {
    * Double click on text
    * @param {*} event
    */
-  onDoubleClick(event) {
+  onDoubleClick () {
     // WARN
     // event.stopPropagation();
     // this.doucleckicked = true;
@@ -251,7 +251,7 @@ class TextHighlight extends Component {
    * @param {number} textCharIndex The last number of selection
    * @param {function} onMouseOverHighlightedWord
    */
-  rangeRenderer(letterGroup, range, textCharIndex, onMouseOverHighlightedWord) {
+  rangeRenderer (letterGroup, range, textCharIndex, onMouseOverHighlightedWord) {
     if (this.props.rangeRenderer) {
       return this.props.rangeRenderer(letterGroup, range, textCharIndex, onMouseOverHighlightedWord);
     }
@@ -259,7 +259,7 @@ class TextHighlight extends Component {
     return letterGroup;
   }
 
-  getNode(i, range, text, url, isEmoji) {
+  getNode (i, range, text, url, isEmoji) {
     if (url.length) {
       return this.getUrlNode(i, range, url);
     } else if (isEmoji) {
@@ -269,7 +269,7 @@ class TextHighlight extends Component {
     return this.getLetterNode(i, range);
   }
 
-  getRanges() {
+  getRanges () {
     /**
      * Text with nodes
      */
@@ -368,7 +368,7 @@ class TextHighlight extends Component {
     return newText;
   }
 
-  render() {
+  render () {
     const newText = this.getRanges();
 
     return (

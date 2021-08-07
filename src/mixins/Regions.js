@@ -14,61 +14,63 @@ const RegionsMixin = types
 
     parentID: types.optional(types.string, ""),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     // selected: false,
     highlighted: false,
     isDrawing: false,
     perRegionFocusRequest: null,
   }))
   .views(self => ({
-    get perRegionStates() {
+    get perRegionStates () {
       const states = self.states;
+
       return states && states.filter(s => s.perregion === true);
     },
 
-    get store() {
+    get store () {
       return getRoot(self);
     },
 
-    get parent() {
+    get parent () {
       return getParent(self);
     },
 
-    get editable() {
+    get editable () {
       return self.readonly === false && self.annotation.editable === true;
     },
 
-    get isCompleted() {
+    get isCompleted () {
       return !self.isDrawing;
-    }
+    },
 
   }))
   .actions(self => {
-    let deferredSelectId;
     return {
-      setParentID(id) {
+      setParentID (id) {
         self.parentID = id;
       },
 
-      setDrawing(val) {
+      setDrawing (val) {
         self.isDrawing = val;
       },
 
-      moveTop(size) {},
-      moveBottom(size) {},
-      moveLeft(size) {},
-      moveRight(size) {},
+      // All of the below accept size as an argument
+      moveTop () {},
+      moveBottom () {},
+      moveLeft () {},
+      moveRight () {},
 
-      sizeRight(size) {},
-      sizeLeft(size) {},
-      sizeTop(size) {},
-      sizeBottom(size) {},
+      sizeRight () {},
+      sizeLeft () {},
+      sizeTop () {},
+      sizeBottom () {},
 
       // "web" degree is opposite to mathematical, -90 is 90 actually
       // swapSizes = true when canvas is already rotated at this moment
       // @todo not used
-      rotatePoint(point, degree, swapSizes = true) {
+      rotatePoint (point, degree, swapSizes = true) {
         const { x, y } = point;
+
         if (!degree) return { x, y };
 
         degree = (360 + degree) % 360;
@@ -81,6 +83,7 @@ const RegionsMixin = types
         //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
         //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
         // for ortogonal degrees it's simple:
+
         if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
         if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
         if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
@@ -88,37 +91,37 @@ const RegionsMixin = types
       },
 
       // @todo not used
-      rotateDimensions({ width, height }, degree) {
+      rotateDimensions ({ width, height }, degree) {
         if ((degree + 360) % 180 === 0) return { width, height };
         return { width: height, height: width };
       },
 
-      convertXToPerc(x) {
+      convertXToPerc (x) {
         return (x * 100) / self.parent.stageWidth;
       },
 
-      convertYToPerc(y) {
+      convertYToPerc (y) {
         return (y * 100) / self.parent.stageHeight;
       },
 
-      convertHDimensionToPerc(hd) {
+      convertHDimensionToPerc (hd) {
         return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
       },
 
-      convertVDimensionToPerc(vd) {
+      convertVDimensionToPerc (vd) {
         return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
       },
 
       // update region appearence based on it's current states, for
       // example bbox needs to update its colors when you change the
       // label, becuase it takes color from the label
-      updateAppearenceFromState() {},
+      updateAppearenceFromState () {},
 
-      serialize() {
+      serialize () {
         console.error("Region class needs to implement serialize");
       },
 
-      toStateJSON() {
+      toStateJSON () {
         const parent = self.parent;
         const buildTree = control => {
           const tree = {
@@ -139,6 +142,7 @@ const RegionsMixin = types
           return self.states
             .map(s => {
               const ser = self.serialize(s, parent);
+
               if (!ser) return null;
 
               const tree = {
@@ -164,14 +168,14 @@ const RegionsMixin = types
         }
       },
 
-      selectRegion() {},
+      selectRegion () {},
 
       /**
      * @todo fix "keep selected" setting
      * Common logic for unselection; specific actions should be in `afterUnselectRegion`
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
-      unselectRegion(tryToKeepStates = false) {
+      unselectRegion (tryToKeepStates = false) {
         console.log("UNSELECT REGION", "you should not be here");
         // eslint-disable-next-line no-constant-condition
         if (1) return;
@@ -196,10 +200,11 @@ const RegionsMixin = types
         }
       },
 
-      afterUnselectRegion() {},
+      afterUnselectRegion () {},
 
-      onClickRegion() {
+      onClickRegion () {
         const annotation = self.annotation;
+
         if (!annotation.editable || self.isDrawing) return;
 
         if (annotation.relationMode) {
@@ -211,34 +216,34 @@ const RegionsMixin = types
         }
       },
 
-      _selectArea() {
+      _selectArea () {
         this.cancelPerRegionFocus();
-        deferredSelectId = null;
         const annotation = self.annotation;
         const wasNotSelected = !self.selected;
+
         annotation.unselectAll();
         if (wasNotSelected) {
           annotation.selectArea(self);
         }
       },
 
-      requestPerRegionFocus() {
+      requestPerRegionFocus () {
         self.perRegionFocusRequest = Date.now();
       },
 
-      cancelPerRegionFocus() {
+      cancelPerRegionFocus () {
         self.perRegionFocusRequest = null;
       },
 
-      setHighlight(val) {
+      setHighlight (val) {
         self.highlighted = val;
       },
 
-      toggleHighlight() {
+      toggleHighlight () {
         self.setHighlight(!self.highlighted);
       },
 
-      toggleHidden(e) {
+      toggleHidden (e) {
         self.hidden = !self.hidden;
         e && e.stopPropagation();
       },

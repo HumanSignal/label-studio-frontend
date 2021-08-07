@@ -6,7 +6,7 @@ module.exports = {
   _regionGroupButton: locate(".lsf-radio-group__button"),
   _regionsCounterLocator: locate(".lsf-entities__counter"),
   _regionLocator: locate(".lsf-region-item"),
-  seeRegions(count) {
+  seeRegions (count) {
     if (count) {
       I.see(`Regions\n\u00A0${count}`, this._sideBarLocator);
     } else {
@@ -14,7 +14,7 @@ module.exports = {
       I.dontSeeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
     }
   },
-  dontSeeRegions(count) {
+  dontSeeRegions (count) {
     if (count) {
       I.dontSee(`Regions\n\u00A0${count}`, this._sideBarLocator);
     } else if (count===+count) {
@@ -23,19 +23,19 @@ module.exports = {
       I.dontSee("Regions", this._sideBarLocator);
     }
   },
-  locate(locator) {
+  locate (locator) {
     return locate(this._sideBarLocator).find(locator);
   },
-  see(text) {
+  see (text) {
     I.see(text, this._sideBarLocator);
   },
-  dontSee(text) {
+  dontSee (text) {
     I.dontSee(text, this._sideBarLocator);
   },
-  seeElement(locator) {
+  seeElement (locator) {
     I.seeElement(this.locate(locator));
   },
-  clickRegion(text) {
+  clickRegion (text) {
     I.click(this._regionLocator.withText(`${text}`));
-  }
+  },
 };

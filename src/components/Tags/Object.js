@@ -6,7 +6,7 @@ import { observer } from "mobx-react";
  * Object Tag Component
  */
 class ObjectTagView extends React.Component {
-  render() {
+  render () {
     const { props } = this;
     const { item } = props;
 

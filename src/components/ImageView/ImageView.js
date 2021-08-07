@@ -13,7 +13,7 @@ import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
-import {LoadingOutlined} from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 
 Konva.showWarnings = false;
 
@@ -39,11 +39,11 @@ const splitRegions = (regions) => {
   };
 };
 
-const Region = memo(({region}) => {
+const Region = memo(({ region }) => {
   return Tree.renderItem(region, false);
 });
 
-const RegionsLayer = memo(({regions, name, useLayers}) => {
+const RegionsLayer = memo(({ regions, name, useLayers }) => {
   const content = regions.map((el) => (
     <Region key={`region-${el.id}`} region={el}/>
   ));
@@ -57,7 +57,7 @@ const RegionsLayer = memo(({regions, name, useLayers}) => {
   );
 });
 
-const Regions = memo(({regions, useLayers = true}) => {
+const Regions = memo(({ regions, useLayers = true }) => {
   return chunks(regions, 15).map((chunk, i) => (
     <RegionsLayer
       key={`chunk-${i}`}
@@ -68,15 +68,18 @@ const Regions = memo(({regions, useLayers = true}) => {
   ));
 });
 
-const DrawingRegion = observer(({item}) => {
-  const {drawingRegion} = item;
+const DrawingRegion = observer(({ item }) => {
+  const { drawingRegion } = item;
   const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment: Layer;
-  return <Wrapper>
-    {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
-  </Wrapper>;
+
+  return (
+    <Wrapper>
+      {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
+    </Wrapper>
+  );
 });
 
-const Crosshair = memo(forwardRef(({width, height}, ref) => {
+const Crosshair = memo(forwardRef(({ width, height }, ref) => {
   const [pointsV, setPointsV] = useState([50, 0, 50, height]);
   const [pointsH, setPointsH] = useState([0, 100, width, 100]);
   const [x, setX] = useState(100);
@@ -88,7 +91,7 @@ const Crosshair = memo(forwardRef(({width, height}, ref) => {
 
   if (ref) {
     ref.current = {
-      updatePointer(newX, newY) {
+      updatePointer (newX, newY) {
         if (newX !== x) {
           setX(newX);
           setPointsV([newX, 0, newX, height]);
@@ -99,9 +102,9 @@ const Crosshair = memo(forwardRef(({width, height}, ref) => {
           setPointsH([0, newY, width, newY]);
         }
       },
-      updateVisibility(visibility) {
+      updateVisibility (visibility) {
         setVisible(visibility);
-      }
+      },
     };
   }
 
@@ -155,7 +158,7 @@ export default observer(
     state = {
       imgStyle: {},
       ratio: 1,
-      pointer: [0, 0]
+      pointer: [0, 0],
     }
 
     imageRef = createRef();
@@ -164,11 +167,13 @@ export default observer(
     handleOnClick = e => {
       const { item } = this.props;
       let evt = e.evt || e;
+
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
     handleMouseDown = e => {
       const { item } = this.props;
+
       item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
 
       // item.freezeHistory();
@@ -190,6 +195,7 @@ export default observer(
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
         const { left, top } = this.container.getBoundingClientRect();
+
         this.canvasX = left;
         this.canvasY = top;
         return item.event("mousedown", e, x, y);
@@ -245,6 +251,7 @@ export default observer(
       if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
         e.evt.preventDefault();
         const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
+
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
         item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
@@ -253,7 +260,8 @@ export default observer(
 
     updateCrosshair = (e) => {
       if (this.crosshairRef.current) {
-        const {x, y} = e.currentTarget.getPointerPosition();
+        const { x, y } = e.currentTarget.getPointerPosition();
+
         this.crosshairRef.current.updatePointer(x, y);
       }
     }
@@ -269,6 +277,7 @@ export default observer(
 
     updateGridSize = range => {
       const { item } = this.props;
+
       item.freezeHistory();
 
       item.setGridSize(range);
@@ -292,11 +301,12 @@ export default observer(
       if (e.evt) {
         const { item } = this.props;
         const stage = item.stageRef;
+
         item.handleZoom(e.evt.deltaY, stage.getPointerPosition());
       }
     };
 
-    renderRulers() {
+    renderRulers () {
       const { item } = this.props;
       const width = 1;
       const color = "white";
@@ -341,7 +351,7 @@ export default observer(
       this.lastOffsetWidth = this.container.offsetWidth;
     };
 
-    componentDidMount() {
+    componentDidMount () {
       window.addEventListener("resize", this.onResize);
 
       if (this.props.item && isAlive(this.props.item)) {
@@ -351,12 +361,12 @@ export default observer(
       this.updateReadyStatus();
     }
 
-    componentWillUnmount() {
+    componentWillUnmount () {
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate (prevProps) {
       this.onResize();
 
       if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
@@ -365,14 +375,15 @@ export default observer(
       this.updateReadyStatus();
     }
 
-    updateReadyStatus() {
-      const {item} = this.props;
-      const {imageRef} = this;
+    updateReadyStatus () {
+      const { item } = this.props;
+      const { imageRef } = this;
+
       if (!item || !isAlive(item) || !imageRef.current) return;
       if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
 
-    observerObjectUpdate(){
+    observerObjectUpdate (){
       this.propsObserverDispose.forEach(dispose => dispose());
       this.propsObserverDispose = [
         'width',
@@ -406,6 +417,7 @@ export default observer(
 
       if (item.zoomScale !== 1) {
         const { zoomingPositionX, zoomingPositionY } = item;
+
         imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
         imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
       }
@@ -442,7 +454,7 @@ export default observer(
       }
     }
 
-    renderTools() {
+    renderTools () {
       const { item, store } = this.props;
       const cs = store.annotationStore;
 
@@ -460,7 +472,7 @@ export default observer(
       );
     }
 
-    render() {
+    render () {
       const { item, store } = this.props;
 
       // @todo stupid but required check for `resetState()`
@@ -485,7 +497,7 @@ export default observer(
         containerStyle["maxWidth"] = item.maxwidth;
       }
 
-      const {brushRegions, shapeRegions} = splitRegions(regions);
+      const { brushRegions, shapeRegions } = splitRegions(regions);
 
       return (
         <ObjectTag

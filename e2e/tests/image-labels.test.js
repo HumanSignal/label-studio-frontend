@@ -25,7 +25,7 @@ const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
 
 const createShape = {
   Rectangle: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -41,7 +41,7 @@ const createShape = {
     },
   },
   Ellipse: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -51,8 +51,9 @@ const createShape = {
     },
   },
   Polygon: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       const points = [];
+
       points.push([x, y]);
       points.push([x + width, y]);
       points.push([x + width, y + height]);
@@ -62,13 +63,13 @@ const createShape = {
         action: "drawByClickingPoints",
         params: [[...points, points[0]]],
         result: {
-          points: points,
+          points,
         },
       };
     },
   },
   KeyPoint: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByClickingPoints",
@@ -82,14 +83,16 @@ const createShape = {
     },
   },
   Brush: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       const points = [];
       const startPoint = { x: x + 5, y: y + 5 };
       const endPoint = { x: x + width - 5, y: y + height - 5 };
       const rows = Math.ceil((endPoint.y - startPoint.y) / 10);
       const step = (endPoint.y - startPoint.y) / rows;
+
       for (let j = 0; j < rows; j++) {
         const cY = startPoint.y + step * j;
+
         points.push([startPoint.x, cY]);
         points.push([endPoint.x, cY]);
       }
@@ -127,6 +130,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       AtLabels.clickLabel(shapeName + "Create");
     },
   ];
+
   for (const [shapeIdx, shapeName] of Object.entries(shapes)) {
     for (const creator of Object.values(createShape[shapeName])) {
       const regions = toolSelectors.map((selector, idx) => {
@@ -134,10 +138,12 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         const x2 = size / 3 * (idx + 1) - offset;
         const y1 = size / 3;
         const y2 = size / 3 * 2;
+
         return creator(x1, y1, x2 - x1, y2 - y1, {
           shape: shapeName,
         });
       });
+
       LabelStudio.init(params);
       AtImageView.waitForImage();
       AtSidebar.seeRegions(0);
@@ -155,6 +161,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       for (const currentShapeName of shapes) {
         const currentLabelName = currentShapeName + "Append";
         let expectedCount = 0;
+
         regions.forEach((region, idx) => {
           AtSidebar.clickRegion(+idx + 1);
           AtLabels.clickLabel(currentLabelName);
@@ -165,10 +172,12 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         const labelsCounter = results.reduce((counter, result) => {
           return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf(currentLabelName) > -1);
         }, 0);
+
         assert.strictEqual(expectedCount, labelsCounter);
       }
 
       let expectedCount = 3;
+
       regions.forEach((region, idx) => {
         AtSidebar.clickRegion(+idx + 1);
         AtLabels.clickLabel("Label");
@@ -177,6 +186,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       const labelsCounter = results.reduce((counter, result) => {
         return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf("Label") > -1);
       }, 0);
+
       assert.strictEqual(expectedCount, labelsCounter);
     }
   }

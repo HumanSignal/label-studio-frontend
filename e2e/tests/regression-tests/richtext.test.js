@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario */
 
 const assert = require("assert");
 
@@ -36,6 +36,7 @@ Scenario("Broken limits", async ({ I, LabelStudio, AtSidebar, AtRichText, Errors
   AtSidebar.seeRegions(1);
   AtSidebar.clickRegion("1");
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -54,6 +55,7 @@ Scenario("The selection in degenerate cases", async ({ I, LabelStudio, AtSidebar
   I.pressKey("1");
   AtRichText.selectTextByGlobalOffset(0, 2);
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -77,6 +79,7 @@ Scenario("Exactly 1 word", async ({ I, LabelStudio, AtSidebar, AtRichText, Error
   AtSidebar.see("Somé");
   AtSidebar.dontSee("Somé wórds");
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -102,9 +105,11 @@ Scenario("Trim spaces around the word", async ({ I, LabelStudio, AtSidebar, AtRi
   AtRichText.selectTextByGlobalOffset(3,8);
   AtSidebar.see("two");
   const result = await LabelStudio.serialize();
+
   assert.strictEqual(result[0].value.text,"four");
   assert.strictEqual(result[1].value.text,"two");
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -126,8 +131,10 @@ Scenario("Trim spaces with BRs", async ({ I, LabelStudio, AtSidebar, AtRichText,
   AtRichText.selectTextByGlobalOffset(5,14);
   AtSidebar.see("BRs");
   const result = await LabelStudio.serialize();
+
   assert.strictEqual(result[0].value.text,"BRs");
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -153,6 +160,7 @@ Scenario("Overlap checks", async ({ I, LabelStudio, AtSidebar, AtRichText, Error
   AtRichText.selectTextByGlobalOffset(4,8);
   I.seeNumberOfElements(AtRichText.locate("span"), 2);
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -176,6 +184,7 @@ Scenario("Non-standard characters in words", async ({ I, LabelStudio, AtSidebar,
   AtSidebar.seeRegions(1);
   AtSidebar.see("Somé");
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }
@@ -200,6 +209,7 @@ Scenario("Should not select words from next line", async ({ I, LabelStudio, AtSi
   AtSidebar.see("Оne");
   AtSidebar.dontSee("line");
   const errors = await ErrorsCollector.grabErrors();
+
   if (errors.length) {
     assert.fail(`Got an error: ${errors[0]}`);
   }

@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, useCallback, useMemo, useState } from "react";
 import { Rect, Group, Text, Label, Tag, Path } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot } from "mobx-state-tree";
@@ -8,7 +8,7 @@ import Constants from "../../core/Constants";
 import { flatten } from "../../utils/utilities";
 
 // @todo rewrite this to update bbox on shape level while adding new point
-function polytobbox(points) {
+function polytobbox (points) {
   var lats = [];
   var lngs = [];
 
@@ -31,8 +31,9 @@ function polytobbox(points) {
 }
 
 // @todo rewrite this to update bbox on shape level while adding new point
-function pointstobbox(points) {
+function pointstobbox (points) {
   const len = points.length;
+
   if (!len)
     return [
       [0, 0],
@@ -74,6 +75,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoo
   const width = useMemo(() => {
     if (!showLabels || !textEl || !maxWidth) return null;
     const currentTextWidth = (text ? textEl.measureSize(text).width : 0) ;
+
     if (currentTextWidth > textMaxWidth) {
       return textMaxWidth;
     } else {
@@ -85,6 +87,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoo
     const cornerRadius = adjacent && isSticking ? ADJACENT_CORNER_RADIUS : NON_ADJACENT_CORNER_RADIUS;
     const width = maxWidth ? Math.min(shape.width() + horizontalPaddings, isSticking ? maxWidth * zoomScale : paddingLeft) : shape.width() + horizontalPaddings;
     const height = shape.height();
+
     context.beginPath();
     if (!cornerRadius) {
       context.rect(0, 0, width, height);
@@ -94,6 +97,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoo
       let topRight = 0;
       let bottomLeft = 0;
       let bottomRight = 0;
+
       if (typeof cornerRadius === 'number') {
         topLeft = topRight = bottomLeft = bottomRight = Math.min(cornerRadius, width / 2, height / 2);
       }
@@ -116,11 +120,12 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoo
     context.closePath();
     context.fillStrokeShape(shape);
   }, [adjacent, isSticking, maxWidth]);
+
   return (
     <Group strokeScaleEnabled={false} x={x} y={y} rotation={rotation}>
       {ss && (
 
-        <Label y={-height * scale} scaleX={scale} scaleY={scale} onClick={e=>{return false;}}>
+        <Label y={-height * scale} scaleX={scale} scaleY={scale} onClick={() => {return false;}}>
           <Tag fill={Utils.Colors.getScaleGradient(score)} cornerRadius={2}/>
           <Text
             text={score.toFixed(2)}
@@ -165,8 +170,10 @@ const LabelOnEllipse = observer(({ item, color, strokewidth }) => {
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(",");
+
   if (!isLabeling && !isTexting) return null;
   const zoomScale = item.parent.zoomScale || 1;
+
   return (
     <LabelOnBbox
       x={item.x - item.radiusX - strokewidth / 2 / zoomScale}
@@ -187,8 +194,10 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(",");
+
   if (!isLabeling && !isTexting) return null;
   const zoomScale = item.parent.zoomScale || 1;
+
   return (
     <LabelOnBbox
       x={item.x - strokewidth / 2 / zoomScale}
@@ -212,10 +221,12 @@ const LabelOnPolygon = observer(({ item, color }) => {
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(",");
+
   if (!isLabeling && !isTexting) return null;
 
   const bbox = polytobbox(item.points);
   const settings = getRoot(item).settings;
+
   return (
     <Fragment>
       {settings && (settings.showLabels || settings.showScore) && (
@@ -249,11 +260,13 @@ const LabelOnPolygon = observer(({ item, color }) => {
 
 const LabelOnMask = observer(({ item, color }) => {
   const settings = getRoot(item).settings;
+
   if (settings && !settings.showLabels && !settings.showScore) return null;
 
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(",");
+
   if (!isLabeling && !isTexting) return null;
   if (item.touches.length === 0) return null;
 
@@ -293,6 +306,7 @@ const LabelOnKP = observer(({ item, color }) => {
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(",");
+
   if (!isLabeling && !isTexting) return null;
 
   return (

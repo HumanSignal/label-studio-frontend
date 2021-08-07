@@ -19,7 +19,7 @@ const ToolView = observer(({ item }) => {
         max={Constants.CONTRAST_MAX}
         selected={item.selected}
         icon={<ControlOutlined />}
-        onResetClick={ev => {
+        onResetClick={() => {
           item.setStroke(Constants.CONTRAST_VALUE);
         }}
         onChange={val => {
@@ -36,12 +36,12 @@ const _Tool = types
     contrast: types.optional(types.number, Constants.CONTRAST_VALUE),
   })
   .views(self => ({
-    get viewClass() {
+    get viewClass () {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    setStroke(val) {
+    setStroke (val) {
       self.contrast = val;
       self.obj.setContrastGrade(val);
     },

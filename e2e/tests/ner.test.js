@@ -48,7 +48,7 @@ const results = [
   },
 ];
 
-Scenario("NER labeling for HyperText", async function({I}) {
+Scenario("NER labeling for HyperText", async function ({ I }) {
   const params = {
     config: configSimple,
     data: { text },
@@ -75,6 +75,7 @@ Scenario("NER labeling for HyperText", async function({I}) {
   I.see("Relations (1)");
 
   const result = await I.executeScript(serialize);
+
   assert.equal(result.length, 3);
   assert.deepEqual(result[0].value, results[0]);
   assert.deepEqual(result[1].value, results[1]);

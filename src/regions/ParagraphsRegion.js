@@ -5,7 +5,6 @@ import RegionsMixin from "../mixins/Regions";
 import SpanTextMixin from "../mixins/SpanText";
 import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
-import { LabelsModel } from "../tags/control/Labels/Labels";
 import { ParagraphLabelsModel } from "../tags/control/ParagraphLabels";
 import { TextAreaModel } from "../tags/control/TextArea/TextArea";
 import { ChoicesModel } from "../tags/control/Choices";
@@ -26,33 +25,33 @@ const Model = types
 
     states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
-  .volatile((self) => ({
+  .volatile(() => ({
     text: "",
     hideable: true,
   }))
   .views(self => ({
-    get parent() {
+    get parent () {
       return self.object;
     },
-    getRegionElement() {
+    getRegionElement () {
       return self._spans?.[0];
     },
   }))
   .actions(self => ({
-    beforeDestroy() {
+    beforeDestroy () {
       Utils.HTML.removeSpans(self._spans);
     },
 
-    setText(text) {
+    setText (text) {
       self.text = text;
     },
 
-    fixOffsets(startOffset, endOffset) {
+    fixOffsets (startOffset, endOffset) {
       self.startOffset = startOffset;
       self.endOffset = endOffset;
     },
 
-    serialize() {
+    serialize () {
       const { start, end } = self;
 
       let res = {

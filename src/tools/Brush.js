@@ -16,8 +16,9 @@ const ToolView = observer(({ item }) => {
       value={item.strokeWidth}
       selected={item.selected}
       icon={<HighlightOutlined />}
-      onClick={ev => {
+      onClick={() => {
         const sel = item.selected;
+
         item.manager.selectTool(item, !sel);
       }}
       onChange={val => {
@@ -33,11 +34,11 @@ const _Tool = types
     strokeWidth: types.optional(types.number, 10),
   })
   .views(self => ({
-    get viewClass() {
+    get viewClass () {
       return <ToolView item={self} />;
     },
 
-    get tagTypes() {
+    get tagTypes () {
       return {
         stateTypes: "brushlabels",
         controlTagTypes: ["brushlabels", "brush"],
@@ -46,12 +47,14 @@ const _Tool = types
   }))
   .actions(self => {
     let brush, isFirstBrushStroke;
+
     return {
-      fromStateJSON(json, controlTag) {
+      fromStateJSON (json, controlTag) {
         const region = self.createFromJSON(json, controlTag);
 
         if (json.value.points) {
           const p = region.addPoints({ type: "add" });
+
           p.addPoints(json.value.points);
         }
 
@@ -62,11 +65,12 @@ const _Tool = types
         return region;
       },
 
-      commitDrawingRegion() {
-        const {currentArea, control, obj} = self;
+      commitDrawingRegion () {
+        const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
-        const value = {coordstype: "px", touches: source.touches};
+        const value = { coordstype: "px", touches: source.touches };
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
+
         self.applyActiveStates(newArea);
         self.deleteRegion();
         return newArea;
@@ -96,7 +100,7 @@ const _Tool = types
       //   }
       // },
 
-      updateCursor() {
+      updateCursor () {
         if (!self.selected || !self.obj.stageRef) return;
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
@@ -106,30 +110,31 @@ const _Tool = types
         stage.container().style.cursor = cursor.join("");
       },
 
-      setStroke(val) {
+      setStroke (val) {
         self.strokeWidth = val;
       },
 
-      afterUpdateSelected() {
+      afterUpdateSelected () {
         self.updateCursor();
       },
 
-      addPoint(x, y) {
+      addPoint (x, y) {
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv() {
+      mouseupEv () {
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
           const newBrush = self.commitDrawingRegion();
+
           self.obj.annotation.selectArea(newBrush);
         }
       },
 
-      mousemoveEv(ev, [x, y]) {
+      mousemoveEv (ev, [x, y]) {
         if (self.mode !== "drawing") return;
         if (
           !findClosestParent(
@@ -143,7 +148,7 @@ const _Tool = types
         self.addPoint(x, y);
       },
 
-      mousedownEv(ev, [x, y]) {
+      mousedownEv (ev, [x, y]) {
         if (
           !findClosestParent(
             ev.target,
@@ -153,6 +158,7 @@ const _Tool = types
         )
           return;
         const c = self.control;
+
         brush = self.getSelectedShape;
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";

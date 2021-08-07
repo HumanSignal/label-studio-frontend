@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Select } from "antd";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
@@ -11,7 +11,6 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import VisibilityMixin from "../../mixins/Visibility";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
-import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
@@ -66,24 +65,26 @@ const Model = types
     children: Types.unionArray(["choice", "view", "header", "hypertext"]),
   })
   .views(self => ({
-    get shouldBeUnselected() {
+    get shouldBeUnselected () {
       return self.choice === "single" || self.choice === "single-radio";
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    get serializableValue() {
+    get serializableValue () {
       const choices = self.selectedValues();
+
       if (choices && choices.length) return { choices };
 
       return null;
     },
 
-    get result() {
+    get result () {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
+
         if (!area) return null;
 
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
@@ -91,15 +92,15 @@ const Model = types
       return self.annotation.results.find(r => r.from_name === self);
     },
 
-    get preselectedValues() {
+    get preselectedValues () {
       return self.tiedChildren.filter(c => c.selected === true).map(c => (c.alias ? c.alias : c.value));
     },
 
-    get selectedLabels() {
+    get selectedLabels () {
       return self.tiedChildren.filter(c => c.sel === true);
     },
 
-    selectedValues() {
+    selectedValues () {
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
     },
 
@@ -120,50 +121,51 @@ const Model = types
     // }
   }))
   .actions(self => ({
-    afterCreate() {
+    afterCreate () {
       // TODO depricate showInline
       if (self.showinline === true) self.layout = "inline";
       if (self.showinline === false) self.layout = "vertical";
     },
 
-    needsUpdate() {
+    needsUpdate () {
       if (self.result) self.setResult(self.result.mainValue);
       else self.setResult([]);
     },
 
-    requiredModal() {
+    requiredModal () {
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
 
-    copyState(choices) {
+    copyState (choices) {
       choices.selectedValues().forEach(l => {
         self.findLabel(l).setSelected(true);
       });
     },
 
     // this is not labels, unselect affects result, so don't unselect on random reason
-    unselectAll() {},
+    unselectAll () {},
 
-    updateFromResult(value) {
+    updateFromResult (value) {
       self.setResult(Array.isArray(value) ? value : [value]);
     },
 
     // unselect only during choice toggle
-    resetSelected() {
+    resetSelected () {
       self.selectedLabels.forEach(c => c.setSelected(false));
     },
 
-    setResult(values) {
+    setResult (values) {
       self.tiedChildren.forEach(choice => choice.setSelected(values.includes(choice.alias || choice._value)));
     },
 
     // update result in the store with current selected choices
-    updateResult() {
+    updateResult () {
       if (self.result) {
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
+
           if (!area) return null;
           area.setValue(self);
         } else {
@@ -172,11 +174,12 @@ const Model = types
       }
     },
 
-    toStateJSON() {
+    toStateJSON () {
       const names = self.selectedValues();
 
       if (names && names.length) {
         const toname = self.toname || self.name;
+
         return {
           id: self.pid,
           from_name: self.name,
@@ -189,7 +192,7 @@ const Model = types
       }
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj) {
       self.unselectAll();
 
       if (!obj.value.choices) throw new Error("No labels param");
@@ -235,13 +238,14 @@ const HtxChoices = observer(({ item }) => {
           style={{ width: "100%" }}
           value={item.selectedLabels.map(l => l._value)}
           mode={item.choice === "multiple" ? "multiple" : ""}
-          onChange={function(val, opt) {
+          onChange={function (val) {
             if (Array.isArray(val)) {
               item.resetSelected();
               val.forEach(v => item.findLabel(v).setSelected(true));
               item.updateResult();
             } else {
               const c = item.findLabel(val);
+
               if (c) {
                 c.toggleSelected();
               }

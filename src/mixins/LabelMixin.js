@@ -9,7 +9,7 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
   /**
    * Usage check of selected controls before send annotation to server
    */
-  beforeSend() {
+  beforeSend () {
     const names = self.selectedValues();
 
     if (names && self.type === self._type) {
@@ -18,14 +18,14 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
   },
 
   // copy state from another Labels object
-  copyState(labels) {
+  copyState (labels) {
     // self.unselectAll();
     labels.selectedValues().forEach(l => {
       self.findLabel(l).setSelected(true);
     });
   },
 
-  fromStateJSON(obj, fromModel) {
+  fromStateJSON (obj) {
     self.unselectAll();
 
     const objectType = obj.value[self._type];

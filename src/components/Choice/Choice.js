@@ -8,7 +8,7 @@ import Hint from "../Hint/Hint";
  * Choice Component
  */
 export default class ChoiceComponent extends React.Component {
-  render() {
+  render () {
     let hint;
 
     if (this.props.hint) {

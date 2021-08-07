@@ -16,17 +16,16 @@ const RankerItemModel = types
     selected: types.optional(types.boolean, false),
     idx: types.number,
   })
-  .views(self => ({}))
   .actions(self => ({
-    setBG(val) {
+    setBG (val) {
       self.backgroundColor = val;
     },
 
-    setIdx(idx) {
+    setIdx (idx) {
       self.idx = idx;
     },
 
-    setSelected(val) {
+    setSelected (val) {
       self.selected = val;
     },
   }));
@@ -95,23 +94,22 @@ const Model = types
     regions: types.array(RankerItemModel),
     // update: types.optional(types.boolean, false)
   })
-  .views(self => ({}))
   .actions(self => ({
-    setUpdate() {
+    setUpdate () {
       self.update = self.update + 1;
     },
 
-    _addRegion(val, idx) {
+    _addRegion (val, idx) {
       const reg = RankerItemModel.create({
         value: val,
-        idx: idx,
+        idx,
         _value: val,
       });
 
       self.regions.push(reg);
     },
 
-    moveItems({ oldIndex, newIndex }) {
+    moveItems ({ oldIndex, newIndex }) {
       if (oldIndex === newIndex) return;
 
       if (self.sortedhighlightcolor) {
@@ -126,7 +124,7 @@ const Model = types
       self.setUpdate();
     },
 
-    toStateJSON() {
+    toStateJSON () {
       return {
         from_name: self.name,
         to_name: self.name,
@@ -138,7 +136,7 @@ const Model = types
       };
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj) {
       obj.value.items.forEach((v, idx) => {
         self._addRegion(v, idx);
       });
@@ -151,7 +149,7 @@ const RankerModel = types.compose("RankerModel", TagAttrs, Model);
 
 const DragHandle = sortableHandle(() => <div className="drag-handle"></div>);
 
-function isMobileDevice() {
+function isMobileDevice () {
   try {
     return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf("IEMobile") !== -1;
   } catch (e) {
@@ -161,6 +159,7 @@ function isMobileDevice() {
 
 const SortableText = SortableElement(({ item, value }) => {
   let classNames;
+
   if (isMobileDevice) {
     classNames = "noselect";
   }
@@ -209,15 +208,16 @@ const SortableList = SortableContainer(({ item, items }) => {
           value={value}
           color={value.backgroundColor}
           item={item}
-          onClick={ev => {}}
+          onClick={() => {}}
         />
       ))}
     </List>
   );
 });
 
-const HtxRankerView = ({ store, item }) => {
+const HtxRankerView = ({ item }) => {
   const props = {};
+
   if (isMobileDevice()) {
     props["pressDelay"] = 100;
   } else {

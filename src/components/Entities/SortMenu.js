@@ -6,7 +6,7 @@ import { LsDate } from "../../assets/icons";
 import { Block, Elem } from "../../utils/bem";
 import "./SortMenu.styl";
 
-export const SortMenuIcon = ({sortKey}) => {
+export const SortMenuIcon = ({ sortKey }) => {
   switch (sortKey) {
     case "date":
       return <LsDate />;

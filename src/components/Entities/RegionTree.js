@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
-import {LsChevron} from "../../assets/icons";
+import { LsChevron } from "../../assets/icons";
 import { RegionItem } from "./RegionItem";
 
 export const RegionTree = observer(({ regionStore }) => {
@@ -67,6 +67,7 @@ export const RegionTree = observer(({ regionStore }) => {
         const dropKey = node.props.eventKey;
         const dragKey = dragNode.props.eventKey;
         const dropPos = node.props.pos.split("-");
+
         dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
         const treeDepth = dropPos.length;
 
@@ -100,7 +101,8 @@ export const RegionTree = observer(({ regionStore }) => {
             // we're moving B -> C part somewhere then it'd have a
             // height of 1
             let treeHeight;
-            treeHeight = function(node) {
+
+            treeHeight = function (node) {
               if (!node) return 0;
 
               // TODO this can blow up if we have lots of stuff there
@@ -114,6 +116,7 @@ export const RegionTree = observer(({ regionStore }) => {
             if (maxDepth >= 0) {
               maxDepth = maxDepth - treeHeight(dragReg);
               let reg = dropReg;
+
               while (reg) {
                 reg = regionStore.findRegion(reg.parentID);
                 maxDepth = maxDepth - 1;

@@ -38,7 +38,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
 
@@ -66,15 +66,15 @@ const Model = types
     hideable: true,
   }))
   .views(self => ({
-    get store() {
+    get store () {
       return getRoot(self);
     },
-    get parent() {
+    get parent () {
       return self.object;
     },
   }))
   .actions(self => ({
-    afterCreate() {
+    afterCreate () {
       self.startX = self.x;
       self.startY = self.y;
 
@@ -88,6 +88,7 @@ const Model = types
         }
         case "px": {
           const { stageWidth, stageHeight } = self.parent;
+
           if (stageWidth && stageHeight) {
             self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
           }
@@ -99,15 +100,16 @@ const Model = types
     },
 
     // @todo not used
-    rotate(degree) {
+    rotate (degree) {
       const p = self.rotatePoint(self, degree);
+
       if (degree === -90) p.y -= self.width;
       if (degree === 90) p.x -= self.height;
       self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
     },
 
     // @todo not used
-    coordsInside(x, y) {
+    coordsInside (x, y) {
       // check if x and y are inside the rectangle
       const rx = self.x;
       const ry = self.y;
@@ -127,7 +129,7 @@ const Model = types
      * @param {number} height
      * @param {number} rotation
      */
-    setPosition(x, y, width, height, rotation) {
+    setPosition (x, y, width, height, rotation) {
       self.x = x;
       self.y = y;
       self.width = width;
@@ -142,20 +144,20 @@ const Model = types
       self.rotation = (rotation + 360) % 360;
     },
 
-    setScale(x, y) {
+    setScale (x, y) {
       self.scaleX = x;
       self.scaleY = y;
     },
 
-    addState(state) {
+    addState (state) {
       self.states.push(state);
     },
 
-    setFill(color) {
+    setFill (color) {
       self.fill = color;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
+    updateImageSize (wp, hp, sw, sh) {
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
@@ -170,7 +172,7 @@ const Model = types
       }
     },
 
-    serialize() {
+    serialize () {
       return {
         original_width: self.parent.naturalWidth,
         original_height: self.parent.naturalHeight,
@@ -271,7 +273,7 @@ const HtxRectangleView = ({ item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
+        onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -279,7 +281,7 @@ const HtxRectangleView = ({ item }) => {
             stage.container().style.cursor = Constants.POINTER_CURSOR;
           }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
           if (store.annotationStore.selected.relationMode) {

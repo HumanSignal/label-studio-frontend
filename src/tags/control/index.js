@@ -49,5 +49,5 @@ export {
   EllipseModel,
   RelationsModel,
   RelationModel,
-  ParagraphLabelsModel,
+  ParagraphLabelsModel
 };

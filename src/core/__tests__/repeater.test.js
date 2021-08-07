@@ -1,8 +1,8 @@
 /* global it, expect */
 import Tree from "../Tree";
 
-function createStore(utterances) {
-  return { task : { dataObj : { utterances }} };
+function createStore (utterances) {
+  return { task : { dataObj : { utterances } } };
 }
 
 it("Should repeat blocks based on store key", () => {

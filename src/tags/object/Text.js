@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -68,41 +68,45 @@ const Model = types
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    get regs() {
+    get regs () {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates() {
+    activeStates () {
       const states = self.states();
+
       return states && states.filter(s => s.isSelected && s.type === "labels");
     },
   }))
   .actions(self => ({
-    setRef(ref) {
+    setRef (ref) {
       self._ref = ref;
     },
 
-    needsUpdate() {
+    needsUpdate () {
       self._update = self._update + 1;
     },
 
-    updateValue(store) {
+    updateValue (store) {
       const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
         const url = value;
         // "/..." for local files
+
         if (!/^https?:\/\/|^\//.test(url)) {
           const message = [];
+
           if (url) {
             // @todo cut long texts ("Lorem ipsum...amet")
             message.push(`URL (${url}) is not valid.`);
@@ -123,6 +127,7 @@ const Model = types
           .then(self.loadedValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
+
             store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.loadedValue("");
           });
@@ -131,7 +136,7 @@ const Model = types
       }
     },
 
-    loadedValue(val) {
+    loadedValue (val) {
       self.loaded = true;
       if (self.encoding === "base64") val = atob(val);
       if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
@@ -147,7 +152,7 @@ const Model = types
       self._regionsCache = [];
     },
 
-    afterCreate() {
+    afterCreate () {
       self._regionsCache = [];
 
       // security measure, if valuetype is set to url then LS
@@ -159,7 +164,7 @@ const Model = types
       }
     },
 
-    createRegion(p) {
+    createRegion (p) {
       const r = TextRegionModel.create(p);
 
       r._range = p._range;
@@ -175,16 +180,18 @@ const Model = types
       return r;
     },
 
-    addRegion(range) {
+    addRegion (range) {
       range.start = range.startOffset;
       range.end = range.endOffset;
 
       const states = self.getAvailableStates();
+
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+
       area._range = range._range;
       return area;
     },
@@ -194,11 +201,12 @@ const Model = types
      * @param {*} obj
      * @param {*} fromModel
      */
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj, fromModel) {
       let r;
       let m;
 
       const fm = self.annotation.names.get(obj.from_name);
+
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -248,7 +256,7 @@ const Model = types
 const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxTextView extends Component {
-  render() {
+  render () {
     const { item, store } = this.props;
 
     if (!item._value) return null;
@@ -258,22 +266,23 @@ class HtxTextView extends Component {
 }
 
 class TextPieceView extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
     this.myRef = React.createRef();
   }
 
-  getValue() {
+  getValue () {
     const { item, store } = this.props;
 
     let val = parseValue(item.value, store.task.dataObj);
+
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
     return val;
   }
 
-  alignWord(r, start, end) {
+  alignWord (r, start, end) {
     const val = this.getValue();
     const strleft = val.substring(0, start);
     const r2 = r.cloneRange();
@@ -290,6 +299,7 @@ class TextPieceView extends Component {
 
       if (idx >= 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
+
         r2.setStart(node, len);
       }
     }
@@ -312,6 +322,7 @@ class TextPieceView extends Component {
 
       if (idx > 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, end + idx + 1);
+
         r2.setEnd(node, len > 0 ? len - 1 : 0);
       }
     }
@@ -319,7 +330,7 @@ class TextPieceView extends Component {
     return r2;
   }
 
-  alignRange(r) {
+  alignRange (r) {
     const item = this.props.item;
     // there is should be at least one selected label
     const label = item.activeStates()[0].selectedLabels[0];
@@ -334,15 +345,9 @@ class TextPieceView extends Component {
     if (granularity === "word") {
       return this.alignWord(r, start, end);
     }
-
-    if (granularity === "sentence") {
-    }
-
-    if (granularity === "paragraph") {
-    }
   }
 
-  captureDocumentSelection(ev) {
+  captureDocumentSelection (ev) {
     var i,
       self = this,
       ranges = [],
@@ -378,6 +383,7 @@ class TextPieceView extends Component {
         const tags = Array.from(r.cloneContents().childNodes);
         // and convert every <br> back to new line
         const text = tags.reduce((str, node) => (str += node.tagName === "BR" ? "\n" : node.textContent), "");
+
         normedRange.text = text;
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
@@ -393,7 +399,9 @@ class TextPieceView extends Component {
         } else {
           ranges.push(normedRange);
         }
-      } catch (err) {}
+      } catch (err) {
+        // Error
+      }
     }
 
     // BrowserRange#normalize() modifies the DOM structure and deselects the
@@ -404,35 +412,40 @@ class TextPieceView extends Component {
     return ranges;
   }
 
-  onClick(ev) {
+  onClick () {
     // console.log('click');
   }
 
-  onMouseUp(ev) {
+  onMouseUp (ev) {
     const item = this.props.item;
+
     if (!item.selectionenabled) return;
 
     const states = item.activeStates();
+
     if (!states || states.length === 0) return;
 
     var selectedRanges = this.captureDocumentSelection(ev);
+
     if (selectedRanges.length === 0) return;
 
     // prevent overlapping spans from being selected right after this
     item._currentSpan = null;
 
     const htxRange = item.addRegion(selectedRanges[0]);
+
     if (htxRange) {
       const spans = htxRange.createSpans();
+
       htxRange.addEventsToSpans(spans);
     }
   }
 
-  _handleUpdate() {
+  _handleUpdate () {
     const root = this.myRef;
     const { item } = this.props;
 
-    item.regs.forEach(function(r) {
+    item.regs.forEach(function (r) {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -455,8 +468,10 @@ class TextPieceView extends Component {
 
           for (var i = 0; i <= node.childNodes?.length; i++) {
             const n = node.childNodes[i];
+
             if (n) {
               const res = traverse(n);
+
               if (res) return res;
             }
           }
@@ -472,6 +487,7 @@ class TextPieceView extends Component {
       //     return;
 
       const range = document.createRange();
+
       range.setStart(ss.node, ss.left);
       range.setEnd(ee.node, ee.left);
 
@@ -484,25 +500,27 @@ class TextPieceView extends Component {
       r._range = range;
 
       const spans = r.createSpans();
+
       r.addEventsToSpans(spans);
     });
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     this._handleUpdate();
   }
 
-  componentDidMount() {
+  componentDidMount () {
     this._handleUpdate();
 
     const ref = this.myRef;
     const settings = this.props.store.settings;
+
     if (ref && ref.classList && settings) {
       ref.classList.toggle("htx-line-numbers", settings.showLineNumbers);
     }
   }
 
-  render() {
+  render () {
     const { item } = this.props;
 
     if (!item.loaded) return null;

@@ -41,23 +41,25 @@ const ModelAttrs = types
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    get serializableValue() {
+    get serializableValue () {
       const obj = {};
+
       obj[self.resultType] = self.selectedValues();
 
       return obj;
     },
 
-    get resultType() {
+    get resultType () {
       return "hypertextlabels";
     },
 
-    get valueType() {
+    get valueType () {
       return "htmllabels";
     },
   }));

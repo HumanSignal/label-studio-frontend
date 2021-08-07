@@ -2,23 +2,23 @@ import { types } from "mobx-state-tree";
 
 const SeparatedControlMixin = types
   .model()
-  .volatile(self => {
+  .volatile(() => {
     return {
       isSeparated: true,
     };
   })
   .views(self => ({
-    get obj() {
+    get obj () {
       return self.annotation.names.get(self.toname);
     },
 
-    get selectedLabels() {
+    get selectedLabels () {
       return [];
     },
-    selectedValues() {
+    selectedValues () {
       return [];
     },
-    getResultValue() {
+    getResultValue () {
       return {};
     },
   }));

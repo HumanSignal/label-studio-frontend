@@ -54,23 +54,25 @@ const ModelAttrs = types
     children: Types.unionArray(["labels", "label", "choice"]),
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates() {
+    activeStates () {
       const states = self.states();
+
       return states ? states.filter(c => c.isSelected === true) : null;
     },
   }));
 
 const Model = LabelMixin.props({ _type: "timeserieslabels" }).views(self => ({
-  get shouldBeUnselected() {
+  get shouldBeUnselected () {
     return self.choice === "single";
   },
 }));

@@ -8,15 +8,15 @@ export class LabelStudio extends Component {
     initialized: false,
   }
 
-  componentDidMount() {
-    configureStore(this.props).then(({store}) => {
+  componentDidMount () {
+    configureStore(this.props).then(({ store }) => {
       this.store = store;
       window.Htx = this.store;
       this.setState({ initialized: true });
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (this.props.task !== prevProps.task) {
       this.store.resetState();
       this.store.assignTask(this.props.task);
@@ -24,7 +24,7 @@ export class LabelStudio extends Component {
     }
   }
 
-  render() {
+  render () {
     return this.state.initialized ? (
       <App
         store={this.store}

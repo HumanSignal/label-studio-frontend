@@ -4,7 +4,7 @@
  * @param {*} is
  * @param {*} value
  */
-function _index(obj, is, value) {
+function _index (obj, is, value) {
   if (typeof is === "string") return _index(obj, is.split("."), value);
   else if (is.length === 1 && value !== undefined) return (obj[is[0]] = value);
   else if (is.length === 0) return obj;
@@ -16,9 +16,10 @@ function _index(obj, is, value) {
  * @param {*} variable
  * @param {*} obj
  */
-function variableNotation(variable, obj) {
+function variableNotation (variable, obj) {
   if (variable.charAt(0) === "$") {
     const n = variable.substring(1);
+
     return _index(obj, n);
   } else {
     return variable;

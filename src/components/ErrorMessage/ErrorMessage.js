@@ -7,5 +7,6 @@ export const ErrorMessage = ({ error }) => {
     return <div className={styles.error} dangerouslySetInnerHTML={{ __html: error }} />;
   }
   const body = error instanceof Error ? error.message : error;
+
   return <div className={styles.error}>{body}</div>;
 };

@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
@@ -51,9 +51,9 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .actions(self => ({
-    fromStateJSON() {},
+    fromStateJSON () {},
 
-    afterCreate() {
+    afterCreate () {
       const poly = Tools.Polygon.create();
       const floodFill = Tools.FloodFill.create();
 
@@ -61,7 +61,7 @@ const Model = types
       floodFill._control = self;
 
       self.tools = {
-        poly: poly,
+        poly,
         // floodfill: floodFill,
       };
     },
@@ -74,7 +74,7 @@ const PolygonModel = types.compose(
   SeparatedControlMixin,
   TagAttrs,
   Validation,
-  Model
+  Model,
 );
 
 const HtxView = () => null;

@@ -38,6 +38,7 @@ const createRegion = (from_name, type, values) => ({
     ...values,
   },
 });
+
 createRegion.id = 1;
 
 const annotations = [
@@ -54,7 +55,7 @@ const annotations = [
 
 Feature("Toggle regions visibility");
 
-Scenario("Checking mass toggling of visibility", async ({I, AtImageView, AtSidebar}) => {
+Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSidebar }) => {
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -75,6 +76,7 @@ Scenario("Checking mass toggling of visibility", async ({I, AtImageView, AtSideb
         break;
     }
     let count = await I.executeAsyncScript(countKonvaShapes);
+
     assert.strictEqual(count, num);
   };
   const hideAll = () => {
@@ -113,7 +115,7 @@ Scenario("Checking mass toggling of visibility", async ({I, AtImageView, AtSideb
   await checkVisible(0);
 });
 
-Scenario("Hiding bulk visibility toggle", ({I, AtImageView, AtLabels, AtSidebar}) => {
+Scenario("Hiding bulk visibility toggle", ({ I, AtImageView, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
@@ -125,7 +127,7 @@ Scenario("Hiding bulk visibility toggle", ({I, AtImageView, AtLabels, AtSidebar}
   I.seeElement(ALL_VISIBLE_SELECTOR);
 });
 
-Scenario("Checking regions grouped by label", async ({I, AtImageView}) => {
+Scenario("Checking regions grouped by label", async ({ I, AtImageView }) => {
   const checkVisible = async num => {
     switch (num) {
       case 0:
@@ -146,6 +148,7 @@ Scenario("Checking regions grouped by label", async ({I, AtImageView}) => {
         break;
     }
     let count = await I.executeAsyncScript(countKonvaShapes);
+
     assert.strictEqual(count, num);
   };
   const hideAll = () => {
@@ -198,21 +201,25 @@ const examples = [
   require("../examples/timeseries-url-indexed"),
 ];
 const examplesTable = new DataTable(["title", "config", "data", "result"]);
+
 examples.forEach(example => {
   const { annotations, config, data, result = annotations[0].result, title } = example;
+
   examplesTable.add([title, config, data, result]);
 });
 
-Data(examplesTable).Scenario("Check visibility switcher through all examples", ({I, AtSidebar, current})=> {
-  const { config, data, result, } = current;
+Data(examplesTable).Scenario("Check visibility switcher through all examples", ({ I, AtSidebar, current })=> {
+  const { config, data, result } = current;
   const params = { annotations: [{ id: "test", result }], config, data };
 
   const ids = [];
+
   result.forEach(r => !ids.includes(r.id) && Object.keys(r.value).length > 1 && ids.push(r.id));
 
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
   const regionsCount = ids.length;
+
   AtSidebar.seeRegions(regionsCount);
 
   if (regionsCount) {

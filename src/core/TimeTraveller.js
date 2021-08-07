@@ -11,15 +11,15 @@ const TimeTraveller = types
 
     createdIdx: 0,
   })
-  .volatile(self => ({
+  .volatile(() => ({
     history: [],
     isFrozen: false,
   }))
   .views(self => ({
-    get canUndo() {
+    get canUndo () {
       return self.undoIdx > 0;
     },
-    get canRedo() {
+    get canRedo () {
       return self.undoIdx < self.history.length - 1;
     },
   }))
@@ -28,32 +28,32 @@ const TimeTraveller = types
     let snapshotDisposer;
     let updateHandlers = new Set();
 
-    function triggerHandlers() {
+    function triggerHandlers () {
       updateHandlers.forEach(handler => handler());
     }
 
     return {
-      freeze() {
+      freeze () {
         self.isFrozen = true;
       },
 
-      unfreeze() {
+      unfreeze () {
         self.isFrozen = false;
         self.recordNow();
       },
 
-      recordNow() {
+      recordNow () {
         self.addUndoState(getSnapshot(targetStore));
       },
 
-      onUpdate(handler) {
+      onUpdate (handler) {
         updateHandlers.add(handler);
         return () => {
           updateHandlers.delete(handler);
         };
       },
 
-      addUndoState(recorder) {
+      addUndoState (recorder) {
         if (self.isFrozen) return;
         if (self.skipNextUndoState) {
           /**
@@ -69,14 +69,14 @@ const TimeTraveller = types
         self.undoIdx = self.history.length - 1;
       },
 
-      reinit() {
+      reinit () {
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
         self.createdIdx = 0;
         triggerHandlers();
       },
 
-      afterCreate() {
+      afterCreate () {
         targetStore = self.targetPath ? resolvePath(self, self.targetPath) : getEnv(self).targetStore;
 
         if (!targetStore)
@@ -93,26 +93,26 @@ const TimeTraveller = types
         self.createdIdx = self.undoIdx;
       },
 
-      beforeDestroy() {
+      beforeDestroy () {
         snapshotDisposer();
       },
 
-      undo() {
+      undo () {
         self.set(self.undoIdx - 1);
       },
 
-      redo() {
+      redo () {
         self.set(self.undoIdx + 1);
       },
 
-      set(idx) {
+      set (idx) {
         self.undoIdx = idx;
         self.skipNextUndoState = true;
         applySnapshot(targetStore, self.history[idx]);
         triggerHandlers();
       },
 
-      reset() {
+      reset () {
         // just apply zero state; it would be added as a new hisory item
         applySnapshot(targetStore, self.history[self.createdIdx]);
         triggerHandlers();

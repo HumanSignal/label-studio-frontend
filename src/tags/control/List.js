@@ -17,17 +17,17 @@ const ListItemModel = types
     selected: types.optional(types.boolean, false),
     idx: types.number,
   })
-  .views(self => ({}))
+  .views(() => ({}))
   .actions(self => ({
-    setBG(val) {
+    setBG (val) {
       self.backgroundColor = val;
     },
 
-    setIdx(idx) {
+    setIdx (idx) {
       self.idx = idx;
     },
 
-    setSelected(val) {
+    setSelected (val) {
       self.selected = val;
     },
   }));
@@ -72,23 +72,23 @@ const Model = types
     regions: types.array(ListItemModel),
     // update: types.optional(types.boolean, false)
   })
-  .views(self => ({}))
+  .views(() => ({}))
   .actions(self => ({
-    setUpdate() {
+    setUpdate () {
       self.update = self.update + 1;
     },
 
-    addRegion(vals, idx) {
+    addRegion (vals, idx) {
       const reg = ListItemModel.create({
         value: self.elementvalue,
-        idx: idx,
+        idx,
         _value: variableNotation(self.elementvalue, vals[idx]),
       });
 
       self.regions.push(reg);
     },
 
-    updateValue(store) {
+    updateValue (store) {
       const val = variableNotation(self.value, store.task.dataObj);
 
       // in case we're in expert mode it will call updateValue
@@ -105,7 +105,7 @@ const Model = types
       self.setUpdate();
     },
 
-    moveItems({ oldIndex, newIndex }) {
+    moveItems ({ oldIndex, newIndex }) {
       if (oldIndex === newIndex) return;
 
       if (self.sortedhighlightcolor) {
@@ -120,7 +120,7 @@ const Model = types
       self.setUpdate();
     },
 
-    toStateJSON() {
+    toStateJSON () {
       const map = {};
 
       self._value.forEach((v, idx) => {
@@ -129,11 +129,12 @@ const Model = types
 
       const ranked = Object.keys(map)
         .sort((a, b) => a - b)
-        .map(function(v) {
+        .map(function (v) {
           return map[v];
         });
 
       const selected = [];
+
       for (let i = 0; i < Object.keys(map).length; i++) {
         selected[self.regions[i].idx] = self.regions[i].selected ? 1 : 0;
       }
@@ -143,12 +144,12 @@ const Model = types
         to_name: self.name,
         value: {
           weights: ranked,
-          selected: selected,
+          selected,
         },
       };
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj) {
       const ranked = [];
       const regions = [];
       const item_weight = {};
@@ -165,6 +166,7 @@ const Model = types
         .sort((a, b) => b - a)
         .forEach(v => {
           const idxes = item_weight[v];
+
           idxes.forEach(idx => {
             regions.push(self.regions[idx]);
             ranked.push(self._value[idx]);
@@ -185,7 +187,7 @@ const ListModel = types.compose("ListModel", TagAttrs, Model);
 
 const DragHandle = sortableHandle(() => <div className="drag-handle"></div>);
 
-function isMobileDevice() {
+function isMobileDevice () {
   try {
     return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf("IEMobile") !== -1;
   } catch (e) {
@@ -195,6 +197,7 @@ function isMobileDevice() {
 
 const SortableText = SortableElement(({ item, value }) => {
   let classNames;
+
   if (isMobileDevice) {
     classNames = "noselect";
   }
@@ -243,15 +246,16 @@ const SortableList = SortableContainer(({ item, items }) => {
           value={value}
           color={value.backgroundColor}
           item={item}
-          onClick={ev => {}}
+          onClick={() => {}}
         />
       ))}
     </List>
   );
 });
 
-const HtxListView = ({ store, item }) => {
+const HtxListView = ({ item }) => {
   const props = {};
+
   if (isMobileDevice()) {
     props["pressDelay"] = 100;
   } else {

@@ -75,7 +75,7 @@ export default observer(({ store, annotation }) => {
 
           {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
         </Button>
-      </Tooltip>
+      </Tooltip>,
     );
 
     entityButtons.push(
@@ -88,7 +88,7 @@ export default observer(({ store, annotation }) => {
         >
           <PlusOutlined />
         </Button>
-      </Tooltip>
+      </Tooltip>,
     );
   }
 
@@ -104,7 +104,7 @@ export default observer(({ store, annotation }) => {
         <CompressOutlined />
         {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
       </Button>
-    </Tooltip>
+    </Tooltip>,
   );
 
   return (
@@ -193,6 +193,7 @@ export default observer(({ store, annotation }) => {
             autoFocus
             onChange={ev => {
               const { value } = ev.target;
+
               node.setNormInput(value);
             }}
             style={{ marginBottom: "0.5em" }}

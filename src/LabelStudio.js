@@ -4,7 +4,7 @@ import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
 import { registerPanels } from "./registerPanels";
 import { configure } from "mobx";
-import {EventInvoker} from './utils/events';
+import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
 import { isDefined } from "./utils/utilities";
@@ -16,7 +16,7 @@ configure({
 export class LabelStudio {
   static instances = new Set();
 
-  static destroyAll() {
+  static destroyAll () {
     this.instances.forEach(inst => inst.destroy());
     this.instances.clear();
   }
@@ -32,11 +32,11 @@ export class LabelStudio {
     this.constructor.instances.add(this);
   }
 
-  on(...args) {
+  on (...args) {
     this.events.on(...args);
   }
 
-  off(eventName, callback){
+  off (eventName, callback){
     if (isDefined(callback)) {
       this.events.off(eventName, callback);
     } else {
@@ -44,9 +44,10 @@ export class LabelStudio {
     }
   }
 
-  async createApp() {
-    const {store, getRoot} = await configureStore(this.options, this.events);
+  async createApp () {
+    const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
+
     this.store = store;
     window.Htx = this.store;
 
@@ -64,7 +65,7 @@ export class LabelStudio {
     this.destroy = destructor;
   }
 
-  supportLgacyEvents(options) {
+  supportLgacyEvents (options) {
     const keys = Object.keys(legacyEvents);
 
     keys.forEach(key => {
@@ -72,6 +73,7 @@ export class LabelStudio {
 
       if (isDefined(callback)) {
         const eventName = toCamelCase(key.replace(/^on/, ''));
+
         this.events.on(eventName, callback);
       }
     });

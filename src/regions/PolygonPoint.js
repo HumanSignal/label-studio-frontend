@@ -4,8 +4,6 @@ import { observer } from "mobx-react";
 import { types, getParent, hasParent, getRoot } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
-import Types from "../core/Types";
-import { defaultStyle } from "../core/Constants";
 import { useRegionColors } from "../hooks/useRegionColor";
 
 const PolygonPoint = types
@@ -26,20 +24,20 @@ const PolygonPoint = types
     style: "circle",
     size: "small",
   })
-  .volatile(self => ({
+  .volatile(() => ({
     selected: false,
   }))
   .views(self => ({
-    get parent() {
+    get parent () {
       if (!hasParent(self, 2)) return null;
       return getParent(self, 2);
     },
 
-    get stage() {
+    get stage () {
       return self.parent?.parent;
     },
 
-    get annotation() {
+    get annotation () {
       return getRoot(self).annotationStore.selected;
     },
   }))
@@ -47,7 +45,7 @@ const PolygonPoint = types
     /**
      * Triggered after create model
      */
-    afterCreate() {
+    afterCreate () {
       self.initX = self.x;
       self.initY = self.y;
 
@@ -66,7 +64,7 @@ const PolygonPoint = types
      * @param {number} y
      */
 
-    movePoint(offsetX, offsetY) {
+    movePoint (offsetX, offsetY) {
       self.initX = self.initX + offsetX;
       self.initY = self.initY + offsetY;
       self.x = self.x + offsetX;
@@ -76,7 +74,7 @@ const PolygonPoint = types
       self.relativeY = (self.y / self.stage.stageHeight) * 100;
     },
 
-    _movePoint(x, y) {
+    _movePoint (x, y) {
       self.initX = x;
       self.initY = y;
 
@@ -91,7 +89,7 @@ const PolygonPoint = types
      * Close polygon
      * @param {*} ev
      */
-    closeStartPoint() {
+    closeStartPoint () {
       if (!self.annotation.editable) return;
       if (self.parent.closed) return;
 
@@ -100,10 +98,11 @@ const PolygonPoint = types
       }
     },
 
-    handleMouseOverStartPoint(ev) {
+    handleMouseOverStartPoint (ev) {
       ev.cancelBubble = true;
 
       const stage = self.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "crosshair";
 
@@ -135,10 +134,11 @@ const PolygonPoint = types
       self.parent.setMouseOverStartPoint(true);
     },
 
-    handleMouseOutStartPoint(ev) {
+    handleMouseOutStartPoint (ev) {
       const t = ev.target;
 
       const stage = self.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "default";
 
@@ -196,7 +196,7 @@ const PolygonPointView = observer(({ item, name }) => {
       item._movePoint(x, y);
     },
 
-    onDragStart: e => {
+    onDragStart: () => {
       item.annotation.history.freeze();
     },
 
@@ -208,12 +208,14 @@ const PolygonPointView = observer(({ item, name }) => {
     onMouseOver: e => {
       e.cancelBubble = true;
       const stage = item.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "crosshair";
     },
 
-    onMouseOut: e => {
+    onMouseOut: () => {
       const stage = item.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "default";
     },

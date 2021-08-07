@@ -18,7 +18,7 @@ import {
   fixMobxObserve,
   formatTrackerTime,
   sparseValues,
-  getOptimalWidth,
+  getOptimalWidth
 } from "./TimeSeries/helpers";
 import { parseCSV, tryToParseJSON } from "../../utils/data";
 import messages from "../../utils/messages";
@@ -93,7 +93,7 @@ const Model = types
     // _value: types.optional(types.string, ""),
     _needsUpdate: types.optional(types.number, 0),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     data: null,
     valueLoaded: false,
     zoomedRange: 0,
@@ -101,52 +101,57 @@ const Model = types
     headers: [],
   }))
   .views(self => ({
-    get regionsTimeRanges() {
+    get regionsTimeRanges () {
       return self.regs.map(r => {
         return [r.start, r.end];
       });
     },
 
-    get store() {
+    get store () {
       return getRoot(self);
     },
 
-    get regs() {
+    get regs () {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    get isDate() {
+    get isDate () {
       return Boolean(self.timeformat) || (self.timedisplayformat && /[a-zA-Z]/.test(self.timedisplayformat[0]));
     },
 
-    get keyColumn() {
+    get keyColumn () {
       // for virtual column use just an uniq random name to not overlap with other column names
       return (self.timecolumn || "#@$").toLowerCase();
     },
 
-    get parseTimeFn() {
+    get parseTimeFn () {
       return self.timeformat && self.timecolumn ? d3.timeParse(self.timeformat) : Number;
     },
 
-    parseTime(time) {
+    parseTime (time) {
       const parse = self.parseTimeFn;
+
       return +parse(time);
     },
 
-    get dataObj() {
+    get dataObj () {
       if (!self.valueLoaded || !self.data) return null;
       let data = self.data;
+
       if (!self.timecolumn) {
         const justAnyColumn = Object.values(data)[0];
         const indices = Array.from({ length: justAnyColumn.length }, (_, i) => i);
+
         data = { ...data, [self.keyColumn]: indices };
       } else if (self.timeformat) {
         const timestamps = data[self.keyColumn].map(self.parseTime);
+
         if (timestamps[0] === 0 && timestamps[1] === 0 && timestamps[2] === 0) {
           const message = [
             `<b>timeColumn</b> (${self.timecolumn}) cannot be parsed.`,
             `First wrong values: ${data[self.keyColumn].slice(0, 3).join(", ")}`,
           ];
+
           if (self.timeformat) {
             message.push(`Your <b>timeFormat</b>: ${self.timeformat}. It should be compatible with these values.`);
           } else {
@@ -166,15 +171,17 @@ const Model = types
             `First wrong values: ${data[self.keyColumn].slice(0, 3).join(", ")}`,
             `<a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
           ];
+
           throw new Error(message.join("<br/>"));
         }
       }
       return data;
     },
 
-    get dataHash() {
+    get dataHash () {
       const raw = self.dataObj;
       const { keyColumn } = self;
+
       if (!raw) return null;
       const keys = Object.keys(raw);
       const data = [];
@@ -192,11 +199,11 @@ const Model = types
       return data;
     },
 
-    get slicesCount() {
+    get slicesCount () {
       return 10;
     },
 
-    get dataSlices() {
+    get dataSlices () {
       // @todo it should make it `computed` automatically
       if (self.slices) return self.slices;
       const count = self.slicesCount;
@@ -213,13 +220,14 @@ const Model = types
     },
 
     // range of times or numerical indices
-    get keysRange() {
+    get keysRange () {
       const keys = self.dataObj?.[self.keyColumn];
+
       if (!keys) return [];
       return [keys[0], keys[keys.length - 1]];
     },
 
-    get persistentValues() {
+    get persistentValues () {
       return {
         brushRange: self.brushRange,
         initialRange: self.initialRange,
@@ -228,18 +236,20 @@ const Model = types
       };
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates() {
+    activeStates () {
       const states = self.states();
+
       return states ? states.filter(s => s.isSelected && getType(s).name === "TimeSeriesLabelsModel") : null;
     },
 
-    formatTime(time) {
+    formatTime (time) {
       if (!self._format) {
         const { timedisplayformat: format, isDate } = self;
+
         if (format === "date") self._format = formatTrackerTime;
         else if (format) self._format = isDate ? d3.timeFormat(format) : d3.format(format);
         else self._format = String;
@@ -249,36 +259,39 @@ const Model = types
   }))
 
   .actions(self => ({
-    setData(data) {
+    setData (data) {
       self.data = data;
       self.valueLoaded = true;
     },
 
-    setColumnNames(headers) {
+    setColumnNames (headers) {
       self.headers = headers;
     },
 
-    setZoomedRange(range) {
+    setZoomedRange (range) {
       self.zoomedRange = range;
     },
 
-    setScale(scale) {
+    setScale (scale) {
       self.scale = scale;
     },
 
-    updateView() {
+    updateView () {
       self._needsUpdate = self._needsUpdate + 1;
     },
 
-    scrollToRegion(r) {
+    scrollToRegion (r) {
       const range = [...self.brushRange];
+
       if (r.start >= range[0] && r.end <= range[1]) return;
       const currentSize = range[1] - range[0];
       const regionSize = r.end - r.start;
       const desiredSize = regionSize * 1.5;
       const gap = (desiredSize - regionSize) / 2;
+
       if (currentSize < desiredSize) {
         const extend = (desiredSize - currentSize) / 2;
+
         range[0] -= extend;
         range[1] += extend;
       }
@@ -298,7 +311,7 @@ const Model = types
       self.updateTR(range, self.scale + 0.0001);
     },
 
-    updateTR(tr, scale = 1) {
+    updateTR (tr, scale = 1) {
       if (tr === null) return;
 
       self.initialRange = tr;
@@ -308,17 +321,18 @@ const Model = types
       self.updateView();
     },
 
-    throttledRangeUpdate() {
+    throttledRangeUpdate () {
       return throttle(self.updateTR, 100);
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj, fromModel) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if ("timeserieslabels" in obj.value) {
         const states = restoreNewsnapshot(fromModel);
+
         states.fromStateJSON(obj);
 
         self.createRegion(obj.value.start, obj.value.end, [states]);
@@ -327,8 +341,9 @@ const Model = types
       }
     },
 
-    addRegion(start, end, predefinedStates) {
+    addRegion (start, end) {
       const states = self.getAvailableStates();
+
       if (states.length === 0) return;
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
@@ -339,7 +354,7 @@ const Model = types
       return r;
     },
 
-    regionChanged(timerange, i, activeStates) {
+    regionChanged (timerange, i, activeStates) {
       const r = self.regs[i];
       let needUpdate = false;
 
@@ -353,7 +368,7 @@ const Model = types
       needUpdate && self.updateView();
     },
 
-    async preloadValue(store) {
+    async preloadValue (store) {
       const dataObj = store.task.dataObj;
 
       if (self.valuetype !== "url") {
@@ -367,12 +382,15 @@ const Model = types
 
       if (!self.value) {
         const message = `Attribute <b>value</b> for <b>${self.name}</b> should be provided when <b>valuetype="url"</b>`;
+
         store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
       const url = dataObj[idFromValue(self.value)];
+
       if (!url || typeof url !== "string") {
         const message = `Cannot find url in <b>${idFromValue(self.value)}</b> field of your task`;
+
         store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
@@ -394,6 +412,7 @@ const Model = types
         text = await res.text();
       } catch (e) {
         let error = e;
+
         if (!res) {
           try {
             res = await fetch(url, { mode: "no-cors" });
@@ -411,10 +430,13 @@ const Model = types
       try {
         let data = tryToParseJSON(text);
         let headers = [];
+
         if (!data) {
           let separator = self.sep;
+
           if (separator?.length > 1) {
             const aliases = { tab: "\t", "\\t": "\t", space: " ", auto: "auto", comma: ",", dot: "." };
+
             separator = aliases[separator] || separator[0];
           }
           [data, headers] = parseCSV(text, separator);
@@ -424,12 +446,14 @@ const Model = types
         self.updateValue(store);
       } catch (e) {
         const message = `Problems with parsing CSV: ${e?.message || e}<br>URL: ${url}`;
+
         store.annotationStore.addErrors([errorBuilder.generalError(message)]);
       }
     },
 
-    async updateValue(store) {
+    async updateValue (store) {
       let data;
+
       try {
         if (!self.dataObj) {
           await self.preloadValue(store);
@@ -441,11 +465,13 @@ const Model = types
       }
       if (!data) return;
       const times = data[self.keyColumn];
+
       if (!times) {
         const message = [
           `<b>${self.keyColumn}</b> not found in data.`,
           `Use <b>valueType="url"</b> for data loading or column index for headless csv`,
         ].join(" ");
+
         store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
@@ -454,10 +480,10 @@ const Model = types
       self.updateTR([times[0], times[times.length >> 2]]);
     },
 
-    onHotKey() {},
+    onHotKey () {},
   }));
 
-function useWidth() {
+function useWidth () {
   const [width, setWidth] = React.useState(840);
   const [node, setNode] = React.useState(null);
 
@@ -471,6 +497,7 @@ function useWidth() {
         // window.requestAnimationFrame(() =>
         setWidth(node.offsetWidth);
       // );
+
       measure();
 
       window.addEventListener("resize", measure);
@@ -485,7 +512,7 @@ function useWidth() {
 }
 
 // class TimeSeriesOverviewD3 extends React.Component {
-const Overview = observer(({ item, data, series, range, forceUpdate }) => {
+const Overview = observer(({ item, data, series }) => {
   const regions = item.regs;
   const [ref, fullWidth, node] = useWidth();
 
@@ -494,12 +521,14 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const width = Math.max(fullWidth - margin.left - margin.right, 0);
   // const data = store.task.dataObj;
   let keys = item.children.map(c => c.columnName);
+
   if (item.overviewchannels) {
     const channels = item.overviewchannels
       .toLowerCase()
       .split(",")
       .map(name => (/^\d+$/.test(name) ? item.headers[name] : name))
       .filter(ch => keys.includes(ch));
+
     if (channels.length) keys = channels;
   }
   // const series = data[idX];
@@ -520,19 +549,23 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   const prevBrush = React.useRef(defaultSelection);
   const MIN_OVERVIEW = 10;
 
-  function brushed() {
+  function brushed () {
     if (d3.event.selection && !checkD3EventLoop("brush") && !checkD3EventLoop("wheel")) {
       let [x1, x2] = d3.event.selection;
       const prev = prevBrush.current;
       const overviewWidth = x2 - x1;
       let start = +x.invert(x1);
       let end = +x.invert(x2);
+
       // if overview is left intact do nothing
       if (prev[0] === x1 && prev[1] === x2) {
+        // TODO: please, rewrite this step to avoid empty blocks
       }
+
       // if overview was moved; precision comparison for floats
       else if (prev[0] !== x1 && prev[1] !== x2 && Math.abs(overviewWidth - MIN_OVERVIEW) < 0.001) {
         const mid = (start + end) / 2;
+
         start = mid - item.zoomedRange / 2;
         end = mid + item.zoomedRange / 2;
         // if overview was resized
@@ -550,13 +583,14 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
     }
   }
 
-  function brushended() {
+  function brushended () {
     if (!d3.event.selection) {
       // move selection on click; try to preserve it's width
       const center = d3.mouse(this)[0];
       const range = item.brushRange.map(x);
       const half = (range[1] - range[0]) >> 1;
       let moved = [center - half, center + half];
+
       if (moved[0] < 0) moved = [0, half * 2];
       if (moved[1] > width) moved = [width - half * 2, width];
       gb.current.call(brush.move, moved);
@@ -598,6 +632,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
 
   const drawRegions = ranges => {
     const rSelection = gRegions.current.selectAll(".region").data(ranges);
+
     rSelection
       .enter()
       .append("rect")
@@ -666,8 +701,10 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   React.useEffect(() => {
     if (!gb.current) return;
     const range = item.brushRange.map(x);
+
     if (range[1] - range[0] < MIN_OVERVIEW) {
       const mid = (range[1] + range[0]) / 2;
+
       range[0] = Math.max(0, mid - MIN_OVERVIEW / 2);
       range[1] = Math.min(width, mid + MIN_OVERVIEW / 2);
     }
@@ -684,7 +721,7 @@ const Overview = observer(({ item, data, series, range, forceUpdate }) => {
   return <div className="htx-timeseries-overview" ref={ref} />;
 });
 
-const HtxTimeSeriesViewRTS = ({ store, item }) => {
+const HtxTimeSeriesViewRTS = ({ item }) => {
   const ref = React.createRef();
 
   React.useEffect(() => {

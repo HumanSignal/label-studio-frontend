@@ -25,31 +25,38 @@ const RegionItemDesc = observer(({ item, setDraggable }) => {
     e.stopPropagation();
   }, []);
   const controls = item.perRegionDescControls || [];
-  return <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable(false);}} onMouseLeave={()=>{setDraggable(true);}}>
-    <Elem name="controls">
-      {controls.map((tag, idx) => {
-        const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
-        return View ? <View key={idx} item={tag} area={item} collapsed={collapsed} setCollapsed={setCollapsed}/> : null;
-      })}
+
+  return (
+    <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable(false);}} onMouseLeave={()=>{setDraggable(true);}}>
+      <Elem name="controls">
+        {controls.map((tag, idx) => {
+          const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
+
+          return View ? <View key={idx} item={tag} area={item} collapsed={collapsed} setCollapsed={setCollapsed}/> : null;
+        })}
+      </Elem>
+      <Elem name="collapse" tag={Button} size="small" type="text" onClick={toggleCollapsed}>
+        {collapsed ? <LsExpand/> : <LsCollapse/>}
+      </Elem>
     </Elem>
-    <Elem name="collapse" tag={Button} size="small" type="text" onClick={toggleCollapsed}>
-      {collapsed ? <LsExpand/> : <LsCollapse/>}
-    </Elem>
-  </Elem>;
+  );
 });
 
 const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   const itemElRef = useRef();
+
   useEffect(()=>{
     if (item.selected) {
       const el = itemElRef.current;
+
       if (!el) return;
       const scroll = el.scrollIntoViewIfNeeded || el.scrollIntoView;
+
       scroll.call(el);
     }
   }, [item.selected]);
   return (
-    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden}}>
+    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden }}>
       <Elem name="header" tag="div">
         <Elem name="counter">{isDefined(idx) ? idx + 1 : ""}</Elem>
 
@@ -96,12 +103,14 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   );
 });
 
-export const RegionItem = observer(({ item, idx, flat, setDraggable}) => {
+export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
   const getVars = useMemo(()=>{
     let vars;
+
     return () => {
       if (!vars) {
         const color = item.getOneColor();
+
         vars = color ? asVars({ labelColor: color, labelBgColor: chroma(color).alpha(0.15) }) : null;
       }
       return vars;
@@ -120,6 +129,7 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable}) => {
   ].filter(Boolean);
 
   const vars = getVars();
+
   return (
     <List.Item
       key={item.id}

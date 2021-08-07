@@ -5,9 +5,9 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { BemWithSpecifiContext } from "../../utils/bem";
 import "./GroundTruth.styl";
 
-const {Block, Elem} = BemWithSpecifiContext();
+const { Block, Elem } = BemWithSpecifiContext();
 
-export const GroundTruth = observer(({entity}) => {
+export const GroundTruth = observer(({ entity }) => {
   const title = entity.ground_truth
     ? "Unset this result as a ground truth"
     : "Set this result as a ground truth";
@@ -28,7 +28,7 @@ export const GroundTruth = observer(({entity}) => {
           <Elem
             name="indicator"
             tag={LsStar}
-            mod={{active: entity.ground_truth}}
+            mod={{ active: entity.ground_truth }}
           />
         </Elem>
       </Tooltip>

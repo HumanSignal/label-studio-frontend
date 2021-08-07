@@ -40,6 +40,7 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
  */
 const waitForImage = async done => {
   const img = document.querySelector("[alt=LS]");
+
   if (!img || img.complete) return done();
   img.onload = done;
 };
@@ -50,6 +51,7 @@ const waitForImage = async done => {
  */
 const waitForAudio = async done => {
   const audios = document.querySelectorAll("audio");
+
   await Promise.all(
     [...audios].map(audio => {
       if (audio.readyState === 4) return true;
@@ -71,6 +73,7 @@ const waitForAudio = async done => {
 const convertToFixed = data => {
   if (["string", "number"].includes(typeof data)) {
     const n = Number(data);
+
     return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(2);
   }
   if (Array.isArray(data)) {
@@ -78,6 +81,7 @@ const convertToFixed = data => {
   }
   if (typeof data === "object") {
     const result = {};
+
     for (let key in data) {
       result[key] = convertToFixed(data[key]);
     }
@@ -100,7 +104,7 @@ const convertToFixed = data => {
  * @param {number} height
  */
 const getSizeConvertor = (width, height) =>
-  function convert(data, size = width) {
+  function convert (data, size = width) {
     if (typeof data === "number") return convertToFixed((data * 100) / size);
     if (Array.isArray(data)) {
       if (data.length === 2) return [convert(data[0]), convert(data[1], height)];
@@ -108,6 +112,7 @@ const getSizeConvertor = (width, height) =>
     }
     if (typeof data === "object") {
       const result = {};
+
       for (let key in data) {
         if (key === "rotation") result[key] = data[key];
         else if (key.startsWith("height") || key === "y" || key.endsWith("Y")) result[key] = convert(data[key], height);
@@ -123,6 +128,7 @@ const delay = n => new Promise(resolve => setTimeout(resolve, n));
 // good idea, but it doesn't work :(
 const emulateClick = source => {
   const event = document.createEvent("CustomEvent");
+
   event.initCustomEvent("click", true, true, null);
   event.clientX = source.getBoundingClientRect().top / 2;
   event.clientY = source.getBoundingClientRect().left / 2;
@@ -132,6 +138,7 @@ const emulateClick = source => {
 // click the Rect on the Konva canvas
 const clickRect = () => {
   const rect = window.Konva.stages[0].findOne("Rect");
+
   rect.fire("click", { clientX: 10, clientY: 10 });
 };
 
@@ -143,6 +150,7 @@ const clickRect = () => {
  */
 const clickKonva = (x, y, done) => {
   const stage = window.Konva.stages[0];
+
   stage.fire("click", { clientX: x, clientY: y, evt: { offsetX: x, offsetY: y, timeStamp: Date.now() } });
   done();
 };
@@ -156,6 +164,7 @@ const clickMultipleKonva = async (points, done) => {
   const stage = window.Konva.stages[0];
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
   let lastPoint;
+
   for (let point of points) {
     if (lastPoint) {
       stage.fire("mousemove", { evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now() } });
@@ -181,6 +190,7 @@ const polygonKonva = async (points, done) => {
   try {
     const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
     const stage = window.Konva.stages[0];
+
     for (let point of points) {
       stage.fire("click", {
         evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
@@ -195,6 +205,7 @@ const polygonKonva = async (points, done) => {
     const lastPoint = stage.find("Circle").slice(-1)[0];
     const firstPoint = lastPoint.parent.find("Circle")[0];
     // for closing the Polygon we should place cursor over the first point
+
     firstPoint.fire("mouseover");
     await delay(100);
     // and only after that we can click on it
@@ -216,6 +227,7 @@ const polygonKonva = async (points, done) => {
 const dragKonva = async (x, y, shiftX, shiftY, done) => {
   const stage = window.Konva.stages[0];
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
+
   stage.fire("mousedown", { evt: { offsetX: x, offsetY: y } });
   await delay();
   stage.fire("mousemove", { evt: { offsetX: x + (shiftX >> 1), offsetY: y + (shiftY >> 1) } });
@@ -253,6 +265,7 @@ const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
 
   for (let layer of stage.getLayers()) {
     const rgba = layer.getContext().getImageData(x, y, 1, 1).data;
+
     if (!areEqualRGB(rgbArray, rgba)) continue;
 
     result = true;
@@ -288,16 +301,19 @@ const getKonvaPixelColorFromPoint = (x, y, done) => {
 
 const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
+
   done({ width: stage.width(), height: stage.height() });
 };
 const getImageSize = done => {
   const image = window.document.querySelector('img[alt="LS"]');
   const clientRect = image.getBoundingClientRect();
+
   done({ width: clientRect.width, height: clientRect.height });
 };
 const getImageFrameSize = done => {
   const image = window.document.querySelector('img[alt="LS"]').parentElement;
   const clientRect = image.getBoundingClientRect();
+
   done({ width: clientRect.width, height: clientRect.height });
 };
 const setZoom = (scale, x, y, done) => {
@@ -317,6 +333,7 @@ const countKonvaShapes = async done => {
   const count = stage.find(node => {
     return node.getType() === "Shape" && node.isVisible();
   }).length;
+
   done(count);
 };
 
@@ -338,6 +355,7 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
     while (currentNode) {
       const isText = currentNode.nodeType === Node.TEXT_NODE;
       const isBR = currentNode.nodeName === "BR";
+
       if (isText || isBR) {
         const length = currentNode.length ? currentNode.length : 1;
 
@@ -362,6 +380,7 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
   const end = findOnPosition(elem, rangeEnd, "left");
 
   const range = new Range();
+
   range.setStart(start.node, start.position);
   range.setEnd(end.node, end.position);
 
@@ -369,6 +388,7 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
   window.getSelection().addRange(range);
 
   const evt = new MouseEvent("mouseup");
+
   evt.initMouseEvent("mouseup", true, true);
   elem.dispatchEvent(evt);
 
@@ -387,11 +407,14 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
     return true;
   };
   let points = [];
+
   for (let layer of stage.getLayers()) {
     const canvas = layer.getCanvas();
+
     for (let x = 0; x < canvas.width; x++) {
       for (let y = 0; y < canvas.height; y++) {
         const rgba = layer.getContext().getImageData(x, y, 1, 1).data;
+
         if (areEqualRGB(rgbArray, rgba)) {
           points.push([x, y]);
         }
@@ -401,16 +424,18 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
-function _isObject(value) {
+function _isObject (value) {
   var type = typeof value;
-  return value != null && (type == "object" || type == "function");
+
+  return value !== null && (type === "object" || type === "function");
 }
 
-function _pickBy(obj, predicate, path = []) {
+function _pickBy (obj, predicate, path = []) {
   if (!_isObject(obj) || Array.isArray(obj)) return obj;
   return Object.keys(obj).reduce((res, key) => {
     const val = obj[key];
     const fullPath = [...path, key];
+
     if (predicate(val, key, fullPath)) {
       res[key] = _pickBy(val, predicate, fullPath);
     }
@@ -418,17 +443,17 @@ function _pickBy(obj, predicate, path = []) {
   }, {});
 }
 
-function _not(predicate) {
+function _not (predicate) {
   return (...args) => {
     return !predicate(...args);
   };
 }
 
-function omitBy(object, predicate) {
+function omitBy (object, predicate) {
   return _pickBy(object, _not(predicate));
 }
 
-function hasSelectedRegion(done) {
+function hasSelectedRegion (done) {
   done(!!Htx.annotationStore.selected.highlightedNode);
 }
 

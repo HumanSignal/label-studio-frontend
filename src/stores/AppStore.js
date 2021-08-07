@@ -105,7 +105,7 @@ export default types
      */
     showComments: false,
 
-    users: types.optional(types.array(UserExtended), [])
+    users: types.optional(types.array(UserExtended), []),
   })
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
@@ -115,12 +115,13 @@ export default types
     /**
      * Get alert
      */
-    get alert() {
+    get alert () {
       return getEnv(self).alert;
     },
 
-    get hasSegmentation() {
-      const match = Array.from(self.annotationStore.names.values()).map(({type}) => !!type.match(/labels/));
+    get hasSegmentation () {
+      const match = Array.from(self.annotationStore.names.values()).map(({ type }) => !!type.match(/labels/));
+
       return match.find(v => v === true) ?? false;
     },
   }))
@@ -128,18 +129,18 @@ export default types
     /**
      * Update settings display state
      */
-    function toggleSettings() {
+    function toggleSettings () {
       self.showingSettings = !self.showingSettings;
     }
 
     /**
      * Update description display state
      */
-    function toggleDescription() {
+    function toggleDescription () {
       self.showingDescription = !self.showingDescription;
     }
 
-    function setFlags(flags) {
+    function setFlags (flags) {
       const names = [
         "showingSettings",
         "showingDescription",
@@ -158,22 +159,22 @@ export default types
      * @param {string} name
      * @returns {string | undefined}
      */
-    function hasInterface(name) {
+    function hasInterface (name) {
       return self.interfaces.find(i => name === i) !== undefined;
     }
 
-    function addInterface(name) {
+    function addInterface (name) {
       return self.interfaces.push(name);
     }
 
-    function toggleComments(state) {
+    function toggleComments (state) {
       return (self.showComments = state);
     }
 
     /**
      * Function
      */
-    function afterCreate() {
+    function afterCreate () {
       // important thing to detect Area atomatically: it hasn't access to store, only via global
       window.Htx = self;
 
@@ -200,8 +201,9 @@ export default types
        */
       hotkeys.addKey(
         "command+backspace, ctrl+backspace",
-        function() {
+        function () {
           const { selected } = self.annotationStore;
+
           if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
             selected.deleteAllRegions();
           }
@@ -212,8 +214,9 @@ export default types
       // create relation
       hotkeys.addKey(
         "r",
-        function() {
+        function () {
           const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode && !c.relationMode) {
             c.startRelationMode(c.highlightedNode);
           }
@@ -224,44 +227,50 @@ export default types
       // Focus fist focusable perregion when region is selected
       hotkeys.addKey(
         "enter",
-        function(e) {
+        function (e) {
           e.preventDefault();
           const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode && !c.relationMode) {
             c.highlightedNode.requestPerRegionFocus();
           }
-        }
+        },
       );
 
       // unselect region
-      hotkeys.addKey("u", function() {
+      hotkeys.addKey("u", function () {
         const c = self.annotationStore.selected;
+
         if (c && !c.relationMode) {
           c.unselectAll();
         }
       });
 
-      hotkeys.addKey("h", function() {
+      hotkeys.addKey("h", function () {
         const c = self.annotationStore.selected;
+
         if (c && c.highlightedNode && !c.relationMode) {
           c.highlightedNode.toggleHidden();
         }
       });
 
-      hotkeys.addKey("command+z, ctrl+z", function() {
+      hotkeys.addKey("command+z, ctrl+z", function () {
         const { history } = self.annotationStore.selected;
+
         history && history.canUndo && history.undo();
       });
 
-      hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
+      hotkeys.addKey("command+shift+z, ctrl+shift+z", function () {
         const { history } = self.annotationStore.selected;
+
         history && history.canRedo && history.redo();
       });
 
       hotkeys.addKey(
         "escape",
-        function() {
+        function () {
           const c = self.annotationStore.selected;
+
           if (c && c.relationMode) {
             c.stopRelationMode();
           } else if (c && c.highlightedNode) {
@@ -273,8 +282,9 @@ export default types
 
       hotkeys.addKey(
         "backspace",
-        function() {
+        function () {
           const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode) {
             c.highlightedNode.deleteRegion();
           }
@@ -284,8 +294,9 @@ export default types
 
       hotkeys.addKey(
         "alt+tab",
-        function() {
+        function () {
           const c = self.annotationStore.selected;
+
           c && c.regionStore.selectNext();
         },
         "Circle through entities",
@@ -298,7 +309,7 @@ export default types
      *
      * @param {*} taskObject
      */
-    function assignTask(taskObject) {
+    function assignTask (taskObject) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
@@ -308,25 +319,28 @@ export default types
       self.task = Task.create(taskObject);
     }
 
-    function assignConfig(config) {
+    function assignConfig (config) {
       const cs = self.annotationStore;
+
       self.config = config;
       cs.initRoot(self.config);
     }
 
     /* eslint-disable no-unused-vars */
-    function showModal(message, type = "warning") {
+    function showModal (message, type = "warning") {
       InfoModal[type](message);
 
       // InfoModal.warning("You need to label at least something!");
     }
     /* eslint-enable no-unused-vars */
 
-    function submitDraft(c) {
+    function submitDraft (c) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
+
         if (!events.hasEvent('submitDraft')) return resolve();
         const res = events.invokeFirst('submitDraft', self, c);
+
         if (res && res.then) res.then(resolve);
         else resolve(res);
       });
@@ -335,18 +349,20 @@ export default types
     // Set `isSubmitting` flag to block [Submit] and related buttons during request
     // to prevent from sending duplicating requests.
     // Better to return request's Promise from SDK to make this work perfect.
-    function handleSubmittingFlag(fn, defaultMessage = "Error during submit") {
+    function handleSubmittingFlag (fn, defaultMessage = "Error during submit") {
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
       // but block for at least 0.5s to prevent from double clicking.
+
       Promise.race([Promise.all([res, delay(500)]), delay(5000)])
         .catch(err => showModal(err?.message || err || defaultMessage))
         .then(() => self.setFlags({ isSubmitting: false }));
     }
 
-    function submitAnnotation() {
+    function submitAnnotation () {
       const entity = self.annotationStore.selected;
+
       entity.beforeSend();
 
       if (!entity.validate()) return;
@@ -358,8 +374,9 @@ export default types
       entity.dropDraft();
     }
 
-    function updateAnnotation() {
+    function updateAnnotation () {
       const entity = self.annotationStore.selected;
+
       entity.beforeSend();
 
       if (!entity.validate()) return;
@@ -369,40 +386,44 @@ export default types
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
-    function skipTask() {
+    function skipTask () {
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('skipTask', self);
       }, "Error during skip, try again");
     }
 
-    function acceptAnnotation() {
+    function acceptAnnotation () {
       handleSubmittingFlag(() => {
         const entity = self.annotationStore.selected;
+
         entity.beforeSend();
         if (!entity.validate()) return;
 
         const isDirty = entity.history.canUndo;
+
         entity.dropDraft();
-        getEnv(self).events.invoke('acceptAnnotation', self, {isDirty, entity});
+        getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
       }, "Error during skip, try again");
     }
 
-    function rejectAnnotation() {
+    function rejectAnnotation () {
       handleSubmittingFlag(() => {
         const entity = self.annotationStore.selected;
+
         entity.beforeSend();
         if (!entity.validate()) return;
 
         const isDirty = entity.history.canUndo;
+
         entity.dropDraft();
-        getEnv(self).events.invoke('rejectAnnotation', self, {isDirty, entity});
+        getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
       }, "Error during skip, try again");
     }
 
     /**
      * Reset annotation store
      */
-    function resetState() {
+    function resetState () {
       self.annotationStore = AnnotationStore.create({ annotations: [] });
 
       // const c = self.annotationStore.addInitialAnnotation();
@@ -415,20 +436,23 @@ export default types
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+    function initializeStore ({ annotations, completions, predictions, annotationHistory }) {
       const as = self.annotationStore;
+
       as.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
       (predictions ?? []).forEach(p => {
         const obj = as.addPrediction(p);
+
         as.selectPrediction(obj.id);
         obj.deserializeAnnotation(p.result);
       });
 
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
         const obj = as.addAnnotation(c);
+
         as.selectAnnotation(obj.id);
         obj.deserializeAnnotation(c.draft || c.result);
         obj.reinitHistory();
@@ -443,7 +467,7 @@ export default types
       }
     }
 
-    function setHistory(history = []) {
+    function setHistory (history = []) {
       const as = self.annotationStore;
 
       as.clearHistory();

@@ -7,7 +7,7 @@ import {
   SettingOutlined,
   RollbackOutlined,
   FullscreenOutlined,
-  FullscreenExitOutlined,
+  FullscreenExitOutlined
 } from "@ant-design/icons";
 
 import styles from "./Panel.module.scss";
@@ -59,7 +59,7 @@ export default observer(({ store }) => {
           type="ghost"
           disabled={!history?.canUndo}
           icon={<RollbackOutlined />}
-          onClick={ev => {
+          onClick={() => {
             history && history.reset();
           }}
         >
@@ -68,7 +68,7 @@ export default observer(({ store }) => {
         {store.setPrelabeling && (
           <Button
             style={{ display: "none" }}
-            onClick={ev => {
+            onClick={() => {
               store.resetPrelabeling();
             }}
           >
@@ -87,7 +87,7 @@ export default observer(({ store }) => {
       <div className={[styles.block, styles.common].join(" ")}>
         {store.description && store.showingDescription && (
           <Button
-            onClick={ev => {
+            onClick={() => {
               store.toggleDescription();
             }}
           >
@@ -96,7 +96,7 @@ export default observer(({ store }) => {
         )}
         {store.description && !store.showingDescription && (
           <Button
-            onClick={ev => {
+            onClick={() => {
               store.toggleDescription();
             }}
           >

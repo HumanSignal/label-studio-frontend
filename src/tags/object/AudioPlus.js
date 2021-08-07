@@ -53,38 +53,40 @@ const Model = types
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     errors: [],
   }))
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    get store() {
+    get store () {
       return getRoot(self);
     },
 
-    get regs() {
+    get regs () {
       return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates() {
+    activeStates () {
       const states = self.states();
+
       return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
     },
   }))
   .actions(self => ({
-    needsUpdate() {
+    needsUpdate () {
       self.handleNewRegions();
     },
 
-    handleNewRegions() {
+    handleNewRegions () {
       if (!self._ws) return;
       self.regs.map(reg => {
         if (reg._ws_region) return;
@@ -92,17 +94,18 @@ const Model = types
       });
     },
 
-    onHotKey(e) {
+    onHotKey (e) {
       e && e.preventDefault();
       self._ws.playPause();
       return false;
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj, fromModel) {
       let r;
       let m;
 
       const fm = self.annotation.names.get(obj.from_name);
+
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -149,17 +152,18 @@ const Model = types
       return r;
     },
 
-    setRangeValue(val) {
+    setRangeValue (val) {
       self.rangeValue = val;
     },
 
-    setPlaybackRate(val) {
+    setPlaybackRate (val) {
       self.playBackRate = val;
     },
 
-    createRegion(wsRegion, states) {
+    createRegion (wsRegion, states) {
       let bgColor = self.selectedregionbg;
       const st = states.find(s => s.type === "labels");
+
       if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
 
       const r = AudioRegionModel.create({
@@ -173,7 +177,7 @@ const Model = types
         regionbg: self.regionbg,
         selectedregionbg: bgColor,
         normalization: wsRegion.normalization,
-        states: states,
+        states,
       });
 
       r._ws_region = wsRegion;
@@ -184,7 +188,7 @@ const Model = types
       return r;
     },
 
-    addRegion(ws_region) {
+    addRegion (ws_region) {
       // area id is assigned to WS region during deserealization
       const find_r = self.annotation.areas.get(ws_region.id);
 
@@ -196,6 +200,7 @@ const Model = types
       }
 
       const states = self.getAvailableStates();
+
       if (states.length === 0) {
         ws_region.remove && ws_region.remove();
         return;
@@ -204,6 +209,7 @@ const Model = types
       const control = self.activeStates()[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const r = self.annotation.createResult(ws_region, labels, control, self);
+
       r._ws_region = ws_region;
       r.updateAppearenceFromState();
       return r;
@@ -212,17 +218,18 @@ const Model = types
     /**
      * Play and stop
      */
-    handlePlay() {
+    handlePlay () {
       self.playing = !self.playing;
     },
 
-    createWsRegion(region) {
+    createWsRegion (region) {
       const r = self._ws.addRegion(region.wsRegionOptions);
+
       region._ws_region = r;
       region.updateAppearenceFromState();
     },
 
-    onLoad(ws) {
+    onLoad (ws) {
       self._ws = ws;
 
       self.regs.forEach(reg => {
@@ -230,11 +237,11 @@ const Model = types
       });
     },
 
-    onError(error) {
+    onError (error) {
       self.errors = [error];
     },
 
-    wsCreated(ws) {
+    wsCreated (ws) {
       self._ws = ws;
     },
   }));

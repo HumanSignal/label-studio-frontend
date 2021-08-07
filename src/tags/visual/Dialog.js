@@ -1,6 +1,6 @@
 import React from "react";
 import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { Divider, Empty } from "antd";
 
 import { guidGenerator } from "../../utils/unique";
@@ -31,9 +31,9 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
 });
 
-function DialogActions(self) {
+function DialogActions (self) {
   return {
-    fromStateJSON(obj) {
+    fromStateJSON (obj) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }

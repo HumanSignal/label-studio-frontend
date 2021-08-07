@@ -35,12 +35,14 @@ export const parseCSV = (text, separator = "auto") => {
   // detect separator (2nd line is definitely with data)
   if (separator === "auto" && lines.length > 1) {
     const candidates = lines[1].trim().match(/[,;\s\t]/g);
+
     if (!candidates.length) throw new Error("No separators found");
     if (candidates.some(c => c !== candidates[0])) {
       const list = Array.from(new Set(candidates))
         .map(escapeHtml)
         .map(s => `"${s}"`)
         .join(", ");
+
       throw new Error(
         [
           `More than one possible separator found: ${list}`,
@@ -78,6 +80,7 @@ export const parseCSV = (text, separator = "auto") => {
   // assume that we have at least one column with numbers
   // and name of this column is not number :)
   // so we have different types for values in first and second rows
+
   if (!names.every((n, i) => isNaN(n) === isNaN(secondLine[i]))) {
     lines.shift();
     names = names.map(n => n.toLowerCase());
@@ -86,6 +89,7 @@ export const parseCSV = (text, separator = "auto") => {
   }
 
   const result = {};
+
   for (let name of names) result[name] = [];
 
   if (names.length !== split(lines[0]).length) {
@@ -101,12 +105,14 @@ export const parseCSV = (text, separator = "auto") => {
 
   let row;
   let i;
+
   for (let line of lines) {
     // skip empty lines including the last line
     if (!line.trim()) continue;
     row = split(line);
     for (i = 0; i < row.length; i++) {
       const val = +row[i];
+
       result[names[i]].push(isNaN(val) ? row[i] : val);
     }
   }
@@ -123,7 +129,9 @@ export const tryToParseJSON = value => {
   if (isString(value) && value[0] === "{") {
     try {
       return JSON.parse(value);
-    } catch (e) {}
+    } catch (e) {
+      // somthing went wrong
+    }
   }
 
   return false;

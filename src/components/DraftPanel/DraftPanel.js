@@ -10,6 +10,7 @@ const panel = cn("draft-panel");
 export const DraftPanel = observer(({ item }) => {
   if (!item.draftSaved && !item.versions.draft) return null;
   const saved = item.draft && item.draftSaved ? ` saved ${Utils.UDate.prettyDate(item.draftSaved)}` : "";
+
   if (!item.selected) {
     if (!item.draft) return null;
     return <div className={panel}>draft{saved}</div>;

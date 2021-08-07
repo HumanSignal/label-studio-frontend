@@ -20,23 +20,23 @@ const Model = types
     text: "", // text is optional, for example in secureMode
   })
   .views(self => ({
-    get parent() {
+    get parent () {
       return self.object;
     },
-    getRegionElement() {
+    getRegionElement () {
       return self._spans?.[0];
     },
   }))
   .actions(self => ({
-    beforeDestroy() {
+    beforeDestroy () {
       Utils.HTML.removeSpans(self._spans);
     },
 
-    setText(text) {
+    setText (text) {
       self.text = text;
     },
 
-    serialize() {
+    serialize () {
       let res = {
         value: {
           start: self.start,

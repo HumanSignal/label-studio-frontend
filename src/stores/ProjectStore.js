@@ -11,7 +11,7 @@ const ProjectStore = types
     id: types.identifierNumber,
   })
   .views(self => ({
-    get app() {
+    get app () {
       return getParent(self);
     },
   }));

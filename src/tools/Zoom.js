@@ -14,22 +14,23 @@ const ToolView = observer(({ item }) => {
         selected={item.selected}
         icon={<DragOutlined />}
         tooltip="Move position"
-        onClick={ev => {
+        onClick={() => {
           const sel = item.selected;
+
           item.manager.selectTool(item, !sel);
         }}
       />
       <BasicToolView
         icon={<ZoomInOutlined />}
         tooltip="Zoom into the image"
-        onClick={ev => {
+        onClick={() => {
           item.handleZoom(1);
         }}
       />
       <BasicToolView
         icon={<ZoomOutOutlined />}
         tooltip="Zoom out of the image"
-        onClick={ev => {
+        onClick={() => {
           item.handleZoom(-1);
         }}
       />
@@ -42,45 +43,48 @@ const _Tool = types
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
   })
   .views(self => ({
-    get viewClass() {
+    get viewClass () {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    mouseupEv() {
+    mouseupEv () {
       self.mode = "viewing";
     },
 
-    updateCursor() {
+    updateCursor () {
       if (!self.selected || !self.obj.stageRef) return;
       const stage = self.obj.stageRef;
+
       stage.container().style.cursor = "all-scroll";
     },
 
-    afterUpdateSelected() {
+    afterUpdateSelected () {
       self.updateCursor();
     },
 
-    handleDrag(ev) {
+    handleDrag (ev) {
       const item = self._manager.obj;
       let posx = item.zoomingPositionX + ev.movementX;
       let posy = item.zoomingPositionY + ev.movementY;
+
       item.setZoomPosition(posx, posy);
     },
 
-    mousemoveEv(ev, [x, y]) {
+    mousemoveEv (ev) {
       const zoomScale = self._manager.obj.zoomScale;
 
       if (zoomScale <= 1) return;
       if (self.mode === "moving") self.handleDrag(ev);
     },
 
-    mousedownEv(ev, [x, y]) {
+    mousedownEv () {
       self.mode = "moving";
     },
 
-    handleZoom(val) {
+    handleZoom (val) {
       const item = self._manager.obj;
+
       item.handleZoom(val);
     },
   }));

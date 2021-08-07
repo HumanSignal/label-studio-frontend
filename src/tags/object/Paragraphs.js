@@ -64,41 +64,44 @@ const Model = types
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
-    get hasStates() {
+    get hasStates () {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    get store() {
+    get store () {
       return getRoot(self);
     },
 
-    get audio() {
+    get audio () {
       if (!self.audiourl) return null;
       if (self.audiourl[0] === "$") {
         const store = getRoot(self);
         const val = self.audiourl.substr(1);
+
         return store.task.dataObj[val];
       }
       return self.audiourl;
     },
 
-    get regs() {
+    get regs () {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    layoutStyles(data) {
+    layoutStyles (data) {
       if (self.layout === "dialogue") {
         const seed = data[self.namekey];
+
         return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: seed })[0], 0.1) },
+          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.1) },
         };
       }
 
       return {};
     },
 
-    get layoutClasses() {
+    get layoutClasses () {
       if (self.layout === "dialogue") {
         return {
           name: styles.dialoguename,
@@ -112,16 +115,17 @@ const Model = types
       };
     },
 
-    states() {
+    states () {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates() {
+    activeStates () {
       const states = self.states();
+
       return states && states.filter(s => s.isSelected && s._type === "paragraphlabels");
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     _value: "",
     playingId: -1,
   }))
@@ -131,8 +135,9 @@ const Model = types
     let endDuration = 0;
     let currentId = -1;
 
-    function stop() {
+    function stop () {
       const audio = audioRef.current;
+
       if (audio.paused) return;
       if (audio.currentTime < endDuration) {
         stopIn(endDuration - audio.currentTime);
@@ -144,24 +149,25 @@ const Model = types
       self.reset();
     }
 
-    function stopIn(seconds) {
+    function stopIn (seconds) {
       audioStopHandler = window.setTimeout(stop, 1000 * seconds);
     }
 
     return {
-      getRef() {
+      getRef () {
         return audioRef;
       },
 
-      reset() {
+      reset () {
         currentId = -1;
         self.playingId = -1;
       },
 
-      play(idx) {
+      play (idx) {
         const value = self._value[idx] || {};
         const { start, duration } = value;
         const end = duration ? start + duration : value.end || 0;
+
         if (!audioRef || isNaN(start) || isNaN(end)) return;
         const audio = audioRef.current;
 
@@ -186,17 +192,19 @@ const Model = types
     };
   })
   .actions(self => ({
-    needsUpdate() {
+    needsUpdate () {
       self._update = self._update + 1;
     },
 
-    updateValue(store) {
+    updateValue (store) {
       const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
         const url = value;
+
         if (!/^https?:\/\//.test(url)) {
           const message = [];
+
           if (url) {
             message.push(`URL (${url}) is not valid.`);
             message.push(`You should not put data directly into your task if you use valuetype="url".`);
@@ -216,6 +224,7 @@ const Model = types
           .then(self.setRemoteValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
+
             store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.setRemoteValue("");
           });
@@ -224,8 +233,9 @@ const Model = types
       }
     },
 
-    setRemoteValue(val) {
+    setRemoteValue (val) {
       let errors = [];
+
       if (!Array.isArray(val)) {
         errors.push(`Provided data is not an array`);
       } else {
@@ -243,6 +253,7 @@ const Model = types
           `defined by <b>nameKey</b> ("author" by default)`,
           `and <b>textKey</b> ("text" by default)`,
         ].join(" ");
+
         self.store.annotationStore.addErrors([
           errorBuilder.generalError(`${general}<ul>${errors.map(error => `<li>${error}</li>`).join("")}</ul>`),
         ]);
@@ -252,7 +263,7 @@ const Model = types
       self.needsUpdate();
     },
 
-    createRegion(p) {
+    createRegion (p) {
       const r = ParagraphsRegionModel.create({
         pid: p.id,
         ...p,
@@ -266,13 +277,15 @@ const Model = types
       return r;
     },
 
-    addRegion(range) {
+    addRegion (range) {
       const states = self.activeStates();
+
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+
       area._range = range._range;
       return area;
     },
@@ -282,7 +295,7 @@ const Model = types
      * @param {*} obj
      * @param {*} fromModel
      */
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON (obj, fromModel) {
       const { start, startOffset, end, endOffset, text } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
@@ -296,8 +309,8 @@ const Model = types
         pid: obj.id,
         parentID: obj.parent_id === null ? "" : obj.parent_id,
 
-        startOffset: startOffset,
-        endOffset: endOffset,
+        startOffset,
+        endOffset,
 
         start,
         end,
@@ -321,35 +334,39 @@ const Model = types
 const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxParagraphsView extends Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
     this.myRef = React.createRef();
   }
 
-  getSelectionText(sel) {
+  getSelectionText (sel) {
     return sel.toString();
   }
 
-  getPhraseElement(node) {
+  getPhraseElement (node) {
     const cls = this.props.item.layoutClasses;
+
     while (node && (!node.classList || !node.classList.contains(cls.text))) node = node.parentNode;
     return node;
   }
 
-  getOffsetInPhraseElement(container, offset) {
+  getOffsetInPhraseElement (container, offset) {
     const node = this.getPhraseElement(container);
     let range = document.createRange();
+
     range.setStart(node, 0);
     range.setEnd(container, offset);
     const fullOffset = range.toString().length;
     const phraseIndex = [...node.parentNode.parentNode.children].indexOf(node.parentNode);
     const phraseNode = node;
+
     return [fullOffset, phraseNode, phraseIndex];
   }
 
-  captureDocumentSelection() {
+  captureDocumentSelection () {
     const cls = this.props.item.layoutClasses;
     const names = [...this.myRef.current.getElementsByClassName(cls.name)];
+
     names.forEach(el => {
       el.style.visibility = "hidden";
     });
@@ -406,7 +423,7 @@ class HtxParagraphsView extends Component {
     return ranges;
   }
 
-  onMouseUp(ev) {
+  onMouseUp () {
     const item = this.props.item;
     var selectedRanges = this.captureDocumentSelection();
     const states = item.activeStates();
@@ -422,17 +439,18 @@ class HtxParagraphsView extends Component {
     const htxRange = item.addRegion(selectedRanges[0]);
 
     const spans = htxRange.createSpans();
+
     htxRange.addEventsToSpans(spans);
   }
 
-  _handleUpdate() {
+  _handleUpdate () {
     const root = this.myRef.current;
     const { item } = this.props;
 
     // wait until text is loaded
     if (!item._value) return;
 
-    item.regs.forEach(function(r, i) {
+    item.regs.forEach(function (r, i) {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -458,8 +476,10 @@ class HtxParagraphsView extends Component {
           ) {
             // find region's text in the node (disregarding spaces)
             const match = startNode.textContent.match(new RegExp(r.text.replace(/\s+/g, "\\s+")));
+
             if (!match) console.warn("Can't find the text", r);
             const { index = 0 } = match || {};
+
             if (r.endOffset - r.startOffset !== r.text.length)
               console.warn("Text length differs from region length; possible regions overlap");
             startOffset = index;
@@ -477,6 +497,7 @@ class HtxParagraphsView extends Component {
 
         r._range = range;
         const spans = r.createSpans();
+
         r.addEventsToSpans(spans);
       } catch (err) {
         console.log(err, r);
@@ -484,22 +505,22 @@ class HtxParagraphsView extends Component {
     });
 
     Array.from(this.myRef.current.getElementsByTagName("a")).forEach(a => {
-      a.addEventListener("click", function(ev) {
+      a.addEventListener("click", function (ev) {
         ev.preventDefault();
         return false;
       });
     });
   }
 
-  componentDidUpdate() {
+  componentDidUpdate () {
     this._handleUpdate();
   }
 
-  componentDidMount() {
+  componentDidMount () {
     this._handleUpdate();
   }
 
-  render() {
+  render () {
     const { item } = this.props;
     const withAudio = !!item.audio;
 
@@ -537,6 +558,7 @@ const Phrases = observer(({ item }) => {
   const val = item._value.map((v, idx) => {
     const style = item.layoutStyles(v);
     const classNames = [styles.phrase];
+
     if (withAudio) classNames.push(styles.withAudio);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 

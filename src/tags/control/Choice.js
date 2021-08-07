@@ -49,26 +49,27 @@ const Model = types
     parentTypes: Types.tagsTypes(["Choices", "Taxonomy"]),
   })
   .views(self => ({
-    get isCheckbox() {
+    get isCheckbox () {
       const choice = self.parent?.choice;
+
       return choice === "multiple" || choice === "single";
     },
 
-    get isSelect() {
+    get isSelect () {
       return self.parent?.layout === "select";
     },
 
     // to conform Label's maxUsages check
-    canBeUsed() {
+    canBeUsed () {
       return true;
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
     sel: false,
   }))
   .actions(self => ({
-    toggleSelected() {
+    toggleSelected () {
       const choices = self.parent;
 
       choices.shouldBeUnselected && choices.resetSelected?.();
@@ -78,15 +79,15 @@ const Model = types
       choices.updateResult?.();
     },
 
-    setVisible(val) {
+    setVisible (val) {
       self.visible = val;
     },
 
-    setSelected(val) {
+    setSelected (val) {
       self.sel = val;
     },
 
-    onHotKey() {
+    onHotKey () {
       return self.toggleSelected();
     },
   }));
@@ -94,7 +95,7 @@ const Model = types
 const ChoiceModel = types.compose("ChoiceModel", TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
 class HtxChoiceView extends Component {
-  render() {
+  render () {
     const { item, store } = this.props;
     let style = {};
 

@@ -2,14 +2,14 @@ import { types, getType, getParent, isRoot } from "mobx-state-tree";
 
 import Registry from "./Registry";
 
-function _mixedArray(fn) {
-  return function(arr) {
+function _mixedArray (fn) {
+  return function (arr) {
     return types.maybeNull(types.array(fn(arr)));
   };
 }
 
-function _oneOf(lookup, err) {
-  return function(arr) {
+function _oneOf (lookup, err) {
+  return function (arr) {
     return types.union({
       dispatcher: sn => {
         if (arr.find(val => sn.type === val)) {
@@ -25,24 +25,26 @@ function _oneOf(lookup, err) {
 const oneOfTags = _oneOf(Registry.getModelByTag, "Not expecting tag: ");
 const tagsArray = _mixedArray(oneOfTags);
 
-function unionArray(arr) {
+function unionArray (arr) {
   const type = types.maybeNull(types.array(oneOfTags(arr)));
+
   type.value = arr;
   return type;
 }
 
-function unionTag(arr) {
+function unionTag (arr) {
   return types.maybeNull(types.enumeration("unionTag", arr));
 }
 
-function tagsTypes(arr) {
+function tagsTypes (arr) {
   const type = types.frozen(arr.map(val => val.toLowerCase()));
+
   type.describe = ()=>`(${arr.join("|")})`;
   type.value = arr;
   return type;
 }
 
-function allModelsTypes() {
+function allModelsTypes () {
   const args = [
     {
       dispatcher: sn => {
@@ -62,14 +64,15 @@ function allModelsTypes() {
   return types.union.apply(null, results);
 }
 
-function isType(node, types) {
+function isType (node, types) {
   const nt = getType(node);
+
   for (let t of types) if (nt === t) return true;
 
   return false;
 }
 
-function getParentOfTypeString(node, str) {
+function getParentOfTypeString (node, str) {
   // same as getParentOfType but checks models .name instead of type
   let parent = getParent(node);
 
@@ -86,7 +89,7 @@ function getParentOfTypeString(node, str) {
   return null;
 }
 
-function getParentTagOfTypeString(node, str) {
+function getParentTagOfTypeString (node, str) {
   // same as getParentOfType but checks models .name instead of type
   let parent = getParent(node);
 

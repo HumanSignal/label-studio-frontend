@@ -13,10 +13,11 @@ export const configureStore = async (params, events) => {
 
   const env = await getEnvironment();
 
-  params = {...params};
+  params = { ...params };
 
   if (!params?.config && env.getExample) {
-    const {task, config} = await env.getExample();
+    const { task, config } = await env.getExample();
+
     params.config = config;
     params.task = task;
   } else if (params?.task) {
@@ -31,7 +32,7 @@ export const configureStore = async (params, events) => {
   store.initializeStore({
     ...(params.task ?? {}),
     users: params.users ?? [],
-    annotationHistory: params.history ?? []
+    annotationHistory: params.history ?? [],
   });
 
   return { store, getRoot: env.rootElement };

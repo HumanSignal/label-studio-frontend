@@ -17,6 +17,7 @@ export const sparseValues = (values, max = 1e6) => {
   let next = 0;
   let step = (values.length - 1) / (max - 1);
   // return values.filter((_, i) => i > next && (next += step))
+
   return values.filter((_, i) => {
     if (i < next) return false;
     next += step;
@@ -26,12 +27,13 @@ export const sparseValues = (values, max = 1e6) => {
 
 export const getRegionColor = (region, alpha = 1) => {
   const color = (region.style || defaultStyle).fillcolor;
+
   return Utils.Colors.convertToRGBA(color, alpha);
 };
 
 // fixes `observe` - it watches only the changes of primitive props of observables count
 // so pass all the required primitives to this stub and they'll be observed
-export const fixMobxObserve = (...args) => {};
+export const fixMobxObserve = () => {};
 
 // clear d3 sourceEvent via async call to prevent infinite loops
 export const clearD3Event = f => setTimeout(f, 0);
@@ -45,12 +47,14 @@ export const checkD3EventLoop = event => {
 
 const formatDateDiff = (start, end) => {
   const dates = [start.toLocaleDateString(), end.toLocaleDateString()];
+
   if (dates[1] !== dates[0]) return dates;
   return [start.toLocaleTimeString(), end.toLocaleTimeString()];
 };
 
 export const formatRegion = node => {
   let ranges = [];
+
   if (node.parent.format === "date") {
     ranges = formatDateDiff(new Date(node.start), new Date(node.end));
   } else {

@@ -27,7 +27,7 @@ const getConfigWithShapes = (shapes, props = "") => `
 
 const createShape = {
   Rectangle: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -43,7 +43,7 @@ const createShape = {
     },
   },
   Ellipse: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -53,8 +53,9 @@ const createShape = {
     },
   },
   Polygon: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       const points = [];
+
       points.push([x, y]);
       points.push([x + width, y]);
       points.push([x + width, y + height]);
@@ -64,20 +65,22 @@ const createShape = {
         action: "drawByClickingPoints",
         params: [[...points, points[0]]],
         result: {
-          points: points,
+          points,
         },
       };
     },
   },
   Brush: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       const points = [];
       const startPoint = { x: x + 5, y: y + 5 };
       const endPoint = { x: x + width - 5, y: y + height - 5 };
       const rows = Math.ceil((endPoint.y - startPoint.y) / 10);
       const step = (endPoint.y - startPoint.y) / rows;
+
       for (let j = 0; j < rows; j++) {
         const cY = startPoint.y + step * j;
+
         points.push([startPoint.x, cY]);
         points.push([endPoint.x, cY]);
       }
@@ -89,7 +92,7 @@ const createShape = {
     },
   },
   KeyPoint: {
-    byBBox(x, y, width, height, opts = {}) {
+    byBBox (x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByClickingPoints",
@@ -104,7 +107,7 @@ const createShape = {
   },
 };
 
-Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar, AtImageView}) {
+Scenario("Drawing with ctrl pressed", async function ({ I, LabelStudio, AtSidebar, AtImageView }) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape), `strokewidth="5"`),
     data: { image: IMAGE },
@@ -118,8 +121,10 @@ Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar,
   const size = Math.min(canvasSize.width, canvasSize.height);
   const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
   let regionPairs = [];
+
   Object.keys(createShape).forEach((shapeName, shapeIdx) => {
     const hotKey = `${shapeIdx + 1}`;
+
     Object.values(createShape[shapeName]).forEach(creator => {
       const outerRegion = creator(50, 50, size - 50 * 2, size - 50 * 2, {
         hotKey,
@@ -129,6 +134,7 @@ Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar,
         hotKey,
         shape: shapeName,
       });
+
       if (outerRegion.result) outerRegion.result[`${shapeName.toLowerCase()}labels`] = [shapeName];
       if (innerRegion.result) innerRegion.result[`${shapeName.toLowerCase()}labels`] = [shapeName];
       regionPairs.push([outerRegion, innerRegion]);
@@ -136,6 +142,7 @@ Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar,
   });
   for (let regionPair of regionPairs) {
     const [outerRegion, innerRegion] = regionPair;
+
     LabelStudio.init(params);
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);
@@ -150,6 +157,7 @@ Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar,
     AtImageView[innerRegion.action](...innerRegion.params);
     I.pressKeyUp("Control");
     const result = await LabelStudio.serialize();
+
     AtSidebar.seeRegions(2);
     for (let i = 0; i < 2; i++) {
       if (regionPair[i].result) {
@@ -159,7 +167,7 @@ Scenario("Drawing with ctrl pressed", async function({I, LabelStudio, AtSidebar,
   }
 });
 
-Scenario("How it works without ctrl", async function({I, LabelStudio, AtSidebar, AtImageView}) {
+Scenario("How it works without ctrl", async function ({ I, LabelStudio, AtSidebar, AtImageView }) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
@@ -172,8 +180,10 @@ Scenario("How it works without ctrl", async function({I, LabelStudio, AtSidebar,
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   let regionPairs = [];
+
   Object.keys(createShape).forEach((shapeName, shapeIdx) => {
     const hotKey = `${shapeIdx + 1}`;
+
     Object.values(createShape[shapeName]).forEach(creator => {
       for (let n = 0; n < 2; n++) {
         const outerRegion = Object.values(createShape)[n].byBBox(50, 50, size - 50 * 2, size - 50 * 2, {
@@ -184,6 +194,7 @@ Scenario("How it works without ctrl", async function({I, LabelStudio, AtSidebar,
           hotKey,
           shape: shapeName,
         });
+
         if (outerRegion.result) outerRegion.result[`${outerRegion.shape.toLowerCase()}labels`] = [outerRegion.shape];
         if (innerRegion.result) innerRegion.result[`${shapeName.toLowerCase()}labels`] = [shapeName];
         regionPairs.push([outerRegion, innerRegion]);
@@ -192,6 +203,7 @@ Scenario("How it works without ctrl", async function({I, LabelStudio, AtSidebar,
   });
   for (let regionPair of regionPairs) {
     const [outerRegion, innerRegion] = regionPair;
+
     LabelStudio.init(params);
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);

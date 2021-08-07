@@ -38,10 +38,10 @@ export const useRegionColors = (region, {
   useEffect(() => {
     const disposeObserver = [
       'highlighted',
-      'fill'
+      'fill',
     ].map(prop => {
       try {
-        return observe(region, prop, ({newValue}) => {
+        return observe(region, prop, ({ newValue }) => {
           switch(prop) {
             case 'highlighted': return setHighlighted(newValue);
             case 'fill': return setShouldFill(newValue);

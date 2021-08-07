@@ -11,7 +11,7 @@ const VisibilityMixin = types
     whenlabelvalue: types.maybeNull(types.string),
   })
   .views(self => ({
-    get isVisible() {
+    get isVisible () {
       if (getParent(self, 2)?.isVisible === false) {
         return false;
       }
@@ -49,13 +49,14 @@ const VisibilityMixin = types
                 .split(",")
                 .map(v => tag.findLabel(v))
                 .some(c => c && c.sel);
+
               return choicesSelected;
             }
 
             return tag.isSelected;
           },
 
-          "no-region-selected": ({ tagName }) => !self.annotation.highlightedNode,
+          "no-region-selected": () => !self.annotation.highlightedNode,
         };
 
         if (Object.keys(fns).includes(self.visiblewhen)) {
@@ -71,7 +72,6 @@ const VisibilityMixin = types
 
       return true;
     },
-  }))
-  .actions(self => ({}));
+  }));
 
 export default VisibilityMixin;

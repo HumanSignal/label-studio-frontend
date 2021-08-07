@@ -40,20 +40,20 @@ const ModelAttrs = types
     children: Types.unionArray(["relations", "relation"]),
   })
   .views(self => ({
-    getSelected() {
+    getSelected () {
       return self.children.filter(c => c.selected === true);
     },
 
-    selectedValues() {
+    selectedValues () {
       return self.getSelected().map(c => c.value);
     },
 
-    findRelation(value) {
+    findRelation (value) {
       return self.children.find(c => c.value === value);
     },
   }))
   .actions(self => ({
-    unselectAll() {
+    unselectAll () {
       self.children.map(c => c.setSelected(false));
     },
   }));

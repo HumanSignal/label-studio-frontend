@@ -1,5 +1,5 @@
 export class DOMWatcher {
-  constructor(root, element, callback) {
+  constructor (root, element, callback) {
     this.root = root;
     this.element = element.getRegionElement();
     this.callback = callback;
@@ -7,11 +7,11 @@ export class DOMWatcher {
     this.handleUpdate();
   }
 
-  handleResize() {
+  handleResize () {
     window.addEventListener("resize", this.onUpdate);
   }
 
-  handleUpdate() {
+  handleUpdate () {
     this.observer = new MutationObserver(this.onUpdate);
 
     this.observer.observe(this.element, { attributes: true });
@@ -21,7 +21,7 @@ export class DOMWatcher {
     this.callback();
   };
 
-  destroy() {
+  destroy () {
     window.removeEventListener("resize", this.onUpdate);
     this.observer.disconnect();
   }

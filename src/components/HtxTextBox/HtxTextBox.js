@@ -18,6 +18,7 @@ export class HtxTextBox extends React.Component {
 
   startEditing = () => {
     const height = this.textRef.current?.parentNode.offsetHeight || 0;
+
     this.setState({ editing: true, height });
 
     // eslint-disable-next-line no-unused-expressions
@@ -28,6 +29,7 @@ export class HtxTextBox extends React.Component {
 
   focus = () => {
     const input = this.inputRef.current;
+
     if (input) input.selectionStart = this.state.value.length;
   };
 
@@ -52,13 +54,14 @@ export class HtxTextBox extends React.Component {
   updateHeight = throttle(() => {
     const borders = 2;
     const height = (this.inputRef.current?.scrollHeight || 0) + borders;
+
     if (height && height !== this.state.height) {
       this.setState({ height });
     }
   }, 100);
 
-  renderEdit() {
-    const { className = "", onChange, onDelete, text, rows = 1, onlyEdit, ...props } = this.props;
+  renderEdit () {
+    const { className = "", rows = 1, onlyEdit, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
@@ -74,6 +77,7 @@ export class HtxTextBox extends React.Component {
       },
       onKeyDown: e => {
         const { key, shiftKey } = e;
+
         if (key === "Enter") {
           // for multiline textarea save only by shift+enter
           if (+rows === 1 || shiftKey) {
@@ -101,7 +105,7 @@ export class HtxTextBox extends React.Component {
     );
   }
 
-  renderView() {
+  renderView () {
     const { onChange, onDelete, text, ...props } = this.props;
 
     return (
@@ -115,7 +119,7 @@ export class HtxTextBox extends React.Component {
     );
   }
 
-  render() {
+  render () {
     return this.state.editing || this.props.onlyEdit ? this.renderEdit() : this.renderView();
   }
 }

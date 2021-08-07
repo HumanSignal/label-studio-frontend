@@ -36,7 +36,7 @@ const Model = types
     type: "relation",
   })
   .actions(self => ({
-    setSelected(value) {
+    setSelected (value) {
       self.selected = value;
     },
   }));
