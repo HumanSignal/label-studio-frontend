@@ -1,4 +1,4 @@
-import { formatDistance, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
@@ -7,9 +7,10 @@ import { Block, Elem } from "../../utils/bem";
 import { isDefined, userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
 
-const injector = inject(({store}) => {
+const injector = inject(({ store }) => {
   const as = store.annotationStore;
   const selected = as?.selected;
+
   return {
     annotationStore: as,
     selected: as?.selected,
@@ -25,7 +26,7 @@ export const AnnotationHistory = injector(observer(({
   selected,
   createdBy,
   selectedHistory,
-  history
+  history,
 }) => {
   return (
     <Block name="annotation-history">
@@ -41,12 +42,12 @@ export const AnnotationHistory = injector(observer(({
         <>
           <Elem name="divider" title="Review history"/>
           {history.map((annotation) => {
-            const {id, user, createdDate} = annotation;
+            const { id, user, createdDate } = annotation;
 
             return (
               <HistoryItem
                 key={`h-${id}`}
-                user={user ?? {email: annotation?.createdBy}}
+                user={user ?? { email: annotation?.createdBy }}
                 date={createdDate}
                 acceptedState={annotation.acceptedState}
                 selected={selectedHistory?.id === annotation.id}
@@ -62,11 +63,11 @@ export const AnnotationHistory = injector(observer(({
 }));
 AnnotationHistory.displayName = 'AnnotationHistory';
 
-const HistoryItem = observer(({entity, user, date, extra, acceptedState, selected = false, selectable = true, onClick}) => {
-  console.log(user);
+const HistoryItem = observer(({ entity, user, date, extra, acceptedState, selected = false, selectable = true, onClick }) => {
   const isPrediction = entity?.type === 'prediction';
+
   return (
-    <Block name="history-item" mod={{selected, disabled: !selectable}} onClick={onClick}>
+    <Block name="history-item" mod={{ selected, disabled: !selectable }} onClick={onClick}>
       <Space spread>
         <Space size="small">
           <Elem
@@ -75,18 +76,18 @@ const HistoryItem = observer(({entity, user, date, extra, acceptedState, selecte
             name="userpic"
             showUsername
             username={isPrediction ? entity.createdBy : null}
-            mod={{prediction: isPrediction}}
+            mod={{ prediction: isPrediction }}
           >{isPrediction && <LsSparks/>}</Elem>
           {isPrediction ? entity.createdBy : userDisplayName(user)}
         </Space>
 
         <Space size="small">
           {(acceptedState === 'accepted') ? (
-            <LsThumbsUp style={{color: '#2AA000'}}/>
+            <LsThumbsUp style={{ color: '#2AA000' }}/>
           ) : acceptedState === 'fixed' ? (
-            <LsThumbsUp style={{color: '#FA8C16'}}/>
+            <LsThumbsUp style={{ color: '#FA8C16' }}/>
           ) : acceptedState === 'rejected' ? (
-            <LsThumbsDown style={{color: "#dd0000"}}/>
+            <LsThumbsDown style={{ color: "#dd0000" }}/>
           ) : null}
 
           {date ? (
@@ -103,4 +104,5 @@ const HistoryItem = observer(({entity, user, date, extra, acceptedState, selecte
     </Block>
   );
 });
+
 HistoryItem.displayName = 'HistoryItem';

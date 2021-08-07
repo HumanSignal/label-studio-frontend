@@ -6,6 +6,7 @@ const Dotenv = require("dotenv-webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const workingDirectory = process.env.WORK_DIR
   ? path.resolve(__dirname, process.env.WORK_DIR)
@@ -206,6 +207,10 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
+  // new ESLintPlugin({
+  //   // fix: true,
+  //   failOnError: false,
+  // }),
 ];
 
 if (!BUILD.NO_SERVER) {

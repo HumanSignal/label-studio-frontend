@@ -16,7 +16,8 @@ const examples = [
 ];
 
 const assert = require("assert");
-function roundFloats(struct) {
+
+function roundFloats (struct) {
   return JSON.parse(
     JSON.stringify(struct, (key, value) => {
       if (typeof value === "number") {
@@ -26,14 +27,14 @@ function roundFloats(struct) {
     }),
   );
 }
-function assertWithTolerance(actual, expected) {
+function assertWithTolerance (actual, expected) {
   assert.deepEqual(roundFloats(actual), roundFloats(expected));
 }
 
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function({I, AtImageView, AtAudioView, AtSidebar}) {
+  Scenario(example.title || "Noname smoke test", async function ({ I, AtImageView, AtAudioView, AtSidebar }) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
@@ -41,6 +42,7 @@ examples.forEach(example =>
     const ids = [];
     // add all unique ids from non-classification results
     // @todo some classifications will be reflected in Results list soon
+
     result.forEach(r => !ids.includes(r.id) && Object.keys(r.value).length > 1 && ids.push(r.id));
     const count = ids.length;
 
@@ -57,6 +59,10 @@ examples.forEach(example =>
 
     if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
       AtAudioView.waitForAudio();
+    }
+
+    if (Utils.xmlFindBy(configTree, node => ["text", "hypertext"].includes(node["#name"].toLowerCase()))) {
+      I.waitForVisible(".htx-richtext", 5);
     }
 
     restored = await I.executeScript(serialize);
