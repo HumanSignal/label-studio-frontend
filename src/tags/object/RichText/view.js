@@ -181,6 +181,7 @@ class RichTextPieceView extends Component {
         <div
           ref={this.originalContentRef}
           className="htx-richtext-orig"
+          style={{ display: 'none' }}
           dangerouslySetInnerHTML={{ __html: val }}
         />
       </ObjectTag>
