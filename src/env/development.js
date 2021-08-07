@@ -44,15 +44,15 @@ import { Taxonomy } from "../examples/taxonomy";
 /**
  * RichText (HTML or plain text)
  */
-import { RichTextHtml } from "../examples/rich_text_html"; // eslint-disable-line no-unused-vars
-import { RichTextPlain } from "../examples/rich_text_plain"; // eslint-disable-line no-unused-vars
-import { RichTextPlainRemote } from "../examples/rich_text_plain_remote"; // eslint-disable-line no-unused-vars
+import { RichTextHtml } from "../examples/rich_text_html";
+import { RichTextPlain } from "../examples/rich_text_plain";
+import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 
 /**
  * Different
  */
 import { Pairwise } from "../examples/pairwise";
-import { Repeater } from "../examples/repeater"; // eslint-disable-line no-unused-vars
+import { Repeater } from "../examples/repeater";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
