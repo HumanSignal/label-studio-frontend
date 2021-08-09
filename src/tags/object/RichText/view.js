@@ -103,7 +103,6 @@ class RichTextPieceView extends Component {
     if (initial) {
       item.regs.forEach((richTextRegion) => {
         try {
-
           const root = this.rootNodeRef.current;
           const { start, startOffset, end, endOffset } = richTextRegion;
           const range = xpath.toRange(start, startOffset, end, endOffset, root);
