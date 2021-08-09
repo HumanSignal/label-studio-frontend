@@ -110,7 +110,8 @@ class RichTextPieceView extends Component {
 
           richTextRegion.updateGlobalOffsets(soff, eoff);
         } catch (e) {
-          console.warn(e);
+          // should never happen
+          // doesn't break anything if happens
         }
       });
     }
