@@ -58,7 +58,7 @@ const Model = types
     errors: [],
   }))
   .actions(self => ({
-    fromStateJSON (obj) {
+    fromStateJSON(obj) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
@@ -68,24 +68,24 @@ const Model = types
       }
     },
 
-    handlePlay () {
+    handlePlay() {
       self.playing = !self.playing;
     },
 
-    onHotKey () {
+    onHotKey() {
       self._ws.playPause();
       return false;
     },
 
-    onLoad (ws) {
+    onLoad(ws) {
       self._ws = ws;
     },
 
-    onError (error) {
+    onError(error) {
       self.errors = [error];
     },
 
-    wsCreated (ws) {
+    wsCreated(ws) {
       self._ws = ws;
     },
   }));

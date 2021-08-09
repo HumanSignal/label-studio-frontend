@@ -20,16 +20,16 @@ const BaseTool = types
   .model("BaseTool", {})
   .views(self => {
     return {
-      get isSeparated () {
+      get isSeparated() {
         return self.control.isSeparated;
       },
-      get viewClass () {
+      get viewClass() {
         return self.isSeparated && self.iconClass ? <ToolView item={self} /> : null;
       },
-      get viewTooltip () {
+      get viewTooltip() {
         return null;
       },
-      get iconClass () {
+      get iconClass() {
         if (self.iconComponent) {
           const Icon = self.iconComponent;
 
@@ -37,7 +37,7 @@ const BaseTool = types
         }
         return null;
       },
-      get iconComponent () {
+      get iconComponent() {
         return null;
       },
     };

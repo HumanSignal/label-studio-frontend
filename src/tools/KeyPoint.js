@@ -10,21 +10,21 @@ const _Tool = types
     default: types.optional(types.boolean, true),
   })
   .views(() => ({
-    get tagTypes () {
+    get tagTypes() {
       return {
         stateTypes: "keypointlabels",
         controlTagTypes: ["keypointlabels", "keypoint"],
       };
     },
-    get viewTooltip () {
+    get viewTooltip() {
       return "Key point region";
     },
-    get iconComponent () {
+    get iconComponent() {
       return NodeViews.KeyPointRegionModel[1];
     },
   }))
   .actions(self => ({
-    clickEv (ev, [x, y]) {
+    clickEv(ev, [x, y]) {
       const c = self.control;
 
       if (c.type === "keypointlabels" && !c.isSelected) return;

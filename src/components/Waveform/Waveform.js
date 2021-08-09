@@ -26,7 +26,7 @@ import { Hotkey } from "../../core/Hotkey";
  * @param: seconds
  * @param: pxPerSec
  */
-function formatTimeCallback (seconds, pxPerSec) {
+function formatTimeCallback(seconds, pxPerSec) {
   seconds = Number(seconds);
   var minutes = Math.floor(seconds / 60);
 
@@ -60,7 +60,7 @@ function formatTimeCallback (seconds, pxPerSec) {
  *
  * @param: pxPerSec
  */
-function timeInterval (pxPerSec) {
+function timeInterval(pxPerSec) {
   var retval = 1;
 
   if (pxPerSec >= 25 * 100) {
@@ -94,7 +94,7 @@ function timeInterval (pxPerSec) {
  *
  * @param pxPerSec
  */
-function primaryLabelInterval (pxPerSec) {
+function primaryLabelInterval(pxPerSec) {
   var retval = 1;
 
   if (pxPerSec >= 25 * 100) {
@@ -132,13 +132,13 @@ function primaryLabelInterval (pxPerSec) {
  *
  * @param pxPerSec
  */
-function secondaryLabelInterval (pxPerSec) {
+function secondaryLabelInterval(pxPerSec) {
   // draw one every 10s as an example
   return Math.floor(10 / timeInterval(pxPerSec));
 }
 
 export default class Waveform extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.hotkeys = Hotkey();
@@ -236,7 +236,7 @@ export default class Waveform extends React.Component {
     return false;
   };
 
-  componentDidMount () {
+  componentDidMount() {
     let wavesurferConfigure = {
       container: this.$waveform,
       waveColor: this.state.colors.waveColor,
@@ -343,7 +343,7 @@ export default class Waveform extends React.Component {
         reg.on("update-end", () => region.onUpdateEnd(self.wavesurfer));
 
         reg.on("dblclick", () => {
-          window.setTimeout(function () {
+          window.setTimeout(function() {
             reg.play();
           }, 0);
         });
@@ -358,7 +358,7 @@ export default class Waveform extends React.Component {
     const slider = document.querySelector("#slider");
 
     if (slider) {
-      slider.oninput = function () {
+      slider.oninput = function() {
         self.wavesurfer.zoom(Number(this.value));
       };
     }
@@ -386,7 +386,7 @@ export default class Waveform extends React.Component {
     this.hotkeys.addKey("ctrl+b", this.onBack, "Back for one second", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     this.hotkeys.unbindAll();
   }
 
@@ -394,7 +394,7 @@ export default class Waveform extends React.Component {
     this.$waveform = node;
   };
 
-  render () {
+  render() {
     const self = this;
 
     const speeds = ["0.5", "0.75", "1.0", "1.25", "1.5", "2.0"];

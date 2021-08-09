@@ -80,6 +80,6 @@ module.exports = {
         "--": false,
       },
     }],
-    "space-before-function-paren": ["error", "always"],
+    "space-before-function-paren": ["error", "never"],
   },
 };

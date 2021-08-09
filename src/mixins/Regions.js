@@ -21,54 +21,54 @@ const RegionsMixin = types
     perRegionFocusRequest: null,
   }))
   .views(self => ({
-    get perRegionStates () {
+    get perRegionStates() {
       const states = self.states;
 
       return states && states.filter(s => s.perregion === true);
     },
 
-    get store () {
+    get store() {
       return getRoot(self);
     },
 
-    get parent () {
+    get parent() {
       return getParent(self);
     },
 
-    get editable () {
+    get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
 
-    get isCompleted () {
+    get isCompleted() {
       return !self.isDrawing;
     },
 
   }))
   .actions(self => {
     return {
-      setParentID (id) {
+      setParentID(id) {
         self.parentID = id;
       },
 
-      setDrawing (val) {
+      setDrawing(val) {
         self.isDrawing = val;
       },
 
       // All of the below accept size as an argument
-      moveTop () {},
-      moveBottom () {},
-      moveLeft () {},
-      moveRight () {},
+      moveTop() {},
+      moveBottom() {},
+      moveLeft() {},
+      moveRight() {},
 
-      sizeRight () {},
-      sizeLeft () {},
-      sizeTop () {},
-      sizeBottom () {},
+      sizeRight() {},
+      sizeLeft() {},
+      sizeTop() {},
+      sizeBottom() {},
 
       // "web" degree is opposite to mathematical, -90 is 90 actually
       // swapSizes = true when canvas is already rotated at this moment
       // @todo not used
-      rotatePoint (point, degree, swapSizes = true) {
+      rotatePoint(point, degree, swapSizes = true) {
         const { x, y } = point;
 
         if (!degree) return { x, y };
@@ -91,37 +91,37 @@ const RegionsMixin = types
       },
 
       // @todo not used
-      rotateDimensions ({ width, height }, degree) {
+      rotateDimensions({ width, height }, degree) {
         if ((degree + 360) % 180 === 0) return { width, height };
         return { width: height, height: width };
       },
 
-      convertXToPerc (x) {
+      convertXToPerc(x) {
         return (x * 100) / self.parent.stageWidth;
       },
 
-      convertYToPerc (y) {
+      convertYToPerc(y) {
         return (y * 100) / self.parent.stageHeight;
       },
 
-      convertHDimensionToPerc (hd) {
+      convertHDimensionToPerc(hd) {
         return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
       },
 
-      convertVDimensionToPerc (vd) {
+      convertVDimensionToPerc(vd) {
         return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
       },
 
       // update region appearence based on it's current states, for
       // example bbox needs to update its colors when you change the
       // label, becuase it takes color from the label
-      updateAppearenceFromState () {},
+      updateAppearenceFromState() {},
 
-      serialize () {
+      serialize() {
         console.error("Region class needs to implement serialize");
       },
 
-      toStateJSON () {
+      toStateJSON() {
         const parent = self.parent;
         const buildTree = control => {
           const tree = {
@@ -168,14 +168,14 @@ const RegionsMixin = types
         }
       },
 
-      selectRegion () {},
+      selectRegion() {},
 
       /**
      * @todo fix "keep selected" setting
      * Common logic for unselection; specific actions should be in `afterUnselectRegion`
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
-      unselectRegion (tryToKeepStates = false) {
+      unselectRegion(tryToKeepStates = false) {
         console.log("UNSELECT REGION", "you should not be here");
         // eslint-disable-next-line no-constant-condition
         if (1) return;
@@ -200,9 +200,9 @@ const RegionsMixin = types
         }
       },
 
-      afterUnselectRegion () {},
+      afterUnselectRegion() {},
 
-      onClickRegion () {
+      onClickRegion() {
         const annotation = self.annotation;
 
         if (!annotation.editable || self.isDrawing) return;
@@ -216,7 +216,7 @@ const RegionsMixin = types
         }
       },
 
-      _selectArea () {
+      _selectArea() {
         this.cancelPerRegionFocus();
         const annotation = self.annotation;
         const wasNotSelected = !self.selected;
@@ -227,23 +227,23 @@ const RegionsMixin = types
         }
       },
 
-      requestPerRegionFocus () {
+      requestPerRegionFocus() {
         self.perRegionFocusRequest = Date.now();
       },
 
-      cancelPerRegionFocus () {
+      cancelPerRegionFocus() {
         self.perRegionFocusRequest = null;
       },
 
-      setHighlight (val) {
+      setHighlight(val) {
         self.highlighted = val;
       },
 
-      toggleHighlight () {
+      toggleHighlight() {
         self.setHighlight(!self.highlighted);
       },
 
-      toggleHidden (e) {
+      toggleHidden(e) {
         self.hidden = !self.hidden;
         e && e.stopPropagation();
       },

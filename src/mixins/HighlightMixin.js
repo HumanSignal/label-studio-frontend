@@ -7,7 +7,7 @@ import Constants, { defaultStyle } from "../core/Constants";
 export const HighlightMixin = types
   .model()
   .views(self => ({
-    get _hasSpans () {
+    get _hasSpans() {
       return self._spans ? (
         self._spans.every(span => span.isConnected)
       ) : false;
@@ -17,7 +17,7 @@ export const HighlightMixin = types
     /**
      * Create highlights from the stored `Range`
      */
-    applyHighlight () {
+    applyHighlight() {
       // Avoid calling this method twice
       if (self._hasSpans) {
         console.warn("Spans already created");
@@ -45,7 +45,7 @@ export const HighlightMixin = types
       return self._spans;
     },
 
-    updateSpans () {
+    updateSpans() {
       if (self._hasSpans) {
         self._spans.forEach(span => {
           span.setAttribute("data-label", self.getLabels());
@@ -56,14 +56,14 @@ export const HighlightMixin = types
     /**
      * Removes current highlights
      */
-    removeHighlight () {
+    removeHighlight() {
       Utils.Selection.removeRange(self._spans);
     },
 
     /**
      * Update region's appearance if the label was changed
      */
-    updateAppearenceFromState () {
+    updateAppearenceFromState() {
       if (!self._spans) return;
 
       const lastSpan = self._spans[self._spans.length - 1];
@@ -75,7 +75,7 @@ export const HighlightMixin = types
     /**
      * Make current region selected
      */
-    selectRegion () {
+    selectRegion() {
       self.annotation.setHighlightedNode(self);
       self.annotation.loadRegionState(self);
 
@@ -95,14 +95,14 @@ export const HighlightMixin = types
     /**
      * Unselect text region
      */
-    afterUnselectRegion () {
+    afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
     },
 
     /**
      * Remove stylesheet before removing the highlight itself
      */
-    beforeDestroy () {
+    beforeDestroy() {
       try {
         self._stylesheet.remove();
       } catch(e) { /* somthing went wrong */ }
@@ -112,7 +112,7 @@ export const HighlightMixin = types
      * Set cursor style of the region
      * @param {import("prettier").CursorOptions} cursor
      */
-    setCursor (cursor) {
+    setCursor(cursor) {
       self._stylesheet.setCursor(cursor);
     },
 
@@ -120,7 +120,7 @@ export const HighlightMixin = types
      * Draw region outline
      * @param {boolean} val
      */
-    setHighlight (val) {
+    setHighlight(val) {
       if (!self._stylesheet) return;
 
       self.highlighted = val;
@@ -134,7 +134,7 @@ export const HighlightMixin = types
       }
     },
 
-    getLabels () {
+    getLabels() {
       const settings = getRoot(self).settings;
 
       if (!self.parent.showlabels && !settings.showLabels) return null;
@@ -142,7 +142,7 @@ export const HighlightMixin = types
       return self.labeling?.mainValue ?? [];
     },
 
-    getLabelColor () {
+    getLabelColor() {
       let labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
 
       if (labelColor) {
@@ -152,7 +152,7 @@ export const HighlightMixin = types
       return labelColor;
     },
 
-    find (span) {
+    find(span) {
       return self._spans && self._spans.indexOf(span) >= 0 ? self : undefined;
     },
 
@@ -160,7 +160,7 @@ export const HighlightMixin = types
      * Add classes to all spans
      * @param {string[]} classNames
      */
-    addClass (classNames) {
+    addClass(classNames) {
       if (!classNames || !self._spans) return;
       const classList = [].concat(classNames); // convert any input to array
 
@@ -171,14 +171,14 @@ export const HighlightMixin = types
      * Remove classes from all spans
      * @param {string[]} classNames
      */
-    removeClass (classNames) {
+    removeClass(classNames) {
       if (!classNames || !self._spans) return;
       const classList = [].concat(classNames); // convert any input to array
 
       self._spans.forEach(span => span.classList.remove(...classList));
     },
 
-    toggleHidden (e) {
+    toggleHidden(e) {
       self.hidden = !self.hidden;
       if (self.hidden) {
         self.addClass("__hidden");

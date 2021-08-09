@@ -68,19 +68,19 @@ const Model = types.model({
     focusable: true,
   };
 }).views(self => ({
-  get valueType () {
+  get valueType() {
     return "text";
   },
 
-  get holdsState () {
+  get holdsState() {
     return self.regions.length > 0;
   },
 
-  get submissionsNum () {
+  get submissionsNum() {
     return self.regions.length;
   },
 
-  get showSubmit () {
+  get showSubmit() {
     if (self.maxsubmissions) {
       const num = parseInt(self.maxsubmissions);
 
@@ -90,27 +90,27 @@ const Model = types.model({
     }
   },
 
-  get serializableValue () {
+  get serializableValue() {
     if (!self.regions.length) return null;
     return { text: self.selectedValues() };
   },
 
-  selectedValues () {
+  selectedValues() {
     return self.regions.map(r => r._value);
   },
 
-  get area () {
+  get area() {
     if (self.perregion) {
       return self.annotation.highlightedNode;
     }
     return null;
   },
 
-  get result () {
+  get result() {
     return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
   },
 })).actions(self => ({
-  getSerializableValue () {
+  getSerializableValue() {
     const texts = self.regions.map(s => s._value);
 
     if (texts.length === 0) return;
@@ -118,30 +118,30 @@ const Model = types.model({
     return { text: texts };
   },
 
-  needsUpdate () {
+  needsUpdate() {
     self.updateFromResult(self.result?.mainValue);
   },
 
-  requiredModal () {
+  requiredModal() {
     InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
   },
 
-  setResult (value) {
+  setResult(value) {
     const values = Array.isArray(value) ? value : [value];
 
     values.forEach(v => self.createRegion(v));
   },
 
-  updateFromResult (value) {
+  updateFromResult(value) {
     self.regions = [];
     value && self.setResult(value);
   },
 
-  setValue (value) {
+  setValue(value) {
     self._value = value;
   },
 
-  remove (region) {
+  remove(region) {
     const index = self.regions.indexOf(region);
 
     if (index < 0) return;
@@ -150,15 +150,15 @@ const Model = types.model({
     self.onChange();
   },
 
-  copyState (obj) {
+  copyState(obj) {
     self.regions = obj.regions.map(r => cloneNode(r));
   },
 
-  perRegionCleanup () {
+  perRegionCleanup() {
     self.regions = [];
   },
 
-  createRegion (text, pid) {
+  createRegion(text, pid) {
     const r = TextAreaRegionModel.create({ pid, _value: text });
 
     self.regions.push(r);
@@ -166,7 +166,7 @@ const Model = types.model({
     return r;
   },
 
-  onChange () {
+  onChange() {
     if (self.result) {
       self.result.area.setValue(self);
     } else {
@@ -181,12 +181,12 @@ const Model = types.model({
     }
   },
 
-  addText (text, pid) {
+  addText(text, pid) {
     self.createRegion(text, pid);
     self.onChange();
   },
 
-  beforeSend () {
+  beforeSend() {
     if (self._value && self._value.length) {
       self.addText(self._value);
       self._value = "";
@@ -194,19 +194,19 @@ const Model = types.model({
   },
 
   // add unsubmitted text when user switches region
-  submitChanges () {
+  submitChanges() {
     self.beforeSend();
   },
 
-  deleteText (text) {
+  deleteText(text) {
     destroy(text);
   },
 
-  onShortcut (value) {
+  onShortcut(value) {
     self.setValue(self._value + value);
   },
 
-  toStateJSON () {
+  toStateJSON() {
     if (!self.regions.length) return;
 
     const toname = self.toname || self.name;
@@ -223,7 +223,7 @@ const Model = types.model({
     return tree;
   },
 
-  fromStateJSON (obj) {
+  fromStateJSON(obj) {
     let { text } = obj.value;
 
     if (!Array.isArray(text)) text = [text];

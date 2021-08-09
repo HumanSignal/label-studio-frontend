@@ -14,13 +14,13 @@ export const TRAVERSE_STOP = "stop";
  * @param {*} items
  * @param {*} attrs
  */
-function cloneReactTree (items, attrs) {
+function cloneReactTree(items, attrs) {
   let clone = null;
 
-  clone = function (children) {
+  clone = function(children) {
     const res = [];
 
-    React.Children.forEach(children, function (child) {
+    React.Children.forEach(children, function(child) {
       let el;
 
       if (child.props) {
@@ -51,7 +51,7 @@ function cloneReactTree (items, attrs) {
  * @param {string} style
  * @returns {object}
  */
-function cssConverter (style) {
+function cssConverter(style) {
   if (!style) return null;
 
   let result = {},
@@ -91,7 +91,7 @@ function cssConverter (style) {
  *
  * @param {*} attrs
  */
-function attrsToProps (attrs) {
+function attrsToProps(attrs) {
   const props = {};
 
   if (!attrs) return props;
@@ -114,13 +114,13 @@ function attrsToProps (attrs) {
  *
  * @param {string} html
  */
-function treeToModel (html, store) {
+function treeToModel(html, store) {
   /**
    * Remove all line breaks from a string
    * @param {string}
    * @returns {string}
    */
-  function removeAllBreaks (data) {
+  function removeAllBreaks(data) {
     return data.replace(/(\r\n|\n|\r)/gm, "");
   }
 
@@ -130,7 +130,7 @@ function treeToModel (html, store) {
    * @param {string} data
    * @returns {string}
    */
-  function editSelfClosingTags (data) {
+  function editSelfClosingTags(data) {
     let split = data.split("/>");
     let newData = "";
 
@@ -148,7 +148,7 @@ function treeToModel (html, store) {
   // support that with the additional attributes used to parse the
   // tree.
   let htseen = -1;
-  const hypertexts = (function () {
+  const hypertexts = (function() {
     let m;
     const res = [];
     const re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
@@ -163,13 +163,13 @@ function treeToModel (html, store) {
     return res;
   })();
 
-  function findHT () {
+  function findHT() {
     htseen = htseen + 1;
     return hypertexts[htseen];
   }
 
-  function cloneXmlTreeAndReplaceKeys (root, idx, indexFlag = "{{idx}}") {
-    function recursiveClone (node) {
+  function cloneXmlTreeAndReplaceKeys(root, idx, indexFlag = "{{idx}}") {
+    function recursiveClone(node) {
       let copy = {};
 
       for (let key in node) {
@@ -196,7 +196,7 @@ function treeToModel (html, store) {
    * Generate new node
    * @param {object} node
    */
-  function addNode (node) {
+  function addNode(node) {
     if (!node.$$) return null;
 
     // if it's a hypertext process the children differently, that's
@@ -243,7 +243,7 @@ function treeToModel (html, store) {
   /**
    * Generate obj with main data
    */
-  function buildData (node) {
+  function buildData(node) {
     const data = attrsToProps(node.$);
     const type = node["#name"].toLowerCase();
 
@@ -274,7 +274,7 @@ function treeToModel (html, store) {
       preserveChildrenOrder: true,
       charsAsChildren: true,
     },
-    function (err, result) {
+    function(err, result) {
       if (err) throw err;
       document = result;
     },
@@ -291,7 +291,7 @@ function treeToModel (html, store) {
  * Render items of tree
  * @param {*} el
  */
-function renderItem (el, includeKey = true) {
+function renderItem(el, includeKey = true) {
   const type = getType(el);
   const identifierAttribute = type.identifierAttribute;
   const typeName = type.name;
@@ -309,7 +309,7 @@ function renderItem (el, includeKey = true) {
  *
  * @param {*} item
  */
-function renderChildren (item) {
+function renderChildren(item) {
   if (item && item.children && item.children.length) {
     return item.children.map(el => {
       return renderItem(el);
@@ -324,10 +324,10 @@ function renderChildren (item) {
  * @param {*} name
  * @param {*} tree
  */
-function findInterface (name, tree) {
+function findInterface(name, tree) {
   let fn;
 
-  fn = function (node) {
+  fn = function(node) {
     if (getType(node).name === name) return node;
 
     if (node.children) {
@@ -347,7 +347,7 @@ function findInterface (name, tree) {
  * @param {*} obj
  * @param {*} classes
  */
-function findParentOfType (obj, classes) {
+function findParentOfType(obj, classes) {
   for (let c of classes) {
     try {
       const p = getParentOfType(obj, c);
@@ -366,12 +366,12 @@ function findParentOfType (obj, classes) {
  * @param {*} obj
  * @param {*} classes
  */
-function filterChildrenOfType (obj, classes) {
+function filterChildrenOfType(obj, classes) {
   const res = [];
 
   if (!Array.isArray(classes)) classes = [classes];
 
-  traverseTree(obj, function (node) {
+  traverseTree(obj, function(node) {
     for (let c of classes) {
       if (getType(node).name === c) res.push(node);
     }
@@ -380,10 +380,10 @@ function filterChildrenOfType (obj, classes) {
   return res;
 }
 
-function traverseTree (root, cb) {
+function traverseTree(root, cb) {
   let visitNode;
 
-  visitNode = function (node) {
+  visitNode = function(node) {
     const res = cb(node);
 
     if (res === TRAVERSE_SKIP) return;

@@ -119,7 +119,7 @@ const Controls = ({ item, video }) => {
   );
 };
 
-function onPlayPause (e) {
+function onPlayPause(e) {
   e.preventDefault();
   const video = e.target;
 

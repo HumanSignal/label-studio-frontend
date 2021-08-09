@@ -15,7 +15,7 @@ const NormalizationMixin = types
      * Set meta text
      * @param {*} val
      */
-    setMetaInfo (val) {
+    setMetaInfo(val) {
       if (val) {
         self.meta = { ...self.meta, text: [val] };
       } else {
@@ -29,11 +29,11 @@ const NormalizationMixin = types
     /**
      * Delete meta text
      */
-    deleteMetaInfo () {
+    deleteMetaInfo() {
       self.setMetaInfo("");
     },
 
-    setNormInput (val) {
+    setNormInput(val) {
       self.normInput = val;
     },
   }));

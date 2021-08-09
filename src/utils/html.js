@@ -2,7 +2,7 @@ import insertAfter from "insert-after";
 import * as Checkers from "./utilities";
 import Canvas from "./canvas";
 
-function toggleLabelsAndScores (show) {
+function toggleLabelsAndScores(show) {
   const els = document.getElementsByClassName("htx-highlight");
 
   Array.from(els).forEach(el => {
@@ -19,10 +19,10 @@ function toggleLabelsAndScores (show) {
   });
 }
 
-const labelWithCSS = (function () {
+const labelWithCSS = (function() {
   const cache = {};
 
-  return function (node, { labels, score }) {
+  return function(node, { labels, score }) {
     const labelsStr = labels ? labels.join(",") : "";
     const clsName = Checkers.hashCode(labelsStr + score);
 
@@ -46,7 +46,7 @@ const labelWithCSS = (function () {
 })();
 
 // work directly with the html tree
-function createClass (name, rules) {
+function createClass(name, rules) {
   var style = document.createElement("style");
 
   style.type = "text/css";
@@ -55,7 +55,7 @@ function createClass (name, rules) {
   else style.sheet.insertRule(name + "{" + rules + "}", 0);
 }
 
-function documentForward (node) {
+function documentForward(node) {
   if (node.firstChild) return node.firstChild;
 
   while (!node.nextSibling) {
@@ -66,23 +66,23 @@ function documentForward (node) {
   return node.nextSibling;
 }
 
-function isTextNode (node) {
+function isTextNode(node) {
   return node.nodeType === Node.TEXT_NODE;
 }
 
-function firstLeaf (node) {
+function firstLeaf(node) {
   while (node.hasChildNodes()) node = node.firstChild;
   return node;
 }
 
 /* Find the last leaf node. */
-function lastLeaf (node) {
+function lastLeaf(node) {
   while (node.hasChildNodes()) node = node.lastChild;
 
   return node;
 }
 
-function getNextNode (node) {
+function getNextNode(node) {
   if (node.firstChild) return node.firstChild;
   while (node) {
     if (node.nextSibling) return node.nextSibling;
@@ -90,7 +90,7 @@ function getNextNode (node) {
   }
 }
 
-function getNodesInRange (range) {
+function getNodesInRange(range) {
   var start = range.startContainer;
   var end = range.endContainer;
   var commonAncestor = range.commonAncestorContainer;
@@ -113,7 +113,7 @@ function getNodesInRange (range) {
   return nodes;
 }
 
-function documentReverse (node) {
+function documentReverse(node) {
   if (node.lastChild) return node.lastChild;
 
   while (!node.previousSibling) {
@@ -129,7 +129,7 @@ function documentReverse (node) {
  * @param {Text} node
  * @param {number} offset
  */
-function splitText (node, offset) {
+function splitText(node, offset) {
   let tail = node.cloneNode(false);
 
   tail.deleteData(0, offset);
@@ -137,7 +137,7 @@ function splitText (node, offset) {
   return insertAfter(tail, node);
 }
 
-function normalizeBoundaries (range) {
+function normalizeBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
   let node, next, last, start, end;
 
@@ -156,7 +156,7 @@ function normalizeBoundaries (range) {
   }
 
   // Any TextNode in the traversal is valid unless excluded by the offset.
-  function isTextNodeInRange (node) {
+  function isTextNodeInRange(node) {
     if (!isTextNode(node)) return false;
     if (node === startContainer && startOffset > 0) return false;
     if (node === endContainer && endOffset === 0) return false;
@@ -185,7 +185,7 @@ function normalizeBoundaries (range) {
   range.setEnd(end, end.length);
 }
 
-function highlightRange (normedRange, cssClass, cssStyle) {
+function highlightRange(normedRange, cssClass, cssStyle) {
   if (typeof cssClass === "undefined" || cssClass === null) {
     cssClass = "htx-annotation";
   }
@@ -230,7 +230,7 @@ function highlightRange (normedRange, cssClass, cssStyle) {
  *
  * @param {Range} range
  */
-function splitBoundaries (range) {
+function splitBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
 
   if (isTextNode(endContainer)) {
@@ -349,7 +349,7 @@ const findIdxContainer = (el, globidx) => {
   return { node, len };
 };
 
-function removeSpans (spans) {
+function removeSpans(spans) {
   var norm = [];
 
   if (spans) {
@@ -432,7 +432,7 @@ export const htmlEscape = string => {
   return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
 
-function findNodeAt (context, at) {
+function findNodeAt(context, at) {
   for (let node = context.firstChild, l = 0; node; ) {
     if (node.textContent.length + l >= at)
       if (!node.firstChild) return [node, at - l];

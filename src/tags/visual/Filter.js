@@ -45,12 +45,12 @@ const Model = types
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get toTag () {
+    get toTag() {
       return self.annotation.names.get(self.toname);
     },
   }))
   .actions(self => ({
-    applyFilter () {
+    applyFilter() {
       let value = self._value;
       const tch = self.toTag.tiedChildren;
 
@@ -71,7 +71,7 @@ const Model = types
       });
     },
 
-    applyFilterEv (e) {
+    applyFilterEv(e) {
       let { value } = e.target;
 
       self._value = value;
@@ -79,7 +79,7 @@ const Model = types
       self.applyFilter();
     },
 
-    onHotKey () {
+    onHotKey() {
       if (self._ref) {
         self._ref.focus();
       }
@@ -87,11 +87,11 @@ const Model = types
       return false;
     },
 
-    setInputRef (ref) {
+    setInputRef(ref) {
       self._ref = ref;
     },
 
-    selectFirstElement () {
+    selectFirstElement() {
       const selected = self.toTag.selectFirstVisible();
 
       if (selected && self.cleanup) {

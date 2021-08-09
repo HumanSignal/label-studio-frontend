@@ -16,7 +16,7 @@ const _Tool = types
     };
 
     return {
-      get getActivePolygon () {
+      get getActivePolygon() {
         const poly = self.currentArea;
 
         if (poly && poly.closed) return null;
@@ -26,49 +26,49 @@ const _Tool = types
         return poly;
       },
 
-      get tagTypes () {
+      get tagTypes() {
         return {
           stateTypes: "polygonlabels",
           controlTagTypes: ["polygonlabels", "polygon"],
         };
       },
 
-      get viewTooltip () {
+      get viewTooltip() {
         return "Polygon region";
       },
-      get iconComponent () {
+      get iconComponent() {
         return NodeViews.PolygonRegionModel[1];
       },
 
-      get defaultDimensions () {
+      get defaultDimensions() {
         return DEFAULT_DIMENSIONS.polygon;
       },
 
-      moreRegionParams (obj) {
+      moreRegionParams(obj) {
         return {
           x: obj.value.points[0][0],
           y: obj.value.points[0][1],
         };
       },
 
-      createRegionOptions ({ x, y }) {
+      createRegionOptions({ x, y }) {
         return Super.createRegionOptions({
           points: [[x, y]],
           width: 10,
         });
       },
 
-      isIncorrectControl () {
+      isIncorrectControl() {
         return Super.isIncorrectControl() && self.current() === null;
       },
-      isIncorrectLabel () {
+      isIncorrectLabel() {
         return !self.current() && Super.isIncorrectLabel();
       },
-      canStart () {
+      canStart() {
         return self.current() === null;
       },
 
-      current () {
+      current() {
         return self.getActivePolygon;
       },
     };
@@ -78,7 +78,7 @@ const _Tool = types
     let closed;
 
     return {
-      listenForClose () {
+      listenForClose() {
         closed = false;
         disposer = observe(self.getCurrentArea(), "closed", ()=>{
           if (self.getCurrentArea().closed && !closed) {
@@ -86,7 +86,7 @@ const _Tool = types
           }
         }, true);
       }, 
-      closeCurrent () {
+      closeCurrent() {
         if (disposer) disposer();
         if (closed) return;
         closed = true;

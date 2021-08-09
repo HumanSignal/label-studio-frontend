@@ -73,25 +73,25 @@ const Result = types
     // meta: types.frozen(),
   })
   .views(self => ({
-    get perRegionStates () {
+    get perRegionStates() {
       const states = self.states;
 
       return states && states.filter(s => s.perregion === true);
     },
 
-    get store () {
+    get store() {
       return getRoot(self);
     },
 
-    get area () {
+    get area() {
       return getParent(self, 2);
     },
 
-    get mainValue () {
+    get mainValue() {
       return self.value[self.from_name.valueType];
     },
 
-    get hasValue () {
+    get hasValue() {
       const value = self.mainValue;
 
       if (!value) return false;
@@ -99,15 +99,15 @@ const Result = types
       return true;
     },
 
-    get editable () {
+    get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
 
-    getSelectedString (joinstr = " ") {
+    getSelectedString(joinstr = " ") {
       return self.mainValue?.join(joinstr) || "";
     },
 
-    get selectedLabels () {
+    get selectedLabels() {
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }
@@ -117,7 +117,7 @@ const Result = types
     /**
      * Checks perRegion and Visibility params
      */
-    get isSubmitable () {
+    get isSubmitable() {
       const control = self.from_name;
 
       if (control.perregion) {
@@ -146,7 +146,7 @@ const Result = types
       return true;
     },
 
-    get tag () {
+    get tag() {
       const value = self.mainValue;
 
       if (!value || !value.length) return null;
@@ -154,7 +154,7 @@ const Result = types
       return self.from_name.findLabel(value[0]);
     },
 
-    get style () {
+    get style() {
       if (!self.tag) return null;
       const fillcolor = self.tag.background || self.tag.parent.fillcolor;
 
@@ -165,7 +165,7 @@ const Result = types
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
 
-    get emptyStyle () {
+    get emptyStyle() {
       const emptyLabel = self.from_name.emptyLabel;
 
       if (!emptyLabel) return null;
@@ -184,30 +184,30 @@ const Result = types
     // highlighted: types.optional(types.boolean, false),
   }))
   .actions(self => ({
-    setValue (value) {
+    setValue(value) {
       self.value[self.from_name.valueType] = value;
     },
 
-    afterCreate () {
+    afterCreate() {
       self.pid = self.id;
     },
 
-    afterAttach () {
+    afterAttach() {
       // const tag = self.from_name;
       // update state of classification tags
       // @todo unify this with `selectArea`
     },
 
-    setParentID (id) {
+    setParentID(id) {
       self.parentID = id;
     },
 
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState () {},
+    updateAppearenceFromState() {},
 
-    serialize () {
+    serialize() {
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize() : {};
@@ -241,7 +241,7 @@ const Result = types
       return data;
     },
 
-    toStateJSON () {
+    toStateJSON() {
       const parent = self.parent;
       const buildTree = control => {
         const tree = {
@@ -291,7 +291,7 @@ const Result = types
     /**
      * Remove region
      */
-    deleteRegion () {
+    deleteRegion() {
       if (!self.annotation.editable) return;
 
       self.unselectRegion();
@@ -307,15 +307,15 @@ const Result = types
       self.annotation.deleteRegion(self);
     },
 
-    setHighlight (val) {
+    setHighlight(val) {
       self.highlighted = val;
     },
 
-    toggleHighlight () {
+    toggleHighlight() {
       self.setHighlight(!self.highlighted);
     },
 
-    toggleHidden () {
+    toggleHidden() {
       self.hidden = !self.hidden;
     },
   }));

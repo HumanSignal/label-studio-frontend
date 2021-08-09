@@ -36,23 +36,23 @@ const Points = types
     strokeWidth: types.optional(types.number, 25),
   })
   .views(self => ({
-    get store () {
+    get store() {
       return getRoot(self);
     },
-    get parent () {
+    get parent() {
       return getParent(self, 2);
     },
-    get compositeOperation () {
+    get compositeOperation() {
       return self.type === "add" ? "source-over" : "destination-out";
     },
   }))
   .actions(self => {
     return {
-      setType (type) {
+      setType(type) {
         self.type = type;
       },
 
-      addPoint (x, y) {
+      addPoint(x, y) {
         // scale it back because it would be scaled on draw
         x = x / self.parent.scaleX;
         y = y / self.parent.scaleY;
@@ -60,18 +60,18 @@ const Points = types
         self.points.push(y);
       },
 
-      setPoints (points) {
+      setPoints(points) {
         self.points = points.map((c, i) => c / (i % 2 === 0 ? self.parent.scaleX : self.parent.scaleY));
       },
 
       // rescale points to the new width and height from the original
-      rescale (origW, origH, destW) {
+      rescale(origW, origH, destW) {
         const s = destW / origW;
 
         return self.points.map(p => p * s);
       },
 
-      scaledStrokeWidth (origW, origH, destW) {
+      scaledStrokeWidth(origW, origH, destW) {
         const s = destW / origW;
 
         return s * self.strokeWidth;
@@ -125,24 +125,24 @@ const Model = types
     layerRef: undefined,
   }))
   .views(self => ({
-    get parent () {
+    get parent() {
       return self.object;
     },
-    get imageData () {
+    get imageData() {
       if (!self.layerRef) return null;
       const ctx = self.layerRef.canvas.context;
 
       return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
     },
-    get colorParts () {
+    get colorParts() {
       const style = self.style || self.tag || defaultStyle;
 
       return colorToRGBAArray(style.strokecolor);
     },
-    get strokeColor () {
+    get strokeColor() {
       return rgbArrayToHex(self.colorParts);
     },
-    get touchesLength () {
+    get touchesLength() {
       return self.touches.length;
     },
   }))
@@ -153,7 +153,7 @@ const Model = types
       lastPointY = -1;
 
     return {
-      afterCreate () {
+      afterCreate() {
         // if ()
         // const newdata = ctx.createImageData(750, 937);
         // newdata.data.set(decode(item._rle));
@@ -165,18 +165,18 @@ const Model = types
         //     var img = imagedata_to_image(newdata);
       },
 
-      setLayerRef (ref) {
+      setLayerRef(ref) {
         self.layerRef = ref;
         if (self.layerRef) {
           self.layerRef.canvas._canvas.style.opacity = self.opacity;
         }
       },
 
-      prepareCoords ([x, y]) {
+      prepareCoords([x, y]) {
         return self.parent.zoomOriginalCoords([x, y]);
       },
 
-      preDraw (x, y) {
+      preDraw(x, y) {
         if (!self.layerRef) return;
         const layer = self.layerRef;
         const ctx = layer.canvas.context;
@@ -205,19 +205,19 @@ const Model = types
         lastPointY = y;
       },
 
-      beginPath ({ type, strokeWidth, opacity = self.opacity }) {
+      beginPath({ type, strokeWidth, opacity = self.opacity }) {
         pathPoints = Points.create({ id: guidGenerator(), type, strokeWidth, opacity });
         cachedPoints = [];
         return pathPoints;
       },
 
-      addPoint (x, y) {
+      addPoint(x, y) {
         self.preDraw(x, y);
         cachedPoints.push(x);
         cachedPoints.push(y);
       },
 
-      endPath () {
+      endPath() {
         if (cachedPoints.length === 2) {
           cachedPoints.push(cachedPoints[0]);
           cachedPoints.push(cachedPoints[1]);
@@ -230,14 +230,14 @@ const Model = types
         cachedPoints = [];
       },
 
-      convertPointsToMask () {},
+      convertPointsToMask() {},
 
-      setScale (x, y) {
+      setScale(x, y) {
         self.scaleX = x;
         self.scaleY = y;
       },
 
-      updateImageSize () {
+      updateImageSize() {
         if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
           let ratioX = self.parent.stageWidth / self.parent.initialWidth;
           let ratioY = self.parent.stageHeight / self.parent.initialHeight;
@@ -248,11 +248,11 @@ const Model = types
         }
       },
 
-      addState (state) {
+      addState(state) {
         self.states.push(state);
       },
 
-      convertToImage () {
+      convertToImage() {
         if (self.touches.length) {
           const object = self.object;
           const rle = Canvas.Region2RLE(self, object, {
@@ -264,7 +264,7 @@ const Model = types
         }
       },
 
-      serialize () {
+      serialize() {
         const object = self.object;
         const rle = Canvas.Region2RLE(self, object);
 

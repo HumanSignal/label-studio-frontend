@@ -31,9 +31,9 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
 });
 
-function DialogActions (self) {
+function DialogActions(self) {
   return {
-    fromStateJSON (obj) {
+    fromStateJSON(obj) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }

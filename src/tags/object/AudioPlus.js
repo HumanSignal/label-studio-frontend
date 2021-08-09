@@ -57,36 +57,36 @@ const Model = types
     errors: [],
   }))
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
 
-    get store () {
+    get store() {
       return getRoot(self);
     },
 
-    get regs () {
+    get regs() {
       return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
-    states () {
+    states() {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates () {
+    activeStates() {
       const states = self.states();
 
       return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
     },
   }))
   .actions(self => ({
-    needsUpdate () {
+    needsUpdate() {
       self.handleNewRegions();
     },
 
-    handleNewRegions () {
+    handleNewRegions() {
       if (!self._ws) return;
       self.regs.map(reg => {
         if (reg._ws_region) return;
@@ -94,13 +94,13 @@ const Model = types
       });
     },
 
-    onHotKey (e) {
+    onHotKey(e) {
       e && e.preventDefault();
       self._ws.playPause();
       return false;
     },
 
-    fromStateJSON (obj, fromModel) {
+    fromStateJSON(obj, fromModel) {
       let r;
       let m;
 
@@ -152,15 +152,15 @@ const Model = types
       return r;
     },
 
-    setRangeValue (val) {
+    setRangeValue(val) {
       self.rangeValue = val;
     },
 
-    setPlaybackRate (val) {
+    setPlaybackRate(val) {
       self.playBackRate = val;
     },
 
-    createRegion (wsRegion, states) {
+    createRegion(wsRegion, states) {
       let bgColor = self.selectedregionbg;
       const st = states.find(s => s.type === "labels");
 
@@ -188,7 +188,7 @@ const Model = types
       return r;
     },
 
-    addRegion (ws_region) {
+    addRegion(ws_region) {
       // area id is assigned to WS region during deserealization
       const find_r = self.annotation.areas.get(ws_region.id);
 
@@ -218,18 +218,18 @@ const Model = types
     /**
      * Play and stop
      */
-    handlePlay () {
+    handlePlay() {
       self.playing = !self.playing;
     },
 
-    createWsRegion (region) {
+    createWsRegion(region) {
       const r = self._ws.addRegion(region.wsRegionOptions);
 
       region._ws_region = r;
       region.updateAppearenceFromState();
     },
 
-    onLoad (ws) {
+    onLoad(ws) {
       self._ws = ws;
 
       self.regs.forEach(reg => {
@@ -237,11 +237,11 @@ const Model = types
       });
     },
 
-    onError (error) {
+    onError(error) {
       self.errors = [error];
     },
 
-    wsCreated (ws) {
+    wsCreated(ws) {
       self._ws = ws;
     },
   }));

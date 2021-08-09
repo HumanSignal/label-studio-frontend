@@ -43,27 +43,27 @@ const _Tool = types
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
   })
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    mouseupEv () {
+    mouseupEv() {
       self.mode = "viewing";
     },
 
-    updateCursor () {
+    updateCursor() {
       if (!self.selected || !self.obj.stageRef) return;
       const stage = self.obj.stageRef;
 
       stage.container().style.cursor = "all-scroll";
     },
 
-    afterUpdateSelected () {
+    afterUpdateSelected() {
       self.updateCursor();
     },
 
-    handleDrag (ev) {
+    handleDrag(ev) {
       const item = self._manager.obj;
       let posx = item.zoomingPositionX + ev.movementX;
       let posy = item.zoomingPositionY + ev.movementY;
@@ -71,18 +71,18 @@ const _Tool = types
       item.setZoomPosition(posx, posy);
     },
 
-    mousemoveEv (ev) {
+    mousemoveEv(ev) {
       const zoomScale = self._manager.obj.zoomScale;
 
       if (zoomScale <= 1) return;
       if (self.mode === "moving") self.handleDrag(ev);
     },
 
-    mousedownEv () {
+    mousedownEv() {
       self.mode = "moving";
     },
 
-    handleZoom (val) {
+    handleZoom(val) {
       const item = self._manager.obj;
 
       item.handleZoom(val);

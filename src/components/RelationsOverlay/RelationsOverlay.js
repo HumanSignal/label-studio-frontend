@@ -169,13 +169,13 @@ class RelationsOverlay extends PureComponent {
   rootNode = createRef();
   state = { shouldRender: false, shouldRenderConnections: Math.random() };
 
-  componentDidUpdate () {
+  componentDidUpdate() {
     if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
     }
   }
 
-  render () {
+  render() {
     const { relations, visible, highlighted } = this.props;
     const hasHighlight = !!highlighted;
 
@@ -200,7 +200,7 @@ class RelationsOverlay extends PureComponent {
     );
   }
 
-  renderRelations (relations, visible, hasHighlight, highlightedRelation) {
+  renderRelations(relations, visible, hasHighlight, highlightedRelation) {
     return relations.map(relation => {
       const highlighted = highlightedRelation === relation;
 

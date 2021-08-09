@@ -31,10 +31,10 @@ const standaloneModal = props => {
   renderModal(props, true);
 
   return {
-    update (newProps) {
+    update(newProps) {
       renderModal({ ...props, ...(newProps ?? {}) }, false);
     },
-    close () {
+    close() {
       modalRef.current.hide();
     },
   };

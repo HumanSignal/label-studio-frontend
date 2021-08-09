@@ -60,7 +60,7 @@ export class HtxTextBox extends React.Component {
     }
   }, 100);
 
-  renderEdit () {
+  renderEdit() {
     const { className = "", rows = 1, onlyEdit, ...props } = this.props;
     const { height, value } = this.state;
 
@@ -105,7 +105,7 @@ export class HtxTextBox extends React.Component {
     );
   }
 
-  renderView () {
+  renderView() {
     const { onChange, onDelete, text, ...props } = this.props;
 
     return (
@@ -119,7 +119,7 @@ export class HtxTextBox extends React.Component {
     );
   }
 
-  render () {
+  render() {
     return this.state.editing || this.props.onlyEdit ? this.renderEdit() : this.renderView();
   }
 }

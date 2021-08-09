@@ -6,7 +6,7 @@ const RequiredMixin = types
     requiredmessage: types.maybeNull(types.string),
   })
   .actions(self => ({
-    validate () {
+    validate() {
       if (self.perregion) {
         // validating when choices labeling is done per region,
         // for example choice may be required to be selected for

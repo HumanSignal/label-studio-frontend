@@ -27,7 +27,7 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({})
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
@@ -35,7 +35,7 @@ const _Tool = types
     let brush;
 
     return {
-      updateCursor () {
+      updateCursor() {
         if (!self.selected || !self.obj.stageRef) return;
         const val = 24;
         const stage = self.obj.stageRef;
@@ -45,21 +45,21 @@ const _Tool = types
         stage.container().style.cursor = cursor.join("");
       },
 
-      afterUpdateSelected () {
+      afterUpdateSelected() {
         self.updateCursor();
       },
 
-      addPoint (x, y) {
+      addPoint(x, y) {
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv () {
+      mouseupEv() {
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
         brush.endPath();
       },
 
-      mousemoveEv (ev, [x, y]) {
+      mousemoveEv(ev, [x, y]) {
         if (self.mode !== "drawing") return;
         if (
           !findClosestParent(
@@ -77,7 +77,7 @@ const _Tool = types
         }
       },
 
-      mousedownEv (ev, [x, y]) {
+      mousedownEv(ev, [x, y]) {
         if (
           !findClosestParent(
             ev.target,

@@ -36,12 +36,12 @@ const _Tool = types
     contrast: types.optional(types.number, Constants.CONTRAST_VALUE),
   })
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    setStroke (val) {
+    setStroke(val) {
       self.contrast = val;
       self.obj.setContrastGrade(val);
     },

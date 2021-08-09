@@ -11,7 +11,7 @@ const VisibilityMixin = types
     whenlabelvalue: types.maybeNull(types.string),
   })
   .views(self => ({
-    get isVisible () {
+    get isVisible() {
       if (getParent(self, 2)?.isVisible === false) {
         return false;
       }

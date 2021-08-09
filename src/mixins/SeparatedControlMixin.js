@@ -8,17 +8,17 @@ const SeparatedControlMixin = types
     };
   })
   .views(self => ({
-    get obj () {
+    get obj() {
       return self.annotation.names.get(self.toname);
     },
 
-    get selectedLabels () {
+    get selectedLabels() {
       return [];
     },
-    selectedValues () {
+    selectedValues() {
       return [];
     },
-    getResultValue () {
+    getResultValue() {
       return {};
     },
   }));

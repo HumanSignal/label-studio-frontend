@@ -14,7 +14,7 @@ const ObjectBase = types
     };
   })
   .views(self => ({
-    findRegion (params) {
+    findRegion(params) {
       let obj = null;
 
       if (self._regionsCache && self._regionsCache.length) {
@@ -25,26 +25,26 @@ const ObjectBase = types
     },
   }))
   .actions(self => ({
-    toStateJSON () {
+    toStateJSON() {
       if (!self.regions) return;
 
       const objectsToReturn = self.regions.map(r => r.toStateJSON());
 
       return objectsToReturn;
     },
-    setReady (value) {
+    setReady(value) {
       self.isReady = value;
     },
   }))
   .actions(self => {
     let props = {};
 
-    function addProp (name, value) {
+    function addProp(name, value) {
       props[name] = value;
       self._needsUpdate = self._needsUpdate + 1;
     }
 
-    function getProps () {
+    function getProps() {
       return props;
     }
 
@@ -53,7 +53,7 @@ const ObjectBase = types
     // and if it was - don't allow to create new region and unselect all regions
     // unselect labels which was exceeded maxUsages
     // return all states left untouched - available labels and others
-    function getAvailableStates () {
+    function getAvailableStates() {
       // `checkMaxUsages` may unselect labels with already reached `maxUsages`
       const checkAndCollect = (list, s) => (s.checkMaxUsages ? list.concat(s.checkMaxUsages()) : list);
       const allStates = self.states() || [];

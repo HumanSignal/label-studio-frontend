@@ -71,11 +71,11 @@ const ModelAttrs = types.model({
 });
 
 const Model = LabelMixin.views(self => ({
-  get shouldBeUnselected () {
+  get shouldBeUnselected() {
     return self.choice === "single";
   },
 })).actions(self => ({
-  afterCreate () {
+  afterCreate() {
     if (self.allowempty) {
       let empty = self.findLabel(null);
 
@@ -96,7 +96,7 @@ const Model = LabelMixin.views(self => ({
       empty.setEmpty();
     }
   },
-  validate () {
+  validate() {
     const regions = self.annotation.regionStore.regions;
 
     for (let r of regions) {

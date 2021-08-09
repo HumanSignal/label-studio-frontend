@@ -8,7 +8,7 @@ export default types
   .model()
   .views(() => ({}))
   .actions(self => ({
-    updateSpansColor (bgcolor, opacity) {
+    updateSpansColor(bgcolor, opacity) {
       if (self._spans) {
         self._spans.forEach(span => {
           if (bgcolor) {
@@ -22,14 +22,14 @@ export default types
       }
     },
 
-    updateAppearenceFromState () {
+    updateAppearenceFromState() {
       const labelColor = self.getLabelColor();
 
       self.updateSpansColor(labelColor, self.selected ? 0.8 : 0.3);
       self.applyCSSClass(self._lastSpan);
     },
 
-    createSpans () {
+    createSpans() {
       const labelColor = self.getLabelColor();
       const spans = highlightRange(self, "htx-highlight", { backgroundColor: labelColor });
 
@@ -45,7 +45,7 @@ export default types
       return spans;
     },
 
-    getLabelColor () {
+    getLabelColor() {
       let labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
 
       if (labelColor) {
@@ -55,7 +55,7 @@ export default types
       return labelColor;
     },
 
-    applyCSSClass (lastSpan) {
+    applyCSSClass(lastSpan) {
       if (!lastSpan) return;
       const classes = ["htx-highlight", "htx-highlight-last"];
       const settings = getRoot(self).settings;
@@ -75,9 +75,9 @@ export default types
       lastSpan.className = classes.filter(Boolean).join(" ");
     },
 
-    addEventsToSpans (spans) {
+    addEventsToSpans(spans) {
       const addEvent = s => {
-        s.onmouseover = function (ev) {
+        s.onmouseover = function(ev) {
           if (self.hidden) return;
           if (self.annotation.relationMode) {
             self.toggleHighlight();
@@ -89,12 +89,12 @@ export default types
           }
         };
 
-        s.onmouseout = function () {
+        s.onmouseout = function() {
           if (self.hidden) return;
           self.setHighlight(false);
         };
 
-        s.onmousedown = function (ev) {
+        s.onmousedown = function(ev) {
           if (self.hidden) return;
           // if we click to already selected span (=== this)
           // skip it to allow another span to be selected
@@ -104,7 +104,7 @@ export default types
           }
         };
 
-        s.onclick = function () {
+        s.onclick = function() {
           if (self.hidden) return;
           // set above in `onmousedown`, can be nulled when new region created
           if (self.parent._currentSpan !== this) return;
@@ -119,7 +119,7 @@ export default types
       spans && spans.forEach(s => addEvent(s));
     },
 
-    selectRegion () {
+    selectRegion() {
       self.updateSpansColor(null, 0.8);
 
       const first = self._spans[0];
@@ -136,11 +136,11 @@ export default types
     /**
      * Unselect text region
      */
-    afterUnselectRegion () {
+    afterUnselectRegion() {
       self.updateSpansColor(null, 0.3);
     },
 
-    setHighlight (val) {
+    setHighlight(val) {
       self.highlighted = val;
 
       if (self._spans) {
@@ -174,7 +174,7 @@ export default types
       }
     },
 
-    toggleHidden (e) {
+    toggleHidden(e) {
       self.hidden = !self.hidden;
       self.setHighlight(self.highlighted);
       if (self.hidden) {

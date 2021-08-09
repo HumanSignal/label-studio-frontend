@@ -28,39 +28,39 @@ const Model = types
     hideable: true,
   }))
   .views(self => ({
-    get parent () {
+    get parent() {
       return self.object;
     },
 
     // Do not remove this annotation getter until saving/updating annotation in LS will work without errors
-    get annotation () {
+    get annotation() {
       const root = getRoot(self);
 
       return root !== self ? root.annotationStore?.selected : null;
     },
 
-    getRegionElement () {
+    getRegionElement() {
       return self._brushRef;
     },
   }))
   .actions(self => ({
-    growRight (size) {
+    growRight(size) {
       self.end = self.end + size;
     },
 
-    growLeft (size) {
+    growLeft(size) {
       self.start = self.start - size;
     },
 
-    shrinkRight (size) {
+    shrinkRight(size) {
       self.end = self.end - size;
     },
 
-    shrinkLeft (size) {
+    shrinkLeft(size) {
       self.start = self.start + size;
     },
 
-    selectRegion () {
+    selectRegion() {
       const one = 1000;
       const lots = one * 10;
 
@@ -77,7 +77,7 @@ const Model = types
       self.parent.scrollToRegion(self);
     },
 
-    updateAppearenceFromState () {
+    updateAppearenceFromState() {
       const s = self.labelsState;
 
       if (!s) return;
@@ -86,18 +86,18 @@ const Model = types
       self.parent.updateView();
     },
 
-    afterUnselectRegion () {
+    afterUnselectRegion() {
       hotkeys.unbindAll();
 
       self.parent.updateView();
     },
 
-    updateRegion (start, end) {
+    updateRegion(start, end) {
       self.start = start;
       self.end = end;
     },
 
-    afterCreate () {
+    afterCreate() {
       if (typeof self.start === "string") {
         // deal only with timestamps/indices
         self.start = self.parent.parseTime(self.start);
@@ -105,7 +105,7 @@ const Model = types
       }
     },
 
-    serialize () {
+    serialize() {
       // convert to original format from data/csv
       const format = self.parent.timeformat ? d3.timeFormat(self.parent.timeformat) : Number;
       let res = {

@@ -13,19 +13,19 @@ const _Tool = types
     };
 
     return {
-      get tagTypes () {
+      get tagTypes() {
         return {
           stateTypes: "ellipselabels",
           controlTagTypes: ["ellipselabels", "ellipse"],
         };
       },
-      get viewTooltip () {
+      get viewTooltip() {
         return "Ellipse region";
       },
-      get iconComponent () {
+      get iconComponent() {
         return NodeViews.EllipseRegionModel[1];
       },
-      get defaultDimensions () {
+      get defaultDimensions() {
         const { radius } = DEFAULT_DIMENSIONS.ellipse;
 
         return {
@@ -33,7 +33,7 @@ const _Tool = types
           height: radius,
         };
       },
-      createRegionOptions ({ x, y }) {
+      createRegionOptions({ x, y }) {
         return Super.createRegionOptions({
           x,
           y,
@@ -44,7 +44,7 @@ const _Tool = types
     };
   })
   .actions(self => ({
-    beforeCommitDrawing () {
+    beforeCommitDrawing() {
       const s = self.getActiveShape;
 
       return s.radiusX > self.MIN_SIZE.X && s.radiusY > self.MIN_SIZE.Y;

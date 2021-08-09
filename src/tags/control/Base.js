@@ -10,12 +10,12 @@ const ControlBase = types.model({}).views(self => ({
   // so _type was introduced to contain desired result type;
   // b. but for textarea they differ from each other: "textarea" and "text".
   // so now there is simple way to distinguish and overwrite them via two methods:
-  get resultType () {
+  get resultType() {
     return self.type;
   },
 
   // and
-  get valueType () {
+  get valueType() {
     return self.type;
   },
 }));

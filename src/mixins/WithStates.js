@@ -6,7 +6,7 @@ export default types
   .model("WithStates")
   .views(self => ({
     // returns one color from all the states
-    getOneColor (pick = "first") {
+    getOneColor(pick = "first") {
       if (!self.states) return;
 
       if (pick === "first") {
@@ -20,7 +20,7 @@ export default types
       }
     },
 
-    getClonedStates () {
+    getClonedStates() {
       return self.states.map(s => cloneNode(s));
     },
   }));

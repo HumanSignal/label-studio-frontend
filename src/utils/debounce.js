@@ -8,10 +8,10 @@
  * @param {number} wait
  * @param {boolean} immediate
  */
-export function debounce (func, wait, immediate) {
+export function debounce(func, wait, immediate) {
   let timeout;
 
-  return function () {
+  return function() {
     const context = this,
       args = arguments;
     const later = () => {
