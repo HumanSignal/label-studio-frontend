@@ -9,19 +9,19 @@ const positioner = (source, target) => {
   return {
     source: sourcePosition,
     target: targetPosition,
-    get top () {
+    get top() {
       return sourcePosition.top - targetPosition.height;
     },
-    get bottom () {
+    get bottom() {
       return sourcePosition.top + sourcePosition.height;
     },
-    get horizontalCenter () {
+    get horizontalCenter() {
       return sourcePosition.left + sourcePosition.width / 2 - targetPosition.width / 2;
     },
-    get horizontalLeft () {
+    get horizontalLeft() {
       return sourcePosition.left;
     },
-    get horizontalRight () {
+    get horizontalRight() {
       return sourcePosition.left + sourcePosition.width - targetPosition.width;
     },
   };

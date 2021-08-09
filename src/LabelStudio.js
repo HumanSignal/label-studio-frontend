@@ -16,12 +16,12 @@ configure({
 export class LabelStudio {
   static instances = new Set();
 
-  static destroyAll () {
+  static destroyAll() {
     this.instances.forEach(inst => inst.destroy());
     this.instances.clear();
   }
 
-  constructor (root, options = {}) {
+  constructor(root, options = {}) {
     this.root = root;
     this.events = new EventInvoker();
     this.supportLgacyEvents(options);
@@ -32,11 +32,11 @@ export class LabelStudio {
     this.constructor.instances.add(this);
   }
 
-  on (...args) {
+  on(...args) {
     this.events.on(...args);
   }
 
-  off (eventName, callback){
+  off(eventName, callback){
     if (isDefined(callback)) {
       this.events.off(eventName, callback);
     } else {
@@ -44,7 +44,7 @@ export class LabelStudio {
     }
   }
 
-  async createApp () {
+  async createApp() {
     const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
 
@@ -65,7 +65,7 @@ export class LabelStudio {
     this.destroy = destructor;
   }
 
-  supportLgacyEvents (options) {
+  supportLgacyEvents(options) {
     const keys = Object.keys(legacyEvents);
 
     keys.forEach(key => {

@@ -35,24 +35,24 @@ const _Tool = types
     threshold: types.optional(types.number, DEF_THRESHOLD),
   })
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    setThreshold (val) {
+    setThreshold(val) {
       self.threshold = val;
     },
 
-    mouseupEv () {
+    mouseupEv() {
       self.mode = "viewing";
     },
 
-    mousemoveEv () {
+    mousemoveEv() {
       if (self.mode !== "drawing") return;
     },
 
-    createPolygonRegion (points) {
+    createPolygonRegion(points) {
       const { states, strokecolor } = {};
       const c = self.control;
 
@@ -81,7 +81,7 @@ const _Tool = types
       return p;
     },
 
-    clickEv (ev, [x, y]) {
+    clickEv(ev, [x, y]) {
       const image = self.obj;
       const imageRef = image.imageRef;
       const imageData = getImageData(imageRef);
@@ -92,7 +92,7 @@ const _Tool = types
       self.control.unselectAll();
     },
 
-    mousedownEv () {
+    mousedownEv() {
       self.mode = "drawing";
     },
   }));

@@ -36,12 +36,12 @@ const _Tool = types
     brightness: types.optional(types.number, Constants.BRIGHTNESS_VALUE),
   })
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    setStroke (val) {
+    setStroke(val) {
       self.brightness = val;
       self.obj.setBrightnessGrade(val);
     },

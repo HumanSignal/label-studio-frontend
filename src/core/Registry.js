@@ -2,7 +2,7 @@
  * Class for register View
  */
 class _Registry {
-  constructor () {
+  constructor() {
     this.tags = [];
     this.models = {};
     this.views = {};
@@ -18,14 +18,14 @@ class _Registry {
     this.perRegionViews = {};
   }
 
-  addTag (tag, model, view) {
+  addTag(tag, model, view) {
     this.tags.push(tag);
     this.models[tag] = model;
     this.views[tag] = view;
     this.views_models[model.name] = view;
   }
 
-  addRegionType (type, object, detector) {
+  addRegionType(type, object, detector) {
     this.regions.push(type);
     if (detector) type.detectByValue = detector;
     const areas = this.areas.get(object);
@@ -34,23 +34,23 @@ class _Registry {
     else this.areas.set(object, [type]);
   }
 
-  regionTypes () {
+  regionTypes() {
     return this.regions;
   }
 
-  addObjectType (type) {
+  addObjectType(type) {
     this.objects.push(type);
   }
 
-  objectTypes () {
+  objectTypes() {
     return this.objects;
   }
 
-  modelsArr () {
+  modelsArr() {
     return Object.values(this.models);
   }
 
-  getViewByModel (modelName) {
+  getViewByModel(modelName) {
     const view = this.views_models[modelName];
 
     if (!view) throw new Error("No view for model: " + modelName);
@@ -58,11 +58,11 @@ class _Registry {
     return view;
   }
 
-  getViewByTag (tag) {
+  getViewByTag(tag) {
     return this.views[tag];
   }
 
-  getAvailableAreas (object, value) {
+  getAvailableAreas(object, value) {
     const available = this.areas.get(object);
 
     if (!available) return [];
@@ -74,7 +74,7 @@ class _Registry {
     return available.filter(a => !a.detectByValue);
   }
 
-  getTool (name) {
+  getTool(name) {
     const model = this.tools[name];
 
     if (!model) {
@@ -86,7 +86,7 @@ class _Registry {
     return model;
   }
 
-  addTool (name, model) {
+  addTool(name, model) {
     this.tools[name] = model;
   }
 
@@ -95,7 +95,7 @@ class _Registry {
    * @param {string} tag
    * @return {import("mobx-state-tree").IModelType}
    */
-  getModelByTag (tag) {
+  getModelByTag(tag) {
     const model = this.models[tag];
 
     if (!model) {
@@ -107,14 +107,14 @@ class _Registry {
     return model;
   }
 
-  addPerRegionView (tag, mode, view) {
+  addPerRegionView(tag, mode, view) {
     const tagViews = this.perRegionViews[tag] || {};
 
     tagViews[mode] = view;
     this.perRegionViews[tag] = tagViews;
   }
 
-  getPerRegionView (tag, mode) {
+  getPerRegionView(tag, mode) {
     return this.perRegionViews[tag]?.[mode];
   }
 }

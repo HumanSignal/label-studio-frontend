@@ -6,7 +6,7 @@
  * @param {string} styles
  * @returns {Object}
  */
-export function styleToProp (styles) {
+export function styleToProp(styles) {
   if (!styles) return null;
   return styles
     .split(";")
@@ -31,7 +31,7 @@ export function styleToProp (styles) {
     );
 }
 
-export function asVars (obj) {
+export function asVars(obj) {
   if (!obj) return null;
   return Object.entries(obj).reduce((vars, [key, val]) => {
     vars[`--${key}`] = val;

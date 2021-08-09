@@ -23,7 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-const MagicWand = (function () {
+const MagicWand = (function() {
   var lib = {};
 
   /** Create a binary mask on the image by color threshold
@@ -35,7 +35,7 @@ const MagicWand = (function () {
    * @param {Uint8Array} mask of visited points (optional)
    * @return {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    */
-  lib.floodFill = function (image, px, py, colorThreshold, mask) {
+  lib.floodFill = function(image, px, py, colorThreshold, mask) {
     var c,
       x,
       newY,
@@ -170,7 +170,7 @@ const MagicWand = (function () {
    * @param {int} blur radius
    * @return {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    */
-  lib.gaussBlur = function (mask, radius) {
+  lib.gaussBlur = function(mask, radius) {
     var i,
       k,
       k1,
@@ -249,7 +249,7 @@ const MagicWand = (function () {
    * @param {Uint8Array} visited: mask of visited points (optional)
    * @return {Array} border index array of boundary points with radius-neighbors (only points need for blur)
    */
-  function createBorderForBlur (mask, radius, visited) {
+  function createBorderForBlur(mask, radius, visited) {
     var x,
       i,
       j,
@@ -368,7 +368,7 @@ const MagicWand = (function () {
    * @param {Uint8Array} visited: mask of visited points (optional)
    * @return {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    */
-  lib.gaussBlurOnlyBorder = function (mask, radius, visited) {
+  lib.gaussBlurOnlyBorder = function(mask, radius, visited) {
     var border = createBorderForBlur(mask, radius, visited), // get border points with radius-neighbors
       ww,
       dsq,
@@ -468,7 +468,7 @@ const MagicWand = (function () {
    * @param {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    * @return {Object} border mask: {Uint8Array} data, {int} width, {int} height, {Object} offset
    */
-  lib.createBorderMask = function (mask) {
+  lib.createBorderMask = function(mask) {
     var x,
       y,
       k,
@@ -538,7 +538,7 @@ const MagicWand = (function () {
    * @param {Object} mask: {Uint8Array} data, {int} width, {int} height
    * @return {Array} border index array boundary points of the mask
    */
-  lib.getBorderIndices = function (mask) {
+  lib.getBorderIndices = function(mask) {
     var x,
       y,
       k,
@@ -595,7 +595,7 @@ const MagicWand = (function () {
    * @param {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    * @return {Object} border mask: {Uint8Array} data, {int} width, {int} height, {Object} offset
    */
-  function prepareMask (mask) {
+  function prepareMask(mask) {
     var x,
       y,
       w = mask.width,
@@ -627,7 +627,7 @@ const MagicWand = (function () {
    * @param {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    * @return {Array} contours: {Array} points, {bool} inner, {int} label
    */
-  lib.traceContours = function (mask) {
+  lib.traceContours = function(mask) {
     var m = prepareMask(mask),
       contours = [],
       label = 0,
@@ -743,7 +743,7 @@ const MagicWand = (function () {
    * @param {int} simplify count: min number of points when the contour is simplified
    * @return {Array} contours: {Array} points, {bool} inner, {int} label, {int} initialCount
    */
-  lib.simplifyContours = function (contours, simplifyTolerant, simplifyCount) {
+  lib.simplifyContours = function(contours, simplifyTolerant, simplifyCount) {
     var lenContours = contours.length,
       result = [],
       i,
@@ -835,7 +835,7 @@ const MagicWand = (function () {
 
       resPoints = [];
       len = lst.length;
-      lst.sort(function (a, b) {
+      lst.sort(function(a, b) {
         return a - b;
       }); // restore index order
       for (k = 0; k < len; k++) {
@@ -850,7 +850,7 @@ const MagicWand = (function () {
   return lib;
 })();
 
-export function getImageData (img) {
+export function getImageData(img) {
   var canvas = document.createElement("canvas");
 
   canvas.width = img.width;
@@ -861,7 +861,7 @@ export function getImageData (img) {
   return ctx.getImageData(0, 0, img.width, img.height);
 }
 
-export function calcBorder (imageData, width, height, x, y, threshold, simple) {
+export function calcBorder(imageData, width, height, x, y, threshold, simple) {
   const blurRadius = 5;
   const simplifyTolerant = 5;
   const simplifyCount = 50;

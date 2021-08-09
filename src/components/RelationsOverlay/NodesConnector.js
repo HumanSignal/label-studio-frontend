@@ -47,13 +47,13 @@ const connect = (relation, root) => {
     direction: relation.direction,
     start: createShape(relation.startNode, root),
     end: createShape(relation.endNode, root),
-    onChange (callback) {
+    onChange(callback) {
       const onChangedCallback = debounce(callback, 50);
 
       this.start.onUpdate(onChangedCallback);
       this.end.onUpdate(onChangedCallback);
     },
-    destroy () {
+    destroy() {
       this.start.destroy();
       this.end.destroy();
     },

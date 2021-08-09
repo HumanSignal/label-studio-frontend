@@ -4,69 +4,69 @@
 /**
  * Callback on submit annotation
  */
-function onSubmitAnnotation () {}
+function onSubmitAnnotation() {}
 
 /**
  * Callback on update annotation
  */
-function onUpdateAnnotation () {}
+function onUpdateAnnotation() {}
 
 /**
  * Callback on delete annotation
  */
-function onDeleteAnnotation () {}
+function onDeleteAnnotation() {}
 
 /**
  * Callback on skip task
  */
-function onSkipTask () {}
+function onSkipTask() {}
 
 /**
  * Callback on task load
  */
-function onTaskLoad () {}
+function onTaskLoad() {}
 
 /**
  * Callback on Label Studio load
  */
-function onLabelStudioLoad () {}
+function onLabelStudioLoad() {}
 
 /**
  * Callback when labeled region gets created
  */
-function onEntityCreate () {}
+function onEntityCreate() {}
 
 /**
  * Callback when labeled region gets deleted
  */
-function onEntityDelete () {}
+function onEntityDelete() {}
 
 /**
  * Callback when ground truth button gets pressed
  */
-function onGroundTruth () {}
+function onGroundTruth() {}
 
 /**
  * Callback when a new annotation gets selected
  */
-function onSelectAnnotation (annotation, previousAnnotation) {}
+function onSelectAnnotation(annotation, previousAnnotation) {}
 
 /**
  * Called when "Accept" or "Fix + Accept" is pressed
  */
-function onAcceptAnnotation (store, entity){}
+function onAcceptAnnotation(store, entity){}
 
 /**
  * Called when "Reject" is pressed
  */
-function onRejectAnnotation (store, entity){}
+function onRejectAnnotation(store, entity){}
 
 /**
  * Called when storage gets initialized for the first time
  */
-function onStorageInitialized (ls) {}
+function onStorageInitialized(ls) {}
 
-function onSubmitDraft (entity) {}
+function onSubmitDraft(entity) {}
 
 export default {
   onDeleteAnnotation,

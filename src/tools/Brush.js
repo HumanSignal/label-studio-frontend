@@ -34,11 +34,11 @@ const _Tool = types
     strokeWidth: types.optional(types.number, 10),
   })
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
 
-    get tagTypes () {
+    get tagTypes() {
       return {
         stateTypes: "brushlabels",
         controlTagTypes: ["brushlabels", "brush"],
@@ -49,7 +49,7 @@ const _Tool = types
     let brush, isFirstBrushStroke;
 
     return {
-      fromStateJSON (json, controlTag) {
+      fromStateJSON(json, controlTag) {
         const region = self.createFromJSON(json, controlTag);
 
         if (json.value.points) {
@@ -65,7 +65,7 @@ const _Tool = types
         return region;
       },
 
-      commitDrawingRegion () {
+      commitDrawingRegion() {
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
         const value = { coordstype: "px", touches: source.touches };
@@ -100,7 +100,7 @@ const _Tool = types
       //   }
       // },
 
-      updateCursor () {
+      updateCursor() {
         if (!self.selected || !self.obj.stageRef) return;
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
@@ -110,19 +110,19 @@ const _Tool = types
         stage.container().style.cursor = cursor.join("");
       },
 
-      setStroke (val) {
+      setStroke(val) {
         self.strokeWidth = val;
       },
 
-      afterUpdateSelected () {
+      afterUpdateSelected() {
         self.updateCursor();
       },
 
-      addPoint (x, y) {
+      addPoint(x, y) {
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv () {
+      mouseupEv() {
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
         brush.setDrawing(false);
@@ -134,7 +134,7 @@ const _Tool = types
         }
       },
 
-      mousemoveEv (ev, [x, y]) {
+      mousemoveEv(ev, [x, y]) {
         if (self.mode !== "drawing") return;
         if (
           !findClosestParent(
@@ -148,7 +148,7 @@ const _Tool = types
         self.addPoint(x, y);
       },
 
-      mousedownEv (ev, [x, y]) {
+      mousedownEv(ev, [x, y]) {
         if (
           !findClosestParent(
             ev.target,

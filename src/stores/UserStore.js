@@ -41,7 +41,7 @@ const UserStore = types
     lastName: types.maybeNull(types.string),
   })
   .views(self => ({
-    get displayName () {
+    get displayName() {
       if (self.firstName || self.lastName) return `${self.firstName} ${self.lastName}`;
 
       return "";

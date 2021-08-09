@@ -27,7 +27,7 @@ const ClassificationArea = types.compose(
 
 const Area = types.union(
   {
-    dispatcher (sn) {
+    dispatcher(sn) {
       // for some deserializations
       if (sn.$treenode) return sn.$treenode.type;
       if (

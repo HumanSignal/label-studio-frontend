@@ -12,7 +12,7 @@ const DEFAULT_BBOX = { x: 0, y: 0, width: 0, height: 0 };
 export class BoundingBox {
   options = {};
 
-  static bbox (region) {
+  static bbox(region) {
     const bbox = _detect(region);
 
     return wrapArray(bbox).map(bbox => Object.assign({ ...DEFAULT_BBOX }, bbox));
@@ -31,27 +31,27 @@ export class BoundingBox {
    * getHeight: (any) => number
    * }} options
    */
-  constructor (options) {
+  constructor(options) {
     Object.assign(this.options, options);
   }
 
-  get _source () {
+  get _source() {
     return this.options.source;
   }
 
-  get x () {
+  get x() {
     return this.options.getX(this._source);
   }
 
-  get y () {
+  get y() {
     return this.options.getY(this._source);
   }
 
-  get width () {
+  get width() {
     return this.options.getWidth(this._source);
   }
 
-  get height () {
+  get height() {
     return this.options.getHeight(this._source);
   }
 }

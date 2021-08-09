@@ -52,22 +52,22 @@ const Model = types
     rating: types.maybeNull(types.number),
   })
   .views(self => ({
-    selectedValues () {
+    selectedValues() {
       return self.rating;
     },
 
-    get serializableValue () {
+    get serializableValue() {
       const rating = self.selectedValues();
 
       if (!rating) return null;
       return { rating };
     },
 
-    get holdsState () {
+    get holdsState() {
       return self.rating > 0;
     },
 
-    get result () {
+    get result() {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
 
@@ -79,22 +79,22 @@ const Model = types
     },
   }))
   .actions(self => ({
-    getSelectedString () {
+    getSelectedString() {
       return self.rating + " star";
     },
 
-    copyState (obj) {
+    copyState(obj) {
       self.setRating(obj.rating);
     },
 
-    needsUpdate () {
+    needsUpdate() {
       if (self.result) self.rating = self.result.mainValue;
       else self.rating = null;
     },
 
-    unselectAll () {},
+    unselectAll() {},
 
-    setRating (value) {
+    setRating(value) {
       self.rating = value;
 
       if (self.result) {
@@ -111,15 +111,15 @@ const Model = types
       }
     },
 
-    updateFromResult (value) {
+    updateFromResult(value) {
       self.rating = value;
     },
 
-    requiredModal () {
+    requiredModal() {
       InfoModal.warning(self.requiredmessage || `Rating "${self.name}" is required.`);
     },
 
-    increaseValue () {
+    increaseValue() {
       if (self.rating >= Number(self.maxrating)) {
         self.setRating(0);
       } else {
@@ -131,11 +131,11 @@ const Model = types
       }
     },
 
-    onHotKey () {
+    onHotKey() {
       return self.increaseValue();
     },
 
-    toStateJSON () {
+    toStateJSON() {
       if (self.rating) {
         const toname = self.toname || self.name;
 
@@ -151,7 +151,7 @@ const Model = types
       }
     },
 
-    fromStateJSON (obj) {
+    fromStateJSON(obj) {
       if (obj.id) self.pid = obj.id;
 
       self.rating = obj.value.rating;

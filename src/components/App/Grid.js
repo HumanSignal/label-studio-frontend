@@ -15,7 +15,7 @@ This triggers next rerender with next annotation until all the annotations are r
 */
 
 class Item extends Component {
-  componentDidMount () {
+  componentDidMount() {
     Promise.all(this.props.annotation.objects.map(o => {
       return o.isReady || new Promise(resolve => {
         let dispose = observe(o, "isReady", ()=>{
@@ -29,7 +29,7 @@ class Item extends Component {
     });
   }
 
-  render () {
+  render() {
     return Tree.renderItem(this.props.root);
   }
 }
@@ -89,7 +89,7 @@ export default class Grid extends Component {
     c.type === "annotation" ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
-  render () {
+  render() {
     const i = this.state.item;
     const { annotations } = this.props;
     const renderNext = i < annotations.length;

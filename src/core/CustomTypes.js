@@ -9,18 +9,18 @@ const { types } = require("mobx-state-tree");
 const Range = (min = 0, max = 1) =>
   types.custom({
     name: `Range(${min}..${max})`,
-    fromSnapshot (snapshot) {
+    fromSnapshot(snapshot) {
       return parseFloat(snapshot);
     },
-    toSnapshot (value) {
+    toSnapshot(value) {
       return value.toString();
     },
-    isTargetType (value) {
+    isTargetType(value) {
       const floatValue = parseFloat(value);
 
       return min <= floatValue && floatValue <= max;
     },
-    getValidationMessage (value) {
+    getValidationMessage(value) {
       if (this.isTargetType(value)) return "";
       return `Value ${value} is outside of range ${min}..${max}.`;
     },
@@ -32,19 +32,19 @@ const Range = (min = 0, max = 1) =>
  */
 const CSSColor = types.custom({
   name: "CSSColor",
-  fromSnapshot (value) {
+  fromSnapshot(value) {
     return String(value);
   },
-  toSnapshot (value) {
+  toSnapshot(value) {
     return value.toString();
   },
-  isTargetType (value) {
+  isTargetType(value) {
     const colorTester = new Option().style;
 
     colorTester.color = value;
     return colorTester.color !== "";
   },
-  getValidationMessage (value) {
+  getValidationMessage(value) {
     if (this.isTargetType(value)) return "";
     return `Value ${value} doesn't appear to be a valid HEX color.`;
   },

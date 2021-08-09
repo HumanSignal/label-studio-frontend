@@ -51,9 +51,9 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .actions(self => ({
-    fromStateJSON () {},
+    fromStateJSON() {},
 
-    afterCreate () {
+    afterCreate() {
       const poly = Tools.Polygon.create();
       const floodFill = Tools.FloodFill.create();
 

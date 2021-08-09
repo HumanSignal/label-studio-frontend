@@ -28,28 +28,28 @@ const Model = types
     selected: false,
   }))
   .views(self => ({
-    get parent () {
+    get parent() {
       return getParentOfType(self, TextAreaModel);
     },
-    getRegionElement () {
+    getRegionElement() {
       return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
   }))
   .actions(self => ({
-    setValue (val) {
+    setValue(val) {
       self._value = val;
       self.parent.onChange();
     },
 
-    deleteRegion () {
+    deleteRegion() {
       self.parent.remove(self);
     },
 
-    selectRegion () {
+    selectRegion() {
       self.selected = true;
     },
 
-    afterUnselectRegion () {
+    afterUnselectRegion() {
       self.selected = false;
     },
   }));

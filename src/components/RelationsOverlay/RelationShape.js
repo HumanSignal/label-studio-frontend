@@ -6,7 +6,7 @@ export class RelationShape {
 
   _onUpdated = null;
 
-  constructor (params) {
+  constructor(params) {
     Object.assign(this.params, params);
 
     if (this.params.watcher) {
@@ -14,11 +14,11 @@ export class RelationShape {
     }
   }
 
-  boundingBox () {
+  boundingBox() {
     return BoundingBox.bbox(this.params.element);
   }
 
-  onUpdate (callback) {
+  onUpdate(callback) {
     this.onUpdated = callback;
   }
 
@@ -26,7 +26,7 @@ export class RelationShape {
     this.onUpdated?.();
   };
 
-  destroy () {
+  destroy() {
     this.onUpdated = null;
   }
 }

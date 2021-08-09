@@ -101,40 +101,40 @@ const Model = types
     headers: [],
   }))
   .views(self => ({
-    get regionsTimeRanges () {
+    get regionsTimeRanges() {
       return self.regs.map(r => {
         return [r.start, r.end];
       });
     },
 
-    get store () {
+    get store() {
       return getRoot(self);
     },
 
-    get regs () {
+    get regs() {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    get isDate () {
+    get isDate() {
       return Boolean(self.timeformat) || (self.timedisplayformat && /[a-zA-Z]/.test(self.timedisplayformat[0]));
     },
 
-    get keyColumn () {
+    get keyColumn() {
       // for virtual column use just an uniq random name to not overlap with other column names
       return (self.timecolumn || "#@$").toLowerCase();
     },
 
-    get parseTimeFn () {
+    get parseTimeFn() {
       return self.timeformat && self.timecolumn ? d3.timeParse(self.timeformat) : Number;
     },
 
-    parseTime (time) {
+    parseTime(time) {
       const parse = self.parseTimeFn;
 
       return +parse(time);
     },
 
-    get dataObj () {
+    get dataObj() {
       if (!self.valueLoaded || !self.data) return null;
       let data = self.data;
 
@@ -178,7 +178,7 @@ const Model = types
       return data;
     },
 
-    get dataHash () {
+    get dataHash() {
       const raw = self.dataObj;
       const { keyColumn } = self;
 
@@ -199,11 +199,11 @@ const Model = types
       return data;
     },
 
-    get slicesCount () {
+    get slicesCount() {
       return 10;
     },
 
-    get dataSlices () {
+    get dataSlices() {
       // @todo it should make it `computed` automatically
       if (self.slices) return self.slices;
       const count = self.slicesCount;
@@ -220,14 +220,14 @@ const Model = types
     },
 
     // range of times or numerical indices
-    get keysRange () {
+    get keysRange() {
       const keys = self.dataObj?.[self.keyColumn];
 
       if (!keys) return [];
       return [keys[0], keys[keys.length - 1]];
     },
 
-    get persistentValues () {
+    get persistentValues() {
       return {
         brushRange: self.brushRange,
         initialRange: self.initialRange,
@@ -236,17 +236,17 @@ const Model = types
       };
     },
 
-    states () {
+    states() {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates () {
+    activeStates() {
       const states = self.states();
 
       return states ? states.filter(s => s.isSelected && getType(s).name === "TimeSeriesLabelsModel") : null;
     },
 
-    formatTime (time) {
+    formatTime(time) {
       if (!self._format) {
         const { timedisplayformat: format, isDate } = self;
 
@@ -259,28 +259,28 @@ const Model = types
   }))
 
   .actions(self => ({
-    setData (data) {
+    setData(data) {
       self.data = data;
       self.valueLoaded = true;
     },
 
-    setColumnNames (headers) {
+    setColumnNames(headers) {
       self.headers = headers;
     },
 
-    setZoomedRange (range) {
+    setZoomedRange(range) {
       self.zoomedRange = range;
     },
 
-    setScale (scale) {
+    setScale(scale) {
       self.scale = scale;
     },
 
-    updateView () {
+    updateView() {
       self._needsUpdate = self._needsUpdate + 1;
     },
 
-    scrollToRegion (r) {
+    scrollToRegion(r) {
       const range = [...self.brushRange];
 
       if (r.start >= range[0] && r.end <= range[1]) return;
@@ -311,7 +311,7 @@ const Model = types
       self.updateTR(range, self.scale + 0.0001);
     },
 
-    updateTR (tr, scale = 1) {
+    updateTR(tr, scale = 1) {
       if (tr === null) return;
 
       self.initialRange = tr;
@@ -321,11 +321,11 @@ const Model = types
       self.updateView();
     },
 
-    throttledRangeUpdate () {
+    throttledRangeUpdate() {
       return throttle(self.updateTR, 100);
     },
 
-    fromStateJSON (obj, fromModel) {
+    fromStateJSON(obj, fromModel) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
@@ -341,7 +341,7 @@ const Model = types
       }
     },
 
-    addRegion (start, end) {
+    addRegion(start, end) {
       const states = self.getAvailableStates();
 
       if (states.length === 0) return;
@@ -354,7 +354,7 @@ const Model = types
       return r;
     },
 
-    regionChanged (timerange, i, activeStates) {
+    regionChanged(timerange, i, activeStates) {
       const r = self.regs[i];
       let needUpdate = false;
 
@@ -368,7 +368,7 @@ const Model = types
       needUpdate && self.updateView();
     },
 
-    async preloadValue (store) {
+    async preloadValue(store) {
       const dataObj = store.task.dataObj;
 
       if (self.valuetype !== "url") {
@@ -451,7 +451,7 @@ const Model = types
       }
     },
 
-    async updateValue (store) {
+    async updateValue(store) {
       let data;
 
       try {
@@ -480,10 +480,10 @@ const Model = types
       self.updateTR([times[0], times[times.length >> 2]]);
     },
 
-    onHotKey () {},
+    onHotKey() {},
   }));
 
-function useWidth () {
+function useWidth() {
   const [width, setWidth] = React.useState(840);
   const [node, setNode] = React.useState(null);
 
@@ -549,7 +549,7 @@ const Overview = observer(({ item, data, series }) => {
   const prevBrush = React.useRef(defaultSelection);
   const MIN_OVERVIEW = 10;
 
-  function brushed () {
+  function brushed() {
     if (d3.event.selection && !checkD3EventLoop("brush") && !checkD3EventLoop("wheel")) {
       let [x1, x2] = d3.event.selection;
       const prev = prevBrush.current;
@@ -583,7 +583,7 @@ const Overview = observer(({ item, data, series }) => {
     }
   }
 
-  function brushended () {
+  function brushended() {
     if (!d3.event.selection) {
       // move selection on click; try to preserve it's width
       const center = d3.mouse(this)[0];

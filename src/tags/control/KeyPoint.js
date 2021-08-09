@@ -39,16 +39,16 @@ const Model = types
     // tools: types.array(BaseTool)
   })
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
   }))
   .actions(self => ({
-    fromStateJSON () {},
+    fromStateJSON() {},
 
-    afterCreate () {
+    afterCreate() {
       const kp = Tools.KeyPoint.create();
 
       kp._control = self;

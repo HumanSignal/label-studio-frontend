@@ -7,23 +7,23 @@ const ToolMixin = types
     selected: types.optional(types.boolean, false),
   })
   .views(self => ({
-    get obj () {
+    get obj() {
       return self._manager.obj;
     },
 
-    get manager () {
+    get manager() {
       return self._manager;
     },
 
-    get control () {
+    get control() {
       return self._control;
     },
 
-    get viewClass () {
+    get viewClass() {
       return null;
     },
 
-    get clonedStates () {
+    get clonedStates() {
       const states = [self.control];
       const activeStates = states
         ? states.filter(c => c.isSelected)
@@ -39,32 +39,32 @@ const ToolMixin = types
       return activeStates ? activeStates.map(s => cloneNode(s)) : null;
     },
 
-    get getActiveShape () {
+    get getActiveShape() {
       // active shape here is the last one that was added
       const obj = self.obj;
 
       return obj.regs[obj.regs.length - 1];
     },
 
-    get getSelectedShape () {
+    get getSelectedShape() {
       return self.control.annotation.highlightedNode;
     },
   }))
   .actions(self => ({
-    setSelected (val) {
+    setSelected(val) {
       self.selected = val;
       self.afterUpdateSelected();
     },
 
-    afterUpdateSelected () {},
+    afterUpdateSelected() {},
 
-    event (name, ev, args) {
+    event(name, ev, args) {
       const fn = name + "Ev";
 
       if (typeof self[fn] !== "undefined") self[fn].call(self, ev, args);
     },
 
-    createFromJSON (obj, fromModel) {
+    createFromJSON(obj, fromModel) {
       let r;
       let states = [];
 
@@ -125,7 +125,7 @@ const ToolMixin = types
       return r;
     },
 
-    fromStateJSON (obj, fromModel) {
+    fromStateJSON(obj, fromModel) {
       // tool may not be implementing fromStateJSON at all
       if (!self.tagTypes) return;
 

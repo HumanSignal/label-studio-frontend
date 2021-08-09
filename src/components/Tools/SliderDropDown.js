@@ -7,7 +7,7 @@ import styles from "./Styles.module.scss";
 
 export default observer(
   class SliderDropDownTool extends Component {
-    render () {
+    render() {
       const menu = (
         <Menu>
           <Menu.Item key="1">

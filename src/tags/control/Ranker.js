@@ -17,15 +17,15 @@ const RankerItemModel = types
     idx: types.number,
   })
   .actions(self => ({
-    setBG (val) {
+    setBG(val) {
       self.backgroundColor = val;
     },
 
-    setIdx (idx) {
+    setIdx(idx) {
       self.idx = idx;
     },
 
-    setSelected (val) {
+    setSelected(val) {
       self.selected = val;
     },
   }));
@@ -95,11 +95,11 @@ const Model = types
     // update: types.optional(types.boolean, false)
   })
   .actions(self => ({
-    setUpdate () {
+    setUpdate() {
       self.update = self.update + 1;
     },
 
-    _addRegion (val, idx) {
+    _addRegion(val, idx) {
       const reg = RankerItemModel.create({
         value: val,
         idx,
@@ -109,7 +109,7 @@ const Model = types
       self.regions.push(reg);
     },
 
-    moveItems ({ oldIndex, newIndex }) {
+    moveItems({ oldIndex, newIndex }) {
       if (oldIndex === newIndex) return;
 
       if (self.sortedhighlightcolor) {
@@ -124,7 +124,7 @@ const Model = types
       self.setUpdate();
     },
 
-    toStateJSON () {
+    toStateJSON() {
       return {
         from_name: self.name,
         to_name: self.name,
@@ -136,7 +136,7 @@ const Model = types
       };
     },
 
-    fromStateJSON (obj) {
+    fromStateJSON(obj) {
       obj.value.items.forEach((v, idx) => {
         self._addRegion(v, idx);
       });
@@ -149,7 +149,7 @@ const RankerModel = types.compose("RankerModel", TagAttrs, Model);
 
 const DragHandle = sortableHandle(() => <div className="drag-handle"></div>);
 
-function isMobileDevice () {
+function isMobileDevice() {
   try {
     return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf("IEMobile") !== -1;
   } catch (e) {

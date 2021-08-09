@@ -72,21 +72,21 @@ const Model = types
     _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
 
-    get regs () {
+    get regs() {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    states () {
+    states() {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates () {
+    activeStates() {
       const states = self.states();
 
       return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
@@ -98,7 +98,7 @@ const Model = types
     regsObserverDisposer: null,
   }))
   .actions(self => ({
-    setRef (rootNodeRef, originalContentRef) {
+    setRef(rootNodeRef, originalContentRef) {
       self.rootNodeRef = rootNodeRef;
       self.originalContentRef = originalContentRef;
     },
@@ -135,7 +135,7 @@ const Model = types
       }
     }),
 
-    setRemoteValue (val) {
+    setRemoteValue(val) {
       self.loaded = true;
 
       if (self.encoding === "base64") val = atob(val);
@@ -152,7 +152,7 @@ const Model = types
       self._regionsCache = [];
     },
 
-    afterCreate () {
+    afterCreate() {
       self._regionsCache = [];
 
       // security measure, if valuetype is set to url then LS
@@ -170,20 +170,20 @@ const Model = types
       });
     },
 
-    fixRegionsXPath (region) {
+    fixRegionsXPath(region) {
       // Text regions don't use XPath
       region._fixXPaths();
     },
 
-    beforeDestroy () {
+    beforeDestroy() {
       self.regsObserverDisposer?.();
     },
 
-    needsUpdate () {
+    needsUpdate() {
       self.regs.forEach(region => region.applyHighlight());
     },
 
-    createRegion (regionData) {
+    createRegion(regionData) {
       const region = RichTextRegionModel.create({
         ...regionData,
         isText: self.type === "text",
@@ -203,7 +203,7 @@ const Model = types
       return region;
     },
 
-    addRegion (range) {
+    addRegion(range) {
       const states = self.getAvailableStates();
 
       if (states.length === 0) return;

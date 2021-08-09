@@ -11,63 +11,63 @@ const SelectedModelMixin = types
     };
   })
   .views(self => ({
-    get tiedChildren () {
+    get tiedChildren() {
       return Tree.filterChildrenOfType(self, self._child);
     },
 
-    get selectedLabels () {
+    get selectedLabels() {
       return self.tiedChildren.filter(c => c.selected === true);
     },
 
-    getSelectedColor () {
+    getSelectedColor() {
       // return first selected label color
       const sel = self.tiedChildren.find(c => c.selected === true);
 
       return sel && sel.background;
     },
 
-    get selectedColor () {
+    get selectedColor() {
       // return first selected label color
       const sel = self.tiedChildren.find(c => c.selected === true);
 
       return sel && sel.background;
     },
 
-    get isSelected () {
+    get isSelected() {
       return self.selectedLabels.length > 0;
     },
 
     // right now this is duplicate code from the above and it's done for clarity
-    get holdsState () {
+    get holdsState() {
       return self.selectedLabels.length > 0;
     },
 
-    selectedValues () {
+    selectedValues() {
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value)).filter(val => isDefined(val));
     },
 
-    getResultValue () {
+    getResultValue() {
       return {
         [self.valueType]: self.selectedValues(),
       };
     },
 
     // return labels that are selected and have an alias only
-    get selectedAliases () {
+    get selectedAliases() {
       return self.selectedLabels.filter(c => c.alias).map(c => c.alias);
     },
 
-    getSelectedString (joinstr = " ") {
+    getSelectedString(joinstr = " ") {
       return self.selectedValues().join(joinstr);
     },
 
-    findLabel (value) {
+    findLabel(value) {
       return self.tiedChildren.find(
         c => (c.alias === value && isDefined(value)) || c.value === value || (!isDefined(c.value) && !isDefined(value)),
       );
     },
 
-    get emptyLabel () {
+    get emptyLabel() {
       return self.allowempty ? self.findLabel(null) : null;
     },
   }))
@@ -75,18 +75,18 @@ const SelectedModelMixin = types
     /**
      * Get current color from Label settings
      */
-    unselectAll () {
+    unselectAll() {
       self.tiedChildren.forEach(c => c.setSelected(false));
     },
 
-    checkMaxUsages () {
+    checkMaxUsages() {
       const list = self.tiedChildren.filter(c => !c.canBeUsed());
 
       if (list.length) list.forEach(c => c.setSelected(false));
       return list;
     },
 
-    selectFirstVisible () {
+    selectFirstVisible() {
       const f = self.tiedChildren.find(c => c.visible);
 
       f && f.toggleSelected();
@@ -98,7 +98,7 @@ const SelectedModelMixin = types
      * Change states of tags according to values from result
      * @param {string|string[]} value
      */
-    updateFromResult (value) {
+    updateFromResult(value) {
       self.unselectAll();
       const values = Array.isArray(value) ? (value.length ? value : [null]) : [value];
 

@@ -7,7 +7,7 @@ import Utils from "../../../utils";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 
 class RichTextPieceView extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.rootNodeRef = React.createRef();
@@ -91,7 +91,7 @@ class RichTextPieceView extends Component {
   /**
    * Handle initial rendering and all subsequent updates
    */
-  _handleUpdate (initial = false) {
+  _handleUpdate(initial = false) {
     const { item } = this.props;
 
     // Make refs accessible to the model
@@ -129,7 +129,7 @@ class RichTextPieceView extends Component {
    * Detects a RichTextRegion corresponding to a span
    * @param {HTMLElement} element
    */
-  _determineRegion (element) {
+  _determineRegion(element) {
     if (matchesSelector(element, ".htx-highlight")) {
       const span = element.tagName === "SPAN" ? element : element.closest(".htx-highlight");
       const { item } = this.props;
@@ -138,15 +138,15 @@ class RichTextPieceView extends Component {
     }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this._handleUpdate(true);
   }
 
-  componentDidUpdate () {
+  componentDidUpdate() {
     this._handleUpdate();
   }
 
-  render () {
+  render() {
     const { item } = this.props;
 
     if (!item._value) return null;

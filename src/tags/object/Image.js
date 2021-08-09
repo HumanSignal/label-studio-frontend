@@ -87,7 +87,7 @@ const IMAGE_CONSTANTS = {
 
 const DrawingRegion = types.union(
   {
-    dispatcher (sn) {
+    dispatcher(sn) {
       if (!sn) return types.null;
       // may be a tag itself or just its name
       const objectName = sn.object.name || sn.object;
@@ -176,23 +176,23 @@ const Model = types
     stageRatio: 1,
   }))
   .views(self => ({
-    get store () {
+    get store() {
       return getRoot(self);
     },
 
-    get parsedValue () {
+    get parsedValue() {
       return parseValue(self.value, self.store.task.dataObj);
     },
 
     // @todo the name is for backward compatibility; change the name later
-    get _value () {
+    get _value() {
       const value = self.parsedValue;
 
       if (Array.isArray(value)) return value[self.currentImage];
       return value;
     },
 
-    get images () {
+    get images() {
       const value = self.parsedValue;
 
       if (!value) return [];
@@ -203,21 +203,21 @@ const Model = types
     /**
      * @return {boolean}
      */
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
 
-    get regs () {
+    get regs() {
       return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
-    get selectedShape () {
+    get selectedShape() {
       return self.regs.find(r => r.selected);
     },
 
-    get stageTranslate () {
+    get stageTranslate() {
       return {
         0: { x: 0, y: 0 },
         90: { x: 0, y: self.stageHeight },
@@ -226,28 +226,28 @@ const Model = types
       }[self.rotation];
     },
 
-    get stageScale () {
+    get stageScale() {
       return self.zoomScale * self.stageRatio;
     },
 
-    get hasTools () {
+    get hasTools() {
       return !!self.getToolsManager().allTools()?.length;
     },
 
     /**
      * @return {object}
      */
-    states () {
+    states() {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates () {
+    activeStates() {
       const states = self.states();
 
       return states && states.filter(s => s.isSelected && s.type.includes("labels"));
     },
 
-    controlButton () {
+    controlButton() {
       const names = self.states();
 
       if (!names || names.length === 0) return;
@@ -267,13 +267,13 @@ const Model = types
       return returnedControl;
     },
 
-    get controlButtonType () {
+    get controlButtonType() {
       const name = self.controlButton();
 
       return getType(name).name;
     },
 
-    get stageComponentSize () {
+    get stageComponentSize() {
       if ((self.rotation + 360) % 180 === 90) {
         return {
           width: self.stageHeight * self.stageRatio,
@@ -286,7 +286,7 @@ const Model = types
       };
     },
 
-    get zoomBy () {
+    get zoomBy() {
       return parseFloat(self.zoomby);
     },
   }))
@@ -295,7 +295,7 @@ const Model = types
   .actions(self => {
     const toolsManager = new ToolsManager({ obj: self });
 
-    function afterCreate () {
+    function afterCreate() {
       if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
 
       if (self.brightnesscontrol)
@@ -306,7 +306,7 @@ const Model = types
       if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
     }
 
-    function getToolsManager () {
+    function getToolsManager() {
       return toolsManager;
     }
 
@@ -317,23 +317,23 @@ const Model = types
 
     return {
       views: {
-        getSkipInteractions () {
+        getSkipInteractions() {
           return skipInteractions;
         },
       },
       actions: {
-        setSkipInteractions (value) {
+        setSkipInteractions(value) {
           skipInteractions = value;
         },
       },
     };
   })
   .actions(self => ({
-    freezeHistory () {
+    freezeHistory() {
       //self.annotation.history.freeze();
     },
 
-    createDrawingRegion (areaValue, resultValue, control) {
+    createDrawingRegion(areaValue, resultValue, control) {
       const result = {
         from_name: control.name,
         to_name: self,
@@ -352,18 +352,18 @@ const Model = types
       return self.drawingRegion;
     },
 
-    deleteDrawingRegion () {
+    deleteDrawingRegion() {
       const { drawingRegion } = self;
 
       self.drawingRegion = null;
       destroy(drawingRegion);
     },
 
-    updateBrushControl (arg) {
+    updateBrushControl(arg) {
       self.brushControl = arg;
     },
 
-    updateBrushStrokeWidth (arg) {
+    updateBrushStrokeWidth(arg) {
       self.brushStrokeWidth = arg;
     },
 
@@ -371,26 +371,26 @@ const Model = types
      * Update brightnessGrade of Image
      * @param {number} value
      */
-    setBrightnessGrade (value) {
+    setBrightnessGrade(value) {
       self.brightnessGrade = value;
     },
 
-    setContrastGrade (value) {
+    setContrastGrade(value) {
       self.contrastGrade = value;
     },
 
-    setGridSize (value) {
+    setGridSize(value) {
       self.gridSize = value;
     },
 
-    setCurrentImage (i) {
+    setCurrentImage(i) {
       self.currentImage = i;
     },
 
     /**
      * Set pointer of X and Y
      */
-    setPointerPosition ({ x, y }) {
+    setPointerPosition({ x, y }) {
       self.freezeHistory();
       self.cursorPositionX = x;
       self.cursorPositionY = y;
@@ -399,14 +399,14 @@ const Model = types
     /**
      * Set zoom
      */
-    setZoom (scale, x, y) {
+    setZoom(scale, x, y) {
       self.resize = scale;
       self.zoomScale = scale;
       self.zoomingPositionX = x;
       self.zoomingPositionY = y;
     },
 
-    setZoomPosition (x, y) {
+    setZoomPosition(x, y) {
       self.zoomingPositionX = clamp(
         x,
         self.stageComponentSize.width - self.stageComponentSize.width * self.zoomScale,
@@ -419,7 +419,7 @@ const Model = types
       );
     },
 
-    handleZoom (val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
+    handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
       if (val) {
         self.freezeHistory();
         const stage = self.stageRef;
@@ -458,15 +458,15 @@ const Model = types
      * Set mode of Image (drawing and viewing)
      * @param {string} mode
      */
-    setMode (mode) {
+    setMode(mode) {
       self.mode = mode;
     },
 
-    setImageRef (ref) {
+    setImageRef(ref) {
       self.imageRef = ref;
     },
 
-    setStageRef (ref) {
+    setStageRef(ref) {
       self.stageRef = ref;
 
       const currentTool = self.getToolsManager().findSelectedTool();
@@ -480,11 +480,11 @@ const Model = types
     },
 
     // @todo remove
-    setSelected () {
+    setSelected() {
       // self.selectedShape = shape;
     },
 
-    rotate (degree = -90) {
+    rotate(degree = -90) {
       self.rotation = (self.rotation + degree + 360) % 360;
       let ratioK = 1 / self.stageRatio;
 
@@ -512,7 +512,7 @@ const Model = types
       }
     },
 
-    _updateImageSize ({ width, height, naturalWidth, naturalHeight, userResize }) {
+    _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
       if (naturalWidth !== undefined) {
         self.naturalWidth = naturalWidth;
         self.naturalHeight = naturalHeight;
@@ -535,7 +535,7 @@ const Model = types
       });
     },
 
-    _updateRegionsSizes ({ width, height, naturalWidth, naturalHeight, userResize }) {
+    _updateRegionsSizes({ width, height, naturalWidth, naturalHeight, userResize }) {
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
@@ -544,7 +544,7 @@ const Model = types
       });
     },
 
-    updateImageSize (ev) {
+    updateImageSize(ev) {
       const { width, height, naturalWidth, naturalHeight } = ev.target;
 
       self.initialWidth = width;
@@ -557,7 +557,7 @@ const Model = types
       setTimeout(self.annotation.reinitHistory, 0);
     },
 
-    checkLabels () {
+    checkLabels() {
       // there is should be at least one state selected for *labels object
       const labelStates = (self.states() || []).filter(s => s.type.includes("labels"));
       const selectedStates = self.getAvailableStates();
@@ -565,7 +565,7 @@ const Model = types
       return selectedStates.length !== 0 || labelStates.length === 0;
     },
 
-    addShape (shape) {
+    addShape(shape) {
       self.regions.push(shape);
 
       self.annotation.addRegion(shape);
@@ -574,7 +574,7 @@ const Model = types
     },
 
     // convert screen coords to image coords considering zoom
-    fixZoomedCoords ([x, y]) {
+    fixZoomedCoords([x, y]) {
       if (!self.stageRef) {
         return [x, y];
       }
@@ -590,7 +590,7 @@ const Model = types
     },
 
     // convert image coords to screen coords considering zoom
-    zoomOriginalCoords ([x, y]) {
+    zoomOriginalCoords([x, y]) {
       const p = self.stageRef.getAbsoluteTransform().point({ x, y });
 
       return [p.x, p.y];
@@ -613,7 +613,7 @@ const Model = types
      * @param {PointFn} fn wrapped function do some math with image coords
      * @return {PointFn} outer function do some math with screen coords
      */
-    fixForZoom (fn) {
+    fixForZoom(fn) {
       return p => {
         const asArray = p.x === undefined;
         const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
@@ -629,18 +629,18 @@ const Model = types
      * @param {*} width
      * @param {*} height
      */
-    onResize (width, height, userResize) {
+    onResize(width, height, userResize) {
       self._updateImageSize({ width, height, userResize });
     },
 
-    event (name, ev, ...coords) {
+    event(name, ev, ...coords) {
       self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
     },
 
     /**
      * Transform JSON data (annotations and predictions) to format
      */
-    fromStateJSON (obj, fromModel) {
+    fromStateJSON(obj, fromModel) {
       const tools = self.getToolsManager().allTools();
 
       // when there is only the image classification and nothing else, we need to handle it here

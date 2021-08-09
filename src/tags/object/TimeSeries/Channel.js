@@ -74,7 +74,7 @@ const Model = types
     parentTypes: Types.tagsTypes(["TimeSeries"]),
   })
   .views(self => ({
-    get columnName () {
+    get columnName() {
       let column = self.column;
 
       if (/^\d+$/.test(column)) {
@@ -216,7 +216,7 @@ class ChannelD3 extends React.Component {
     parent?.addRegion(region.start, region.end);
   };
 
-  renderBrushes (ranges, flush = false) {
+  renderBrushes(ranges, flush = false) {
     const { width } = this.state;
     const height = this.height;
     const { item } = this.props;
@@ -242,11 +242,11 @@ class ChannelD3 extends React.Component {
       .append("g")
       .attr("class", "brush")
       .attr("id", r => `brush_${item.id}_${r.id}`)
-      .each(function (r) {
+      .each(function(r) {
         const group = d3.select(this);
         const brush = d3.brushX().extent(extent);
 
-        brush.on("brush", function () {
+        brush.on("brush", function() {
           if (checkD3EventLoop("brush")) return;
           const sticked = getRegion(d3.event.selection, r.instant);
 
@@ -272,7 +272,7 @@ class ChannelD3 extends React.Component {
         }
       })
       .merge(brushSelection)
-      .each(function (r) {
+      .each(function(r) {
         const group = d3.select(this);
         const selection = group.selectAll(".selection");
 
@@ -302,7 +302,7 @@ class ChannelD3 extends React.Component {
     brushSelection.exit().remove();
   }
 
-  renderBrushCreator () {
+  renderBrushCreator() {
     if (this.gCreator) {
       this.gCreator.selectAll("*").remove();
     } else {
@@ -319,7 +319,7 @@ class ChannelD3 extends React.Component {
         [0, 0],
         [this.state.width, this.height],
       ])
-      .on("brush", function () {
+      .on("brush", function() {
         if (checkD3EventLoop("brush") || !d3.event.selection) return;
         const sticked = getRegion(d3.event.selection);
 
@@ -369,7 +369,7 @@ class ChannelD3 extends React.Component {
       .attr("y2", 0)
       .attr("stroke", "#666");
 
-    function onHover () {
+    function onHover() {
       updateTracker(d3.mouse(this)[0]);
     }
 
@@ -441,7 +441,7 @@ class ChannelD3 extends React.Component {
       );
   };
 
-  initZoom () {
+  initZoom() {
     const { data, item, time } = this.props;
     const times = data[time];
     const upd = item.parent?.throttledRangeUpdate();
@@ -473,7 +473,7 @@ class ChannelD3 extends React.Component {
     this.main.on("wheel", onZoom);
   }
 
-  componentDidMount () {
+  componentDidMount() {
     if (!this.ref.current) return;
 
     const { data, item, range, time, column } = this.props;
@@ -619,11 +619,11 @@ class ChannelD3 extends React.Component {
     window.addEventListener("resize", this.changeWidth);
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     window.removeEventListener("resize", this.changeWidth);
   }
 
-  setRangeWithScaling (range) {
+  setRangeWithScaling(range) {
     this.x.domain(range);
     const current = this.x.range();
     const all = this.plotX.domain().map(this.x);
@@ -702,7 +702,7 @@ class ChannelD3 extends React.Component {
     this.renderYAxis();
   }
 
-  componentDidUpdate (prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const { range } = this.props;
     const { width } = this.state;
     let flushBrushes = false;
@@ -732,7 +732,7 @@ class ChannelD3 extends React.Component {
     this.renderBrushes(this.props.ranges, flushBrushes);
   }
 
-  render () {
+  render() {
     this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.hidden, r.style?.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 

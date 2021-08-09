@@ -64,7 +64,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
 
 const data = RichTextHtml;
 
-function getData (task) {
+function getData(task) {
   if (task && task.data) {
     return {
       ...task,
@@ -79,7 +79,7 @@ function getData (task) {
  * Get current config
  * @param {string} pathToConfig
  */
-async function getConfig (pathToConfig) {
+async function getConfig(pathToConfig) {
   const response = await fetch(pathToConfig);
   const config = await response.text();
 
@@ -89,7 +89,7 @@ async function getConfig (pathToConfig) {
 /**
  * Get custom config
  */
-async function getExample () {
+async function getExample() {
   let datatype = data;
 
   let config = await getConfig(datatype.config);
@@ -108,7 +108,7 @@ async function getExample () {
 /**
  * Function to return App element
  */
-function rootElement (element) {
+function rootElement(element) {
   let root;
 
   if (typeof element === "string") {
@@ -128,7 +128,7 @@ function rootElement (element) {
  * Function to configure application with callbacks
  * @param {object} params
  */
-function configureApplication (params) {
+function configureApplication(params) {
   const options = {
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },

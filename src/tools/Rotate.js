@@ -34,12 +34,12 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({})
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    rotate (degree) {
+    rotate(degree) {
       self.obj.rotate(degree);
     },
   }));

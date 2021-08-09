@@ -4,7 +4,7 @@ import * as Colors from "./colors";
 import { colorToRGBAArray } from "./colors";
 
 // given the imageData object returns the DOM Image with loaded data
-function imageData2Image (imagedata) {
+function imageData2Image(imagedata) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
 
@@ -19,7 +19,7 @@ function imageData2Image (imagedata) {
 }
 
 // given the RLE array returns the DOM Image element with loaded image
-function RLE2Region (rle, image, { color }) {
+function RLE2Region(rle, image, { color }) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
@@ -50,7 +50,7 @@ function RLE2Region (rle, image, { color }) {
 }
 
 // given the brush region return the RLE encoded array
-function Region2RLE (region, image) {
+function Region2RLE(region, image) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
   const stage = region.object?.stageRef;
@@ -118,7 +118,7 @@ function Region2RLE (region, image) {
   return rle;
 }
 
-function brushSizeCircle (size) {
+function brushSizeCircle(size) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
 
@@ -135,10 +135,10 @@ function brushSizeCircle (size) {
   return canvas.toDataURL();
 }
 
-function encodeSVG (data) {
+function encodeSVG(data) {
   var externalQuotesValue = "single";
 
-  function getQuotes () {
+  function getQuotes() {
     const double = `"`;
     const single = `'`;
 
@@ -150,7 +150,7 @@ function encodeSVG (data) {
 
   var quotes = getQuotes();
 
-  function addNameSpace (data) {
+  function addNameSpace(data) {
     if (data.indexOf("http://www.w3.org/2000/svg") < 0) {
       data = data.replace(/<svg/g, `<svg xmlns=${quotes.level2}http://www.w3.org/2000/svg${quotes.level2}`);
     }
@@ -178,10 +178,10 @@ function encodeSVG (data) {
   return `${quotes.level1}data:image/svg+xml,${escaped}${quotes.level1}`;
 }
 
-const labelToSVG = (function () {
+const labelToSVG = (function() {
   const SVG_CACHE = {};
 
-  function calculateTextWidth (text) {
+  function calculateTextWidth(text) {
     const svg = document.createElement("svg");
     const svgText = document.createElement("text");
 
@@ -198,7 +198,7 @@ const labelToSVG = (function () {
     return textLen;
   }
 
-  return function ({ label, score }) {
+  return function({ label, score }) {
     let cacheKey = label;
 
     if (score !== null) cacheKey = cacheKey + score;

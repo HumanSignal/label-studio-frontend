@@ -21,7 +21,7 @@ const Model = types
     // _value: types.optional(types.string, ""),
   })
   .views(self => ({
-    get _value () {
+    get _value() {
       if (!self.value) return undefined;
 
       const store = getRoot(self);

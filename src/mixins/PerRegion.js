@@ -19,7 +19,7 @@ const PerRegionMixin = types
     };
   },
   ).views(self => ({
-    perRegionVisible () {
+    perRegionVisible() {
       if (!self.perregion) return true;
 
       const region = self.annotation.highlightedNode;

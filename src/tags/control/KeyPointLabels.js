@@ -47,7 +47,7 @@ const ModelAttrs = types
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;

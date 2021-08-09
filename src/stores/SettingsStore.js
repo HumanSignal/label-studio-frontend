@@ -57,15 +57,15 @@ const SettingsModel = types
     // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
-    get annotation () {
+    get annotation() {
       return getRoot(self).annotationStore.selected;
     },
-    get displayLabelsByDefault () {
+    get displayLabelsByDefault() {
       return self.sidePanelMode === SIDEPANEL_MODE_LABELS;
     },
   }))
   .actions(self => ({
-    afterCreate () {
+    afterCreate() {
       // sandboxed environment may break even on check of this property
       try {
         const { localStorage } = window;
@@ -100,7 +100,7 @@ const SettingsModel = types
     //       self.showScore = !self.showScore;
     // },
 
-    toggleShowLabels () {
+    toggleShowLabels() {
       self.showLabels = !self.showLabels;
 
       Utils.HTML.toggleLabelsAndScores(self.showLabels);
@@ -112,7 +112,7 @@ const SettingsModel = types
       // });
     },
 
-    toggleShowLineNumbers () {
+    toggleShowLineNumbers() {
       self.showLineNumbers = !self.showLineNumbers;
 
       // hack to enable it from outside, because Text spawns spans on every rerender
@@ -120,26 +120,26 @@ const SettingsModel = types
       document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
     },
 
-    toggleContinuousLabeling () {
+    toggleContinuousLabeling() {
       self.continuousLabeling = !self.continuousLabeling;
     },
 
-    toggleSelectAfterCreate () {
+    toggleSelectAfterCreate() {
       self.selectAfterCreate = !self.selectAfterCreate;
     },
 
-    toggleSidepanelModel () {
+    toggleSidepanelModel() {
       self.sidePanelMode =
         self.sidePanelMode === SIDEPANEL_MODE_LABELS ? SIDEPANEL_MODE_REGIONS : SIDEPANEL_MODE_LABELS;
       // apply immediately
       self.annotation.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
     },
 
-    toggleAutoSave () {
+    toggleAutoSave() {
       self.enableAutoSave = !self.enableAutoSave;
     },
 
-    toggleHotkeys () {
+    toggleHotkeys() {
       self.enableHotkeys = !self.enableHotkeys;
       if (self.enableHotkeys) {
         Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
@@ -151,38 +151,38 @@ const SettingsModel = types
     /**
      * Function to off/on panel of hotkeys
      */
-    togglePanelHotkeys () {
+    togglePanelHotkeys() {
       self.enablePanelHotkeys = !self.enablePanelHotkeys;
     },
 
     /**
      * Function to off/on tooltips
      */
-    toggleTooltips () {
+    toggleTooltips() {
       self.enableTooltips = !self.enableTooltips;
     },
 
-    toggleFullscreen () {
+    toggleFullscreen() {
       self.fullscreen = !self.fullscreen;
     },
 
-    toggleBottomSP () {
+    toggleBottomSP() {
       self.bottomSidePanel = !self.bottomSidePanel;
     },
 
-    toggleImageFS () {
+    toggleImageFS() {
       self.imageFullSize = !self.imageFullSize;
     },
 
-    toggleLabelTooltips () {
+    toggleLabelTooltips() {
       self.enableLabelTooltips = !self.enableLabelTooltips;
     },
 
-    toggleAnnotationsPanel () {
+    toggleAnnotationsPanel() {
       self.showAnnotationsPanel = !self.showAnnotationsPanel;
     },
 
-    togglePredictionsPanel () {
+    togglePredictionsPanel() {
       self.showPredictionsPanel = !self.showPredictionsPanel;
     },
   }));

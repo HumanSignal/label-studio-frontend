@@ -17,14 +17,14 @@ const Model = types
     type: "brush",
   })
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
   }))
   .actions(self => ({
-    afterCreate () {
+    afterCreate() {
       const brush = Tools.Brush.create();
       const erase = Tools.Erase.create();
       // const zoom  = Tools.Zoom.create();

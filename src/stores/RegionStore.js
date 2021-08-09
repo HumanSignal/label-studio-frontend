@@ -15,11 +15,11 @@ export default types
     view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   })
   .views(self => ({
-    get annotation () {
+    get annotation() {
       return getParent(self);
     },
 
-    get classifications () {
+    get classifications() {
       const textAreas = Array.from(self.annotation.names.values())
         .filter(t => isDefined(t))
         .filter(t => t.type === "textarea" && !t.perregion)
@@ -28,15 +28,15 @@ export default types
       return [].concat(...textAreas);
     },
 
-    get regions () {
+    get regions() {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
-    get isAllHidden () {
+    get isAllHidden() {
       return !self.regions.find(area => !area.hidden);
     },
 
-    get sortedRegions () {
+    get sortedRegions() {
       const sorts = {
         date: isDesc => (isDesc ? self.regions : [...self.regions].reverse()),
         score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
@@ -47,7 +47,7 @@ export default types
       return sorted;
     },
 
-    asTree (enrich) {
+    asTree(enrich) {
       // every region has a parentID
       // parentID is an empty string - "" if it's top level
       // or it can contain a string key to the parent region
@@ -83,7 +83,7 @@ export default types
       return tree;
     },
 
-    asLabelsTree (enrich) {
+    asLabelsTree(enrich) {
       // collect all label states into two maps
       let labels = {};
       const map = {};
@@ -122,22 +122,22 @@ export default types
     },
   }))
   .actions(self => ({
-    addRegion (region) {
+    addRegion(region) {
       console.log({ region });
       self.regions.push(region);
       getEnv(self).events.invoke('entityCreate', region);
     },
 
-    toggleSortOrder () {
+    toggleSortOrder() {
       if (self.sortOrder === "asc") self.sortOrder = "desc";
       else self.sortOrder = "asc";
     },
 
-    setView (view) {
+    setView(view) {
       self.view = view;
     },
 
-    setSort (sort) {
+    setSort(sort) {
       if (self.sort === sort) {
         self.toggleSortOrder();
       } else {
@@ -147,7 +147,7 @@ export default types
       self.initHotkeys();
     },
 
-    setGroup (group) {
+    setGroup(group) {
       self.group = group;
     },
 
@@ -155,7 +155,7 @@ export default types
      * Delete region
      * @param {obj} region
      */
-    deleteRegion (region) {
+    deleteRegion(region) {
       const arr = self.regions;
 
       // find regions that have that region as a parent
@@ -173,19 +173,19 @@ export default types
       self.initHotkeys();
     },
 
-    findRegionID (id) {
+    findRegionID(id) {
       return self.regions.find(r => r.id === id);
     },
 
-    findRegion (id) {
+    findRegion(id) {
       return self.regions.find(r => r.id === id);
     },
 
-    filterByParentID (id) {
+    filterByParentID(id) {
       return self.regions.filter(r => r.parentID === id);
     },
 
-    afterCreate () {
+    afterCreate() {
       onPatch(self, patch => {
         if ((patch.op === "add" || patch.op === "delete") && patch.path.indexOf("/regions/") !== -1) {
           self.initHotkeys();
@@ -195,13 +195,13 @@ export default types
     },
 
     // init Alt hotkeys for regions selection
-    initHotkeys () {
+    initHotkeys() {
       const PREFIX = "alt+shift+";
 
       hotkeys.unbindAll();
 
       self.sortedRegions.forEach((r, n) => {
-        hotkeys.addKey(PREFIX + (n + 1), function () {
+        hotkeys.addKey(PREFIX + (n + 1), function() {
           self.unselectAll();
           r.selectRegion();
         });
@@ -215,15 +215,15 @@ export default types
     /**
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
-    unselectAll () {
+    unselectAll() {
       self.annotation.unselectAll();
     },
 
-    unhighlightAll () {
+    unhighlightAll() {
       self.regions.forEach(r => r.setHighlight(false));
     },
 
-    selectNext () {
+    selectNext() {
       const { regions } = self;
       const idx = self.regions.findIndex(r => r.selected);
 
@@ -234,7 +234,7 @@ export default types
       next && next.selectRegion();
     },
 
-    toggleVisibility () {
+    toggleVisibility() {
       const shouldBeHidden = !self.isAllHidden;
 
       self.regions.forEach(area => {
@@ -244,7 +244,7 @@ export default types
       });
     },
 
-    setHiddenByLabel (shouldBeHidden, label) {
+    setHiddenByLabel(shouldBeHidden, label) {
       self.regions.forEach(area => {
         if (area.hidden !== shouldBeHidden) {
           const l = area.labeling;

@@ -91,7 +91,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
 
   if (ref) {
     ref.current = {
-      updatePointer (newX, newY) {
+      updatePointer(newX, newY) {
         if (newX !== x) {
           setX(newX);
           setPointsV([newX, 0, newX, height]);
@@ -102,7 +102,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           setPointsH([0, newY, width, newY]);
         }
       },
-      updateVisibility (visibility) {
+      updateVisibility(visibility) {
         setVisible(visibility);
       },
     };
@@ -306,7 +306,7 @@ export default observer(
       }
     };
 
-    renderRulers () {
+    renderRulers() {
       const { item } = this.props;
       const width = 1;
       const color = "white";
@@ -351,7 +351,7 @@ export default observer(
       this.lastOffsetWidth = this.container.offsetWidth;
     };
 
-    componentDidMount () {
+    componentDidMount() {
       window.addEventListener("resize", this.onResize);
 
       if (this.props.item && isAlive(this.props.item)) {
@@ -361,12 +361,12 @@ export default observer(
       this.updateReadyStatus();
     }
 
-    componentWillUnmount () {
+    componentWillUnmount() {
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
     }
 
-    componentDidUpdate (prevProps) {
+    componentDidUpdate(prevProps) {
       this.onResize();
 
       if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
@@ -375,7 +375,7 @@ export default observer(
       this.updateReadyStatus();
     }
 
-    updateReadyStatus () {
+    updateReadyStatus() {
       const { item } = this.props;
       const { imageRef } = this;
 
@@ -383,7 +383,7 @@ export default observer(
       if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
 
-    observerObjectUpdate (){
+    observerObjectUpdate(){
       this.propsObserverDispose.forEach(dispose => dispose());
       this.propsObserverDispose = [
         'width',
@@ -454,7 +454,7 @@ export default observer(
       }
     }
 
-    renderTools () {
+    renderTools() {
       const { item, store } = this.props;
       const cs = store.annotationStore;
 
@@ -472,7 +472,7 @@ export default observer(
       );
     }
 
-    render () {
+    render() {
       const { item, store } = this.props;
 
       // @todo stupid but required check for `resetState()`

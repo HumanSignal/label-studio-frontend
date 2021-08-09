@@ -24,7 +24,7 @@ const createGrid = (width, height, nodeSize) => {
 
 export default observer(
   class ImageGrid extends Component {
-    render () {
+    render() {
       const { item } = this.props;
 
       const grid = createGrid(

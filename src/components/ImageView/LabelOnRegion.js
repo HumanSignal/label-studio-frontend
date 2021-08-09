@@ -8,7 +8,7 @@ import Constants from "../../core/Constants";
 import { flatten } from "../../utils/utilities";
 
 // @todo rewrite this to update bbox on shape level while adding new point
-function polytobbox (points) {
+function polytobbox(points) {
   var lats = [];
   var lngs = [];
 
@@ -31,7 +31,7 @@ function polytobbox (points) {
 }
 
 // @todo rewrite this to update bbox on shape level while adding new point
-function pointstobbox (points) {
+function pointstobbox(points) {
   const len = points.length;
 
   if (!len)

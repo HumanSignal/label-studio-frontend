@@ -35,15 +35,15 @@ const Model = types
     hideable: true,
   }))
   .views(self => ({
-    get parent () {
+    get parent() {
       return self.object;
     },
-    getRegionElement () {
+    getRegionElement() {
       return self._spans?.[0];
     },
   }))
   .actions(self => ({
-    beforeDestroy () {
+    beforeDestroy() {
       try{
         self.removeHighlight();
       } catch(e) {
@@ -51,7 +51,7 @@ const Model = types
       }
     },
 
-    serialize () {
+    serialize() {
       let res = {
         value: {},
       };
@@ -85,18 +85,18 @@ const Model = types
       return res;
     },
 
-    updateOffsets (startOffset, endOffset) {
+    updateOffsets(startOffset, endOffset) {
       Object.assign(self, { startOffset, endOffset });
     },
 
-    updateGlobalOffsets (start, end) {
+    updateGlobalOffsets(start, end) {
       self.globalOffsets = GlobalOffsets.create({
         start,
         end,
       });
     },
 
-    rangeFromGlobalOffset () {
+    rangeFromGlobalOffset() {
       const root = self._getRootNode();
 
       if (self.globalOffsets && isDefined(root)) {
@@ -107,7 +107,7 @@ const Model = types
     },
 
     // For external XPath updates
-    _fixXPaths () {
+    _fixXPaths() {
       if (self.isText) return;
 
       const range = self._getRange(true);
@@ -134,7 +134,7 @@ const Model = types
       }
     },
 
-    _getRange ({ useOriginalContent = false, useCache = true } = {}) {
+    _getRange({ useOriginalContent = false, useCache = true } = {}) {
       const rootNode = self._getRootNode(useOriginalContent);
       const hasCache = isDefined(self._cachedRange) && !useOriginalContent && useCache;
       const rootNodeExists = hasCache && (rootNode && !rootNode.contains(self._cachedRange.commonAncestorContainer));
@@ -153,7 +153,7 @@ const Model = types
       return self._cachedRange;
     },
 
-    _getRootNode (originalContent = false) {
+    _getRootNode(originalContent = false) {
       const rootNode = originalContent
         ? self.parent.originalContentRef
         : self.parent.rootNodeRef;
@@ -161,7 +161,7 @@ const Model = types
       return rootNode.current;
     },
 
-    _createNativeRange (useOriginalContent = false) {
+    _createNativeRange(useOriginalContent = false) {
       let rootNode = self._getRootNode(useOriginalContent);
 
       if (rootNode === undefined) return undefined;

@@ -33,12 +33,12 @@ const Model = types
     hideable: true,
   }))
   .views(self => ({
-    get store () {
+    get store() {
       return getRoot(self);
     },
   }))
   .actions(self => ({
-    afterCreate () {
+    afterCreate() {
       if (self.coordstype === "perc") {
         // deserialization
         self.relativeX = self.x;
@@ -56,13 +56,13 @@ const Model = types
     },
 
     // @todo not used
-    rotate (degree) {
+    rotate(degree) {
       const p = self.rotatePoint(self, degree);
 
       self.setPosition(p.x, p.y);
     },
 
-    setPosition (x, y) {
+    setPosition(x, y) {
       self.x = x;
       self.y = y;
 
@@ -70,7 +70,7 @@ const Model = types
       self.relativeY = (y / self.parent.stageHeight) * 100;
     },
 
-    updateImageSize (wp, hp, sw, sh) {
+    updateImageSize(wp, hp, sw, sh) {
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
@@ -84,7 +84,7 @@ const Model = types
       }
     },
 
-    serialize () {
+    serialize() {
       return {
         original_width: self.parent.naturalWidth,
         original_height: self.parent.naturalHeight,

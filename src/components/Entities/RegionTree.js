@@ -102,7 +102,7 @@ export const RegionTree = observer(({ regionStore }) => {
             // height of 1
             let treeHeight;
 
-            treeHeight = function (node) {
+            treeHeight = function(node) {
               if (!node) return 0;
 
               // TODO this can blow up if we have lots of stuff there

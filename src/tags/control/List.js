@@ -19,15 +19,15 @@ const ListItemModel = types
   })
   .views(() => ({}))
   .actions(self => ({
-    setBG (val) {
+    setBG(val) {
       self.backgroundColor = val;
     },
 
-    setIdx (idx) {
+    setIdx(idx) {
       self.idx = idx;
     },
 
-    setSelected (val) {
+    setSelected(val) {
       self.selected = val;
     },
   }));
@@ -74,11 +74,11 @@ const Model = types
   })
   .views(() => ({}))
   .actions(self => ({
-    setUpdate () {
+    setUpdate() {
       self.update = self.update + 1;
     },
 
-    addRegion (vals, idx) {
+    addRegion(vals, idx) {
       const reg = ListItemModel.create({
         value: self.elementvalue,
         idx,
@@ -88,7 +88,7 @@ const Model = types
       self.regions.push(reg);
     },
 
-    updateValue (store) {
+    updateValue(store) {
       const val = variableNotation(self.value, store.task.dataObj);
 
       // in case we're in expert mode it will call updateValue
@@ -105,7 +105,7 @@ const Model = types
       self.setUpdate();
     },
 
-    moveItems ({ oldIndex, newIndex }) {
+    moveItems({ oldIndex, newIndex }) {
       if (oldIndex === newIndex) return;
 
       if (self.sortedhighlightcolor) {
@@ -120,7 +120,7 @@ const Model = types
       self.setUpdate();
     },
 
-    toStateJSON () {
+    toStateJSON() {
       const map = {};
 
       self._value.forEach((v, idx) => {
@@ -129,7 +129,7 @@ const Model = types
 
       const ranked = Object.keys(map)
         .sort((a, b) => a - b)
-        .map(function (v) {
+        .map(function(v) {
           return map[v];
         });
 
@@ -149,7 +149,7 @@ const Model = types
       };
     },
 
-    fromStateJSON (obj) {
+    fromStateJSON(obj) {
       const ranked = [];
       const regions = [];
       const item_weight = {};
@@ -187,7 +187,7 @@ const ListModel = types.compose("ListModel", TagAttrs, Model);
 
 const DragHandle = sortableHandle(() => <div className="drag-handle"></div>);
 
-function isMobileDevice () {
+function isMobileDevice() {
   try {
     return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf("IEMobile") !== -1;
   } catch (e) {

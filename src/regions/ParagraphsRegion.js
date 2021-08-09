@@ -30,28 +30,28 @@ const Model = types
     hideable: true,
   }))
   .views(self => ({
-    get parent () {
+    get parent() {
       return self.object;
     },
-    getRegionElement () {
+    getRegionElement() {
       return self._spans?.[0];
     },
   }))
   .actions(self => ({
-    beforeDestroy () {
+    beforeDestroy() {
       Utils.HTML.removeSpans(self._spans);
     },
 
-    setText (text) {
+    setText(text) {
       self.text = text;
     },
 
-    fixOffsets (startOffset, endOffset) {
+    fixOffsets(startOffset, endOffset) {
       self.startOffset = startOffset;
       self.endOffset = endOffset;
     },
 
-    serialize () {
+    serialize() {
       const { start, end } = self;
 
       let res = {
