@@ -62,7 +62,7 @@ const Model = types
           end: self.endOffset,
         });
       } else {
-        console.log(self.globalOffsets);
+        // Calculate proper XPath right before serialization
         const root = self._getRootNode(true);
         const range = findRangeNative(
           self.globalOffsets.start,
@@ -129,8 +129,6 @@ const Model = types
         self.end = normedRange.end ?? self.end;
         self.startOffset = normedRange.startOffset ?? self.startOffset;
         self.endOffset = normedRange.endOffset ?? self.endOffset;
-
-        console.log(self.text, normedRange);
       }
     },
 
@@ -138,8 +136,6 @@ const Model = types
       const rootNode = self._getRootNode(useOriginalContent);
       const hasCache = isDefined(self._cachedRange) && !useOriginalContent && useCache;
       const rootNodeExists = hasCache && (rootNode && !rootNode.contains(self._cachedRange.commonAncestorContainer));
-
-      if (useOriginalContent) console.log({ rootNode, hasCache, rootNodeExists });
 
       if (hasCache === false || rootNodeExists) {
         const foundRange = self._createNativeRange(useOriginalContent);
@@ -181,13 +177,15 @@ const Model = types
           return range;
         }
       } catch (err) {
-        if (rootNode) console.log(err, rootNode, [startOffset, endOffset]);
+        // should never happen
+        // doesn't break anything if happens
       }
 
       try {
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
-        if (rootNode) console.warn(err);
+        // should never happen
+        // doesn't break anything if happens
       }
 
       return undefined;
