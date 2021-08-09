@@ -10,8 +10,7 @@ import { customTypes } from "../../../core/CustomTypes";
 import { parseValue } from "../../../utils/data";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { observe } from "mobx";
-import * as xpath from "xpath-range";
-import { findRangeNative, rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -173,23 +172,7 @@ const Model = types
 
     fixRegionsXPath (region) {
       // Text regions don't use XPath
-      if (region.isText) return;
-
-      const range = region._cachedRange;
-
-      if (range && region.globalOffsets) {
-        const root = self.originalContentRef.current;
-
-        const rangeFromGlobal = findRangeNative(
-          region.globalOffsets.start,
-          region.globalOffsets.end,
-          root,
-        );
-
-        const normedRange = xpath.fromRange(rangeFromGlobal, root);
-
-        region.updateXPath(normedRange);
-      }
+      region._fixXPaths();
     },
 
     beforeDestroy () {

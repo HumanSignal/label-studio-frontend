@@ -62,11 +62,19 @@ const Model = types
           end: self.endOffset,
         });
       } else {
+        console.log(self.globalOffsets);
+        const root = self._getRootNode(true);
+        const range = findRangeNative(
+          self.globalOffsets.start,
+          self.globalOffsets.end,
+          root,
+        );
+
+        const xpathRange = xpath.fromRange(range, root);
+
         Object.assign(res.value, {
-          start: self.start,
-          end: self.end,
-          startOffset: self.startOffset,
-          endOffset: self.endOffset,
+          ...xpathRange,
+          globalOffsets: self.globalOffsets?.toJSON(),
         });
       }
 
@@ -89,22 +97,41 @@ const Model = types
     },
 
     rangeFromGlobalOffset () {
-      if (self.globalOffsets) {
-        return findRangeNative(self.globalOffsets.start, self.globalOffsets.end, self._getRootNode());
+      const root = self._getRootNode();
+
+      if (self.globalOffsets && isDefined(root)) {
+        return findRangeNative(self.globalOffsets.start, self.globalOffsets.end, root);
       }
 
       return self._getRange();
     },
 
     // For external XPath updates
-    updateXPath (normedRange) {
+    _fixXPaths () {
       if (self.isText) return;
-      if (!isDefined(normedRange)) return;
 
-      self.start = normedRange.start ?? self.start;
-      self.end = normedRange.end ?? self.end;
-      self.startOffset = normedRange.startOffset ?? self.startOffset;
-      self.endOffset = normedRange.endOffset ?? self.endOffset;
+      const range = self._getRange(true);
+
+      if (range && self.globalOffsets) {
+        const root = self._getRootNode(true);
+
+        const rangeFromGlobal = findRangeNative(
+          self.globalOffsets.start,
+          self.globalOffsets.end,
+          root,
+        );
+
+        const normedRange = xpath.fromRange(rangeFromGlobal, root);
+
+        if (!isDefined(normedRange)) return;
+
+        self.start = normedRange.start ?? self.start;
+        self.end = normedRange.end ?? self.end;
+        self.startOffset = normedRange.startOffset ?? self.startOffset;
+        self.endOffset = normedRange.endOffset ?? self.endOffset;
+
+        console.log(self.text, normedRange);
+      }
     },
 
     _getRange ({ useOriginalContent = false, useCache = true } = {}) {
@@ -135,7 +162,7 @@ const Model = types
     },
 
     _createNativeRange (useOriginalContent = false) {
-      const rootNode = self._getRootNode(useOriginalContent);
+      let rootNode = self._getRootNode(useOriginalContent);
 
       if (rootNode === undefined) return undefined;
 
@@ -153,10 +180,14 @@ const Model = types
 
           return range;
         }
-
-        return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
         if (rootNode) console.log(err, rootNode, [startOffset, endOffset]);
+      }
+
+      try {
+        return xpath.toRange(start, startOffset, end, endOffset, rootNode);
+      } catch (err) {
+        if (rootNode) console.warn(err);
       }
 
       return undefined;
