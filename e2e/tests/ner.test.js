@@ -37,18 +37,26 @@ const results = [
     endOffset: 1,
     htmllabels: ["Term"],
     text: "Named-entity recognition",
+    globalOffsets: {
+      end: 28,
+      start: 4,
+    },
   },
   {
-    start: "/div[1]/p[1]/b[2]/text()[1]",
+    start: "/div[1]/p[1]/b[2]",
     startOffset: 0,
     end: "/div[1]/p[1]/b[2]/text()[1]",
     endOffset: 3,
     htmllabels: ["Abbr"],
     text: "NER",
+    globalOffsets: {
+      end: 61,
+      start: 58,
+    },
   },
 ];
 
-Scenario("NER labeling for HyperText", async function ({ I }) {
+Scenario("NER labeling for HyperText", async function({ I }) {
   const params = {
     config: configSimple,
     data: { text },
