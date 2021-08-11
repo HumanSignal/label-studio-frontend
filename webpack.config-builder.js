@@ -212,11 +212,14 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
-  new ESLintPlugin({
-    fix: isDevelopment,
-    failOnError: isDevelopment,
-  }),
 ];
+
+if (isDevelopment) {
+  plugins.push(new ESLintPlugin({
+    fix: true,
+    failOnError: true,
+  }));
+}
 
 if (!BUILD.NO_SERVER) {
   plugins.push(
