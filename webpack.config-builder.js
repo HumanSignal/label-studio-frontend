@@ -39,6 +39,7 @@ const dirPrefix = {
 const LOCAL_ENV = {
   NODE_ENV: DEFAULT_NODE_ENV,
   CSS_PREFIX: "lsf-",
+  BUILD_NO_SERVER: BUILD.NO_SERVER,
 };
 
 const babelOptimizeOptions = () => {
