@@ -29,6 +29,9 @@ jobs:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
 
+    - name: Print Yarn cache size
+      run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
+
     - name: Install dependencies
       run: yarn install --silent
 
