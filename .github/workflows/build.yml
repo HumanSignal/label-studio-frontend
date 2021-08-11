@@ -16,19 +16,27 @@ jobs:
       with:
         node-version: 12
 
-    # cache npm deps for faster runs
-    - name: Cache node modules
-      uses: actions/cache@v1
-      env:
-        cache-name: cache-node-modules
-      with:
-        path: ~/.npm
-        key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-        restore-keys: |
-          npm-${{ runner.os }}-
+    - name: Upgrade Yarn
+      run: npm install -g yarn@1.22
 
-    - run: npm ci
-    - run: npm run build:module
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+
+    - name: Configure yarn cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Print Yarn cache size
+      run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
+
+    - name: Install dependencies
+      run: yarn install --silent
+
+    - name: Build distribution package
+      run: yarn run build:module
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
         NODE_ENV: 'production'
@@ -38,7 +46,7 @@ jobs:
     # because pr can contain unfinished job
     - run: npx serve -l tcp://localhost:3000 build &
       if: github.event_name == 'push'
-    - run: npm run test:e2e:headless
+    - run: yarn run test:e2e:headless
       if: github.event_name == 'push'
 
     - uses: actions/upload-artifact@master
