@@ -7,6 +7,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
+const { EnvironmentPlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
   ? path.resolve(__dirname, process.env.WORK_DIR)
@@ -208,6 +209,7 @@ const plugins = [
     allowEmptyValues: true,
     defaults: "./.env.defaults",
   }),
+  new EnvironmentPlugin(LOCAL_ENV),
   new MiniCssExtractPlugin({
     ...cssOutput(),
   }),
@@ -273,7 +275,13 @@ module.exports = ({withDevServer = true} = {}) => ({
     maxEntrypointSize: Infinity,
     maxAssetSize: 1000000,
   },
-  stats: "normal",
+  stats: {
+    errorDetails: true,
+    logging: 'error',
+    chunks: false,
+    cachedAssets: false,
+    orphanModules: false,
+  },
   module: {
     rules: [
       {
