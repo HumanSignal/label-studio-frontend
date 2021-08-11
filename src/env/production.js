@@ -1,7 +1,7 @@
 import External from "../core/External";
 import Messages from "../utils/messages";
 
-function getData (task) {
+function getData(task) {
   if (task && task.data) {
     return {
       ...task,
@@ -12,7 +12,7 @@ function getData (task) {
   return task;
 }
 
-function getState (task) {
+function getState(task) {
   return {
     annotations: task?.annotations,
     completions: task?.completions,
@@ -23,7 +23,7 @@ function getState (task) {
 /**
  * LS will render in this part
  */
-function rootElement (element) {
+function rootElement(element) {
   let root;
 
   if (typeof element === "string") {
@@ -41,7 +41,7 @@ function rootElement (element) {
  * Function to configure application with callbacks
  * @param {object} params
  */
-function configureApplication (params) {
+function configureApplication(params) {
   // callbacks for back compatibility
   const osCB = params.submitAnnotation || params.onSubmitAnnotation;
   const ouCB = params.updateAnnotation || params.onUpdateAnnotation;

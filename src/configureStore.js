@@ -1,11 +1,11 @@
 import AppStore from "./stores/AppStore";
 
 const getEnvironment = async() => {
-  if (process.env.NODE_ENV === "production") {
-    return (await import("./env/production")).default;
-  } else {
+  if (process.env.NODE_ENV === "development" && !process.env.BUILD_NO_SERVER) {
     return (await import("./env/development")).default;
   }
+
+  return (await import("./env/production")).default;
 };
 
 export const configureStore = async(params, events) => {
