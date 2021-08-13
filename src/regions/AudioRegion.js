@@ -50,6 +50,26 @@ const Model = types
     },
   }))
   .actions(self => ({
+    /**
+     * @example
+     * {
+     *   "original_length": 18,
+     *   "value": {
+     *     "start": 3.1,
+     *     "end": 8.2,
+     *     "labels": ["Voice"]
+     *   }
+     * }
+     * @typedef {Object} AudioRegionResult
+     * @property {number} original_length length of the original audio (s)
+     * @property {Object} value
+     * @property {number} value.start start time of the fragment (s)
+     * @property {number} value.end finish time of the fragment (s)
+     */
+
+    /**
+     * @returns {AudioRegionResult}
+     */
     serialize() {
       let res = {
         original_length: self.object._ws?.getDuration(),

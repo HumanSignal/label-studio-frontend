@@ -51,6 +51,29 @@ const Model = types
       self.endOffset = endOffset;
     },
 
+    /**
+     * @example
+     * {
+     *   "value": {
+     *     "start": 3,
+     *     "end": 5,
+     *     "startOffset": 2,
+     *     "endOffset": 81,
+     *     "paragraphlabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} ParagraphsRegionResult
+     * @property {Object} value
+     * @property {number} value.start index of paragraph where the region starts
+     * @property {number} value.end index of paragraph where the region ends (xpath)
+     * @property {number} value.startOffset offset inside start paragraph
+     * @property {number} value.endOffset offset inside end paragraph
+     * @property {string} [value.text] text content of the region, may be missed
+     */
+
+    /**
+     * @return {ParagraphsRegionResult}
+     */
     serialize() {
       const { start, end } = self;
 

@@ -172,6 +172,35 @@ const Model = types
       }
     },
 
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "x": 3.1,
+     *     "y": 8.2,
+     *     "width": 20,
+     *     "height": 16,
+     *     "rectanglelabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} RectRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number} value.x x coord of the top left corner before rotation (0-100)
+     * @property {number} value.y y coord of the top left corner before rotation (0-100)
+     * @property {number} value.width width (0-100)
+     * @property {number} value.height height (0-100)
+     * @property {number} value.rotation rotation degree (deg)
+     */
+
+    /**
+     * @return {RectRegionResult}
+     */
     serialize() {
       return {
         original_width: self.parent.naturalWidth,
