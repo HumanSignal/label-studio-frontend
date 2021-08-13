@@ -22,6 +22,7 @@ import ControlBase from "./Base";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPointLabels
+ * @regions KeyPointRegion
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels

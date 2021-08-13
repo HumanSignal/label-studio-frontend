@@ -21,6 +21,7 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name BrushLabels
+ * @regions BrushRegion
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether the data labeler can select one or multiple labels

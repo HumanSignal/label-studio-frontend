@@ -14,6 +14,7 @@ import { TagParentMixin } from "../../../mixins/TagParentMixin";
 /**
  * Channel tag can be used to label time series data
  * @name Channel
+ * @subtag
  * @param {string} column column name or index
  * @param {string} [legend] display name of the channel
  * @param {string} [units] display units name

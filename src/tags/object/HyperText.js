@@ -20,8 +20,14 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @example
  * <View>
  *   <HyperText name="text-1" value="$text" />
+ *   <Labels name="parts" toName="text-1">
+ *     <Label value="Caption" />
+ *     <Label value="Article" />
+ *     <Label value="Author" />
+ *   </Labels>
  * </View>
  * @name HyperText
+ * @regions HyperTextRegion
  * @param {string} name - Name of the element
  * @param {string} value - Value of the element
  * @param {url|text} [valueType]       - Where the text is stored — directly in uploaded data or needs to be loaded from a URL
@@ -55,21 +61,21 @@ const Model = types
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
 
-    get regs () {
+    get regs() {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    states () {
+    states() {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates () {
+    activeStates() {
       const states = self.states();
 
       return states
@@ -80,15 +86,15 @@ const Model = types
     },
   }))
   .actions(self => ({
-    needsUpdate () {
+    needsUpdate() {
       self._update = self._update + 1;
     },
 
-    updateValue (store) {
+    updateValue(store) {
       self._value = parseValue(self.value, store.task.dataObj);
     },
 
-    createRegion (p) {
+    createRegion(p) {
       const r = HyperTextRegionModel.create({
         pid: p.id,
         ...p,
@@ -102,7 +108,7 @@ const Model = types
       return r;
     },
 
-    addRegion (range) {
+    addRegion(range) {
       const states = self.getAvailableStates();
 
       if (states.length === 0) return;
@@ -120,7 +126,7 @@ const Model = types
      * @param {*} obj
      * @param {*} fromModel
      */
-    fromStateJSON (obj, fromModel) {
+    fromStateJSON(obj, fromModel) {
       const { start, startOffset, end, endOffset, text } = obj.value;
 
       if (fromModel.type === "textarea" || fromModel.type === "choices") {
@@ -154,7 +160,7 @@ const Model = types
 const HyperTextModel = types.compose("HyperTextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxHyperTextView extends Component {
-  render () {
+  render() {
     const { item, store } = this.props;
 
     if (!item._value) return null;
@@ -164,12 +170,12 @@ class HtxHyperTextView extends Component {
 }
 
 class HyperTextPieceView extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.myRef = React.createRef();
   }
 
-  captureDocumentSelection () {
+  captureDocumentSelection() {
     var i,
       self = this,
       ranges = [],
@@ -213,7 +219,7 @@ class HyperTextPieceView extends Component {
     return ranges;
   }
 
-  onMouseUp () {
+  onMouseUp() {
     const item = this.props.item;
     const states = item.activeStates();
 
@@ -234,11 +240,11 @@ class HyperTextPieceView extends Component {
     }
   }
 
-  _handleUpdate () {
+  _handleUpdate() {
     const root = this.myRef.current;
     const { item } = this.props;
 
-    item.regs.forEach(function (r) {
+    item.regs.forEach(function(r) {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -264,7 +270,7 @@ class HyperTextPieceView extends Component {
 
     if (!item.clickablelinks) {
       Array.from(this.myRef.current.getElementsByTagName("a")).forEach(a => {
-        a.addEventListener("click", function (ev) {
+        a.addEventListener("click", function(ev) {
           ev.preventDefault();
           return false;
         });
@@ -272,15 +278,15 @@ class HyperTextPieceView extends Component {
     }
   }
 
-  componentDidUpdate () {
+  componentDidUpdate() {
     this._handleUpdate();
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this._handleUpdate();
   }
 
-  render () {
+  render() {
     const { item, store } = this.props;
 
     let val = parseValue(item.value, store.task.dataObj);

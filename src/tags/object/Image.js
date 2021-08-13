@@ -23,11 +23,7 @@ import { guidGenerator } from "../../utils/unique";
  * @example
  * <View>
  *   <!-- Take the image url from the url column in JSON/CSV -->
- *   <Image value="$url"></Image>
- * </View>
- * @example
- * <View>
- *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px" />
+ *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
  * @name Image
  * @param {string} name                       - Name of the element

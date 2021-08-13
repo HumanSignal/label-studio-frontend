@@ -21,6 +21,7 @@ import ControlBase from "./Base";
  *   </PolygonLabels>
  * </View>
  * @name PolygonLabels
+ * @regions PolygonRegion
  * @param {string} name                             - Name of tag
  * @param {string} toName                           - Name of image to label
  * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels

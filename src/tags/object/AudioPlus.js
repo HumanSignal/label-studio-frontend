@@ -19,8 +19,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @example
  * <View>
  *   <Labels name="lbl-1" toName="audio-1">
- *     <Label value="Hello" />
- *     <Label value="World" />
+ *     <Label value="Guitar" />
+ *     <Label value="Drums" />
  *   </Labels>
  *   <Rating name="rate-1" toName="audio-1" />
  *   <AudioPlus name="audio-1" value="$audio" />
