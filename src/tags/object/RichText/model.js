@@ -1,16 +1,17 @@
 import React from "react";
-
-import RegionsMixin from "../../../mixins/Regions";
 import { types, getType, flow } from "mobx-state-tree";
-import ObjectBase from "../Base";
-import { RichTextRegionModel } from "../../../regions/RichTextRegion";
-import Infomodal from "../../../components/Infomodal/Infomodal";
-import Utils from "../../../utils";
-import { customTypes } from "../../../core/CustomTypes";
-import { parseValue } from "../../../utils/data";
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { observe } from "mobx";
+
+import { customTypes } from "../../../core/CustomTypes";
+import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
+import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
+import RegionsMixin from "../../../mixins/Regions";
+import { RichTextRegionModel } from "../../../regions/RichTextRegion";
+import Utils from "../../../utils";
+import { parseValue } from "../../../utils/data";
+import messages from "../../../utils/messages";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
+import ObjectBase from "../Base";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -110,11 +111,11 @@ const Model = types
         const url = value;
 
         if (!/^https?:\/\//.test(url)) {
-          const message = [WARNING_MESSAGES.dataTypeMistmatch(), WARNING_MESSAGES.badURL(url)];
+          const message = [WARNING_MESSAGES.badURL(url), WARNING_MESSAGES.dataTypeMistmatch()];
 
           if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
 
-          Infomodal.error(message.map((t, i) => <p key={i}>{t}</p>));
+          self.annotationStore.addErrors([errorBuilder.generalError(message.join("<br/>\n"))]);
           self.setRemoteValue("");
           return;
         }
@@ -127,7 +128,9 @@ const Model = types
 
           self.setRemoteValue(yield response.text());
         } catch (error) {
-          Infomodal.error(WARNING_MESSAGES.loadingError(url, error));
+          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url });
+
+          self.annotationStore.addErrors([errorBuilder.generalError(message)]);
           self.setRemoteValue("");
         }
       } else {
