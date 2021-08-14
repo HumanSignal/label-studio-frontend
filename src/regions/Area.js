@@ -1,5 +1,6 @@
 import { types } from "mobx-state-tree";
 import Registry from "../core/Registry";
+import RegionsMixin from "../mixins/Regions";
 import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
@@ -14,6 +15,7 @@ import { ParagraphsRegionModel } from "./ParagraphsRegion";
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
   "ClassificationArea",
+  RegionsMixin,
   AreaMixin,
   types
     .model({

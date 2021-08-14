@@ -174,8 +174,22 @@ const HtxRating = inject("store")(
 
     const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
+    // rc-rate component listens for keypress event and hit the star if the key is Enter
+    // but it doesn't check for any modificators, so it removes star during submit (ctrl+enter)
+    // so we'll just remove focus from component at the moment any modificator pressed
+    const dontBreakSubmit = e => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) {
+        // should be a star, because that's the only way this event can happen
+        const star = document.activeElement;
+        const control = e.currentTarget;
+
+        // but we'll check that for sure
+        if (control.contains(star)) star.blur();
+      }
+    };
+
     return (
-      <div style={visibleStyle}>
+      <div style={visibleStyle} onKeyDownCapture={dontBreakSubmit}>
         <Rate
           character={<StarOutlined style={{ fontSize: iconSize }} />}
           value={item.rating}

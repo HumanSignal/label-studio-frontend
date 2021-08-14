@@ -361,6 +361,8 @@ export default types
     }
 
     function submitAnnotation() {
+      if (self.isSubmitting) return;
+
       const entity = self.annotationStore.selected;
 
       entity.beforeSend();

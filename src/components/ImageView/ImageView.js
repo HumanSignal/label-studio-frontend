@@ -9,6 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import messages from "../../utils/messages";
 import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
 import { observe } from "mobx";
@@ -269,10 +270,9 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
+      const message = messages.ERR_LOADING_HTTP({ attr: item.value, error: "", url: item._value });
 
-      cs.addErrors([
-        errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
-      ]);
+      cs.addErrors([errorBuilder.generalError(message)]);
     };
 
     updateGridSize = range => {
