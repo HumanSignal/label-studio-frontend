@@ -17,7 +17,7 @@ const RequiredMixin = types
           const s = reg.results.find(s => s.type === self.resultType);
 
           if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
-            return true;
+            continue;
           }
 
           if (!s?.hasValue) {
