@@ -460,6 +460,9 @@ export default types
         obj.reinitHistory();
       });
 
+      const current = as.annotations[as.annotations.length - 1];
+      if (current) current.setInitialValues();
+
       self.setHistory(annotationHistory);
       /* eslint-enable no-unused-expressions */
 
