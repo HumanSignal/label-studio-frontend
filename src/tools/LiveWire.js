@@ -22,20 +22,20 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({})
   .views(self => ({
-    get viewClass () {
+    get viewClass() {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    mouseupEv () {
+    mouseupEv() {
       self.mode = "viewing";
     },
 
-    mousemoveEv () {
+    mousemoveEv() {
       if (self.mode !== "drawing") return;
     },
 
-    mousedownEv () {
+    mousedownEv() {
       self.mode = "drawing";
     },
   }));

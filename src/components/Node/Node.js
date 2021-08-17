@@ -17,6 +17,7 @@ import {
 import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
+import { IconBrushTool, IconCircleTool, IconKeypointsTool, IconPolygonTool, IconRectangleTool } from "../../assets/icons";
 
 const NodeViews = {
   RichTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
@@ -39,30 +40,46 @@ const NodeViews = {
 
   RectRegionModel: [
     "Rect",
-    BlockOutlined,
+    IconRectangleTool,
     () => null,
   ],
 
-  PolygonRegionModel: ["Polygon", GatewayOutlined, () => null],
+  PolygonRegionModel: [
+    "Polygon",
+    IconPolygonTool,
+    () => null,
+  ],
 
   EllipseRegionModel: [
     "Ellipse",
-    Loading3QuartersOutlined,
+    IconCircleTool,
     () => null,
   ],
 
   // @todo add coords
   KeyPointRegionModel: [
     "KeyPoint",
-    EyeOutlined,
+    IconKeypointsTool,
     () => null,
   ],
 
-  BrushRegionModel: ["Brush", HighlightOutlined, () => null],
+  BrushRegionModel: [
+    "Brush",
+    IconBrushTool,
+    () => null,
+  ],
 
-  ChoicesModel: ["Classification", ApartmentOutlined, () => null],
+  ChoicesModel: [
+    "Classification",
+    ApartmentOutlined,
+    () => null,
+  ],
 
-  TextAreaModel: ["Input", MessageOutlined, () => null],
+  TextAreaModel: [
+    "Input",
+    MessageOutlined,
+    () => null,
+  ],
 };
 
 const Node = observer(({ className, node }) => {

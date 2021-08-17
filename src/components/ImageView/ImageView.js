@@ -15,6 +15,7 @@ import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
 import { LoadingOutlined } from "@ant-design/icons";
+import { Toolbar } from "../Toolbar/Toolbar";
 
 Konva.showWarnings = false;
 
@@ -460,15 +461,10 @@ export default observer(
 
       if (cs.viewingAllAnnotations || cs.viewingAllPredictions) return null;
 
+      const tools = item.getToolsManager().allTools();
+
       return (
-        <div className={styles.block}>
-          {item
-            .getToolsManager()
-            .allTools()
-            .map(tool => {
-              return <Fragment key={guidGenerator()}>{tool.viewClass}</Fragment>;
-            })}
-        </div>
+        <Toolbar tools={tools}/>
       );
     }
 

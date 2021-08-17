@@ -58,13 +58,13 @@ const TagAttrs = types.model({
   gridSize: types.optional(types.number, 30),
   gridColor: types.optional(customTypes.color, "#EEEEF4"),
 
-  zoom: types.optional(types.boolean, false),
+  zoom: types.optional(types.boolean, true),
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
   showlabels: types.optional(types.boolean, false),
 
-  zoomcontrol: types.optional(types.boolean, false),
+  zoomcontrol: types.optional(types.boolean, true),
   brightnesscontrol: types.optional(types.boolean, false),
   contrastcontrol: types.optional(types.boolean, false),
   rotatecontrol: types.optional(types.boolean, false),

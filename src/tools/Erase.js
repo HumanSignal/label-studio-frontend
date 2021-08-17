@@ -1,7 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { ScissorOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import BasicTool from "../components/Tools/Basic";
@@ -9,17 +8,19 @@ import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
+import { IconEraserTool } from "../assets/icons";
+import { Tool } from "../components/Toolbar/Tool";
 
 const ToolView = observer(({ item }) => {
   return (
-    <BasicTool
-      selected={item.selected}
+    <Tool
+      active={item.selected}
       onClick={() => {
         const sel = item.selected;
 
         item.manager.selectTool(item, !sel);
       }}
-      icon={<ScissorOutlined />}
+      icon={<IconEraserTool />}
     />
   );
 });

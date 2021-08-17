@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { HighlightOutlined } from "@ant-design/icons";
+import { IconBrushTool } from '../assets/icons';
 
 import BaseTool from "./Base";
 import SliderTool from "../components/Tools/Slider";
@@ -9,13 +9,14 @@ import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
+import { Tool } from "../components/Toolbar/Tool";
 
 const ToolView = observer(({ item }) => {
   return (
-    <SliderTool
+    <Tool
       value={item.strokeWidth}
-      selected={item.selected}
-      icon={<HighlightOutlined />}
+      active={item.selected}
+      icon={<IconBrushTool />}
       onClick={() => {
         const sel = item.selected;
 

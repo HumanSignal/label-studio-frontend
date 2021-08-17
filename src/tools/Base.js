@@ -1,14 +1,14 @@
 import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import React from "react";
-import BasicToolView from "../components/Tools/Basic";
+import { Tool } from "../components/Toolbar/Tool";
 
 const ToolView = observer(({ item }) => {
   return (
-    <BasicToolView
-      selected={item.selected}
+    <Tool
+      active={item.selected}
       icon={item.iconClass}
-      tooltip={item.viewTooltip}
+      label={item.viewTooltip}
       onClick={() => {
         item.manager.selectTool(item, !item.selected);
       }}

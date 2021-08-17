@@ -1,0 +1,18 @@
+.tool
+  width 32px
+  height 32px
+  margin 4px
+  opacity 0.5
+  display flex
+  cursor pointer
+  align-items center
+  justify-content center
+
+  &:hover
+    opacity 1
+
+  &_active,
+  &:active
+    background rgba(#000, 0.1)
+    box-shadow inset 0px 1px 0px rgba(#000, 0.05), inset 0px 0px 0px 1px rgba(#000, 0.05)
+    border-radius 5px

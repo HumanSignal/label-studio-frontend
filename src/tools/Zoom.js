@@ -1,35 +1,35 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { DragOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
-import BasicToolView from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
+import { Tool } from "../components/Toolbar/Tool";
+import { IconMagnifyTool, IconMinifyTool, IconMoveTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
     <Fragment>
-      <BasicToolView
-        selected={item.selected}
-        icon={<DragOutlined />}
-        tooltip="Move position"
+      <Tool
+        active={item.selected}
+        icon={<IconMoveTool />}
+        label="Move position"
         onClick={() => {
           const sel = item.selected;
 
           item.manager.selectTool(item, !sel);
         }}
       />
-      <BasicToolView
-        icon={<ZoomInOutlined />}
-        tooltip="Zoom into the image"
+      <Tool
+        icon={<IconMagnifyTool />}
+        label="Zoom into the image"
         onClick={() => {
           item.handleZoom(1);
         }}
       />
-      <BasicToolView
-        icon={<ZoomOutOutlined />}
-        tooltip="Zoom out of the image"
+      <Tool
+        icon={<IconMinifyTool />}
+        label="Zoom out of the image"
         onClick={() => {
           item.handleZoom(-1);
         }}

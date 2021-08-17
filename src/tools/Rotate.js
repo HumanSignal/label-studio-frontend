@@ -2,27 +2,27 @@ import React from "react";
 
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { RotateLeftOutlined, RotateRightOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
-import BasicToolView from "../components/Tools/Basic";
+import { Tool } from "../components/Toolbar/Tool";
+import { IconRotateLeftTool, IconRotateRightTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
     <>
-      <BasicToolView
-        selected={item.selected}
-        icon={<RotateLeftOutlined />}
-        tooltip="Rotate Left"
+      <Tool
+        active={item.selected}
+        icon={<IconRotateLeftTool />}
+        label="Rotate Left"
         onClick={() => {
           item.rotate(-90);
         }}
       />
-      <BasicToolView
-        selected={item.selected}
-        icon={<RotateRightOutlined />}
-        tooltip="Rotate Right"
+      <Tool
+        active={item.selected}
+        icon={<IconRotateRightTool />}
+        label="Rotate Right"
         onClick={() => {
           item.rotate(90);
         }}
