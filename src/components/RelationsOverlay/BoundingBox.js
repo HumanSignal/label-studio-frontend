@@ -58,15 +58,16 @@ export class BoundingBox {
 
 const imageRelatedBBox = (region, bbox) => {
   const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
-
-  return Geometry.clampBBox({
-    ...bbox,
-    x: imageBbox.x + bbox.x,
-    y: imageBbox.y + bbox.y,
-  },
-  { x:0, y:0 },
-  { x:region.parent.stageWidth, y:region.parent.stageHeight },
+  const clampedBbox = Geometry.clampBBox(bbox,
+    { x:0, y:0 },
+    { x:region.parent.stageWidth, y:region.parent.stageHeight },
   );
+
+  return {
+    ...clampedBbox,
+    x: imageBbox.x + clampedBbox.x,
+    y: imageBbox.y + clampedBbox.y,
+  };
 };
 
 const stageRelatedBBox = (region, bbox) => {
