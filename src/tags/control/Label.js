@@ -73,6 +73,7 @@ const Model = types.model({
   ]),
 }).volatile(() => {
   return {
+    initiallySelected: self.selected,
     isEmpty: false,
   };
 }).views(self => ({

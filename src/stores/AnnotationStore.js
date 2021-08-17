@@ -865,6 +865,7 @@ export default types
       c.selected = true;
       self.selected = c;
       c.updateObjects();
+      if (c.type === "annotation") c.setInitialValues();
 
       return c;
     }
