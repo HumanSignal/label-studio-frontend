@@ -461,6 +461,7 @@ export default types
       });
 
       const current = as.annotations[as.annotations.length - 1];
+
       if (current) current.setInitialValues();
 
       self.setHistory(annotationHistory);

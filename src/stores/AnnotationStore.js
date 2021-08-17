@@ -380,6 +380,7 @@ const Annotation = types
         if (tag.type.endsWith("labels")) {
           // @todo check for choice="multiple" and multiple preselected labels
           const preselected = tag.children?.find(label => label.initiallySelected);
+
           if (preselected) preselected.setSelected(true);
         }
       });
