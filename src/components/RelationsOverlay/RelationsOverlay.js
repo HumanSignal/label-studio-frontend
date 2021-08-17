@@ -1,9 +1,11 @@
 import { observer } from "mobx-react";
-import { createRef, forwardRef, PureComponent, useEffect, useRef } from "react";
+import { createRef, forwardRef, PureComponent, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { getParent } from "mobx-state-tree";
+import { Fragment } from "react";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -167,11 +169,31 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
   rootNode = createRef();
-  state = { shouldRender: false, shouldRenderConnections: Math.random() };
+  state = { shouldRender: false, ready: false, shouldRenderConnections: Math.random() };
+
+  componentDidMount() {
+    this.checkTagsAreReady();
+  }
 
   componentDidUpdate() {
     if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
+    }
+  }
+
+  checkTagsAreReady() {
+    if (!this.state.ready) {
+      const ready = this.props.tags.reduce((res, tag) => {
+        return res && (tag?.isReady ?? true);
+      }, true);
+
+      if (!ready) {
+        setTimeout(() => {
+          this.checkTagsAreReady();
+        }, 100);
+      } else {
+        this.setState({ ready });
+      }
     }
   }
 
@@ -193,7 +215,9 @@ class RelationsOverlay extends PureComponent {
       <AutoSizer onResize={this.onResize}>
         {() => (
           <svg className="relations-overlay" ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-            {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
+            {(this.state.shouldRender && this.state.ready) && (
+              this.renderRelations(relations, visible, hasHighlight, highlighted)
+            )}
           </svg>
         )}
       </AutoSizer>
@@ -229,7 +253,7 @@ class RelationsOverlay extends PureComponent {
 const RelationObserverView = observer(RelationsOverlay);
 
 const RelationsOverlayObserver = observer(
-  forwardRef(({ store }, ref) => {
+  forwardRef(({ store, tags }, ref) => {
     const { relations, showConnections, highlighted } = store;
 
     return (
@@ -238,6 +262,7 @@ const RelationsOverlayObserver = observer(
         relations={Array.from(relations)}
         visible={showConnections}
         highlighted={highlighted}
+        tags={Array.from(tags?.values?.() ?? [])}
       />
     );
   }),
