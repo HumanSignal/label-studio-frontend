@@ -133,7 +133,14 @@ class App extends Component {
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
 
-    return <RelationsOverlay key={guidGenerator()} store={store} ref={this.relationsRef} />;
+    return (
+      <RelationsOverlay
+        key={guidGenerator()}
+        store={store}
+        ref={this.relationsRef}
+        tags={selectedStore.names}
+      />
+    );
   }
 
   render() {
