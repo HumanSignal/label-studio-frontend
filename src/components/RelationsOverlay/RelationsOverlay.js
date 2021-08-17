@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { createRef, forwardRef, PureComponent, useEffect, useMemo, useRef } from "react";
+import { createRef, forwardRef, PureComponent, useCallback, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
@@ -169,31 +169,15 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
   rootNode = createRef();
-  state = { shouldRender: false, ready: false, shouldRenderConnections: Math.random() };
-
-  componentDidMount() {
-    this.checkTagsAreReady();
-  }
+  timer = null;
+  state = {
+    shouldRender: false,
+    shouldRenderConnections: Math.random(),
+  };
 
   componentDidUpdate() {
     if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
-    }
-  }
-
-  checkTagsAreReady() {
-    if (!this.state.ready) {
-      const ready = this.props.tags.reduce((res, tag) => {
-        return res && (tag?.isReady ?? true);
-      }, true);
-
-      if (!ready) {
-        setTimeout(() => {
-          this.checkTagsAreReady();
-        }, 100);
-      } else {
-        this.setState({ ready });
-      }
     }
   }
 
@@ -215,7 +199,7 @@ class RelationsOverlay extends PureComponent {
       <AutoSizer onResize={this.onResize}>
         {() => (
           <svg className="relations-overlay" ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-            {(this.state.shouldRender && this.state.ready) && (
+            {(this.state.shouldRender) && (
               this.renderRelations(relations, visible, hasHighlight, highlighted)
             )}
           </svg>
@@ -268,4 +252,38 @@ const RelationsOverlayObserver = observer(
   }),
 );
 
-export { RelationsOverlayObserver as RelationsOverlay };
+let readinessTimer = null;
+
+const checkTagsAreReady = (tags, callback) => {
+  clearTimeout(readinessTimer);
+
+  const ready = Array.from(tags.values()).reduce((res, tag) => {
+    return res && (tag?.isReady ?? true);
+  }, true);
+
+  callback(ready);
+
+  if (!ready) {
+    readinessTimer = setTimeout(() => {
+      checkTagsAreReady(tags, callback);
+    }, 100);
+  }
+};
+
+const EnsureTagsReady = observer(
+  forwardRef(({ tags, taskData, ...props }, ref) => {
+    const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+      checkTagsAreReady(tags, (readyState) => {
+        setReady(readyState);
+      });
+    }, [taskData, tags]);
+
+    return ready && (
+      <RelationsOverlayObserver ref={ref} {...props} />
+    );
+  }),
+);
+
+export { EnsureTagsReady as RelationsOverlay };
