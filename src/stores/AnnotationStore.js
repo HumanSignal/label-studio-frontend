@@ -374,7 +374,7 @@ const Annotation = types
       self.names.forEach(tag => {
         if (tag.type.endsWith("labels")) {
           // @todo check for choice="multiple" and multiple preselected labels
-          const preselected = tag.children.find(label => label.initiallySelected);
+          const preselected = tag.children?.find(label => label.initiallySelected);
           if (preselected) preselected.setSelected(true);
         }
       });

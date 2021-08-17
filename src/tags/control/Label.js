@@ -74,7 +74,7 @@ const Model = types.model({
 }).volatile(self => {
   return {
     initiallySelected: self.selected,
-    isEmpty: false
+    isEmpty: false,
   };
 }).views(self => ({
   get maxUsages() {
