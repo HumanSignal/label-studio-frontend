@@ -374,6 +374,20 @@ const Annotation = types
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
     },
 
+    setInitialValues() {
+      // <Label selected="true"/>
+      self.names.forEach(tag => {
+        if (tag.type.endsWith("labels")) {
+          // @todo check for choice="multiple" and multiple preselected labels
+          const preselected = tag.children?.find(label => label.initiallySelected);
+
+          if (preselected) preselected.setSelected(true);
+        }
+      });
+
+      // @todo deal with `defaultValue`s
+    },
+
     addVersions(versions) {
       self.versions = { ...self.versions, ...versions };
       if (versions.draft) self.setDraftSelected();
