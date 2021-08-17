@@ -23,5 +23,4 @@ export default types
     getClonedStates() {
       return self.states.map(s => cloneNode(s));
     },
-  }))
-  .actions(self => ({}));
+  }));

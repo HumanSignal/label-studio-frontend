@@ -120,6 +120,7 @@ const getTypeDescription = (type, withNullType = true) => {
   // Remove optional null
   if (withNullType === false) {
     const index = description.indexOf("null?");
+
     if (index >= 0) description.splice(index, 1);
   }
 
@@ -134,6 +135,7 @@ const getTypeDescription = (type, withNullType = true) => {
  */
 const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
   const result = [];
+
   if (!tree.children) return [];
 
   for (let child of tree.children) {
@@ -141,6 +143,7 @@ const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
     assign id of the parent for quick mathcing */
     const parentTypes = [...parentParentTypes, ...(parent?.type ? [parent?.type] : [])];
     const flatChild = { ...child, parent: parent?.id ?? null, parentTypes };
+
     delete flatChild.children;
 
     result.push(flatChild);
@@ -210,6 +213,7 @@ const validateToNameTag = (element, model, flatTree) => {
  */
 const validateParentTag = (element, model) => {
   const parentTypes = model.properties.parentTypes?.value;
+
   if (!parentTypes || element.parentTypes.find(elementParentType => parentTypes.find(type => elementParentType === type.toLowerCase()))) {
     return null;
   }
@@ -263,14 +267,17 @@ export class ConfigValidator {
       const model = Registry.getModelByTag(child.type);
       // Validate name attribute
       const nameValidation = validateNameTag(child, model);
+
       if (nameValidation !== null) validationResult.push(nameValidation);
 
       // Validate toName attribute
       const toNameValidation = validateToNameTag(child, model, flatTree);
+
       if (toNameValidation !== null) validationResult.push(toNameValidation);
 
       // Validate by parentUnexpected parent tag
       const parentValidation = validateParentTag(child, model, flatTree);
+
       if (parentValidation !== null) validationResult.push(parentValidation);
 
       validationResult.push(...validateAttributes(child, model, propertiesToSkip));

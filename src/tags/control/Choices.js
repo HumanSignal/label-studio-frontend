@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Select } from "antd";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
@@ -11,10 +11,11 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import VisibilityMixin from "../../mixins/Visibility";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
-import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+
+import "./Choice";
 
 const { Option } = Select;
 
@@ -76,6 +77,7 @@ const Model = types
 
     get serializableValue() {
       const choices = self.selectedValues();
+
       if (choices && choices.length) return { choices };
 
       return null;
@@ -84,6 +86,7 @@ const Model = types
     get result() {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
+
         if (!area) return null;
 
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
@@ -164,6 +167,7 @@ const Model = types
       } else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
+
           if (!area) return null;
           area.setValue(self);
         } else {
@@ -177,6 +181,7 @@ const Model = types
 
       if (names && names.length) {
         const toname = self.toname || self.name;
+
         return {
           id: self.pid,
           from_name: self.name,
@@ -189,7 +194,7 @@ const Model = types
       }
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       self.unselectAll();
 
       if (!obj.value.choices) throw new Error("No labels param");
@@ -235,13 +240,14 @@ const HtxChoices = observer(({ item }) => {
           style={{ width: "100%" }}
           value={item.selectedLabels.map(l => l._value)}
           mode={item.choice === "multiple" ? "multiple" : ""}
-          onChange={function(val, opt) {
+          onChange={function(val) {
             if (Array.isArray(val)) {
               item.resetSelected();
               val.forEach(v => item.findLabel(v).setSelected(true));
               item.updateResult();
             } else {
               const c = item.findLabel(val);
+
               if (c) {
                 c.toggleSelected();
               }

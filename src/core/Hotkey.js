@@ -15,7 +15,7 @@ keymaster.filter = function(event) {
   return true;
 };
 
-export const Hotkey = name => {
+export const Hotkey = () => {
   let _hotkeys_map = {};
 
   return {
@@ -47,7 +47,7 @@ export const Hotkey = name => {
      * Given a key temp overwrites the function, the overwrite is removed
      * after the returning function is called
      */
-    overwriteKey(key, func) {}, // eslint-disable-line no-unused-vars
+    overwriteKey() {}, // eslint-disable-line no-unused-vars
 
     removeKey(key, scope = DEFAULT_SCOPE) {
       scope
@@ -87,6 +87,7 @@ export const Hotkey = name => {
 
       for (var i = 0; i <= combs.length; i++) {
         let comb;
+
         if (prefix) comb = prefix + "+" + combs[i];
         else comb = combs[i];
 

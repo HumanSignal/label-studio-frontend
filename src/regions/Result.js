@@ -75,6 +75,7 @@ const Result = types
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
+
       return states && states.filter(s => s.perregion === true);
     },
 
@@ -92,6 +93,7 @@ const Result = types
 
     get hasValue() {
       const value = self.mainValue;
+
       if (!value) return false;
       if (Array.isArray(value)) return value.length > 0;
       return true;
@@ -120,6 +122,7 @@ const Result = types
 
       if (control.perregion) {
         const label = control.whenlabelvalue;
+
         if (label && !self.area.hasLabel(label)) return false;
       }
 
@@ -127,8 +130,10 @@ const Result = types
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
         const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
+
         if (tagName) {
           const result = results.find(r => r.from_name.name === tagName);
+
           if (!result) return false;
           if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
         } else {
@@ -143,6 +148,7 @@ const Result = types
 
     get tag() {
       const value = self.mainValue;
+
       if (!value || !value.length) return null;
       if (!self.from_name.findLabel) return null;
       return self.from_name.findLabel(value[0]);
@@ -151,23 +157,28 @@ const Result = types
     get style() {
       if (!self.tag) return null;
       const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
       const { strokewidth, fillopacity, opacity } = self.tag.parent;
+
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
 
     get emptyStyle() {
       const emptyLabel = self.from_name.emptyLabel;
+
       if (!emptyLabel) return null;
       const fillcolor = emptyLabel.background || emptyLabel.parent.fillcolor;
+
       if (!fillcolor) return null;
       const strokecolor = emptyLabel.background || emptyLabel.parent.strokecolor;
       const { strokewidth, fillopacity, opacity } = emptyLabel.parent;
+
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     pid: "",
     selected: false,
     // highlighted: types.optional(types.boolean, false),
@@ -200,17 +211,21 @@ const Result = types
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize() : {};
+
       if (!data) return null;
       if (!self.isSubmitable) return null;
       // cut off annotation id
       const id = self.area.cleanId;
+
       if (!data.value) data.value = {};
 
       const contolMeta = self.from_name.metaValue;
+
       if (contolMeta) {
         data.meta = { ...data.meta, ...contolMeta };
       }
       const areaMeta = self.area.meta;
+
       if (areaMeta && Object.keys(areaMeta).length) {
         data.meta = { ...data.meta, ...areaMeta };
       }
@@ -247,6 +262,7 @@ const Result = types
         return self.states
           .map(s => {
             const ser = self.serialize(s, parent);
+
             if (!ser) return null;
 
             const tree = {

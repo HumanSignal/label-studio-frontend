@@ -47,9 +47,10 @@ const Model = types
 
     afterCreate() {
       const rect = Tools.Rect.create({ activeShape: null });
+
       rect._control = self;
 
-      self.tools = { rect: rect };
+      self.tools = { rect };
     },
   }));
 

@@ -11,7 +11,7 @@ const TimeTraveller = types
 
     createdIdx: 0,
   })
-  .volatile(self => ({
+  .volatile(() => ({
     history: [],
     isFrozen: false,
   }))

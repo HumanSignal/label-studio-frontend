@@ -83,7 +83,7 @@ const result = {
 };
 const annotations = [{ id: "1", result: [result] }];
 
-Scenario("Check required param", async function({I}) {
+Scenario("Check required param", async function ({ I }) {
   const params = { config, data: { text } };
 
   const waitForError = name => {
@@ -128,7 +128,7 @@ Scenario("Check required param", async function({I}) {
   I.see('Checkbox "second" is required');
 });
 
-Scenario("Check required param in complex config", async function({I}) {
+Scenario("Check required param in complex config", async function ({ I }) {
   const params = { annotations, config: complex, data: { text } };
 
   const waitForError = name => {

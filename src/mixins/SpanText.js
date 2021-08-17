@@ -6,7 +6,7 @@ import { highlightRange } from "../utils/html";
 
 export default types
   .model()
-  .views(self => ({}))
+  .views(() => ({}))
   .actions(self => ({
     updateSpansColor(bgcolor, opacity) {
       if (self._spans) {
@@ -34,6 +34,7 @@ export default types
       const spans = highlightRange(self, "htx-highlight", { backgroundColor: labelColor });
 
       const lastSpan = spans[spans.length - 1];
+
       if (!lastSpan) return;
 
       self.applyCSSClass(lastSpan);
@@ -58,6 +59,7 @@ export default types
       if (!lastSpan) return;
       const classes = ["htx-highlight", "htx-highlight-last"];
       const settings = getRoot(self).settings;
+
       if (!self.parent.showlabels && !settings.showLabels) {
         classes.push("htx-no-label");
       } else {
@@ -67,6 +69,7 @@ export default types
           labels: names,
           score: self.score,
         });
+
         classes.push(cssCls);
       }
       lastSpan.className = classes.filter(Boolean).join(" ");
@@ -101,7 +104,7 @@ export default types
           }
         };
 
-        s.onclick = function(ev) {
+        s.onclick = function() {
           if (self.hidden) return;
           // set above in `onmousedown`, can be nulled when new region created
           if (self.parent._currentSpan !== this) return;
@@ -120,6 +123,7 @@ export default types
       self.updateSpansColor(null, 0.8);
 
       const first = self._spans[0];
+
       if (first) {
         if (first.scrollIntoViewIfNeeded) {
           first.scrollIntoViewIfNeeded();
@@ -154,12 +158,14 @@ export default types
 
         if (self.highlighted && !self.hidden) {
           const h = Constants.HIGHLIGHTED_CSS_BORDER;
+
           set(fspan, h, { right: false });
           set(lspan, h, { left: false });
 
           if (mspans.length) mspans.forEach(s => set(s, h, { left: false, right: false }));
         } else {
           const zpx = "0px";
+
           set(fspan, zpx);
           set(lspan, zpx);
 

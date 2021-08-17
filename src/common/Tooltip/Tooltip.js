@@ -11,7 +11,7 @@ export const Tooltip = forwardRef(({
   defaultVisible,
   mouseEnterDelay = 0,
   enabled = true,
-  style
+  style,
 }, ref) => {
   if (!children || Array.isArray(children)) {
     throw new Error("Tooltip does accept a single child only");

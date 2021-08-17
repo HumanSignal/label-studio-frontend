@@ -38,7 +38,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
 
@@ -78,11 +78,22 @@ const Model = types
       self.startX = self.x;
       self.startY = self.y;
 
-      if (self.coordstype === "perc") {
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-        self.relativeWidth = self.width;
-        self.relativeHeight = self.height;
+      switch (self.coordstype)  {
+        case "perc": {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case "px": {
+          const { stageWidth, stageHeight } = self.parent;
+
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+          }
+          break;
+        }
       }
       self.checkSizes();
       self.updateAppearenceFromState();
@@ -91,6 +102,7 @@ const Model = types
     // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
+
       if (degree === -90) p.y -= self.width;
       if (degree === 90) p.x -= self.height;
       self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
@@ -261,7 +273,7 @@ const HtxRectangleView = ({ item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
+        onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -269,7 +281,7 @@ const HtxRectangleView = ({ item }) => {
             stage.container().style.cursor = Constants.POINTER_CURSOR;
           }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
           if (store.annotationStore.selected.relationMode) {

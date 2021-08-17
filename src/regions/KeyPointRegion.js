@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { types, getRoot } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
@@ -27,7 +27,7 @@ const Model = types
     width: types.number,
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
     hideable: true,
@@ -47,6 +47,7 @@ const Model = types
       } else {
         // creation
         const { stageWidth: width, stageHeight: height } = self.parent;
+
         if (width && height) {
           self.relativeX = (self.x / width) * 100;
           self.relativeY = (self.y / height) * 100;
@@ -57,6 +58,7 @@ const Model = types
     // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
+
       self.setPosition(p.x, p.y);
     },
 
@@ -144,6 +146,7 @@ const HtxKeyPointView = ({ item }) => {
         }}
         onDragEnd={e => {
           const t = e.target;
+
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
         }}
         dragBoundFunc={item.parent.fixForZoom(pos => {
@@ -160,7 +163,7 @@ const HtxKeyPointView = ({ item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
+        onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
@@ -168,7 +171,7 @@ const HtxKeyPointView = ({ item }) => {
             stage.container().style.cursor = "pointer";
           }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
           stage.container().style.cursor = "default";
 
           if (store.annotationStore.selected.relationMode) {

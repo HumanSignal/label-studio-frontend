@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
@@ -67,6 +67,7 @@ const Model = types
   .actions(self => ({
     updateResult() {
       const { result, selected } = self;
+
       if (selected === "none") {
         if (result) result.area.removeResult(result);
       } else {
@@ -101,8 +102,10 @@ const Model = types
       }
 
       let selection = {};
+
       if (self.selectionstyle) {
         const s = Tree.cssConverter(self.selectionstyle);
+
         for (let key in s) {
           selection[key] = s[key];
         }

@@ -43,6 +43,7 @@ export default types
       };
 
       const sorted = sorts[self.sort](self.sortOrder === "desc");
+
       return sorted;
     },
 
@@ -66,8 +67,10 @@ export default types
       Object.keys(lookup).forEach(key => {
         const el = lookup[key];
         let pid = el["item"].parentID;
+
         if (pid) {
           let parent = lookup[pid];
+
           if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
           if (parent) {
             parent.children.push(el);
@@ -84,18 +87,22 @@ export default types
       // collect all label states into two maps
       let labels = {};
       const map = {};
+
       self.regions.forEach(r => {
         const selectedLabels = r.labeling?.selectedLabels || r.emptyLabel && [r.emptyLabel];
+
         if (selectedLabels) {
           selectedLabels.forEach(s => {
             const key = `${s.value}#${s.id}`;
+
             labels[key] = s;
             if (key in map) map[key].push(r);
             else map[key] = [r];
           });
         } else {
           const key = `_empty`;
-          labels = {[key]: {id: key, isNotLabel: true}, ...labels};
+
+          labels = { [key]: { id: key, isNotLabel: true }, ...labels };
           if (key in map) map[key].push(r);
           else map[key] = [r];
         }
@@ -105,6 +112,7 @@ export default types
       let idx = 0;
       const tree = Object.keys(labels).map(key => {
         const el = enrich(labels[key], idx, true, map[key]);
+
         el["children"] = map[key].map(r => enrich(r, idx++));
 
         return el;
@@ -115,7 +123,7 @@ export default types
   }))
   .actions(self => ({
     addRegion(region) {
-      console.log({region});
+      console.log({ region });
       self.regions.push(region);
       getEnv(self).events.invoke('entityCreate', region);
     },
@@ -152,6 +160,7 @@ export default types
 
       // find regions that have that region as a parent
       const children = self.filterByParentID(region.id);
+
       children && children.forEach(r => r.setParentID(region.parentID));
 
       for (let i = 0; i < arr.length; i++) {
@@ -206,7 +215,7 @@ export default types
     /**
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
-    unselectAll(tryToKeepStates = false) {
+    unselectAll() {
       self.annotation.unselectAll();
     },
 
@@ -217,6 +226,7 @@ export default types
     selectNext() {
       const { regions } = self;
       const idx = self.regions.findIndex(r => r.selected);
+
       idx !== -1 && regions[idx].unselectRegion();
 
       const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
@@ -226,6 +236,7 @@ export default types
 
     toggleVisibility() {
       const shouldBeHidden = !self.isAllHidden;
+
       self.regions.forEach(area => {
         if (area.hidden !== shouldBeHidden) {
           area.toggleHidden();
@@ -237,8 +248,10 @@ export default types
       self.regions.forEach(area => {
         if (area.hidden !== shouldBeHidden) {
           const l = area.labeling;
+
           if (l) {
             const selected = l.selectedLabels;
+
             if (selected.includes(label)) {
               area.toggleHidden();
             }

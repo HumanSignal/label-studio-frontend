@@ -20,6 +20,7 @@ const NormalizationMixin = types
         self.meta = { ...self.meta, text: [val] };
       } else {
         const adjusted = { ...self.meta };
+
         delete adjusted.text;
         self.meta = adjusted;
       }

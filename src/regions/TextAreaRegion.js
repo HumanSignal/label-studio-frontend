@@ -21,7 +21,7 @@ const Model = types
     _value: types.string,
     // states: types.array(types.union(ChoicesModel)),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     classification: true,
     perRegionTags: [],
     results: [],
@@ -87,6 +87,7 @@ const HtxTextAreaRegionView = ({ item }) => {
   params.onDelete = item.deleteRegion;
 
   let divAttrs = {};
+
   if (!parent.perregion) {
     divAttrs = {
       onMouseOver: () => {

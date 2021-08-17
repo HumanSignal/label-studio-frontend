@@ -24,7 +24,7 @@ export const HighlightMixin = types
         return;
       }
 
-      const range = self._getRange();
+      const range = self.rangeFromGlobalOffset();
 
       // Avoid rendering before view is ready
       if (!range) {
@@ -83,7 +83,7 @@ export const HighlightMixin = types
 
       const first = self._spans?.[0];
 
-      if (first) return;
+      if (!first) return;
 
       if (first.scrollIntoViewIfNeeded) {
         first.scrollIntoViewIfNeeded();
@@ -105,7 +105,7 @@ export const HighlightMixin = types
     beforeDestroy() {
       try {
         self._stylesheet.remove();
-      } catch(e) {}
+      } catch(e) { /* somthing went wrong */ }
     },
 
     /**
@@ -136,6 +136,7 @@ export const HighlightMixin = types
 
     getLabels() {
       const settings = getRoot(self).settings;
+
       if (!self.parent.showlabels && !settings.showLabels) return null;
 
       return self.labeling?.mainValue ?? [];
@@ -162,6 +163,7 @@ export const HighlightMixin = types
     addClass(classNames) {
       if (!classNames || !self._spans) return;
       const classList = [].concat(classNames); // convert any input to array
+
       self._spans.forEach(span => span.classList.add(...classList));
     },
 
@@ -172,6 +174,7 @@ export const HighlightMixin = types
     removeClass(classNames) {
       if (!classNames || !self._spans) return;
       const classList = [].concat(classNames); // convert any input to array
+
       self._spans.forEach(span => span.classList.remove(...classList));
     },
 
@@ -256,6 +259,7 @@ const createSpanStylesheet = (identifier, color) => {
   };
 
   const styleTag = document.createElement("style");
+
   styleTag.type = "text/css";
   styleTag.id = `highlight-${identifier}`;
   document.head.appendChild(styleTag);
@@ -277,6 +281,7 @@ const createSpanStylesheet = (identifier, color) => {
   const setColor = color => {
     const newActiveColor = toActiveColor(color);
     const { style } = stylesheet.rules[2];
+
     document.documentElement.style.setProperty(variables.color, color);
 
     style.backgroundColor = newActiveColor;

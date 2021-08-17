@@ -10,7 +10,7 @@ const ToolView = observer(({ item }) => {
   return (
     <BasicTool
       selected={item.selected}
-      onClick={ev => {
+      onClick={() => {
         item.manager.unselectAll();
         item.setSelected(true);
       }}
@@ -22,20 +22,20 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({})
   .views(self => ({
-    get viewClass() {
+    get viewClass () {
       return <ToolView item={self} />;
     },
   }))
   .actions(self => ({
-    mouseupEv() {
+    mouseupEv () {
       self.mode = "viewing";
     },
 
-    mousemoveEv(ev, [x, y]) {
+    mousemoveEv () {
       if (self.mode !== "drawing") return;
     },
 
-    mousedownEv(ev, [x, y]) {
+    mousedownEv () {
       self.mode = "drawing";
     },
   }));

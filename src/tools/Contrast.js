@@ -19,7 +19,7 @@ const ToolView = observer(({ item }) => {
         max={Constants.CONTRAST_MAX}
         selected={item.selected}
         icon={<ControlOutlined />}
-        onResetClick={ev => {
+        onResetClick={() => {
           item.setStroke(Constants.CONTRAST_VALUE);
         }}
         onChange={val => {

@@ -1,4 +1,4 @@
-import { types, getParent, destroy, clone } from "mobx-state-tree";
+import { types, destroy } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Result from "../regions/Result";
 import { defaultStyle } from "../core/Constants";
@@ -14,10 +14,6 @@ export const AreaMixin = types
     // self id without annotation id added to uniquiness across all the tree
     get cleanId() {
       return self.id.replace(/#.*/, "");
-    },
-
-    get annotation() {
-      return getParent(self, 2);
     },
 
     get labeling() {
@@ -61,6 +57,7 @@ export const AreaMixin = types
       const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, " ");
       const labelNames = label?.getSelectedString(joinstr);
       const labelText = [];
+
       if (labelNames) labelText.push(labelNames);
       if (text) labelText.push(text);
       return labelText.join(": ");
@@ -72,10 +69,12 @@ export const AreaMixin = types
 
     get style() {
       const styled = self.results.find(r => r.style);
+
       if (styled && styled.style) {
         return styled.style;
       }
       const emptyStyled = self.results.find(r => r.emptyStyle);
+
       return emptyStyled && emptyStyled.emptyStyle;
     },
 
@@ -88,7 +87,7 @@ export const AreaMixin = types
       return (self.style || defaultStyle).fillcolor;
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     // selected: false,
   }))
   .actions(self => ({
@@ -116,6 +115,7 @@ export const AreaMixin = types
 
     removeResult(r) {
       const index = self.results.indexOf(r);
+
       if (index < 0) return;
       self.results.splice(index, 1);
       destroy(r);
@@ -125,6 +125,7 @@ export const AreaMixin = types
     setValue(tag) {
       const result = self.results.find(r => r.from_name === tag);
       const values = tag.selectedValues();
+
       if (result) {
         if (tag.holdsState) result.setValue(values);
         else self.removeResult(result);

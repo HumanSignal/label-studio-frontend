@@ -1,10 +1,9 @@
-import { types, getType, getRoot } from "mobx-state-tree";
+import { types, getType, getRoot, destroy } from "mobx-state-tree";
 import { inject } from "mobx-react";
 
 import * as Tools from "../../tools";
 import ImageView from "../../components/ImageView/ImageView";
 import ObjectBase from "./Base";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import ToolsManager from "../../tools/Manager";
 import { BrushRegionModel } from "../../regions/BrushRegion";
@@ -16,6 +15,7 @@ import { customTypes } from "../../core/CustomTypes";
 import { parseValue } from "../../utils/data";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
+import { guidGenerator } from "../../utils/unique";
 
 /**
  * Image tag shows an image on the page.
@@ -85,6 +85,23 @@ const IMAGE_CONSTANTS = {
   ellipselabels: "ellipselabels",
 };
 
+const DrawingRegion = types.union(
+  {
+    dispatcher(sn) {
+      if (!sn) return types.null;
+      // may be a tag itself or just its name
+      const objectName = sn.object.name || sn.object;
+      // we have to use current config to detect Object tag by name
+      const tag = window.Htx.annotationStore.names.get(objectName);
+      // provide value to detect Area by data
+      const available = Registry.getAvailableAreas(tag.type, sn);
+      // union of all available Areas for this Object type
+
+      return types.union(...available, types.null);
+    },
+  },
+);
+
 const Model = types
   .model({
     type: "image",
@@ -151,8 +168,10 @@ const Model = types
       types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
       [],
     ),
+
+    drawingRegion: types.optional(DrawingRegion, null),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     currentImage: 0,
     stageRatio: 1,
   }))
@@ -168,12 +187,14 @@ const Model = types
     // @todo the name is for backward compatibility; change the name later
     get _value() {
       const value = self.parsedValue;
+
       if (Array.isArray(value)) return value[self.currentImage];
       return value;
     },
 
     get images() {
       const value = self.parsedValue;
+
       if (!value) return [];
       if (Array.isArray(value)) return value;
       return [value];
@@ -184,6 +205,7 @@ const Model = types
      */
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
@@ -221,11 +243,13 @@ const Model = types
 
     activeStates() {
       const states = self.states();
+
       return states && states.filter(s => s.isSelected && s.type.includes("labels"));
     },
 
     controlButton() {
       const names = self.states();
+
       if (!names || names.length === 0) return;
 
       let returnedControl = names[0];
@@ -245,6 +269,7 @@ const Model = types
 
     get controlButtonType() {
       const name = self.controlButton();
+
       return getType(name).name;
     },
 
@@ -287,8 +312,9 @@ const Model = types
 
     return { afterCreate, getToolsManager };
   })
-  .extend(self => {
+  .extend(() => {
     let skipInteractions = false;
+
     return {
       views: {
         getSkipInteractions() {
@@ -305,6 +331,32 @@ const Model = types
   .actions(self => ({
     freezeHistory() {
       //self.annotation.history.freeze();
+    },
+
+    createDrawingRegion(areaValue, resultValue, control) {
+      const result = {
+        from_name: control.name,
+        to_name: self,
+        type: control.resultType,
+        value: resultValue,
+      };
+
+      const areaRaw = {
+        id: guidGenerator(),
+        object: self,
+        ...areaValue,
+        results: [result],
+      };
+
+      self.drawingRegion = areaRaw;
+      return self.drawingRegion;
+    },
+
+    deleteDrawingRegion() {
+      const { drawingRegion } = self;
+
+      self.drawingRegion = null;
+      destroy(drawingRegion);
     },
 
     updateBrushControl(arg) {
@@ -376,6 +428,7 @@ const Model = types
 
         let mouseAbsolutePos;
         let zoomingPosition;
+
         window.stage = stage;
         mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
@@ -417,6 +470,7 @@ const Model = types
       self.stageRef = ref;
 
       const currentTool = self.getToolsManager().findSelectedTool();
+
       currentTool?.updateCursor?.();
 
       // Konva updates ref repeatedly and this breaks brush scaling
@@ -426,13 +480,14 @@ const Model = types
     },
 
     // @todo remove
-    setSelected(shape) {
+    setSelected() {
       // self.selectedShape = shape;
     },
 
     rotate(degree = -90) {
       self.rotation = (self.rotation + degree + 360) % 360;
       let ratioK = 1 / self.stageRatio;
+
       if ((self.rotation + 360) % 180 === 90) {
         self.stageRatio = self.initialWidth / self.initialHeight;
       } else {
@@ -491,6 +546,7 @@ const Model = types
 
     updateImageSize(ev) {
       const { width, height, naturalWidth, naturalHeight } = ev.target;
+
       self.initialWidth = width;
       self.initialHeight = height;
       self._updateImageSize({ width, height, naturalWidth, naturalHeight });
@@ -505,6 +561,7 @@ const Model = types
       // there is should be at least one state selected for *labels object
       const labelStates = (self.states() || []).filter(s => s.type.includes("labels"));
       const selectedStates = self.getAvailableStates();
+
       return selectedStates.length !== 0 || labelStates.length === 0;
     },
 
@@ -528,12 +585,14 @@ const Model = types
         .copy()
         .invert()
         .point({ x, y });
+
       return [p.x, p.y];
     },
 
     // convert image coords to screen coords considering zoom
     zoomOriginalCoords([x, y]) {
       const p = self.stageRef.getAbsoluteTransform().point({ x, y });
+
       return [p.x, p.y];
     },
 
@@ -560,6 +619,7 @@ const Model = types
         const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
         const modified = fn(asArray ? [x, y] : { x, y });
         const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
+
         return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
       };
     },

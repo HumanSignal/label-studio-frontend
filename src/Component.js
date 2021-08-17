@@ -9,7 +9,7 @@ export class LabelStudio extends Component {
   }
 
   componentDidMount() {
-    configureStore(this.props).then(({store}) => {
+    configureStore(this.props).then(({ store }) => {
       this.store = store;
       window.Htx = this.store;
       this.setState({ initialized: true });

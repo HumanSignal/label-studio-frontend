@@ -48,5 +48,5 @@ export {
   PolygonPointView,
   PolygonRegionModel,
   RectRegionModel,
-  TextAreaRegionModel,
+  TextAreaRegionModel
 };

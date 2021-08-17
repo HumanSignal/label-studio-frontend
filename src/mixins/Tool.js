@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -39,12 +39,10 @@ const ToolMixin = types
       return activeStates ? activeStates.map(s => cloneNode(s)) : null;
     },
 
-    // @todo remove
-    moreRegionParams(obj) {},
-
     get getActiveShape() {
       // active shape here is the last one that was added
       const obj = self.obj;
+
       return obj.regs[obj.regs.length - 1];
     },
 
@@ -62,6 +60,7 @@ const ToolMixin = types
 
     event(name, ev, args) {
       const fn = name + "Ev";
+
       if (typeof self[fn] !== "undefined") self[fn].call(self, ev, args);
     },
 
@@ -70,6 +69,7 @@ const ToolMixin = types
       let states = [];
 
       const fm = self.annotation.names.get(obj.from_name);
+
       fm.fromStateJSON(obj);
 
       // workaround to prevent perregion textarea from duplicating
@@ -91,7 +91,7 @@ const ToolMixin = types
 
       if (controlTagTypes.includes(obj.type)) {
         const params = {};
-        const moreParams = self.moreRegionParams(obj);
+        const moreParams = self.moreRegionParams?.(obj) ?? obj;
         const data = {
           pid: obj.id,
           parentID: obj.parent_id === null ? "" : obj.parent_id,
@@ -114,6 +114,7 @@ const ToolMixin = types
         // id, which might not be the case since it'd a good
         // practice to have unique ids
         const { regions } = self.obj;
+
         r = regions.find(r => r.pid === obj.id);
 
         // r = self.findRegion(obj.value);

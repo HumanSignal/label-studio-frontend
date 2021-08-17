@@ -1,11 +1,10 @@
 import React from "react";
 import { Rect, Circle } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, hasParent } from "mobx-state-tree";
+import { types, getParent, hasParent, getRoot } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
-import Types from "../core/Types";
-import { defaultStyle } from "../core/Constants";
+import { useRegionColors } from "../hooks/useRegionColor";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -25,7 +24,7 @@ const PolygonPoint = types
     style: "circle",
     size: "small",
   })
-  .volatile(self => ({
+  .volatile(() => ({
     selected: false,
   }))
   .views(self => ({
@@ -39,7 +38,7 @@ const PolygonPoint = types
     },
 
     get annotation() {
-      return Types.getParentOfTypeString(self, "Annotation");
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({
@@ -103,6 +102,7 @@ const PolygonPoint = types
       ev.cancelBubble = true;
 
       const stage = self.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "crosshair";
 
@@ -138,6 +138,7 @@ const PolygonPoint = types
       const t = ev.target;
 
       const stage = self.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "default";
 
@@ -158,7 +159,7 @@ const PolygonPoint = types
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
 
-  const style = item.parent.style || item.parent.tag || defaultStyle;
+  const colors = useRegionColors(item.parent);
   const sizes = {
     small: 4,
     medium: 8,
@@ -177,7 +178,7 @@ const PolygonPointView = observer(({ item, name }) => {
     item.index === 0
       ? {
         hitStrokeWidth: 12,
-        fill: style.strokecolor || item.primary,
+        fill: colors.strokeColor || item.primary,
         onMouseOver: item.handleMouseOverStartPoint,
         onMouseOut: item.handleMouseOutStartPoint,
       }
@@ -195,7 +196,7 @@ const PolygonPointView = observer(({ item, name }) => {
       item._movePoint(x, y);
     },
 
-    onDragStart: e => {
+    onDragStart: () => {
       item.annotation.history.freeze();
     },
 
@@ -207,12 +208,14 @@ const PolygonPointView = observer(({ item, name }) => {
     onMouseOver: e => {
       e.cancelBubble = true;
       const stage = item.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "crosshair";
     },
 
-    onMouseOut: e => {
+    onMouseOut: () => {
       const stage = item.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "default";
     },

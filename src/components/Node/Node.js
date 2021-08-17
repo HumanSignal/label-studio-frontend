@@ -11,13 +11,12 @@ import {
   Loading3QuartersOutlined,
   EyeOutlined,
   HighlightOutlined,
-  ApartmentOutlined,
+  ApartmentOutlined
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
-import Constants from "../../core/Constants";
 
 const NodeViews = {
   RichTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
@@ -28,12 +27,12 @@ const NodeViews = {
     node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
   ],
 
-  AudioRegionModel: ["Audio", AudioOutlined, node => null],
+  AudioRegionModel: ["Audio", AudioOutlined, () => null],
 
   TimeSeriesRegionModel: [
     "TimeSeries",
     LineChartOutlined,
-    node => null,
+    () => null,
   ],
 
   TextAreaRegionModel: ["Input", MessageOutlined, node => <span style={{ color: "#5a5a5a" }}>{node._value}</span>],
@@ -41,7 +40,7 @@ const NodeViews = {
   RectRegionModel: [
     "Rect",
     BlockOutlined,
-    node => null,
+    () => null,
   ],
 
   PolygonRegionModel: ["Polygon", GatewayOutlined, () => null],
@@ -49,14 +48,14 @@ const NodeViews = {
   EllipseRegionModel: [
     "Ellipse",
     Loading3QuartersOutlined,
-    node => null,
+    () => null,
   ],
 
   // @todo add coords
   KeyPointRegionModel: [
     "KeyPoint",
     EyeOutlined,
-    node => null,
+    () => null,
   ],
 
   BrushRegionModel: ["Brush", HighlightOutlined, () => null],
@@ -68,6 +67,7 @@ const NodeViews = {
 
 const Node = observer(({ className, node }) => {
   const name = getType(node).name;
+
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
   let [, , getContent] = NodeViews[name];
@@ -84,9 +84,11 @@ const Node = observer(({ className, node }) => {
 
 const NodeIcon = observer(({ node }) => {
   const name = getType(node).name;
+
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
   const Icon = NodeViews[name][1];
+
   return <Icon />;
 });
 
@@ -94,6 +96,7 @@ const NodeMinimal = observer(({ node }) => {
   const { sortedRegions: regions } = getRoot(node).annotationStore.selected.regionStore;
   const index = regions.indexOf(node);
   const name = getType(node).name;
+
   if (!(name in NodeViews)) return null;
 
   const [text, Icon] = NodeViews[name];

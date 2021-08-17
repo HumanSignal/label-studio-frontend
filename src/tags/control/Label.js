@@ -69,9 +69,9 @@ const Model = types.model({
     "BrushLabels",
     "HyperTextLabels",
     "TimeSeriesLabels",
-    "ParagraphLabels"
-  ])
-}).volatile(self => {
+    "ParagraphLabels",
+  ]),
+}).volatile(() => {
   return {
     initiallySelected: self.selected,
     isEmpty: false,
@@ -85,13 +85,14 @@ const Model = types.model({
     const regions = self.annotation.regionStore.regions;
     // count all the usages among all the regions
     const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
+
     return used;
   },
 
   canBeUsed() {
     if (!self.maxUsages) return true;
     return self.usedAlready() < self.maxUsages;
-  }
+  },
 })).actions(self => ({
   setEmpty() {
     self.isEmpty = true;
@@ -105,6 +106,7 @@ const Model = types.model({
     // right now highlighted, and if that region is readonly
     const region = self.annotation.highlightedNode;
     const sameObject = region && region.parent?.name === self.parent?.toname;
+
     if (region && region.readonly === true && sameObject) return;
 
     // one more check if that label can be selected
@@ -141,6 +143,7 @@ const Model = types.model({
 
       // unselect other tools if they exist and selected
       const tool = Object.values(self.parent?.tools || {})[0];
+
       if (tool && tool.manager.findSelectedTool() !== tool) {
         tool.manager.selectTool(tool, true);
       }
@@ -148,6 +151,7 @@ const Model = types.model({
 
     if (self.isEmpty) {
       let selected = self.selected;
+
       labels.unselectAll();
       self.setSelected(!selected);
     } else {
@@ -227,15 +231,17 @@ const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
     const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
-    return <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={ev => {
-      item.toggleSelected();
-      return false;
-    }}>
-      {item._value}
-      {item.showalias === true && item.alias && (
-        <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
-      )}
-    </Label>;
+    return (
+      <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
+        item.toggleSelected();
+        return false;
+      }}>
+        {item._value}
+        {item.showalias === true && item.alias && (
+          <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
+        )}
+      </Label>
+    );
   }),
 );
 

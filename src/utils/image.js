@@ -71,8 +71,10 @@ export function getBoundingBoxAfterTransform(rect, transform) {
     { x: rect.x, y: rect.y + rect.height },
   ];
   let minX, minY, maxX, maxY;
+
   points.forEach(point => {
     var transformed = transform.point(point);
+
     if (minX === undefined) {
       minX = maxX = transformed.x;
       minY = maxY = transformed.y;
@@ -98,6 +100,7 @@ export function getBoundingBoxAfterTransform(rect, transform) {
  */
 export function getBoundingBoxAfterChanges(rect, shiftPoint, degRotation = 0) {
   const transform = new Konva.Transform();
+
   transform.translate(shiftPoint.x, shiftPoint.y);
   transform.rotate((degRotation * Math.PI) / 180);
   return getBoundingBoxAfterTransform(rect, transform);

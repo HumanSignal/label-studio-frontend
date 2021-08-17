@@ -17,7 +17,7 @@ export const RadioGroup = ({ size, value, defaultValue, onChange, children, ...p
       value={{
         value: value ?? currentValue,
         onChange: onRadioChange,
-        defaultValue: defaultValue,
+        defaultValue,
       }}
     >
       <div className={cn("radio-group").mod({ size })} style={props.style}>

@@ -80,7 +80,7 @@ const configComplicated = `
 const reviewText =
   "Not much to write about here, but it does exactly what it's supposed to. filters out the pop sounds. now my recordings are much more crisp. it is one of the lowest prices pop filters on amazon so might as well buy it, they honestly work the same despite their pricing,";
 
-Scenario("Check simple nested Choices for Text", async function({I}) {
+Scenario("Check simple nested Choices for Text", async function ({ I }) {
   const params = {
     config: configSimple,
     data: { reviewText },
@@ -96,12 +96,13 @@ Scenario("Check simple nested Choices for Text", async function({I}) {
   I.click("Emotional");
 
   const result = await I.executeScript(serialize);
+
   assert.equal(result.length, 2);
   assert.deepEqual(result[0].value, { choices: ["Positive"] });
   assert.deepEqual(result[1].value, { choices: ["Emotional"] });
 });
 
-Scenario("check good nested Choice for Text", async function({I, AtLabels, AtSidebar}) {
+Scenario("check good nested Choice for Text", async function ({ I, AtLabels, AtSidebar }) {
   const params = {
     config: configComplicated,
     data: { reviewText },
@@ -115,6 +116,7 @@ Scenario("check good nested Choice for Text", async function({I, AtLabels, AtSid
   I.click("Laughter");
 
   const personTag = AtLabels.locateLabel("Person");
+
   I.seeElement(personTag);
   I.click(personTag);
   I.executeAsyncScript(selectText, {
@@ -128,6 +130,7 @@ Scenario("check good nested Choice for Text", async function({I, AtLabels, AtSid
   // the only element of regions tree list
   const regionInList = locate(".lsf-entities__regions").find(".ant-list-item");
   // select this region
+
   I.click(regionInList);
 
   AtSidebar.seeRegions(1);
@@ -136,6 +139,7 @@ Scenario("check good nested Choice for Text", async function({I, AtLabels, AtSid
   I.click("Female");
 
   const result = await I.executeScript(serialize);
+
   assert.equal(result.length, 4);
   assert.deepEqual(result[0].value.choices, ["Positive"]);
   assert.deepEqual(result[1].value.choices, ["Laughter"]);

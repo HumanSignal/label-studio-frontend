@@ -1,4 +1,3 @@
-import { DownOutlined } from "@ant-design/icons";
 import styles from "./Entities.module.scss";
 import { Tree } from "antd";
 import { LabelItem } from "./LabelItem";

@@ -26,6 +26,7 @@ const Model = types
 
       const store = getRoot(self);
       const val = self.value.substr(1);
+
       return store.task.dataObj[val];
     },
   }));

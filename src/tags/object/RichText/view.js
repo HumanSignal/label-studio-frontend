@@ -4,12 +4,15 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
+import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 
 class RichTextPieceView extends Component {
   constructor(props) {
     super(props);
 
     this.rootNodeRef = React.createRef();
+
+    this.originalContentRef = React.createRef();
 
     this.rootRef = props.item.rootNodeRef;
   }
@@ -26,7 +29,7 @@ class RichTextPieceView extends Component {
 
     Utils.Selection.captureSelection(
       ({ selectionText, range }) => {
-        if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
+        if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
           return;
         }
 
@@ -88,11 +91,32 @@ class RichTextPieceView extends Component {
   /**
    * Handle initial rendering and all subsequent updates
    */
-  _handleUpdate() {
+  _handleUpdate(initial = false) {
     const { item } = this.props;
 
-    this.props.item.setRef(this.rootNodeRef);
+    // Make refs accessible to the model
+    this.props.item.setRef(
+      this.rootNodeRef,
+      this.originalContentRef,
+    );
 
+    if (initial) {
+      item.regs.forEach((richTextRegion) => {
+        try {
+          const root = this.rootNodeRef.current;
+          const { start, startOffset, end, endOffset } = richTextRegion;
+          const range = xpath.toRange(start, startOffset, end, endOffset, root);
+          const [soff, eoff] = rangeToGlobalOffset(range, root);
+
+          richTextRegion.updateGlobalOffsets(soff, eoff);
+        } catch (e) {
+          // should never happen
+          // doesn't break anything if happens
+        }
+      });
+    }
+
+    // Apply highlight to ranges of a current tag
     item.regs.forEach(richTextRegion => {
       try {
         richTextRegion.applyHighlight();
@@ -116,7 +140,7 @@ class RichTextPieceView extends Component {
   }
 
   componentDidMount() {
-    this._handleUpdate();
+    this._handleUpdate(true);
   }
 
   componentDidUpdate() {
@@ -146,6 +170,12 @@ class RichTextPieceView extends Component {
           className="htx-richtext"
           dangerouslySetInnerHTML={{ __html: val }}
           {...eventHandlers}
+        />
+        <div
+          ref={this.originalContentRef}
+          className="htx-richtext-orig"
+          style={{ display: 'none' }}
+          dangerouslySetInnerHTML={{ __html: val }}
         />
       </ObjectTag>
     );

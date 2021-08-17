@@ -74,11 +74,13 @@ export function flatten(arr) {
 
 export function hashCode(str) {
   var hash = 0;
+
   if (str.length === 0) {
     return hash + "";
   }
   for (var i = 0; i < str.length; i++) {
     var char = str.charCodeAt(i);
+
     hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
@@ -108,6 +110,16 @@ export function escapeHtml(unsafe) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+/**
+ * Compares two arrays; order matters
+ * @template T
+ * @param {T[]} arr1 array 1
+ * @param {T[]} arr2 array 2
+ */
+export function isArraysEqual(arr1, arr2) {
+  return arr1.length === arr2.length && arr1.every((value, index) => arr2[index] === value);
 }
 
 /**

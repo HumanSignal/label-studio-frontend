@@ -14,6 +14,7 @@ export class BoundingBox {
 
   static bbox(region) {
     const bbox = _detect(region);
+
     return wrapArray(bbox).map(bbox => Object.assign({ ...DEFAULT_BBOX }, bbox));
   }
 
@@ -57,13 +58,14 @@ export class BoundingBox {
 
 const imageRelatedBBox = (region, bbox) => {
   const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
+
   return Geometry.clampBBox({
     ...bbox,
     x: imageBbox.x + bbox.x,
     y: imageBbox.y + bbox.y,
   },
-  {x:0, y:0},
-  {x:region.parent.stageWidth, y:region.parent.stageHeight}
+  { x:0, y:0 },
+  { x:region.parent.stageWidth, y:region.parent.stageHeight },
   );
 };
 
@@ -71,9 +73,10 @@ const stageRelatedBBox = (region, bbox) => {
   const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
   const transformedBBox = Geometry.clampBBox(
     Geometry.modifyBBoxCoords(bbox, region.parent.zoomOriginalCoords),
-    {x:0, y:0},
-    {x:region.parent.stageWidth, y:region.parent.stageHeight}
+    { x:0, y:0 },
+    { x:region.parent.stageWidth, y:region.parent.stageHeight },
   );
+
   return {
     ...transformedBBox,
     x: imageBbox.x + transformedBBox.x,
@@ -109,6 +112,7 @@ const _detect = region => {
     case "keypointregion": {
       const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
       const scale = region.parent.zoomScale;
+
       return {
         x: region.x * scale + imageBbox.x - 2,
         y: region.y * scale + imageBbox.y - 2,

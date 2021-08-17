@@ -49,6 +49,7 @@ const ModelAttrs = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
   }));

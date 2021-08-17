@@ -13,16 +13,19 @@ const Prediction = observer(({ item, store }) => {
     e.stopPropagation();
     item.toggleVisibility();
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.style.display = item.hidden ? "none" : "unset";
   };
 
-  const highlight = e => {
+  const highlight = () => {
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.classList.add("hover");
   };
 
-  const unhighlight = e => {
+  const unhighlight = () => {
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.classList.remove("hover");
   };
 
@@ -30,7 +33,7 @@ const Prediction = observer(({ item, store }) => {
     <List.Item
       key={item.id}
       className={item.selected ? `${styles.annotation} ${styles.annotation_selected}` : styles.annotation}
-      onClick={ev => {
+      onClick={() => {
         !item.selected && store.annotationStore.selectPrediction(item.id);
       }}
       onMouseEnter={highlight}
@@ -55,7 +58,7 @@ const Prediction = observer(({ item, store }) => {
                   const c = cs.addAnnotationFromPrediction(p);
 
                   // this is here because otherwise React doesn't re-render the change in the tree
-                  window.setTimeout(function() {
+                  window.setTimeout(function () {
                     store.annotationStore.selectAnnotation(c.id);
                   }, 50);
                 }}
@@ -76,7 +79,7 @@ const Prediction = observer(({ item, store }) => {
 });
 
 class Predictions extends Component {
-  render() {
+  render () {
     const { store } = this.props;
     const { predictions } = store.annotationStore;
 

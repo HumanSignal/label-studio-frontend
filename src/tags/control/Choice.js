@@ -51,6 +51,7 @@ const Model = types
   .views(self => ({
     get isCheckbox() {
       const choice = self.parent?.choice;
+
       return choice === "multiple" || choice === "single";
     },
 
@@ -63,7 +64,7 @@ const Model = types
       return true;
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
     sel: false,
   }))

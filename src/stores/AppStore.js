@@ -105,7 +105,7 @@ export default types
      */
     showComments: false,
 
-    users: types.optional(types.array(UserExtended), [])
+    users: types.optional(types.array(UserExtended), []),
   })
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
@@ -120,7 +120,8 @@ export default types
     },
 
     get hasSegmentation() {
-      const match = Array.from(self.annotationStore.names.values()).map(({type}) => !!type.match(/labels/));
+      const match = Array.from(self.annotationStore.names.values()).map(({ type }) => !!type.match(/labels/));
+
       return match.find(v => v === true) ?? false;
     },
   }))
@@ -202,6 +203,7 @@ export default types
         "command+backspace, ctrl+backspace",
         function() {
           const { selected } = self.annotationStore;
+
           if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
             selected.deleteAllRegions();
           }
@@ -214,6 +216,7 @@ export default types
         "r",
         function() {
           const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode && !c.relationMode) {
             c.startRelationMode(c.highlightedNode);
           }
@@ -227,15 +230,17 @@ export default types
         function(e) {
           e.preventDefault();
           const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode && !c.relationMode) {
             c.highlightedNode.requestPerRegionFocus();
           }
-        }
+        },
       );
 
       // unselect region
       hotkeys.addKey("u", function() {
         const c = self.annotationStore.selected;
+
         if (c && !c.relationMode) {
           c.unselectAll();
         }
@@ -243,6 +248,7 @@ export default types
 
       hotkeys.addKey("h", function() {
         const c = self.annotationStore.selected;
+
         if (c && c.highlightedNode && !c.relationMode) {
           c.highlightedNode.toggleHidden();
         }
@@ -250,11 +256,13 @@ export default types
 
       hotkeys.addKey("command+z, ctrl+z", function() {
         const { history } = self.annotationStore.selected;
+
         history && history.canUndo && history.undo();
       });
 
       hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
         const { history } = self.annotationStore.selected;
+
         history && history.canRedo && history.redo();
       });
 
@@ -262,6 +270,7 @@ export default types
         "escape",
         function() {
           const c = self.annotationStore.selected;
+
           if (c && c.relationMode) {
             c.stopRelationMode();
           } else if (c && c.highlightedNode) {
@@ -275,6 +284,7 @@ export default types
         "backspace",
         function() {
           const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode) {
             c.highlightedNode.deleteRegion();
           }
@@ -286,6 +296,7 @@ export default types
         "alt+tab",
         function() {
           const c = self.annotationStore.selected;
+
           c && c.regionStore.selectNext();
         },
         "Circle through entities",
@@ -310,6 +321,7 @@ export default types
 
     function assignConfig(config) {
       const cs = self.annotationStore;
+
       self.config = config;
       cs.initRoot(self.config);
     }
@@ -325,8 +337,10 @@ export default types
     function submitDraft(c) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
+
         if (!events.hasEvent('submitDraft')) return resolve();
         const res = events.invokeFirst('submitDraft', self, c);
+
         if (res && res.then) res.then(resolve);
         else resolve(res);
       });
@@ -340,13 +354,17 @@ export default types
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
       // but block for at least 0.5s to prevent from double clicking.
+
       Promise.race([Promise.all([res, delay(500)]), delay(5000)])
         .catch(err => showModal(err?.message || err || defaultMessage))
         .then(() => self.setFlags({ isSubmitting: false }));
     }
 
     function submitAnnotation() {
+      if (self.isSubmitting) return;
+
       const entity = self.annotationStore.selected;
+
       entity.beforeSend();
 
       if (!entity.validate()) return;
@@ -360,6 +378,7 @@ export default types
 
     function updateAnnotation() {
       const entity = self.annotationStore.selected;
+
       entity.beforeSend();
 
       if (!entity.validate()) return;
@@ -378,24 +397,28 @@ export default types
     function acceptAnnotation() {
       handleSubmittingFlag(() => {
         const entity = self.annotationStore.selected;
+
         entity.beforeSend();
         if (!entity.validate()) return;
 
         const isDirty = entity.history.canUndo;
+
         entity.dropDraft();
-        getEnv(self).events.invoke('acceptAnnotation', self, {isDirty, entity});
+        getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
       }, "Error during skip, try again");
     }
 
     function rejectAnnotation() {
       handleSubmittingFlag(() => {
         const entity = self.annotationStore.selected;
+
         entity.beforeSend();
         if (!entity.validate()) return;
 
         const isDirty = entity.history.canUndo;
+
         entity.dropDraft();
-        getEnv(self).events.invoke('rejectAnnotation', self, {isDirty, entity});
+        getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
       }, "Error during skip, try again");
     }
 
@@ -417,18 +440,21 @@ export default types
      */
     function initializeStore({ annotations, completions, predictions, annotationHistory }) {
       const as = self.annotationStore;
+
       as.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
       (predictions ?? []).forEach(p => {
         const obj = as.addPrediction(p);
+
         as.selectPrediction(obj.id);
         obj.deserializeAnnotation(p.result);
       });
 
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
         const obj = as.addAnnotation(c);
+
         as.selectAnnotation(obj.id);
         obj.deserializeAnnotation(c.draft || c.result);
         obj.reinitHistory();

@@ -14,7 +14,7 @@ const ToolView = observer(({ item }) => {
   return (
     <BasicTool
       selected={item.selected}
-      onClick={ev => {
+      onClick={() => {
         const sel = item.selected;
 
         item.manager.selectTool(item, !sel);
@@ -33,6 +33,7 @@ const _Tool = types
   }))
   .actions(self => {
     let brush;
+
     return {
       updateCursor() {
         if (!self.selected || !self.obj.stageRef) return;
@@ -70,6 +71,7 @@ const _Tool = types
           return;
 
         const shape = self.getSelectedShape;
+
         if (shape && shape.type === "brushregion") {
           self.addPoint(x, y);
         }

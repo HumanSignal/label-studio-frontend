@@ -16,7 +16,6 @@ const RankerItemModel = types
     selected: types.optional(types.boolean, false),
     idx: types.number,
   })
-  .views(self => ({}))
   .actions(self => ({
     setBG(val) {
       self.backgroundColor = val;
@@ -95,7 +94,6 @@ const Model = types
     regions: types.array(RankerItemModel),
     // update: types.optional(types.boolean, false)
   })
-  .views(self => ({}))
   .actions(self => ({
     setUpdate() {
       self.update = self.update + 1;
@@ -104,7 +102,7 @@ const Model = types
     _addRegion(val, idx) {
       const reg = RankerItemModel.create({
         value: val,
-        idx: idx,
+        idx,
         _value: val,
       });
 
@@ -138,7 +136,7 @@ const Model = types
       };
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       obj.value.items.forEach((v, idx) => {
         self._addRegion(v, idx);
       });
@@ -161,6 +159,7 @@ function isMobileDevice() {
 
 const SortableText = SortableElement(({ item, value }) => {
   let classNames;
+
   if (isMobileDevice) {
     classNames = "noselect";
   }
@@ -209,15 +208,16 @@ const SortableList = SortableContainer(({ item, items }) => {
           value={value}
           color={value.backgroundColor}
           item={item}
-          onClick={ev => {}}
+          onClick={() => {}}
         />
       ))}
     </List>
   );
 });
 
-const HtxRankerView = ({ store, item }) => {
+const HtxRankerView = ({ item }) => {
   const props = {};
+
   if (isMobileDevice()) {
     props["pressDelay"] = 100;
   } else {

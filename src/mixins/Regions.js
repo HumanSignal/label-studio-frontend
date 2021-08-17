@@ -14,7 +14,7 @@ const RegionsMixin = types
 
     parentID: types.optional(types.string, ""),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     // selected: false,
     highlighted: false,
     isDrawing: false,
@@ -23,6 +23,7 @@ const RegionsMixin = types
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
+
       return states && states.filter(s => s.perregion === true);
     },
 
@@ -40,11 +41,10 @@ const RegionsMixin = types
 
     get isCompleted() {
       return !self.isDrawing;
-    }
+    },
 
   }))
   .actions(self => {
-    let deferredSelectId;
     return {
       setParentID(id) {
         self.parentID = id;
@@ -54,21 +54,23 @@ const RegionsMixin = types
         self.isDrawing = val;
       },
 
-      moveTop(size) {},
-      moveBottom(size) {},
-      moveLeft(size) {},
-      moveRight(size) {},
+      // All of the below accept size as an argument
+      moveTop() {},
+      moveBottom() {},
+      moveLeft() {},
+      moveRight() {},
 
-      sizeRight(size) {},
-      sizeLeft(size) {},
-      sizeTop(size) {},
-      sizeBottom(size) {},
+      sizeRight() {},
+      sizeLeft() {},
+      sizeTop() {},
+      sizeBottom() {},
 
       // "web" degree is opposite to mathematical, -90 is 90 actually
       // swapSizes = true when canvas is already rotated at this moment
       // @todo not used
       rotatePoint(point, degree, swapSizes = true) {
         const { x, y } = point;
+
         if (!degree) return { x, y };
 
         degree = (360 + degree) % 360;
@@ -81,6 +83,7 @@ const RegionsMixin = types
         //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
         //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
         // for ortogonal degrees it's simple:
+
         if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
         if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
         if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
@@ -139,6 +142,7 @@ const RegionsMixin = types
           return self.states
             .map(s => {
               const ser = self.serialize(s, parent);
+
               if (!ser) return null;
 
               const tree = {
@@ -200,6 +204,7 @@ const RegionsMixin = types
 
       onClickRegion() {
         const annotation = self.annotation;
+
         if (!annotation.editable || self.isDrawing) return;
 
         if (annotation.relationMode) {
@@ -213,9 +218,9 @@ const RegionsMixin = types
 
       _selectArea() {
         this.cancelPerRegionFocus();
-        deferredSelectId = null;
         const annotation = self.annotation;
         const wasNotSelected = !self.selected;
+
         annotation.unselectAll();
         if (wasNotSelected) {
           annotation.selectArea(self);

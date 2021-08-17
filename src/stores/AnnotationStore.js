@@ -34,8 +34,8 @@ const Annotation = types
     type: types.enumeration(["annotation", "prediction", "history"]),
     acceptedState: types.optional(
       types.maybeNull(
-        types.enumeration(['fixed', 'accepted', 'rejected'])
-      ), null
+        types.enumeration(['fixed', 'accepted', 'rejected']),
+      ), null,
     ),
 
     createdDate: types.optional(types.string, Utils.UDate.currentISODate()),
@@ -119,6 +119,7 @@ const Annotation = types
 
     get results() {
       const results = [];
+
       self.areas.forEach(a => a.results.forEach(r => results.push(r)));
       return results;
     },
@@ -131,9 +132,9 @@ const Annotation = types
         .map(r => r.serialize())
         .filter(Boolean)
         .concat(self.relationStore.serializeAnnotation());
-    }
+    },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     hidden: false,
     draftId: 0,
     draftSelected: false,
@@ -218,6 +219,7 @@ const Annotation = types
 
     unselectAreas() {
       const node = self.highlightedNode;
+
       if (!node) return;
 
       // eslint-disable-next-line no-unused-expressions
@@ -286,6 +288,7 @@ const Annotation = types
       region.states &&
         region.states.forEach(s => {
           const mainViewTag = self.names.get(s.name);
+
           mainViewTag.unselectAll && mainViewTag.unselectAll();
           mainViewTag.copyState(s);
         });
@@ -295,6 +298,7 @@ const Annotation = types
       region.states &&
         region.states.forEach(s => {
           const mainViewTag = self.names.get(s.name);
+
           mainViewTag.unselectAll && mainViewTag.unselectAll();
           mainViewTag.perRegionCleanup && mainViewTag.perRegionCleanup();
         });
@@ -346,6 +350,7 @@ const Annotation = types
       let { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
+
       children && children.forEach(r => r.setParentID(region.parentID));
 
       if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
@@ -389,6 +394,7 @@ const Annotation = types
 
     toggleDraft() {
       const isDraft = self.draftSelected;
+
       if (!isDraft && !self.versions.draft) return;
       self.autosave.flush();
       self.pauseAutosave();
@@ -426,6 +432,7 @@ const Annotation = types
 
           const result = self.serializeAnnotation();
           // if this is new annotation and no regions added yet
+
           if (!self.pk && !result.length) return;
 
           self.setDraftSelected();
@@ -626,13 +633,16 @@ const Annotation = types
         // Clear non-existent labels
         if (obj.type.endsWith("labels")) {
           const keys = Object.keys(obj.value);
+
           for (const key of keys) {
             if (key.endsWith("labels")) {
               if (self.names.has(obj.from_name)) {
                 const labelsContainer = self.names.get(obj.from_name);
                 const value = obj.value[key];
-                if (value && value.length) {
+
+                if (value && value.length && labelsContainer.type.endsWith("labels")) {
                   const filteredValue = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+
                   if (filteredValue.length !== value.length) {
                     obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
                   }
@@ -647,12 +657,15 @@ const Annotation = types
                   // Redirect references to existent tool
                   const targetObject = self.names.get(obj.to_name);
                   const states = targetObject.states();
+
                   if (states?.length) {
                     const altToolsControllerType = obj.type.replace(/labels$/, "");
                     const sameLabelsType = obj.type;
                     const simpleLabelsType = "labels";
+
                     for (const altType of [altToolsControllerType, sameLabelsType, simpleLabelsType]) {
                       const state = states.find(state => state.type === altType);
+
                       if (state) {
                         obj.type = altType;
                         obj.from_name = state.name;
@@ -846,6 +859,7 @@ export default types
 
       // sad hack with pk while sdk are not using pk everywhere
       const c = list.find(c => c.id === id || c.pk === String(id)) || list[0];
+
       if (!c) return null;
       c.selected = true;
       self.selected = c;
@@ -906,11 +920,12 @@ export default types
       if (self.root) return;
 
       if (!config) {
-        return (self.root = ViewModel.create({id:"empty"}));
+        return (self.root = ViewModel.create({ id:"empty" }));
       }
 
       // convert config to mst model
       let rootModel;
+
       try {
         rootModel = Tree.treeToModel(config, self.store);
       } catch (e) {
@@ -943,12 +958,14 @@ export default types
       Tree.traverseTree(self.root, node => {
         const isControlTag = node.name && !objectTypes.includes(node.type);
         // auto-infer missed toName if there is only one object tag in the config
+
         if (isControlTag && !node.toname && objects.length === 1) {
           node.toname = objects[0];
         }
 
         if (node && node.toname) {
           const val = self.toNames.get(node.toname);
+
           if (val) {
             val.push(node.name);
           } else {
@@ -981,6 +998,7 @@ export default types
         pk: pk && String(pk),
         root: self.root,
       };
+
       if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
       if (options.user) node.user = options.user;
 
@@ -992,6 +1010,7 @@ export default types
       options.type = "prediction";
 
       const item = createItem(options);
+
       self.predictions.unshift(item);
 
       const record = self.predictions[0];
@@ -1014,7 +1033,7 @@ export default types
 
       record.addVersions({
         result: options.result,
-        draft: options.draft
+        draft: options.draft,
       });
 
       return record;
@@ -1053,6 +1072,7 @@ export default types
       s.forEach(r => {
         if ("id" in r) {
           const id = r.id.replace(/#.*$/, `#${c.id}`);
+
           ids[r.id] = id;
           r.id = id;
         }

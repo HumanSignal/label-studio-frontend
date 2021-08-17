@@ -20,59 +20,64 @@ const RegionMixin = types
     parentID: types.optional(types.string, ""),
   })
   .views(self => ({
-    get perRegionStates() {
+    get perRegionStates () {
       const states = self.states;
+
       return states && states.filter(s => s.perregion === true);
     },
 
-    get store() {
+    get store () {
       return getRoot(self);
     },
 
-    get parent() {
+    get parent () {
       return getParent(self);
     },
 
-    get editable() {
+    get editable () {
       return self.readonly === false && self.annotation.editable === true;
     },
 
-    get labelsState() {
+    get labelsState () {
       return self.states.find(s => s.type.indexOf("labels") !== -1);
     },
 
-    hasLabelState(labelValue) {
+    hasLabelState (labelValue) {
       // first of all check if this region implements labels
       // interface
       const s = self.labelsState;
+
       if (!s) return false;
 
       // find that label and check if its selected
       const l = s.findLabel(labelValue);
+
       if (!l || !l.selected) return false;
 
       return true;
     },
   }))
   .actions(self => ({
-    setParentID(id) {
+    setParentID (id) {
       self.parentID = id;
     },
 
-    moveTop(size) {},
-    moveBottom(size) {},
-    moveLeft(size) {},
-    moveRight(size) {},
+    // All of the below accept size as an arument
+    moveTop () {},
+    moveBottom () {},
+    moveLeft () {},
+    moveRight () {},
 
-    sizeRight(size) {},
-    sizeLeft(size) {},
-    sizeTop(size) {},
-    sizeBottom(size) {},
+    sizeRight () {},
+    sizeLeft () {},
+    sizeTop () {},
+    sizeBottom () {},
 
     // "web" degree is opposite to mathematical, -90 is 90 actually
     // swapSizes = true when canvas is already rotated at this moment
-    rotatePoint(point, degree, swapSizes = true) {
+    rotatePoint (point, degree, swapSizes = true) {
       const { x, y } = point;
+
       if (!degree) return { x, y };
 
       degree = (360 + degree) % 360;
@@ -85,13 +90,14 @@ const RegionMixin = types
       //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
       //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
       // for ortogonal degrees it's simple:
+
       if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
       if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
       if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
       return { x, y };
     },
 
-    rotateDimensions({ width, height }, degree) {
+    rotateDimensions ({ width, height }, degree) {
       if ((degree + 360) % 180 === 0) return { width, height };
       return { width: height, height: width };
     },
@@ -99,13 +105,13 @@ const RegionMixin = types
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState() {},
+    updateAppearenceFromState () {},
 
-    serialize() {
+    serialize () {
       console.error("Region class needs to implement serialize");
     },
 
-    toStateJSON() {
+    toStateJSON () {
       const parent = self.parent;
       const buildTree = control => {
         const tree = {
@@ -126,6 +132,7 @@ const RegionMixin = types
         return self.states
           .map(s => {
             const ser = self.serialize(s, parent);
+
             if (!ser) return null;
 
             const tree = {
@@ -151,8 +158,9 @@ const RegionMixin = types
       }
     },
 
-    updateOrAddState(state) {
+    updateOrAddState (state) {
       var foundIndex = self.states.findIndex(s => s.name === state.name);
+
       if (foundIndex !== -1) {
         self.states[foundIndex] = cloneNode(state);
         self.updateAppearenceFromState();
@@ -164,8 +172,9 @@ const RegionMixin = types
     // given the specific state object (for example labels) it finds
     // that inside the region states objects and updates that, this
     // function is used to capture the state
-    updateSingleState(state) {
+    updateSingleState (state) {
       var foundIndex = self.states.findIndex(s => s.name === state.name);
+
       if (foundIndex !== -1) {
         self.states[foundIndex] = cloneNode(state);
 
@@ -174,6 +183,7 @@ const RegionMixin = types
         // therefore we need to recheck here
         if (state.type.indexOf("labels") !== -1) {
           const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
+
           states && states.forEach(s => self.states.remove(s));
         }
 
@@ -181,7 +191,7 @@ const RegionMixin = types
       }
     },
 
-    selectRegion() {
+    selectRegion () {
       self.selected = true;
       self.annotation.setHighlightedNode(self);
 
@@ -192,7 +202,7 @@ const RegionMixin = types
      * Common logic for unselection; specific actions should be in `afterUnselectRegion`
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
-    unselectRegion(tryToKeepStates = false) {
+    unselectRegion (tryToKeepStates = false) {
       const annotation = self.annotation;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
@@ -214,10 +224,11 @@ const RegionMixin = types
       }
     },
 
-    afterUnselectRegion() {},
+    afterUnselectRegion () {},
 
-    onClickRegion() {
+    onClickRegion () {
       const annotation = self.annotation;
+
       if (!annotation.editable) return;
 
       if (annotation.relationMode) {
@@ -237,7 +248,7 @@ const RegionMixin = types
     /**
      * Remove region
      */
-    deleteRegion() {
+    deleteRegion () {
       if (!self.annotation.editable) return;
 
       self.unselectRegion();
@@ -253,15 +264,15 @@ const RegionMixin = types
       self.annotation.deleteRegion(self);
     },
 
-    setHighlight(val) {
+    setHighlight (val) {
       self.highlighted = val;
     },
 
-    toggleHighlight() {
+    toggleHighlight () {
       self.setHighlight(!self.highlighted);
     },
 
-    toggleHidden() {
+    toggleHidden () {
       self.hidden = !self.hidden;
     },
   }));

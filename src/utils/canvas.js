@@ -7,11 +7,13 @@ import { colorToRGBAArray } from "./colors";
 function imageData2Image(imagedata) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
+
   canvas.width = imagedata.width;
   canvas.height = imagedata.height;
   ctx.putImageData(imagedata, 0, 0);
 
   var image = new Image();
+
   image.src = canvas.toDataURL();
   return image;
 }
@@ -23,12 +25,15 @@ function RLE2Region(rle, image, { color }) {
 
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
+
   canvas.width = nw;
   canvas.height = nh;
 
   const newdata = ctx.createImageData(nw, nh);
+
   newdata.data.set(decode(rle));
   const rgb = colorToRGBAArray(color);
+
   for (let i = newdata.data.length / 4; i--; ) {
     if (newdata.data[i * 4 + 3]) {
       newdata.data[i * 4] = rgb[0];
@@ -39,6 +44,7 @@ function RLE2Region(rle, image, { color }) {
   ctx.putImageData(newdata, 0, 0);
 
   var new_image = new Image();
+
   new_image.src = canvas.toDataURL();
   return new_image;
 }
@@ -49,12 +55,14 @@ function Region2RLE(region, image) {
     nh = image.naturalHeight;
   const stage = region.object?.stageRef;
   const parent = region.parent;
+
   if (!stage) {
     console.error(`Stage not found for area #${region.cleanId}`);
     return;
   }
 
   const layer = stage.findOne(`#${region.cleanId}`);
+
   if (!layer) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
@@ -71,6 +79,7 @@ function Region2RLE(region, image) {
     offsetX = stage.getOffsetX(),
     offsetY = stage.getOffsetY(),
     rotation = stage.getRotation();
+
   stage
     .setWidth(parent.stageWidth)
     .setHeight(parent.stageHeight)
@@ -88,6 +97,7 @@ function Region2RLE(region, image) {
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
+
   for (let i = data.data.length / 4; i--; ) {
     data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
   }
@@ -111,6 +121,7 @@ function Region2RLE(region, image) {
 function brushSizeCircle(size) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
+
   canvas.width = size * 4 + 8;
   canvas.height = size * 4 + 8;
 
@@ -163,6 +174,7 @@ function encodeSVG(data) {
   // var resultCss = `background-image: url();`;
 
   var escaped = data.replace(symbols, encodeURIComponent);
+
   return `${quotes.level1}data:image/svg+xml,${escaped}${quotes.level1}`;
 }
 
@@ -172,6 +184,7 @@ const labelToSVG = (function() {
   function calculateTextWidth(text) {
     const svg = document.createElement("svg");
     const svgText = document.createElement("text");
+
     svgText.style = "font-size: 9.5px; font-weight: bold; color: red; fill: red; font-family: Monaco";
     svgText.innerHTML = text;
 
@@ -179,6 +192,7 @@ const labelToSVG = (function() {
     document.body.appendChild(svg);
 
     const textLen = svgText.getBoundingClientRect().width;
+
     svg.remove();
 
     return textLen;
@@ -186,6 +200,7 @@ const labelToSVG = (function() {
 
   return function({ label, score }) {
     let cacheKey = label;
+
     if (score !== null) cacheKey = cacheKey + score;
 
     if (cacheKey in SVG_CACHE) return SVG_CACHE[cacheKey];
@@ -195,6 +210,7 @@ const labelToSVG = (function() {
 
     if (score !== null && score !== undefined) {
       const fillColor = Colors.getScaleGradient(score);
+
       items.push(`<rect x="0" y="0" rx="2" ry="2" width="24" height="14" style="fill:${fillColor};opacity:0.5" />`);
       items.push(`<text x="3" y="10" style="font-size: 8px; font-family: Monaco">${score.toFixed(2)}</text>`);
       width = width + 26;

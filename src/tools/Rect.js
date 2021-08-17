@@ -1,6 +1,6 @@
 import { types } from "mobx-state-tree";
 
-import BaseTool, { DEFAULT_DIMENSIONS, MIN_SIZE } from "./Base";
+import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
@@ -12,6 +12,7 @@ const _Tool = types
     const Super = {
       createRegionOptions: self.createRegionOptions,
     };
+
     return {
       get tagTypes() {
         return {
@@ -41,6 +42,7 @@ const _Tool = types
   .actions(self => ({
     beforeCommitDrawing() {
       const s = self.getActiveShape;
+
       return s.width > self.MIN_SIZE.X  && s.height * self.MIN_SIZE.Y;
     },
   }));

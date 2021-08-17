@@ -1,4 +1,4 @@
-import { List, Tag } from "antd";
+import { List } from "antd";
 import { observer } from "mobx-react";
 import { Button } from "../../common/Button/Button";
 import { Block, Elem } from "../../utils/bem";
@@ -11,7 +11,7 @@ import "./LabelItem.styl";
 
 export const LabelItem = observer(({ item, regions, regionStore }) => {
   const color = item.background;
-  const vars = asVars({color});
+  const vars = asVars({ color });
 
   const isHidden = Object.values(regions).reduce((acc, item) => acc && item.hidden, true);
   const count = Object.values(regions).length;
@@ -20,9 +20,11 @@ export const LabelItem = observer(({ item, regions, regionStore }) => {
     <Block name="list-item" tag={List.Item} key={item.id} style={vars}>
       <Space spread>
         <Elem name="title">
-          {!item.isNotLabel ? <Label color={color} empty={item.isEmpty}>
-            {item._value}
-          </Label> : <>Not labeled</>}
+          {!item.isNotLabel ? (
+            <Label color={color} empty={item.isEmpty}>
+              {item._value}
+            </Label>
+          ) : <>Not labeled</>}
           <Elem name="counter">
             {`${count} Region${(count === 0 || count > 1) ? "s" : ""}`}
           </Elem>
@@ -33,7 +35,7 @@ export const LabelItem = observer(({ item, regions, regionStore }) => {
           type="text"
           icon={isHidden ? <LsInvisible/> : <LsVisible/>}
           onClick={() => regionStore.setHiddenByLabel(!isHidden, item)}
-          mod={{hidden: isHidden}}
+          mod={{ hidden: isHidden }}
         />
       </Space>
     </Block>

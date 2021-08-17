@@ -27,6 +27,7 @@ const tagsArray = _mixedArray(oneOfTags);
 
 function unionArray(arr) {
   const type = types.maybeNull(types.array(oneOfTags(arr)));
+
   type.value = arr;
   return type;
 }
@@ -37,6 +38,7 @@ function unionTag(arr) {
 
 function tagsTypes(arr) {
   const type = types.frozen(arr.map(val => val.toLowerCase()));
+
   type.describe = ()=>`(${arr.join("|")})`;
   type.value = arr;
   return type;
@@ -64,6 +66,7 @@ function allModelsTypes() {
 
 function isType(node, types) {
   const nt = getType(node);
+
   for (let t of types) if (nt === t) return true;
 
   return false;

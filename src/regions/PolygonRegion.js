@@ -29,7 +29,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
@@ -46,8 +46,8 @@ const Model = types
       if (!self.points[0].id) {
         self.points = self.points.map(([x, y], index) => ({
           id: guidGenerator(),
-          x: x,
-          y: y,
+          x,
+          y,
           size: self.pointSize,
           style: self.pointStyle,
           index,
@@ -123,20 +123,21 @@ const Model = types
     insertPoint(insertIdx, x, y) {
       const p = {
         id: guidGenerator(),
-        x: x,
-        y: y,
+        x,
+        y,
         size: self.pointSize,
         style: self.pointStyle,
         index: self.points.length,
       };
+
       self.points.splice(insertIdx, 0, p);
     },
 
     _addPoint(x, y) {
       self.points.push({
         id: guidGenerator(),
-        x: x,
-        y: y,
+        x,
+        y,
         size: self.pointSize,
         style: self.pointStyle,
         index: self.points.length,
@@ -148,15 +149,13 @@ const Model = types
     rotate(degree = -90) {
       self.points.forEach(point => {
         const p = self.rotatePoint(point, degree);
+
         point._movePoint(p.x, p.y);
       });
     },
 
     closePoly() {
       self.closed = true;
-      self.setDrawing(false);
-      self.selectRegion();
-      self.annotation.history.unfreeze();
     },
 
     canClose(x, y) {
@@ -211,6 +210,7 @@ const Model = types
         self.points.forEach(p => {
           const x = (sw * p.x) / 100;
           const y = (sh * p.y) / 100;
+
           self.coordstype = "px";
           p._movePoint(x, y);
         });
@@ -264,6 +264,7 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
 
 function getFlattenedPoints(points) {
   const p = points.map(p => [p.x, p.y]);
+
   return p.reduce(function(flattenedPoints, point) {
     return flattenedPoints.concat(point);
   }, []);
@@ -297,11 +298,13 @@ function createHoverAnchor({ point, group, layer, zoom }) {
 
 function moveHoverAnchor({ point, group, layer, zoom }) {
   const hoverAnchor = getHoverAnchor({ layer }) || createHoverAnchor({ point, group, layer, zoom });
+
   hoverAnchor.to({ x: point[0], y: point[1], duration: 0 });
 }
 
 function removeHoverAnchor({ layer }) {
   const hoverAnchor = getHoverAnchor({ layer });
+
   if (!hoverAnchor) return;
   hoverAnchor.destroy();
   layer.draw();
@@ -360,11 +363,13 @@ const HtxPolygonView = ({ item }) => {
 
   function renderLines(points, closed) {
     const name = "borders";
+
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
+
           return renderLine({ points, idx1, idx2, closed });
         })}
       </Group>
@@ -374,6 +379,7 @@ const HtxPolygonView = ({ item }) => {
   function renderPoly(points) {
     const name = "poly";
     const flattenedPoints = getFlattenedPoints(points);
+
     return (
       <Group key={name} name={name}>
         <Line
@@ -401,6 +407,7 @@ const HtxPolygonView = ({ item }) => {
 
   function renderCircles(points) {
     const name = "anchors";
+
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => renderCircle({ points, idx }))}
@@ -450,7 +457,7 @@ const HtxPolygonView = ({ item }) => {
         if (maxY + y > sh) y = sh - maxY;
         if (maxX + x > sw) x = sw - maxX;
 
-        return { x: x, y: y };
+        return { x, y };
       })}
       onDragEnd={e => {
         const t = e.target;
@@ -465,7 +472,7 @@ const HtxPolygonView = ({ item }) => {
         t.setAttr("x", 0);
         t.setAttr("y", 0);
       }}
-      onMouseOver={e => {
+      onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
           stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -473,7 +480,7 @@ const HtxPolygonView = ({ item }) => {
           stage.container().style.cursor = Constants.POINTER_CURSOR;
         }
       }}
-      onMouseOut={e => {
+      onMouseOut={() => {
         stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
         if (store.annotationStore.selected.relationMode) {

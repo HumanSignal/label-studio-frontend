@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  * Callback on submit annotation
@@ -81,5 +82,5 @@ export default {
   onSelectAnnotation,
   onAcceptAnnotation,
   onRejectAnnotation,
-  onStorageInitialized
+  onStorageInitialized,
 };

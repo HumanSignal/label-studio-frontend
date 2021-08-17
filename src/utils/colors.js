@@ -186,6 +186,7 @@ function hexToRGBArray(hex) {
   /**
    * If HEX = 3
    */
+
   if (hex && hex.length === 4) {
     rgb[0] = "0x" + hex[1] + hex[1];
     rgb[1] = "0x" + hex[2] + hex[2];
@@ -225,6 +226,7 @@ export function hexToRGBA(hex, opacity) {
 export function colorToRGBA(value, alpha) {
   if (typeof value === "string" && typeof colorNames[value.toLowerCase()] !== undefined) {
     const hexColor = colorNames[value.toLowerCase()];
+
     return hexToRGBA(hexColor, alpha);
   }
 
@@ -238,6 +240,7 @@ export function colorToRGBA(value, alpha) {
  */
 export function convertToRGBA(value, alpha) {
   const rgba = colorToRGBAArray(value);
+
   rgba[3] = Number(alpha) === alpha ? alpha : rgba[3];
   return rgbaArrayToRGBA(rgba);
 }
@@ -257,6 +260,7 @@ export function stringToColor(str) {
 
   for (let i = 0; i < 3; i++) {
     let value = (hash >> (i * 8)) & 0xff;
+
     color += ("00" + value.toString(16)).substr(-2);
   }
 
@@ -304,6 +308,7 @@ export const removeAlpha = (r, g, b, a, base = [255, 255, 255, 1]) => {
 export const contrastColor = color => {
   const [r, g, b] = removeAlpha(...color.match(/([0-9.]{1,3})/g).map(Number));
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+
   return yiq >= 128 ? "rgb(0,0,0)" : "rgb(255,255,255)";
 };
 
@@ -315,22 +320,26 @@ export function colorToRGBAArray(value) {
   if (value) {
     if (value.charAt(0) === "#") {
       const colorRGBArray = hexToRGBArray(value);
+
       colorRGBArray.push(1);
       return colorRGBArray;
     }
 
     let matches;
+
     if ((matches = RGBARegEx.exec(value))) {
       return matches.slice(1, 5).map(x => +x);
     }
     if ((matches = RGBRegEx.exec(value))) {
       const colorRGBArray = matches.slice(1, 4);
+
       colorRGBArray.push(1);
       return colorRGBArray.map(x => +x);
     }
     if (typeof value === "string" && typeof colorNames[value.toLowerCase()] !== undefined) {
       const hexColor = colorNames[value.toLowerCase()];
       const colorRGBArray = hexToRGBArray(hexColor);
+
       colorRGBArray.push(1);
       return colorRGBArray;
     }
@@ -344,6 +353,7 @@ export function colorToRGBAArray(value) {
  */
 export function rgbArrayToHex(value) {
   const color = value.slice(0, 3).map(x => (x | (1 << 8)).toString(16).slice(1));
+
   color.unshift("#");
   return color.join("");
 }
@@ -359,5 +369,6 @@ export function over(color, bgColor = "white") {
   const k2 = bgColor.alpha() * (1 - k1);
   const k12 = k1 + k2;
   const bgRGB = bgColor.rgb() || [];
+
   return chroma([...color.rgb().map((c, idx) => (k1 * c + k2 * bgRGB[idx]) / k12), k12]);
 }

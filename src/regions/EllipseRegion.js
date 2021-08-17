@@ -37,7 +37,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
 
@@ -76,13 +76,24 @@ const Model = types
       self.startX = self.x;
       self.startY = self.y;
 
-      if (self.coordstype === "perc") {
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-        self.relativeRadiusX = self.radiusX;
-        self.relativeRadiusY = self.radiusY;
-        self.relativeWidth = self.width;
-        self.relativeHeight = self.height;
+      switch (self.coordstype)  {
+        case "perc": {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeRadiusX = self.radiusX;
+          self.relativeRadiusY = self.radiusY;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case "px": {
+          const { stageWidth, stageHeight } = self.parent;
+
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.radiusX, self.radiusY, self.rotation);
+          }
+          break;
+        }
       }
       self.checkSizes();
       self.updateAppearenceFromState();
@@ -102,6 +113,7 @@ const Model = types
 
       //going to system where our ellipse has angle 0 to X-Axis via rotate matrix
       const theta = self.rotation;
+
       rel_x = rel_x * Math.cos(Math.unit(theta, "deg")) - rel_y * Math.sin(Math.unit(theta, "deg"));
       rel_y = rel_x * Math.sin(Math.unit(theta, "deg")) + rel_y * Math.cos(Math.unit(theta, "deg"));
 
@@ -117,6 +129,7 @@ const Model = types
     // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
+
       self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
     },
 
@@ -272,7 +285,7 @@ const HtxEllipseView = ({ item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
+        onMouseOver={() => {
 
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
@@ -281,7 +294,7 @@ const HtxEllipseView = ({ item }) => {
             stage.container().style.cursor = Constants.POINTER_CURSOR;
           }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
           if (store.annotationStore.selected.relationMode) {

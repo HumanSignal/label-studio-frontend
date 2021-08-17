@@ -1,5 +1,5 @@
 import React from "react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { Input } from "antd";
 
@@ -63,6 +63,7 @@ const Model = types
 
       tch.forEach(ch => {
         let chval = ch._value;
+
         if (!self.casesensetive) chval = chval.toLowerCase();
 
         if (chval.indexOf(value) !== -1) ch.setVisible(true);
@@ -72,6 +73,7 @@ const Model = types
 
     applyFilterEv(e) {
       let { value } = e.target;
+
       self._value = value;
 
       self.applyFilter();
@@ -91,6 +93,7 @@ const Model = types
 
     selectFirstElement() {
       const selected = self.toTag.selectFirstVisible();
+
       if (selected && self.cleanup) {
         self._value = "";
         self.applyFilter();

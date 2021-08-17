@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
@@ -19,6 +19,7 @@ const Model = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
   }))
@@ -32,8 +33,8 @@ const Model = types
       erase._control = self;
 
       self.tools = {
-        brush: brush,
-        erase: erase,
+        brush,
+        erase,
         // zoom: zoom
       };
     },

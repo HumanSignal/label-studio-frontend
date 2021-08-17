@@ -57,4 +57,5 @@ const HtxTextNodeView = ({ store, range, id, highlightStyle, style, charIndex, c
 };
 
 const HtxTextNode = inject("store")(observer(HtxTextNodeView));
+
 export { HtxTextNode };

@@ -9,11 +9,12 @@ import ObjectTag from "../../components/Tags/Object";
 import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import messages from "../../utils/messages";
 import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
-import {LoadingOutlined} from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 
 Konva.showWarnings = false;
 
@@ -39,11 +40,11 @@ const splitRegions = (regions) => {
   };
 };
 
-const Region = memo(({region}) => {
+const Region = memo(({ region }) => {
   return Tree.renderItem(region, false);
 });
 
-const RegionsLayer = memo(({regions, name, useLayers}) => {
+const RegionsLayer = memo(({ regions, name, useLayers }) => {
   const content = regions.map((el) => (
     <Region key={`region-${el.id}`} region={el}/>
   ));
@@ -57,7 +58,7 @@ const RegionsLayer = memo(({regions, name, useLayers}) => {
   );
 });
 
-const Regions = memo(({regions, useLayers = true}) => {
+const Regions = memo(({ regions, useLayers = true }) => {
   return chunks(regions, 15).map((chunk, i) => (
     <RegionsLayer
       key={`chunk-${i}`}
@@ -68,7 +69,18 @@ const Regions = memo(({regions, useLayers = true}) => {
   ));
 });
 
-const Crosshair = memo(forwardRef(({width, height}, ref) => {
+const DrawingRegion = observer(({ item }) => {
+  const { drawingRegion } = item;
+  const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment: Layer;
+
+  return (
+    <Wrapper>
+      {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
+    </Wrapper>
+  );
+});
+
+const Crosshair = memo(forwardRef(({ width, height }, ref) => {
   const [pointsV, setPointsV] = useState([50, 0, 50, height]);
   const [pointsH, setPointsH] = useState([0, 100, width, 100]);
   const [x, setX] = useState(100);
@@ -93,7 +105,7 @@ const Crosshair = memo(forwardRef(({width, height}, ref) => {
       },
       updateVisibility(visibility) {
         setVisible(visibility);
-      }
+      },
     };
   }
 
@@ -147,7 +159,7 @@ export default observer(
     state = {
       imgStyle: {},
       ratio: 1,
-      pointer: [0, 0]
+      pointer: [0, 0],
     }
 
     imageRef = createRef();
@@ -156,11 +168,13 @@ export default observer(
     handleOnClick = e => {
       const { item } = this.props;
       let evt = e.evt || e;
+
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
     handleMouseDown = e => {
       const { item } = this.props;
+
       item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
 
       // item.freezeHistory();
@@ -182,6 +196,7 @@ export default observer(
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
         const { left, top } = this.container.getBoundingClientRect();
+
         this.canvasX = left;
         this.canvasY = top;
         return item.event("mousedown", e, x, y);
@@ -237,6 +252,7 @@ export default observer(
       if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
         e.evt.preventDefault();
         const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
+
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
         item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
@@ -245,7 +261,8 @@ export default observer(
 
     updateCrosshair = (e) => {
       if (this.crosshairRef.current) {
-        const {x, y} = e.currentTarget.getPointerPosition();
+        const { x, y } = e.currentTarget.getPointerPosition();
+
         this.crosshairRef.current.updatePointer(x, y);
       }
     }
@@ -253,14 +270,14 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
+      const message = messages.ERR_LOADING_HTTP({ attr: item.value, error: "", url: item._value });
 
-      cs.addErrors([
-        errorBuilder.generalError(`Cannot load image (${item._value}).\nCheck console/network panel for more info.`),
-      ]);
+      cs.addErrors([errorBuilder.generalError(message)]);
     };
 
     updateGridSize = range => {
       const { item } = this.props;
+
       item.freezeHistory();
 
       item.setGridSize(range);
@@ -284,6 +301,7 @@ export default observer(
       if (e.evt) {
         const { item } = this.props;
         const stage = item.stageRef;
+
         item.handleZoom(e.evt.deltaY, stage.getPointerPosition());
       }
     };
@@ -358,8 +376,9 @@ export default observer(
     }
 
     updateReadyStatus() {
-      const {item} = this.props;
-      const {imageRef} = this;
+      const { item } = this.props;
+      const { imageRef } = this;
+
       if (!item || !isAlive(item) || !imageRef.current) return;
       if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
@@ -398,6 +417,7 @@ export default observer(
 
       if (item.zoomScale !== 1) {
         const { zoomingPositionX, zoomingPositionY } = item;
+
         imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
         imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
       }
@@ -477,7 +497,7 @@ export default observer(
         containerStyle["maxWidth"] = item.maxwidth;
       }
 
-      const {brushRegions, shapeRegions} = splitRegions(regions);
+      const { brushRegions, shapeRegions } = splitRegions(regions);
 
       return (
         <ObjectTag
@@ -583,6 +603,8 @@ export default observer(
                   </Layer>
                 )
               )}
+
+              <DrawingRegion item={item}/>
 
               {item.crosshair && (
                 <Crosshair

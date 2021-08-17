@@ -122,6 +122,7 @@ class App extends Component {
 
   renderAllAnnotations() {
     const cs = this.props.store.annotationStore;
+
     return <Grid store={cs} annotations={[...cs.annotations, ...cs.predictions]} root={cs.root} />;
   }
 
@@ -131,6 +132,7 @@ class App extends Component {
 
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
+
     return <RelationsOverlay key={guidGenerator()} store={store} ref={this.relationsRef} />;
   }
 
@@ -193,7 +195,7 @@ class App extends Component {
                     <SidebarPage name="annotation" title="Annotation">
                       <AnnotationTab store={store} />
                     </SidebarPage>
-                    {this.props.panels.map(({name, title, Component}) => (
+                    {this.props.panels.map(({ name, title, Component }) => (
                       <SidebarPage key={name} name={name} title={title}>
                         <Component/>
                       </SidebarPage>

@@ -18,8 +18,9 @@ const ToolView = observer(({ item }) => {
       default={DEF_THRESHOLD}
       selected={item.selected}
       icon={"tool"}
-      onClick={ev => {
+      onClick={() => {
         const sel = item.selected;
+
         item.manager.selectTool(item, !sel);
       }}
       onChange={val => {
@@ -47,7 +48,7 @@ const _Tool = types
       self.mode = "viewing";
     },
 
-    mousemoveEv(ev, [x, y]) {
+    mousemoveEv() {
       if (self.mode !== "drawing") return;
     },
 
@@ -62,12 +63,12 @@ const _Tool = types
         fillcolor: c.fillcolor,
 
         strokewidth: parseInt(c.strokewidth),
-        strokecolor: strokecolor,
+        strokecolor,
 
         pointsize: c.pointsize,
         pointstyle: c.pointstyle,
 
-        states: states,
+        states,
 
         coordstype: "px",
       });
@@ -91,7 +92,7 @@ const _Tool = types
       self.control.unselectAll();
     },
 
-    mousedownEv(ev, [x, y]) {
+    mousedownEv() {
       self.mode = "drawing";
     },
   }));

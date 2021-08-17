@@ -19,8 +19,8 @@ const Model = types
 
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
-  .volatile(self => ({
-    hideable: true
+  .volatile(() => ({
+    hideable: true,
   }))
   .views(self => ({
     getRegionElement() {
@@ -32,6 +32,21 @@ const Model = types
       let el = document.querySelector(`[data-id="${elID}"]`);
 
       return el;
+    },
+
+    get wsRegionOptions() {
+      const reg = {
+        id: self.id,
+        start: self.start,
+        end: self.end,
+        color: "orange",
+      };
+
+      if (self.readonly) {
+        reg.drag = false;
+        reg.resize = false;
+      }
+      return reg;
     },
   }))
   .actions(self => ({
@@ -50,6 +65,7 @@ const Model = types
     updateColor(alpha = 1) {
       const color = Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
       // eslint-disable-next-line no-unused-expressions
+
       self._ws_region?.update({ color });
     },
 
@@ -64,6 +80,7 @@ const Model = types
 
       const settings = getRoot(self).settings;
       const el = self.wsRegionElement(wsRegion);
+
       if (!el) return;
       const classes = [el.className, "htx-highlight", "htx-highlight-last"];
 
@@ -74,6 +91,7 @@ const Model = types
           labels: self.labeling?.mainValue,
           score: self.score,
         });
+
         classes.push(cssCls);
       }
       el.className = classes.filter(Boolean).join(" ");
@@ -86,11 +104,13 @@ const Model = types
       self.updateColor(0.8);
 
       const el = self.wsRegionElement(self._ws_region);
+
       if (el) {
         // scroll object tag but don't scroll the document
         const container = window.document.scrollingElement;
         const top = container.scrollTop;
         const left = container.scrollLeft;
+
         el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
         window.document.scrollingElement.scrollTo(left, top);
       }
@@ -119,7 +139,7 @@ const Model = types
       if (self._ws_region) self._ws_region.remove();
     },
 
-    onClick(wavesurfer) {
+    onClick() {
       // if (! self.editable) return;
 
       if (!self.annotation.relationMode) {
@@ -147,7 +167,7 @@ const Model = types
       }
     },
 
-    onUpdateEnd(wavesurfer) {
+    onUpdateEnd() {
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
       self.updateColor(self.selected ? 0.8 : 0.3);

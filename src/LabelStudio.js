@@ -4,7 +4,7 @@ import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
 import { registerPanels } from "./registerPanels";
 import { configure } from "mobx";
-import {EventInvoker} from './utils/events';
+import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
 import { isDefined } from "./utils/utilities";
@@ -21,7 +21,7 @@ export class LabelStudio {
     this.instances.clear();
   }
 
-  constructor (root, options = {}) {
+  constructor(root, options = {}) {
     this.root = root;
     this.events = new EventInvoker();
     this.supportLgacyEvents(options);
@@ -45,8 +45,9 @@ export class LabelStudio {
   }
 
   async createApp() {
-    const {store, getRoot} = await configureStore(this.options, this.events);
+    const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
+
     this.store = store;
     window.Htx = this.store;
 
@@ -72,6 +73,7 @@ export class LabelStudio {
 
       if (isDefined(callback)) {
         const eventName = toCamelCase(key.replace(/^on/, ''));
+
         this.events.on(eventName, callback);
       }
     });

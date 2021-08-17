@@ -1,6 +1,4 @@
-import { types, getParent, getRoot } from "mobx-state-tree";
-import { cloneNode } from "../core/Helpers";
-import { guidGenerator } from "../core/Helpers";
+import { types } from "mobx-state-tree";
 
 const Region = types.model({
   name: types.string,
@@ -14,7 +12,7 @@ export const ImageRegion = types.compose(
       id: types.identifier,
       type: types.literal("image"),
     })
-    .actions(self => ({
+    .actions(() => ({
       draw() {
         // console.log("DRAW", self.id);
       },
@@ -29,7 +27,7 @@ export const TextRegion = types.compose(
       id: types.identifier,
       type: types.literal("text"),
     })
-    .actions(self => ({
+    .actions(() => ({
       select() {
         // console.log("SELECT", self.id);
       },

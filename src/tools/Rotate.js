@@ -15,7 +15,7 @@ const ToolView = observer(({ item }) => {
         selected={item.selected}
         icon={<RotateLeftOutlined />}
         tooltip="Rotate Left"
-        onClick={ev => {
+        onClick={() => {
           item.rotate(-90);
         }}
       />
@@ -23,7 +23,7 @@ const ToolView = observer(({ item }) => {
         selected={item.selected}
         icon={<RotateRightOutlined />}
         tooltip="Rotate Right"
-        onClick={ev => {
+        onClick={() => {
           item.rotate(90);
         }}
       />

@@ -29,6 +29,7 @@ export default class TransformerComponent extends Component {
 
     const selectedNode = stage.findOne("." + selectedShape.id);
     // do nothing if selected node is already attached
+
     if (selectedNode === this.transformer.node()) {
       return;
     }

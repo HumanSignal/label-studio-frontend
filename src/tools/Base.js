@@ -9,7 +9,7 @@ const ToolView = observer(({ item }) => {
       selected={item.selected}
       icon={item.iconClass}
       tooltip={item.viewTooltip}
-      onClick={ev => {
+      onClick={() => {
         item.manager.selectTool(item, !item.selected);
       }}
     />
@@ -32,6 +32,7 @@ const BaseTool = types
       get iconClass() {
         if (self.iconComponent) {
           const Icon = self.iconComponent;
+
           return <Icon />;
         }
         return null;
@@ -41,7 +42,7 @@ const BaseTool = types
       },
     };
   })
-  .actions(self => ({}));
+  .actions(() => ({}));
 
 export const MIN_SIZE = { X: 3, Y: 3 };
 

@@ -53,12 +53,13 @@ const Model = types
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     errors: [],
   }))
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
@@ -76,10 +77,23 @@ const Model = types
 
     activeStates() {
       const states = self.states();
+
       return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
     },
   }))
   .actions(self => ({
+    needsUpdate() {
+      self.handleNewRegions();
+    },
+
+    handleNewRegions() {
+      if (!self._ws) return;
+      self.regs.map(reg => {
+        if (reg._ws_region) return;
+        self.createWsRegion(reg);
+      });
+    },
+
     onHotKey(e) {
       e && e.preventDefault();
       self._ws.playPause();
@@ -91,6 +105,7 @@ const Model = types
       let m;
 
       const fm = self.annotation.names.get(obj.from_name);
+
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -148,6 +163,7 @@ const Model = types
     createRegion(wsRegion, states) {
       let bgColor = self.selectedregionbg;
       const st = states.find(s => s.type === "labels");
+
       if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
 
       const r = AudioRegionModel.create({
@@ -161,7 +177,7 @@ const Model = types
         regionbg: self.regionbg,
         selectedregionbg: bgColor,
         normalization: wsRegion.normalization,
-        states: states,
+        states,
       });
 
       r._ws_region = wsRegion;
@@ -184,6 +200,7 @@ const Model = types
       }
 
       const states = self.getAvailableStates();
+
       if (states.length === 0) {
         ws_region.remove && ws_region.remove();
         return;
@@ -192,6 +209,7 @@ const Model = types
       const control = self.activeStates()[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const r = self.annotation.createResult(ws_region, labels, control, self);
+
       r._ws_region = ws_region;
       r.updateAppearenceFromState();
       return r;
@@ -204,25 +222,18 @@ const Model = types
       self.playing = !self.playing;
     },
 
+    createWsRegion(region) {
+      const r = self._ws.addRegion(region.wsRegionOptions);
+
+      region._ws_region = r;
+      region.updateAppearenceFromState();
+    },
+
     onLoad(ws) {
       self._ws = ws;
 
-      self.regs.forEach(obj => {
-        const reg = {
-          id: obj.id,
-          start: obj.start,
-          end: obj.end,
-          color: "orange",
-        };
-
-        if (obj.readonly) {
-          reg.drag = false;
-          reg.resize = false;
-        }
-
-        const r = self._ws.addRegion(reg);
-        obj._ws_region = r;
-        obj.updateAppearenceFromState();
+      self.regs.forEach(reg => {
+        self.createWsRegion(reg);
       });
     },
 

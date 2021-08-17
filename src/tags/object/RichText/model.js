@@ -1,15 +1,17 @@
 import React from "react";
+import { types, getType, flow } from "mobx-state-tree";
+import { observe } from "mobx";
 
-import RegionsMixin from "../../../mixins/Regions";
-import { types, getRoot, getType, flow } from "mobx-state-tree";
-import { restoreNewsnapshot } from "../../../core/Helpers";
-import ObjectBase from "../Base";
-import { RichTextRegionModel } from "../../../regions/RichTextRegion";
-import Infomodal from "../../../components/Infomodal/Infomodal";
-import Utils from "../../../utils";
 import { customTypes } from "../../../core/CustomTypes";
-import { parseValue } from "../../../utils/data";
+import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
+import RegionsMixin from "../../../mixins/Regions";
+import { RichTextRegionModel } from "../../../regions/RichTextRegion";
+import Utils from "../../../utils";
+import { parseValue } from "../../../utils/data";
+import messages from "../../../utils/messages";
+import { rangeToGlobalOffset } from "../../../utils/selection-tools";
+import ObjectBase from "../Base";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -73,6 +75,7 @@ const Model = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
@@ -86,16 +89,21 @@ const Model = types
 
     activeStates() {
       const states = self.states();
+
       return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
     },
   }))
   .volatile(() => ({
     rootNodeRef: React.createRef(),
+    originalContentRef: React.createRef(),
+    regsObserverDisposer: null,
   }))
   .actions(self => ({
-    setRef(value) {
-      self.rootNodeRef = value;
+    setRef(rootNodeRef, originalContentRef) {
+      self.rootNodeRef = rootNodeRef;
+      self.originalContentRef = originalContentRef;
     },
+
     updateValue: flow(function * (store) {
       const value = parseValue(self.value, store.task.dataObj);
 
@@ -103,10 +111,11 @@ const Model = types
         const url = value;
 
         if (!/^https?:\/\//.test(url)) {
-          const message = [WARNING_MESSAGES.dataTypeMistmatch(), WARNING_MESSAGES.badURL(url)];
+          const message = [WARNING_MESSAGES.badURL(url), WARNING_MESSAGES.dataTypeMistmatch()];
+
           if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
 
-          Infomodal.error(message.map((t, i) => <p key={i}>{t}</p>));
+          self.annotationStore.addErrors([errorBuilder.generalError(message.join("<br/>\n"))]);
           self.setRemoteValue("");
           return;
         }
@@ -114,11 +123,14 @@ const Model = types
         try {
           const response = yield fetch(url);
           const { ok, status, statusText } = response;
+
           if (!ok) throw new Error(`${status} ${statusText}`);
 
           self.setRemoteValue(yield response.text());
         } catch (error) {
-          Infomodal.error(WARNING_MESSAGES.loadingError(url, error));
+          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url });
+
+          self.annotationStore.addErrors([errorBuilder.generalError(message)]);
           self.setRemoteValue("");
         }
       } else {
@@ -153,6 +165,21 @@ const Model = types
         if (self.valuetype === "url") self.savetextresult = "no";
         else if (self.valuetype === "text") self.savetextresult = "yes";
       }
+
+      // Watch all the changes to the regions list to properly update the text
+      // their XPaths relatively to each other
+      self.regsObserverDisposer = observe(self, 'regs', () => {
+        self.regs.forEach(reg => self.fixRegionsXPath(reg));
+      });
+    },
+
+    fixRegionsXPath(region) {
+      // Text regions don't use XPath
+      region._fixXPaths();
+    },
+
+    beforeDestroy() {
+      self.regsObserverDisposer?.();
     },
 
     needsUpdate() {
@@ -181,23 +208,22 @@ const Model = types
 
     addRegion(range) {
       const states = self.getAvailableStates();
-      console.log({states});
+
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+
       area._range = range._range;
 
-      if (range.isText) {
-        const { startContainer, startOffset, endContainer, endOffset } = range._range;
-        const [soff, eoff] = [
-          Utils.HTML.toGlobalOffset(self.rootNodeRef.current, startContainer, startOffset),
-          Utils.HTML.toGlobalOffset(self.rootNodeRef.current, endContainer, endOffset),
-        ];
+      const [soff, eoff] = rangeToGlobalOffset(range._range, self.rootNodeRef.current);
 
+      if (range.isText) {
         area.updateOffsets(soff, eoff);
       }
+
+      area.updateGlobalOffsets(soff, eoff);
 
       area.applyHighlight();
 

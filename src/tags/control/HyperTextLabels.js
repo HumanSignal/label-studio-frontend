@@ -43,11 +43,13 @@ const ModelAttrs = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
     get serializableValue() {
       const obj = {};
+
       obj[self.resultType] = self.selectedValues();
 
       return obj;

@@ -19,7 +19,7 @@ const ToolView = observer(({ item }) => {
         max={Constants.BRIGHTNESS_MAX}
         selected={item.selected}
         icon={<ControlOutlined />}
-        onResetClick={ev => {
+        onResetClick={() => {
           item.setStroke(Constants.BRIGHTNESS_VALUE);
         }}
         onChange={val => {

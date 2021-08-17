@@ -21,10 +21,14 @@ const result = [
     to_name: "text",
     type: "hypertextlabels",
     value: {
-      start: "/div[1]/div[2]/div[1]/p[1]/b[1]/text()[1]",
+      start: "/div[1]/div[2]",
       end: "/div[1]/div[2]/div[1]/p[1]/text()[1]",
       startOffset: 0,
       endOffset: 17,
+      globalOffsets: {
+        start: 81,
+        end: 105,
+      },
       text: "Vincent: Look, Mr. Wolfe",
       htmllabels: ["Date"],
     },
@@ -39,6 +43,10 @@ const result = [
       end: "/div[1]/div[1]/div[1]/p[1]/b[1]/text()[1]",
       startOffset: 0,
       endOffset: 5,
+      globalOffsets: {
+        start: 0,
+        end: 5,
+      },
       text: "Jules",
       htmllabels: ["Person"],
     },
@@ -49,10 +57,14 @@ const result = [
     to_name: "text",
     type: "hypertextlabels",
     value: {
-      start: "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
+      start: "/div[1]/div[3]",
       end: "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
       startOffset: 0,
       endOffset: 8,
+      globalOffsets: {
+        start: 180,
+        end: 188,
+      },
       text: "The Wolf",
       htmllabels: ["Person"],
     },
@@ -67,6 +79,10 @@ const result = [
       end: "/div[1]/div[2]/div[1]/p[1]/text()[1]",
       startOffset: 64,
       endOffset: 16,
+      globalOffsets: {
+        start: 69,
+        end: 104,
+      },
       text: "appreciated.\\n\\nVincent: Look, Mr. Wolfe, I respect you.",
       htmllabels: ["Date"],
     },

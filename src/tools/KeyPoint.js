@@ -9,7 +9,7 @@ const _Tool = types
   .model({
     default: types.optional(types.boolean, true),
   })
-  .views(self => ({
+  .views(() => ({
     get tagTypes() {
       return {
         stateTypes: "keypointlabels",
@@ -26,16 +26,16 @@ const _Tool = types
   .actions(self => ({
     clickEv(ev, [x, y]) {
       const c = self.control;
+
       if (c.type === "keypointlabels" && !c.isSelected) return;
 
-      //if (!self.obj.checkLabels()) return;
-
       const keyPoint = self.createRegion({
-        x: x,
-        y: y,
+        x,
+        y,
         width: Number(c.strokewidth),
         coordstype: "px",
       });
+
       keyPoint.setDrawing(false);
     },
   }));

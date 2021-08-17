@@ -62,7 +62,7 @@ export default {
     </p>
   ),
 
-  ERR_LOADING_S3: ({ attr, url, error }) => `
+  ERR_LOADING_S3: ({ attr, url }) => `
     <div>
       <p>
         There was an issue loading URL from <code>${attr}</code> value.
@@ -73,7 +73,7 @@ export default {
     </div>
   `,
 
-  ERR_LOADING_CORS: ({ attr, url, error }) => `
+  ERR_LOADING_CORS: ({ attr, url }) => `
     <div>
       <p>
         There was an issue loading URL from <code>${attr}</code> value.

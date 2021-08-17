@@ -5,7 +5,7 @@ import { isDefined } from "../utils/utilities";
 
 const SelectedModelMixin = types
   .model()
-  .volatile(self => {
+  .volatile(() => {
     return {
       isSeparated: false,
     };
@@ -22,12 +22,14 @@ const SelectedModelMixin = types
     getSelectedColor() {
       // return first selected label color
       const sel = self.tiedChildren.find(c => c.selected === true);
+
       return sel && sel.background;
     },
 
     get selectedColor() {
       // return first selected label color
       const sel = self.tiedChildren.find(c => c.selected === true);
+
       return sel && sel.background;
     },
 
@@ -67,7 +69,7 @@ const SelectedModelMixin = types
 
     get emptyLabel() {
       return self.allowempty ? self.findLabel(null) : null;
-    }
+    },
   }))
   .actions(self => ({
     /**
@@ -79,12 +81,14 @@ const SelectedModelMixin = types
 
     checkMaxUsages() {
       const list = self.tiedChildren.filter(c => !c.canBeUsed());
+
       if (list.length) list.forEach(c => c.setSelected(false));
       return list;
     },
 
     selectFirstVisible() {
       const f = self.tiedChildren.find(c => c.visible);
+
       f && f.toggleSelected();
 
       return f;
@@ -97,6 +101,7 @@ const SelectedModelMixin = types
     updateFromResult(value) {
       self.unselectAll();
       const values = Array.isArray(value) ? (value.length ? value : [null]) : [value];
+
       if (values.length) {
         values.map(v => self.findLabel(v)).forEach(label => label?.setSelected(true));
       } else if (self.allowempty) {

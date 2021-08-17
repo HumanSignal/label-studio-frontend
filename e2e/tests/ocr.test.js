@@ -24,6 +24,7 @@ const data = {
 };
 
 const H3_POINTS = [[1.25, 50.887573964497044], [21.875, 50.69033530571992], [22.03125, 55.226824457593686], [1.40625, 55.226824457593686]];
+
 Scenario("Basic scenario", async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
   LabelStudio.init({ config: createConfig({ shapes: ["Polygon"] }), data });
@@ -36,11 +37,13 @@ Scenario("Basic scenario", async ({ I, LabelStudio, AtImageView, AtSettings, AtL
   AtSettings.close();
   AtLabels.clickLabel("Paragraph");
   const canvasSize = await AtImageView.getCanvasSize();
+
   await AtImageView.lookForStage();
   AtImageView.drawByClickingPoints([...H3_POINTS, H3_POINTS[0]].map(([x, y]) => ([x * canvasSize.width / 100, y * canvasSize.height / 100])));
   AtSidebar.seeRegions(1);
   AtSidebar.seeElement("[placeholder=\"Recognized Text\"]");
   const Text = "The \"H3\" header";
+
   I.pressKey("Enter");
   for (const key of "The \"H3\" header") {
     I.pressKey(key);
@@ -48,6 +51,7 @@ Scenario("Basic scenario", async ({ I, LabelStudio, AtImageView, AtSettings, AtL
   I.pressKey("Enter");
   const results = await LabelStudio.serialize();
   const hasText = results.find(result => (result && result.value && result.value.text && result.value.text[0] === Text));
+
   assert(hasText, true);
 });
 
@@ -58,7 +62,7 @@ const REGIONS = [
     "y": 1.183431952662722,
     "width": 34.375,
     "height": 5.719921104536489,
-    text: 'The "H1" Header'
+    text: 'The "H1" Header',
   },
   {
     "label": "Paragraph",
@@ -66,7 +70,7 @@ const REGIONS = [
     "y": 10.453648915187376,
     "width": 98.4375,
     "height": 10.650887573964496,
-    text: 'This is a paragraph contained with the "p" tag. This content repeats itself for demonstration purposes. This content repeats itself for demonstration purposes. This content repeats itself for demonstration purposes. This content repeats itself for demonstration purposes.'
+    text: 'This is a paragraph contained with the "p" tag. This content repeats itself for demonstration purposes. This content repeats itself for demonstration purposes. This content repeats itself for demonstration purposes. This content repeats itself for demonstration purposes.',
   },
   {
     "label": "Header",
@@ -74,7 +78,7 @@ const REGIONS = [
     "y": 23.471400394477318,
     "width": 27.1875,
     "height": 6.31163708086785,
-    text: 'The "H2" Header'
+    text: 'The "H2" Header',
   },
   {
     "label": "Paragraph",
@@ -82,7 +86,7 @@ const REGIONS = [
     "y": 31.558185404339252,
     "width": 62.34375,
     "height": 4.339250493096647,
-    text: 'This paragraph, also contained with the "p" tag, contains an unordered list:'
+    text: 'This paragraph, also contained with the "p" tag, contains an unordered list:',
   },
   {
     "label": "List",
@@ -97,14 +101,14 @@ const REGIONS = [
     "y": 50.69033530571992,
     "width": 22.65625,
     "height": 4.733727810650888,
-    text: 'The "H3" Header'
+    text: 'The "H3" Header',
   },
   {
     "label": "Paragraph",
     "x": 0.625,
     "y": 57.790927021696255,
     "width": 98.28125,
-    "height": 11.242603550295858
+    "height": 11.242603550295858,
   },
   {
     "label": "Header",
@@ -112,14 +116,14 @@ const REGIONS = [
     "y": 71.20315581854044,
     "width": 19.0625,
     "height": 4.339250493096647,
-    text: 'The "H4" Header'
+    text: 'The "H4" Header',
   },
   {
     "label": "Paragraph",
     "x": 0.46875,
     "y": 78.10650887573965,
     "width": 64.53125,
-    "height": 4.930966469428008
+    "height": 4.930966469428008,
   },
   {
     "label": "Header",
@@ -127,16 +131,17 @@ const REGIONS = [
     "y": 85.20710059171597,
     "width": 15.3125,
     "height": 4.1420118343195265,
-    text: 'The "H5" Header'
+    text: 'The "H5" Header',
   },
   {
     "label": "Paragraph",
     "x": 0.46875,
     "y": 92.11045364891518,
     "width": 41.40625,
-    "height": 4.536489151873767
-  }
+    "height": 4.536489151873767,
+  },
 ];
+
 Scenario("Drawing multiple blank regions and then attaching labels", async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
   LabelStudio.init({ config: createConfig( ), data });
@@ -148,8 +153,10 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
   AtSettings.close();
   AtLabels.clickLabel("blank");
   const canvasSize = await AtImageView.getCanvasSize();
+
   await AtImageView.lookForStage();
-  const regions = REGIONS.map(r => ({...r, x: r.x * canvasSize.width / 100, y: r.y * canvasSize.height / 100, width: r.width * canvasSize.width / 100, height: r.height * canvasSize.height / 100 }));
+  const regions = REGIONS.map(r => ({ ...r, x: r.x * canvasSize.width / 100, y: r.y * canvasSize.height / 100, width: r.width * canvasSize.width / 100, height: r.height * canvasSize.height / 100 }));
+
   I.say("Drawing");
   for (let region of regions) {
     AtImageView.drawByDrag(region.x, region.y, region.width, region.height);
@@ -164,15 +171,17 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
     }
   }
   const results = await LabelStudio.serialize();
+
   for (let region of regions) {
     if (region.text) {
       const hasText = results.find(result => (result && result.value && result.value.text && result.value.text[0] === region.text));
+
       assert(hasText, true);
     }
   }
   session('Deserialization', () => {
     I.amOnPage('/');
-    LabelStudio.init({ config: createConfig( ), data, annotations: [{ id: "test", result: results }]});
+    LabelStudio.init({ config: createConfig( ), data, annotations: [{ id: "test", result: results }] });
     AtImageView.waitForImage();
     AtSidebar.seeRegions(regions.length);
     for (let [idx, region] of Object.entries(regions)) {

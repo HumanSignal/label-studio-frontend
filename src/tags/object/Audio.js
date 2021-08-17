@@ -1,6 +1,6 @@
 import React from "react";
 import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectBase from "./Base";
@@ -54,11 +54,11 @@ const Model = types
     playing: types.optional(types.boolean, false),
     height: types.optional(types.string, "20"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     errors: [],
   }))
   .actions(self => ({
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }

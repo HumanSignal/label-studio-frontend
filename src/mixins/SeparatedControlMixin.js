@@ -2,7 +2,7 @@ import { types } from "mobx-state-tree";
 
 const SeparatedControlMixin = types
   .model()
-  .volatile(self => {
+  .volatile(() => {
     return {
       isSeparated: true,
     };

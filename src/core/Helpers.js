@@ -26,6 +26,7 @@ export function cloneNode(node) {
     ...snapshot,
     id: guidGenerator(),
   });
+
   return snapshotRandomId;
 }
 

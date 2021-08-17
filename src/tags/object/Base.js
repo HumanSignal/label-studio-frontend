@@ -8,9 +8,9 @@ const ObjectBase = types
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
   })
-  .volatile(self => {
+  .volatile(() => {
     return {
-      isReady: true
+      isReady: true,
     };
   })
   .views(self => ({
@@ -29,11 +29,12 @@ const ObjectBase = types
       if (!self.regions) return;
 
       const objectsToReturn = self.regions.map(r => r.toStateJSON());
+
       return objectsToReturn;
     },
     setReady(value) {
       self.isReady = value;
-    }
+    },
   }))
   .actions(self => {
     let props = {};
@@ -58,9 +59,11 @@ const ObjectBase = types
       const allStates = self.states() || [];
       const exceeded = allStates.reduce(checkAndCollect, []);
       const states = self.activeStates() || [];
+
       if (states.length === 0) {
         if (exceeded.length) {
           const label = exceeded[0];
+
           InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
         }
         self.annotation.unselectAll();

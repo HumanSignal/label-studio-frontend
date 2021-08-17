@@ -24,7 +24,7 @@ const Model = types
     end: types.union(types.number, types.string),
     instant: false,
   })
-  .volatile((self) => ({
+  .volatile(() => ({
     hideable: true,
   }))
   .views(self => ({
@@ -35,6 +35,7 @@ const Model = types
     // Do not remove this annotation getter until saving/updating annotation in LS will work without errors
     get annotation() {
       const root = getRoot(self);
+
       return root !== self ? root.annotationStore?.selected : null;
     },
 
@@ -78,6 +79,7 @@ const Model = types
 
     updateAppearenceFromState() {
       const s = self.labelsState;
+
       if (!s) return;
 
       // @todo remove
@@ -103,7 +105,7 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
+    serialize() {
       // convert to original format from data/csv
       const format = self.parent.timeformat ? d3.timeFormat(self.parent.timeformat) : Number;
       let res = {
@@ -125,7 +127,7 @@ const TimeSeriesRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   AnnotationMixin,
-  Model
+  Model,
 );
 
 Registry.addTag("timeseriesregion", TimeSeriesRegionModel, () => {});

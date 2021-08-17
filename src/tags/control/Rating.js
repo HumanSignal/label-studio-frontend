@@ -1,7 +1,7 @@
 import React from "react";
 import { Rate } from "antd";
 import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { StarOutlined } from "@ant-design/icons";
 
 import RequiredMixin from "../../mixins/Required";
@@ -58,6 +58,7 @@ const Model = types
 
     get serializableValue() {
       const rating = self.selectedValues();
+
       if (!rating) return null;
       return { rating };
     },
@@ -69,6 +70,7 @@ const Model = types
     get result() {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
+
         if (!area) return null;
 
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
@@ -100,6 +102,7 @@ const Model = types
       } else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
+
           if (!area) return null;
           area.setValue(self);
         } else {
@@ -135,6 +138,7 @@ const Model = types
     toStateJSON() {
       if (self.rating) {
         const toname = self.toname || self.name;
+
         return {
           id: self.pid,
           from_name: self.name,
@@ -147,7 +151,7 @@ const Model = types
       }
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       if (obj.id) self.pid = obj.id;
 
       self.rating = obj.value.rating;
@@ -170,8 +174,22 @@ const HtxRating = inject("store")(
 
     const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
+    // rc-rate component listens for keypress event and hit the star if the key is Enter
+    // but it doesn't check for any modificators, so it removes star during submit (ctrl+enter)
+    // so we'll just remove focus from component at the moment any modificator pressed
+    const dontBreakSubmit = e => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) {
+        // should be a star, because that's the only way this event can happen
+        const star = document.activeElement;
+        const control = e.currentTarget;
+
+        // but we'll check that for sure
+        if (control.contains(star)) star.blur();
+      }
+    };
+
     return (
-      <div style={visibleStyle}>
+      <div style={visibleStyle} onKeyDownCapture={dontBreakSubmit}>
         <Rate
           character={<StarOutlined style={{ fontSize: iconSize }} />}
           value={item.rating}

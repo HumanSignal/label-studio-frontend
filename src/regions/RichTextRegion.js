@@ -11,6 +11,12 @@ import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Utils from "../utils";
 import { isDefined } from "../utils/utilities";
+import { findRangeNative } from "../utils/selection-tools";
+
+const GlobalOffsets = types.model("GlobalOffset", {
+  start: types.number,
+  end: types.number,
+});
 
 const Model = types
   .model("RichTextRegionModel", {
@@ -23,8 +29,9 @@ const Model = types
     end: types.string,
     text: types.maybeNull(types.string),
     isText: types.optional(types.boolean, false),
+    globalOffsets: types.maybeNull(GlobalOffsets),
   })
-  .volatile((self) => ({
+  .volatile(() => ({
     hideable: true,
   }))
   .views(self => ({
@@ -39,7 +46,9 @@ const Model = types
     beforeDestroy() {
       try{
         self.removeHighlight();
-      } catch(e) {}
+      } catch(e) {
+        console.warn(e);
+      }
     },
 
     serialize() {
@@ -53,11 +62,19 @@ const Model = types
           end: self.endOffset,
         });
       } else {
+        // Calculate proper XPath right before serialization
+        const root = self._getRootNode(true);
+        const range = findRangeNative(
+          self.globalOffsets.start,
+          self.globalOffsets.end,
+          root,
+        );
+
+        const xpathRange = xpath.fromRange(range, root);
+
         Object.assign(res.value, {
-          start: self.start,
-          end: self.end,
-          startOffset: self.startOffset,
-          endOffset: self.endOffset,
+          ...xpathRange,
+          globalOffsets: self.globalOffsets?.toJSON(),
         });
       }
 
@@ -72,22 +89,76 @@ const Model = types
       Object.assign(self, { startOffset, endOffset });
     },
 
-    _getRange() {
-      const rootNode = self._getRootNode();
+    updateGlobalOffsets(start, end) {
+      self.globalOffsets = GlobalOffsets.create({
+        start,
+        end,
+      });
+    },
 
-      if (self._cachedRegion === undefined || (rootNode && !rootNode.contains(self._cachedRegion.commonAncestorContainer))) {
-        return (self._cachedRegion = self._createNativeRange());
+    rangeFromGlobalOffset() {
+      const root = self._getRootNode();
+
+      if (self.globalOffsets && isDefined(root)) {
+        return findRangeNative(self.globalOffsets.start, self.globalOffsets.end, root);
       }
 
-      return self._cachedRegion;
+      return self._getRange();
     },
 
-    _getRootNode() {
-      return self.parent.rootNodeRef.current;
+    // For external XPath updates
+    _fixXPaths() {
+      if (self.isText) return;
+
+      const range = self._getRange(true);
+
+      if (range && self.globalOffsets) {
+        const root = self._getRootNode(true);
+
+        const rangeFromGlobal = findRangeNative(
+          self.globalOffsets.start,
+          self.globalOffsets.end,
+          root,
+        );
+
+        const normedRange = xpath.fromRange(rangeFromGlobal, root);
+
+        if (!isDefined(normedRange)) return;
+
+        self.start = normedRange.start ?? self.start;
+        self.end = normedRange.end ?? self.end;
+        self.startOffset = normedRange.startOffset ?? self.startOffset;
+        self.endOffset = normedRange.endOffset ?? self.endOffset;
+      }
     },
 
-    _createNativeRange() {
-      const rootNode = self._getRootNode();
+    _getRange({ useOriginalContent = false, useCache = true } = {}) {
+      const rootNode = self._getRootNode(useOriginalContent);
+      const hasCache = isDefined(self._cachedRange) && !useOriginalContent && useCache;
+      const rootNodeExists = hasCache && (rootNode && !rootNode.contains(self._cachedRange.commonAncestorContainer));
+
+      if (hasCache === false || rootNodeExists) {
+        const foundRange = self._createNativeRange(useOriginalContent);
+
+        // Skip cache for original content tag
+        if (useOriginalContent || useCache === false) return foundRange;
+
+        return (self._cachedRange = foundRange);
+      }
+
+      return self._cachedRange;
+    },
+
+    _getRootNode(originalContent = false) {
+      const rootNode = originalContent
+        ? self.parent.originalContentRef
+        : self.parent.rootNodeRef;
+
+      return rootNode.current;
+    },
+
+    _createNativeRange(useOriginalContent = false) {
+      let rootNode = self._getRootNode(useOriginalContent);
 
       if (rootNode === undefined) return undefined;
 
@@ -105,10 +176,16 @@ const Model = types
 
           return range;
         }
+      } catch (err) {
+        // should never happen
+        // doesn't break anything if happens
+      }
 
+      try {
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
-        if (rootNode) console.log(err, rootNode, [startOffset, endOffset]);
+        // should never happen
+        // doesn't break anything if happens
       }
 
       return undefined;

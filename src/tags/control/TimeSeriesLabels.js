@@ -56,6 +56,7 @@ const ModelAttrs = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
@@ -65,6 +66,7 @@ const ModelAttrs = types
 
     activeStates() {
       const states = self.states();
+
       return states ? states.filter(c => c.isSelected === true) : null;
     },
   }));

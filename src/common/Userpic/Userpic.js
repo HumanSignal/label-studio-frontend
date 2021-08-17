@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { Tooltip } from "../Tooltip/Tooltip";
 import "./Userpic.styl";
@@ -38,6 +38,7 @@ export const Userpic = forwardRef(({
   const background = useMemo(() => {
     if (isDefined(user.id)) {
       const color = localStorage.getItem(`userpic-color-${user.id}`) ?? chroma.average([chroma.random(), "#cfcfcf"]);
+
       localStorage.setItem(`userpic-color-${user.id}`, color);
       return color;
     }
@@ -63,7 +64,7 @@ export const Userpic = forwardRef(({
   const stylesheet = { ...(style ?? {}), background, color: textColor };
 
   const userpic = (
-    <Block ref={ref} name="userpic" mix={className} mod={{faded}} style={stylesheet} {...rest}>
+    <Block ref={ref} name="userpic" mix={className} mod={{ faded }} style={stylesheet} {...rest}>
       {children ? children : (
         <>
           <Elem
@@ -72,10 +73,10 @@ export const Userpic = forwardRef(({
             ref={imgRef}
             src={finalSrc}
             alt={(displayName ?? "").toUpperCase()}
-            style={{opacity: imgVisible ? (faded ? 0.3 : 1) : 0}}
+            style={{ opacity: imgVisible ? (faded ? 0.3 : 1) : 0 }}
             onLoad={onImageLoaded}
             onError={() => setFinalSrc(FALLBACK_IMAGE) }
-            mod={{faded}}
+            mod={{ faded }}
           />
           {nameVisible && (
             <Elem tag="span" name="username">
@@ -87,7 +88,7 @@ export const Userpic = forwardRef(({
 
       {badge && Object.entries(badge).map(([align, content], i) => {
         return (
-          <Elem key={`badge-${i}`} name="badge" mod={{[align]: true}}>
+          <Elem key={`badge-${i}`} name="badge" mod={{ [align]: true }}>
             {content}
           </Elem>
         );

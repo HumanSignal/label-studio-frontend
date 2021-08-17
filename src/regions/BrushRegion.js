@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Group, Layer, Image, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot, isAlive, cast } from "mobx-state-tree";
+import { types, getParent, getRoot, cast } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -65,13 +65,15 @@ const Points = types
       },
 
       // rescale points to the new width and height from the original
-      rescale(origW, origH, destW, destH) {
+      rescale(origW, origH, destW) {
         const s = destW / origW;
+
         return self.points.map(p => p * s);
       },
 
-      scaledStrokeWidth(origW, origH, destW, destH) {
+      scaledStrokeWidth(origW, origH, destW) {
         const s = destW / origW;
+
         return s * self.strokeWidth;
       },
     };
@@ -96,7 +98,7 @@ const Model = types
     touches: types.array(Points),
     currentTouch: types.maybeNull(types.reference(Points)),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     /**
      * Higher values will result in a more curvy line. A value of 0 will result in no interpolation.
      */
@@ -129,10 +131,12 @@ const Model = types
     get imageData() {
       if (!self.layerRef) return null;
       const ctx = self.layerRef.canvas.context;
+
       return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
     },
     get colorParts() {
       const style = self.style || self.tag || defaultStyle;
+
       return colorToRGBAArray(style.strokecolor);
     },
     get strokeColor() {
@@ -147,6 +151,7 @@ const Model = types
       cachedPoints,
       lastPointX = -1,
       lastPointY = -1;
+
     return {
       afterCreate() {
         // if ()
@@ -175,6 +180,7 @@ const Model = types
         if (!self.layerRef) return;
         const layer = self.layerRef;
         const ctx = layer.canvas.context;
+
         ctx.save();
         ctx.beginPath();
         if (cachedPoints.length / 2 > 3) {
@@ -200,7 +206,7 @@ const Model = types
       },
 
       beginPath({ type, strokeWidth, opacity = self.opacity }) {
-        pathPoints = Points.create({ id: guidGenerator(), type: type, strokeWidth: strokeWidth, opacity });
+        pathPoints = Points.create({ id: guidGenerator(), type, strokeWidth, opacity });
         cachedPoints = [];
         return pathPoints;
       },
@@ -231,7 +237,7 @@ const Model = types
         self.scaleY = y;
       },
 
-      updateImageSize(wp, hp, sw, sh) {
+      updateImageSize() {
         if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
           let ratioX = self.parent.stageWidth / self.parent.initialWidth;
           let ratioY = self.parent.stageHeight / self.parent.initialHeight;
@@ -252,6 +258,7 @@ const Model = types
           const rle = Canvas.Region2RLE(self, object, {
             color: self.strokeColor,
           });
+
           self.toches = cast([]);
           self.rle = Array.from(rle);
         }
@@ -306,7 +313,7 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
   });
 
   const sceneFunc = useCallback(
-    (context, shape) => {
+    (context) => {
       pointsList.forEach(points => {
         drawLine(context, {
           points: points.points,
@@ -338,9 +345,11 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
 
 const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
+
   useMemo(() => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
+
     img.onload = () => {
       setImage(img);
     };
@@ -352,6 +361,7 @@ const HtxBrushView = ({ item }) => {
         context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
         const imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
         const colorParts = colorToRGBAArray(shape.colorKey);
+
         for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
           if (imageData.data[i * 4 + 3] > 0) {
             for (let k = 0; k < 3; k++) {
@@ -374,6 +384,7 @@ const HtxBrushView = ({ item }) => {
   const drawCallback = useCallback(() => {
     if (layerRef.current && !highlightedRef.current) {
       const dataUrl = layerRef.current.canvas.toDataURL();
+
       highlightedImageRef.current.src = dataUrl;
     }
   }, []);
@@ -403,7 +414,7 @@ const HtxBrushView = ({ item }) => {
             e.cancelBubble = true;
           }
         }}
-        onMouseOver={e => {
+        onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
@@ -412,7 +423,7 @@ const HtxBrushView = ({ item }) => {
             if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = "pointer";
           }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(false);
           }

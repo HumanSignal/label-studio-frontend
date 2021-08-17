@@ -8,13 +8,13 @@ import Registry from "../../../core/Registry";
 import SelectedModelMixin from "../../../mixins/SelectedModel";
 import Tree from "../../../core/Tree";
 import Types from "../../../core/Types";
-import { LabelModel } from "../Label"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../../core/Helpers";
 import ControlBase from "../Base";
 import "./Labels.styl";
 import { Block } from "../../../utils/bem";
 import { customTypes } from "../../../core/CustomTypes";
 import { defaultStyle } from "../../../core/Constants";
+import "../Label";
 
 /**
  * Labels tag, create a group of labels.
@@ -78,12 +78,14 @@ const Model = LabelMixin.views(self => ({
   afterCreate() {
     if (self.allowempty) {
       let empty = self.findLabel(null);
+
       if (!empty) {
         const emptyParams = {
           value: null,
           type: "label",
           background: defaultStyle.fillcolor,
         };
+
         if (self.children) {
           self.children.unshift(emptyParams);
         } else {

@@ -64,6 +64,7 @@ const MagicWand = (function() {
     var sampleColor = [data[i], data[i + 1], data[i + 2], data[i + 3]]; // start point color (sample)
 
     var stack = [{ y: py, left: px - 1, right: px + 1, dir: 1 }]; // first scanning line
+
     do {
       el = stack.shift(); // get line for scanning
 
@@ -153,10 +154,10 @@ const MagicWand = (function() {
       width: image.width,
       height: image.height,
       bounds: {
-        minX: minX,
-        minY: minY,
-        maxX: maxX,
-        maxY: maxY,
+        minX,
+        minY,
+        maxX,
+        maxY,
       },
     };
   };
@@ -194,6 +195,7 @@ const MagicWand = (function() {
     for (i = 0; i < radius; i++) {
       var dsq = (radius - i) * (radius - i);
       var ww = Math.exp(-dsq / (2.0 * s2)) / (2 * Math.PI * s2);
+
       wg[radius + i] = wg[radius - i] = ww;
       total += 2 * ww;
     }
@@ -233,10 +235,10 @@ const MagicWand = (function() {
       width: w,
       height: h,
       bounds: {
-        minX: minX,
-        minY: minY,
-        maxX: maxX,
-        maxY: maxY,
+        minX,
+        minY,
+        maxX,
+        maxY,
       },
     };
   };
@@ -454,10 +456,10 @@ const MagicWand = (function() {
       width: w,
       height: h,
       bounds: {
-        minX: minX,
-        minY: minY,
-        maxX: maxX,
-        maxY: maxY,
+        minX,
+        minY,
+        maxX,
+        maxY,
       },
     };
   };
@@ -680,7 +682,7 @@ const MagicWand = (function() {
 
               c = [];
               dir = inner ? 2 : 6; // start direction
-              current = previous = first = { x: x, y: y };
+              current = previous = first = { x, y };
               second = null;
               // eslint-disable-next-line no-constant-condition
               while (true) {
@@ -721,9 +723,9 @@ const MagicWand = (function() {
                 dir = (dir + 4) % 8; // next dir (symmetrically to the current direction)
               }
 
-              if (next != null) {
+              if (next !== null) {
                 c.push({ x: first.x + dx, y: first.y + dy }); // close the contour
-                contours.push({ inner: inner, label: label, points: c }); // add contour to the list
+                contours.push({ inner, label, points: c }); // add contour to the list
               }
             }
           }
@@ -850,9 +852,11 @@ const MagicWand = (function() {
 
 export function getImageData(img) {
   var canvas = document.createElement("canvas");
+
   canvas.width = img.width;
   canvas.height = img.height;
   var ctx = canvas.getContext("2d");
+
   ctx.drawImage(img, 0, 0);
   return ctx.getImageData(0, 0, img.width, img.height);
 }
@@ -865,12 +869,13 @@ export function calcBorder(imageData, width, height, x, y, threshold, simple) {
   let parentPoints = [];
   let image = {
     data: imageData,
-    width: width,
-    height: height,
+    width,
+    height,
     bytes: 4,
   };
 
   let mask = MagicWand.floodFill(image, x, y, threshold, null, true);
+
   mask = MagicWand.gaussBlurOnlyBorder(mask, blurRadius);
 
   var cs = MagicWand.traceContours(mask);

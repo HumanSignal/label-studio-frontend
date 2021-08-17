@@ -4,8 +4,10 @@ import Canvas from "./canvas";
 
 function toggleLabelsAndScores(show) {
   const els = document.getElementsByClassName("htx-highlight");
+
   Array.from(els).forEach(el => {
     let foundCls = null;
+
     Array.from(el.classList).forEach(cls => {
       if (cls.indexOf("htx-label-") !== -1) foundCls = cls;
     });
@@ -25,13 +27,14 @@ const labelWithCSS = (function() {
     const clsName = Checkers.hashCode(labelsStr + score);
 
     let cssCls = "htx-label-" + clsName;
+
     cssCls = cssCls.toLowerCase();
 
     if (cssCls in cache) return cache[cssCls];
 
     node.setAttribute("data-labels", labelsStr);
 
-    const resSVG = Canvas.labelToSVG({ label: labelsStr, score: score });
+    const resSVG = Canvas.labelToSVG({ label: labelsStr, score });
     const svgURL = `url(${resSVG})`;
 
     createClass(`.${cssCls}:after`, `content:${svgURL}`);
@@ -45,6 +48,7 @@ const labelWithCSS = (function() {
 // work directly with the html tree
 function createClass(name, rules) {
   var style = document.createElement("style");
+
   style.type = "text/css";
   document.getElementsByTagName("head")[0].appendChild(style);
   if (!(style.sheet || {}).insertRule) (style.styleSheet || style.sheet).addRule(name, rules);
@@ -127,6 +131,7 @@ function documentReverse(node) {
  */
 function splitText(node, offset) {
   let tail = node.cloneNode(false);
+
   tail.deleteData(0, offset);
   node.deleteData(offset, node.length - offset);
   return insertAfter(tail, node);
@@ -193,16 +198,21 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   var nodes = textNodes; // normedRange.textNodes(),
 
   let start = 0;
+
   if (normedRange._range.startOffset === nodes[start].length) start++;
 
   let nlen = nodes.length;
+
   if (nlen > 1 && nodes[nodes.length - 1].length !== normedRange._range.endOffset) nlen = nlen - 1;
 
   const results = [];
+
   for (var i = start, len = nlen; i < len; i++) {
     var node = nodes[i];
+
     if (!white.test(node.nodeValue)) {
       var hl = window.document.createElement("span");
+
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
       hl.className = cssClass;
@@ -254,8 +264,10 @@ const toGlobalOffset = (container, element, len) => {
 
     for (var i = 0; i <= node.childNodes.length; i++) {
       const n = node.childNodes[i];
+
       if (n) {
         const res = count(n);
+
         if (res !== undefined) return res;
       }
     }
@@ -296,6 +308,7 @@ const mainOffsets = element => {
 
         if (n) {
           const res = traverse(n);
+
           if (res) return res;
         }
       }
@@ -304,7 +317,7 @@ const mainOffsets = element => {
 
   traverse(element);
 
-  return { start: start, end: end };
+  return { start, end };
 };
 
 const findIdxContainer = (el, globidx) => {
@@ -324,6 +337,7 @@ const findIdxContainer = (el, globidx) => {
 
         if (n) {
           const res = traverse(n);
+
           if (res) return res;
         }
       }
@@ -441,5 +455,5 @@ export {
   highlightRange,
   splitBoundaries,
   normalizeBoundaries,
-  createClass,
+  createClass
 };

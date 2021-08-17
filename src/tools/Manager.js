@@ -10,6 +10,7 @@ class ToolsManager {
   addTool(name, tool, prefix = guidGenerator()) {
     // todo: It seems that key is using only for storing, but not for finding tools, so may be there might be an array instead of an object
     const key = `${prefix}#${name}`;
+
     this.tools[key] = tool;
     tool._manager = this;
 
@@ -39,6 +40,7 @@ class ToolsManager {
       if (tool.setSelected) tool.setSelected(true);
     } else {
       const drawingTool = this.findDrawingTool();
+
       if (drawingTool) return this.selectTool(drawingTool, true);
       if (tool.setSelected) tool.setSelected(false);
     }

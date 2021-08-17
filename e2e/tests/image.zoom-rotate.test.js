@@ -23,10 +23,12 @@ const getConfigWithShape = (shape, props = "") => `
 
 const hScaleCoords = ([x, y], w, h) => {
   const ratio = w / h;
+
   return [x * ratio, y * ratio];
 };
 const rotateCoords = (point, degree, w, h) => {
   const [x, y] = point;
+
   if (!degree) return point;
 
   degree = (360 + degree) % 360;
@@ -102,11 +104,12 @@ const shapes = [
   },
 ];
 const shapesTable = new DataTable(["shape", "props", "action", "regions"]);
+
 shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-Data(shapesTable).Scenario("Simple rotation", async function({I, LabelStudio, AtImageView, AtSidebar, current}) {
+Data(shapesTable).Scenario("Simple rotation", async function ({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -117,6 +120,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, LabelStudio, At
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
+
   for (let region of current.regions) {
     I.pressKey("u");
     I.pressKey("1");
@@ -126,6 +130,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, LabelStudio, At
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
   let degree = 0;
   let hasPixel = await AtImageView.hasPixelColor(100, 100, BLUEVIOLET.rgbArray);
+
   assert.equal(hasPixel, true);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
@@ -136,13 +141,14 @@ Data(shapesTable).Scenario("Simple rotation", async function({I, LabelStudio, At
     );
     assert.strictEqual(hasPixel, true);
     const result = await I.executeScript(serialize);
+
     for (let i = 0; i < standard.length; i++) {
       assert.deepEqual(standard[i].result, result[i].result);
     }
   }
 });
 
-Data(shapesTable).Scenario("Rotate zoomed", async function({I, LabelStudio, AtImageView, AtSidebar, current}) {
+Data(shapesTable).Scenario("Rotate zoomed", async function ({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -153,6 +159,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({I, LabelStudio, AtIm
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
+
   for (let region of current.regions) {
     I.pressKey("u");
     I.pressKey("1");
@@ -161,6 +168,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({I, LabelStudio, AtIm
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
   let degree = 0;
   const ZOOM = 3;
+
   AtImageView.setZoom(ZOOM, -100 * ZOOM, -100 * ZOOM);
   let hasPixel = await AtImageView.hasPixelColor(1, 1, BLUEVIOLET.rgbArray);
 
@@ -178,16 +186,18 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({I, LabelStudio, AtIm
 });
 
 const windowSizesTable = new DataTable(["width", "height"]);
+
 windowSizesTable.add([1280, 720]);
 windowSizesTable.add([1920, 1080]);
 windowSizesTable.add([800, 480]);
 windowSizesTable.add([1017, 970]);
 
-Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({I, LabelStudio, AtImageView, AtSidebar, current}) {
+Data(windowSizesTable).Scenario("Rotation with different window sizes", async function ({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape("Rectangle"),
     data: { image: IMAGE },
   };
+
   I.amOnPage("/");
   I.resizeWindow(current.width, current.height);
   LabelStudio.init(params);
@@ -196,12 +206,14 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
+
   assert(Math.abs(canvasSize.width - imageSize.width) < 1);
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
   for (let rotate of rotationQueue) {
     I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
+
     assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
     assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
   }
@@ -226,10 +238,11 @@ const twoColumnsConfigs = [`<View>
         </View>
     </View>
 </View>`];
-const directions = ["column", "row", "column-reverse", "row-reverse"];
-Scenario("Rotation in the two columns template", async function({I, LabelStudio, AtImageView, AtSidebar, AtSettings}) {
+
+Scenario("Rotation in the two columns template", async function ({ I, LabelStudio, AtImageView, AtSidebar, AtSettings }) {
   I.amOnPage("/");
   let isVerticalLayout = false;
+
   for (const config of twoColumnsConfigs) {
     for (const inline of [true, false]) {
       for (const reversed of [true, false]) {
@@ -245,6 +258,7 @@ Scenario("Rotation in the two columns template", async function({I, LabelStudio,
         AtSidebar.seeRegions(0);
         I.click(locate("button").withDescendant(`[aria-label='rotate-right']`));
         let rotatedCanvasSize,rotatedImageSize;
+
         rotatedCanvasSize = await AtImageView.getCanvasSize();
         rotatedImageSize = await AtImageView.getImageFrameSize();
         assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
@@ -252,7 +266,7 @@ Scenario("Rotation in the two columns template", async function({I, LabelStudio,
         AtSettings.open();
         isVerticalLayout = !isVerticalLayout;
         AtSettings.setLayoutSettings({
-          [AtSettings.LAYOUT_SETTINGS.VERTICAL_LAYOUT]: isVerticalLayout
+          [AtSettings.LAYOUT_SETTINGS.VERTICAL_LAYOUT]: isVerticalLayout,
         });
         AtSettings.close();
         rotatedCanvasSize = await AtImageView.getCanvasSize();
