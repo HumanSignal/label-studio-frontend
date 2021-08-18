@@ -109,7 +109,7 @@ const Model = types
         },
 
         onChange(node, checked) {
-          selected = checked.map(s => s.path);
+          selected = checked.map(s => s.path ?? s);
           self.maxUsagesReached = selected.length >= self.maxusages;
 
           if (self.result) {
@@ -165,7 +165,7 @@ const HtxTaxonomy = observer(({ item }) => {
 
   return (
     <div style={{ ...style }}>
-      <Taxonomy items={item.traverse(item.children)} selected={item.selectedValues()} />
+      <Taxonomy items={item.traverse(item.children)} selected={item.selectedValues()} onChange={item.onChange} />
       <DropdownTreeSelect
         key={item.maxUsagesReached}
         mode={item.leafsonly ? "hierarchical" : "multiSelect"}
