@@ -71,6 +71,8 @@ const imageRelatedBBox = (region, bbox) => {
 };
 
 const stageRelatedBBox = (region, bbox) => {
+  // If there is no stageRef we just wait for it in the next renders
+  if (!region.parent?.stageRef) return null;
   const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
   const transformedBBox = Geometry.clampBBox(
     Geometry.modifyBBoxCoords(bbox, region.parent.zoomOriginalCoords),
@@ -122,7 +124,8 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      return imageRelatedBBox(
+      // If there is no imageData we just wait for the next render
+      return region.imageData && imageRelatedBBox(
         region,
         Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
       );
