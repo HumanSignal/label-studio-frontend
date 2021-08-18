@@ -1,4 +1,5 @@
 import { types, getParent } from "mobx-state-tree";
+import RTree from 'rtree'; 
 
 import Utilities from "../utils";
 
@@ -44,6 +45,47 @@ const TaskStore = types
         return null;
       }
     },
-  }));
+
+    getTextFromBbox(searchX, searchY, searchW, searchH) {
+      if (self.dataObj.ocrData) {
+        if (!self.rtree) {
+          self.createRTree();
+        }
+
+        const foundObjects = self.rtree.search({ x: searchX, y: searchY, w: searchW, h: searchH });
+
+        if (foundObjects.length > 0) {
+          const text = (foundObjects.reverse().map(obj => obj.description)).join(' ');
+
+          return text;
+        }
+      }
+      return null;
+    },
+  })).actions(self => ({
+    createRTree() {
+      if (self.dataObj.ocrData) {
+        
+        const bbrtree = RTree(10000);
+
+        const textAnnotations = self.dataObj.ocrData.outputs[0].textAnnotations;
+
+        textAnnotations.forEach((box, index) => {
+          if (index === 0)
+            return;
+              
+          bbrtree.insert({
+            x: box.boundingPoly.vertices[0].x,
+            y: box.boundingPoly.vertices[0].y,
+            w: box.boundingPoly.vertices[2].x - box.boundingPoly.vertices[0].x,
+            h: box.boundingPoly.vertices[2].y - box.boundingPoly.vertices[0].y,
+          }, { description: box.description });
+        });
+
+        self.rtree = bbrtree;
+      }
+    },
+  }),
+  );
 
 export default TaskStore;
