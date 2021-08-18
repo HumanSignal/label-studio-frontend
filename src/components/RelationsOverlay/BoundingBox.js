@@ -122,7 +122,8 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      return imageRelatedBBox(
+      // sometimes imageData is null but it's ok.
+      return region.imageData && imageRelatedBBox(
         region,
         Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
       );
