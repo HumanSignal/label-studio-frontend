@@ -1,7 +1,9 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo, useContext } from "react";
+
+import { useToggle } from "../../hooks/useToggle";
+import { isArraysEqual } from "../../utils/utilities";
 
 import styles from "./Taxonomy.module.scss";
-import { useToggle } from "../../hooks/useToggle";
 
 type TaxonomyPath = string[]
 
@@ -23,13 +25,30 @@ type DropdownProps = {
   dropdownRef: React.Ref<HTMLDivElement>,
 }
 
-const SelectedList = ({ selected }: { selected: TaxonomyPath[] }) => (
-  <div className={styles.taxonomy__selected}>
-    {selected.map(path => <div key={path.join("|")}>{path[path.length - 1]}</div>)}
-  </div>
-);
+type TaxonomySelectedContextValue = [
+  TaxonomyPath[],
+  (path: TaxonomyPath, value: boolean) => any,
+]
+
+const TaxonomySelectedContext = React.createContext<TaxonomySelectedContextValue>([[], () => undefined]);
+
+const SelectedList = () => {
+  const [selected, setSelected] = useContext(TaxonomySelectedContext);
+
+  return (
+    <div className={styles.taxonomy__selected}>
+      {selected.map(path => (
+        <div key={path.join("|")}>
+          {path[path.length - 1]}
+          <input type="button" onClick={() => setSelected(path, false)} value="×" />
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Item = ({ item }: { item: TaxonomyItem }) => {
+  const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const [isOpen, , , toggle] = useToggle();
   const prefix = item.children?.length ? (isOpen ? "-" : "+") : " ";
 
@@ -38,7 +57,11 @@ const Item = ({ item }: { item: TaxonomyItem }) => {
       <div className={styles.taxonomy__item}>
         <div className={styles.taxonomy__grouping} onClick={toggle}>{prefix}</div>
         <label>
-          <input type="checkbox"/>
+          <input
+            type="checkbox"
+            checked={selected.some(current => isArraysEqual(current, item.path))}
+            onChange={e => setSelected(item.path, e.currentTarget.checked)}
+          />
           {item.label}
         </label>
       </div>
@@ -55,7 +78,7 @@ const Dropdown = ({ show, items, dropdownRef }: DropdownProps) => {
   );
 };
 
-const Taxonomy = ({ items, selected }: TaxonomyProps) => {
+const Taxonomy = ({ items, selected: externalSelected, onChange }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
@@ -70,6 +93,24 @@ const Taxonomy = ({ items, selected }: TaxonomyProps) => {
     }
   }, []);
 
+  const [selected, setInternalSelected] = useState(externalSelected);
+  const contextValue: TaxonomySelectedContextValue = useMemo(() => {
+    const setSelected = (path: TaxonomyPath, value: boolean) => {
+      const newSelected = value
+        ? [...selected, path]
+        : selected.filter(current => !isArraysEqual(current, path));
+
+      setInternalSelected(newSelected);
+      onChange && onChange(null, newSelected);
+    };
+
+    return [selected, setSelected];
+  }, [selected]);
+
+  useEffect(() => {
+    setInternalSelected(externalSelected);
+  }, [externalSelected]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.addEventListener("click", onClickOutside, true);
@@ -81,11 +122,13 @@ const Taxonomy = ({ items, selected }: TaxonomyProps) => {
   }, [isOpen]);
 
   return (
-    <div className={styles.taxonomy}>
-      <SelectedList selected={selected} />
-      <span onClick={() => !isOpen && setOpen(true)}>Click to add...</span>
-      <Dropdown show={isOpen} items={items} dropdownRef={dropdownRef} />
-    </div>
+    <TaxonomySelectedContext.Provider value={contextValue}>
+      <div className={styles.taxonomy}>
+        <SelectedList />
+        <span onClick={() => !isOpen && setOpen(true)}>Click to add...</span>
+        <Dropdown show={isOpen} items={items} dropdownRef={dropdownRef} />
+      </div>
+    </TaxonomySelectedContext.Provider>
   );
 };
 
