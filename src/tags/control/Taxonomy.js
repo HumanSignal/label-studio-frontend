@@ -4,6 +4,7 @@ import { types } from "mobx-state-tree";
 import DropdownTreeSelect from "react-dropdown-tree-select";
 
 import Infomodal from "../../components/Infomodal/Infomodal";
+import { Taxonomy } from "../../components/Taxonomy/Taxonomy";
 import { guidGenerator } from "../../core/Helpers";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
@@ -164,6 +165,7 @@ const HtxTaxonomy = observer(({ item }) => {
 
   return (
     <div style={{ ...style }}>
+      <Taxonomy items={item.traverse(item.children)} selected={item.selectedValues()} />
       <DropdownTreeSelect
         key={item.maxUsagesReached}
         mode={item.leafsonly ? "hierarchical" : "multiSelect"}
