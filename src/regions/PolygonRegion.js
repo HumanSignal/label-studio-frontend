@@ -39,6 +39,21 @@ const Model = types
     get store() {
       return getRoot(self);
     },
+    get bboxCoords() {
+      return self.points.reduce((bboxCoords, point)=>{
+        return {
+          left: Math.min(bboxCoords.left, point.x),
+          top: Math.min(bboxCoords.top, point.y),
+          right: Math.min(bboxCoords.right, point.x),
+          bottom: Math.min(bboxCoords.bottom, point.y),
+        };
+      }, {
+        left: self.points[0].x,
+        top: self.points[0].y,
+        right: self.points[0].x,
+        bottom: self.points[0].y,
+      });
+    },
   }))
   .actions(self => ({
     afterCreate() {

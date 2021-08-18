@@ -1,5 +1,5 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
-import { Stage, Layer, Group, Line } from "react-konva";
+import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from "react";
+import { Stage, Layer, Group, Line, Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 
@@ -77,6 +77,100 @@ const DrawingRegion = observer(({ item }) => {
     <Wrapper>
       {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
     </Wrapper>
+  );
+});
+
+const SELECTION_COLOR = "#40A9FF";
+const SELECTION_SECOND_COLOR = "white";
+const SELECTION_DASH = [3,3];
+
+const SelectionBorders = observer(({ item }) => {
+  const { selectionBorders: bbox } = item;
+
+  const points = bbox? [
+    {
+      x: bbox.left,
+      y: bbox.top,
+    },
+    {
+      x: bbox.right,
+      y: bbox.top,
+    },
+    {
+      x: bbox.left,
+      y: bbox.bottom,
+    },
+    {
+      x: bbox.right,
+      y: bbox.bottom,
+    },
+  ] : [];
+
+  return (
+    <>
+      {bbox && (
+        <Rect
+          x={bbox.left}
+          y={bbox.top}
+          width={bbox.right - bbox.left}
+          height={bbox.bottom-bbox.top}
+          stroke={SELECTION_COLOR}
+          strokeWidth={1}
+          listening={false}
+        />
+      )}
+      {points.map((point, idx) => {
+        return (
+          <Rect
+            key={idx}
+            x={point.x-3}
+            y={point.y-3}
+            width={6}
+            height={6}
+            fill={SELECTION_COLOR}
+            stroke={SELECTION_SECOND_COLOR}
+            strokeWidth={2}
+            listening={false}
+          />
+        );
+      })}
+    </>
+  );
+});
+
+const SelectionRect = observer(({ item }) => {
+  return (
+    <>
+      <Rect
+        x={item.x}
+        y={item.y}
+        width={item.width}
+        height={item.height}
+        stroke={SELECTION_COLOR}
+        strokeWidth={1}
+        dash={SELECTION_DASH}
+        listening={false}
+      />
+      <Rect
+        x={item.x}
+        y={item.y}
+        width={item.width}
+        height={item.height}
+        stroke={SELECTION_SECOND_COLOR}
+        strokeWidth={1}
+        dash={SELECTION_DASH}
+        dashOffset={SELECTION_DASH[0]}
+        listening={false}
+      />
+    </>
+  );
+});
+
+const Selection = observer(({ item }) => {
+  return (
+    <Layer>
+      {item.isActive ? <SelectionRect item={item} /> : <SelectionBorders item={item} /> }
+    </Layer>
   );
 });
 
@@ -484,6 +578,7 @@ export default observer(
 
       const selected = item.selectedShape;
       const regions = item.regs.filter(r => r !== selected);
+
       const cb = item.controlButton();
       const containerStyle = {};
 
@@ -605,6 +700,7 @@ export default observer(
               )}
 
               <DrawingRegion item={item}/>
+              <Selection item={item.selectionArea}/>
 
               {item.crosshair && (
                 <Crosshair

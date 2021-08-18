@@ -12,12 +12,13 @@ import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
 import { restoreNewsnapshot } from "../../core/Helpers";
-import { splitBoundaries, findNodeAt } from "../../utils/html";
+import { splitBoundaries, findNodeAt, matchesSelector } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { isSelectionContainsSpan } from "../../utils/selection-tools";
 
 /**
  * Paragraphs tag shows paragraph markup that can be labeled.
@@ -334,6 +335,8 @@ const Model = types
 const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxParagraphsView extends Component {
+  _regionSpanSelector = ".htx-highlight";
+
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -423,12 +426,48 @@ class HtxParagraphsView extends Component {
     return ranges;
   }
 
-  onMouseUp() {
+  _selectRegions = (additionalMode) => {
+    const { item } = this.props;
+    const root = this.myRef.current;
+    const selection = window.getSelection();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+    const regions = [];
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+
+      if (node.nodeName === "SPAN" && node.matches(this._regionSpanSelector) && isSelectionContainsSpan(node)) {
+        const region = this._determineRegion(node);
+
+        regions.push(region);
+      }
+    }
+    if (regions.length) {
+      if (additionalMode) {
+        item.annotation.extendSelectionWith(regions);
+      } else {
+        item.annotation.selectAreas(regions);
+      }
+      selection.removeAllRanges();
+    }
+  };
+
+  _determineRegion(element) {
+    if (matchesSelector(element, this._regionSpanSelector)) {
+      const span = element.tagName === "SPAN" ? element : element.closest(this._regionSpanSelector);
+      const { item } = this.props;
+
+      return item.regs.find(region => region.find(span));
+    }
+  }
+
+  onMouseUp(ev) {
     const item = this.props.item;
-    var selectedRanges = this.captureDocumentSelection();
     const states = item.activeStates();
 
-    if (!states || states.length === 0) return;
+    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
+
+    var selectedRanges = this.captureDocumentSelection();
 
     if (selectedRanges.length === 0) {
       return;

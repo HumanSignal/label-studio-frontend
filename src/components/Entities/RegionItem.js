@@ -103,7 +103,7 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   );
 });
 
-export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
+export const RegionItem = observer(({ item, idx, flat, setDraggable, onClick }) => {
   const getVars = useMemo(()=>{
     let vars;
 
@@ -125,7 +125,7 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
     styles.lstitem,
     flat && styles.flat,
     item.hidden === true && styles.hidden,
-    item.selected && styles.selected,
+    item.inSelection && styles.selected,
   ].filter(Boolean);
 
   const vars = getVars();
@@ -134,7 +134,7 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
     <List.Item
       key={item.id}
       className={classnames.join(" ")}
-      onClick={() => anno.selectArea(item)}
+      onClick={(e)=>{onClick(e, item);}}
       onMouseOver={() => item.setHighlight(true)}
       onMouseOut={() => item.setHighlight(false)}
       style={vars}

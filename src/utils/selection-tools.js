@@ -634,3 +634,18 @@ const findGlobalOffset = (node, position, root) => {
 
   return globalPosition;
 };
+
+export const isSelectionContainsSpan = (spanNode) => {
+  const selection = window.getSelection();
+  const spanRange = document.createRange();
+  const textNode = spanNode.childNodes[0];
+
+  spanRange.setStart(textNode, 0);
+  spanRange.setEnd(textNode, textNode.length);
+  for (let i = selection.rangeCount; i--;) {
+    const selRange = selection.getRangeAt(i);
+
+    if (selRange.compareBoundaryPoints(Range.START_TO_START, spanRange) < 1 && selRange.compareBoundaryPoints(Range.END_TO_END, spanRange) > -1) return true;
+  }
+  return false;
+};

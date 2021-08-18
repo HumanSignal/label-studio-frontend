@@ -56,12 +56,14 @@ const renderResult = result => {
 };
 
 export default observer(({ store, annotation }) => {
-  const node = annotation.highlightedNode;
+  const { highlightedNode: node, selectedRegions: nodes, selectionSize } = annotation;
   const [editMode, setEditMode] = React.useState(false);
 
   const entityButtons = [];
+  const hasEditableNodes = !!nodes.find(node => node.editable);
+  const hasEditableRegions = !!nodes.find(node => node.editable && !node.classification);
 
-  if (node.editable && !node.classification) {
+  if (hasEditableRegions) {
     entityButtons.push(
       <Tooltip key="relations" placement="topLeft" title="Create Relation: [r]">
         <Button
@@ -70,6 +72,7 @@ export default observer(({ store, annotation }) => {
           onClick={() => {
             annotation.startRelationMode(node);
           }}
+          disabled={!node}
         >
           <LinkOutlined />
 
@@ -85,6 +88,7 @@ export default observer(({ store, annotation }) => {
           onClick={() => {
             setEditMode(true);
           }}
+          disabled={!node}
         >
           <PlusOutlined />
         </Button>
@@ -111,14 +115,18 @@ export default observer(({ store, annotation }) => {
     <Block name="entity">
       <Elem name="info" tag={Space} spread>
         <Elem name="node">
-          <NodeMinimal node={node} />
-          {" "}
-          (ID: {node.id})
+          {node ? (
+            <>
+              <NodeMinimal node={node} />
+              {" "}
+              (ID: {node.id})
+            </>
+          ) : `${selectionSize} Region${(selectionSize > 1) ? "s are" : " is"} selected` }
         </Elem>
-        {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
+        {!hasEditableNodes && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
       </Elem>
       <div className={styles.statesblk + " ls-entity-states"}>
-        {node.score && (
+        {node?.score && (
           <Fragment>
             <Text>
               Score: <Text underline>{node.score}</Text>
@@ -126,7 +134,7 @@ export default observer(({ store, annotation }) => {
           </Fragment>
         )}
 
-        {node.meta?.text && (
+        {node?.meta?.text && (
           <Text>
             Meta: <Text code>{node.meta.text}</Text>
             &nbsp;
@@ -140,7 +148,7 @@ export default observer(({ store, annotation }) => {
           </Text>
         )}
 
-        <Fragment>{node.results.map(renderResult)}</Fragment>
+        <Fragment>{node?.results.map(renderResult)}</Fragment>
       </div>
 
       <div className={styles.block + " ls-entity-buttons"}>
@@ -149,13 +157,13 @@ export default observer(({ store, annotation }) => {
             {entityButtons}
           </Space>
 
-          {node.editable && (
-            <Tooltip placement="topLeft" title="Delete Entity: [Backspace]">
+          {hasEditableNodes && (
+            <Tooltip placement="topLeft" title={`Delete Entit${node ? "y" : "ies"}: [Backspace]`}>
               <Button
                 look="danger"
                 className={styles.button}
                 onClick={() => {
-                  annotation.highlightedNode.deleteRegion();
+                  annotation.deleteSelectedRegions();
                 }}
               >
                 <DeleteOutlined />

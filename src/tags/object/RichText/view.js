@@ -5,8 +5,12 @@ import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { Block } from "../../../utils/bem";
+import "./RichText.styl";
 
 class RichTextPieceView extends Component {
+  _regionSpanSelector = ".htx-highlight";
+
   constructor(props) {
     super(props);
 
@@ -17,12 +21,39 @@ class RichTextPieceView extends Component {
     this.rootRef = props.item.rootNodeRef;
   }
 
-  _onMouseUp = () => {
+  _selectRegions = (additionalMode) => {
+    const { item } = this.props;
+    const root = item.rootNodeRef.current;
+    const selection = window.getSelection();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+    const regions = [];
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+
+      if (node.nodeName === "SPAN" && node.matches(this._regionSpanSelector) && selection.containsNode(node)) {
+        const region = this._determineRegion(node);
+
+        regions.push(region);
+      }
+    }
+    if (regions.length) {
+      item.annotation.extendSelectionWith(regions);
+      if (additionalMode) {
+        item.annotation.extendSelectionWith(regions);
+      } else {
+        item.annotation.selectAreas(regions);
+      }
+      selection.removeAllRanges();
+    }
+  };
+
+  _onMouseUp = (ev) => {
     const { item } = this.props;
     const states = item.activeStates();
     const root = item.rootNodeRef.current;
 
-    if (!states || states.length === 0) return;
+    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
 
     const label = states[0]?.selectedLabels?.[0];
@@ -67,8 +98,7 @@ class RichTextPieceView extends Component {
     const region = this._determineRegion(event.target);
 
     if (!region) return;
-
-    region && region.onClickRegion();
+    region && region.onClickRegion(event);
     event.stopPropagation();
   };
 
@@ -131,8 +161,8 @@ class RichTextPieceView extends Component {
    * @param {HTMLElement} element
    */
   _determineRegion(element) {
-    if (matchesSelector(element, ".htx-highlight")) {
-      const span = element.tagName === "SPAN" ? element : element.closest(".htx-highlight");
+    if (matchesSelector(element, this._regionSpanSelector)) {
+      const span = element.tagName === "SPAN" ? element : element.closest(this._regionSpanSelector);
       const { item } = this.props;
 
       return item.regs.find(region => region.find(span));

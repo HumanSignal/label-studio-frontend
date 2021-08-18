@@ -39,6 +39,7 @@
 }
 
 .lstitem {
+  user-select: none;
   cursor: pointer;
   align-items: center;
   justify-content: flex-start;

@@ -16,6 +16,7 @@ import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
 import { defaultStyle } from "../core/Constants";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { Geometry } from "../components/RelationsOverlay/Geometry";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -124,28 +125,48 @@ const Model = types
     hideable: true,
     layerRef: undefined,
   }))
-  .views(self => ({
-    get parent() {
-      return self.object;
-    },
-    get imageData() {
-      if (!self.layerRef) return null;
-      const ctx = self.layerRef.canvas.context;
+  .views(self => {
+    let cachedImageData;
 
-      return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
-    },
-    get colorParts() {
-      const style = self.style || self.tag || defaultStyle;
+    return {
+      get parent() {
+        return self.object;
+      },
+      get imageData() {
+        if (cachedImageData && (!self.layerRef || Math.abs(cachedImageData.width - self.layerRef.canvas.width) < 1 &&
+          Math.abs(cachedImageData.height - self.layerRef.canvas.height) < 1)) {
+          return cachedImageData;
+        }
+        if (!self.layerRef) return null;
+        const ctx = self.layerRef.canvas.context;
 
-      return colorToRGBAArray(style.strokecolor);
-    },
-    get strokeColor() {
-      return rgbArrayToHex(self.colorParts);
-    },
-    get touchesLength() {
-      return self.touches.length;
-    },
-  }))
+        cachedImageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
+        return cachedImageData;
+      },
+      get colorParts() {
+        const style = self.style || self.tag || defaultStyle;
+
+        return colorToRGBAArray(style.strokecolor);
+      },
+      get strokeColor() {
+        return rgbArrayToHex(self.colorParts);
+      },
+      get touchesLength() {
+        return self.touches.length;
+      },
+      get bboxCoords() {
+        if (!self.imageData) return null;
+        const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
+
+        return {
+          left: imageBBox.x,
+          top: imageBBox.y,
+          right: imageBBox.x + imageBBox.width,
+          bottom: imageBBox.y + imageBBox.height,
+        };
+      },
+    };
+  })
   .actions(self => {
     let pathPoints,
       cachedPoints,
@@ -166,9 +187,11 @@ const Model = types
       },
 
       setLayerRef(ref) {
-        self.layerRef = ref;
-        if (self.layerRef) {
-          self.layerRef.canvas._canvas.style.opacity = self.opacity;
+        if (ref) {
+          ref.canvas._canvas.style.opacity = self.opacity;
+        }
+        if (!self.inSelection) {
+          self.layerRef = ref;
         }
       },
 
@@ -353,24 +376,30 @@ const HtxBrushView = ({ item }) => {
     img.onload = () => {
       setImage(img);
     };
-  }, [item.rle, item.parent, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
+  }, [item.rle, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
 
-  const imageHitFunc = useCallback(
-    (context, shape) => {
-      if (image) {
-        context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-        const imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
-        const colorParts = colorToRGBAArray(shape.colorKey);
+  const imageHitFunc = useMemo(
+    ()=>{
+      let imageData;
 
-        for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
-          if (imageData.data[i * 4 + 3] > 0) {
-            for (let k = 0; k < 3; k++) {
-              imageData.data[i * 4 + k] = colorParts[k];
+      return (context, shape) => {
+        if (image) {
+          if (!imageData) {
+            context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
+            imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+            const colorParts = colorToRGBAArray(shape.colorKey);
+
+            for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
+              if (imageData.data[i * 4 + 3] > 0) {
+                for (let k = 0; k < 3; k++) {
+                  imageData.data[i * 4 + k] = colorParts[k];
+                }
+              }
             }
           }
+          context.putImageData(imageData, 0, 0);
         }
-        context.putImageData(imageData, 0, 0);
-      }
+      };
     },
     [image, item.parent?.stageWidth, item.parent?.stageHeight],
   );

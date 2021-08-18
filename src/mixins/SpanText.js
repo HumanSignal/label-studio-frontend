@@ -141,7 +141,7 @@ export default types
     },
 
     setHighlight(val) {
-      self.highlighted = val;
+      self._highlighted = val;
 
       if (self._spans) {
         const len = self._spans.length;
@@ -188,6 +188,10 @@ export default types
         self.updateAppearenceFromState();
       }
       e?.stopPropagation();
+    },
+
+    find(span) {
+      return self._spans && self._spans.indexOf(span) >= 0 ? self : undefined;
     },
 
   }));

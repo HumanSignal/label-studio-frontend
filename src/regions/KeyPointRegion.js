@@ -36,6 +36,14 @@ const Model = types
     get store() {
       return getRoot(self);
     },
+    get bboxCoords() {
+      return {
+        left: self.x - self.width,
+        top: self.y - self.width,
+        right: self.x + self.width,
+        bottom: self.y + self.width,
+      };
+    },
   }))
   .actions(self => ({
     afterCreate() {
