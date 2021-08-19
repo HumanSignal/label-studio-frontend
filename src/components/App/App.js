@@ -132,8 +132,17 @@ class App extends Component {
 
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
+    const taskData = this.props.store.task?.data;
 
-    return <RelationsOverlay key={guidGenerator()} store={store} ref={this.relationsRef} />;
+    return (
+      <RelationsOverlay
+        key={guidGenerator()}
+        store={store}
+        ref={this.relationsRef}
+        tags={selectedStore.names}
+        taskData={taskData}
+      />
+    );
   }
 
   render() {

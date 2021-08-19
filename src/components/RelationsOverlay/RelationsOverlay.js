@@ -1,9 +1,11 @@
 import { observer } from "mobx-react";
-import { createRef, forwardRef, PureComponent, useEffect, useRef } from "react";
+import { createRef, forwardRef, PureComponent, useCallback, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { getParent } from "mobx-state-tree";
+import { Fragment } from "react";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -167,7 +169,11 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
   rootNode = createRef();
-  state = { shouldRender: false, shouldRenderConnections: Math.random() };
+  timer = null;
+  state = {
+    shouldRender: false,
+    shouldRenderConnections: Math.random(),
+  };
 
   componentDidUpdate() {
     if (this.rootNode.current && !this.state.shouldRender) {
@@ -193,7 +199,9 @@ class RelationsOverlay extends PureComponent {
       <AutoSizer onResize={this.onResize}>
         {() => (
           <svg className="relations-overlay" ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-            {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
+            {(this.state.shouldRender) && (
+              this.renderRelations(relations, visible, hasHighlight, highlighted)
+            )}
           </svg>
         )}
       </AutoSizer>
@@ -229,7 +237,7 @@ class RelationsOverlay extends PureComponent {
 const RelationObserverView = observer(RelationsOverlay);
 
 const RelationsOverlayObserver = observer(
-  forwardRef(({ store }, ref) => {
+  forwardRef(({ store, tags }, ref) => {
     const { relations, showConnections, highlighted } = store;
 
     return (
@@ -238,9 +246,44 @@ const RelationsOverlayObserver = observer(
         relations={Array.from(relations)}
         visible={showConnections}
         highlighted={highlighted}
+        tags={Array.from(tags?.values?.() ?? [])}
       />
     );
   }),
 );
 
-export { RelationsOverlayObserver as RelationsOverlay };
+let readinessTimer = null;
+
+const checkTagsAreReady = (tags, callback) => {
+  clearTimeout(readinessTimer);
+
+  const ready = Array.from(tags.values()).reduce((res, tag) => {
+    return res && (tag?.isReady ?? true);
+  }, true);
+
+  callback(ready);
+
+  if (!ready) {
+    readinessTimer = setTimeout(() => {
+      checkTagsAreReady(tags, callback);
+    }, 100);
+  }
+};
+
+const EnsureTagsReady = observer(
+  forwardRef(({ tags, taskData, ...props }, ref) => {
+    const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+      checkTagsAreReady(tags, (readyState) => {
+        setReady(readyState);
+      });
+    }, [taskData, tags]);
+
+    return ready && (
+      <RelationsOverlayObserver ref={ref} {...props} />
+    );
+  }),
+);
+
+export { EnsureTagsReady as RelationsOverlay };

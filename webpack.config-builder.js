@@ -206,6 +206,7 @@ const plugins = [
   new Dotenv({
     path: "./.env",
     safe: true,
+    silent: true,
     allowEmptyValues: true,
     defaults: "./.env.defaults",
   }),
