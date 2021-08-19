@@ -20,3 +20,4 @@ export { default as LsDate } from "./date.svg";
 export { default as IconPlayerPause } from "./player/pause.svg";
 export { default as IconPlayerPlay } from "./player/play.svg";
 export { default as IconPlayerStep } from "./player/step.svg";
+export { default as IconInfo } from './info.svg';
