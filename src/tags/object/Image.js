@@ -114,6 +114,12 @@ const ImageSelection = types.model({
     get obj() {
       return getParent(self);
     },
+    get annotation() {
+      return self.obj.annotation;
+    },
+    get highlightedNodeExists() {
+      return !!self.annotation.highlightedNode;
+    },
     get isActive() {
       return self.start && self.end;
     },

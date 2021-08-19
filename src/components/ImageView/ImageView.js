@@ -169,7 +169,7 @@ const SelectionRect = observer(({ item }) => {
 const Selection = observer(({ item }) => {
   return (
     <Layer>
-      {item.isActive ? <SelectionRect item={item} /> : <SelectionBorders item={item} /> }
+      {item.highlightedNodeExists ? null : item.isActive ? <SelectionRect item={item} /> : <SelectionBorders item={item} /> }
     </Layer>
   );
 });
