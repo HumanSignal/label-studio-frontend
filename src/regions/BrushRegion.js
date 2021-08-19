@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Group, Layer, Image, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot, cast } from "mobx-state-tree";
+import { types, getParent, getRoot, cast, isAlive } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -190,7 +190,7 @@ const Model = types
         if (ref) {
           ref.canvas._canvas.style.opacity = self.opacity;
         }
-        if (!self.inSelection) {
+        if (!isAlive(self) || !self.inSelection) {
           self.layerRef = ref;
         }
       },
