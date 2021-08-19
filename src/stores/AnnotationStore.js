@@ -591,6 +591,27 @@ const Annotation = types
         value: resultValue,
       };
 
+      const foundText = getRoot(self).task.getTextFromBbox(areaValue.x, areaValue.y, areaValue.width, areaValue.height);
+      
+      let results;
+
+      if (foundText) {
+        const result2 = {
+          from_name: 'transcription',
+          to_name: 'image',
+          type: 'textarea',
+          value: {
+            text: [
+              foundText,
+            ],
+          },
+        };
+        
+        results = [result, result2];
+      } else {
+        results = [result];
+      }
+
       const areaRaw = {
         id: guidGenerator(),
         object,
@@ -598,7 +619,7 @@ const Annotation = types
         ...areaValue,
         // for Model detection
         value: areaValue,
-        results: [result],
+        results,
       };
 
       const area = self.areas.put(areaRaw);
