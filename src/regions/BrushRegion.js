@@ -281,8 +281,8 @@ const Model = types
        * @property {number} original_height height of the original image (px)
        * @property {number} image_rotation rotation degree of the image (deg)
        * @property {Object} value
-       * @property {"rle"} value.format only RLE is supported for now
-       * @property {number[]} value.rle RLE encoded image
+       * @property {"rle"} value.format format of the masks, only RLE is supported for now
+       * @property {number[]} value.rle RLE-encoded image
        */
 
       /**

@@ -66,9 +66,9 @@ const Model = types
      * @property {Object} value
      * @property {number} value.start index of paragraph where the region starts
      * @property {number} value.end index of paragraph where the region ends (xpath)
-     * @property {number} value.startOffset offset inside start paragraph
-     * @property {number} value.endOffset offset inside end paragraph
-     * @property {string} [value.text] text content of the region, may be missed
+     * @property {number} value.startOffset offset within start paragraph
+     * @property {number} value.endOffset offset within end paragraph
+     * @property {string} [value.text] text content of the region, can be skipped
      */
 
     /**

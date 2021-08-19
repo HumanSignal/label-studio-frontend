@@ -47,9 +47,9 @@ const Model = types
      * }
      * @typedef {Object} TextRegionResult
      * @property {Object} value
-     * @property {string} value.start position of the start of the region
-     * @property {string} value.end position of the end of the region
-     * @property {string} [value.text] text content of the region, may be missed
+     * @property {string} value.start position of the start of the region in characters
+     * @property {string} value.end position of the end of the region in characters
+     * @property {string} [value.text] text content of the region, can be skipped
      */
 
     /**

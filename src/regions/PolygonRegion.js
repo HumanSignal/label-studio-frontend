@@ -233,7 +233,7 @@ const Model = types
      * @property {number} original_height height of the original image (px)
      * @property {number} image_rotation rotation degree of the image (deg)
      * @property {Object} value
-     * @property {number[][]} value.points list of (x, y) coords (0-100)
+     * @property {number[][]} value.points list of (x, y) coordinates of the polygon by percentage of the image size (0-100)
      */
 
     /**

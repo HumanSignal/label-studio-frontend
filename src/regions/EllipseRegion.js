@@ -202,8 +202,8 @@ const Model = types
      * @property {number} original_height height of the original image (px)
      * @property {number} image_rotation rotation degree of the image (deg)
      * @property {Object} value
-     * @property {number} value.x x coord of the top left corner before rotation (0-100)
-     * @property {number} value.y y coord of the top left corner before rotation (0-100)
+     * @property {number} value.x x coordinate of the top left corner before rotation (0-100)
+     * @property {number} value.y y coordinate of the top left corner before rotation (0-100)
      * @property {number} value.radiusX radius by x axis (0-100)
      * @property {number} value.radiusY radius by y axis (0-100)
      * @property {number} value.rotation rotation degree (deg)

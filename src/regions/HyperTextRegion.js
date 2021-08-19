@@ -55,9 +55,9 @@ const Model = types
      * @property {Object} value
      * @property {string} value.start xpath of the container where the region starts (xpath)
      * @property {string} value.end xpath of the container where the region ends (xpath)
-     * @property {number} value.startOffset offset inside start container
-     * @property {number} value.endOffset offset inside end container
-     * @property {string} [value.text] text content of the region, may be missed
+     * @property {number} value.startOffset offset within start container
+     * @property {number} value.endOffset offset within end container
+     * @property {string} [value.text] text content of the region, can be skipped
      */
 
     /**

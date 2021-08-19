@@ -61,10 +61,10 @@ const Model = types
      *   }
      * }
      * @typedef {Object} AudioRegionResult
-     * @property {number} original_length length of the original audio (s)
+     * @property {number} original_length length of the original audio
      * @property {Object} value
-     * @property {number} value.start start time of the fragment (s)
-     * @property {number} value.end finish time of the fragment (s)
+     * @property {number} value.start start time of the fragment(s)
+     * @property {number} value.end end time of the fragment(s)
      */
 
     /**
