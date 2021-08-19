@@ -47,28 +47,39 @@ fetch(currentTagsUrl)
       const name = t.name.toLowerCase();
       // there are no new tags if we didn't get the list
       const isNew = tags ? !tags.includes(name) : false;
-      const header = supertag ? `## ${t.name}\n\n` : infoHeader(t.name, dir, isNew);
+      const meta = t.customTags ? Object.fromEntries(
+        // convert @meta_* params into key-value hash
+        t.customTags
+          .filter(tag => tag.tag.startsWith("meta_"))
+          .map(tag => [tag.tag.substr(5), tag.value]),
+      ) : {};
+      const header = supertag ? `## ${t.name}\n\n` : infoHeader(t.name, dir, isNew, meta);
 
+      // we can use comma-separated list of @regions used by tag
       const regions = t.customTags && t.customTags.find(desc => desc.tag === "regions");
+      // sample regions result and description
       let results = "";
 
       if (regions) {
         for (let region of regions.value.split(/,\s*/)) {
           const files = path.resolve(__dirname + "/../src/regions/" + region + ".js");
           const regionsData = jsdoc2md.getTemplateDataSync({ files });
+          // region descriptions named after region and defined as separate type:
+          // @typedef {Object} AudioRegionResult
           const serializeData = regionsData.find(reg => reg.name === region + "Result");
 
           if (serializeData) {
             results = jsdoc2md.renderSync({ data: [serializeData], "example-lang": "js" })
               .split("\n")
-              .slice(5)
+              .slice(5) // remove first 5 lines with header
               .join("\n")
-              .replace("**Example**", "### Example JSON");
-            results = `### Sample Results JSON\n${results}\n\n`;
+              .replace(/\*\*Example\*\*\s*/, "### Example JSON");
+            results = `### Sample Results JSON\n${results}\n`;
           }
         }
       }
 
+      // remove all other @params we don't know how to use
       delete t.customTags;
 
       let str = jsdoc2md
@@ -105,12 +116,15 @@ fetch(currentTagsUrl)
     for (let { dir, title, nested } of groups) {
       console.log("## " + title);
       const prefix = __dirname + "/../src/tags/" + dir;
-      // const templateData = [].concat(...["/*.js", "/*/*.js"].map(glob => jsdoc2md.getTemplateDataSync({ files: path.resolve(prefix + glob) })));
-      let templateData = jsdoc2md.getTemplateDataSync({ files: path.resolve(prefix + "/*.js") });
+      const getTemplateDataByGlob = glob =>
+        jsdoc2md.getTemplateDataSync({ files: path.resolve(prefix + glob) });
+      let templateData = getTemplateDataByGlob("/*.js");
 
       if (nested) {
-        templateData = templateData.concat(jsdoc2md.getTemplateDataSync({ files: path.resolve(prefix + "/*/*.js") }));
+        templateData = templateData.concat(getTemplateDataByGlob("/*/*.js"));
       }
+      // tags inside nested dirs go after others, so we have to resort file list
+      templateData.sort((a, b) => a.name > b.name ? 1 : -1);
       for (let t of templateData) {
         const name = t.name.toLowerCase();
         const str = processTemplate(t, dir);
