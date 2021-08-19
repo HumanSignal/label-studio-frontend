@@ -21,6 +21,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   <Text name="text" value="$text" />
  * </View>
  * @name Filter
+ * @meta_title Filter Tags for Filter Search
+ * @meta_description Label Studio Filter Tags customize Label Studio with filter search for machine learning and data science projects.
  * @param {string} [placeholder="Quick Filter"]      - Placeholder text for filter
  * @param {number} [minlength=3]      - Size of the filter
  * @param {string} [style]            - CSS style of the string

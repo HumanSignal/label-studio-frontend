@@ -22,6 +22,8 @@ import ControlBase from "./Base";
  * </View>
  * @name PolygonLabels
  * @regions PolygonRegion
+ * @meta_title Polygon Label Tags for Labeling Polygons in Images
+ * @meta_description Label Studio Polygon Label Tags customize Label Studio for labeling polygons in images for machine learning and data science projects.
  * @param {string} name                             - Name of tag
  * @param {string} toName                           - Name of image to label
  * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels

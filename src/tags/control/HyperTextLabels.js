@@ -20,6 +20,8 @@ import ControlBase from "./Base";
  *   <HyperText name="ht" value="$html" />
  * </View>
  * @name HyperTextLabels
+ * @meta_title Hypertext Label Tags to Create Labeled Hypertext (HTML)
+ * @meta_description Label Studio Hypertext Label Tags customize Label Studio to create labeled hypertext (HTML) for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the HTML element to label
  * @param {single|multiple=} [choice=single] - Configure if you can select one or multiple labels

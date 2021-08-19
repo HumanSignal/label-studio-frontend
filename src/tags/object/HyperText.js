@@ -28,6 +28,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * </View>
  * @name HyperText
  * @regions HyperTextRegion
+ * @meta_title Hypertext Tags for Hypertext Markup (HTML)
+ * @meta_description Label Studio Hypertext Tags customize Label Studio for hypertext markup (HTML) for machine learning and data science projects.
  * @param {string} name - Name of the element
  * @param {string} value - Value of the element
  * @param {url|text} [valueType]       - Where the text is stored — directly in uploaded data or needs to be loaded from a URL

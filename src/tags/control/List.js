@@ -40,6 +40,8 @@ const ListItemModel = types
  *  <List name="ranker" value="$replies" elementValue="$text" elementTag="Text" ranked="true" sortedHighlightColor="#fcfff5"></List>
  * </View>
  * @name List
+ * @meta_title List Tags for Lists
+ * @meta_description Label Studio List Tags customize Label Studio with lists for machine learning and data science projects.
  * @param {string} elementValue                - Lookup key for a child object
  * @param {Text|Image|Audio} [elementTag=Text] - Element used to render children
  * @param {string} value                       - List values

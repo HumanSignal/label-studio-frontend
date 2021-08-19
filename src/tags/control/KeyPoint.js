@@ -14,6 +14,8 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPoint
+ * @meta_title Keypoint Tags for Adding Keypoints to Images
+ * @meta_description Label Studio Keypoint Tags customize Label Studio for adding keypoints to images for machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {float=} [opacity=0.9]         - Opacity of keypoint

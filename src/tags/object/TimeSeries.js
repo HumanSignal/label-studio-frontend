@@ -57,6 +57,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   </TimeSeries>
  * </View>
  * @name TimeSeries
+ * @meta_title Time Series Tags for Time Series Data
+ * @meta_description Label Studio Time Series Tags customize Label Studio for Time Series Data for machine learning and data science projects.
  * @param {string} name Name of the element
  * @param {string} value Key used to look up the data, either URLs for your time-series if valueType=url, otherwise expects JSON
  * @param {url|json} [valueType=url] Format of time series data provided. If set to "url" then Label Studio loads value references inside `value` key, otherwise it expects JSON.

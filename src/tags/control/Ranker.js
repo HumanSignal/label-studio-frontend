@@ -65,6 +65,8 @@ const RankerItemModel = types
  *   }]
  * }]
  * @name Ranker
+ * @meta_title Ranker Tags for Model Ranking
+ * @meta_description Label Studio Ranker Tags customize Label Studio for model ranking for machine learning and data science projects.
  * @param {string} name                 - Name of group
  * @param {y|x=} [axis=y]               - Axis direction
  * @param {x|y} lockAxis                - Lock axis

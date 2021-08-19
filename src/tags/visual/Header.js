@@ -18,6 +18,8 @@ import Tree from "../../core/Tree";
  *   <Header name="text-1" value="Please select the class" />
  * </View>
  * @name Header
+ * @meta_title Header Tags to Show Headers
+ * @meta_description Label Studio Header Tags customize Label Studio to show headers for machine learning and data science projects.
  * @param {string} value              - Text of header
  * @param {number} [size=4]           - Size of header
  * @param {string} [style]            - CSS style string

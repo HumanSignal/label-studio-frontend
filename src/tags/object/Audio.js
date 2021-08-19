@@ -12,7 +12,7 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Audio tag plays a simple audio file.
+ * Audio tag plays a simple audio file
  * @example
  * <View>
  *   <Audio name="audio" value="$audio" />

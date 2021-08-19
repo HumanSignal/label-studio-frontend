@@ -21,6 +21,8 @@ import { customTypes } from "../../core/CustomTypes";
  *   </Labels>
  * </View>
  * @name Relation
+ * @meta_title Relation Tags for a Single Relation
+ * @meta_description Label Studio Relation Tags customize Label Studio for a single relation for machine learning and data science projects.
  * @param {string} value        - Value of the relation
  * @param {string} [background] - Background color of the active label
  */

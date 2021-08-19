@@ -26,6 +26,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   <AudioPlus name="audio-1" value="$audio" />
  * </View>
  * @name AudioPlus
+ * @meta_title
+ * @meta_description
  * @param {string} name - Name of the element
  * @param {string} value - Value of the element
  * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)

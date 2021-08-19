@@ -32,6 +32,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * </View>
  * @name Text
  * @regions TextRegion
+ * @meta_title Text Tags for Text Objects
+ * @meta_description Label Studio Text Tags customize Label Studio for Text for machine learning and data science projects.
  * @param {string} name                      - name of the element
  * @param {string} value                     - data field with text or url
  * @param {url|text} [valueType]             - where is the text stored — directly in task or should be loaded by url
