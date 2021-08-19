@@ -69,6 +69,7 @@ const TagAttrs = types.model({
   contrastcontrol: types.optional(types.boolean, false),
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
+  selectioncontrol: types.optional(types.boolean, true),
 });
 
 const IMAGE_CONSTANTS = {
@@ -375,7 +376,7 @@ const Model = types.model({
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
-      toolsManager.addTool("selection", Tools.Selection.create({}, { manager: toolsManager }));
+      if (self.selectioncontrol) toolsManager.addTool("selection", Tools.Selection.create({}, { manager: toolsManager }));
 
       if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
 

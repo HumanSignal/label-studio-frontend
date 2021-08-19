@@ -8,7 +8,7 @@ const IMAGE =
 
 const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
   return `<View>
-    <Image name="image" value="$image"></Image>
+    <Image name="image" value="$image" selectionControl="false"></Image>
     ${shapes.map(shapeName => {
     return `<${shapeName} name="image${shapeName}" toName="image" ${props} />
     <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
@@ -25,7 +25,7 @@ const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
 
 const createShape = {
   Rectangle: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -41,7 +41,7 @@ const createShape = {
     },
   },
   Ellipse: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -51,7 +51,7 @@ const createShape = {
     },
   },
   Polygon: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       const points = [];
 
       points.push([x, y]);
@@ -69,7 +69,7 @@ const createShape = {
     },
   },
   KeyPoint: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByClickingPoints",
@@ -83,7 +83,7 @@ const createShape = {
     },
   },
   Brush: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       const points = [];
       const startPoint = { x: x + 5, y: y + 5 };
       const endPoint = { x: x + width - 5, y: y + height - 5 };
@@ -105,7 +105,7 @@ const createShape = {
   },
 };
 
-Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
+Scenario("Preventing applying labels of mismatch types", async({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
   const shapes = Object.keys(createShape);
   const params = {
     config: createConfig({ shapes, props: `strokewidth="5"` }),

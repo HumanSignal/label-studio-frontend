@@ -13,6 +13,9 @@ const SelectionMap = types.model(
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
   }).views(self => {
   return {
+    get annotation() {
+      return getParent(self).annotation;
+    },
     get highlighted() {
       return self.selected.size === 1 ? self.selected.values().next().value : null;
     },
@@ -65,6 +68,7 @@ const SelectionMap = types.model(
           }
         });
       });
+      self.annotation.unselectStates();
       for (let [controlName, value] of Object.entries(valuesFromControls)) {
         const control = controlsByName[controlName];
 
