@@ -73,7 +73,7 @@ fetch(currentTagsUrl)
               .split("\n")
               .slice(5) // remove first 5 lines with header
               .join("\n")
-              .replace(/\*\*Example\*\*\s*/, "### Example JSON");
+              .replace(/\*\*Example\*\*\s*\n/, "### Example JSON\n");
             results = `### Sample Results JSON\n${results}\n`;
           }
         }
