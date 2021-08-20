@@ -508,6 +508,8 @@ export default observer(
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
+            // width:item.naturalWidth + 1000,
+            // height:item.naturalHeight,
           }}
         >
           <div
@@ -520,13 +522,18 @@ export default observer(
             {this.state.ratio !== 1 && (
               <div
                 className={styles.filler}
-                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
+                //style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
+                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.naturalWidth }}
               />
             )}
             <img
               ref={ref => {
                 item.setImageRef(ref);
                 this.imageRef.current = ref;
+              }}
+              style={{                
+                width:item.naturalWidth,
+                height:item.naturalHeight,
               }}
               src={item._value}
               onLoad={item.updateImageSize}
@@ -540,10 +547,12 @@ export default observer(
               ref={ref => {
                 item.setStageRef(ref);
               }}
-              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}              
               className={"image-element"}
-              width={item.stageComponentSize.width}
-              height={item.stageComponentSize.height}
+              //width={item.stageComponentSize.width}
+              //height={item.stageComponentSize.height}
+              width={item.naturalWidth}
+              height={item.naturalHeight}
               scaleX={item.stageScale}
               scaleY={item.stageScale}
               x={item.zoomingPositionX}
@@ -609,8 +618,10 @@ export default observer(
               {item.crosshair && (
                 <Crosshair
                   ref={this.crosshairRef}
-                  width={item.stageComponentSize.width}
-                  height={item.stageComponentSize.height}
+                  //width={item.stageComponentSize.width}                  
+                  //height={item.stageComponentSize.height}
+                  width={item.naturalWidth}
+                  height={item.naturalHeight}
                 />
               )}
             </Stage>

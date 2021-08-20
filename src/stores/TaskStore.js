@@ -68,7 +68,7 @@ const TaskStore = types
         
         const bbrtree = RTree(10000);
 
-        const textAnnotations = self.dataObj.ocrData.outputs[0].textAnnotations;
+        const textAnnotations = self.dataObj.ocrData.outputs[0].ocr.textAnnotations;
 
         textAnnotations.forEach((box, index) => {
           if (index === 0)
