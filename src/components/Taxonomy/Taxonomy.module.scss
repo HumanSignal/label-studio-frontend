@@ -59,6 +59,12 @@
   }
 }
 
+.taxonomy__search {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+}
+
 .taxonomy__item ~ div {
   margin-left: 16px;
 }

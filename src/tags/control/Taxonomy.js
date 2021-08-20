@@ -143,7 +143,7 @@ const Model = types
             // disable checkbox and hide it via styles if this node is not a leaf (=have children)
             const leafsOnly = self.leafsonly && !!node.children;
             const disabled = maxUsagesReached || leafsOnly;
-            const obj = { label, path, checked, disabled };
+            const obj = { label, path, checked, disabled, depth: parents.length };
 
             if (node.children) {
               obj.children = node.children.map(n => visitNode(n, path));
