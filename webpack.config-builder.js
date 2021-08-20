@@ -258,7 +258,11 @@ module.exports = ({withDevServer = true} = {}) => ({
   mode: DEFAULT_NODE_ENV || "development",
   devtool: sourceMap,
   ...(withDevServer ? devServer() : {}),
-  entry: path.resolve(__dirname, "src/index.js"),
+  entry: {
+    main: [
+      path.resolve(__dirname, "src/index.js"),
+    ],
+  },
   output: {
     path: path.resolve(workingDirectory),
     filename: "main.js",
