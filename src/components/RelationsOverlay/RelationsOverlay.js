@@ -1,11 +1,9 @@
 import { observer } from "mobx-react";
-import { createRef, forwardRef, PureComponent, useCallback, useEffect, useMemo, useRef } from "react";
+import { createRef, forwardRef, PureComponent, useEffect, useRef } from "react";
 import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
 import AutoSizer from "react-virtualized-auto-sizer";
-import { getParent } from "mobx-state-tree";
-import { Fragment } from "react";
 
 const ArrowMarker = ({ id, color }) => {
   return (
