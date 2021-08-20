@@ -3,14 +3,24 @@
   border-radius: 6px;
   padding: 4px;
   width: max-content;
+  max-width: 100%;
   position: relative;
+
+  & > span {
+    line-height: 30px;
+    padding: 0 5px; // 4px padding + 1px border to stay on the same indent as selected
+    white-space: nowrap;
+    cursor: pointer;
+  }
 }
 
 .taxonomy__selected {
   display: inline-flex;
+  flex-wrap: wrap;
+  margin-bottom: -4px; // compensate margin of the last row
 
   div {
-    margin-right: 8px;
+    margin: 0 4px 4px 0;
     background: #f4f4f4;
     padding: 2px 4px;
     border: 1px solid #d9d9d9;
@@ -29,18 +39,23 @@
   position: absolute;
   z-index: 10;
   background: white;
-  border: 1px solid #d9d9d9;
-  border-radius: 0 0 6px 6px;
-  border-top-color: transparent;
+  border-radius: 6px;
   padding: 8px;
   max-height: 300px;
   overflow-y: auto;
   left: -1px;
-  width: calc(100% + 2px);
+  width: max-content;
+  min-width: 200px;
+  max-width: 100%;
+  margin-top: 9px; // 4px padding + 1px border + 4px gap
+  box-shadow: 0 0 4px #d9d9d9;
 
   input[type=checkbox] {
     margin-right: 4px;
     vertical-align: -2px;
+    &:disabled {
+      opacity: 0.5;
+    }
   }
 }
 
@@ -59,6 +74,7 @@
 
 .taxonomy__item label {
   flex-grow: 1;
+  flex-shrink: 0;
 }
 
 .taxonomy__grouping {

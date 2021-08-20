@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo, useContext } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo, useContext, FormEvent } from "react";
 
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
@@ -13,16 +13,17 @@ type TaxonomyItem = {
   children?: TaxonomyItem[],
 }
 
+type TaxonomyOptions = {
+  leafsOnly?: boolean,
+  showFullPath?: boolean,
+  pathSeparator?: string,
+}
+
 type TaxonomyProps = {
   items: TaxonomyItem[],
   selected: TaxonomyPath[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
-}
-
-type DropdownProps = {
-  show: boolean,
-  items: TaxonomyItem[],
-  dropdownRef: React.Ref<HTMLDivElement>,
+  options?: TaxonomyOptions,
 }
 
 type TaxonomySelectedContextValue = [
@@ -31,15 +32,17 @@ type TaxonomySelectedContextValue = [
 ]
 
 const TaxonomySelectedContext = React.createContext<TaxonomySelectedContextValue>([[], () => undefined]);
+const TaxonomyOptionsContext = React.createContext<TaxonomyOptions>({});
 
 const SelectedList = () => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
+  const { showFullPath, pathSeparator = " / " } = useContext(TaxonomyOptionsContext);
 
   return (
     <div className={styles.taxonomy__selected}>
       {selected.map(path => (
         <div key={path.join("|")}>
-          {path[path.length - 1]}
+          {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
           <input type="button" onClick={() => setSelected(path, false)} value="×" />
         </div>
       ))}
@@ -49,16 +52,19 @@ const SelectedList = () => {
 
 const Item = ({ item }: { item: TaxonomyItem }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
+  const { leafsOnly } = useContext(TaxonomyOptionsContext);
   const [isOpen, , , toggle] = useToggle();
   const prefix = item.children?.length ? (isOpen ? "-" : "+") : " ";
+  const onClick = () => leafsOnly && toggle();
 
   return (
     <div>
       <div className={styles.taxonomy__item}>
         <div className={styles.taxonomy__grouping} onClick={toggle}>{prefix}</div>
-        <label>
+        <label onClick={onClick}>
           <input
             type="checkbox"
+            disabled={leafsOnly && Boolean(item.children?.length)}
             checked={selected.some(current => isArraysEqual(current, item.path))}
             onChange={e => setSelected(item.path, e.currentTarget.checked)}
           />
@@ -78,7 +84,7 @@ const Dropdown = ({ show, items, dropdownRef }: DropdownProps) => {
   );
 };
 
-const Taxonomy = ({ items, selected: externalSelected, onChange }: TaxonomyProps) => {
+const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
@@ -86,7 +92,6 @@ const Taxonomy = ({ items, selected: externalSelected, onChange }: TaxonomyProps
     if (!dropdownRef.current?.contains(e.target)) close();
   }, []);
   const onEsc = useCallback(e => {
-    console.log(e, e.target, e.key);
     if (e.key === "Escape") {
       close();
       e.stopPropagation();
@@ -123,11 +128,13 @@ const Taxonomy = ({ items, selected: externalSelected, onChange }: TaxonomyProps
 
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
-      <div className={styles.taxonomy}>
-        <SelectedList />
-        <span onClick={() => !isOpen && setOpen(true)}>Click to add...</span>
-        <Dropdown show={isOpen} items={items} dropdownRef={dropdownRef} />
-      </div>
+      <TaxonomyOptionsContext.Provider value={options}>
+        <div className={styles.taxonomy}>
+          <SelectedList />
+          <span onClick={() => !isOpen && setOpen(true)}>Click to add...</span>
+          <Dropdown show={isOpen} items={items} dropdownRef={dropdownRef} />
+        </div>
+      </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>
   );
 };
