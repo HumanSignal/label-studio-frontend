@@ -38,6 +38,8 @@ import "react-dropdown-tree-select/dist/styles.css";
  * @param {string} name                - Name of the element
  * @param {string} toName              - Name of the element that you want to classify
  * @param {boolean} [leafsOnly=false]  - Allow to select only leaf nodes of taxonomy
+ * @param {boolean} [showFullPath=false] - Show full path of selected items
+ * @param {string} [pathSeparator= / ] - Separator to show in the full path
  * @param {number} [maxUsages]         - Maximum available usages
  * @param {boolean} [required=false]   - Whether taxonomy validation is required
  * @param {string} [requiredMessage]   - Message to show if validation fails
@@ -46,6 +48,8 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
   leafsonly: types.optional(types.boolean, false),
+  showfullpath: types.optional(types.boolean, false),
+  pathseparator: types.optional(types.string, " / "),
   maxusages: types.maybeNull(types.string),
 });
 
@@ -162,10 +166,20 @@ function searchPredicate(node, searchTerm = "") {
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
+  const options = {
+    showFullPath: item.showfullpath,
+    leafsOnly: item.leafsonly,
+    pathSeparator: item.pathseparator,
+  };
 
   return (
     <div style={{ ...style }}>
-      <Taxonomy items={item.traverse(item.children)} selected={item.selectedValues()} onChange={item.onChange} />
+      <Taxonomy
+        items={item.traverse(item.children)}
+        selected={item.selectedValues()}
+        onChange={item.onChange}
+        options={options}
+      />
       <DropdownTreeSelect
         key={item.maxUsagesReached}
         mode={item.leafsonly ? "hierarchical" : "multiSelect"}
