@@ -69,7 +69,7 @@ fetch(currentTagsUrl)
           const serializeData = regionsData.find(reg => reg.name === region + "Result");
 
           if (serializeData) {
-            results = jsdoc2md.renderSync({ data: [serializeData], "example-lang": "js" })
+            results = jsdoc2md.renderSync({ data: [serializeData], "example-lang": "json" })
               .split("\n")
               .slice(5) // remove first 5 lines with header
               .join("\n")
