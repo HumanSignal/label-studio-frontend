@@ -22,6 +22,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * </View>
  *
  * @name Rating
+ * @meta_title Rating Tags for Ratings
+ * @meta_description Label Studio Rating Tags customize Label Studio for ratings for machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} toName                     - Name of the element that you want to label
  * @param {number} [maxRating=5]              - Maximum rating value

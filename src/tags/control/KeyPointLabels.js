@@ -22,6 +22,9 @@ import ControlBase from "./Base";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPointLabels
+ * @regions KeyPointRegion
+ * @meta_title Keypoint Label Tags for Labeling Keypoints
+ * @meta_description Label Studio Keypoint Label Tags customize Label Studio for labeling keypoints for machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels

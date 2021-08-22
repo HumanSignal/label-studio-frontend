@@ -28,6 +28,8 @@ const { TextArea } = Input;
  *   <TextArea name="ta"></TextArea>
  * </View>
  * @name TextArea
+ * @meta_title Textarea Tags for Text areas
+ * @meta_description Label Studio Textarea Tags customize Label Studio for text areas and transcriptions for machine learning and data science projects.
  * @param {string} name                    - Name of the element
  * @param {string} toName                  - Name of the element that you want to label
  * @param {string} value                   - Pre-filled value

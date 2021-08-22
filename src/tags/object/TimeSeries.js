@@ -42,6 +42,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *      <Channel column="sensor1" />
  *      <Channel column="sensor2" />
  *   </TimeSeries>
+ *   <TimeSeriesLabels name="label" toName="device">
+ *     <Label value="Run" background="#5b5"/>
+ *     <Label value="Walk" background="#55f"/>
+ *   </TimeSeriesLabels>
  * </View>
  * @example
  * <!-- data stored directly in task's field `ts` as json -->
@@ -53,13 +57,15 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   </TimeSeries>
  * </View>
  * @name TimeSeries
+ * @meta_title Time Series Tags for Time Series Data
+ * @meta_description Label Studio Time Series Tags customize Label Studio for Time Series Data for machine learning and data science projects.
  * @param {string} name Name of the element
  * @param {string} value Key used to look up the data, either URLs for your time-series if valueType=url, otherwise expects JSON
  * @param {url|json} [valueType=url] Format of time series data provided. If set to "url" then Label Studio loads value references inside `value` key, otherwise it expects JSON.
  * @param {string} [timeColumn] Column name or index that provides temporal values. If your time series data has no temporal column then one is automatically generated.
  * @param {string} [timeFormat] Pattern used to parse values inside timeColumn, parsing is provided by d3, and follows `strftime` implementation
  * @param {string} [timeDisplayFormat] Format used to display temporal value. Can be a number or a date. If a temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
- * @param {string} [sep=","] Separator for you CSV file.
+ * @param {string} [sep=,] Separator for you CSV file.
  * @param {string} [overviewChannels] Comma-separated list of channel names or indexes displayed in overview.
  * @param {boolean} [fixedScale=false] Whether to scale y-axis to the maximum to fit all the values. If false, current view scales to fit only the displayed values.
  */

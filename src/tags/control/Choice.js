@@ -25,6 +25,8 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
  *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choice
+ * @meta_title Choice Tags for Single Choice Labels
+ * @meta_description Label Studio Choice Tags customize Label Studio for single choice labels for machine learning and data science projects.
  * @param {string} value       - Choice value
  * @param {boolean} [selected] - Specify whether to preselect this label on the labeling interface
  * @param {string} [alias]     - Alias for the label
