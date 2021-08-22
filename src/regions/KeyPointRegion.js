@@ -84,6 +84,32 @@ const Model = types
       }
     },
 
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "x": 3.1,
+     *     "y": 8.2,
+     *     "width": 2,
+     *     "keypointlabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} KeyPointRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number} value.x x coordinate by percentage of the image size (0-100)
+     * @property {number} value.y y coordinate by percentage of the image size (0-100)
+     * @property {number} value.width point size by percentage of the image size (0-100)
+     */
+
+    /**
+     * @return {KeyPointRegionResult}
+     */
     serialize() {
       return {
         original_width: self.parent.naturalWidth,

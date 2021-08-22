@@ -22,6 +22,8 @@ import ControlBase from "./Base";
  *   <Paragraphs name="prg" value="$dialogue" layout="dialogue" />
  * </View>
  * @name ParagraphLabels
+ * @meta_title Paragraph Label Tags for Paragraph Labels
+ * @meta_description Label Studio Paragraph Label Tags customize Label Studio with paragraph labels for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the HTML element to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels

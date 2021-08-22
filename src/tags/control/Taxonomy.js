@@ -34,6 +34,8 @@ import "react-dropdown-tree-select/dist/styles.css";
  *   <Text name="text" value="You'd never believe what he did to the country" />
  * </View>
  * @name Taxonomy
+ * @meta_title Taxonomy Tags for Hierarchical Labels
+ * @meta_description Label Studio Taxonomy Tags customize Label Studio by using hierarchical labels for machine learning and data science projects.
  * @param {string} name                - Name of the element
  * @param {string} toName              - Name of the element that you want to classify
  * @param {boolean} [leafsOnly=false]  - Allow to select only leaf nodes of taxonomy
