@@ -18,6 +18,11 @@ type TaxonomyOptions = {
   leafsOnly?: boolean,
   showFullPath?: boolean,
   pathSeparator?: string,
+  maxUsages?: number,
+}
+
+type TaxonomyOptionsContextValue = TaxonomyOptions & {
+  maxUsagesReached?: boolean
 }
 
 type TaxonomyProps = {
@@ -33,7 +38,7 @@ type TaxonomySelectedContextValue = [
 ]
 
 const TaxonomySelectedContext = React.createContext<TaxonomySelectedContextValue>([[], () => undefined]);
-const TaxonomyOptionsContext = React.createContext<TaxonomyOptions>({});
+const TaxonomyOptionsContext = React.createContext<TaxonomyOptionsContextValue>({});
 
 const SelectedList = () => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
@@ -53,20 +58,28 @@ const SelectedList = () => {
 
 const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
-  const { leafsOnly } = useContext(TaxonomyOptionsContext);
+  const { leafsOnly, maxUsages, maxUsagesReached } = useContext(TaxonomyOptionsContext);
   const [isOpen, , , toggle] = useToggle();
   const prefix = item.children?.length && !flat ? (isOpen ? "-" : "+") : " ";
   const onClick = () => leafsOnly && toggle();
+
+  const checked = selected.some(current => isArraysEqual(current, item.path));
+  const hasChilds = Boolean(item.children?.length);
+  const onlyLeafsAllowed = leafsOnly && hasChilds;
+  const limitReached = maxUsagesReached && !checked;
+  const title = onlyLeafsAllowed
+    ? "Only leaf nodes allowed"
+    : (limitReached ? `Maximum ${maxUsages} items already selected` : "");
 
   return (
     <div>
       <div className={styles.taxonomy__item}>
         <div className={styles.taxonomy__grouping} onClick={toggle}>{prefix}</div>
-        <label onClick={onClick}>
+        <label onClick={onClick} title={title}>
           <input
             type="checkbox"
-            disabled={leafsOnly && Boolean(item.children?.length)}
-            checked={selected.some(current => isArraysEqual(current, item.path))}
+            disabled={onlyLeafsAllowed || limitReached}
+            checked={checked}
             onChange={e => setSelected(item.path, e.currentTarget.checked)}
           />
           {item.label}
@@ -156,6 +169,12 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }:
     return [selected, setSelected];
   }, [selected]);
 
+  const optionsWithMaxUsages = useMemo(() => {
+    const maxUsagesReached = options.maxUsages ? selected.length >= options.maxUsages : false;
+
+    return { ...options, maxUsagesReached };
+  }, [options, options.maxUsages, options.maxUsages ? selected : 0]);
+
   useEffect(() => {
     setInternalSelected(externalSelected);
   }, [externalSelected]);
@@ -172,7 +191,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }:
 
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
-      <TaxonomyOptionsContext.Provider value={options}>
+      <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
         <div className={styles.taxonomy}>
           <SelectedList />
           <span onClick={() => !isOpen && setOpen(true)}>Click to add...</span>

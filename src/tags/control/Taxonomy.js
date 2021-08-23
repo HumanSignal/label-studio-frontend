@@ -172,6 +172,7 @@ const HtxTaxonomy = observer(({ item }) => {
     showFullPath: item.showfullpath,
     leafsOnly: item.leafsonly,
     pathSeparator: item.pathseparator,
+    maxUsages: item.maxusages,
   };
 
   return (
