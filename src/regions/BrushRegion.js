@@ -190,9 +190,7 @@ const Model = types
         if (ref) {
           ref.canvas._canvas.style.opacity = self.opacity;
         }
-        if (!isAlive(self) || !self.inSelection) {
-          self.layerRef = ref;
-        }
+        self.layerRef = ref;
       },
 
       prepareCoords([x, y]) {
