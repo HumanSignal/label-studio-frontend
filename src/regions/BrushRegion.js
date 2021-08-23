@@ -264,6 +264,30 @@ const Model = types
         }
       },
 
+      /**
+       * @example
+       * {
+       *   "original_width": 1920,
+       *   "original_height": 1280,
+       *   "image_rotation": 0,
+       *   "value": {
+       *     "format": "rle",
+       *     "rle": [0, 1, 1, 2, 3],
+       *     "brushlabels": ["Car"]
+       *   }
+       * }
+       * @typedef {Object} BrushRegionResult
+       * @property {number} original_width width of the original image (px)
+       * @property {number} original_height height of the original image (px)
+       * @property {number} image_rotation rotation degree of the image (deg)
+       * @property {Object} value
+       * @property {"rle"} value.format format of the masks, only RLE is supported for now
+       * @property {number[]} value.rle RLE-encoded image
+       */
+
+      /**
+       * @return {BrushRegionResult}
+       */
       serialize() {
         const object = self.object;
         const rle = Canvas.Region2RLE(self, object);
@@ -273,6 +297,7 @@ const Model = types
         const res = {
           original_width: object.naturalWidth,
           original_height: object.naturalHeight,
+          image_rotation: object.rotation,
           value: {
             format: "rle",
             // UInt8Array serializes as object, not an array :(

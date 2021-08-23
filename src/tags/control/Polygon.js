@@ -16,6 +16,8 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Polygon
+ * @meta_title Polygon Tags for Adding Polygons to Images
+ * @meta_description Label Studio Polygon Tags customize Label Studio for adding polygons to images for machine learning and data science projects.
  * @param {string} name                           - Name of tag
  * @param {string} toname                         - Name of image to label
  * @param {number} [opacity=0.6]                  - Opacity of polygon

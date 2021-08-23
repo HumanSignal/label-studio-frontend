@@ -21,6 +21,9 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name BrushLabels
+ * @regions BrushRegion
+ * @meta_title Brush Label Tags for Segmented Image Labeling
+ * @meta_description Label Studio Brush Label Tags customize Label Studio for segmented image labeling for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether the data labeler can select one or multiple labels

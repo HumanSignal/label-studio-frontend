@@ -14,6 +14,8 @@ import Registry from "../../core/Registry";
  *   </View>
  * </View>
  * @name Style
+ * @meta_title Style Tags to use CSS Styles
+ * @meta_description Label Studio Style Tags customize Label Studio with CSS Styles for machine learning and data science projects.
  */
 const Model = types.model({
   type: "style",

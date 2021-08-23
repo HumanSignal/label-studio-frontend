@@ -21,6 +21,8 @@ import ControlBase from "./Base";
  *   </Labels>
  * </View>
  * @name Relations
+ * @meta_title Relations Tags for Multiple Relations
+ * @meta_description Label Studio Relations Tags customize Label Studio for Multiple Relations for machine learning and data science projects.
  * @param {single|multiple=} [choice=single] Configure whether you can select one or multiple labels
  */
 const TagAttrs = types.model({

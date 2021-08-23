@@ -22,6 +22,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   </View>
  * </View>
  * @name View
+ * @meta_title View Tags for Defining How Blocks are Displayed
+ * @meta_description Label Studio View Tags customize how blocks are displayed in Label Studio for machine learning and data science projects.
  * @param {block|inline} display
  * @param {string} [style] CSS style string
  * @param {string} [className] - Class name of the css style to apply

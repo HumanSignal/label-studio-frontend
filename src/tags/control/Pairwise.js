@@ -24,6 +24,8 @@ import ControlBase from "./Base";
  *   </View>
  * </View>
  * @name Pairwise
+ * @meta_title Pairwise Tags to Compare Objects
+ * @meta_description Label Studio Pairwise Tags customize Label Studio with pairwise to compare objects for machine learning and data science projects.
  * @param {string} name               - Name of the element
  * @param {string} toName             - Names of the elements you want to compare, comma-separated
  * @param {string} [selectionStyle]   - Style of the selection
