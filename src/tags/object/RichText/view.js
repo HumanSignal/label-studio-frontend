@@ -20,7 +20,8 @@ class RichTextPieceView extends Component {
   _onMouseUp = () => {
     const { item } = this.props;
     const states = item.activeStates();
-    const root = item.rootNodeRef.current;
+    const rootEl = item.rootNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
@@ -44,6 +45,7 @@ class RichTextPieceView extends Component {
         item.addRegion(normedRange);
       },
       {
+        window: rootEl?.contentWindow ?? window,
         granularity: label?.granularity ?? item.granularity,
         beforeCleanup: () => (this._selectionMode = true),
       },
@@ -103,7 +105,8 @@ class RichTextPieceView extends Component {
     if (initial) {
       item.regs.forEach((richTextRegion) => {
         try {
-          const root = this.rootNodeRef.current;
+          const rootEl = this.rootNodeRef.current;
+          const root = rootEl?.contentDocument?.body ?? rootEl;
           const { start, startOffset, end, endOffset } = richTextRegion;
           const range = xpath.toRange(start, startOffset, end, endOffset, root);
           const [soff, eoff] = rangeToGlobalOffset(range, root);
@@ -147,6 +150,21 @@ class RichTextPieceView extends Component {
     this._handleUpdate();
   }
 
+  onLoad = () => {
+    const body = this.rootNodeRef.current.contentDocument.body;
+    const eventHandlers = {
+      click: [this._onRegionClick, true],
+      mouseup: [this._onMouseUp, false],
+      mouseover: [this._onRegionMouseOver, true],
+    };
+
+    for (let event in eventHandlers) {
+      body.addEventListener(event, ...eventHandlers[event]);
+    }
+
+    this._handleUpdate();
+  }
+
   render() {
     const { item } = this.props;
 
@@ -164,18 +182,19 @@ class RichTextPieceView extends Component {
 
     return (
       <ObjectTag item={item}>
-        <div
+        <iframe
           ref={this.rootNodeRef}
           style={{ overflow: "auto" }}
           className="htx-richtext"
-          dangerouslySetInnerHTML={{ __html: val }}
+          srcDoc={val}
+          onLoad={this.onLoad}
           {...eventHandlers}
         />
-        <div
+        <iframe
           ref={this.originalContentRef}
           className="htx-richtext-orig"
           style={{ display: 'none' }}
-          dangerouslySetInnerHTML={{ __html: val }}
+          srcDoc={val}
         />
       </ObjectTag>
     );

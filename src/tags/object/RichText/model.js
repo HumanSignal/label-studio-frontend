@@ -214,10 +214,12 @@ const Model = types
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+      const rootEl = self.rootNodeRef.current;
+      const root = rootEl?.contentDocument?.body ?? rootEl;
 
       area._range = range._range;
 
-      const [soff, eoff] = rangeToGlobalOffset(range._range, self.rootNodeRef.current);
+      const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
       if (range.isText) {
         area.updateOffsets(soff, eoff);
