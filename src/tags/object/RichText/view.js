@@ -176,6 +176,13 @@ class RichTextPieceView extends Component {
       onMouseOverCapture: this._onRegionMouseOver,
     };
 
+    const style = {
+      border: "none",
+      width: "100%",
+      minHeight: "60vh",
+      overflow: "auto",
+    };
+
     const content = item._value || "";
     const newLineReplacement = "<br/>";
     const val = (item.type === 'text' ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
@@ -184,7 +191,7 @@ class RichTextPieceView extends Component {
       <ObjectTag item={item}>
         <iframe
           ref={this.rootNodeRef}
-          style={{ overflow: "auto" }}
+          style={style}
           className="htx-richtext"
           srcDoc={val}
           onLoad={this.onLoad}
