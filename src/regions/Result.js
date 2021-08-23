@@ -45,6 +45,7 @@ const Result = types
       "ellipselabels",
       "timeserieslabels",
       "choices",
+      "number",
       "taxonomy",
       "textarea",
       "rating",
@@ -52,6 +53,7 @@ const Result = types
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      number: types.maybe(types.number),
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.string)),
