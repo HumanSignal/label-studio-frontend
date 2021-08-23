@@ -1,7 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import DropdownTreeSelect from "react-dropdown-tree-select";
 
 import Infomodal from "../../components/Infomodal/Infomodal";
 import { Taxonomy } from "../../components/Taxonomy/Taxonomy";
@@ -162,10 +161,6 @@ const Model = types
 
 const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, VisibilityMixin, AnnotationMixin);
 
-function searchPredicate(node, searchTerm = "") {
-  return !node.disabled && node.label?.toLowerCase().includes(searchTerm.toLowerCase());
-}
-
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
   const options = {
@@ -182,16 +177,6 @@ const HtxTaxonomy = observer(({ item }) => {
         selected={item.selectedValues()}
         onChange={item.onChange}
         options={options}
-      />
-      <DropdownTreeSelect
-        key={item.maxUsagesReached}
-        mode={item.leafsonly ? "hierarchical" : "multiSelect"}
-        data={item.traverse(item.children)}
-        onChange={item.onChange}
-        texts={{ placeholder: "Click to add..." }}
-        inlineSearchInput
-        searchPredicate={searchPredicate}
-        showPartiallySelected
       />
     </div>
   );
