@@ -13,8 +13,6 @@ import VisibilityMixin from "../../mixins/Visibility";
 import { isArraysEqual } from "../../utils/utilities";
 import ControlBase from "./Base";
 
-import "react-dropdown-tree-select/dist/styles.css";
-
 /**
  * Taxonomy tag allows to select one or more hierarchical labels
  * storing both label and their ancestors.
