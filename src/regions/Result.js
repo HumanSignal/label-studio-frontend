@@ -2,6 +2,7 @@ import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
+import { isDefined } from "../utils/utilities";
 
 const Result = types
   .model("Result", {
@@ -219,7 +220,7 @@ const Result = types
       // cut off annotation id
       const id = self.area.cleanId;
 
-      if (!data.value) data.value = {};
+      if (!isDefined(data.value)) data.value = {};
 
       const contolMeta = self.from_name.metaValue;
 
@@ -237,7 +238,9 @@ const Result = types
       }
 
       Object.assign(data, { id, from_name, to_name, type });
-      value[valueType] && Object.assign(data.value, { [valueType]: value[valueType] });
+      if (isDefined(value[valueType])) {
+        Object.assign(data.value, { [valueType]: value[valueType] });
+      }
       if (typeof score === "number") data.score = score;
 
       return data;

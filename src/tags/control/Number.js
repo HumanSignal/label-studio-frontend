@@ -23,8 +23,10 @@ import ControlBase from "./Base";
  * @name Number
  * @param {string} name                       - Name of the element
  * @param {string} toName                     - Name of the element that you want to label
- * @param {number} [max=5]                    - Maximum number value
- * @param {number} [defaultValue=0]           - Default number value
+ * @param {number} [min]                      - Minimum number value
+ * @param {number} [max]                      - Maximum number value
+ * @param {number} [step=1]                   - Step for value increment/decrement
+ * @param {number} [defaultValue]             - Default number value
  * @param {string} hotkey                     - HotKey for increasing number value
  * @param {boolean} [required=false]          - Whether number validation is required
  * @param {string} [requiredMessage]          - Message to show if validation fails
@@ -34,8 +36,10 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
 
+  min: types.maybeNull(types.string),
   max: types.maybeNull(types.string),
-  defaultvalue: types.optional(types.string, "0"),
+  step: types.maybeNull(types.string),
+  defaultvalue: types.maybeNull(types.string),
 
   hotkey: types.maybeNull(types.string),
 });
@@ -77,6 +81,7 @@ const Model = types
 
     needsUpdate() {
       if (self.result) self.number = self.result.mainValue;
+      else if (isDefined(self.defaultvalue)) self.setNumber(+self.defaultvalue);
       else self.number = null;
     },
 
@@ -105,8 +110,8 @@ const Model = types
       if (!isNaN(value)) self.setNumber(value);
     },
 
-    updateFromResult(value) {
-      self.number = value;
+    updateFromResult() {
+      this.needsUpdate();
     },
 
     requiredModal() {
@@ -140,8 +145,10 @@ const HtxNumber = inject("store")(
       <div style={visibleStyle}>
         <input
           type="number"
-          name={item.name} 
-          value={item.number}
+          name={item.name}
+          value={item.number ?? 0}
+          step={item.step ?? 1}
+          min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
           defaultValue={Number(item.defaultvalue)}
           onChange={item.onChange}
