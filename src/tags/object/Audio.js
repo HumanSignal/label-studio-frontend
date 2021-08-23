@@ -32,6 +32,9 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   <Audio name="audio" value="$audio" />
  *   <TextArea name="ta" toName="audio" />
  * </View>
+ * @regions AudioRegion
+ * @meta_title Audio Tags for Labeling Audio
+ * @meta_description Label Studio Audio Tags customize Label Studio for labeling audio for machine learning and data science projects.
  * @name Audio
  * @param {string} name Name of the element
  * @param {string} value Value of the element

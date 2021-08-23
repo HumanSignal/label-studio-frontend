@@ -12,6 +12,8 @@ import Registry from "../../core/Registry";
  *   <Table name="text-1" value="$text"></Table>
  * </View>
  * @name Table
+ * @meta_title Table Tags to Display Keys & Values in Tables
+ * @meta_description Label Studio Table Tags customize Label Studio by Displaying Keys & Values in Tables for machine learning and data science projects.
  * @param {string} value
  */
 const Model = types

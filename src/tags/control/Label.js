@@ -27,6 +27,8 @@ import Types from "../../core/Types";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
+ * @meta_title Label Tags for Single Label Tags
+ * @meta_description Label Studio Label Tags customize Label Studio with single label tags for machine learning and data science projects.
  * @param {string} value                    - Value of the label
  * @param {boolean} [selected=false]        - Whether to preselect this label
  * @param {number} [maxUsages]              - Maximum available uses of the label

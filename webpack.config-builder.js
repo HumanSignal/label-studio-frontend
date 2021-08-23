@@ -192,13 +192,14 @@ const devServer = () => {
     devServer: {
       compress: true,
       hot: true,
-      port: 9000,
-      stats: "normal",
-      contentBase: path.join(__dirname, "public"),
+      port: 3000,
+      static: {
+        directory: path.join(__dirname, "public")
+      },
       historyApiFallback: {
         index: "./public/index.html",
       },
-    },
+    }
   } : {};
 };
 
@@ -257,7 +258,11 @@ module.exports = ({withDevServer = true} = {}) => ({
   mode: DEFAULT_NODE_ENV || "development",
   devtool: sourceMap,
   ...(withDevServer ? devServer() : {}),
-  entry: path.resolve(__dirname, "src/index.js"),
+  entry: {
+    main: [
+      path.resolve(__dirname, "src/index.js"),
+    ],
+  },
   output: {
     path: path.resolve(workingDirectory),
     filename: "main.js",
@@ -270,7 +275,10 @@ module.exports = ({withDevServer = true} = {}) => ({
       timers: require.resolve("timers-browserify"),
     },
   },
-  plugins: plugins,
+  plugins: withDevServer ? [
+    ...plugins,
+    new webpack.HotModuleReplacementPlugin(),
+  ] : plugins,
   optimization: optimizer(),
   performance: {
     maxEntrypointSize: Infinity,
