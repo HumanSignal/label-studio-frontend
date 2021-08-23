@@ -16,6 +16,8 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Ellipse
+ * @meta_title Ellipse Tags for Adding Elliptical Bounding Box to Images
+ * @meta_description Label Studio Ellipse Tags customize Label Studio to add elliptical bounding boxes to images for machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {float} [opacity=0.6]          - Opacity of ellipse

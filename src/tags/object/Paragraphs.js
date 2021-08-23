@@ -25,8 +25,15 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @example
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
+ *   <ParagraphLabels name="importance" toName="dialogue-1">
+ *     <Label value="Important Stuff"></Label>
+ *     <Label value="Random talk"></Label>
+ *   </ParagraphLabels>
  * </View>
  * @name Paragraphs
+ * @regions ParagraphsRegion
+ * @meta_title Paragraph Tags for Paragraphs
+ * @meta_description Label Studio Paragraph Tags customize Label Studio for paragraphs for machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} value                 - Value of the element
  * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL
