@@ -65,6 +65,8 @@ Scenario("NER labeling for HyperText", async function({ I }) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
+  // create regions inside iframe
+  I.switchTo("iframe");
   I.pressKey("1");
   I.click("[data-testid=r1-start]");
   I.pressKeyDown("Shift");
@@ -72,13 +74,12 @@ Scenario("NER labeling for HyperText", async function({ I }) {
   I.pressKeyUp("Shift");
 
   I.pressKey("2");
-  I.doubleClick(".lsf-main-view b:nth-child(2)");
+  I.doubleClick("b:nth-child(2)");
 
   I.click("[data-testid=r1-mid]");
-  // @todo this hotkey doesn't work. why?
-  // I.pressKey('r')
-  I.click("Create Relation");
-  I.click(".lsf-main-view b:nth-child(2)");
+  I.pressKey('r');
+  I.click("b:nth-child(2)");
+  I.switchTo();
 
   I.see("Relations (1)");
 
