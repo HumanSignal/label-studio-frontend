@@ -150,13 +150,29 @@ class RichTextPieceView extends Component {
     this._handleUpdate();
   }
 
+  _passHotkeys = e => {
+    const props = "key code keyCode location ctrlKey shiftKey altKey metaKey".split(" ");
+    const init = {};
+
+    for (let prop of props) init[prop] = e[prop];
+
+    const internal = new KeyboardEvent(e.type, init);
+
+    document.dispatchEvent(internal);
+  }
+
   onLoad = () => {
-    const body = this.rootNodeRef.current.contentDocument.body;
+    const body = this.rootNodeRef.current?.contentDocument?.body;
     const eventHandlers = {
       click: [this._onRegionClick, true],
+      keydown: [this._passHotkeys, false],
+      keyup: [this._passHotkeys, false],
+      keypress: [this._passHotkeys, false],
       mouseup: [this._onMouseUp, false],
       mouseover: [this._onRegionMouseOver, true],
     };
+
+    if (!body) return;
 
     for (let event in eventHandlers) {
       body.addEventListener(event, ...eventHandlers[event]);
@@ -190,6 +206,7 @@ class RichTextPieceView extends Component {
     return (
       <ObjectTag item={item}>
         <iframe
+          sandbox="allow-same-origin allow-scripts"
           ref={this.rootNodeRef}
           style={style}
           className="htx-richtext"
@@ -198,6 +215,7 @@ class RichTextPieceView extends Component {
           {...eventHandlers}
         />
         <iframe
+          sandbox="allow-same-origin allow-scripts"
           ref={this.originalContentRef}
           className="htx-richtext-orig"
           style={{ display: 'none' }}
