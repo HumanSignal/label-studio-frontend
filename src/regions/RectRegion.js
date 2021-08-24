@@ -144,6 +144,14 @@ const Model = types
       self.rotation = (rotation + 360) % 360;
     },
 
+    setTextAfterResize() {
+      if (self.results[1]) { //modify our injected results if present
+        const foundText = getRoot(self).task.getTextFromBbox(self.x, self.y, self.width, self.height);
+
+        self.results[1].value.text = [foundText];
+      }
+    },
+
     setScale(x, y) {
       self.scaleX = x;
       self.scaleY = y;
@@ -236,6 +244,8 @@ const HtxRectangleView = ({ item }) => {
 
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
+
+          item.setTextAfterResize();
         }}
         onDragStart={e => {
           if (item.parent.getSkipInteractions()) {
