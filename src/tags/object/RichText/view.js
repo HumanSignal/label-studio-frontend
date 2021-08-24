@@ -188,7 +188,9 @@ class RichTextPieceView extends Component {
 
     const content = item._value || "";
     const newLineReplacement = "<br/>";
-    const val = (item.type === 'text' ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
+    const val = item.type === 'text'
+      ? htmlEscape(content).replace(/\n|\r/g, newLineReplacement)
+      : content;
 
     if (item.inline) {
       const style = { overflow: "auto" };
