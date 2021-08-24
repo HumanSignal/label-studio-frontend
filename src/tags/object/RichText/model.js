@@ -34,6 +34,7 @@ const WARNING_MESSAGES = {
  * @param {string} name                                   - name of the element
  * @param {string} value                                  - value of the element
  * @param {url|text} [valueType=url|text]                – source of the data
+ * @param {boolean} [inline=false]                        - whether to embed html directly to LS or use iframe (only HyperText)
  * @param {boolean} [saveTextResult=true]                 – whether or not to save selected text to the serialized data
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
  * @param {boolean} [clickableLinks=false]                 – allow annotator to open resources from links
@@ -48,6 +49,8 @@ const TagAttrs = types.model("RichTextModel", {
 
   /** Defines the type of data to be shown */
   valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
+
+  inline: false,
 
   /** Whether or not to save selected text to the serialized data */
   savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
@@ -158,6 +161,8 @@ const Model = types
     afterCreate() {
       self._regionsCache = [];
 
+      if (self.type === "text") self.inline = true;
+
       // security measure, if valuetype is set to url then LS
       // doesn't save the text into the result, otherwise it does
       // can be aslo directly configured
@@ -214,10 +219,12 @@ const Model = types
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+      const rootEl = self.rootNodeRef.current;
+      const root = rootEl?.contentDocument?.body ?? rootEl;
 
       area._range = range._range;
 
-      const [soff, eoff] = rangeToGlobalOffset(range._range, self.rootNodeRef.current);
+      const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
       if (range.isText) {
         area.updateOffsets(soff, eoff);
