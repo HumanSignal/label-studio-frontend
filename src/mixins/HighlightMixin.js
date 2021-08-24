@@ -19,7 +19,9 @@ export const HighlightMixin = types
      */
     applyHighlight() {
       // Avoid calling this method twice
-      if (self._hasSpans) {
+      // spans in iframe disappear on every annotation switch, so check for it
+      // in iframe spans still isConnected, but window is missing
+      if (self._hasSpans && self._spans[0]?.ownerDocument?.defaultView) {
         console.warn("Spans already created");
         return;
       }
