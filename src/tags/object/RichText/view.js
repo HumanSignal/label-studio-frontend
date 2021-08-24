@@ -161,7 +161,7 @@ class RichTextPieceView extends Component {
     document.dispatchEvent(internal);
   }
 
-  onLoad = () => {
+  onIFrameLoad = () => {
     const body = this.rootNodeRef.current?.contentDocument?.body;
     const eventHandlers = {
       click: [this._onRegionClick, true],
@@ -186,43 +186,62 @@ class RichTextPieceView extends Component {
 
     if (!item._value) return null;
 
-    const eventHandlers = {
-      onClickCapture: this._onRegionClick,
-      onMouseUp: this._onMouseUp,
-      onMouseOverCapture: this._onRegionMouseOver,
-    };
-
-    const style = {
-      border: "none",
-      width: "100%",
-      minHeight: "60vh",
-      overflow: "auto",
-    };
-
     const content = item._value || "";
     const newLineReplacement = "<br/>";
     const val = (item.type === 'text' ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
 
-    return (
-      <ObjectTag item={item}>
-        <iframe
-          sandbox="allow-same-origin allow-scripts"
-          ref={this.rootNodeRef}
-          style={style}
-          className="htx-richtext"
-          srcDoc={val}
-          onLoad={this.onLoad}
-          {...eventHandlers}
-        />
-        <iframe
-          sandbox="allow-same-origin allow-scripts"
-          ref={this.originalContentRef}
-          className="htx-richtext-orig"
-          style={{ display: 'none' }}
-          srcDoc={val}
-        />
-      </ObjectTag>
-    );
+    if (item.inline) {
+      const style = { overflow: "auto" };
+      const eventHandlers = {
+        onClickCapture: this._onRegionClick,
+        onMouseUp: this._onMouseUp,
+        onMouseOverCapture: this._onRegionMouseOver,
+      };
+
+      return (
+        <ObjectTag item={item}>
+          <div
+            ref={this.rootNodeRef}
+            style={style}
+            className="htx-richtext"
+            dangerouslySetInnerHTML={{ __html: val }}
+            {...eventHandlers}
+          />
+          <div
+            ref={this.originalContentRef}
+            className="htx-richtext-orig"
+            style={{ display: 'none' }}
+            dangerouslySetInnerHTML={{ __html: val }}
+          />
+        </ObjectTag>
+      );
+    } else {
+      const style = {
+        border: "none",
+        width: "100%",
+        minHeight: "60vh",
+      };
+
+      return (
+        <ObjectTag item={item}>
+          <iframe
+            sandbox="allow-same-origin allow-scripts"
+            ref={this.rootNodeRef}
+            style={style}
+            className="htx-richtext"
+            srcDoc={val}
+            onLoad={this.onIFrameLoad}
+          />
+          <iframe
+            sandbox="allow-same-origin allow-scripts"
+            ref={this.originalContentRef}
+            className="htx-richtext-orig"
+            style={{ display: 'none' }}
+            srcDoc={val}
+          />
+        </ObjectTag>
+      );
+    }
   }
 }
 
