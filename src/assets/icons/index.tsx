@@ -33,3 +33,4 @@ export { default as IconMinifyTool } from './minify-tool.svg';
 export { default as IconMoveTool } from './move-tool.svg';
 export { default as IconRotateLeftTool } from './rotate-left-tool.svg';
 export { default as IconRotateRightTool } from './rotate-right-tool.svg';
+export { default as IconInfo } from './info.svg';

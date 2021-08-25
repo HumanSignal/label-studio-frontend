@@ -19,12 +19,15 @@ export const HighlightMixin = types
      */
     applyHighlight() {
       // Avoid calling this method twice
-      if (self._hasSpans) {
+      // spans in iframe disappear on every annotation switch, so check for it
+      // in iframe spans still isConnected, but window is missing
+      if (self._hasSpans && self._spans[0]?.ownerDocument?.defaultView) {
         console.warn("Spans already created");
         return;
       }
 
       const range = self.rangeFromGlobalOffset();
+      const root = self._getRootNode();
 
       // Avoid rendering before view is ready
       if (!range) {
@@ -34,7 +37,7 @@ export const HighlightMixin = types
 
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
-      const stylesheet = createSpanStylesheet(identifier, labelColor);
+      const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
 
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
@@ -204,7 +207,7 @@ const stateClass = {
  * @param {string} identifier GUID identifier of a region
  * @param {string} color Default label color
  */
-const createSpanStylesheet = (identifier, color) => {
+const createSpanStylesheet = (document, identifier, color) => {
   const className = `.htx-highlight-${identifier}`;
   const variables = {
     color: `--background-color-${identifier}`,

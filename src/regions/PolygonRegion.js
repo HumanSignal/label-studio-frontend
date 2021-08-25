@@ -217,6 +217,28 @@ const Model = types
       }
     },
 
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "points": [[2, 2], [3.5, 8.1], [3.5, 12.6]],
+     *     "polygonlabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} PolygonRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number[][]} value.points list of (x, y) coordinates of the polygon by percentage of the image size (0-100)
+     */
+
+    /**
+     * @return {PolygonRegionResult}
+     */
     serialize() {
       if (self.points.length < 3) return null;
       return {

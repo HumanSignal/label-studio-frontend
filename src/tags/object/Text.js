@@ -24,9 +24,16 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * In any case every space counts for result offsets.
  * @example
  * <View>
- *   <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ *   <Text name="text-1" value="$text" granularity="word" highlightColor="#ff0000" />
+ *   <Labels name="ner" toName="text-1">
+ *     <Label value="Person" />
+ *     <Label value="Location" />
+ *   </Labels>
  * </View>
  * @name Text
+ * @regions TextRegion
+ * @meta_title Text Tags for Text Objects
+ * @meta_description Label Studio Text Tags customize Label Studio for Text for machine learning and data science projects.
  * @param {string} name                      - name of the element
  * @param {string} value                     - data field with text or url
  * @param {url|text} [valueType]             - where is the text stored — directly in task or should be loaded by url
@@ -68,36 +75,36 @@ const Model = types
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
-    get hasStates () {
+    get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
     },
 
-    get regs () {
+    get regs() {
       return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
-    states () {
+    states() {
       return self.annotation.toNames.get(self.name);
     },
 
-    activeStates () {
+    activeStates() {
       const states = self.states();
 
       return states && states.filter(s => s.isSelected && s.type === "labels");
     },
   }))
   .actions(self => ({
-    setRef (ref) {
+    setRef(ref) {
       self._ref = ref;
     },
 
-    needsUpdate () {
+    needsUpdate() {
       self._update = self._update + 1;
     },
 
-    updateValue (store) {
+    updateValue(store) {
       const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
@@ -136,7 +143,7 @@ const Model = types
       }
     },
 
-    loadedValue (val) {
+    loadedValue(val) {
       self.loaded = true;
       if (self.encoding === "base64") val = atob(val);
       if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
@@ -152,7 +159,7 @@ const Model = types
       self._regionsCache = [];
     },
 
-    afterCreate () {
+    afterCreate() {
       self._regionsCache = [];
 
       // security measure, if valuetype is set to url then LS
@@ -164,7 +171,7 @@ const Model = types
       }
     },
 
-    createRegion (p) {
+    createRegion(p) {
       const r = TextRegionModel.create(p);
 
       r._range = p._range;
@@ -180,7 +187,7 @@ const Model = types
       return r;
     },
 
-    addRegion (range) {
+    addRegion(range) {
       range.start = range.startOffset;
       range.end = range.endOffset;
 
@@ -201,7 +208,7 @@ const Model = types
      * @param {*} obj
      * @param {*} fromModel
      */
-    fromStateJSON (obj, fromModel) {
+    fromStateJSON(obj, fromModel) {
       let r;
       let m;
 
@@ -256,7 +263,7 @@ const Model = types
 const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxTextView extends Component {
-  render () {
+  render() {
     const { item, store } = this.props;
 
     if (!item._value) return null;
@@ -266,12 +273,12 @@ class HtxTextView extends Component {
 }
 
 class TextPieceView extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.myRef = React.createRef();
   }
 
-  getValue () {
+  getValue() {
     const { item, store } = this.props;
 
     let val = parseValue(item.value, store.task.dataObj);
@@ -282,7 +289,7 @@ class TextPieceView extends Component {
     return val;
   }
 
-  alignWord (r, start, end) {
+  alignWord(r, start, end) {
     const val = this.getValue();
     const strleft = val.substring(0, start);
     const r2 = r.cloneRange();
@@ -330,7 +337,7 @@ class TextPieceView extends Component {
     return r2;
   }
 
-  alignRange (r) {
+  alignRange(r) {
     const item = this.props.item;
     // there is should be at least one selected label
     const label = item.activeStates()[0].selectedLabels[0];
@@ -347,7 +354,7 @@ class TextPieceView extends Component {
     }
   }
 
-  captureDocumentSelection (ev) {
+  captureDocumentSelection(ev) {
     var i,
       self = this,
       ranges = [],
@@ -412,11 +419,11 @@ class TextPieceView extends Component {
     return ranges;
   }
 
-  onClick () {
+  onClick() {
     // console.log('click');
   }
 
-  onMouseUp (ev) {
+  onMouseUp(ev) {
     const item = this.props.item;
 
     if (!item.selectionenabled) return;
@@ -441,11 +448,11 @@ class TextPieceView extends Component {
     }
   }
 
-  _handleUpdate () {
+  _handleUpdate() {
     const root = this.myRef;
     const { item } = this.props;
 
-    item.regs.forEach(function (r) {
+    item.regs.forEach(function(r) {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -505,11 +512,11 @@ class TextPieceView extends Component {
     });
   }
 
-  componentDidUpdate () {
+  componentDidUpdate() {
     this._handleUpdate();
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this._handleUpdate();
 
     const ref = this.myRef;
@@ -520,7 +527,7 @@ class TextPieceView extends Component {
     }
   }
 
-  render () {
+  render() {
     const { item } = this.props;
 
     if (!item.loaded) return null;

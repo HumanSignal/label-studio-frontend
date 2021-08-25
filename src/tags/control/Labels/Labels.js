@@ -27,6 +27,8 @@ import "../Label";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Labels
+ * @meta_title Labels Tags for Label Groups
+ * @meta_description Label Studio Labels Tags customize Label Studio with label groups for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the element that you want to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels

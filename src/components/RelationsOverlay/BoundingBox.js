@@ -58,18 +58,21 @@ export class BoundingBox {
 
 const imageRelatedBBox = (region, bbox) => {
   const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
-
-  return Geometry.clampBBox({
-    ...bbox,
-    x: imageBbox.x + bbox.x,
-    y: imageBbox.y + bbox.y,
-  },
-  { x:0, y:0 },
-  { x:region.parent.stageWidth, y:region.parent.stageHeight },
+  const clampedBbox = Geometry.clampBBox(bbox,
+    { x:0, y:0 },
+    { x:region.parent.stageWidth, y:region.parent.stageHeight },
   );
+
+  return {
+    ...clampedBbox,
+    x: imageBbox.x + clampedBbox.x,
+    y: imageBbox.y + clampedBbox.y,
+  };
 };
 
 const stageRelatedBBox = (region, bbox) => {
+  // If there is no stageRef we just wait for it in the next renders
+  if (!region.parent?.stageRef) return null;
   const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
   const transformedBBox = Geometry.clampBBox(
     Geometry.modifyBBoxCoords(bbox, region.parent.zoomOriginalCoords),
@@ -92,7 +95,20 @@ const _detect = region => {
     case "audioregion":
     case "paragraphs":
     case "timeseriesregion": {
-      return Geometry.getDOMBBox(region.getRegionElement());
+      const regionBbox = Geometry.getDOMBBox(region.getRegionElement());
+      const container = region.parent?.rootNodeRef?.current;
+
+      if (container?.tagName === "IFRAME") {
+        const iframeBbox = Geometry.getDOMBBox(container, true);
+
+        return regionBbox.map(bbox => ({
+          ...bbox,
+          x: bbox.x + iframeBbox.x,
+          y: bbox.y + iframeBbox.y,
+        }));
+      }
+
+      return regionBbox;
     }
     case "rectangleregion": {
       return stageRelatedBBox(
@@ -121,7 +137,8 @@ const _detect = region => {
       };
     }
     case "brushregion": {
-      return imageRelatedBBox(
+      // If there is no imageData we just wait for the next render
+      return region.imageData && imageRelatedBBox(
         region,
         Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
       );

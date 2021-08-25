@@ -132,6 +132,7 @@ class App extends Component {
 
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
+    const taskData = this.props.store.task?.data;
 
     return (
       <RelationsOverlay
@@ -139,6 +140,7 @@ class App extends Component {
         store={store}
         ref={this.relationsRef}
         tags={selectedStore.names}
+        taskData={taskData}
       />
     );
   }

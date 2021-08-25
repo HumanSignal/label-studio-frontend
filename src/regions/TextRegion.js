@@ -20,23 +20,42 @@ const Model = types
     text: "", // text is optional, for example in secureMode
   })
   .views(self => ({
-    get parent () {
+    get parent() {
       return self.object;
     },
-    getRegionElement () {
+    getRegionElement() {
       return self._spans?.[0];
     },
   }))
   .actions(self => ({
-    beforeDestroy () {
+    beforeDestroy() {
       Utils.HTML.removeSpans(self._spans);
     },
 
-    setText (text) {
+    setText(text) {
       self.text = text;
     },
 
-    serialize () {
+    /**
+     * @example
+     * {
+     *   "value": {
+     *     "start": 2,
+     *     "end": 81,
+     *     "labels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} TextRegionResult
+     * @property {Object} value
+     * @property {string} value.start position of the start of the region in characters
+     * @property {string} value.end position of the end of the region in characters
+     * @property {string} [value.text] text content of the region, can be skipped
+     */
+
+    /**
+     * @return {TextRegionResult}
+     */
+    serialize() {
       let res = {
         value: {
           start: self.start,
