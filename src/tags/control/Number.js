@@ -80,8 +80,11 @@ const Model = types
     },
 
     needsUpdate() {
+      // don't use defaultValue before deserialization
+      const initial = self.annotation._initialAnnotationObj;
+
       if (self.result) self.number = self.result.mainValue;
-      else if (isDefined(self.defaultvalue)) self.setNumber(+self.defaultvalue);
+      else if (isDefined(self.defaultvalue) && !initial) self.setNumber(+self.defaultvalue);
       else self.number = null;
     },
 
