@@ -17,19 +17,18 @@ import ControlBase from "./Base";
  * @example
  * <View>
  *   <Text name="txt" value="$text" />
- *   <DateTime name="datetime" toName="txt" />
+ *   <DateTime name="datetime" toName="txt" only="date" />
  * </View>
  *
  * @name DateTime
- * @param {string} name                       - Name of the element
- * @param {string} toName                     - Name of the element that you want to label
- * @param {string} only                       - Comma-separated list of parts to display (day, month, year, date, time)
- * @param {string} [min]                      - Minimum datetime value
- * @param {string} [max]                      - Maximum datetime value
- * @param {string} [defaultValue]             - Default datetime value
- * @param {boolean} [required=false]          - Whether datetime is required or not
- * @param {string} [requiredMessage]          - Message to show if validation fails
- * @param {boolean} [perRegion]               - Use this tag to label regions instead of the whole object
+ * @param {string} name              - Name of the element
+ * @param {string} toName            - Name of the element that you want to label
+ * @param {string} only              - Comma-separated list of parts to display (date, time)
+ * @param {string} [min]             - Minimum datetime value
+ * @param {string} [max]             - Maximum datetime value
+ * @param {boolean} [required=false] - Whether datetime is required or not
+ * @param {string} [requiredMessage] - Message to show if validation fails
+ * @param {boolean} [perRegion]      - Use this tag to label regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,
