@@ -110,6 +110,11 @@ const Model = types
     unselectAll() {},
 
     setDateTime(value) {
+      if (!self.showDate) {
+        self.time = value;
+        return;
+      }
+
       const [date, time] = value.split(/T| /);
 
       self.date = date;
