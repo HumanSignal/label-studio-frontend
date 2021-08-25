@@ -3,8 +3,9 @@ import { Button } from "../../common/Button/Button";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
-import "./Controls.styl";
 import { IconBan } from "../../assets/icons";
+
+import "./Controls.styl";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -20,7 +21,14 @@ const ButtonTooltip = inject("store")(observer(({ store, title, children }) => {
   );
 }));
 
-export const Controls = inject("store")(observer(({ store, annotation }) => {
+const controlsInjector = inject(({ store }) => {
+  return {
+    store,
+    history: store?.annotationStore?.selected?.history,
+  };
+});
+
+export const Controls = controlsInjector(observer(({ store, history, annotation }) => {
   const isReview = store.hasInterface("review");
   const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
