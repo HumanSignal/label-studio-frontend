@@ -26,7 +26,6 @@ import ControlBase from "./Base";
  * @param {string} only                       - Comma-separated list of parts to display (day, month, year, date, time)
  * @param {string} [min]                      - Minimum datetime value
  * @param {string} [max]                      - Maximum datetime value
- * @param {number} [step=1]                   - Step for value increment/decrement
  * @param {string} [defaultValue]             - Default datetime value
  * @param {boolean} [required=false]          - Whether datetime is required or not
  * @param {string} [requiredMessage]          - Message to show if validation fails
@@ -160,6 +159,7 @@ const HtxDateTime = inject("store")(
       style: { width: "auto" },
       className: "ant-input",
     };
+    const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
 
     return (
       <div style={visibleStyle}>
@@ -169,9 +169,8 @@ const HtxDateTime = inject("store")(
             type="date"
             name={item.name + "-date"}
             value={item.date}
-            // step={item.step ?? 1}
-            // min={isDefined(item.min) ? Number(item.min) : undefined}
-            // max={isDefined(item.max) ? Number(item.max) : undefined}
+            min={item.min}
+            max={item.max}
             // defaultValue={Number(item.defaultvalue)}
             onChange={item.onDateChange}
           />
@@ -182,6 +181,8 @@ const HtxDateTime = inject("store")(
             type="time"
             name={item.name + "-time"}
             value={item.time}
+            min={minTime}
+            max={maxTime}
             onChange={item.onTimeChange}
           />
         )}
