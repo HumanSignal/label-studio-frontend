@@ -4,12 +4,12 @@ import { types } from "mobx-state-tree";
 import { IconBrushTool } from '../assets/icons';
 
 import BaseTool from "./Base";
-import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
 import { Tool } from "../components/Toolbar/Tool";
+import { Range } from "../common/Range/Range";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -18,14 +18,22 @@ const ToolView = observer(({ item }) => {
       active={item.selected}
       icon={<IconBrushTool />}
       onClick={() => {
-        const sel = item.selected;
+        if (item.selected) return;
 
-        item.manager.selectTool(item, !sel);
-      }}
-      onChange={val => {
-        item.setStroke(val);
         item.manager.selectTool(item, true);
       }}
+      controls={[
+        <Range
+          key="brush-size"
+          value={item.strokeWidth}
+          min={10}
+          max={50}
+          onChange={(value) => {
+            item.setStroke(value);
+            item.manager.selectTool(item, true);
+          }}
+        />,
+      ]}
     />
   );
 });

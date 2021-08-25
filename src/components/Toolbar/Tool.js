@@ -8,6 +8,7 @@ export const Tool = ({
   active = false,
   disabled = false,
   expanded = false,
+  controls,
   icon,
   label,
   shortcut,
@@ -40,6 +41,11 @@ export const Tool = ({
         <Elem name="label">{label} {shortcutView}</Elem>
       ) : (isDefined(label) || isDefined(shortcutView)) && (
         <Elem name="tooltip">{label} {shortcutView}</Elem>
+      )}
+      {controls?.length && active && (
+        <Elem name="controls">
+          {controls}
+        </Elem>
       )}
     </Block>
   );
