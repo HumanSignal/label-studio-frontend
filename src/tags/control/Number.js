@@ -151,10 +151,15 @@ const NumberModel = types.compose("NumberModel", ControlBase, TagAttrs, Model, R
 const HtxNumber = inject("store")(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+    const visual = {
+      style: { width: "auto" },
+      className: "ant-input",
+    };
 
     return (
       <div style={visibleStyle}>
         <input
+          {...visual}
           type="number"
           name={item.name}
           value={item.number ?? item.defaultvalue ?? 0}

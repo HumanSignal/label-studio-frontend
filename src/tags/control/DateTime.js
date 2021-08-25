@@ -156,11 +156,16 @@ const DateTimeModel = types.compose("DateTimeModel", ControlBase, TagAttrs, Mode
 const HtxDateTime = inject("store")(
   observer(({ item }) => {
     const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+    const visual = {
+      style: { width: "auto" },
+      className: "ant-input",
+    };
 
     return (
       <div style={visibleStyle}>
         {item.showDate && (
           <input
+            {...visual}
             type="date"
             name={item.name + "-date"}
             value={item.date}
@@ -173,6 +178,7 @@ const HtxDateTime = inject("store")(
         )}
         {item.showTime && (
           <input
+            {...visual}
             type="time"
             name={item.name + "-time"}
             value={item.time}
