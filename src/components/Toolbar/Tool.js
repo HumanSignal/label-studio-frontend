@@ -32,11 +32,15 @@ export const Tool = ({
   }, [shortcut]);
 
   return (
-    <Tooltip title={label} enabled={isDefined(label) && !expanded}>
-      <Block name="tool" mod={{ active, disabled }} onClick={onClick}>
+    <Block name="tool" mod={{ active, disabled }} onClick={onClick}>
+      <Elem name="icon">
         {icon}
-        {expanded && (<Elem name="label">{label} {shortcutView}</Elem>)}
-      </Block>
-    </Tooltip>
+      </Elem>
+      {expanded ? (
+        <Elem name="label">{label} {shortcutView}</Elem>
+      ) : (isDefined(label) || isDefined(shortcutView)) && (
+        <Elem name="tooltip">{label} {shortcutView}</Elem>
+      )}
+    </Block>
   );
 };

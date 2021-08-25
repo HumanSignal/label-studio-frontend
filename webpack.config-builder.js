@@ -199,6 +199,9 @@ const devServer = () => {
       historyApiFallback: {
         index: "./public/index.html",
       },
+      client: {
+        overlay: false,
+      }
     }
   } : {};
 };

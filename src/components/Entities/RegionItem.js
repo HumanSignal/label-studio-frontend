@@ -91,9 +91,8 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
               size="small"
               type="text"
               mod={{ active: !item.hidden }}
-              icon={item.hidden ? <LsInvisible/> : <LsVisible/>}
               onClick={item.toggleHidden}
-            />
+            >{item.hidden ? <LsInvisible/> : <LsVisible/>}</Elem>
           )}
 
         </Space>
