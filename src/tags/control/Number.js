@@ -80,12 +80,15 @@ const Model = types
     },
 
     needsUpdate() {
-      // don't use defaultValue before deserialization
-      const initial = !self.annotation._initialAnnotationObj;
-
       if (self.result) self.number = self.result.mainValue;
-      else if (isDefined(self.defaultvalue) && !initial) self.setNumber(+self.defaultvalue);
       else self.number = null;
+    },
+
+    beforeSend() {
+      // add defaultValue to results for top-level controls
+      if (!isDefined(self.number) && isDefined(self.defaultvalue) && !self.perRegion) {
+        self.setNumber(+self.defaultvalue);
+      }
     },
 
     unselectAll() {},
@@ -149,7 +152,7 @@ const HtxNumber = inject("store")(
         <input
           type="number"
           name={item.name}
-          value={item.number ?? 0}
+          value={item.number ?? item.defaultvalue ?? 0}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
