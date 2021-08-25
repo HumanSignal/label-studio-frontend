@@ -14,4 +14,10 @@
   </Choices>
   <Header value="Listen the audio:"></Header>
   <AudioPlus name="audio" value="$url"></AudioPlus>
+  <Header>How many instruments in this audio?</Header>
+  <Number name="overall" toName="audio" defaultValue="2" />
+  <View visibleWhen="region-selected">
+    <Header>And in this fragment?</Header>
+    <Number name="fragment" toName="audio" perRegion="true" />
+  </View>
 </View>

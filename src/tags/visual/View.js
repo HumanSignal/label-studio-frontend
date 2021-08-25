@@ -51,6 +51,7 @@ const Model = types
       "taxonomy",
       "choices",
       "choice",
+      "number",
       "rating",
       "ranker",
       "rectangle",
