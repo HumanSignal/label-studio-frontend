@@ -168,7 +168,7 @@ const HtxDateTime = inject("store")(
             {...visual}
             type="date"
             name={item.name + "-date"}
-            value={item.date}
+            value={item.date ?? ""}
             min={item.min}
             max={item.max}
             // defaultValue={Number(item.defaultvalue)}
@@ -180,7 +180,7 @@ const HtxDateTime = inject("store")(
             {...visual}
             type="time"
             name={item.name + "-time"}
-            value={item.time}
+            value={item.time ?? ""}
             min={minTime}
             max={maxTime}
             onChange={item.onTimeChange}
