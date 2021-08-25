@@ -61,8 +61,22 @@ const Model = types
       return isDefined(self.date) || isDefined(self.time);
     },
 
+    get showDate() {
+      return !self.only || self.only !== "time";
+    },
+
+    get showTime() {
+      return !self.only || self.only.includes("time");
+    },
+
     get datetime() {
-      return (self.date || (new Date).toISOString().substr(0, 10)) + "T" + (self.time || "00:00");
+      // @todo use format
+      const parts = [];
+
+      if (self.showDate) parts.push(self.date || (new Date).toISOString().substr(0, 10));
+      if (self.showTime) parts.push(self.time || "00:00");
+
+      return parts.join("T");
     },
 
     get result() {
@@ -145,17 +159,26 @@ const HtxDateTime = inject("store")(
 
     return (
       <div style={visibleStyle}>
-        <input
-          type="date"
-          name={item.name + "-date"}
-          value={item.date}
-          // step={item.step ?? 1}
-          // min={isDefined(item.min) ? Number(item.min) : undefined}
-          // max={isDefined(item.max) ? Number(item.max) : undefined}
-          // defaultValue={Number(item.defaultvalue)}
-          onChange={item.onDateChange}
-        />
-        <input type="time" name={item.name + "-time"} value={item.time} onChange={item.onTimeChange}/>
+        {item.showDate && (
+          <input
+            type="date"
+            name={item.name + "-date"}
+            value={item.date}
+            // step={item.step ?? 1}
+            // min={isDefined(item.min) ? Number(item.min) : undefined}
+            // max={isDefined(item.max) ? Number(item.max) : undefined}
+            // defaultValue={Number(item.defaultvalue)}
+            onChange={item.onDateChange}
+          />
+        )}
+        {item.showTime && (
+          <input
+            type="time"
+            name={item.name + "-time"}
+            value={item.time}
+            onChange={item.onTimeChange}
+          />
+        )}
       </div>
     );
   }),
