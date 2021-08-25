@@ -6,6 +6,7 @@ import { KeyPointLabelsModel } from "./KeyPointLabels";
 import { KeyPointModel } from "./KeyPoint";
 import { LabelsModel } from "./Labels/Labels";
 import { ListModel } from "./List";
+import { NumberModel } from "./Number";
 import { PairwiseModel } from "./Pairwise";
 import { PolygonLabelsModel } from "./PolygonLabels";
 import { PolygonModel } from "./Polygon";
@@ -34,6 +35,7 @@ export {
   KeyPointLabelsModel,
   KeyPointModel,
   ListModel,
+  NumberModel,
   PairwiseModel,
   PolygonLabelsModel,
   PolygonModel,
