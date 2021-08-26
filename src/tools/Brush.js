@@ -28,6 +28,27 @@ const ToolView = observer(({ item }) => {
           value={item.strokeWidth}
           min={10}
           max={50}
+          step={5}
+          reverse
+          align="vertical"
+          minIcon={(
+            <span style={{
+              display: 'block',
+              width: 8,
+              height: 8,
+              background: 'rgba(0, 0, 0, 0.25)',
+              borderRadius: '100%',
+            }}/>
+          )}
+          maxIcon={(
+            <span style={{
+              display: 'block',
+              width: 16,
+              height: 16,
+              background: 'rgba(0, 0, 0, 0.25)',
+              borderRadius: '100%',
+            }}/>
+          )}
           onChange={(value) => {
             item.setStroke(value);
             item.manager.selectTool(item, true);
