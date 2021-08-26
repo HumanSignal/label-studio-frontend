@@ -159,6 +159,8 @@ const RelationStore = types
     deserializeRelation(node1, node2, direction, labels) {
       const rl = self.addRelation(node1, node2);
 
+      if (!rl) return; // duplicated relation
+
       rl.direction = direction;
 
       if (rl.relations && labels)
