@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 import React from "react";
 import { observer, inject } from "mobx-react";
 import { types } from "mobx-state-tree";
@@ -10,6 +11,10 @@ import PerRegionMixin from "../../mixins/PerRegion";
 import RequiredMixin from "../../mixins/Required";
 import { isDefined } from "../../utils/utilities";
 import ControlBase from "./Base";
+
+const FORMAT_FULL = "%Y-%m-%dT%H:%M";
+const FORMAT_DATE = "%Y-%m-%d";
+const FORMAT_TIME = "%H:%M";
 
 /**
  * DateTime adds date and time selection
@@ -24,6 +29,10 @@ import ControlBase from "./Base";
  * @param {string} name              - Name of the element
  * @param {string} toName            - Name of the element that you want to label
  * @param {string} only              - Comma-separated list of parts to display (date, time)
+ * @param {string} format                     - Input/output format for datetime (internally it's always ISO);
+ *        by default this is ISO with "T" separator when bot date and time parts enabled;
+ *        that's ISO date when only date is enabled;
+ *        that's just a 24h time with leading zero when only time is enabled
  * @param {string} [min]             - Minimum datetime value
  * @param {string} [max]             - Maximum datetime value
  * @param {boolean} [required=false] - Whether datetime is required or not
@@ -34,6 +43,7 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
 
+  format: types.maybeNull(types.string),
   only: types.maybeNull(types.string),
   min: types.maybeNull(types.string),
   max: types.maybeNull(types.string),
@@ -68,13 +78,13 @@ const Model = types
     },
 
     get datetime() {
-      // @todo use format
-      const parts = [];
+      if (!self.showDate) return self.time || "00:00";
+      if (!self.date) return null;
 
-      if (self.showDate) parts.push(self.date || (new Date).toISOString().substr(0, 10));
-      if (self.showTime) parts.push(self.time || "00:00");
+      const dateStr = `${self.date}T${self.time || "00:00"}`;
+      const date = new Date(dateStr);
 
-      return parts.join("T");
+      return self.formatDateTime(date);
     },
 
     get result() {
@@ -88,11 +98,29 @@ const Model = types
       return self.annotation.results.find(r => r.from_name === self);
     },
   }))
-  .actions(self => ({
-    getSelectedString() {
-      return self.datetime;
-    },
+  .volatile(self => {
+    const defaultFormatters = {
+      formatDate: d3.timeFormat(FORMAT_DATE),
+      formatTime: d3.timeFormat(FORMAT_TIME),
+    };
 
+    if (!self.showDate) {
+      return {
+        ...defaultFormatters,
+        formatDateTime: String,
+        parseDateTime: String,
+      };
+    }
+
+    const format = self.format ?? (self.showTime ? FORMAT_FULL : FORMAT_DATE);
+
+    return {
+      ...defaultFormatters,
+      formatDateTime: d3.timeFormat(format),
+      parseDateTime: d3.timeParse(format),
+    };
+  })
+  .actions(self => ({
     copyState(obj) {
       self.setDateTime(obj.datetime);
     },
@@ -108,16 +136,23 @@ const Model = types
 
     unselectAll() {},
 
+    resetDateTime() {
+      self.date = null;
+      self.time = null;
+    },
+
     setDateTime(value) {
       if (!self.showDate) {
         self.time = value;
         return;
       }
 
-      const [date, time] = value.split(/T| /);
+      const date = self.parseDateTime(value);
 
-      self.date = date;
-      self.time = time;
+      if (!date) return self.resetDateTime();
+
+      self.date = self.formatDate(date);
+      self.time = self.formatTime(date);
     },
 
     updateResult() {
