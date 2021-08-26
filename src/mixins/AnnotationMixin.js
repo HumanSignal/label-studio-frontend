@@ -1,4 +1,6 @@
-import { getRoot, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
+
+import Types from "../core/Types";
 
 export const AnnotationMixin = types.model("AnnotationMixin", {
 
@@ -10,12 +12,6 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
   },
 
   get annotationStore() {
-    const root = getRoot(self);
-
-    if (root === self) {
-      return getRoot(self.control).annotationStore;
-    }
-
-    return root.annotationStore;
+    return Types.getParentOfTypeString(self, "AnnotationStore");
   },
 }));
