@@ -1,7 +1,7 @@
 import Konva from "konva";
 import React from "react";
 import { Group, Line } from "react-konva";
-import { types, destroy, detach, getRoot } from "mobx-state-tree";
+import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
