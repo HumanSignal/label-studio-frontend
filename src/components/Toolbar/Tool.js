@@ -1,8 +1,15 @@
 import { Block, Elem } from "../../utils/bem";
-import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { isDefined } from "../../utils/utilities";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Fragment } from "react";
+import { Hotkey } from "../../core/Hotkey";
+
+const hotkeys = Hotkey("SegmentationToolbar");
+
+const keysDictionary = {
+  plus: "+",
+  minus: "-",
+};
 
 export const Tool = ({
   active = false,
@@ -14,6 +21,8 @@ export const Tool = ({
   shortcut,
   onClick,
 }) => {
+  const [currentShortcut, setCurrentShortcut] = useState(shortcut);
+
   const shortcutView = useMemo(() => {
     if (!isDefined(shortcut)) return null;
 
@@ -22,14 +31,36 @@ export const Tool = ({
     return (
       <Elem name="shortcut">
         {combos.map((combo, index) => {
+          const keys = combo.split("+");
+
           return (
-            <Fragment key={`${combo.join('-')}-${index}`}>
-              {combo.map(key => <kbd key={key}>{key}</kbd>)}
+            <Fragment key={`${keys.join('-')}-${index}`}>
+              {keys.map(key => {
+                return (
+                  <Elem name="key" tag="kbd" key={key}>{keysDictionary[key] ?? key}</Elem>
+                );
+              })}
             </Fragment>
           );
         })}
       </Elem>
     );
+  }, [shortcut]);
+
+  useEffect(() => {
+    const removeShortcuts = () => {
+      if (currentShortcut && hotkeys.hasKey()) hotkeys.removeKey(currentShortcut);
+    };
+
+    removeShortcuts();
+    setCurrentShortcut(shortcut);
+    if (shortcut && !hotkeys.hasKey(shortcut)) {
+      hotkeys.addKey(shortcut, () => {
+        onClick?.();
+      }, label);
+    }
+
+    return () => removeShortcuts();
   }, [shortcut]);
 
   return (

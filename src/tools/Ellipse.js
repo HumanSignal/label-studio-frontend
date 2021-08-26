@@ -6,7 +6,9 @@ import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
-  .model("EllipseTool")
+  .model("EllipseTool", {
+    group: "segmentation",
+  })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,

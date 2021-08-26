@@ -464,7 +464,7 @@ export default observer(
       const tools = item.getToolsManager().allTools();
 
       return (
-        <Toolbar tools={tools}/>
+        <Toolbar tools={tools} expanded/>
       );
     }
 

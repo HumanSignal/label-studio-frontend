@@ -13,7 +13,8 @@ const ToolView = observer(({ item }) => {
       <Tool
         active={item.selected}
         icon={<IconMoveTool />}
-        label="Move position"
+        label="Pan Image"
+        shortcut="M"
         onClick={() => {
           const sel = item.selected;
 
@@ -23,6 +24,7 @@ const ToolView = observer(({ item }) => {
       <Tool
         icon={<IconMagnifyTool />}
         label="Zoom into the image"
+        shortcut="alt+plus"
         onClick={() => {
           item.handleZoom(1);
         }}
@@ -30,6 +32,7 @@ const ToolView = observer(({ item }) => {
       <Tool
         icon={<IconMinifyTool />}
         label="Zoom out of the image"
+        shortcut="alt+minus"
         onClick={() => {
           item.handleZoom(-1);
         }}
@@ -41,6 +44,7 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
+    group: "control",
   })
   .views(self => ({
     get viewClass() {

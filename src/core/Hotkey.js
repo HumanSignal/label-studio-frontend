@@ -1,4 +1,5 @@
 import keymaster from "keymaster";
+import { isDefined } from "../utils/utilities";
 
 const DEFAULT_SCOPE = "__main__";
 const INPUT_SCOPE = "__input__";
@@ -26,6 +27,7 @@ export const Hotkey = () => {
      */
     addKey(key, func, desc, scope = DEFAULT_SCOPE) {
       if (_hotkeys_map[key]) {
+        console.warn(`Key already added: ${key}. It's possibly a bug.`);
         return;
       }
 
@@ -55,11 +57,16 @@ export const Hotkey = () => {
         .map(s => s.trim())
         .filter(Boolean)
         .forEach(scope => {
+          console.log(`Removed key ${key}`);
           keymaster.unbind(key, scope);
         });
 
       delete _hotkeys_map[key];
       delete _hotkeys_desc[key];
+    },
+
+    hasKey(key) {
+      return isDefined(_hotkeys_map[key]);
     },
 
     getKeys() {

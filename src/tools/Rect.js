@@ -7,7 +7,9 @@ import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
-  .model("RectTool")
+  .model("RectTool", {
+    group: "segmentation",
+  })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,

@@ -33,6 +33,7 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({
     threshold: types.optional(types.number, DEF_THRESHOLD),
+    group: "segmentation",
   })
   .views(self => ({
     get viewClass() {

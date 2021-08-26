@@ -5,6 +5,8 @@ import { AnnotationMixin } from "./AnnotationMixin";
 const ToolMixin = types
   .model({
     selected: types.optional(types.boolean, false),
+    group: types.optional(types.string, 'default'),
+    shortcut: types.optional(types.maybeNull(types.string), null),
   })
   .views(self => ({
     get obj() {

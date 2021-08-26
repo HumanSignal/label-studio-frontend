@@ -32,7 +32,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({})
+  .model({
+    group: "control",
+  })
   .views(self => ({
     get viewClass() {
       return <ToolView item={self} />;

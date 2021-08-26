@@ -60,14 +60,24 @@ export const Range = ({
     return value;
   }, [min, max, size]);
 
+  const increase = useCallback(() => {
+    if (multi) return;
+    updateValue(currentValue + step);
+  }, [step, multi, currentValue]);
+
+  const decrease = useCallback(() => {
+    if (multi) return;
+    updateValue(currentValue - step);
+  }, [step, multi, currentValue]);
+
   const sizeProperty = align === 'horizontal' ? 'minWidth' : 'minHeight';
 
   return (
     <Block name="range" mod={{ align }} style={{ [sizeProperty]: size }}>
       {reverse ? (
-        maxIcon && <Elem name="icon">{maxIcon}</Elem>
+        maxIcon && <Elem name="icon" onMouseDown={increase}>{maxIcon}</Elem>
       ) : (
-        minIcon && <Elem name="icon">{minIcon}</Elem>
+        minIcon && <Elem name="icon" onMouseDown={decrease}>{minIcon}</Elem>
       )}
       <Elem name="body">
         <Elem name="line"></Elem>
@@ -114,9 +124,9 @@ export const Range = ({
         )}
       </Elem>
       {reverse ? (
-        minIcon && <Elem name="icon">{minIcon}</Elem>
+        minIcon && <Elem name="icon" onMouseDown={decrease}>{minIcon}</Elem>
       ) : (
-        maxIcon && <Elem name="icon">{maxIcon}</Elem>
+        maxIcon && <Elem name="icon" onMouseDown={increase}>{maxIcon}</Elem>
       )}
     </Block>
   );

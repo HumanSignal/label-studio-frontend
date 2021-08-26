@@ -7,7 +7,10 @@ import { NodeViews } from "../components/Node/Node";
 import { observe } from "mobx";
 
 const _Tool = types
-  .model("PolygonTool")
+  .model("PolygonTool", {
+    group: "segmentation",
+    shortcut: "P",
+  })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,
@@ -85,7 +88,7 @@ const _Tool = types
             self.finishDrawing();
           }
         }, true);
-      }, 
+      },
       closeCurrent() {
         if (disposer) disposer();
         if (closed) return;

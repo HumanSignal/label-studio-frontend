@@ -8,6 +8,8 @@ import { DrawingTool } from "../mixins/DrawingTool";
 const _Tool = types
   .model({
     default: types.optional(types.boolean, true),
+    group: "segmentation",
+    shortcut: "K",
   })
   .views(() => ({
     get tagTypes() {

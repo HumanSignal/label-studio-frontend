@@ -14,6 +14,8 @@ import { Tool } from "../components/Toolbar/Tool";
 const ToolView = observer(({ item }) => {
   return (
     <Tool
+      label="Eraser"
+      shortcut="E"
       active={item.selected}
       onClick={() => {
         const sel = item.selected;
@@ -26,7 +28,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({})
+  .model({
+    group: "eraser",
+  })
   .views(self => ({
     get viewClass() {
       return <ToolView item={self} />;

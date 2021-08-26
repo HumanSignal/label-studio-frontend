@@ -32,21 +32,27 @@
     top 50%
     right calc(100% + 10px)
     padding 4px 10px
-    display flex
     display none
     font-size 12px
+    align-items center
     position absolute
     border-radius 5px
     white-space nowrap
+    user-select none
+    font-weight 500
+    font-size 14px
+    color rgba(0, 0, 0, 0.4)
     background-color #fff
     transform translate3d(0, -50%, 0)
     box-shadow 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 5px 10px rgba(0, 0, 0, 0.1)
 
     ~/:hover &
       display flex
+      color #000
 
     ~/_active &
       display none
+      color #000
 
   &__controls
     top 50%
@@ -57,3 +63,28 @@
     right calc(100% + 10px)
     transform translate3d(0, -50%, 0)
     box-shadow 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 5px 10px rgba(0, 0, 0, 0.1)
+
+  &__shortcut
+    opacity 0.6
+    display flex
+    font-size 12px
+    margin-left 20px
+    font-weight bold
+    color rgba(0, 0, 0, 0.6)
+
+    ~/_active &,
+    ~/:hover &
+      opacity 1
+
+  &__key
+    padding 0 4px
+    height 16px
+    display flex
+    align-items center
+    background #FFFFFF
+    border-radius 2px
+    text-transform uppercase
+    box-shadow 0px 0px 0px 1px rgba(0, 0, 0, 0.1), 0px 1px 0px rgba(0, 0, 0, 0.08)
+
+  &__key + &__key
+    margin-left 2px

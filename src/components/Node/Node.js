@@ -5,12 +5,7 @@ import {
   FontColorsOutlined,
   AudioOutlined,
   MessageOutlined,
-  BlockOutlined,
-  GatewayOutlined,
   LineChartOutlined,
-  Loading3QuartersOutlined,
-  EyeOutlined,
-  HighlightOutlined,
   ApartmentOutlined
 } from "@ant-design/icons";
 

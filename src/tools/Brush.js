@@ -11,11 +11,25 @@ import { DrawingTool } from "../mixins/DrawingTool";
 import { Tool } from "../components/Toolbar/Tool";
 import { Range } from "../common/Range/Range";
 
+const IconDot = ({ size }) => {
+  return (
+    <span style={{
+      display: 'block',
+      width: size,
+      height: size,
+      background: 'rgba(0, 0, 0, 0.25)',
+      borderRadius: '100%',
+    }}/>
+  );
+};
+
 const ToolView = observer(({ item }) => {
   return (
     <Tool
+      label="Brush"
       value={item.strokeWidth}
       active={item.selected}
+      shortcut={item.shortcut}
       icon={<IconBrushTool />}
       onClick={() => {
         if (item.selected) return;
@@ -28,27 +42,10 @@ const ToolView = observer(({ item }) => {
           value={item.strokeWidth}
           min={10}
           max={50}
-          step={5}
           reverse
           align="vertical"
-          minIcon={(
-            <span style={{
-              display: 'block',
-              width: 8,
-              height: 8,
-              background: 'rgba(0, 0, 0, 0.25)',
-              borderRadius: '100%',
-            }}/>
-          )}
-          maxIcon={(
-            <span style={{
-              display: 'block',
-              width: 16,
-              height: 16,
-              background: 'rgba(0, 0, 0, 0.25)',
-              borderRadius: '100%',
-            }}/>
-          )}
+          minIcon={<IconDot size={8}/>}
+          maxIcon={<IconDot size={16}/>}
           onChange={(value) => {
             item.setStroke(value);
             item.manager.selectTool(item, true);
@@ -62,6 +59,8 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model({
     strokeWidth: types.optional(types.number, 10),
+    group: "segmentation",
+    shortcut: "B",
   })
   .views(self => ({
     get viewClass() {
