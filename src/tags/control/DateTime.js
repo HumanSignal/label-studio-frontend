@@ -29,7 +29,7 @@ const FORMAT_TIME = "%H:%M";
  * @param {string} name              - Name of the element
  * @param {string} toName            - Name of the element that you want to label
  * @param {string} only              - Comma-separated list of parts to display (date, time)
- * @param {string} format                     - Input/output format for datetime (internally it's always ISO);
+ * @param {string} format                     - Input/output strftime format for datetime (internally it's always ISO);
  *        by default this is ISO with "T" separator when bot date and time parts enabled;
  *        that's ISO date when only date is enabled;
  *        that's just a 24h time with leading zero when only time is enabled
@@ -57,8 +57,6 @@ const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
     type: "datetime",
-    date: types.maybeNull(types.string),
-    time: types.maybeNull(types.string),
   })
   .views(self => ({
     selectedValues() {
@@ -70,15 +68,27 @@ const Model = types
     },
 
     get showDate() {
-      return !self.only || self.only !== "time";
+      return !self.only || self.only.includes("date");
     },
 
     get showTime() {
       return !self.only || self.only.includes("time");
     },
 
+    get onlyTime() {
+      return self.only === "time";
+    },
+
+    get showMonth() {
+      return self.only?.includes("month") && !self.only?.includes("date");
+    },
+
+    get showYear() {
+      return self.only?.includes("year") && !self.only?.includes("date");
+    },
+
     get datetime() {
-      if (!self.showDate) return self.time || "00:00";
+      if (self.onlyTime) return self.time || "00:00";
       if (!self.date) return null;
 
       const dateStr = `${self.date}T${self.time || "00:00"}`;
@@ -98,27 +108,36 @@ const Model = types
       return self.annotation.results.find(r => r.from_name === self);
     },
   }))
+  .volatile(() => ({
+    date: null,
+    time: null,
+    formatDate: d3.timeFormat(FORMAT_DATE),
+    formatTime: d3.timeFormat(FORMAT_TIME),
+  }))
   .volatile(self => {
-    const defaultFormatters = {
-      formatDate: d3.timeFormat(FORMAT_DATE),
-      formatTime: d3.timeFormat(FORMAT_TIME),
-    };
+    let format;
 
-    if (!self.showDate) {
-      return {
-        ...defaultFormatters,
-        formatDateTime: String,
-        parseDateTime: String,
-      };
-    }
-
-    const format = self.format ?? (self.showTime ? FORMAT_FULL : FORMAT_DATE);
+    if (self.onlyTime) format = String; // don't format only=time
+    else if (self.format) format = self.format;
+    else if (!self.showTime) format = FORMAT_DATE;
+    else format = FORMAT_FULL;
 
     return {
-      ...defaultFormatters,
       formatDateTime: d3.timeFormat(format),
       parseDateTime: d3.timeParse(format),
     };
+  })
+  .volatile(() => {
+    const months = [];
+    const monthName = d3.timeFormat("%B");
+    const date = new Date("2021-01-13");
+
+    for (let m = 0; m < 12; m++) {
+      date.setMonth(m);
+      months[m] = monthName(date);
+    }
+
+    return { months };
   })
   .actions(self => ({
     copyState(obj) {
@@ -142,7 +161,7 @@ const Model = types
     },
 
     setDateTime(value) {
-      if (!self.showDate) {
+      if (self.onlyTime) {
         self.time = value;
         return;
       }
@@ -168,6 +187,26 @@ const Model = types
           self.annotation.createResult({}, { datetime: self.datetime }, self, self.toname);
         }
       }
+    },
+
+    setDatePart(index, value) {
+      const now = self.formatDate(new Date);
+      const date = self.date ?? now;
+      const parts = date.split("-");
+      const defaultParts = now.split("-");
+
+      parts[index] = value || defaultParts[index];
+      self.date = parts.join("-");
+
+      self.updateResult();
+    },
+
+    onMonthChange(e) {
+      self.setDatePart(1, e.target.value);
+    },
+
+    onYearChange(e) {
+      self.setDatePart(0, e.target.value);
     },
 
     onDateChange(e) {
@@ -202,6 +241,19 @@ const HtxDateTime = inject("store")(
 
     return (
       <div style={visibleStyle}>
+        {item.showMonth && (
+          <select
+            name={item.name + "-date"}
+            onChange={item.onMonthChange}
+          >
+            <option value="">Select month...</option>
+            {item.months.map((month, index) => (
+              <option key={month} value={`${index < 9 ? "0" : ""}${index + 1}`}>
+                {month}
+              </option>
+            ))}
+          </select>
+        )}
         {item.showDate && (
           <input
             {...visual}
