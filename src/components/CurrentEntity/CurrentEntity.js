@@ -59,7 +59,7 @@ export const CurrentEntity = injector(observer(({
     const pasteHandler = (ev) =>{
       const selection = window.getSelection();
 
-      if (Node.ELEMENT_NODE === selection.focusNode.nodeType && selection.focusNode.focus) return;
+      if (Node.ELEMENT_NODE === selection.focusNode?.nodeType && selection.focusNode?.focus) return;
 
       pasteFromClipboard(ev);
     };
