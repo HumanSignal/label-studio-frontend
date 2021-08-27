@@ -1,19 +1,20 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import * as d3 from "d3";
 import ObjectBase from "../Base";
 import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
-import { getOptimalWidth, getRegionColor, fixMobxObserve, sparseValues, checkD3EventLoop } from "./helpers";
+import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from "./helpers";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { TagParentMixin } from "../../../mixins/TagParentMixin";
 
 /**
  * Channel tag can be used to label time series data
  * @name Channel
+ * @subtag
  * @param {string} column column name or index
  * @param {string} [legend] display name of the channel
  * @param {string} [units] display units name

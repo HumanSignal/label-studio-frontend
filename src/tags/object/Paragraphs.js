@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import { Button } from "antd";
 import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
@@ -12,7 +12,7 @@ import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
 import { restoreNewsnapshot } from "../../core/Helpers";
-import { splitBoundaries, findNodeAt, matchesSelector } from "../../utils/html";
+import { findNodeAt, matchesSelector, splitBoundaries } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";
@@ -26,8 +26,15 @@ import { isSelectionContainsSpan } from "../../utils/selection-tools";
  * @example
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
+ *   <ParagraphLabels name="importance" toName="dialogue-1">
+ *     <Label value="Important Stuff"></Label>
+ *     <Label value="Random talk"></Label>
+ *   </ParagraphLabels>
  * </View>
  * @name Paragraphs
+ * @regions ParagraphsRegion
+ * @meta_title Paragraph Tags for Paragraphs
+ * @meta_description Label Studio Paragraph Tags customize Label Studio for paragraphs for machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} value                 - Value of the element
  * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL

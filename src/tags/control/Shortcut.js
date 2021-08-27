@@ -1,7 +1,7 @@
 import React from "react";
 import { Tag } from "antd";
-import { observer, inject } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getParent, types } from "mobx-state-tree";
 
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
@@ -18,6 +18,8 @@ import { Hotkey } from "../../core/Hotkey";
  *   </TextArea>
  * </View>
  * @name Shortcut
+ * @meta_title Shortcut Tags to Define Shortcuts
+ * @meta_description Label Studio Shortcut Tags customize Label Studio to define keyboard shortcuts and hotkeys for machine learning and data science projects.
  * @param {string} value    - A value of the shortcut
  * @param {string} [alias]  - Shortcut alias
  * @param {string} [hotkey] - Hotkey

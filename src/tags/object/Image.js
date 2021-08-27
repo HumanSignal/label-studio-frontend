@@ -1,4 +1,4 @@
-import { types, getType, getRoot, destroy, getParent } from "mobx-state-tree";
+import { destroy, getParent, getRoot, getType, types } from "mobx-state-tree";
 import { inject } from "mobx-react";
 
 import * as Tools from "../../tools";
@@ -23,13 +23,11 @@ import { guidGenerator } from "../../utils/unique";
  * @example
  * <View>
  *   <!-- Take the image url from the url column in JSON/CSV -->
- *   <Image value="$url"></Image>
- * </View>
- * @example
- * <View>
- *   <Image value="https://imgflip.com/s/meme/Leonardo-Dicaprio-Cheers.jpg" width="100%" maxWidth="750px" />
+ *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
  * @name Image
+ * @meta_title Image Tags for Images
+ * @meta_description Label Studio Image Tags customize Label Studio for images for machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} value                      - Value
  * @param {string=} [width=100%]              - Image width

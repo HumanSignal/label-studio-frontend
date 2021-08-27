@@ -1,8 +1,8 @@
 import React, { forwardRef, useCallback, useEffect, useRef } from "react";
-import { Form, Input, Button } from "antd";
+import { Button, Form, Input } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react";
-import { types, destroy, isAlive } from "mobx-state-tree";
+import { destroy, isAlive, types } from "mobx-state-tree";
 
 import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import RequiredMixin from "../../../mixins/Required";
@@ -28,6 +28,8 @@ const { TextArea } = Input;
  *   <TextArea name="ta"></TextArea>
  * </View>
  * @name TextArea
+ * @meta_title Textarea Tags for Text areas
+ * @meta_description Label Studio Textarea Tags customize Label Studio for text areas and transcriptions for machine learning and data science projects.
  * @param {string} name                    - Name of the element
  * @param {string} toName                  - Name of the element that you want to label
  * @param {string} value                   - Pre-filled value

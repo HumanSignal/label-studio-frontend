@@ -2,7 +2,7 @@ import React from "react";
 import arrayMove from "array-move";
 import { List } from "antd";
 import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
@@ -65,6 +65,8 @@ const RankerItemModel = types
  *   }]
  * }]
  * @name Ranker
+ * @meta_title Ranker Tags for Model Ranking
+ * @meta_description Label Studio Ranker Tags customize Label Studio for model ranking for machine learning and data science projects.
  * @param {string} name                 - Name of group
  * @param {y|x=} [axis=y]               - Axis direction
  * @param {x|y} lockAxis                - Lock axis

@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -11,7 +11,7 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
+import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
@@ -191,6 +191,35 @@ const Model = types
       }
     },
 
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "x": 3.1,
+     *     "y": 8.2,
+     *     "radiusX": 20,
+     *     "radiusY": 16,
+     *     "ellipselabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} EllipseRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number} value.x x coordinate of the top left corner before rotation (0-100)
+     * @property {number} value.y y coordinate of the top left corner before rotation (0-100)
+     * @property {number} value.radiusX radius by x axis (0-100)
+     * @property {number} value.radiusY radius by y axis (0-100)
+     * @property {number} value.rotation rotation degree (deg)
+     */
+
+    /**
+     * @return {EllipseRegionResult}
+     */
     serialize() {
       const res = {
         original_width: self.parent.naturalWidth,

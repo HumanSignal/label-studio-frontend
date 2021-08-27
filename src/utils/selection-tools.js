@@ -211,7 +211,7 @@ const boundarySelection = (selection, boundary) => {
  */
 export const captureSelection = (
   callback,
-  { granularity, beforeCleanup } = {
+  { granularity, beforeCleanup, window } = {
     granularity: "symbol",
   },
 ) => {
@@ -278,7 +278,7 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
 
   if (isTextNode(startNode)) return startNode;
 
-  const walker = document.createTreeWalker(commonContainer, NodeFilter.SHOW_ALL);
+  const walker = commonContainer.ownerDocument.createTreeWalker(commonContainer, NodeFilter.SHOW_ALL);
   let currentNode = walker.nextNode();
   let lastTextNode;
 
@@ -383,7 +383,7 @@ export const highlightRangePart = (container, startOffset, endOffset, classNames
    * to maintain proper nesting of highlight nodes
    */
   if (startOffset === 0 && container.length === endOffset && parent.classList.contains(classNames[0])) {
-    const placeholder = document.createElement("span");
+    const placeholder = container.ownerDocument.createElement("span");
     const parentNode = parent.parentNode;
 
     parentNode.replaceChild(placeholder, parent);
@@ -393,7 +393,7 @@ export const highlightRangePart = (container, startOffset, endOffset, classNames
     // Extract text content that matches offsets
     const content = text.substring(startOffset, endOffset);
     // Create text node that will be highlighted
-    const highlitedNode = document.createTextNode(content);
+    const highlitedNode = container.ownerDocument.createTextNode(content);
 
     // Split the container in three parts
     const noseNode = container.cloneNode();
@@ -406,7 +406,7 @@ export const highlightRangePart = (container, startOffset, endOffset, classNames
     // To avoid weird dom mutation we assemble replacement
     // beforehands, it allows to replace original node
     // directly without extra work
-    const textFragment = document.createDocumentFragment();
+    const textFragment = container.ownerDocument.createDocumentFragment();
 
     spanHighlight = wrapWithSpan(highlitedNode, classNames);
 
@@ -430,7 +430,7 @@ export const highlightRangePart = (container, startOffset, endOffset, classNames
  * @param {string} [label]
  */
 export const wrapWithSpan = (node, classNames, label) => {
-  const highlight = document.createElement("span");
+  const highlight = node.ownerDocument.createElement("span");
 
   highlight.appendChild(node);
 
@@ -468,7 +468,7 @@ export const findNodesBetween = (startNode, endNode, root) => {
   // Also we iterate over Text nodes only natively. That's
   // the only type of nodes we need to highlight.
   // No additional checks, long live TreeWalker :)
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+  const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   // Flag indicates that we're somwhere between `startNode` and `endNode`
   let inRange = false;
@@ -494,7 +494,7 @@ export const findNodesBetween = (startNode, endNode, root) => {
  */
 export const removeRange = spans => {
   spans.forEach(hl => {
-    const fragment = document.createDocumentFragment();
+    const fragment = hl.ownerDocument.createDocumentFragment();
     const parent = hl.parentNode;
 
     // Fill replacement fragment
@@ -536,7 +536,7 @@ export const findRange = (start, end, root) => {
 export const findRangeNative = (start, end, root) => {
   const { startContainer, endContainer } = findRange(start, end, root);
 
-  const range = document.createRange();
+  const range = (root.contentDocument ?? root.ownerDocument).createRange();
 
   range.setStart(startContainer.node, startContainer.position);
   range.setEnd(endContainer.node, endContainer.position);
@@ -550,7 +550,7 @@ export const findRangeNative = (start, end, root) => {
  * @param {number} position
  */
 export const findOnPosition = (root, position, borderSide = "left") => {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+  const walker = (root.contentDocument ?? root.ownerDocument).createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   let lastPosition = 0;
   let currentNode = walker.nextNode();
@@ -599,7 +599,7 @@ export const rangeToGlobalOffset = (range, root) => {
  * @param {Node} root
  */
 const findGlobalOffset = (node, position, root) => {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+  const walker = (root.contentDocument ?? root.ownerDocument).createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   let globalPosition = 0;
   let nodeReached = false;

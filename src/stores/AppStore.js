@@ -1,6 +1,6 @@
 /* global LSF_VERSION */
 
-import { types, getEnv } from "mobx-state-tree";
+import { getEnv, types } from "mobx-state-tree";
 
 import AnnotationStore from "./AnnotationStore";
 import { Hotkey } from "../core/Hotkey";

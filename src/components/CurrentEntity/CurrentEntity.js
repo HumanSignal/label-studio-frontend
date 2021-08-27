@@ -1,6 +1,6 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { LsSettings, LsTrash } from "../../assets/icons";
+import { IconInfo, LsSettings, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
 import { Space } from "../../common/Space/Space";
@@ -48,7 +48,7 @@ export const CurrentEntity = injector(observer(({
         return;
       }
     };
-    
+
     const copyHandler = (ev) =>{
       const selection = window.getSelection();
 
@@ -70,7 +70,7 @@ export const CurrentEntity = injector(observer(({
 
       copyToClipboard(ev);
       entity.deleteSelectedRegions();
-      
+
       console.log("Window event: cutHandler", ev);
     };
 
@@ -92,23 +92,38 @@ export const CurrentEntity = injector(observer(({
           {showGroundTruth && <GroundTruth entity={entity}/>}
         </Space>
 
-        {store.hasInterface("annotations:add-new") && saved && (
-          <Tooltip title={`Create copy of this ${entity.type}`}>
-            <Button size="small" look="ghost" onClick={(ev) => {
-              ev.preventDefault();
+        <Space size="small">
+          {store.hasInterface("annotations:add-new") && saved && (
+            <Tooltip title={`Create copy of this ${entity.type}`}>
+              <Button size="small" look="ghost" onClick={(ev) => {
+                ev.preventDefault();
 
-              const cs = store.annotationStore;
-              const c = cs.addAnnotationFromPrediction(entity);
+                const cs = store.annotationStore;
+                const c = cs.addAnnotationFromPrediction(entity);
 
-              // this is here because otherwise React doesn't re-render the change in the tree
-              window.setTimeout(function() {
-                store.annotationStore.selectAnnotation(c.id);
-              }, 50);
-            }}>
-              Create Copy
-            </Button>
-          </Tooltip>
-        )}
+                // this is here because otherwise React doesn't re-render the change in the tree
+                window.setTimeout(function() {
+                  store.annotationStore.selectAnnotation(c.id);
+                }, 50);
+              }}>
+                Create Copy
+              </Button>
+            </Tooltip>
+          )}
+
+          {store.description && store.hasInterface('instruction') && (
+            <Button
+              primary={store.showingDescription}
+              icon={<IconInfo style={{ width: 16, height: 16 }}/>}
+              kind="link"
+              size="small"
+              style={{ padding: 0, width: 32 }}
+              onClick={() => {
+                store.toggleDescription();
+              }}
+            />
+          )}
+        </Space>
       </Elem>
 
       <Space spread style={{ margin: "8px 0" }}>

@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot, getType } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, getType, types } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectTag from "../../components/Tags/Object";
@@ -19,13 +19,15 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @example
  * <View>
  *   <Labels name="lbl-1" toName="audio-1">
- *     <Label value="Hello" />
- *     <Label value="World" />
+ *     <Label value="Guitar" />
+ *     <Label value="Drums" />
  *   </Labels>
  *   <Rating name="rate-1" toName="audio-1" />
  *   <AudioPlus name="audio-1" value="$audio" />
  * </View>
  * @name AudioPlus
+ * @meta_title
+ * @meta_description
  * @param {string} name - Name of the element
  * @param {string} value - Value of the element
  * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
