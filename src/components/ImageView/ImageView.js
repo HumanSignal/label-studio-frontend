@@ -41,11 +41,11 @@ const splitRegions = (regions) => {
   };
 };
 
-const Region = memo(({ region, showSelected }) => {
+const Region = memo(({ region, showSelected = false }) => {
   return useObserver(()=>(region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
 });
 
-const RegionsLayer = memo(({ regions, name, useLayers, showSelected }) => {
+const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
   const content = regions.map((el) => (
     <Region key={`region-${el.id}`} region={el} showSelected={showSelected}/>
   ));
