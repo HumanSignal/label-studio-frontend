@@ -1,4 +1,4 @@
-import { types, destroy } from "mobx-state-tree";
+import { destroy, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Result from "../regions/Result";
 import { defaultStyle } from "../core/Constants";

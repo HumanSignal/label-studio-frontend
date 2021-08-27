@@ -4,9 +4,8 @@ import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { SelectOutlined } from "@ant-design/icons";
-import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
 
-const _Tool = types.model("SelectionTool").views(self => {
+const _Tool = types.model("SelectionTool").views(() => {
   return {
     get isSeparated() {
       return true;
@@ -22,6 +21,10 @@ const _Tool = types.model("SelectionTool").views(self => {
   let isSelecting = false;
 
   return {
+    shouldSkipInteractions() {
+      return false;
+    },
+
     mousedownEv(ev, [x, y]) {
       isSelecting = true;
       self.obj.setSelectionStart({ x, y });
@@ -44,9 +47,6 @@ const _Tool = types.model("SelectionTool").views(self => {
         self.annotation.selectAreas(regionsInSelectionArea);
       }
       isSelecting = false;
-    },
-
-    clickEv(ev, [x,y]) {
     },
   };
 });

@@ -1,4 +1,4 @@
-import { types, getParent, getRoot } from "mobx-state-tree";
+import { getParent, getRoot, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -220,7 +220,7 @@ const RegionsMixin = types
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
-          self._selectArea(ev?.ctrlKey);
+          self._selectArea(ev?.ctrlKey || ev?.metaKey);
         }
       },
 

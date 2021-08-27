@@ -13,6 +13,8 @@ export const KonvaRegionMixin = types.model({}).actions(self => {
     },
     onClickRegion(e) {
       const annotation = self.annotation;
+      const ev = e.evt || e;
+      const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
       if (!annotation.editable || self.isDrawing) return;
       if (e) e.cancelBubble = true;
@@ -29,7 +31,7 @@ export const KonvaRegionMixin = types.model({}).actions(self => {
           annotation.selectArea(self);
         } else {
           deferredSelectId = setTimeout(() => {
-            self._selectArea();
+            self._selectArea(additiveMode);
             deferredSelectId = null;
           }, 300);
         }

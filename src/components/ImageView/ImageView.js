@@ -1,5 +1,5 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from "react";
-import { Stage, Layer, Group, Line, Rect } from "react-konva";
+import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
+import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 
@@ -317,7 +317,7 @@ export default observer(
     handleMouseDown = e => {
       const { item } = this.props;
 
-      item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
+      item.updateSkipInteractions(e);
 
       // item.freezeHistory();
       const p = e.target.getParent();

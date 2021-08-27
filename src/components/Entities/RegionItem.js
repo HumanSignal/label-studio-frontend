@@ -1,9 +1,9 @@
 import { Badge, List } from "antd";
 import { observer } from "mobx-react";
-import { getRoot, isAlive } from "mobx-state-tree";
+import { isAlive } from "mobx-state-tree";
 import { Button } from "../../common/Button/Button";
 import { Node, NodeIcon } from "../Node/Node";
-import { LsVisible, LsInvisible, LsExpand, LsCollapse } from "../../assets/icons";
+import { LsCollapse, LsExpand, LsInvisible, LsVisible } from "../../assets/icons";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
@@ -119,8 +119,6 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable, onClick }) 
 
   if (!isAlive(item)) return null;
 
-  const as = getRoot(item).annotationStore;
-  const anno = as.selectedHistory ?? as.selected;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,

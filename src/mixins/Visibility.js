@@ -1,4 +1,4 @@
-import { types, getParent } from "mobx-state-tree";
+import { getParent, types } from "mobx-state-tree";
 
 /*
  * Per Region Mixin

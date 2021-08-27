@@ -5,7 +5,6 @@ import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
-import { Block } from "../../../utils/bem";
 import "./RichText.styl";
 
 class RichTextPieceView extends Component {

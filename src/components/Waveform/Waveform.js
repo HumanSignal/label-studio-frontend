@@ -7,7 +7,7 @@ import TimelinePlugin from "wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js
 import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
 import globalStyles from "../../styles/global.module.scss";
-import { Slider, Row, Col, Select } from "antd";
+import { Col, Row, Select, Slider } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";

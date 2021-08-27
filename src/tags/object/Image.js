@@ -391,7 +391,7 @@ const Model = types.model({
     }
 
     return { afterCreate, getToolsManager };
-  }).extend(() => {
+  }).extend((self) => {
     let skipInteractions = false;
 
     return {
@@ -403,6 +403,14 @@ const Model = types.model({
       actions: {
         setSkipInteractions(value) {
           skipInteractions = value;
+        },
+        updateSkipInteractions(e) {
+          const currentTool = self.getToolsManager().findSelectedTool();
+
+          if (currentTool.shouldSkipInteractions) {
+            return self.setSkipInteractions(currentTool.shouldSkipInteractions(e));
+          }
+          self.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
         },
       },
     };

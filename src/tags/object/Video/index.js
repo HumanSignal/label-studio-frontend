@@ -1,4 +1,4 @@
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import Registry from "../../../core/Registry";
 
 import { HtxVideoView } from "./HtxVideo";

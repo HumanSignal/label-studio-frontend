@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
+import { getEnv, getParent, onPatch, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 import { isDefined } from "../utils/utilities";
@@ -83,11 +83,11 @@ const SelectionMap = types.model(
     clear() {
       let regionEntries = self.selected.toJS();
 
-      for (let [idx, region] of regionEntries) {
+      for (let [, region] of regionEntries) {
         self.beforeUnselect(region);
       }
       self.selected.clear();
-      for (let [idx, region] of regionEntries) {
+      for (let [, region] of regionEntries) {
         self.afterUnselect(region);
       }
     },
