@@ -331,7 +331,7 @@ const setZoom = (scale, x, y, done) => {
 const countKonvaShapes = async done => {
   const stage = window.Konva.stages[0];
   const count = stage.find(node => {
-    return node.getType() === "Shape" && node.isVisible() && node.attrs.name?.indexOf("#") > -1;
+    return node.getType() === "Shape" && node.isVisible() && node.attrs.name && node.attrs.name.indexOf("#") > -1;
   }).length;
 
   done(count);
