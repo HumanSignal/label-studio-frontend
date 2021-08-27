@@ -227,6 +227,7 @@ class RichTextPieceView extends Component {
       return (
         <ObjectTag item={item}>
           <iframe
+            referrerpolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={this.rootNodeRef}
             style={style}
@@ -235,6 +236,7 @@ class RichTextPieceView extends Component {
             onLoad={this.onIFrameLoad}
           />
           <iframe
+            referrerpolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={this.originalContentRef}
             className="htx-richtext-orig"
