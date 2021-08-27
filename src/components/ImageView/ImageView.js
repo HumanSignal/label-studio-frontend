@@ -15,6 +15,7 @@ import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useObserver } from "mobx-react-lite";
 
 Konva.showWarnings = false;
 
@@ -40,13 +41,13 @@ const splitRegions = (regions) => {
   };
 };
 
-const Region = memo(({ region }) => {
-  return Tree.renderItem(region, false);
+const Region = memo(({ region, showSelected }) => {
+  return useObserver(()=>(region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
 });
 
-const RegionsLayer = memo(({ regions, name, useLayers }) => {
+const RegionsLayer = memo(({ regions, name, useLayers, showSelected }) => {
   const content = regions.map((el) => (
-    <Region key={`region-${el.id}`} region={el}/>
+    <Region key={`region-${el.id}`} region={el} showSelected={showSelected}/>
   ));
 
   return useLayers === false ? (
@@ -58,13 +59,14 @@ const RegionsLayer = memo(({ regions, name, useLayers }) => {
   );
 });
 
-const Regions = memo(({ regions, useLayers = true }) => {
-  return chunks(regions, 15).map((chunk, i) => (
+const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, showSelected = false }) => {
+  return (chunkSize ? chunks(regions, chunkSize) : regions).map((chunk, i) => (
     <RegionsLayer
       key={`chunk-${i}`}
       name={`chunk-${i}`}
       regions={chunk}
       useLayers={useLayers}
+      showSelected={showSelected}
     />
   ));
 });
@@ -110,10 +112,11 @@ const SelectionBorders = observer(({ item }) => {
     <>
       {bbox && (
         <Rect
+          name="regions_selection"
           x={bbox.left}
           y={bbox.top}
           width={bbox.right - bbox.left}
-          height={bbox.bottom-bbox.top}
+          height={bbox.bottom - bbox.top}
           stroke={SELECTION_COLOR}
           strokeWidth={1}
           listening={false}
@@ -166,11 +169,56 @@ const SelectionRect = observer(({ item }) => {
   );
 });
 
-const Selection = observer(({ item }) => {
+const SelectedRegions = observer(({ selectedRegions }) => {
+  if (!selectedRegions) return null;
+  const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
+
+  return (
+    <>
+      {brushRegions.length > 0 && (
+        <Regions
+          key="brushes"
+          name="brushes"
+          regions={brushRegions}
+          useLayers={false}
+          showSelected
+          chankSize={0}
+        />
+      )}
+
+      {shapeRegions.length > 0 && (
+        <Regions
+          key="shapes"
+          name="shapes"
+          regions={shapeRegions}
+          showSelected
+          chankSize={0}
+        />
+      )}
+    </>
+  );
+});
+
+const SelectionLayer = observer(({ item, selectionArea }) => {
+  const cb = item.controlButton();
+  const supportsTransform = !item.selectedRegions?.find(shape => !shape.supportsTransform);
+
   return (
     <Layer>
-      {item.highlightedNodeExists ? null : item.isActive ? <SelectionRect item={item} /> : <SelectionBorders item={item} /> }
+      { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
+      <ImageTransformer rotateEnabled={cb && cb.canrotate} supportsTransform={supportsTransform} selectedShapes={item.selectedRegions} />
     </Layer>
+  );
+});
+
+const Selection = observer(({ item, selectionArea }) => {
+  return (
+    <>
+      <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
+
+      <SelectionLayer item={item} selectionArea={selectionArea} />
+
+    </>
   );
 });
 
@@ -576,10 +624,8 @@ export default observer(
       // TODO fix me
       if (!store.task || !item._value) return null;
 
-      const selected = item.selectedShape;
-      const regions = item.regs.filter(r => r !== selected);
+      const regions = item.regs;
 
-      const cb = item.controlButton();
       const containerStyle = {};
 
       let containerClassName = styles.container;
@@ -686,21 +732,8 @@ export default observer(
                 />
               )}
 
-              {selected && (
-                (selected.type === 'brushregion') ? (
-                  Tree.renderItem(selected)
-                ) : (
-                  <Layer name="selected">
-                    {Tree.renderItem(selected)}
-                    {selected.type !== 'brushregion' && selected.editable && (
-                      <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-                    )}
-                  </Layer>
-                )
-              )}
-
+              <Selection item={item} selectionArea={item.selectionArea}/>
               <DrawingRegion item={item}/>
-              <Selection item={item.selectionArea}/>
 
               {item.crosshair && (
                 <Crosshair

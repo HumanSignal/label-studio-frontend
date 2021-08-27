@@ -5,11 +5,11 @@ import { fixRectToFit, getBoundingBoxAfterChanges } from "../../utils/image";
 
 export default class TransformerComponent extends Component {
   componentDidMount() {
-    this.checkNode();
+    setTimeout(()=>this.checkNode());
   }
 
   componentDidUpdate() {
-    this.checkNode();
+    setTimeout(()=>this.checkNode());
   }
 
   checkNode() {
@@ -17,29 +17,32 @@ export default class TransformerComponent extends Component {
 
     // here we need to manually attach or detach Transformer node
     const stage = this.transformer.getStage();
-    const { selectedShape } = this.props;
+    const { selectedShapes } = this.props;
 
-    if (!selectedShape) {
+    if (!selectedShapes?.length) {
       this.transformer.detach();
       this.transformer.getLayer().batchDraw();
       return;
     }
 
-    if (!selectedShape.supportsTransform) return;
+    if (selectedShapes.find(shape => !shape.supportsTransform)) return;
 
-    const selectedNode = stage.findOne("." + selectedShape.id);
+    const selectedNodes = selectedShapes.map(shape => stage.findOne(node => {
+      return shape.id === node.attrs.name && node.parent;
+    }));
+    const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
 
-    if (selectedNode === this.transformer.node()) {
+    if (selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx])) {
       return;
     }
 
-    if (selectedNode) {
+    if (selectedNodes.length) {
       // attach to another node
-      this.transformer.attachTo(selectedNode);
+      this.transformer.nodes(selectedNodes);
     } else {
       // remove transformer
-      this.transformer.detach();
+      this.transformer.nodes([]);
     }
     this.transformer.getLayer().batchDraw();
   }
@@ -72,7 +75,7 @@ export default class TransformerComponent extends Component {
   };
 
   render() {
-    if (!this.props.selectedShape.supportsTransform) return null;
+    if (!this.props.supportsTransform) return null;
 
     return (
       <Transformer

@@ -19,16 +19,22 @@ const _Tool = types.model("SelectionTool").views(self => {
     },
   };
 }).actions(self => {
+  let isSelecting = false;
+
   return {
     mousedownEv(ev, [x, y]) {
+      isSelecting = true;
       self.obj.setSelectionStart({ x, y });
     },
 
     mousemoveEv(ev, [x, y]) {
+      if (!isSelecting) return;
       self.obj.setSelectionEnd({ x,y });
     },
 
     mouseupEv(ev, [x, y]) {
+      if (!isSelecting) return;
+      self.obj.setSelectionEnd({ x,y });
       const { regionsInSelectionArea } = self.obj;
 
       self.obj.resetSelection();
@@ -37,6 +43,7 @@ const _Tool = types.model("SelectionTool").views(self => {
       } else {
         self.annotation.selectAreas(regionsInSelectionArea);
       }
+      isSelecting = false;
     },
 
     clickEv(ev, [x,y]) {

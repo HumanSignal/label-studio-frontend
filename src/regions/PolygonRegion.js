@@ -44,8 +44,8 @@ const Model = types
         return {
           left: Math.min(bboxCoords.left, point.x),
           top: Math.min(bboxCoords.top, point.y),
-          right: Math.min(bboxCoords.right, point.x),
-          bottom: Math.min(bboxCoords.bottom, point.y),
+          right: Math.max(bboxCoords.right, point.x),
+          bottom: Math.max(bboxCoords.bottom, point.y),
         };
       }, {
         left: self.points[0].x,
