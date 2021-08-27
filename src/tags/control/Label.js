@@ -1,7 +1,7 @@
 import ColorScheme from "pleasejs";
 import React from "react";
 import { types } from "mobx-state-tree";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";

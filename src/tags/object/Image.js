@@ -1,4 +1,4 @@
-import { types, getType, getRoot, destroy } from "mobx-state-tree";
+import { destroy, getRoot, getType, types } from "mobx-state-tree";
 import { inject } from "mobx-react";
 
 import * as Tools from "../../tools";

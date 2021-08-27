@@ -1,6 +1,6 @@
 import React from "react";
 import { Rate } from "antd";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 import { StarOutlined } from "@ant-design/icons";
 

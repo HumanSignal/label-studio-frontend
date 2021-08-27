@@ -5,7 +5,7 @@ import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Hotkey } from "../../../core/Hotkey";
-import { Elem, Block } from "../../../utils/bem";
+import { Block, Elem } from "../../../utils/bem";
 
 import "./Video.styl";
 

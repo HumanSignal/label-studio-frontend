@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getType } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getType, types } from "mobx-state-tree";
 
 import Utils from "../../utils";
 import ObjectBase from "./Base";
@@ -9,7 +9,7 @@ import ObjectTag from "../../components/Tags/Object";
 import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import { HyperTextRegionModel } from "../../regions/HyperTextRegion";
-import { restoreNewsnapshot, guidGenerator } from "../../core/Helpers";
+import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import { customTypes } from "../../core/CustomTypes";

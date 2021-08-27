@@ -1,4 +1,4 @@
-import { types, getType, getParent, isRoot } from "mobx-state-tree";
+import { getParent, getType, isRoot, types } from "mobx-state-tree";
 
 import Registry from "./Registry";
 

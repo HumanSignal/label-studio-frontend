@@ -1,4 +1,4 @@
-import { isString, escapeHtml } from "./utilities";
+import { escapeHtml, isString } from "./utilities";
 import get from "lodash.get";
 
 /**

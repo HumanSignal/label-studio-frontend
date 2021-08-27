@@ -1,4 +1,4 @@
-import { types, destroy, getParentOfType, getRoot, isValidReference } from "mobx-state-tree";
+import { destroy, getParentOfType, getRoot, isValidReference, types } from "mobx-state-tree";
 
 import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";

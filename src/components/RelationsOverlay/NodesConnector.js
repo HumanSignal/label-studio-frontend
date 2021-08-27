@@ -2,7 +2,7 @@ import { debounce } from "../../utils/debounce";
 import { wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
 import { RelationShape } from "./RelationShape";
-import { DOMWatcher, createPropertyWatcher } from "./watchers";
+import { createPropertyWatcher, DOMWatcher } from "./watchers";
 
 const parentImagePropsWatch = {
   parent: ["zoomScale", "zoomingPositionX", "zoomingPositionY", "rotation"],
