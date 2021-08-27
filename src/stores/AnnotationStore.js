@@ -660,6 +660,7 @@ const Annotation = types
 
     appendResults(results) {
       const regionIdMap = {};
+      const prevSize = self.regionStore.regions.length;
 
       // Generate new ids to prevent collisions
       results.forEach((result)=>{
@@ -673,6 +674,7 @@ const Annotation = types
 
       self.deserializeAnnotation(results);
       self.updateObjects();
+      return self.regionStore.regions.slice(prevSize);
     },
 
     serializeAnnotation() {
