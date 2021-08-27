@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, onPatch } from "mobx-state-tree";
+import { getEnv, getParent, onPatch, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 import { isDefined } from "../utils/utilities";

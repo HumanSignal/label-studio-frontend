@@ -2,7 +2,7 @@ import React from "react";
 import arrayMove from "array-move";
 import { List } from "antd";
 import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";

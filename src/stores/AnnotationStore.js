@@ -1,4 +1,4 @@
-import { types, getParent, getEnv, getRoot, destroy, detach, onSnapshot, isAlive } from "mobx-state-tree";
+import { destroy, detach, getEnv, getParent, getRoot, isAlive, onSnapshot, types } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import { Hotkey } from "../core/Hotkey";

@@ -1,5 +1,5 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 
 import TextNode from "../TextNode/TextNode";
 import Utils from "../../utils";

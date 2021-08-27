@@ -1,6 +1,6 @@
 import AppStore from "./stores/AppStore";
 
-const getEnvironment = async() => {
+const getEnvironment = async () => {
   if (process.env.NODE_ENV === "development" && !process.env.BUILD_NO_SERVER) {
     return (await import("./env/development")).default;
   }
@@ -8,7 +8,7 @@ const getEnvironment = async() => {
   return (await import("./env/production")).default;
 };
 
-export const configureStore = async(params, events) => {
+export const configureStore = async (params, events) => {
   if (params.options?.secureMode) window.LS_SECURE_MODE = true;
 
   const env = await getEnvironment();

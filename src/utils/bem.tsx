@@ -104,37 +104,37 @@ export const cn = (block: string, options: CNOptions = {}): CN => {
   const blockName = block;
 
   const classNameBuilder: CN = {
-    block (name) {
+    block(name) {
       return cn(name, { elem, mix, mod });
     },
 
-    elem (name) {
+    elem(name) {
       return cn(block, { elem: name, mix, mod });
     },
 
-    mod (newMod = {}) {
+    mod(newMod = {}) {
       const stateOverride = Object.assign({}, mod ?? {}, newMod);
 
       return cn(block ?? blockName, { elem, mix, mod: stateOverride });
     },
 
-    mix (...mix) {
+    mix(...mix) {
       return cn(block, { elem, mix, mod });
     },
 
-    select (root = document) {
+    select(root = document) {
       return root.querySelector(this.toCSSSelector());
     },
 
-    selectAll (root = document) {
+    selectAll(root = document) {
       return root.querySelectorAll(this.toCSSSelector());
     },
 
-    closest (root) {
+    closest(root) {
       return root.closest(this.toCSSSelector());
     },
 
-    toString () {
+    toString() {
       return assembleClass(
         block,
         elem,
@@ -143,11 +143,11 @@ export const cn = (block: string, options: CNOptions = {}): CN => {
       );
     },
 
-    toClassName () {
+    toClassName() {
       return this.toString();
     },
 
-    toCSSSelector () {
+    toCSSSelector() {
       return `.${this.toClassName().replace(/(\s+)/g, '.')}`;
     },
   };

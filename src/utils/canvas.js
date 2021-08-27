@@ -1,4 +1,4 @@
-import { encode, decode } from "@thi.ng/rle-pack";
+import { decode, encode } from "@thi.ng/rle-pack";
 
 import * as Colors from "./colors";
 import { colorToRGBAArray } from "./colors";

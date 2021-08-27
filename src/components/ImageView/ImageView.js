@@ -1,5 +1,5 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
-import { Stage, Layer, Group, Line } from "react-konva";
+import { Group, Layer, Line, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 

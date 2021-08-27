@@ -1,4 +1,4 @@
-import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
+import { getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";

@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Checkbox, Tabs, Table } from "antd";
+import { Checkbox, Modal, Table, Tabs } from "antd";
 import { observer } from "mobx-react";
 
 import { Hotkey } from "../../core/Hotkey";

@@ -1,6 +1,6 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
-import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { inject, observer } from "mobx-react";
+import { CheckCircleOutlined, CheckOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
 import { DraftPanel } from "../Annotations/Annotations";
