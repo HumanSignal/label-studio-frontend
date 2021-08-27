@@ -330,10 +330,12 @@ const setZoom = (scale, x, y, done) => {
  */
 const countKonvaShapes = async done => {
   const stage = window.Konva.stages[0];
-  const count = stage.find(node => {
-    return node.getType() === "Shape" && node.isVisible() && node.attrs.name && node.attrs.name.indexOf("#") > -1;
-  }).length;
+  const regions = Htx.annotationStore.selected.regionStore.regions;
+  let count = 0;
 
+  regions.forEach(region => {
+    count +=  stage.find("."+region.id).filter(node => node.isVisible()).length;
+  });
   done(count);
 };
 
