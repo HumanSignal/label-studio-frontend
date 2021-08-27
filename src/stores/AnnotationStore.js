@@ -133,6 +133,24 @@ const Annotation = types
         .concat(self.relationStore.serializeAnnotation());
     },
 
+    get serializedSelection() {
+      // Dirty hack to force MST track changes
+      self.areas.toJSON();
+
+      const selectedResults = [];
+
+      self.areas.forEach(a => {
+        if (!a.inSelection) return;
+        a.results.forEach(r => {
+          selectedResults.push(r);
+        });
+      });
+
+      return selectedResults
+        .map(r => r.serialize())
+        .filter(Boolean);
+    },
+
     get highlightedNode() {
       return self.regionStore.selection.highlighted;
     },
@@ -638,6 +656,23 @@ const Annotation = types
       }
 
       return area;
+    },
+
+    appendResults(results) {
+      const regionIdMap = {};
+
+      // Generate new ids to prevent collisions
+      results.forEach((result)=>{
+        const regionId = result.id;
+
+        if (!regionIdMap[regionId]) {
+          regionIdMap[regionId] = guidGenerator();
+        }
+        result.id = regionIdMap[regionId];
+      });
+
+      self.deserializeAnnotation(results);
+      self.updateObjects();
     },
 
     serializeAnnotation() {
