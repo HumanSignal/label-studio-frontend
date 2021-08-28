@@ -1,8 +1,8 @@
 import React from "react";
-import { Select, List, Button } from "antd";
-import { isValidReference, getRoot } from "mobx-state-tree";
+import { Button, List, Select } from "antd";
+import { getRoot, isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
-import { ArrowLeftOutlined, ArrowRightOutlined, SwapOutlined, MoreOutlined, DeleteOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined, DeleteOutlined, MoreOutlined, SwapOutlined } from "@ant-design/icons";
 
 import styles from "./Relations.module.scss";
 import { NodeMinimal } from "../Node/Node";

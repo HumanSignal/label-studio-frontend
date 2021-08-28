@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import { Button } from "antd";
 import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
@@ -12,7 +12,7 @@ import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
 import { restoreNewsnapshot } from "../../core/Helpers";
-import { splitBoundaries, findNodeAt } from "../../utils/html";
+import { findNodeAt, splitBoundaries } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";

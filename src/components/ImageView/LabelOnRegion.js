@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useMemo, useState } from "react";
-import { Rect, Group, Text, Label, Tag, Path } from "react-konva";
+import { Group, Label, Path, Rect, Tag, Text } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot } from "mobx-state-tree";
 

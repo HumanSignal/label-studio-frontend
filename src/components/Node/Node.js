@@ -1,12 +1,12 @@
 import React from "react";
-import { getType, getRoot } from "mobx-state-tree";
+import { getRoot, getType } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
-  FontColorsOutlined,
+  ApartmentOutlined,
   AudioOutlined,
-  MessageOutlined,
+  FontColorsOutlined,
   LineChartOutlined,
-  ApartmentOutlined
+  MessageOutlined
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";

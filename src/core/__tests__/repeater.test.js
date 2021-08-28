@@ -1,7 +1,7 @@
 /* global it, expect */
 import Tree from "../Tree";
 
-function createStore (utterances) {
+function createStore(utterances) {
   return { task : { dataObj : { utterances } } };
 }
 

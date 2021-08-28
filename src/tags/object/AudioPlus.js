@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot, getType } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, getType, types } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectTag from "../../components/Tags/Object";

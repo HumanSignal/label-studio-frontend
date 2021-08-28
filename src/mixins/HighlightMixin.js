@@ -1,4 +1,4 @@
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import Utils from "../utils";
 import { guidGenerator } from "../utils/unique";

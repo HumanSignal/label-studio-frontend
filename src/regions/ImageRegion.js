@@ -1,4 +1,4 @@
-import { types, getParent, getRoot } from "mobx-state-tree";
+import { getParent, getRoot, types } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
@@ -20,29 +20,29 @@ const RegionMixin = types
     parentID: types.optional(types.string, ""),
   })
   .views(self => ({
-    get perRegionStates () {
+    get perRegionStates() {
       const states = self.states;
 
       return states && states.filter(s => s.perregion === true);
     },
 
-    get store () {
+    get store() {
       return getRoot(self);
     },
 
-    get parent () {
+    get parent() {
       return getParent(self);
     },
 
-    get editable () {
+    get editable() {
       return self.readonly === false && self.annotation.editable === true;
     },
 
-    get labelsState () {
+    get labelsState() {
       return self.states.find(s => s.type.indexOf("labels") !== -1);
     },
 
-    hasLabelState (labelValue) {
+    hasLabelState(labelValue) {
       // first of all check if this region implements labels
       // interface
       const s = self.labelsState;
@@ -58,24 +58,24 @@ const RegionMixin = types
     },
   }))
   .actions(self => ({
-    setParentID (id) {
+    setParentID(id) {
       self.parentID = id;
     },
 
     // All of the below accept size as an arument
-    moveTop () {},
-    moveBottom () {},
-    moveLeft () {},
-    moveRight () {},
+    moveTop() {},
+    moveBottom() {},
+    moveLeft() {},
+    moveRight() {},
 
-    sizeRight () {},
-    sizeLeft () {},
-    sizeTop () {},
-    sizeBottom () {},
+    sizeRight() {},
+    sizeLeft() {},
+    sizeTop() {},
+    sizeBottom() {},
 
     // "web" degree is opposite to mathematical, -90 is 90 actually
     // swapSizes = true when canvas is already rotated at this moment
-    rotatePoint (point, degree, swapSizes = true) {
+    rotatePoint(point, degree, swapSizes = true) {
       const { x, y } = point;
 
       if (!degree) return { x, y };
@@ -97,7 +97,7 @@ const RegionMixin = types
       return { x, y };
     },
 
-    rotateDimensions ({ width, height }, degree) {
+    rotateDimensions({ width, height }, degree) {
       if ((degree + 360) % 180 === 0) return { width, height };
       return { width: height, height: width };
     },
@@ -105,13 +105,13 @@ const RegionMixin = types
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState () {},
+    updateAppearenceFromState() {},
 
-    serialize () {
+    serialize() {
       console.error("Region class needs to implement serialize");
     },
 
-    toStateJSON () {
+    toStateJSON() {
       const parent = self.parent;
       const buildTree = control => {
         const tree = {
@@ -158,7 +158,7 @@ const RegionMixin = types
       }
     },
 
-    updateOrAddState (state) {
+    updateOrAddState(state) {
       var foundIndex = self.states.findIndex(s => s.name === state.name);
 
       if (foundIndex !== -1) {
@@ -172,7 +172,7 @@ const RegionMixin = types
     // given the specific state object (for example labels) it finds
     // that inside the region states objects and updates that, this
     // function is used to capture the state
-    updateSingleState (state) {
+    updateSingleState(state) {
       var foundIndex = self.states.findIndex(s => s.name === state.name);
 
       if (foundIndex !== -1) {
@@ -191,7 +191,7 @@ const RegionMixin = types
       }
     },
 
-    selectRegion () {
+    selectRegion() {
       self.selected = true;
       self.annotation.setHighlightedNode(self);
 
@@ -202,7 +202,7 @@ const RegionMixin = types
      * Common logic for unselection; specific actions should be in `afterUnselectRegion`
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
-    unselectRegion (tryToKeepStates = false) {
+    unselectRegion(tryToKeepStates = false) {
       const annotation = self.annotation;
       const parent = self.parent;
       const keepStates = tryToKeepStates && self.store.settings.continuousLabeling;
@@ -224,9 +224,9 @@ const RegionMixin = types
       }
     },
 
-    afterUnselectRegion () {},
+    afterUnselectRegion() {},
 
-    onClickRegion () {
+    onClickRegion() {
       const annotation = self.annotation;
 
       if (!annotation.editable) return;
@@ -248,7 +248,7 @@ const RegionMixin = types
     /**
      * Remove region
      */
-    deleteRegion () {
+    deleteRegion() {
       if (!self.annotation.editable) return;
 
       self.unselectRegion();
@@ -264,15 +264,15 @@ const RegionMixin = types
       self.annotation.deleteRegion(self);
     },
 
-    setHighlight (val) {
+    setHighlight(val) {
       self.highlighted = val;
     },
 
-    toggleHighlight () {
+    toggleHighlight() {
       self.setHighlight(!self.highlighted);
     },
 
-    toggleHidden () {
+    toggleHidden() {
       self.hidden = !self.hidden;
     },
   }));

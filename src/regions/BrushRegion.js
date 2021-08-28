@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Group, Layer, Image, Shape } from "react-konva";
+import { Group, Image, Layer, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, getRoot, cast } from "mobx-state-tree";
+import { cast, getParent, getRoot, types } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";

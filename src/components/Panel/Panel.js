@@ -2,12 +2,12 @@ import React from "react";
 import { observer } from "mobx-react";
 import { Button } from "antd";
 import {
-  UndoOutlined,
-  RedoOutlined,
-  SettingOutlined,
-  RollbackOutlined,
+  FullscreenExitOutlined,
   FullscreenOutlined,
-  FullscreenExitOutlined
+  RedoOutlined,
+  RollbackOutlined,
+  SettingOutlined,
+  UndoOutlined
 } from "@ant-design/icons";
 
 import styles from "./Panel.module.scss";

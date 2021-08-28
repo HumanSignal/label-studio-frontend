@@ -1,5 +1,5 @@
 import React from "react";
-import { types, getType, flow } from "mobx-state-tree";
+import { flow, getType, types } from "mobx-state-tree";
 import { observe } from "mobx";
 
 import { customTypes } from "../../../core/CustomTypes";

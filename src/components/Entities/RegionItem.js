@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 import { Button } from "../../common/Button/Button";
 import { Node, NodeIcon } from "../Node/Node";
-import { LsVisible, LsInvisible, LsExpand, LsCollapse } from "../../assets/icons";
+import { LsCollapse, LsExpand, LsInvisible, LsVisible } from "../../assets/icons";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
