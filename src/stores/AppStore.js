@@ -105,6 +105,16 @@ export default types
      */
     showComments: false,
 
+    /**
+     * Dynamic preannotations
+     */
+    dynamicPreannotations: false,
+
+    /**
+     * Auto accept suggested annotations
+     */
+    autoAcceptSuggestions: false,
+
     users: types.optional(types.array(UserExtended), []),
   })
   .volatile(() => ({
@@ -497,6 +507,14 @@ export default types
       });
     }
 
+    const setDynamicPreannotation = (value) => {
+      self.dynamicPreannotations = value;
+    };
+
+    const setAutoAcceptSuggestions = (value) => {
+      self.autoAcceptSuggestions = value;
+    };
+
     return {
       setFlags,
       addInterface,
@@ -520,5 +538,8 @@ export default types
       toggleComments,
       toggleSettings,
       toggleDescription,
+
+      setDynamicPreannotation,
+      setAutoAcceptSuggestions,
     };
   });
