@@ -41,6 +41,16 @@
       width 4px
       height 100%
 
+  &__indicator
+    border-radius 8px
+    position absolute
+    background-color rgba($accent_color, 0.5)
+
+    ~/_align_horizontal &
+      height 4px
+
+    ~/_align_vertical &
+      width 4px
 
   &__range-handle
     width 0
@@ -53,6 +63,13 @@
       background #0099FF
       box-shadow 0px 5px 10px rgba(0, 153, 255, 0.3), inset 0px -1px 0px rgba(0, 0, 0, 0.1)
       border-radius 2px
+      transform translate3d(-50%, -50%, 0)
+
+    &::after
+      content ''
+      width 25px
+      height 25px
+      position absolute
       transform translate3d(-50%, -50%, 0)
 
     ~/_align_horizontal &

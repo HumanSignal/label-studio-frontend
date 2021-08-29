@@ -13,7 +13,7 @@
 
 .treelabels {
   max-height: 350px;
-  overflow-y: auto;
+  overflow-y: visible;
 }
 
 .treelabel :global(.ant-tree-node-content-wrapper) {

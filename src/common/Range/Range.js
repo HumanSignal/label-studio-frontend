@@ -4,6 +4,10 @@ import { clamp } from "../../utils/utilities";
 import { useValueTracker } from "../Utils/useValueTracker";
 import "./Range.styl";
 
+const arrayReverse = (array, reverse=false) => {
+  return reverse ? [...array].reverse() : array;
+};
+
 export const Range = ({
   value,
   defaultValue,
@@ -81,7 +85,14 @@ export const Range = ({
       )}
       <Elem name="body">
         <Elem name="line"></Elem>
-        {multi ? currentValue.map((value, index, list) => {
+        <RangeIndicator
+          align={align}
+          reverse={reverse}
+          value={currentValue}
+          valueConvert={valueToPercentage}
+        />
+        {multi ? arrayReverse(currentValue, reverse).map((value, i, list) => {
+          let index = reverse ? i === 0 ? 1 : 0 : i;
           const preservedValueIndex = index === 0 ? 1 : 0;
 
           const getValue = (val) => {
@@ -103,6 +114,7 @@ export const Range = ({
               value={value}
               values={list}
               bodySize={size}
+              reverese={reverse}
               valueConvert={valueToPercentage}
               offsetConvert={offsetToValue}
               onChangePosition={(val) => updateValue(getValue(val), false)}
@@ -181,5 +193,41 @@ const RangeHandle = ({
       style={{ [offsetProperty]: `${valueConvert(value)}%` }}
       onMouseDownCapture={handleMouseDown}
     />
+  );
+};
+
+const RangeIndicator = ({
+  value,
+  valueConvert,
+  align,
+  reverse,
+}) => {
+  const style = {};
+  const multi = Array.isArray(value);
+
+  if (align === 'horizontal') {
+    if (multi) {
+      style.left = `${valueConvert(value[0])}%`;
+      style.right = `${100 - valueConvert(value[1])}%`;
+    } else {
+      style.left = 0;
+      style.right = `${100 - valueConvert(value)}%`;
+    }
+
+    if (reverse && !multi) [style.left, style.right] = [style.right, style.left];
+  } else if (align === 'vertical') {
+    if (multi) {
+      style.top = `${valueConvert(value[0])}%`;
+      style.bottom = `${100 - valueConvert(value[1])}%`;
+    } else {
+      style.top = 0;
+      style.bottom = `${100 - valueConvert(value)}%`;
+    }
+
+    if (reverse && !multi) [style.top, style.bottom] = [style.bottom, style.top];
+  }
+
+  return (
+    <Elem name="indicator" style={style}/>
   );
 };
