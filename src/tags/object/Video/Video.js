@@ -6,7 +6,8 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 
 /**
- * Video tag plays a simple video file.
+ * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
+ * Use with the following data types: video
  * @example
  * <View>
  *   <Video name="video" value="$video" />
@@ -27,6 +28,8 @@ import ObjectBase from "../Base";
  *   <TextArea name="ta" toName="video" />
  * </View>
  * @name Video
+ * @meta_title Video Tag for Video Labeling
+ * @meta_description Customize Label Studio with the Video tag for basic video annotation tasks for machine learning and data science projects.
  * @param {string} name Name of the element
  * @param {string} value URL of the video
  * @param {number} [frameRate=0.04] frame rate in seconds; default 1/25s

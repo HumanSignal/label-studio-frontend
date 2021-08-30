@@ -18,16 +18,17 @@ import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
 
 /**
- * Image tag shows an image on the page.
- * All the region numbers are percents of image original sizes — [0, 100]
+ * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
+ * Use with the following data types: images
+ * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
  * @example
  * <View>
- *   <!-- Take the image url from the url column in JSON/CSV -->
+ *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
  * @name Image
  * @meta_title Image Tags for Images
- * @meta_description Label Studio Image Tags customize Label Studio for images for machine learning and data science projects.
+ * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} value                      - Value
  * @param {string=} [width=100%]              - Image width
