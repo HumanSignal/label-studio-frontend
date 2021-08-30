@@ -16,6 +16,10 @@ const FORMAT_FULL = "%Y-%m-%dT%H:%M";
 const FORMAT_DATE = "%Y-%m-%d";
 const FORMAT_TIME = "%H:%M";
 
+const ISO_DATE_SEPARATOR = "T";
+
+const zero = n => (n < 10 ? "0" : "") + n;
+
 /**
  * DateTime adds date and time selection
  *
@@ -64,7 +68,7 @@ const Model = types
     },
 
     get holdsState() {
-      return isDefined(self.date) || isDefined(self.time);
+      return (isDefined(self.month) && isDefined(self.year)) || isDefined(self.time);
     },
 
     get showDate() {
@@ -87,12 +91,18 @@ const Model = types
       return self.only?.includes("year") && !self.only?.includes("date");
     },
 
-    get datetime() {
-      if (self.onlyTime) return self.time || "00:00";
-      if (!self.date) return null;
+    get date() {
+      if (!self.month || !self.year) return undefined;
+      return [self.year, zero(self.month), zero(self.day)].join("-");
+    },
 
-      const dateStr = `${self.date}T${self.time || "00:00"}`;
-      const date = new Date(dateStr);
+    get datetime() {
+      const timeStr = self.time || "00:00";
+
+      if (self.onlyTime) return timeStr;
+      if (!self.date) return undefined;
+
+      const date = new Date(self.date + ISO_DATE_SEPARATOR + timeStr);
 
       return self.formatDateTime(date);
     },
@@ -109,8 +119,10 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    date: null,
-    time: null,
+    day: undefined,
+    month: undefined,
+    year: undefined,
+    time: undefined,
     formatDate: d3.timeFormat(FORMAT_DATE),
     formatTime: d3.timeFormat(FORMAT_TIME),
   }))
@@ -127,17 +139,29 @@ const Model = types
       parseDateTime: d3.timeParse(format),
     };
   })
-  .volatile(() => {
+  .volatile(self => {
+    const years = [];
     const months = [];
     const monthName = d3.timeFormat("%B");
-    const date = new Date("2021-01-13");
+    const date = new Date;
+    const getYear = minmax => {
+      if (minmax === "current") return date.getFullYear();
+      if (minmax.length === 4) return minmax;
+      return self.parseDateTime(minmax)?.getFullYear();
+    };
+    const minYear = getYear(self.min ?? "2000");
+    const maxYear = getYear(self.max ?? "current");
+
+    for (let y = maxYear; y >= minYear; y--) {
+      years.push(y);
+    }
 
     for (let m = 0; m < 12; m++) {
       date.setMonth(m);
       months[m] = monthName(date);
     }
 
-    return { months };
+    return { months, years };
   })
   .actions(self => ({
     copyState(obj) {
@@ -148,16 +172,21 @@ const Model = types
       if (self.result) {
         self.setDateTime(self.result.mainValue);
       } else {
-        self.date = null;
-        self.time = null;
+        self.resetDateTime();
       }
     },
 
     unselectAll() {},
 
+    resetDate() {
+      self.day = undefined;
+      self.month = undefined;
+      self.year = undefined;
+    },
+
     resetDateTime() {
-      self.date = null;
-      self.time = null;
+      self.resetDate();
+      self.time = undefined;
     },
 
     setDateTime(value) {
@@ -170,8 +199,13 @@ const Model = types
 
       if (!date) return self.resetDateTime();
 
-      self.date = self.formatDate(date);
-      self.time = self.formatTime(date);
+      self.day = date.getDate();
+      self.month = date.getMonth() + 1;
+      self.year = date.getFullYear();
+
+      if (self.showTime) {
+        self.time = self.formatTime(date);
+      }
     },
 
     updateResult() {
@@ -189,33 +223,31 @@ const Model = types
       }
     },
 
-    setDatePart(index, value) {
-      const now = self.formatDate(new Date);
-      const date = self.date ?? now;
-      const parts = date.split("-");
-      const defaultParts = now.split("-");
-
-      parts[index] = value || defaultParts[index];
-      self.date = parts.join("-");
-
+    onMonthChange(e) {
+      self.month = +e.target.value || undefined;
       self.updateResult();
     },
 
-    onMonthChange(e) {
-      self.setDatePart(1, e.target.value);
-    },
-
     onYearChange(e) {
-      self.setDatePart(0, e.target.value);
+      self.year = +e.target.value || undefined;
+      self.updateResult();
     },
 
     onDateChange(e) {
-      self.date = e.target.value;
+      const date = new Date(e.target.value);
+
+      if (date && !isNaN(date)) {
+        self.day = date.getDate();
+        self.month = date.getMonth() + 1;
+        self.year = date.getFullYear();
+      } else {
+        self.resetDate();
+      }
       self.updateResult();
     },
     
     onTimeChange(e) {
-      self.time = e.target.value;
+      self.time = e.target.value || undefined;
       self.updateResult();
     },
 
@@ -234,7 +266,7 @@ const HtxDateTime = inject("store")(
   observer(({ item }) => {
     const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
     const visual = {
-      style: { width: "auto" },
+      style: { width: "auto", marginRight: "4px" },
       className: "ant-input",
     };
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
@@ -243,13 +275,30 @@ const HtxDateTime = inject("store")(
       <div style={visibleStyle}>
         {item.showMonth && (
           <select
+            {...visual}
             name={item.name + "-date"}
+            value={item.month}
             onChange={item.onMonthChange}
           >
-            <option value="">Select month...</option>
+            <option value="">Month...</option>
             {item.months.map((month, index) => (
-              <option key={month} value={`${index < 9 ? "0" : ""}${index + 1}`}>
+              <option key={month} value={index + 1}>
                 {month}
+              </option>
+            ))}
+          </select>
+        )}
+        {item.showYear && (
+          <select
+            {...visual}
+            name={item.name + "-year"}
+            value={item.year}
+            onChange={item.onYearChange}
+          >
+            <option value="">Year...</option>
+            {item.years.map(year => (
+              <option key={year} value={year}>
+                {year}
               </option>
             ))}
           </select>
