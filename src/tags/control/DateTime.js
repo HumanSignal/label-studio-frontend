@@ -32,13 +32,14 @@ const zero = n => (n < 10 ? "0" : "") + n;
  * @name DateTime
  * @param {string} name              - Name of the element
  * @param {string} toName            - Name of the element that you want to label
- * @param {string} only              - Comma-separated list of parts to display (date, time)
- * @param {string} format                     - Input/output strftime format for datetime (internally it's always ISO);
+ * @param {string} only              - Comma-separated list of parts to display (date, time, month, year)
+ *        date and month/year can't be used together; date takes precedence
+ * @param {string} format            - Input/output strftime format for datetime (internally it's always ISO);
  *        by default this is ISO with "T" separator when bot date and time parts enabled;
  *        that's ISO date when only date is enabled;
  *        that's just a 24h time with leading zero when only time is enabled
- * @param {string} [min]             - Minimum datetime value
- * @param {string} [max]             - Maximum datetime value
+ * @param {string} [min]             - Minimum datetime value for only=date, minimum year for only=year
+ * @param {string} [max]             - Maximum datetime value for only=date, maximum year for only=year
  * @param {boolean} [required=false] - Whether datetime is required or not
  * @param {string} [requiredMessage] - Message to show if validation fails
  * @param {boolean} [perRegion]      - Use this tag to label regions instead of the whole object
