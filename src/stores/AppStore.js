@@ -285,8 +285,8 @@ export default types
         function() {
           const c = self.annotationStore.selected;
 
-          if (c && c.highlightedNode) {
-            c.highlightedNode.deleteRegion();
+          if (c) {
+            c.deleteSelectedRegions();
           }
         },
         "Delete selected region",
