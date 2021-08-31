@@ -428,22 +428,45 @@ const HtxBrushView = ({ item }) => {
   );
   const { store } = item;
 
-  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   const highlightedImageRef = useRef(new window.Image());
   const layerRef = useRef();
-  const highlightedRef = useRef();
-  const drawCallback = useCallback(() => {
-    if (layerRef.current && !highlightedRef.current) {
-      const dataUrl = layerRef.current.canvas.toDataURL();
+  const highlightedRef = useRef({});
 
-      highlightedImageRef.current.src = dataUrl;
-    }
-  }, []);
+  highlightedRef.current.highlighted = item.highlighted || item.inSelection;
+  highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
+
+  const drawCallback = useMemo(()=>{
+    let done = false;
+
+    return () => {
+      const { highlighted } = highlightedRef.current;
+      const layer = layerRef.current;
+
+      if (layer && !done) {
+        let dataUrl;
+
+        if (!highlighted) {
+          layer.draw();
+          dataUrl = layer.canvas.toDataURL();
+        } else {
+          const highlightEl = layer.findOne(".highlight");
+
+          highlightEl.hide();
+          layer.draw();
+          dataUrl = layer.canvas.toDataURL();
+          highlightEl.show();
+          layer.draw();
+        }
+
+        highlightedImageRef.current.src = dataUrl;
+        done = true;
+      }
+    };
+  }, [item.touches.length]);
 
   if (!item.parent) return null;
 
-  highlightedRef.current = item.highlighted;
   const stage = item.parent?.stageRef;
 
   return (
@@ -453,7 +476,9 @@ const HtxBrushView = ({ item }) => {
         item.setLayerRef(ref);
         layerRef.current = ref;
       }}
-      onDraw={drawCallback}
+      onDraw={() => {
+        setTimeout(drawCallback);
+      }}
     >
       <Group
         attrMy={item.needsUpdate}
@@ -509,18 +534,21 @@ const HtxBrushView = ({ item }) => {
         </Group>
 
         <Image
+          name="highlight"
           image={highlightedImageRef.current}
-          sceneFunc={item.highlighted ? null : () => {}}
+          sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
           hitFunc={() => {}}
-          {...highlight}
+          {...highlightedRef.current.highlight}
           scaleX={1/item.parent.stageScale}
           scaleY={1/item.parent.stageScale}
           x={-item.parent.zoomingPositionX/item.parent.stageScale}
           y={-item.parent.zoomingPositionY/item.parent.stageScale}
           width={item.parent.stageWidth}
           height={item.parent.stageHeight}
+          listening={false}
         />
       </Group>
+
     </Layer>
   );
 };
