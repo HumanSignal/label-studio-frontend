@@ -3,8 +3,9 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
+import { DrawingToolExtension } from "./DrawingToolExtension";
 
-const DrawingTool = types
+const DrawingTool = types.compose(types
   .model("DrawingTool", {
     default: true,
     mode: types.optional(types.enumeration(["drawing", "viewing"]), "viewing"),
@@ -172,7 +173,7 @@ const DrawingTool = types
         self.mode = "viewing";
       },
     };
-  });
+  }), DrawingToolExtension);
 
 const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
   .views(self => ({

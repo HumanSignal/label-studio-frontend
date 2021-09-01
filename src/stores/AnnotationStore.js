@@ -18,10 +18,11 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
+import { AnnotationStoreExtension } from "./AnnotationStoreExtension";
 
 const hotkeys = Hotkey("Annotations");
 
-const Annotation = types
+const Annotation = types.compose(types
   .model("Annotation", {
     id: types.identifier,
     // @todo this value used `guidGenerator(5)` as default value before
@@ -591,27 +592,6 @@ const Annotation = types
         value: resultValue,
       };
 
-      const foundText = getRoot(self).task.getTextFromBbox(areaValue.x, areaValue.y, areaValue.width, areaValue.height);
-      
-      let results;
-
-      if (foundText) {
-        const result2 = {
-          from_name: 'transcription',
-          to_name: 'image',
-          type: 'textarea',
-          value: {
-            text: [
-              foundText,
-            ],
-          },
-        };
-        
-        results = [result, result2];
-      } else {
-        results = [result];
-      }
-
       const areaRaw = {
         id: guidGenerator(),
         object,
@@ -619,7 +599,7 @@ const Annotation = types
         ...areaValue,
         // for Model detection
         value: areaValue,
-        results,
+        results: [result],
       };
 
       const area = self.areas.put(areaRaw);
@@ -793,7 +773,7 @@ const Annotation = types
 
       return value;
     },
-  }));
+  })), AnnotationStoreExtension);
 
 export default types
   .model("AnnotationStore", {

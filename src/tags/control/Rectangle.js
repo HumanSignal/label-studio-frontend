@@ -31,6 +31,8 @@ const TagAttrs = types.model({
   opacity: types.optional(customTypes.range(), "1"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
+  gettextfromocr: types.optional(types.boolean, false),
+
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
   fillopacity: types.optional(customTypes.range(), "0.2"),

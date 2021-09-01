@@ -520,13 +520,17 @@ export default observer(
             {this.state.ratio !== 1 && (
               <div
                 className={styles.filler}
-                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
+                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.naturalWidth }}
               />
             )}
             <img
               ref={ref => {
                 item.setImageRef(ref);
                 this.imageRef.current = ref;
+              }}
+              style={{                
+                width:item.naturalWidth,
+                height:item.naturalHeight,
               }}
               src={item._value}
               onLoad={item.updateImageSize}
