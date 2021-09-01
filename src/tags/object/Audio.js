@@ -13,8 +13,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks.
+ *
  * Use with the following data types: audio
  * @example
+ * <!--Play audio on the labeling interface-->
  * <View>
  *   <Audio name="audio" value="$audio" />
  * </View>

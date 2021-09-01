@@ -7,8 +7,10 @@ import ObjectBase from "../Base";
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
+ *
  * Use with the following data types: video
  * @example
+ * <!--Labeling configuration to display a video on the labeling interface-->
  * <View>
  *   <Video name="video" value="$video" />
  * </View>

@@ -17,8 +17,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
  * The HyperText tag displays hypertext markup for labeling. Use for labeling HTML-encoded text and webpages for NER and NLP projects.
+ *
  * Use with the following data types: HTML
  * @example
+ * <!--Labeling configuration to label HTML content -->
  * <View>
  *   <HyperText name="text-1" value="$text" />
  *   <Labels name="parts" toName="text-1">

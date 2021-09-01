@@ -19,9 +19,12 @@ import { guidGenerator } from "../../utils/unique";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
+ *
  * Use with the following data types: images
+ *
  * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
  * @example
+ * <!--Labeling configuration to display an image on the labeling interface-->
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>

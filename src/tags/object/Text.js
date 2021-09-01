@@ -22,8 +22,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * The Text tag shows text markup that can be labeled. Use to display any type of text on the labeling interface.
  * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all spaces in the text, otherwise spaces are trimmed when displayed.
  * Every space in the text sample is counted when calculating result offsets, for example for NER labeling tasks.
+ *
  * Use with the following data types: text
  * @example
+ * <!--Labeling configuration to label text for NER tasks with a word-level granularity -->
  * <View>
  *   <Text name="text-1" value="$text" granularity="word" highlightColor="#ff0000" />
  *   <Labels name="ner" toName="text-1">

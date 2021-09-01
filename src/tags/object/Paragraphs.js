@@ -23,8 +23,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
  * The Paragraphs tag expects task data formatted as an array of objects like the following:
  * [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ *
  * Use with the following data types: text
  * @example
+ * <!--Labeling configuration to label paragraph regions of text containing dialogue-->
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
  *   <ParagraphLabels name="importance" toName="dialogue-1">
