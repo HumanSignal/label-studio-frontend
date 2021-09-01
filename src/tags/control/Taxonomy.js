@@ -42,6 +42,7 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]         - Maximum available usages
  * @param {boolean} [required=false]   - Whether taxonomy validation is required
  * @param {string} [requiredMessage]   - Message to show if validation fails
+ * @param {string} [placeholder=]      - What to display as prompt on the input
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -49,6 +50,7 @@ const TagAttrs = types.model({
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, " / "),
+  placeholder: "",
   maxusages: types.maybeNull(types.string),
 });
 
@@ -125,7 +127,7 @@ const Model = types
     traverse(root) {
       const visitNode = function(node, parents = []) {
         const label = node.value;
-        const path = [...parents, label];
+        const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
         const obj = { label, path, depth: parents.length };
 
         if (node.children) {
@@ -143,15 +145,17 @@ const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Mode
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
+  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
   const options = {
     showFullPath: item.showfullpath,
     leafsOnly: item.leafsonly,
     pathSeparator: item.pathseparator,
     maxUsages: item.maxusages,
+    placeholder: item.placeholder,
   };
 
   return (
-    <div style={{ ...style }}>
+    <div style={{ ...style, ...visibleStyle }}>
       <Taxonomy
         items={item.traverse(item.children)}
         selected={item.selected}
