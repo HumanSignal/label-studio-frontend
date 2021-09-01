@@ -133,6 +133,11 @@ const Annotation = types
         .filter(Boolean)
         .concat(self.relationStore.serializeAnnotation());
     },
+
+    // existing annotation which can be updated
+    get exists() {
+      return self.sentUserGenerate || self.versions.result;
+    },
   }))
   .volatile(() => ({
     hidden: false,
