@@ -44,7 +44,7 @@ const ListItemModel = types
  * </View>
  * @name List
  * @meta_title List Tag for Lists
- * @meta_description Label Studio List Tags customize Label Studio with lists for machine learning and data science projects.
+ * @meta_description Customize Label Studio with lists for machine learning and data science projects.
  * @param {string} elementValue                - Lookup key for a child object
  * @param {Text|Image|Audio} [elementTag=Text] - Element used to render children
  * @param {string} value                       - List values
