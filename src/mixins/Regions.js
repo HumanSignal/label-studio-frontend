@@ -19,6 +19,7 @@ const RegionsMixin = types
     highlighted: false,
     isDrawing: false,
     perRegionFocusRequest: null,
+    shapeRef: null,
   }))
   .views(self => ({
     get perRegionStates() {
@@ -52,6 +53,10 @@ const RegionsMixin = types
 
       setDrawing(val) {
         self.isDrawing = val;
+      },
+
+      setShapeRef(ref) {
+        self.shapeRef = ref;
       },
 
       // All of the below accept size as an argument

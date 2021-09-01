@@ -15,13 +15,14 @@ export const Tool = ({
   active = false,
   disabled = false,
   expanded = false,
+  extraShortcuts = {},
   controls,
   icon,
   label,
   shortcut,
   onClick,
 }) => {
-  const [currentShortcut, setCurrentShortcut] = useState(shortcut);
+  let currentShortcut = shortcut;
 
   const shortcutView = useMemo(() => {
     if (!isDefined(shortcut)) return null;
@@ -53,7 +54,7 @@ export const Tool = ({
     };
 
     removeShortcuts();
-    setCurrentShortcut(shortcut);
+    currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
         onClick?.();
@@ -62,6 +63,28 @@ export const Tool = ({
 
     return () => removeShortcuts();
   }, [shortcut]);
+
+  useEffect(() => {
+    const removeShortcuts = () => {
+      Object.keys(extraShortcuts).forEach((key) => {
+        if (hotkeys.hasKey(key)) hotkeys.removeKey(key);
+      });
+    };
+
+    const addShortcuts = () => {
+      Object.entries(extraShortcuts).forEach(([key, [label, fn]]) => {
+        if (!hotkeys.hasKey(key)) hotkeys.addKey(key, fn, label);
+      });
+    };
+
+    if (active) {
+      addShortcuts();
+    } else {
+      removeShortcuts();
+    }
+
+    return removeShortcuts;
+  }, [extraShortcuts, active]);
 
   return (
     <Block name="tool" mod={{ active, disabled }} onClick={onClick}>

@@ -211,6 +211,10 @@ const Model = types
       return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },
 
+    get suggestions() {
+      return self.annotation?.regionStore.suggestions.filter(r => r.object === self) || [];
+    },
+
     get selectedShape() {
       return self.regs.find(r => r.selected);
     },

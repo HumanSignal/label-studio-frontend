@@ -4,4 +4,5 @@ declare module '*.svg' {
   const value: SvgrComponent;
 
   export default value;
+  export const ReactComponent = value;
 }

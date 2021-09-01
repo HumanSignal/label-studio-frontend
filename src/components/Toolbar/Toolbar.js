@@ -36,7 +36,7 @@ export const Toolbar = ({ tools, expanded }) => {
   return (
     <Block ref={(el) => setToolbar(el)} name="toolbar" mod={{ alignment, expanded }}>
       {Object.entries(toolGroups).map(([name, tools], i) => {
-        return (
+        return tools.length ? (
           <Elem name="group" key={`toolset-${name}-${i}`}>
             {tools.map(tool => {
               return (
@@ -46,7 +46,7 @@ export const Toolbar = ({ tools, expanded }) => {
               );
             })}
           </Elem>
-        );
+        ) : null;
       })}
     </Block>
   );

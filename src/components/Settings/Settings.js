@@ -4,18 +4,35 @@ import { observer } from "mobx-react";
 
 import { Hotkey } from "../../core/Hotkey";
 
+import "./Settings.styl";
+import { Block, Elem } from "../../utils/bem";
+
 const HotkeysDescription = () => {
   const descr = Hotkey.keysDescipritions();
   const columns = [
-    { title: "Key", dataIndex: "key", key: "key" },
+    { title: "Shortcut", dataIndex: "combo", key: "combo" },
     { title: "Description", dataIndex: "descr", key: "descr" },
   ];
 
   const data = Object.keys(descr)
     .filter(k => descr[k])
-    .map(k => new Object({ key: k, descr: descr[k] })); // eslint-disable-line no-new-object
+    .map(k => ({
+      key: k,
+      combo: k.split(",").map(keyGroup => {
+        return (
+          <Elem name="key-group" key={keyGroup}>
+            {keyGroup.trim().split("+").map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
+          </Elem>
+        );
+      }),
+      descr: descr[k],
+    }));
 
-  return <Table columns={columns} dataSource={data} size="small" />;
+  return (
+    <Block name="keys">
+      <Table columns={columns} dataSource={data} size="small" />
+    </Block>
+  );
 };
 
 export default observer(({ store }) => {

@@ -16,6 +16,7 @@ import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Toolbar } from "../Toolbar/Toolbar";
+import { ImageViewProvider } from "./ImageViewContext";
 
 Konva.showWarnings = false;
 
@@ -59,15 +60,19 @@ const RegionsLayer = memo(({ regions, name, useLayers }) => {
   );
 });
 
-const Regions = memo(({ regions, useLayers = true }) => {
-  return chunks(regions, 15).map((chunk, i) => (
-    <RegionsLayer
-      key={`chunk-${i}`}
-      name={`chunk-${i}`}
-      regions={chunk}
-      useLayers={useLayers}
-    />
-  ));
+const Regions = memo(({ regions, useLayers = true, suggestion = false }) => {
+  return (
+    <ImageViewProvider value={{ suggestion }}>
+      {chunks(regions, 15).map((chunk, i) => (
+        <RegionsLayer
+          key={`chunk-${i}`}
+          name={`chunk-${i}`}
+          regions={chunk}
+          useLayers={useLayers}
+        />
+      ))}
+    </ImageViewProvider>
+  );
 });
 
 const DrawingRegion = observer(({ item }) => {
@@ -493,7 +498,22 @@ export default observer(
         containerStyle["maxWidth"] = item.maxwidth;
       }
 
-      const { brushRegions, shapeRegions } = splitRegions(regions);
+      const {
+        brushRegions,
+        shapeRegions,
+      } = splitRegions(regions);
+
+      const {
+        brushRegions: suggestedBrushRegions,
+        shapeRegions: suggestedShapeRegions,
+      } = splitRegions(item.suggestions);
+
+      const renderableRegions = Object.entries({
+        brush: brushRegions,
+        shape: shapeRegions,
+        suggestedBrush: suggestedBrushRegions,
+        suggestedShape: suggestedShapeRegions,
+      });
 
       return (
         <ObjectTag
@@ -564,28 +584,28 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
+              {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
                 <Layer>
                   <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
                 </Layer>
               )}
-
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
-              {brushRegions.length > 0 && (
-                <Regions
-                  name="brushes"
-                  regions={brushRegions}
-                  useLayers={false}
-                />
-              )}
+              {renderableRegions.map(([groupName, list]) => {
+                const isBrush = groupName.match(/brush/i) !== null;
+                const isSuggestion = groupName.match('suggested') !== null;
 
-              {shapeRegions.length > 0 && (
-                <Regions
-                  name="shapes"
-                  regions={shapeRegions}
-                />
-              )}
+                return list.length > 0 ? (
+                  <Regions
+                    key={groupName}
+                    name={groupName}
+                    regions={list}
+                    useLayers={isBrush === false}
+                    suggestion={isSuggestion}
+                  />
+                ) : <Fragment key={groupName}/>;
+              })}
 
               {selected && (
                 (selected.type === 'brushregion') ? (

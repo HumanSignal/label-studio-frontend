@@ -51,6 +51,10 @@ const ToolMixin = types
     get getSelectedShape() {
       return self.control.annotation.highlightedNode;
     },
+
+    get extraShortcuts() {
+      return {};
+    },
   }))
   .actions(self => ({
     setSelected(val) {

@@ -1,0 +1,27 @@
+.keys
+  &__key
+    padding 0 4px
+    height 16px
+    display inline-flex
+    align-items center
+    background #FFFFFF
+    border-radius 2px
+    font-weight bold
+    font-size 12px
+    text-transform uppercase
+    box-shadow 0px 0px 0px 1px rgba(0, 0, 0, 0.1), 0px 1px 0px rgba(0, 0, 0, 0.08)
+
+  &__key + &__key
+    position relative
+    margin-left 15px
+
+    &::before
+      position absolute
+      right 100%
+      width 15px
+      height 100%
+      content "+"
+      text-align center
+      display flex
+      align-items center
+      justify-content center

@@ -384,6 +384,14 @@ module.exports = ({withDevServer = true} = {}) => ({
               ref: true,
             },
           },
+          "url-loader"
+        ],
+      },
+      {
+        test: /\.png$/,
+        exclude: /node_modules/,
+        use: [
+          "url-loader"
         ],
       },
       {

@@ -31,21 +31,15 @@ export const Range = ({
   let currentValueShadow = currentValue;
 
   const roundToStep = (value) => {
-    return Math.round(value / step) * step;
+    return clamp(Math.round(value / step) * step, min, max);
   };
 
-  const notifyOnChange = (value) => {
-    if (value !== currentValueShadow) {
-      onChange?.(value);
-    }
-  };
-
-  const updateValue = (value, notify = true) => {
+  const updateValue = (value, notify = true, force = false) => {
     const newValue = multi ? value.map(roundToStep) : roundToStep(value);
 
-    if (currentValue !== newValue) {
+    if (currentValueShadow !== newValue || force) {
       setValue(newValue);
-      if (notify || continuous) notifyOnChange(newValue);
+      if (notify || continuous || force) onChange?.(value);
       currentValueShadow = newValue;
     }
   };
@@ -118,7 +112,7 @@ export const Range = ({
               valueConvert={valueToPercentage}
               offsetConvert={offsetToValue}
               onChangePosition={(val) => updateValue(getValue(val), false)}
-              onChange={(val) => updateValue(getValue(val))}
+              onChange={(val) => updateValue(getValue(val), true, true)}
             />
 
           );
@@ -131,7 +125,7 @@ export const Range = ({
             valueConvert={valueToPercentage}
             offsetConvert={offsetToValue}
             onChangePosition={(val) => updateValue(val, false)}
-            onChange={(val) => updateValue(val)}
+            onChange={(val) => updateValue(val, true, true)}
           />
         )}
       </Elem>
@@ -178,9 +172,10 @@ const RangeHandle = ({
     };
 
     const handleMouseUp = () => {
+      onChange?.(newValue);
+
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      onChange?.(newValue);
     };
 
     document.addEventListener('mousemove', handleMouseMove);

@@ -57,7 +57,6 @@ export const Hotkey = () => {
         .map(s => s.trim())
         .filter(Boolean)
         .forEach(scope => {
-          console.log(`Removed key ${key}`);
           keymaster.unbind(key, scope);
         });
 

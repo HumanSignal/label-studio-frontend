@@ -30,6 +30,7 @@ const ToolView = observer(({ item }) => {
       value={item.strokeWidth}
       active={item.selected}
       shortcut={item.shortcut}
+      extraShortcuts={item.extraShortcuts}
       icon={<IconBrushTool />}
       onClick={() => {
         if (item.selected) return;
@@ -66,11 +67,20 @@ const _Tool = types
     get viewClass() {
       return <ToolView item={self} />;
     },
-
     get tagTypes() {
       return {
         stateTypes: "brushlabels",
         controlTagTypes: ["brushlabels", "brush"],
+      };
+    },
+    get extraShortcuts() {
+      return {
+        "[": ["Decrease size", () => {
+          self.setStroke(Math.max(10, self.strokeWidth - 5));
+        }],
+        "]": ["Increase size", () => {
+          self.setStroke(Math.min(50, self.strokeWidth + 5));
+        }],
       };
     },
   }))

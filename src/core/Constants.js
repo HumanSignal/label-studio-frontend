@@ -26,6 +26,9 @@ export default {
   HIGHLIGHTED_STROKE_WIDTH: 2,
   HIGHLIGHTED_CSS_BORDER: "1px dashed #00aeff",
 
+  // when using dynamic suggestions
+  SUGGESTION_STROKE_WIDTH: 4,
+
   // cursors
   DEFAULT_CURSOR: "default",
   CHOOSE_CURSOR: "pointer",

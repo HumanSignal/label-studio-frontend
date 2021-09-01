@@ -13,9 +13,7 @@ export const AnnotationTab = observer(({ store }) => {
 
   return (
     <>
-      <div>
-        <DynamicPreannotationsToggle />
-      </div>
+      <DynamicPreannotationsToggle />
       {store.hasInterface("annotations:current") && (
         <CurrentEntity
           entity={as.selected}

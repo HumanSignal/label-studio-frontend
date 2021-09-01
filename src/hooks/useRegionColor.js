@@ -1,12 +1,14 @@
 import chroma from "chroma-js";
 import { observe } from "mobx";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import Constants, { defaultStyle } from "../core/Constants";
 
 export const useRegionColors = (region, {
   useStrokeAsFill = false,
 } = {}) => {
   const style = region.style || region.tag || defaultStyle;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
   const [highlighted, setHighlighted] = useState(region.highlighted);
   const [shouldFill, setShouldFill] = useState(region.fill ?? useStrokeAsFill);
 
@@ -28,7 +30,9 @@ export const useRegionColors = (region, {
   }, [highlighted, style]);
 
   const strokeWidth = useMemo(() => {
-    if (highlighted) {
+    if (suggestion) {
+      return Constants.SUGGESTION_STROKE_WIDTH;
+    } else if (highlighted) {
       return Constants.HIGHLIGHTED_STROKE_WIDTH;
     } else {
       return +style.strokewidth;

@@ -71,6 +71,8 @@ const Annotation = types
 
     areas: types.map(Area),
 
+    suggestions: types.map(Area),
+
     regionStore: types.optional(RegionStore, {
       regions: [],
     }),
@@ -402,10 +404,10 @@ const Annotation = types
       if (isDraft) self.versions.draft = self.serializeAnnotation();
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
-        self.deserializeAnnotation(self.versions.result);
+        self.deserializeResults(self.versions.result);
         self.draftSelected = false;
       } else {
-        self.deserializeAnnotation(self.versions.draft);
+        self.deserializeResults(self.versions.draft);
         self.draftSelected = true;
       }
       self.updateObjects();
@@ -684,51 +686,42 @@ const Annotation = types
       });
     },
 
+    setSuggestions(rawSuggestions) {
+      self.suggestions.clear();
+
+      self.deserializeResults(rawSuggestions, {
+        suggestions: true,
+      });
+
+      if (getRoot(self).autoAcceptSuggestions) {
+        self.acceptAllSuggestions();
+      }
+    },
+
     /**
-     * Deserialize annotation of models
+     * Deserialize results
+     * @param {string | Array<any>} json Input results
+     * @param {{
+     * suggestions: boolean
+     * }} options Deserialization options
      */
-    deserializeAnnotation(json) {
+    deserializeResults(json, { suggestions=false } = {}) {
       try {
-        let objAnnotation = json;
-
-        if (typeof objAnnotation !== "object") {
-          objAnnotation = JSON.parse(objAnnotation);
-        }
-
-        objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
+        const objAnnotation = self.prepareAnnotation(json);
+        const areas = suggestions ? self.suggestions : self.areas;
 
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
-          if (obj["type"] !== "relation") {
-            const { id, value: rawValue, type, ...data } = obj;
-
-            const { type: tagType } = self.names.get(obj.to_name) ?? {};
-
-            // avoid duplicates of the same areas in different annotations/predictions
-            const areaId = `${id || guidGenerator()}#${self.id}`;
-            const resultId = `${data.from_name}@${areaId}`;
-            const value = self.prepareValue(rawValue, tagType);
-
-            let area = self.areas.get(areaId);
-
-            if (!area) {
-              const areaSnapshot = {
-                id: areaId,
-                object: data.to_name,
-                ...data,
-                ...value,
-                value,
-              };
-
-              area = self.areas.put(areaSnapshot);
-            }
-
-            area.addResult({ ...data, id: resultId, type, value });
-          }
+          self.deserializeSingleResult(obj,
+            (id) => areas.get(id),
+            (snapshot) => areas.put(snapshot),
+          );
         });
 
-        self.results.filter(r => r.area.classification).forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+        self.results
+          .filter(r => r.area.classification)
+          .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
         objAnnotation.forEach(obj => {
           if (obj["type"] === "relation") {
@@ -740,10 +733,50 @@ const Annotation = types
             );
           }
         });
-
       } catch (e) {
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
+      }
+    },
+
+    prepareAnnotation(rawAnnotation) {
+      let objAnnotation = rawAnnotation;
+
+      if (typeof objAnnotation !== "object") {
+        objAnnotation = JSON.parse(objAnnotation);
+      }
+
+      objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
+
+      return objAnnotation;
+    },
+
+    deserializeSingleResult(obj, getArea, createArea) {
+      if (obj["type"] !== "relation") {
+        const { id, value: rawValue, type, ...data } = obj;
+
+        const { type: tagType } = self.names.get(obj.to_name) ?? {};
+
+        // avoid duplicates of the same areas in different annotations/predictions
+        const areaId = `${id || guidGenerator()}#${self.id}`;
+        const resultId = `${data.from_name}@${areaId}`;
+        const value = self.prepareValue(rawValue, tagType);
+
+        let area = getArea(areaId);
+
+        if (!area) {
+          const areaSnapshot = {
+            id: areaId,
+            object: data.to_name,
+            ...data,
+            ...value,
+            value,
+          };
+
+          area = createArea(areaSnapshot);
+        }
+
+        area.addResult({ ...data, id: resultId, type, value });
       }
     },
 
@@ -771,6 +804,30 @@ const Annotation = types
       }
 
       return value;
+    },
+
+    acceptAllSuggestions() {
+      Array.from(self.suggestions).forEach(([id, item]) => {
+        self.areas.set(id, item.toJSON());
+        self.suggestions.delete(id);
+      });
+    },
+
+    rejectAllSuggestions() {
+      Array.from(self.suggestions.keys).forEach((id) => {
+        self.suggestions.delete(id);
+      });
+    },
+
+    acceptSuggestion(id) {
+      const item = self.suggestions.get(id);
+
+      self.areas.set(id, item.toJSON());
+      self.suggestions.delete(id);
+    },
+
+    rejectSuggestion(id) {
+      self.suggestions.delete(id);
     },
   }));
 
@@ -1088,7 +1145,7 @@ export default types
       });
 
       selectAnnotation(c.id);
-      c.deserializeAnnotation(s);
+      c.deserializeResults(s);
       c.updateObjects();
 
       return c;

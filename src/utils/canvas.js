@@ -32,15 +32,7 @@ function RLE2Region(rle, image, { color }) {
   const newdata = ctx.createImageData(nw, nh);
 
   newdata.data.set(decode(rle));
-  const rgb = colorToRGBAArray(color);
 
-  for (let i = newdata.data.length / 4; i--; ) {
-    if (newdata.data[i * 4 + 3]) {
-      newdata.data[i * 4] = rgb[0];
-      newdata.data[i * 4 + 1] = rgb[1];
-      newdata.data[i * 4 + 2] = rgb[2];
-    }
-  }
   ctx.putImageData(newdata, 0, 0);
 
   var new_image = new Image();

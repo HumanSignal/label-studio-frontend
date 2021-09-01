@@ -117,6 +117,14 @@ export default types
 
     users: types.optional(types.array(UserExtended), []),
   })
+  .preProcessSnapshot((sn) => {
+    console.log({ sn });
+    return {
+      ...sn,
+      dynamicPreannotations: localStorage.getItem("dynamicPreannotations") === "true",
+      autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
+    };
+  })
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
     initialized: false,
@@ -459,14 +467,14 @@ export default types
         const obj = as.addPrediction(p);
 
         as.selectPrediction(obj.id);
-        obj.deserializeAnnotation(p.result);
+        obj.deserializeResults(p.result);
       });
 
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
         const obj = as.addAnnotation(c);
 
         as.selectAnnotation(obj.id);
-        obj.deserializeAnnotation(c.draft || c.result);
+        obj.deserializeResults(c.draft || c.result);
         obj.reinitHistory();
       });
 
@@ -503,16 +511,18 @@ export default types
 
         const result = item.previous_annotation_history_result ?? [];
 
-        obj.deserializeAnnotation(result);
+        obj.deserializeResults(result);
       });
     }
 
     const setDynamicPreannotation = (value) => {
       self.dynamicPreannotations = value;
+      localStorage.setItem("dynamicPreannotations", value);
     };
 
     const setAutoAcceptSuggestions = (value) => {
       self.autoAcceptSuggestions = value;
+      localStorage.setItem("autoAcceptSuggestions", value);
     };
 
     return {
