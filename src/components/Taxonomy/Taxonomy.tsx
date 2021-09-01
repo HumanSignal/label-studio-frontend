@@ -19,6 +19,7 @@ type TaxonomyOptions = {
   showFullPath?: boolean,
   pathSeparator?: string,
   maxUsages?: number,
+  placeholder?: string,
 }
 
 type TaxonomyOptionsContextValue = TaxonomyOptions & {
@@ -69,16 +70,21 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
   const limitReached = maxUsagesReached && !checked;
   const title = onlyLeafsAllowed
     ? "Only leaf nodes allowed"
-    : (limitReached ? `Maximum ${maxUsages} items already selected` : "");
+    : (limitReached ? `Maximum ${maxUsages} items already selected` : undefined);
+  const disabled = onlyLeafsAllowed || limitReached;
 
   return (
     <div>
       <div className={styles.taxonomy__item}>
         <div className={styles.taxonomy__grouping} onClick={toggle}>{prefix}</div>
-        <label onClick={onClick} title={title}>
+        <label
+          onClick={onClick}
+          title={title}
+          className={disabled ? styles.taxonomy__collapsable : undefined}
+        >
           <input
             type="checkbox"
-            disabled={onlyLeafsAllowed || limitReached}
+            disabled={disabled}
             checked={checked}
             onChange={e => setSelected(item.path, e.currentTarget.checked)}
           />
@@ -132,10 +138,11 @@ const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
 
 const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const taxonomyRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const onClickOutside = useCallback(e => {
-    if (!dropdownRef.current?.contains(e.target)) close();
+    if (!taxonomyRef.current?.contains(e.target)) close();
   }, []);
   const onEsc = useCallback(e => {
     if (e.key === "Escape") {
@@ -143,6 +150,8 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }:
       e.stopPropagation();
     }
   }, []);
+
+  const isOpenClassName = isOpen ? styles.taxonomy_open : "";
 
   const flatten = useMemo(() => {
     const flatten: TaxonomyItem[] = [];
@@ -192,9 +201,11 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }:
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
-        <div className={styles.taxonomy}>
+        <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
           <SelectedList />
-          <span onClick={() => !isOpen && setOpen(true)}>Click to add...</span>
+          <span onClick={() => setOpen(val => !val)}>
+            {options.placeholder || "Click to add..."}
+          </span>
           <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
         </div>
       </TaxonomyOptionsContext.Provider>
