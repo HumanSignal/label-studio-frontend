@@ -33,7 +33,8 @@ const ListItemModel = types
   }));
 
 /**
- * List element, used for ranking results. Great choice for recomendation systems.
+ * Use the List tag to rank results. Great choice for recommendation systems.
+ * Use with the following data types: audio, image, text
  * @example
  * <View>
  *  <HyperText name="page" value="$markup"></HyperText>

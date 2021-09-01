@@ -17,7 +17,8 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
 import Types from "../../core/Types";
 
 /**
- * Label tag represents a single label.
+ * Label tag represents a single label. Use to assign a single label to regions in a task.
+ * Use with the following data types: audio, image, text, time series, video
  * @example
  * <View>
  *   <Labels name="type" toName="txt-1">
@@ -28,7 +29,7 @@ import Types from "../../core/Types";
  * </View>
  * @name Label
  * @meta_title Label Tags for Single Label Tags
- * @meta_description Label Studio Label Tags customize Label Studio with single label tags for machine learning and data science projects.
+ * @meta_description Customize Label Studio with the Label tag to assign a single label to regions in a task for machine learning and data science projects.
  * @param {string} value                    - Value of the label
  * @param {boolean} [selected=false]        - Whether to preselect this label
  * @param {number} [maxUsages]              - Maximum available uses of the label

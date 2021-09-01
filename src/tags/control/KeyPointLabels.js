@@ -11,8 +11,8 @@ import { KeyPointModel } from "./KeyPoint";
 import ControlBase from "./Base";
 
 /**
- * KeyPointLabels tag
- * KeyPointLabels tag creates labeled keypoints
+ * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points when performing semantic segmentation.
+ * Use with the following data types: image
  * @example
  * <View>
  *   <KeyPointLabels name="kp-1" toName="img-1">
@@ -24,7 +24,7 @@ import ControlBase from "./Base";
  * @name KeyPointLabels
  * @regions KeyPointRegion
  * @meta_title Keypoint Label Tags for Labeling Keypoints
- * @meta_description Label Studio Keypoint Label Tags customize Label Studio for labeling keypoints for machine learning and data science projects.
+ * @meta_description Customize Label Studio with the KeyPointLabels tag to label keypoints for computer vision machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
@@ -45,7 +45,7 @@ const Validation = types.model({
 });
 
 const ModelAttrs = types
-  .model("KeyPointLabelesModel", {
+  .model("KeyPointLabelsModel", {
     type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })

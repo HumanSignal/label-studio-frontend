@@ -8,8 +8,9 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
- * Ellipse
- * Ellipse is used to add ellipse (elliptical Bounding Box) to an image
+ * Use the Ellipse tag to add an elliptical bounding box to an image. Use for bounding box image segmentation tasks
+ * with ellipses.
+ * Use with the following data types: image
  * @example
  * <View>
  *   <Ellipse name="ellipse1-1" toName="img-1" />
@@ -17,7 +18,7 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  * </View>
  * @name Ellipse
  * @meta_title Ellipse Tags for Adding Elliptical Bounding Box to Images
- * @meta_description Label Studio Ellipse Tags customize Label Studio to add elliptical bounding boxes to images for machine learning and data science projects.
+ * @meta_description Customize Label Studio with ellipse tags to add elliptical bounding boxes to images for machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {float} [opacity=0.6]          - Opacity of ellipse

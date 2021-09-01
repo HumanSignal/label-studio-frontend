@@ -11,7 +11,8 @@ import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * Use the BrushLabels tag to create segmented labeling for images.
+ * Use the BrushLabels tag for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
+ * Use with the following data types: image
  * @example
  * <View>
  *   <BrushLabels name="labels" toName="image">
@@ -22,8 +23,8 @@ import ControlBase from "./Base";
  * </View>
  * @name BrushLabels
  * @regions BrushRegion
- * @meta_title Brush Label Tags for Segmented Image Labeling
- * @meta_description Label Studio Brush Label Tags customize Label Studio for segmented image labeling for machine learning and data science projects.
+ * @meta_title Brush Label Tags for Image Segmentation Labeling
+ * @meta_description Customize Label Studio with brush label tags for image segmentation labeling for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether the data labeler can select one or multiple labels
