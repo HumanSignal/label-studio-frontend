@@ -17,8 +17,11 @@ import { defaultStyle } from "../../../core/Constants";
 import "../Label";
 
 /**
- * Labels tag, create a group of labels.
+ * Use the Labels tag to create a set of labels that can be assigned to identified regions. Use with the Label tag to specify the values of labels to assign to regions.
+ *
+ * Use with the following data types: audio, image, text, time series, video
  * @example
+ * <!--Basic labeling configuration to apply labels to a passage of text -->
  * <View>
  *   <Labels name="type" toName="txt-1">
  *     <Label alias="B" value="Brand" />
@@ -27,8 +30,8 @@ import "../Label";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Labels
- * @meta_title Labels Tags for Label Groups
- * @meta_description Label Studio Labels Tags customize Label Studio with label groups for machine learning and data science projects.
+ * @meta_title Labels Tag for Labeling Regions
+ * @meta_description Customize Label Studio by using the Labels tag to provide a set of labels for labeling regions in tasks for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the element that you want to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels

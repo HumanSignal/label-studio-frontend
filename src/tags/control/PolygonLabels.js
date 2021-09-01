@@ -11,19 +11,22 @@ import { PolygonModel } from "./Polygon";
 import ControlBase from "./Base";
 
 /**
- * PolygonLabels tag, create labeled polygons
+ * Use the PolygonLabels tag to create labeled polygons. Use to apply labels to polygons in semantic segmentation tasks.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic labeling configuration for polygonal semantic segmentation of images -->
  * <View>
  *   <Image name="image" value="$image" />
- *   <PolygonLabels name="lables" toName="image">
+ *   <PolygonLabels name="labels" toName="image">
  *     <Label value="Car" />
  *     <Label value="Sign" />
  *   </PolygonLabels>
  * </View>
  * @name PolygonLabels
  * @regions PolygonRegion
- * @meta_title Polygon Label Tags for Labeling Polygons in Images
- * @meta_description Label Studio Polygon Label Tags customize Label Studio for labeling polygons in images for machine learning and data science projects.
+ * @meta_title Polygon Label Tag for Labeling Polygons in Images
+ * @meta_description Customize Label Studio with the PolygonLabels tag and label polygons in images for semantic segmentation machine learning and data science projects.
  * @param {string} name                             - Name of tag
  * @param {string} toName                           - Name of image to label
  * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels

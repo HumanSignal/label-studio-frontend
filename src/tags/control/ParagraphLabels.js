@@ -11,9 +11,11 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * ParagraphLabels tag
- * ParagraphLabels tag creates labeled paragraph
+ * The ParagraphLabels tag creates labeled paragraphs. Use to label a paragraph of text.
+ *
+ * Use with the following data types: HTML, text
  * @example
+ * <!--Basic labeling configuration to label paragraphs -->
  * <View>
  *   <ParagraphLabels name="labels" toName="prg">
  *     <Label value="Statement" />
@@ -22,7 +24,7 @@ import ControlBase from "./Base";
  *   <Paragraphs name="prg" value="$dialogue" layout="dialogue" />
  * </View>
  * @name ParagraphLabels
- * @meta_title Paragraph Label Tags for Paragraph Labels
+ * @meta_title Paragraph Label Tag for Paragraph Labels
  * @meta_description Label Studio Paragraph Label Tags customize Label Studio with paragraph labels for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the HTML element to label
@@ -36,7 +38,7 @@ const TagAttrs = types.model({
 });
 
 const ModelAttrs = types
-  .model("ParagraphLabelesModel", {
+  .model("ParagraphLabelsModel", {
     pid: types.optional(types.string, guidGenerator),
     type: "paragraphlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),

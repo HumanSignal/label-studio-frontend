@@ -7,16 +7,17 @@ import { customTypes } from "../../core/CustomTypes";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
- * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful
- * when you have only one label to assign to the key point.
+ * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
+ *
  * Use with the following data types: image
  * @example
+ * <!--Basic keypoint image labeling configuration-->
  * <View>
  *   <KeyPoint name="kp-1" toName="img-1" />
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPoint
- * @meta_title Keypoint Tags for Adding Keypoints to Images
+ * @meta_title Keypoint Tag for Adding Keypoints to Images
  * @meta_description Customize Label Studio with the KeyPoint tag to add key points to images for computer vision machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label

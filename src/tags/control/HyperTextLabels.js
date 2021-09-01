@@ -11,8 +11,10 @@ import ControlBase from "./Base";
 
 /**
  * The HyperTextLabels tag creates labeled hyper text (HTML). Use to annotate HTML text or HTML elements for named entity recognition tasks.
+ *
  * Use with the following data types: HTML text
  * @example
+ * <!--Basic semantic text labeling configuration-->
  * <View>
  *   <HyperTextLabels name="labels" toName="ht">
  *     <Label value="Header" />
@@ -21,7 +23,7 @@ import ControlBase from "./Base";
  *   <HyperText name="ht" value="$html" />
  * </View>
  * @name HyperTextLabels
- * @meta_title Hypertext Label Tags to Create Labeled Hypertext (HTML)
+ * @meta_title Hypertext Label Tag to Create Labeled Hypertext (HTML)
  * @meta_description Customize Label Studio with the HyperTextLabels tag to label hypertext (HTML) for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the HTML element to label

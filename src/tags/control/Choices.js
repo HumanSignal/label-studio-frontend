@@ -20,11 +20,11 @@ import "./Choice";
 const { Option } = Select;
 
 /**
- * Use the Choices tag to create a group of choices, with radio buttons or checkboxes. Can
- * be used for single or multi-class classification. Use for advanced classification tasks where
- * annotators can choose one or multiple answers.
+ * Use the Choices tag to create a group of choices, with radio buttons or checkboxes. Can be used for single or multi-class classification. Use for advanced classification tasks where annotators can choose one or multiple answers.
+ *
  * Use with the following data types: audio, image, text, time series, video
  * @example
+ * <!--Basic text classification labeling configuration-->
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single-radio">
  *     <Choice alias="M" value="Male" />
@@ -35,7 +35,7 @@ const { Option } = Select;
  *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choices
- * @meta_title Choices Tags for Multiple Choice Labels
+ * @meta_title Choices Tag for Multiple Choice Labels
  * @meta_description Customize Label Studio with multiple choice labels for machine learning and data science projects.
  * @param {string} name                - Name of the group of choices
  * @param {string} toName              - Name of the data item that you want to label

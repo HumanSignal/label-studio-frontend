@@ -12,8 +12,10 @@ import ControlBase from "./Base";
 
 /**
  * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points when performing semantic segmentation.
+ *
  * Use with the following data types: image
  * @example
+ * <!--Basic keypoint image labeling configuration for multiple regions-->
  * <View>
  *   <KeyPointLabels name="kp-1" toName="img-1">
  *     <Label value="Face" />
@@ -23,7 +25,7 @@ import ControlBase from "./Base";
  * </View>
  * @name KeyPointLabels
  * @regions KeyPointRegion
- * @meta_title Keypoint Label Tags for Labeling Keypoints
+ * @meta_title Keypoint Label Tag for Labeling Keypoints
  * @meta_description Customize Label Studio with the KeyPointLabels tag to label keypoints for computer vision machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label

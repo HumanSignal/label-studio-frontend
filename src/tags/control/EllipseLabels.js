@@ -12,8 +12,10 @@ import ControlBase from "./Base";
 
 /**
  * The EllipseLabels tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
+ *
  * Use with the following data types: image
  * @example
+ * <!--Basic semantic image segmentation labeling configuration-->
  * <View>
  *   <EllipseLabels name="labels" toName="image">
  *     <Label value="Person" />
@@ -23,9 +25,8 @@ import ControlBase from "./Base";
  * </View>
  * @name EllipseLabels
  * @regions EllipseRegion
- * @meta_title Ellipse Label Tags for Labeling Images with Elliptical Bounding Boxes
- * @meta_description Customize Label Studio with the EllipseLabels tag to label images with elliptical bounding boxes for
- * semantic image segmentation machine learning and data science projects.
+ * @meta_title Ellipse Label Tag for Labeling Images with Elliptical Bounding Boxes
+ * @meta_description Customize Label Studio with the EllipseLabels tag to label images with elliptical bounding boxes for semantic image segmentation machine learning and data science projects.
  * @param {string} name               - Name of the element
  * @param {string} toName             - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels

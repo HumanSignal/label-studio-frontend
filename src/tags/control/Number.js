@@ -12,15 +12,20 @@ import { isDefined } from "../../utils/utilities";
 import ControlBase from "./Base";
 
 /**
- * Number adds numeric classification
+ * The Number tag supports numeric classification. Use to classify tasks using numbers.
+ *
+ * Use with the following data types: audio, image, text, time series, video
  *
  * @example
+ * <!--Basic labeling configuration for numeric classification of text -->
  * <View>
  *   <Text name="txt" value="$text" />
  *   <Number name="number" toName="txt" max="10" />
  * </View>
  *
  * @name Number
+ * @meta_title Number Tag to Numerically Classify
+ * @meta_description Customize Label Studio with the Number tag to numerically classify tasks in your machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} toName                     - Name of the element that you want to label
  * @param {number} [min]                      - Minimum number value

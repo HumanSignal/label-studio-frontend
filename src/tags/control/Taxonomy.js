@@ -16,16 +16,18 @@ import ControlBase from "./Base";
 import "react-dropdown-tree-select/dist/styles.css";
 
 /**
- * Taxonomy tag allows to select one or more hierarchical labels
- * storing both label and their ancestors.
+ * Use the Taxonomy tag to create one or more hierarchical labels, storing both label and their ancestors in the results. Frequently used for nested classification tasks with the Choice or Choices tags.
+ *
+ * Use with the following data types: audio, image, text, time series, video
  * @example
+ * <!--Labeling configuration for providing a taxonomy of choices in response to a passage of text -->
  * <View>
  *   <Taxonomy name="media" toName="text">
  *     <Choice value="Online">
  *       <Choice value="UGC" />
  *       <Choice value="Free" />
  *       <Choice value="Paywall">
- *         <Choice value="NYC Times" />
+ *         <Choice value="NY Times" />
  *         <Choice value="The Wall Street Journal" />
  *       </Choice>
  *     </Choice>
@@ -34,11 +36,11 @@ import "react-dropdown-tree-select/dist/styles.css";
  *   <Text name="text" value="You'd never believe what he did to the country" />
  * </View>
  * @name Taxonomy
- * @meta_title Taxonomy Tags for Hierarchical Labels
- * @meta_description Label Studio Taxonomy Tags customize Label Studio by using hierarchical labels for machine learning and data science projects.
+ * @meta_title Taxonomy Tag for Hierarchical Labels
+ * @meta_description Customize Label Studio with the Taxonomy tag and use hierarchical labels for machine learning and data science projects.
  * @param {string} name                - Name of the element
  * @param {string} toName              - Name of the element that you want to classify
- * @param {boolean} [leafsOnly=false]  - Allow to select only leaf nodes of taxonomy
+ * @param {boolean} [leafsOnly=false]  - Allow annotators to select only leaf nodes of taxonomy
  * @param {number} [maxUsages]         - Maximum available usages
  * @param {boolean} [required=false]   - Whether taxonomy validation is required
  * @param {string} [requiredMessage]   - Message to show if validation fails

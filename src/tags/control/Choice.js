@@ -13,8 +13,10 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
 
 /**
  * The Choice tag represents a single choice for annotations. Use for simple classification tasks where annotators must provide one answer.
+ *
  * Use with the following data types: audio, image, text, time series, video
  * @example
+ * <!--Basic text classification labeling configuration-->
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single">
  *     <Choice value="Man" />
@@ -25,7 +27,7 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
  *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choice
- * @meta_title Choice Tags for Single Choice Labels
+ * @meta_title Choice Tag for Single Choice Labels
  * @meta_description Customize Label Studio with choice tags for simple classification tasks in machine learning and data science projects.
  * @param {string} value       - Choice value
  * @param {boolean} [selected] - Specify whether to preselect this label on the labeling interface
