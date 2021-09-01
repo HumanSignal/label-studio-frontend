@@ -8,18 +8,20 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 
 /**
- * Use the Header tag to show a header.
+ * Use the Header tag to show a header on the labeling interface.
  * @example
+ * <!-- Display only a header on the labeling interface -->
  * <View>
  *   <Header name="text-1" value="$text" />
  * </View>
  * @example
+ * <!-- Display only a header on the labeling interface -->
  * <View>
  *   <Header name="text-1" value="Please select the class" />
  * </View>
  * @name Header
- * @meta_title Header Tags to Show Headers
- * @meta_description Label Studio Header Tags customize Label Studio to show headers for machine learning and data science projects.
+ * @meta_title Header Tag to Show Headers
+ * @meta_description Customize Label Studio with the Header tag to display a header for a labeling task for machine learning and data science projects.
  * @param {string} value              - Text of header
  * @param {number} [size=4]           - Size of header
  * @param {string} [style]            - CSS style string

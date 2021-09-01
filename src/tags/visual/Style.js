@@ -5,8 +5,10 @@ import { observer } from "mobx-react";
 import Registry from "../../core/Registry";
 
 /**
- * Style tag, add CSS styles right through the labeling config.
+ * Use the Style tag to apply CSS styles to the labeling interface.
+ *  
  * @example
+ * <!-- Add CSS styles to a header on the labeling interface -->
  * <View>
  *   <Style> .cls-name { background: red; }</Style>
  *   <View className="cls-name">
@@ -14,8 +16,8 @@ import Registry from "../../core/Registry";
  *   </View>
  * </View>
  * @name Style
- * @meta_title Style Tags to use CSS Styles
- * @meta_description Label Studio Style Tags customize Label Studio with CSS Styles for machine learning and data science projects.
+ * @meta_title Style Tag to use CSS Styles
+ * @meta_description Customize Label Studio with CSS styles to modify the labeling interface for machine learning and data science projects.
  */
 const Model = types.model({
   type: "style",
