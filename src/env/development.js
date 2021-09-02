@@ -62,7 +62,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = AudioRegions;
+const data = Taxonomy;
 
 function getData(task) {
   if (task && task.data) {

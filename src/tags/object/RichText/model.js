@@ -11,6 +11,7 @@ import Utils from "../../../utils";
 import { parseValue } from "../../../utils/data";
 import messages from "../../../utils/messages";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
@@ -113,7 +114,7 @@ const Model = types
       if (self.valuetype === "url") {
         const url = value;
 
-        if (!/^https?:\/\//.test(url)) {
+        if (!isValidObjectURL(url, true)) {
           const message = [WARNING_MESSAGES.badURL(url), WARNING_MESSAGES.dataTypeMistmatch()];
 
           if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());

@@ -18,6 +18,7 @@ import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { isValidObjectURL } from "../../utils/utilities";
 
 /**
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -213,7 +214,7 @@ const Model = types
       if (self.valuetype === "url") {
         const url = value;
 
-        if (!/^https?:\/\//.test(url)) {
+        if (!isValidObjectURL(url, true)) {
           const message = [];
 
           if (url) {
