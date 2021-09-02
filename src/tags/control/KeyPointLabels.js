@@ -30,12 +30,12 @@ import ControlBase from "./Base";
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]           - Maximum available uses of the label
- * @param {boolean} [showInline=true]    - Show items in the same visual line
+ * @param {number} [maxUsages]           - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]    - Show labels in the same visual line
  * @param {float=} [opacity=0.9]         - Opacity of the keypoint
- * @param {string=} [fillColor=#8bad00]  - Keypoint fill color
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
- * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color
+ * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  */
 const TagAttrs = types.model({
   name: types.identifier,

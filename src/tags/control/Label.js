@@ -34,15 +34,15 @@ import { parseValue } from "../../utils/data";
  * @meta_description Customize Label Studio with the Label tag to assign a single label to regions in a task for machine learning and data science projects.
  * @param {string} value                    - Value of the label
  * @param {boolean} [selected=false]        - Whether to preselect this label
- * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {number} [maxUsages]              - Maximum number of times this label can be used per task
  * @param {string} [hint]                   - Hint for label on hover
  * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
  * @param {string} [alias]                  - Label alias
  * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
- * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
+ * @param {string} [aliasStyle=opacity:0.6] - CSS style for the alias
  * @param {string} [size=medium]            - Size of text in the label
- * @param {string} [background=#36B37E]     - Background color of an active label
- * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {string} [background=#36B37E]     - Background color of an active label in hexadecimal
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label in hexadecimal
  * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({

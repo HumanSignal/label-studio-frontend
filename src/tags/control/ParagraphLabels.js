@@ -27,10 +27,10 @@ import ControlBase from "./Base";
  * @meta_title Paragraph Label Tag for Paragraph Labels
  * @meta_description Customize Label Studio with paragraph labels for machine learning and data science projects.
  * @param {string} name                      - Name of the element
- * @param {string} toName                    - Name of the HTML element to label
+ * @param {string} toName                    - Name of the paragraph element to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]               - Maximum available uses of a label
- * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,

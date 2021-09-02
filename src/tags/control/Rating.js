@@ -36,7 +36,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {string} hotkey                     - HotKey for changing rating value
  * @param {boolean} [required=false]          - Whether rating validation is required
  * @param {string} [requiredMessage]          - Message to show if validation fails
- * @param {boolean} [perRegion]               - Use this tag to label regions instead of the whole object
+ * @param {boolean} [perRegion]               - Use this tag to rate regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,

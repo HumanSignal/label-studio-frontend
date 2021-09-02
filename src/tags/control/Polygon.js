@@ -24,8 +24,8 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  * @param {string} name                           - Name of tag
  * @param {string} toname                         - Name of image to label
  * @param {number} [opacity=0.6]                  - Opacity of polygon
- * @param {string} [fillColor=transparent]        - Polygon fill color
- * @param {string} [strokeColor=#f48a42]          - Stroke color
+ * @param {string} [fillColor=transparent]        - Polygon fill color in hexadecimal or HTML color name
+ * @param {string} [strokeColor=#f48a42]          - Stroke color in hexadecimal
  * @param {number} [strokeWidth=3]                - Width of stroke
  * @param {small|medium|large} [pointSize=small]  - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=circle]  - Style of points

@@ -30,11 +30,11 @@ import ControlBase from "./Base";
  * @param {string} name                             - Name of tag
  * @param {string} toName                           - Name of image to label
  * @param {single|multiple=} [choice=single]        - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]                      - Maximum available uses of the label
- * @param {boolean} [showInline=true]               - Show items in the same visual line
+ * @param {number} [maxUsages]                      - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]               - Show labels in the same visual line
  * @param {number} [opacity=0.2]                    - Opacity of polygon
- * @param {string} [fillColor]                      - Polygon fill color
- * @param {string} [strokeColor]                    - Stroke color
+ * @param {string} [fillColor]                      - Polygon fill color in hexadecimal
+ * @param {string} [strokeColor]                    - Stroke color in hexadecimal
  * @param {number} [strokeWidth=1]                  - Width of stroke
  * @param {small|medium|large} [pointSize=medium]   - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=rectangle] - Style of points

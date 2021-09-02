@@ -28,8 +28,8 @@ import ControlBase from "./Base";
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the HTML element to label
  * @param {single|multiple=} [choice=single] - Configure if you can select one or multiple labels
- * @param {number} [maxUsages]               - Maximum available uses of a label
- * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,

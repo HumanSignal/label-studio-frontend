@@ -46,12 +46,12 @@ const ListItemModel = types
  * @meta_title List Tag for Lists
  * @meta_description Customize Label Studio with lists for machine learning and data science projects.
  * @param {string} elementValue                - Lookup key for a child object
- * @param {Text|Image|Audio} [elementTag=Text] - Element used to render children
+ * @param {Text|Image|Audio} [elementTag=Text] - Object tag used to render children
  * @param {string} value                       - List values
  * @param {string} name                        - Name of group
- * @param {string=} sortedHighlightColor       - Color
+ * @param {string=} sortedHighlightColor       - Sorted color in HTML color name
  * @param {x|y} [axis=y]                       - Axis used for drag and drop
- * @param {x|y} lockAxis                       - Lock axis
+ * @param {x|y} lockAxis                       - Whether to lock the axis
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),

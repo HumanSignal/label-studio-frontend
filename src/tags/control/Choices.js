@@ -40,14 +40,14 @@ const { Option } = Select;
  * @param {string} name                - Name of the group of choices
  * @param {string} toName              - Name of the data item that you want to label
  * @param {single|single-radio|multiple} [choice=single] - Single or multi-class classification
- * @param {boolean} [showInline=false] - Show items in the same visual line
+ * @param {boolean} [showInline=false] - Show choices in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - When true, show the contents of a view
- * @param {string} [whenTagName]       - Narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - Control visibility of the choices.
+ * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
  * @param {string} [whenLabelValue]    - Narrow down visibility by label value
  * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
- * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
+ * @param {boolean} [perRegion] - Use this tag to select a choice for a specific region instead of the entire task
  */
 const TagAttrs = types.model({
   name: types.identifier,

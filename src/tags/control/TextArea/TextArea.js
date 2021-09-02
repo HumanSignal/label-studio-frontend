@@ -50,7 +50,7 @@ const { TextArea } = Input;
  * @param {string=} [label]                - Label text
  * @param {string=} [placeholder]          - Placeholder text
  * @param {string=} [maxSubmissions]       - Maximum number of submissions
- * @param {boolean=} [editable=false]      - Editable textarea results
+ * @param {boolean=} [editable=false]      - Whether to display an editable textarea
  * @param {boolean=} [transcription=false] - If false, always show editor
  * @param {number} [rows]                  - Number of rows in the textarea
  * @param {boolean} [required=false]       - Validate whether content in textarea is required

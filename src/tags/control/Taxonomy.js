@@ -39,9 +39,9 @@ import ControlBase from "./Base";
  * @param {string} name                - Name of the element
  * @param {string} toName              - Name of the element that you want to classify
  * @param {boolean} [leafsOnly=false]  - Allow annotators to select only leaf nodes of taxonomy
- * @param {boolean} [showFullPath=false] - Show full path of selected items
+ * @param {boolean} [showFullPath=false] - Whether to show the full path of selected items
  * @param {string} [pathSeparator= / ] - Separator to show in the full path
- * @param {number} [maxUsages]         - Maximum available usages
+ * @param {number} [maxUsages]         - Maximum number of times a choice can be selected per task
  * @param {boolean} [required=false]   - Whether taxonomy validation is required
  * @param {string} [requiredMessage]   - Message to show if validation fails
  * @param {string} [placeholder=]      - What to display as prompt on the input

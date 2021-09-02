@@ -29,8 +29,8 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
  * @meta_title Choice Tag for Single Choice Labels
  * @meta_description Customize Label Studio with choice tags for simple classification tasks in machine learning and data science projects.
  * @param {string} value       - Choice value
- * @param {boolean} [selected] - Specify whether to preselect this label on the labeling interface
- * @param {string} [alias]     - Alias for the label
+ * @param {boolean} [selected] - Specify whether to preselect this choice on the labeling interface
+ * @param {string} [alias]     - Alias for the choice. If used, the alias replaces the choice value in the annotation results. Alias does not display in the interface.
  * @param {style} [style]      - CSS style of the checkbox element
  * @param {string} [hotkey]    - Hotkey for the selection
  */

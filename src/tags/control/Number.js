@@ -32,10 +32,10 @@ import ControlBase from "./Base";
  * @param {number} [max]                      - Maximum number value
  * @param {number} [step=1]                   - Step for value increment/decrement
  * @param {number} [defaultValue]             - Default number value
- * @param {string} hotkey                     - HotKey for increasing number value
- * @param {boolean} [required=false]          - Whether number validation is required
+ * @param {string} hotkey                     - Hotkey for increasing number value
+ * @param {boolean} [required=false]          - Whether to require number validation
  * @param {string} [requiredMessage]          - Message to show if validation fails
- * @param {boolean} [perRegion]               - Use this tag to label regions instead of the whole object
+ * @param {boolean} [perRegion]               - Use this tag to classify specific regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,

@@ -25,7 +25,7 @@ import { customTypes } from "../../core/CustomTypes";
  * @meta_title Relation Tag for a Single Relation
  * @meta_description Customize Label Studio by using the Relation tag to add a single consistent label to relations between regions in machine learning and data science projects.
  * @param {string} value        - Value of the relation
- * @param {string} [background] - Background color of the active label
+ * @param {string} [background] - Background color of the active label in hexadecimal
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

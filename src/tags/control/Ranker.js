@@ -72,9 +72,9 @@ const RankerItemModel = types
  * @meta_title Ranker Tag for Model Ranking
  * @meta_description Customize Label Studio with the Ranker tag to rank the predictions from different models to rank model quality in your machine learning and data science projects.
  * @param {string} name                 - Name of group
- * @param {y|x=} [axis=y]               - Axis direction for ranking
+ * @param {y|x} [axis=y]               - Whether to use a vertical or horizantal axis direction for ranking
  * @param {x|y} lockAxis                - Lock axis
- * @param {string} sortedHighlightColor - Sorted color
+ * @param {string} sortedHighlightColor - Sorted color in HTML color name
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),
