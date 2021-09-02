@@ -19,7 +19,7 @@ import "../Label";
 /**
  * Use the Labels tag to create a set of labels that can be assigned to identified regions. Use with the Label tag to specify the values of labels to assign to regions.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, text. Other data types have type-specific Labels tags. 
  * @example
  * <!--Basic labeling configuration to apply labels to a passage of text -->
  * <View>
