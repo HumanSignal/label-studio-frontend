@@ -88,11 +88,15 @@ const Model = types
     setSelected(val) {
       self.sel = val;
     },
-
-    onHotKey() {
-      return self.toggleSelected();
-    },
-  }));
+  }))
+  .actions(self => {
+    if (self.parent.type === "choices") return {
+      onHotKey() {
+        return self.toggleSelected();
+      },
+    };
+    return {};
+  });
 
 const ChoiceModel = types.compose("ChoiceModel", TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
