@@ -1,12 +1,12 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 import { Divider, Empty } from "antd";
 
 import { guidGenerator } from "../../utils/unique";
 import Registry from "../../core/Registry";
 import DialogView from "../../components/Dialog/Dialog";
-import { stringToColor, convertToRGBA } from "../../utils/colors";
+import { convertToRGBA, stringToColor } from "../../utils/colors";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**

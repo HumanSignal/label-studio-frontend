@@ -4,7 +4,7 @@ import { Userpic } from "../../common/Userpic/Userpic";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./AnnotationTabs.styl";
-import { LsGrid, LsPlus, LsSparks, LsStar, IconBan } from "../../assets/icons";
+import { IconBan, LsGrid, LsPlus, LsSparks, LsStar } from "../../assets/icons";
 
 export const EntityTab = observer(forwardRef(({
   entity,

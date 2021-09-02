@@ -20,7 +20,8 @@ class RichTextPieceView extends Component {
   _onMouseUp = () => {
     const { item } = this.props;
     const states = item.activeStates();
-    const root = item.rootNodeRef.current;
+    const rootEl = item.rootNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!states || states.length === 0) return;
     if (item.selectionenabled === false) return;
@@ -44,6 +45,7 @@ class RichTextPieceView extends Component {
         item.addRegion(normedRange);
       },
       {
+        window: rootEl?.contentWindow ?? window,
         granularity: label?.granularity ?? item.granularity,
         beforeCleanup: () => (this._selectionMode = true),
       },
@@ -103,7 +105,8 @@ class RichTextPieceView extends Component {
     if (initial) {
       item.regs.forEach((richTextRegion) => {
         try {
-          const root = this.rootNodeRef.current;
+          const rootEl = this.rootNodeRef.current;
+          const root = rootEl?.contentDocument?.body ?? rootEl;
           const { start, startOffset, end, endOffset } = richTextRegion;
           const range = xpath.toRange(start, startOffset, end, endOffset, root);
           const [soff, eoff] = rangeToGlobalOffset(range, root);
@@ -147,38 +150,102 @@ class RichTextPieceView extends Component {
     this._handleUpdate();
   }
 
+  _passHotkeys = e => {
+    const props = "key code keyCode location ctrlKey shiftKey altKey metaKey".split(" ");
+    const init = {};
+
+    for (let prop of props) init[prop] = e[prop];
+
+    const internal = new KeyboardEvent(e.type, init);
+
+    document.dispatchEvent(internal);
+  }
+
+  onIFrameLoad = () => {
+    const body = this.rootNodeRef.current?.contentDocument?.body;
+    const eventHandlers = {
+      click: [this._onRegionClick, true],
+      keydown: [this._passHotkeys, false],
+      keyup: [this._passHotkeys, false],
+      keypress: [this._passHotkeys, false],
+      mouseup: [this._onMouseUp, false],
+      mouseover: [this._onRegionMouseOver, true],
+    };
+
+    if (!body) return;
+
+    for (let event in eventHandlers) {
+      body.addEventListener(event, ...eventHandlers[event]);
+    }
+
+    this._handleUpdate();
+  }
+
   render() {
     const { item } = this.props;
 
     if (!item._value) return null;
 
-    const eventHandlers = {
-      onClickCapture: this._onRegionClick,
-      onMouseUp: this._onMouseUp,
-      onMouseOverCapture: this._onRegionMouseOver,
-    };
-
     const content = item._value || "";
     const newLineReplacement = "<br/>";
-    const val = (item.type === 'text' ? htmlEscape(content) : content).replace(/\n|\r/g, newLineReplacement);
+    const val = item.type === 'text'
+      ? htmlEscape(content).replace(/\n|\r/g, newLineReplacement)
+      : content;
 
-    return (
-      <ObjectTag item={item}>
-        <div
-          ref={this.rootNodeRef}
-          style={{ overflow: "auto" }}
-          className="htx-richtext"
-          dangerouslySetInnerHTML={{ __html: val }}
-          {...eventHandlers}
-        />
-        <div
-          ref={this.originalContentRef}
-          className="htx-richtext-orig"
-          style={{ display: 'none' }}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
-      </ObjectTag>
-    );
+    if (item.inline) {
+      const style = { overflow: "auto" };
+      const eventHandlers = {
+        onClickCapture: this._onRegionClick,
+        onMouseUp: this._onMouseUp,
+        onMouseOverCapture: this._onRegionMouseOver,
+      };
+
+      return (
+        <ObjectTag item={item}>
+          <div
+            ref={this.rootNodeRef}
+            style={style}
+            className="htx-richtext"
+            dangerouslySetInnerHTML={{ __html: val }}
+            {...eventHandlers}
+          />
+          <div
+            ref={this.originalContentRef}
+            className="htx-richtext-orig"
+            style={{ display: 'none' }}
+            dangerouslySetInnerHTML={{ __html: val }}
+          />
+        </ObjectTag>
+      );
+    } else {
+      const style = {
+        border: "none",
+        width: "100%",
+        minHeight: "60vh",
+      };
+
+      return (
+        <ObjectTag item={item}>
+          <iframe
+            referrerpolicy="no-referrer"
+            sandbox="allow-same-origin allow-scripts"
+            ref={this.rootNodeRef}
+            style={style}
+            className="htx-richtext"
+            srcDoc={val}
+            onLoad={this.onIFrameLoad}
+          />
+          <iframe
+            referrerpolicy="no-referrer"
+            sandbox="allow-same-origin allow-scripts"
+            ref={this.originalContentRef}
+            className="htx-richtext-orig"
+            style={{ display: 'none' }}
+            srcDoc={val}
+          />
+        </ObjectTag>
+      );
+    }
   }
 }
 

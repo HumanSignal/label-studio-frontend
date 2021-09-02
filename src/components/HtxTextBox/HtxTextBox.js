@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Tooltip } from "antd";
+import { Tooltip, Typography } from "antd";
 import { DeleteOutlined, EditOutlined, EnterOutlined } from "@ant-design/icons";
 import styles from "./HtxTextBox.module.scss";
 import throttle from "lodash.throttle";

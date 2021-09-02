@@ -1,7 +1,7 @@
 import React from "react";
 import { Table } from "antd";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 

@@ -35,7 +35,7 @@ export class Modal extends Component {
 
   show(onShow) {
     return new Promise(resolve => {
-      this.setState({ visible: true }, async() => {
+      this.setState({ visible: true }, async () => {
         onShow?.();
         this.props.onShow?.();
         await this.transition("appear", resolve);
@@ -109,19 +109,19 @@ export class Modal extends Component {
 
   transition(type, onFinish) {
     return aroundTransition(this.modalRef.current, {
-      transition: async() =>
+      transition: async () =>
         new Promise(resolve => {
           this.setState({ transition: type }, () => {
             resolve();
           });
         }),
-      beforeTransition: async() =>
+      beforeTransition: async () =>
         new Promise(resolve => {
           this.setState({ transition: `before-${type}` }, () => {
             resolve();
           });
         }),
-      afterTransition: async() =>
+      afterTransition: async () =>
         new Promise(resolve => {
           this.setState({ transition: type === "appear" ? "visible" : null }, () => {
             onFinish?.();

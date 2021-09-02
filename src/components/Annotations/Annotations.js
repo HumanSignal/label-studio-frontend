@@ -1,14 +1,14 @@
 import React, { Component } from "react";
-import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
+import { Badge, Button, Card, List, Popconfirm, Tooltip } from "antd";
 import { observer } from "mobx-react";
 import {
-  StarOutlined,
-  StarFilled,
   DeleteOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  StopOutlined,
   PlusOutlined,
+  StarFilled,
+  StarOutlined,
+  StopOutlined,
   WindowsOutlined
 } from "@ant-design/icons";
 
@@ -207,7 +207,7 @@ const Annotation = observer(({ item, store }) => {
 });
 
 class Annotations extends Component {
-  render () {
+  render() {
     const { store } = this.props;
 
     let title = (

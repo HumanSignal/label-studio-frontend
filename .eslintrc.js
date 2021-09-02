@@ -53,6 +53,13 @@ module.exports = {
       "SwitchCase": 1,
       "MemberExpression": 1,
     }],
+    "sort-imports": ["error", {
+      "ignoreCase": true,
+      "ignoreDeclarationSort": true,
+      "ignoreMemberSort": false,
+      "allowSeparatedGroups": false,
+      "memberSyntaxSortOrder": ["all", "single", "multiple", "none"],
+    }],
     "no-async-promise-executor": "off",
     "semi": [2, "always"],
     "comma-dangle": ["error", {
@@ -80,6 +87,10 @@ module.exports = {
         "--": false,
       },
     }],
-    "space-before-function-paren": ["error", "never"],
+    "space-before-function-paren": ["error", {
+      "anonymous": "never",
+      "named": "never",
+      "asyncArrow": "always",
+    }],
   },
 };

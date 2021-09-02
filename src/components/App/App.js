@@ -38,6 +38,7 @@ import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 import { Block, Elem } from "../../utils/bem";
 import './App.styl';
+import { Space } from "../../common/Space/Space";
 
 /**
  * App
@@ -107,16 +108,24 @@ class App extends Component {
               {Tree.renderItem(root)}
               {this.renderRelations(as.selected)}
             </Elem>
-            {getRoot(as).hasInterface('infobar') && (
-              <Elem name="infobar">
-                Task #{getRoot(as).task.id}
-              </Elem>
-            )}
+            {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}
         {as.viewingAllPredictions && this.renderAllPredictions()}
       </>
+    );
+  }
+
+  _renderInfobar(as) {
+    const { id, queue } = getRoot(as).task;
+
+    return (
+      <Elem name="infobar" tag={Space} size="small">
+        <span>Task #{id}</span>
+
+        {queue && <span>{queue}</span>}
+      </Elem>
     );
   }
 

@@ -150,11 +150,12 @@ const Model = types
     },
 
     _getRootNode(originalContent = false) {
-      const rootNode = originalContent
+      const ref = originalContent
         ? self.parent.originalContentRef
         : self.parent.rootNodeRef;
+      const node = ref.current;
 
-      return rootNode.current;
+      return node?.contentDocument?.body ?? node;
     },
 
     _createNativeRange(useOriginalContent = false) {

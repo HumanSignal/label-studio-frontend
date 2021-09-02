@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Checkbox, Radio, Form } from "antd";
-import { observer, inject } from "mobx-react";
+import { Checkbox, Form, Radio } from "antd";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import Hint from "../../components/Hint/Hint";

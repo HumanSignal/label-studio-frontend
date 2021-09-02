@@ -1,4 +1,4 @@
-import { types, onSnapshot, getRoot } from "mobx-state-tree";
+import { getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
 import Utils from "../utils";
