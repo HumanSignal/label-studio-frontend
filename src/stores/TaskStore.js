@@ -1,6 +1,6 @@
-import { types, getParent } from "mobx-state-tree";
-
+import { getParent, types } from "mobx-state-tree";
 import Utilities from "../utils";
+
 
 /**
  * Model for HTTP Basic Authorization
@@ -25,6 +25,7 @@ const TaskStore = types
      * MST doesn't support processing of dynamic objects with unkown keys value
      */
     data: types.maybeNull(types.string),
+    queue: types.optional(types.maybeNull(types.string), null),
   })
   .views(self => ({
     get app() {

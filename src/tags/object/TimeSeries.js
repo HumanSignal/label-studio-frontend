@@ -1,7 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
-import { observer, inject } from "mobx-react";
-import { types, getRoot, getType } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, getType, types } from "mobx-state-tree";
 import throttle from "lodash.throttle";
 import { Spin } from "antd";
 
@@ -13,12 +13,12 @@ import Types from "../../core/Types";
 import { restoreNewsnapshot } from "../../core/Helpers";
 import {
   checkD3EventLoop,
-  idFromValue,
-  getRegionColor,
   fixMobxObserve,
   formatTrackerTime,
-  sparseValues,
-  getOptimalWidth
+  getOptimalWidth,
+  getRegionColor,
+  idFromValue,
+  sparseValues
 } from "./TimeSeries/helpers";
 import { parseCSV, tryToParseJSON } from "../../utils/data";
 import messages from "../../utils/messages";

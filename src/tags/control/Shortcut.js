@@ -1,7 +1,7 @@
 import React from "react";
 import { Tag } from "antd";
-import { observer, inject } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getParent, types } from "mobx-state-tree";
 
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";

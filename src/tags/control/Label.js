@@ -1,20 +1,21 @@
+import { inject, observer } from "mobx-react";
+import { types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import React from "react";
-import { types } from "mobx-state-tree";
-import { observer, inject } from "mobx-react";
 
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import Registry from "../../core/Registry";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
+import InfoModal from "../../components/Infomodal/Infomodal";
+import { Label } from "../../components/Label/Label";
 import Constants from "../../core/Constants";
+import { customTypes } from "../../core/CustomTypes";
+import { guidGenerator } from "../../core/Helpers";
+import Registry from "../../core/Registry";
+import Types from "../../core/Types";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
+import { TagParentMixin } from "../../mixins/TagParentMixin";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
-import { guidGenerator } from "../../core/Helpers";
-import InfoModal from "../../components/Infomodal/Infomodal";
-import { customTypes } from "../../core/CustomTypes";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import { Label } from "../../components/Label/Label";
-import { TagParentMixin } from "../../mixins/TagParentMixin";
-import Types from "../../core/Types";
 
 /**
  * Label tag represents a single label.
@@ -32,6 +33,7 @@ import Types from "../../core/Types";
  * @param {string} value                    - Value of the label
  * @param {boolean} [selected=false]        - Whether to preselect this label
  * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {string} [hint]                   - Hint for label on hover
  * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
  * @param {string} [alias]                  - Label alias
  * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
@@ -46,6 +48,7 @@ const TagAttrs = types.model({
   selected: types.optional(types.boolean, false),
   maxusages: types.maybeNull(types.string),
   alias: types.maybeNull(types.string),
+  hint: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
   aliasstyle: types.optional(types.string, "opacity: 0.6"),
@@ -233,7 +236,7 @@ const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
     const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
-    return (
+    const label = (
       <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
         item.toggleSelected();
         return false;
@@ -244,6 +247,10 @@ const HtxLabelView = inject("store")(
         )}
       </Label>
     );
+
+    return item.hint
+      ? <Tooltip title={item.hint}>{label}</Tooltip>
+      : label;
   }),
 );
 

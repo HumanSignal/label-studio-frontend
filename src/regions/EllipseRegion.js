@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Ellipse } from "react-konva";
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
 import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
@@ -11,7 +11,7 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
+import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";

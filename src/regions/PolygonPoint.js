@@ -1,7 +1,7 @@
 import React from "react";
-import { Rect, Circle } from "react-konva";
+import { Circle, Rect } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, hasParent, getRoot } from "mobx-state-tree";
+import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
 import { useRegionColors } from "../hooks/useRegionColor";

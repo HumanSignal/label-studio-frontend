@@ -95,7 +95,20 @@ const _detect = region => {
     case "audioregion":
     case "paragraphs":
     case "timeseriesregion": {
-      return Geometry.getDOMBBox(region.getRegionElement());
+      const regionBbox = Geometry.getDOMBBox(region.getRegionElement());
+      const container = region.parent?.rootNodeRef?.current;
+
+      if (container?.tagName === "IFRAME") {
+        const iframeBbox = Geometry.getDOMBBox(container, true);
+
+        return regionBbox.map(bbox => ({
+          ...bbox,
+          x: bbox.x + iframeBbox.x,
+          y: bbox.y + iframeBbox.y,
+        }));
+      }
+
+      return regionBbox;
     }
     case "rectangleregion": {
       return stageRelatedBBox(

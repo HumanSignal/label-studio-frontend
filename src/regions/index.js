@@ -7,12 +7,12 @@ import { AudioRegionModel } from "./AudioRegion";
 import { BrushRegionModel, HtxBrush } from "./BrushRegion";
 import { ParagraphsRegionModel } from "./ParagraphsRegion";
 import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
-import { KeyPointRegionModel, HtxKeyPoint } from "./KeyPointRegion";
+import { HtxKeyPoint, KeyPointRegionModel } from "./KeyPointRegion";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
-import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
-import { RectRegionModel, HtxRectangle } from "./RectRegion";
+import { HtxPolygon, PolygonRegionModel } from "./PolygonRegion";
+import { HtxRectangle, RectRegionModel } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
-import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
+import { HtxTextAreaRegion, TextAreaRegionModel } from "./TextAreaRegion";
 import { RichTextRegionModel } from "./RichTextRegion";
 
 const AllRegionsType = types.union(

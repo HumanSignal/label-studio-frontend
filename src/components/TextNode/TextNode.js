@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { PropTypes } from "prop-types";
 
 export default class TextNode extends Component {
-  render () {
+  render() {
     return (
       <span
         data-position={this.props.position}

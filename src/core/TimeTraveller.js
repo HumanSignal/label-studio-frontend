@@ -1,4 +1,4 @@
-import { types, resolvePath, getEnv, onSnapshot, getSnapshot, applySnapshot } from "mobx-state-tree";
+import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from "mobx-state-tree";
 
 /**
  * Time Traveller
