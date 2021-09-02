@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import Registry from "../../core/Registry";
 
 /**
- * Use the Style tag to apply CSS styles to the labeling interface.
+ * Use the Style tag inside the View tag to apply CSS styles to the labeling interface.
  *  
  * @example
  * <!-- Add CSS styles to a header on the labeling interface -->
