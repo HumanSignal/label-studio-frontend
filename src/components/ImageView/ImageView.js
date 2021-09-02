@@ -17,8 +17,11 @@ import { guidGenerator } from "../../utils/unique";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
+import { Hotkey } from "../../core/Hotkey";
 
 Konva.showWarnings = false;
+
+const hotkeys = Hotkey("Image");
 
 const splitRegions = (regions) => {
   const brushRegions = [];
@@ -364,12 +367,17 @@ export default observer(
         this.updateImageTransform();
         this.observerObjectUpdate();
       }
+
       this.updateReadyStatus();
+
+      hotkeys.addDescription("shift", "Pan image");
     }
 
     componentWillUnmount() {
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
+
+      hotkeys.removeDescription("shift");
     }
 
     componentDidUpdate(prevProps) {

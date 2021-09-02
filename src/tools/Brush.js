@@ -27,7 +27,6 @@ const ToolView = observer(({ item }) => {
   return (
     <Tool
       label="Brush"
-      value={item.strokeWidth}
       active={item.selected}
       shortcut={item.shortcut}
       extraShortcuts={item.extraShortcuts}
@@ -49,7 +48,6 @@ const ToolView = observer(({ item }) => {
           maxIcon={<IconDot size={16}/>}
           onChange={(value) => {
             item.setStroke(value);
-            item.manager.selectTool(item, true);
           }}
         />,
       ]}
@@ -58,10 +56,11 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({
+  .model("BrushTool", {
     strokeWidth: types.optional(types.number, 10),
     group: "segmentation",
     shortcut: "B",
+    smart: true,
   })
   .views(self => ({
     get viewClass() {
@@ -115,30 +114,6 @@ const _Tool = types
         return newArea;
       },
 
-      // fromStateJSON(obj, fromModel) {
-      //   if ("brushlabels" in obj.value) {
-      //     const states = restoreNewsnapshot(fromModel);
-      //     states.fromStateJSON(obj);
-
-      //     const region = self.createRegion({
-      //       pid: obj.id,
-      //       stroke: states.getSelectedColor(),
-      //       states: states,
-      //       // coordstype: "px",
-      //       // points: obj.value.points,
-      //     });
-
-      //     if (obj.value.points) {
-      //       const p = region.addPoints({ type: "add" });
-      //       p.addPoints(obj.value.points);
-      //     }
-
-      //     if (obj.value.format === "rle") {
-      //       region._rle = obj.value.rle;
-      //     }
-      //   }
-      // },
-
       updateCursor() {
         if (!self.selected || !self.obj.stageRef) return;
         const val = self.strokeWidth;
@@ -150,6 +125,7 @@ const _Tool = types
       },
 
       setStroke(val) {
+        console.log({ self });
         self.strokeWidth = val;
       },
 
@@ -228,6 +204,6 @@ const _Tool = types
     };
   });
 
-const Brush = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
+const Brush = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Brush };

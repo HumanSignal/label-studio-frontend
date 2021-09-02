@@ -47,6 +47,6 @@ const _Tool = types
     },
   }));
 
-const Brightness = types.compose(ToolMixin, BaseTool, _Tool);
+const Brightness = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 export { Brightness };

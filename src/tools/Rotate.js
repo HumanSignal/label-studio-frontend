@@ -15,6 +15,7 @@ const ToolView = observer(({ item }) => {
         active={item.selected}
         icon={<IconRotateLeftTool />}
         label="Rotate Left"
+        shortcut="alt+left"
         onClick={() => {
           item.rotate(-90);
         }}
@@ -23,6 +24,7 @@ const ToolView = observer(({ item }) => {
         active={item.selected}
         icon={<IconRotateRightTool />}
         label="Rotate Right"
+        shortcut="alt+right"
         onClick={() => {
           item.rotate(90);
         }}
@@ -32,7 +34,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({
+  .model("RotateTool", {
     group: "control",
   })
   .views(self => ({
@@ -46,7 +48,7 @@ const _Tool = types
     },
   }));
 
-const Rotate = types.compose(ToolMixin, BaseTool, _Tool);
+const Rotate = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 export { Rotate };
 

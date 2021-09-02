@@ -6,6 +6,7 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * Ellipse
@@ -53,7 +54,10 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      const ellipse = Tools.Ellipse.create({ activeShape: null });
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
+
+      const ellipse = Tools.Ellipse.create({ activeShape: null }, env);
 
       ellipse._control = self;
 

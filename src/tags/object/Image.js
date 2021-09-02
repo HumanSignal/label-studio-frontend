@@ -295,21 +295,25 @@ const Model = types
 
   // actions for the tools
   .actions(self => {
-    const toolsManager = new ToolsManager({ obj: self });
+    const manager = ToolsManager.getInstance({ obj: self });
+    const env = { manager, control: self };
 
     function afterCreate() {
-      if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
+      if (self.zoomcontrol)
+        manager.addTool("zoom", Tools.Zoom.create({}, env));
 
       if (self.brightnesscontrol)
-        toolsManager.addTool("brightness", Tools.Brightness.create({}, { manager: toolsManager }));
+        manager.addTool("brightness", Tools.Brightness.create({}, env));
 
-      if (self.contrastcontrol) toolsManager.addTool("contrast", Tools.Contrast.create({}, { manager: toolsManager }));
+      if (self.contrastcontrol)
+        manager.addTool("contrast", Tools.Contrast.create({}, env));
 
-      if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
+      if (self.rotatecontrol)
+        manager.addTool("rotate", Tools.Rotate.create({}, env));
     }
 
     function getToolsManager() {
-      return toolsManager;
+      return manager;
     }
 
     return { afterCreate, getToolsManager };

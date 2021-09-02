@@ -1,7 +1,8 @@
-import { types } from "mobx-state-tree";
+import { getEnv, getSnapshot, getType, types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import React from "react";
 import { Tool } from "../components/Toolbar/Tool";
+import ToolsManager from "./Manager";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -17,7 +18,12 @@ const ToolView = observer(({ item }) => {
 });
 
 const BaseTool = types
-  .model("BaseTool", {})
+  .model("BaseTool", {
+    smart: false,
+  })
+  .volatile(() => ({
+    dynamic: false,
+  }))
   .views(self => {
     return {
       get isSeparated() {
@@ -42,7 +48,37 @@ const BaseTool = types
       },
     };
   })
-  .actions(() => ({}));
+  .actions((self) => {
+    return  {
+      afterCreate() {
+        console.log("Creating tool");
+        if (self.smart) {
+          const currentEnv = getEnv(self);
+          const toolType = getType(self);
+          const snapshot = {
+            ...getSnapshot(self),
+            smart: false,
+          };
+          const env = {
+            ...currentEnv,
+          };
+
+          console.log(currentEnv);
+
+          const smartCopy = toolType.create(snapshot, env);
+
+          smartCopy.makeDynamic();
+
+          // getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy);
+        }
+      },
+
+      makeDynamic() {
+        self.dynamic = true;
+      },
+    };
+  });
+
 
 export const MIN_SIZE = { X: 3, Y: 3 };
 

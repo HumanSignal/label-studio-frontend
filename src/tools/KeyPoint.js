@@ -6,7 +6,7 @@ import { NodeViews } from "../components/Node/Node";
 import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
-  .model({
+  .model("KeyPointTool", {
     default: types.optional(types.boolean, true),
     group: "segmentation",
     shortcut: "K",
@@ -42,7 +42,7 @@ const _Tool = types
     },
   }));
 
-const KeyPoint = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
+const KeyPoint = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
 
 // Registry.addTool("keypoint", KeyPoint);
 

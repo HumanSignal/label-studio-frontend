@@ -1,8 +1,10 @@
 import { Block, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Fragment } from "react";
 import { Hotkey } from "../../core/Hotkey";
+import { SmartToolsContext, ToolbarContext } from "./ToolbarContext";
+import { Space } from '../../common/Space/Space';
 
 const hotkeys = Hotkey("SegmentationToolbar");
 
@@ -14,7 +16,6 @@ const keysDictionary = {
 export const Tool = ({
   active = false,
   disabled = false,
-  expanded = false,
   extraShortcuts = {},
   controls,
   icon,
@@ -23,6 +24,8 @@ export const Tool = ({
   onClick,
 }) => {
   let currentShortcut = shortcut;
+  const smartTools = useContext(SmartToolsContext);
+  const { expanded, alignment } = useContext(ToolbarContext);
 
   const shortcutView = useMemo(() => {
     if (!isDefined(shortcut)) return null;
@@ -78,6 +81,7 @@ export const Tool = ({
     };
 
     if (active) {
+      removeShortcuts();
       addShortcuts();
     } else {
       removeShortcuts();
@@ -87,7 +91,7 @@ export const Tool = ({
   }, [extraShortcuts, active]);
 
   return (
-    <Block name="tool" mod={{ active, disabled }} onClick={onClick}>
+    <Block name="tool" mod={{ active, disabled, expanded, alignment }} onClick={onClick}>
       <Elem name="icon">
         {icon}
       </Elem>
@@ -99,6 +103,15 @@ export const Tool = ({
       {controls?.length && active && (
         <Elem name="controls">
           {controls}
+        </Elem>
+      )}
+      {smartTools.tools.length > 0 && (
+        <Elem name="controls">
+          {smartTools.tools.map((t, i) => (
+            <Fragment key={`${t.type}-${i}`}>
+              {t.viewClass}
+            </Fragment>
+          ))}
         </Elem>
       )}
     </Block>

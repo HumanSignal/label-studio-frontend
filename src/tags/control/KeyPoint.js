@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * KeyPoint is used to add a keypoint to an image without label selection. It's useful when you have only one label.
@@ -51,7 +52,10 @@ const Model = types
     fromStateJSON() {},
 
     afterCreate() {
-      const kp = Tools.KeyPoint.create();
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
+
+      const kp = Tools.KeyPoint.create({}, env);
 
       kp._control = self;
 

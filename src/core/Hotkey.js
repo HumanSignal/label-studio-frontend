@@ -72,6 +72,18 @@ export const Hotkey = () => {
       return Object.keys(_hotkeys_map);
     },
 
+    addDescription(key, description) {
+      if (!_hotkeys_map[key]) {
+        _hotkeys_desc[key] = description;
+      }
+    },
+
+    removeDescription(key) {
+      if (!_hotkeys_map) {
+        _hotkeys_desc[key];
+      }
+    },
+
     /**
      * Unbund all hotkeys
      */

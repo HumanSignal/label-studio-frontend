@@ -9,6 +9,7 @@ import { NodeViews } from "../components/Node/Node";
 const _Tool = types
   .model("RectTool", {
     group: "segmentation",
+    smart: true,
   })
   .views(self => {
     const Super = {
@@ -49,6 +50,6 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool, AnnotationMixin);
+const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool, AnnotationMixin);
 
 export { Rect };

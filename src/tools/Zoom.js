@@ -23,7 +23,7 @@ const ToolView = observer(({ item }) => {
       />
       <Tool
         icon={<IconMagnifyTool />}
-        label="Zoom into the image"
+        label="Zoom In"
         shortcut="alt+plus"
         onClick={() => {
           item.handleZoom(1);
@@ -31,7 +31,7 @@ const ToolView = observer(({ item }) => {
       />
       <Tool
         icon={<IconMinifyTool />}
-        label="Zoom out of the image"
+        label="Zoom Out"
         shortcut="alt+minus"
         onClick={() => {
           item.handleZoom(-1);
@@ -42,7 +42,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({
+  .model("ZoomTool", {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
     group: "control",
   })
@@ -68,7 +68,7 @@ const _Tool = types
     },
 
     handleDrag(ev) {
-      const item = self._manager.obj;
+      const item = self.obj;
       let posx = item.zoomingPositionX + ev.movementX;
       let posy = item.zoomingPositionY + ev.movementY;
 
@@ -76,7 +76,7 @@ const _Tool = types
     },
 
     mousemoveEv(ev) {
-      const zoomScale = self._manager.obj.zoomScale;
+      const zoomScale = self.obj.zoomScale;
 
       if (zoomScale <= 1) return;
       if (self.mode === "moving") self.handleDrag(ev);
@@ -87,13 +87,13 @@ const _Tool = types
     },
 
     handleZoom(val) {
-      const item = self._manager.obj;
+      const item = self.obj;
 
       item.handleZoom(val);
     },
   }));
 
-const Zoom = types.compose(ToolMixin, BaseTool, _Tool);
+const Zoom = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 // Registry.addTool("zoom", Zoom);
 

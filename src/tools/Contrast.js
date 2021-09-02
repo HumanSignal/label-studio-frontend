@@ -32,7 +32,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({
+  .model("ContrastTool", {
     contrast: types.optional(types.number, Constants.CONTRAST_VALUE),
   })
   .views(self => ({
@@ -47,6 +47,6 @@ const _Tool = types
     },
   }));
 
-const Contrast = types.compose(ToolMixin, BaseTool, _Tool);
+const Contrast = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 export { Contrast };

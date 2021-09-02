@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { getEnv, types } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -10,15 +10,15 @@ const ToolMixin = types
   })
   .views(self => ({
     get obj() {
-      return self._manager.obj;
+      return self.manager?.obj;
     },
 
     get manager() {
-      return self._manager;
+      return getEnv(self).manager;
     },
 
     get control() {
-      return self._control;
+      return getEnv(self).control;
     },
 
     get viewClass() {

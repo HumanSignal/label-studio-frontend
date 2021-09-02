@@ -31,7 +31,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({
+  .model("FloodFillTool", {
     threshold: types.optional(types.number, DEF_THRESHOLD),
     group: "segmentation",
   })
@@ -98,6 +98,6 @@ const _Tool = types
     },
   }));
 
-const FloodFill = types.compose(ToolMixin, _Tool, BaseTool);
+const FloodFill = types.compose(_Tool.name, ToolMixin, _Tool, BaseTool);
 
 export { FloodFill };

@@ -6,6 +6,7 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * Rectangle is used to add rectangle (Bounding Box) to an image without label selection. It's useful when you have
@@ -48,7 +49,10 @@ const Model = types
     fromStateJSON() {},
 
     afterCreate() {
-      const rect = Tools.Rect.create({ activeShape: null });
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
+
+      const rect = Tools.Rect.create({ activeShape: null }, env);
 
       rect._control = self;
 

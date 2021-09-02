@@ -223,10 +223,93 @@ const labelToSVG = (function() {
   };
 })();
 
+/**
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @returns {{
+ * canvas: HTMLCanvasElement,
+ * bbox: {
+ *   left: number,
+ *   top: number,
+ *   right: number,
+ *   bottom: number,
+ *   width: number,
+ *   height: number
+ * }
+ * }}
+ */
+const trim = (canvas) => {
+  let copy, width = canvas.width, height = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const bbox = {
+    top: null,
+    left: null,
+    right: null,
+    bottom: null,
+  };
+
+  try {
+    copy = document.createElement('canvas').getContext('2d');
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const l = pixels.data.length;
+    let i, x, y;
+
+    for (i = 0; i < l; i += 4) {
+      if (pixels.data[i+3] !== 0) {
+        x = (i / 4) % canvas.width;
+        y = ~ ~ ((i / 4) / canvas.width);
+
+        if (bbox.top === null) {
+          bbox.top = y;
+        }
+
+        if (bbox.left === null) {
+          bbox.left = x;
+        } else if (x < bbox.left) {
+          bbox.left = x;
+        }
+
+        if (bbox.right === null) {
+          bbox.right = x;
+        } else if (bbox.right < x) {
+          bbox.right = x;
+        }
+
+        if (bbox.bottom === null) {
+          bbox.bottom = y;
+        } else if (bbox.bottom < y) {
+          bbox.bottom = y;
+        }
+      }
+    }
+
+    width = bbox.right - bbox.left;
+    height = bbox.bottom - bbox.top;
+    const trimmed = ctx.getImageData(bbox.left, bbox.top, width, height);
+
+    copy.canvas.width = width;
+    copy.canvas.height = height;
+    copy.putImageData(trimmed, 0, 0);
+  } catch (err) {
+    /* Gotcha! */
+  }
+
+  // open new window with trimmed image:
+  return {
+    canvas: copy?.canvas ?? canvas,
+    bbox: {
+      ...bbox,
+      width,
+      height,
+    },
+  };
+};
+
 export default {
   imageData2Image,
   Region2RLE,
   RLE2Region,
   brushSizeCircle,
   labelToSVG,
+  trim,
 };

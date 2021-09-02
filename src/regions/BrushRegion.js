@@ -39,6 +39,10 @@ const Points = types
      * Stroke width
      */
     strokeWidth: types.optional(types.number, 25),
+    /**
+     * Eraser size
+     */
+    eraserSize: types.optional(types.number, 25),
   })
   .views(self => ({
     get store() {
@@ -366,6 +370,7 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
           compositeOperation: "source-over",
         });
       });
+      console.log("hit");
     },
     [pointsList, pointsList.length],
   );
@@ -500,6 +505,8 @@ const HtxBrushView = ({ item }) => {
 
           <Group scaleX={item.scaleX} scaleY={item.scaleY}>
             <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
+          </Group>
+          <Group scaleX={item.scaleX} scaleY={item.scaleY}>
             <LabelOnMask item={item} color={item.strokeColor}/>
           </Group>
 

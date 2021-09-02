@@ -98,7 +98,7 @@ const _Tool = types
     };
   });
 
-const Polygon = types.compose(ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
+const Polygon = types.compose(_Tool.name, ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
 
 export { Polygon };
 

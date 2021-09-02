@@ -1,6 +1,13 @@
 import { guidGenerator } from "../utils/unique";
 
+/** @type {ToolsManager} */
+let instance = null;
+
 class ToolsManager {
+  static getInstance(...args) {
+    return instance ?? (instance = new ToolsManager(...args));
+  }
+
   constructor({ obj }) {
     this.obj = obj;
     this.tools = {};
@@ -8,11 +15,12 @@ class ToolsManager {
   }
 
   addTool(name, tool, prefix = guidGenerator()) {
-    // todo: It seems that key is using only for storing, but not for finding tools, so may be there might be an array instead of an object
+    // todo: It seems that key is using only for storing,
+    // but not for finding tools, so may be there might
+    // be an array instead of an object
     const key = `${prefix}#${name}`;
 
     this.tools[key] = tool;
-    tool._manager = this;
 
     if (tool.default && !this._default_tool) {
       this._default_tool = tool;

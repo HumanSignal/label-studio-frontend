@@ -118,7 +118,6 @@ export default types
     users: types.optional(types.array(UserExtended), []),
   })
   .preProcessSnapshot((sn) => {
-    console.log({ sn });
     return {
       ...sn,
       dynamicPreannotations: localStorage.getItem("dynamicPreannotations") === "true",

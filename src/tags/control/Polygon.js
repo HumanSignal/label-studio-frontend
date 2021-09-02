@@ -7,6 +7,7 @@ import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * Use the Polygon tag to add polygons to an image without selecting a label. It's useful when you have only one label.
@@ -56,8 +57,11 @@ const Model = types
     fromStateJSON() {},
 
     afterCreate() {
-      const poly = Tools.Polygon.create();
-      const floodFill = Tools.FloodFill.create();
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
+
+      const poly = Tools.Polygon.create({}, env);
+      const floodFill = Tools.FloodFill.create({}, env);
 
       poly._control = self;
       floodFill._control = self;
