@@ -14,9 +14,9 @@ import VisibilityMixin from "../../mixins/Visibility";
 import ControlBase from "./Base";
 
 /**
- * Use the Taxonomy tag to create one or more hierarchical labels, storing both label and their ancestors in the results. Frequently used for nested classification tasks with the Choice or Choices tags.
+ * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
  * <!--Labeling configuration for providing a taxonomy of choices in response to a passage of text -->
  * <View>

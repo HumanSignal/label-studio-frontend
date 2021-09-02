@@ -10,14 +10,14 @@ import Tree from "../../core/Tree";
 /**
  * Use the Header tag to show a header on the labeling interface.
  * @example
- * <!-- Display only a header on the labeling interface -->
+ * <!-- Display a header on the labeling interface based on a field in the data -->
  * <View>
- *   <Header name="text-1" value="$text" />
+ *   <Header value="$text" />
  * </View>
  * @example
- * <!-- Display only a header on the labeling interface -->
+ * <!-- Display a static header on the labeling interface -->
  * <View>
- *   <Header name="text-1" value="Please select the class" />
+ *   <Header value="Please select the class" />
  * </View>
  * @name Header
  * @meta_title Header Tag to Show Headers

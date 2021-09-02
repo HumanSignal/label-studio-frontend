@@ -8,7 +8,7 @@ import Registry from "../../core/Registry";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Use the Filter tag to add a filter search for a large number of labels. Use with the Labels tag.
+ * Use the Filter tag to add a filter search for a large number of labels or choices. Use with the Labels tag or Choices tag.
  * @example
  * <!-- Add a filter to labels for a named entity recognition task -->
  * <View>

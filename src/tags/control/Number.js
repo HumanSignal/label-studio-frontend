@@ -14,7 +14,7 @@ import ControlBase from "./Base";
 /**
  * The Number tag supports numeric classification. Use to classify tasks using numbers.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  *
  * @example
  * <!--Basic labeling configuration for numeric classification of text -->

@@ -9,7 +9,7 @@ import ControlBase from "./Base";
 /**
  * Use the Pairwise tag to compare two different objects.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
  * <!--Basic labeling configuration to compare two passages of text -->
  * <View>

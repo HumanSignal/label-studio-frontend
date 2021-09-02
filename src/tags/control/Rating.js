@@ -15,7 +15,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 /**
  * The Rating tag adds a rating selection to the labeling interface. Use for labeling tasks involving ratings.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  *
  * @example
  * <!--Basic labeling configuration to rate the content of a text passage -->

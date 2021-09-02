@@ -18,9 +18,8 @@ import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
 
 /**
- * Label tag represents a single label. Use to assign a single label to regions in a task, or with the Labels tag to provide many labels.
+ * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
  *
- * Use with the following data types: audio, image, text, time series, video
  * @example
  * <!--Basic named entity recognition labeling configuration for text-->
  * <View>

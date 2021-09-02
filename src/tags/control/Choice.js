@@ -12,9 +12,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
 
 /**
- * The Choice tag represents a single choice for annotations. Use for simple classification tasks where annotators must provide one answer.
+ * The Choice tag represents a single choice for annotations. Use with the Choices tag or Taxonomy tag to provide specific choice options.
  *
- * Use with the following data types: audio, image, text, time series, video
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>

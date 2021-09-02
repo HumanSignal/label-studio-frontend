@@ -11,7 +11,7 @@ import { KeyPointModel } from "./KeyPoint";
 import ControlBase from "./Base";
 
 /**
- * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points when performing semantic segmentation.
+ * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
  *
  * Use with the following data types: image
  * @example

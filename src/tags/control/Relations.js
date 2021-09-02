@@ -8,7 +8,7 @@ import ControlBase from "./Base";
 /**
  * Use the Relations tag to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
  * <!--Basic labeling configuration to apply the label "similar" or "dissimilar" to a relation identified between two labeled regions of text -->
  * <View>

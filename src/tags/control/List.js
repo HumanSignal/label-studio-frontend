@@ -33,9 +33,9 @@ const ListItemModel = types
   }));
 
 /**
- * Use the List tag to rank results. Great choice for recommendation systems.
+ * Use the List tag to rank results, for example for recommendation systems.
  *
- * Use with the following data types: audio, image, text
+ * Use with the following data types: audio, image, HTML, paragraphs, text
  * @example
  * <!--Labeling configuration for a list of possible reply options that can be ranked-->
  * <View>

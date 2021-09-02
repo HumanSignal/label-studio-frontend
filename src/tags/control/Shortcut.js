@@ -12,7 +12,7 @@ import { Hotkey } from "../../core/Hotkey";
 /**
  * Use the Shortcut tag to define a shortcut that annotators can use to add a predefined object, such as a specific label value, with a hotkey or keyboard shortcut.
  *
- * Use with the following data types: audio, image, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
  * <!--Basic labeling configuration to add a shortcut that places the text SILENCE in a given Text Area while doing transcription -->
  * <View>
