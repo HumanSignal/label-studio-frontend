@@ -24,7 +24,7 @@ const { TextArea } = Input;
 /**
  * Use the TextArea tag to display a text area for user input. Use for transcription, paraphrasing, or captioning tasks.
  *
- * Use with the following data types: audio, image, text, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
  * <!--Basic labeling configuration to display only a text area -->
  * <View>
