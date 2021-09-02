@@ -15,7 +15,7 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * The AudioPlus tag plays audio and shows its waveform. Use for advanced audio annotation tasks where you want to see the waveform and manipulate audio during annotation.
+ * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
  *
  * Use with the following data types: audio
  * @example

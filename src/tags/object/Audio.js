@@ -12,7 +12,7 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks.
+ * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
  *
  * Use with the following data types: audio
  * @example
