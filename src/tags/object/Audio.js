@@ -40,7 +40,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @meta_description Customize Label Studio to label audio data for machine learning and data science projects.
  * @name Audio
  * @param {string} name Name of the element
- * @param {string} value Value of the element
+ * @param {string} value Data field containing path or a URL to the audio
  * @param {string} hotkey Hotkey used to play or pause audio
  */
 

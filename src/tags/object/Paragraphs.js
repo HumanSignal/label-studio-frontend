@@ -40,14 +40,14 @@ import { isValidObjectURL } from "../../utils/utilities";
  * @meta_title Paragraph Tags for Paragraphs
  * @meta_description Customize Label Studio with the Paragraphs tag to annotate paragraphs for NLP and NER machine learning and data science projects.
  * @param {string} name                  - Name of the element
- * @param {string} value                 - Value of the element
- * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} value                 - Data field containing the paragraph content
+ * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
  * @param {string} audioUrl              - Audio to sync phrases with
  * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
- * @param {no|yes} [saveTextResult=yes]  - Whether to save `text` to `value` or not for annotation results
- * @param {none|dialogue} [layout=none]  - The styles layout to use
- * @param {string} [nameKey=author]      - The name key to use
- * @param {string} [textKey=text]        - The text key to use
+ * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
+ * @param {string} [nameKey=author]      - The key field to use for name
+ * @param {string} [textKey=text]        - The key field to use for the text
  */
 const TagAttrs = types.model("ParagraphsModel", {
   name: types.identifier,

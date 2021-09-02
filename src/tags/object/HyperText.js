@@ -35,8 +35,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @meta_description Label Studio Hypertext Tags customize Label Studio for hypertext markup (HTML) for machine learning and data science projects.
  * @param {string} name - Name of the element
  * @param {string} value - Value of the element
- * @param {url|text} [valueType]       - Where the text is stored — directly in uploaded data or needs to be loaded from a URL
- * @param {yes|no} [saveTextResult]    - Whether or not to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {url|text} [valueType]       - Whether the text is stored directly in uploaded data or needs to be loaded from a URL
+ * @param {yes|no} [saveTextResult]    - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
  * @param {boolean} [showLabels=false] - Whether to show labels next to the region
  * @param {none|base64|base64unicode} [encoding]  - How to decode values from encoded strings
  * @param {boolean} [clickableLinks=false] - Whether to allow opening resources from links in the hypertext markup.

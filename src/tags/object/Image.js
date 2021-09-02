@@ -33,15 +33,15 @@ import { guidGenerator } from "../../utils/unique";
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
  * @param {string} name                       - Name of the element
- * @param {string} value                      - Value
+ * @param {string} value                      - Data field containing a path or URL to the image
  * @param {string=} [width=100%]              - Image width
  * @param {string=} [maxWidth=750px]          - Maximum image width
  * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
  * @param {boolean=} [negativeZoom=false]     - Enable zooming out an image
  * @param {float=} [zoomBy=1.1]               - Scale factor
- * @param {boolean=} [grid=false]             - Show grid
+ * @param {boolean=} [grid=false]             - Whether to show a grid
  * @param {number=} [gridSize=30]             - Specify size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid, opacity is 0.15
+ * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid in hex, opacity is 0.15
  * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
  * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
