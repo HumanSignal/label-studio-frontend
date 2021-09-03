@@ -70,8 +70,10 @@ export const Hotkey = () => {
      * Unbund all hotkeys
      */
     unbindAll() {
-      for (let key of Object.keys(_hotkeys_map)) {
-        keymaster.unbind(key);
+      for (let scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
+        for (let key of Object.keys(_hotkeys_map)) {
+          keymaster.unbind(key, scope);
+        }
       }
 
       _hotkeys_map = {};
