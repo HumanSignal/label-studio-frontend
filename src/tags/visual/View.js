@@ -27,7 +27,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @meta_description Customize how blocks are displayed on the labeling interface in Label Studio for machine learning and data science projects.
  * @param {block|inline} display
  * @param {string} [style] CSS style string
- * @param {string} [className] - Class name of the CSS style to apply
+ * @param {string} [className] - Class name of the CSS style to apply. Use with the Style tag
  * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] Show the contents of a view when condition is true
  * @param {string} [whenTagName] Narrow down visibility by tag name. For regions, use the name of the object tag, for choices, use the name of the choices tag.
  * @param {string} [whenLabelValue] Narrow down visibility by label value
