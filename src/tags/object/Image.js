@@ -295,6 +295,10 @@ const Model = types.model({
     return self.regs.find(r => r.selected);
   },
 
+  get useTransformer() {
+    return self.getToolsManager().findSelectedTool()?.useTransformer === true;
+  },
+
   get stageTranslate() {
     return {
       0: { x: 0, y: 0 },

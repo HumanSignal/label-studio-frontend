@@ -27,9 +27,23 @@ export default class TransformerComponent extends Component {
 
     if (selectedShapes.find(shape => !shape.supportsTransform)) return;
 
-    const selectedNodes = selectedShapes.map(shape => stage.findOne(node => {
-      return shape.id === node.attrs.name && node.parent;
-    }));
+    const selectedNodes = [];
+
+    selectedShapes.forEach(shape => {
+      const shapeContainer = stage.findOne(node => {
+        return node.hasName(shape.id) && node.parent;
+      });
+
+      if (!shapeContainer) return;
+      if (shapeContainer.hasName("_transformable")) selectedNodes.push(shapeContainer);
+      if (!shapeContainer.find) return;
+
+      const transformableElements = shapeContainer.find(node => {
+        return node.hasName("_transformable");
+      }, true);
+
+      selectedNodes.push(...transformableElements);
+    });
     const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
 
@@ -82,6 +96,7 @@ export default class TransformerComponent extends Component {
         resizeEnabled={true}
         ignoreStroke={true}
         keepRatio={false}
+        useSingleNodeRotation={this.props.rotateEnabled}
         rotateEnabled={this.props.rotateEnabled}
         borderDash={[3, 1]}
         // borderStroke={"red"}
@@ -90,6 +105,7 @@ export default class TransformerComponent extends Component {
         ref={node => {
           this.transformer = node;
         }}
+        shouldOverdrawWholeArea
       />
     );
   }

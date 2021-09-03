@@ -65,6 +65,14 @@ const Model = types
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
   }))
+  .volatile(() => {
+    return {
+      useTransformer: true,
+      preferTransformer: true,
+      supportsRotate: true,
+      supportsScale: true,
+    };
+  })
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -259,7 +267,7 @@ const HtxRectangleView = ({ item }) => {
         opacity={1}
         rotation={item.rotation}
         draggable={item.editable}
-        name={item.id}
+        name={`${item.id} _transformable`}
         onTransformEnd={e => {
           const t = e.target;
 

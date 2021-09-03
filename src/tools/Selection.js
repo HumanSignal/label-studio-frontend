@@ -16,6 +16,9 @@ const _Tool = types.model("SelectionTool").views(() => {
     get iconComponent() {
       return SelectOutlined;
     },
+    get useTransformer() {
+      return true;
+    },
   };
 }).actions(self => {
   let isSelecting = false;

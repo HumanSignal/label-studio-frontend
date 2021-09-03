@@ -66,6 +66,14 @@ const Model = types
     supportsTransform: true,
     hideable: true,
   }))
+  .volatile(() => {
+    return {
+      useTransformer: true,
+      preferTransformer: true,
+      supportsRotate: true,
+      supportsScale: true,
+    };
+  })
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -271,7 +279,7 @@ const HtxEllipseView = ({ item }) => {
         scaleY={item.scaleY}
         opacity={1}
         rotation={item.rotation}
-        name={item.id}
+        name={`${item.id} _transformable`}
         onTransformEnd={e => {
           const t = e.target;
 

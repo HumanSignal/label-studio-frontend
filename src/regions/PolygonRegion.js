@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React from "react";
+import React, { memo, useRef } from "react";
 import { Group, Line } from "react-konva";
 import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
@@ -17,6 +17,8 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { observer } from "mobx-react";
+import { minMax } from "../utils/utilities";
 
 const Model = types
   .model({
@@ -34,6 +36,11 @@ const Model = types
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
+    supportsTransform: true,
+    useTransformer: true,
+    preferTransformer: false,
+    supportsRotate: false,
+    supportsScale: true,
   }))
   .views(self => ({
     get store() {
@@ -133,6 +140,13 @@ const Model = types
     addPoint(x, y) {
       if (self.closed) return;
       self._addPoint(x, y);
+    },
+
+    setPoints(points) {
+      self.points.forEach((p, idx) => {
+        p.x = points[idx * 2];
+        p.y = points[idx * 2 + 1];
+      });
     },
 
     insertPoint(insertIdx, x, y) {
@@ -347,6 +361,93 @@ function removeHoverAnchor({ layer }) {
   layer.draw();
 }
 
+const Poly = memo(observer(({ item, colors }) => {
+  const { points } = item;
+  const name = "poly";
+  const flattenedPoints = getFlattenedPoints(points);
+
+
+  let state = useRef({ minX:0, maxX:0, minY:0, maxY:0, isDragging :false });
+
+
+  return (
+    <Group key={name} name={name}>
+      <Line
+        name="_transformable"
+        lineJoin="round"
+        lineCap="square"
+        stroke={colors.strokeColor}
+        strokeWidth={colors.strokeWidth}
+        strokeScaleEnabled={false}
+        points={flattenedPoints}
+        fill={colors.fillColor}
+        closed={true}
+        onDragStart={e => {
+          if (e.target !== e.currentTarget) return;
+
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+          state.current.isDragging = true;
+          item.annotation.setDragMode(true);
+
+          var arrX = item.points.map(p => p.x);
+          var arrY = item.points.map(p => p.y);
+
+          [state.current.minX, state.current.maxX] = minMax(arrX);
+          [state.current.minY, state.current.maxY] = minMax(arrY);
+        }}
+        dragBoundFunc={item.parent.fixForZoom(pos => {
+          if (!state.current.isDragging) return pos;
+          let { x, y } = pos;
+          const { minY,minX, maxY, maxX } = state.current;
+
+          const sw = item.parent.stageWidth;
+          const sh = item.parent.stageHeight;
+
+          if (minY + y < 0) y = -1 * minY;
+          if (minX + x < 0) x = -1 * minX;
+          if (maxY + y > sh) y = sh - maxY;
+          if (maxX + x > sw) x = sw - maxX;
+          return { x, y };
+        })}
+        onDragEnd={e => {
+          if (!state.current.isDragging) return;
+          if (e.target !== e.currentTarget) return;
+          const t = e.target;
+
+          item.annotation.setDragMode(false);
+          if (!item.closed) item.closePoly();
+
+          const d = [t.getAttr("x", 0), t.getAttr("y", 0)];
+
+          item.setPoints(t.getAttr("points").map((c, idx) => c + d[idx % 2]));
+
+          t.setAttr("x", 0);
+          t.setAttr("y", 0);
+          state.current.isDragging = false;
+        }}
+        onTransformEnd={e => {
+          if (e.target !== e.currentTarget) return;
+
+          const t = e.target;
+
+          const d = [t.getAttr("x", 0), t.getAttr("y", 0)];
+          const scale = [t.getAttr("scaleX", 1), t.getAttr("scaleY", 1)];
+
+          item.setPoints(t.getAttr("points").map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
+
+          t.setAttr("x", 0);
+          t.setAttr("y", 0);
+          t.setAttr("scaleX", 1);
+          t.setAttr("scaleY", 1);
+        }}
+      />
+    </Group>
+  );
+}));
+
 const HtxPolygonView = ({ item }) => {
   const { store } = item;
 
@@ -413,28 +514,8 @@ const HtxPolygonView = ({ item }) => {
     );
   }
 
-  function renderPoly(points) {
-    const name = "poly";
-    const flattenedPoints = getFlattenedPoints(points);
-
-    return (
-      <Group key={name} name={name}>
-        <Line
-          lineJoin="round"
-          lineCap="square"
-          stroke={colors.strokeColor}
-          strokeWidth={colors.strokeWidth}
-          strokeScaleEnabled={false}
-          points={flattenedPoints}
-          fill={colors.fillColor}
-          closed={true}
-        />
-      </Group>
-    );
-  }
-
   function renderCircle({ points, idx }) {
-    const name = `anchor_${points.length}_${idx}`;
+    const name = `anchor_${points.length}_${idx} _transformable`;
     const point = points[idx];
 
     if (!item.closed || (item.closed && item.selected)) {
@@ -445,6 +526,7 @@ const HtxPolygonView = ({ item }) => {
   function renderCircles(points) {
     const name = "anchors";
 
+    if (item.parent.useTransformer && item.closed) return null;
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => renderCircle({ points, idx }))}
@@ -452,29 +534,25 @@ const HtxPolygonView = ({ item }) => {
     );
   }
 
-  function minMax(items) {
-    return items.reduce((acc, val) => {
-      acc[0] = acc[0] === undefined || val < acc[0] ? val : acc[0];
-      acc[1] = acc[1] === undefined || val > acc[1] ? val : acc[1];
-      return acc;
-    }, []);
-  }
-
   let minX = 0,
     maxX = 0,
     minY = 0,
-    maxY = 0;
+    maxY = 0,
+    isDragging = false;
 
   const stage = item.parent.stageRef;
 
   return (
     <Group
       key={item.id ? item.id : guidGenerator(5)}
+      name={item.id}
       onDragStart={e => {
+        if (e.target !== e.currentTarget) return;
         if (item.parent.getSkipInteractions()) {
           e.currentTarget.stopDrag(e.evt);
           return;
         }
+        isDragging = true;
         item.annotation.setDragMode(true);
 
         var arrX = item.points.map(p => p.x);
@@ -484,6 +562,7 @@ const HtxPolygonView = ({ item }) => {
         [minY, maxY] = minMax(arrY);
       }}
       dragBoundFunc={item.parent.fixForZoom(pos => {
+        if (!isDragging) return pos;
         let { x, y } = pos;
 
         const sw = item.parent.stageWidth;
@@ -497,17 +576,22 @@ const HtxPolygonView = ({ item }) => {
         return { x, y };
       })}
       onDragEnd={e => {
+        if (!isDragging) return;
         const t = e.target;
 
-        item.annotation.setDragMode(false);
-        if (!item.closed) item.closePoly();
+        if (e.target === e.currentTarget) {
 
-        item.annotation.history.freeze();
-        item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
-        item.annotation.history.unfreeze();
+          item.annotation.setDragMode(false);
+          if (!item.closed) item.closePoly();
+
+          item.annotation.history.freeze();
+          item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
+          item.annotation.history.unfreeze();
+        }
 
         t.setAttr("x", 0);
         t.setAttr("y", 0);
+        isDragging = false;
       }}
       onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
@@ -548,7 +632,7 @@ const HtxPolygonView = ({ item }) => {
 
       {item.mouseOverStartPoint}
 
-      {item.points && item.closed ? renderPoly(item.points) : null}
+      {item.points && item.closed ? <Poly item={item} colors={colors}/> : null}
       {item.points ? renderLines(item.points, item.closed) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>

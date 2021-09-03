@@ -186,6 +186,7 @@ const PolygonPointView = observer(({ item, name }) => {
 
   const dragOpts = {
     onDragMove: e => {
+      if (e.target !== e.currentTarget) return;
       let { x, y } = e.target.attrs;
 
       if (x < 0) x = 0;
@@ -219,6 +220,18 @@ const PolygonPointView = observer(({ item, name }) => {
       if (!stage) return;
       stage.container().style.cursor = "default";
     },
+
+    onTransformEnd(e) {
+      if (e.target !== e.currentTarget) return;
+      const t = e.target;
+
+      t.setAttr("x", 0);
+      t.setAttr("y", 0);
+      t.setAttr("scaleX", 1);
+      t.setAttr("scaleY", 1);
+    },
+
+    transformsEnabled: "position",
   };
 
   const fill = item.selected ? "green" : "white";

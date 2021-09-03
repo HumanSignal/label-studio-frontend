@@ -200,13 +200,20 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-  const cb = item.controlButton();
-  const supportsTransform = !item.selectedRegions?.find(shape => !shape.supportsTransform);
+  let supportsTransform = true;
+  let supportsRotate = true;
+  let supportsScale = true;
 
+  item.selectedRegions?.forEach(shape => {
+    supportsTransform = supportsTransform && shape.supportsTransform === true;
+    supportsRotate = supportsRotate && shape.canRotate === true;
+    supportsScale = supportsScale && true;
+  });
+  supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
   return (
     <Layer>
       { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
-      <ImageTransformer rotateEnabled={cb && cb.canrotate} supportsTransform={supportsTransform} selectedShapes={item.selectedRegions} />
+      <ImageTransformer rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
     </Layer>
   );
 });
