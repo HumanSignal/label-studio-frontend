@@ -21,8 +21,9 @@ const ISO_DATE_SEPARATOR = "T";
 const zero = n => (n < 10 ? "0" : "") + n;
 
 /**
- * DateTime adds date and time selection
+ * The DateTime tag adds date and time selection to the labeling interface. Use this tag to add a date, timestamp, month, or year to an annotation.
  *
+ * Use with the following data types: audio, image, HTML, paragraph, text, time series, video
  * @example
  * <View>
  *   <Text name="txt" value="$text" />
@@ -33,16 +34,16 @@ const zero = n => (n < 10 ? "0" : "") + n;
  * @param {string} name              - Name of the element
  * @param {string} toName            - Name of the element that you want to label
  * @param {string} only              - Comma-separated list of parts to display (date, time, month, year)
- *        date and month/year can't be used together; date takes precedence
+ *        date and month/year can't be used together. The date option takes precedence
  * @param {string} format            - Input/output strftime format for datetime (internally it's always ISO);
- *        by default this is ISO with "T" separator when bot date and time parts enabled;
+ *        by default this is ISO with "T" separator when both date and time parts are enabled;
  *        that's ISO date when only date is enabled;
  *        that's just a 24h time with leading zero when only time is enabled
- * @param {string} [min]             - Minimum datetime value for only=date, minimum year for only=year
- * @param {string} [max]             - Maximum datetime value for only=date, maximum year for only=year
+ * @param {string} [min]             - Set a minimum datetime value for only=date, minimum year for only=year
+ * @param {string} [max]             - Set a maximum datetime value for only=date, maximum year for only=year
  * @param {boolean} [required=false] - Whether datetime is required or not
  * @param {string} [requiredMessage] - Message to show if validation fails
- * @param {boolean} [perRegion]      - Use this tag to label regions instead of the whole object
+ * @param {boolean} [perRegion]      - Use this option to label regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,
