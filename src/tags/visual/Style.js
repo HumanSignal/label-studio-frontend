@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import Registry from "../../core/Registry";
 
 /**
- * Use the Style tag in combination with the View tag to apply CSS properties to the labeling interface. See the [CSS Reference](https://www.w3schools.com/cssref/default.asp) on the W3Schools page for a full list of available properties that you can reference.
+ * Use the Style tag in combination with the View tag to apply custom CSS properties to the labeling interface. See the [CSS Reference](https://www.w3schools.com/cssref/default.asp) on the W3Schools page for a full list of available properties that you can reference. You can also adjust default Label Studio CSS classes. Use the browser developer tools to inspect the element on the UI and locate the class name, then specify that class name in the Style tag.
  *  
  * @example
  * <!-- Use CSS styling to make a header appear with a red background on the labeling interface -->
@@ -41,6 +41,18 @@ import Registry from "../../core/Registry";
  *        <Choice value="Other2"/>
  *     </Choices>
  *   </View>
+ * </View>
+ * @example
+ * <!-- Adjust the default CSS styling in Label Studio to surround each radio button choice with a solid green border -->
+ * <View>
+ * <Style>
+ *   .ant-radio-wrapper {border: 2px solid green;}
+ * </Style>
+ * <Choices name="chc" toName="text" choice="single-radio">
+ *   <Choice value="First Choice"/>
+ *   <Choice value="Second Choice"/>
+ * </Choices>
+ * <Text name="text" value="$text"/>
  * </View>
  * @name Style
  * @meta_title Style Tag to use CSS Styles
