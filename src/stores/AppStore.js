@@ -184,7 +184,9 @@ export default types
       /**
        * Hotkey for submit
        */
-      if (self.hasInterface("submit")) hotkeys.addKey("ctrl+enter", self.submitAnnotation, "Submit a task");
+      if (self.hasInterface("submit")) {
+        hotkeys.addKey("ctrl+enter", self.submitAnnotation, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+      }
 
       /**
        * Hotkey for skip task
@@ -364,6 +366,7 @@ export default types
       if (self.isSubmitting) return;
 
       const entity = self.annotationStore.selected;
+      const event = entity.exists ? 'updateAnnotation' : 'submitAnnotation';
 
       entity.beforeSend();
 
@@ -371,7 +374,7 @@ export default types
 
       entity.sendUserGenerate();
       handleSubmittingFlag(() => {
-        getEnv(self).events.invoke('submitAnnotation', self, entity);
+        getEnv(self).events.invoke(event, self, entity);
       });
       entity.dropDraft();
     }
