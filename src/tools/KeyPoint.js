@@ -23,7 +23,9 @@ const _Tool = types
       return "Key Point";
     },
     get iconComponent() {
-      return NodeViews.KeyPointRegionModel.icon;
+      return self.dynamic
+        ? NodeViews.KeyPointRegionModel.altIcon
+        : NodeViews.KeyPointRegionModel.icon;
     },
   }))
   .actions(self => ({

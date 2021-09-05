@@ -53,7 +53,9 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
             </Elem>
           ) : null;
         })}
-        <SmartTools tools={smartTools}/>
+        {store.dynamicPreannotations && (
+          <SmartTools tools={smartTools}/>
+        )}
       </Block>
     </ToolbarProvider>
   );

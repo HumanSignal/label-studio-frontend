@@ -12,7 +12,7 @@ import {
 import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
-import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconKeypointsTool, IconPolygonTool, IconRectangleTool } from "../../assets/icons";
+import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangleTool, IconRectangleToolSmart } from "../../assets/icons";
 import { NodeView } from "./NodeView";
 
 const NodeViews = {
@@ -47,22 +47,26 @@ const NodeViews = {
   RectRegionModel: NodeView({
     name: "Rect",
     icon: IconRectangleTool,
+    altIcon: IconRectangleToolSmart,
   }),
 
   PolygonRegionModel: NodeView({
     name: "Polygon",
     icon: IconPolygonTool,
+    altIcon: IconPolygonToolSmart,
   }),
 
   EllipseRegionModel: NodeView({
     name: "Ellipse",
     icon: IconCircleTool,
+    altIcon: IconCircleToolSmart,
   }),
 
   // @todo add coords
   KeyPointRegionModel: NodeView({
     name: "KeyPoint",
     icon: IconKeypointsTool,
+    altIcon: IconKeypointsToolSmart,
   }),
 
   BrushRegionModel: NodeView({

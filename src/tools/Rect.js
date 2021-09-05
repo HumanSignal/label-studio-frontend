@@ -28,7 +28,9 @@ const _Tool = types
         return "Rectangle";
       },
       get iconComponent() {
-        return NodeViews.RectRegionModel.icon;
+        return self.dynamic
+          ? NodeViews.RectRegionModel.altIcon
+          : NodeViews.RectRegionModel.icon;
       },
       get defaultDimensions() {
         return DEFAULT_DIMENSIONS.rect;
