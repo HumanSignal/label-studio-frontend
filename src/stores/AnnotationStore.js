@@ -136,7 +136,7 @@ const Annotation = types
 
     // existing annotation which can be updated
     get exists() {
-      return self.sentUserGenerate || self.versions.result;
+      return (self.userGenerate && self.sentUserGenerate) || self.versions.result;
     },
   }))
   .volatile(() => ({
