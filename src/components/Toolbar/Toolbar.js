@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { guidGenerator } from "../../utils/unique";
 import './Toolbar.styl';
@@ -7,6 +7,7 @@ import { useWindowSize } from "../../common/Utils/useWindowSize";
 import { isDefined } from "../../utils/utilities";
 import { inject, observer } from "mobx-react";
 import { SmartToolsProvider, ToolbarProvider } from "./ToolbarContext";
+import { Tool } from "./Tool";
 
 export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => {
   const [toolbar, setToolbar] = useState(null);
@@ -42,7 +43,7 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
         {Object.entries(toolGroups).map(([name, tools], i) => {
           return tools.length ? (
             <Elem name="group" key={`toolset-${name}-${i}`}>
-              {tools.map(tool => {
+              {tools.sort((a, b) => a.index - b.index).map(tool => {
                 return (
                   <Fragment key={guidGenerator()}>
                     {tool.viewClass}
@@ -52,21 +53,53 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
             </Elem>
           ) : null;
         })}
-        {/* <SmartTools tools={smartTools}/> */}
+        <SmartTools tools={smartTools}/>
       </Block>
     </ToolbarProvider>
   );
 }));
 
-const SmartTools = ({ tools }) => {
-  const selected = tools.find(t => t.selected) ?? tools[0];
-  const otherTools = tools.filter(t => t !== selected);
+const SmartTools = observer(({ tools }) => {
+  const [selectedIndex, setSelectedIndex] = useState(Math.max(tools.findIndex(t => t.selected), 0));
+
+  const selected = useMemo(() => tools[selectedIndex], [selectedIndex]);
+
+  const hasSelected = tools.some(t => t.selected);
 
   return (
-    <SmartToolsProvider value={{ tools: otherTools }}>
-      <Elem name="group">
-        {selected.viewClass}
-      </Elem>
-    </SmartToolsProvider>
+    <Elem name="group">
+      <Tool
+        smart
+        label="Auto-Detect"
+        active={hasSelected}
+        icon={selected.iconClass}
+        shortcut="M"
+        extra={(
+          <Elem name="smart">
+            {tools.map((t, i) => (
+              <div key={`${i}`} onClickCapture={(e) => {
+                e.preventDefault();
+                setSelectedIndex(i);
+                t.manager.selectTool(t, true);
+              }}>
+                {t.viewClass}
+              </div>
+            ))}
+          </Elem>
+        )}
+        controls={selected.controls}
+        onClick={() => {
+          let nextIndex = selectedIndex + 1;
+
+          if (!hasSelected) nextIndex = 0;
+          else if (nextIndex >= tools.length) nextIndex = 0;
+
+          const nextTool = tools[nextIndex];
+
+          setSelectedIndex(nextIndex);
+          nextTool.manager.selectTool(nextTool, true);
+        }}
+      />
+    </Elem>
   );
-};
+});

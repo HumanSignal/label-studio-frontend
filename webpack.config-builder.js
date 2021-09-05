@@ -223,7 +223,7 @@ const plugins = [
 
 if (isDevelopment) {
   plugins.push(new ESLintPlugin({
-    fix: true,
+    fix: false,
     failOnError: true,
   }));
 }

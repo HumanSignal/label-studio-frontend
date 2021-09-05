@@ -12,69 +12,74 @@ import {
 import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
-import { IconBrushTool, IconCircleTool, IconKeypointsTool, IconPolygonTool, IconRectangleTool } from "../../assets/icons";
+import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconKeypointsTool, IconPolygonTool, IconRectangleTool } from "../../assets/icons";
+import { NodeView } from "./NodeView";
 
 const NodeViews = {
-  RichTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
+  RichTextRegionModel: NodeView({
+    name: "HTML",
+    icon: FontColorsOutlined,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+  }),
 
-  ParagraphsRegionModel: [
-    "Paragraphs",
-    FontColorsOutlined,
-    node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
-  ],
+  ParagraphsRegionModel: NodeView({
+    name: "Paragraphs",
+    icon: FontColorsOutlined,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+  }),
 
-  AudioRegionModel: ["Audio", AudioOutlined, () => null],
+  AudioRegionModel: NodeView({
+    name: "Audio",
+    icon: AudioOutlined,
+  }),
 
-  TimeSeriesRegionModel: [
-    "TimeSeries",
-    LineChartOutlined,
-    () => null,
-  ],
+  TimeSeriesRegionModel: NodeView({
+    name: "TimeSeries",
+    icon: LineChartOutlined,
+  }),
 
-  TextAreaRegionModel: ["Input", MessageOutlined, node => <span style={{ color: "#5a5a5a" }}>{node._value}</span>],
+  TextAreaRegionModel: NodeView({
+    name: "Input",
+    icon: MessageOutlined,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node._value}</span>,
+  }),
 
-  RectRegionModel: [
-    "Rect",
-    IconRectangleTool,
-    () => null,
-  ],
+  RectRegionModel: NodeView({
+    name: "Rect",
+    icon: IconRectangleTool,
+  }),
 
-  PolygonRegionModel: [
-    "Polygon",
-    IconPolygonTool,
-    () => null,
-  ],
+  PolygonRegionModel: NodeView({
+    name: "Polygon",
+    icon: IconPolygonTool,
+  }),
 
-  EllipseRegionModel: [
-    "Ellipse",
-    IconCircleTool,
-    () => null,
-  ],
+  EllipseRegionModel: NodeView({
+    name: "Ellipse",
+    icon: IconCircleTool,
+  }),
 
   // @todo add coords
-  KeyPointRegionModel: [
-    "KeyPoint",
-    IconKeypointsTool,
-    () => null,
-  ],
+  KeyPointRegionModel: NodeView({
+    name: "KeyPoint",
+    icon: IconKeypointsTool,
+  }),
 
-  BrushRegionModel: [
-    "Brush",
-    IconBrushTool,
-    () => null,
-  ],
+  BrushRegionModel: NodeView({
+    name: "Brush",
+    icon: IconBrushTool,
+    altIcon: IconBrushToolSmart,
+  }),
 
-  ChoicesModel: [
-    "Classification",
-    ApartmentOutlined,
-    () => null,
-  ],
+  ChoicesModel: NodeView({
+    name: "Classification",
+    icon: ApartmentOutlined,
+  }),
 
-  TextAreaModel: [
-    "Input",
-    MessageOutlined,
-    () => null,
-  ],
+  TextAreaModel: NodeView({
+    name: "Input",
+    icon: MessageOutlined,
+  }),
 };
 
 const Node = observer(({ className, node }) => {
@@ -82,7 +87,7 @@ const Node = observer(({ className, node }) => {
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  let [, , getContent] = NodeViews[name];
+  let { getContent } = NodeViews[name];
   const labelName = node.labelName;
 
   return (
@@ -99,7 +104,7 @@ const NodeIcon = observer(({ node }) => {
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  const Icon = NodeViews[name][1];
+  const { icon: Icon } = NodeViews[name];
 
   return <Icon />;
 });
@@ -111,7 +116,7 @@ const NodeMinimal = observer(({ node }) => {
 
   if (!(name in NodeViews)) return null;
 
-  const [text, Icon] = NodeViews[name];
+  const { name: text, Icon } = NodeViews[name];
 
   return (
     <Block name="node-minimal" tag="span">

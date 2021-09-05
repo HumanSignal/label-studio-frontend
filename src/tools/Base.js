@@ -2,7 +2,6 @@ import { getEnv, getSnapshot, getType, types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import React from "react";
 import { Tool } from "../components/Toolbar/Tool";
-import ToolsManager from "./Manager";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -10,8 +9,11 @@ const ToolView = observer(({ item }) => {
       active={item.selected}
       icon={item.iconClass}
       label={item.viewTooltip}
+      shortcut={item.shortcut}
+      extraShortcuts={item.extraShortcuts}
+      tool={item}
       onClick={() => {
-        item.manager.selectTool(item, !item.selected);
+        item.manager.selectTool(item, true);
       }}
     />
   );
@@ -23,6 +25,7 @@ const BaseTool = types
   })
   .volatile(() => ({
     dynamic: false,
+    index: 1,
   }))
   .views(self => {
     return {
@@ -33,6 +36,9 @@ const BaseTool = types
         return self.isSeparated && self.iconClass ? <ToolView item={self} /> : null;
       },
       get viewTooltip() {
+        return null;
+      },
+      get controls() {
         return null;
       },
       get iconClass() {
@@ -51,7 +57,6 @@ const BaseTool = types
   .actions((self) => {
     return  {
       afterCreate() {
-        console.log("Creating tool");
         if (self.smart) {
           const currentEnv = getEnv(self);
           const toolType = getType(self);
@@ -63,13 +68,11 @@ const BaseTool = types
             ...currentEnv,
           };
 
-          console.log(currentEnv);
-
           const smartCopy = toolType.create(snapshot, env);
 
           smartCopy.makeDynamic();
 
-          // getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy);
+          getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy);
         }
       },
 

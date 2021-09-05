@@ -9,7 +9,7 @@ import { Block, Elem } from "../../../utils/bem";
 
 import "./Video.styl";
 
-const hotkeys = Hotkey();
+const hotkeys = Hotkey("Video", "Video Annotation");
 
 const PlayPause = ({ video }) => {
   const [paused, setPaused] = useState(true);

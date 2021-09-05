@@ -19,7 +19,7 @@ import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
 
-const hotkeys = Hotkey("Annotations");
+const hotkeys = Hotkey("Annotations", "Annotations");
 
 const Annotation = types
   .model("Annotation", {

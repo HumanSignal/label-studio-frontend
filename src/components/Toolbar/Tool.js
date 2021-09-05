@@ -3,10 +3,12 @@ import { isDefined } from "../../utils/utilities";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Fragment } from "react";
 import { Hotkey } from "../../core/Hotkey";
-import { SmartToolsContext, ToolbarContext } from "./ToolbarContext";
-import { Space } from '../../common/Space/Space';
+import { ToolbarContext } from "./ToolbarContext";
 
-const hotkeys = Hotkey("SegmentationToolbar");
+const hotkeys = Hotkey(
+  "SegmentationToolbar",
+  "Segmentation Tools",
+);
 
 const keysDictionary = {
   plus: "+",
@@ -16,6 +18,10 @@ const keysDictionary = {
 export const Tool = ({
   active = false,
   disabled = false,
+  smart = false,
+  extra = null,
+  tool = null,
+  controlsOnHover = false,
   extraShortcuts = {},
   controls,
   icon,
@@ -24,8 +30,9 @@ export const Tool = ({
   onClick,
 }) => {
   let currentShortcut = shortcut;
-  const smartTools = useContext(SmartToolsContext);
+  const dynamic = tool?.dynamic ?? false;
   const { expanded, alignment } = useContext(ToolbarContext);
+  const [hovered, setHovered] = useState(false);
 
   const shortcutView = useMemo(() => {
     if (!isDefined(shortcut)) return null;
@@ -76,42 +83,66 @@ export const Tool = ({
 
     const addShortcuts = () => {
       Object.entries(extraShortcuts).forEach(([key, [label, fn]]) => {
-        if (!hotkeys.hasKey(key)) hotkeys.addKey(key, fn, label);
+        if (!hotkeys.hasKey(key)) hotkeys.overwriteKey(key, fn, label);
       });
     };
 
     if (active) {
-      removeShortcuts();
       addShortcuts();
-    } else {
-      removeShortcuts();
     }
 
     return removeShortcuts;
   }, [extraShortcuts, active]);
 
+  const extraContent = useMemo(() => {
+    return smart && extra ? (
+      <Elem name="extra">{extra}</Elem>
+    ) : null;
+  }, [smart, extra]);
+
   return (
-    <Block name="tool" mod={{ active, disabled, expanded, alignment }} onClick={onClick}>
+    <Block name="tool" mod={{
+      active,
+      disabled,
+      alignment,
+      expanded: expanded && !dynamic,
+      smart: dynamic || smart,
+    }} onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      onClick?.(e);
+    }} onMouseEnter={() => {
+      setHovered(true);
+    }} onMouseLeave={() => {
+      setHovered(false);
+    }}>
       <Elem name="icon">
         {icon}
       </Elem>
-      {expanded ? (
-        <Elem name="label">{label} {shortcutView}</Elem>
-      ) : (isDefined(label) || isDefined(shortcutView)) && (
-        <Elem name="tooltip">{label} {shortcutView}</Elem>
+      {dynamic === false && controlsOnHover === false &&  (
+        expanded ? (
+          <>
+            <Elem name="label">
+              {extraContent}
+              {label}
+              {shortcutView}
+            </Elem>
+          </>
+        ) : (isDefined(label) || isDefined(shortcutView)) && (
+          <Elem name="tooltip" mod={{ controlled: !!(smart && extra) }}>
+            <Elem name="tooltip-body">
+              {extraContent}
+              {label}
+              {shortcutView}
+            </Elem>
+          </Elem>
+        )
       )}
-      {controls?.length && active && (
-        <Elem name="controls">
-          {controls}
-        </Elem>
-      )}
-      {smartTools.tools.length > 0 && (
-        <Elem name="controls">
-          {smartTools.tools.map((t, i) => (
-            <Fragment key={`${t.type}-${i}`}>
-              {t.viewClass}
-            </Fragment>
-          ))}
+      {dynamic === false && controls?.length && (active || (controlsOnHover && hovered)) && (
+        <Elem name="controls" onClickCapture={e => e.stopPropagation()}>
+          <Elem name="controls-body">
+            {controls}
+          </Elem>
         </Elem>
       )}
     </Block>

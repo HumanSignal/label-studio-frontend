@@ -8,13 +8,14 @@ import "./Settings.styl";
 import { Block, Elem } from "../../utils/bem";
 
 const HotkeysDescription = () => {
-  const descr = Hotkey.keysDescipritions();
   const columns = [
     { title: "Shortcut", dataIndex: "combo", key: "combo" },
     { title: "Description", dataIndex: "descr", key: "descr" },
   ];
 
-  const data = Object.keys(descr)
+  const keyNamespaces = Hotkey.namespaces();
+
+  const getData = (descr) => Object.keys(descr)
     .filter(k => descr[k])
     .map(k => ({
       key: k,
@@ -30,7 +31,19 @@ const HotkeysDescription = () => {
 
   return (
     <Block name="keys">
-      <Table columns={columns} dataSource={data} size="small" />
+      <Tabs size="small">
+        {Object.entries(keyNamespaces).map(([ns, data]) => {
+          if (Object.keys(data.descriptions).length === 0) {
+            return null;
+          } else {
+            return (
+              <Tabs.TabPane key={ns} tab={data.description ?? ns}>
+                <Table columns={columns} dataSource={getData(data.descriptions)} size="small" />
+              </Tabs.TabPane>
+            );
+          }
+        })}
+      </Tabs>
     </Block>
   );
 };

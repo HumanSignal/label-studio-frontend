@@ -10,6 +10,7 @@ const _Tool = types
   .model("RectTool", {
     group: "segmentation",
     smart: true,
+    shortcut: "R",
   })
   .views(self => {
     const Super = {
@@ -24,10 +25,10 @@ const _Tool = types
         };
       },
       get viewTooltip() {
-        return "Rectangle region";
+        return "Rectangle";
       },
       get iconComponent() {
-        return NodeViews.RectRegionModel[1];
+        return NodeViews.RectRegionModel.icon;
       },
       get defaultDimensions() {
         return DEFAULT_DIMENSIONS.rect;

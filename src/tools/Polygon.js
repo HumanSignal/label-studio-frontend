@@ -40,7 +40,7 @@ const _Tool = types
         return "Polygon region";
       },
       get iconComponent() {
-        return NodeViews.PolygonRegionModel[1];
+        return NodeViews.PolygonRegionModel.icon;
       },
 
       get defaultDimensions() {

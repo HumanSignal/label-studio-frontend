@@ -370,7 +370,6 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
           compositeOperation: "source-over",
         });
       });
-      console.log("hit");
     },
     [pointsList, pointsList.length],
   );

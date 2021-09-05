@@ -12,16 +12,14 @@
     box-shadow 0px 0px 0px 1px rgba(0, 0, 0, 0.1), 0px 1px 0px rgba(0, 0, 0, 0.08)
 
   &__key + &__key
-    position relative
-    margin-left 15px
+    margin-left 4px
 
-    &::before
-      position absolute
-      right 100%
-      width 15px
-      height 100%
-      content "+"
-      text-align center
-      display flex
-      align-items center
-      justify-content center
+  &__key-group
+    margin-left -8px
+    margin-right -8px
+    padding-left 8px
+    padding-right 8px
+
+  &__key-group + &__key-group
+    margin-top 5px
+    border-top 2px solid rgba(#000, 0.05)

@@ -10,6 +10,7 @@ const _Tool = types
     default: types.optional(types.boolean, true),
     group: "segmentation",
     shortcut: "K",
+    smart: true,
   })
   .views(() => ({
     get tagTypes() {
@@ -19,10 +20,10 @@ const _Tool = types
       };
     },
     get viewTooltip() {
-      return "Key point region";
+      return "Key Point";
     },
     get iconComponent() {
-      return NodeViews.KeyPointRegionModel[1];
+      return NodeViews.KeyPointRegionModel.icon;
     },
   }))
   .actions(self => ({

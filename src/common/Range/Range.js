@@ -171,7 +171,7 @@ const RangeHandle = ({
       });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
       onChange?.(newValue);
 
       document.removeEventListener('mousemove', handleMouseMove);

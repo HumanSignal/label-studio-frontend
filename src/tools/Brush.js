@@ -10,6 +10,7 @@ import { findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
 import { Tool } from "../components/Toolbar/Tool";
 import { Range } from "../common/Range/Range";
+import { NodeViews } from "../components/Node/Node";
 
 const IconDot = ({ size }) => {
   return (
@@ -30,27 +31,14 @@ const ToolView = observer(({ item }) => {
       active={item.selected}
       shortcut={item.shortcut}
       extraShortcuts={item.extraShortcuts}
-      icon={<IconBrushTool />}
+      icon={item.iconClass}
+      tool={item}
       onClick={() => {
         if (item.selected) return;
 
         item.manager.selectTool(item, true);
       }}
-      controls={[
-        <Range
-          key="brush-size"
-          value={item.strokeWidth}
-          min={10}
-          max={50}
-          reverse
-          align="vertical"
-          minIcon={<IconDot size={8}/>}
-          maxIcon={<IconDot size={16}/>}
-          onChange={(value) => {
-            item.setStroke(value);
-          }}
-        />,
-      ]}
+      controls={item.controls}
     />
   );
 });
@@ -66,11 +54,33 @@ const _Tool = types
     get viewClass() {
       return <ToolView item={self} />;
     },
+    get iconComponent() {
+      return self.dynamic
+        ? NodeViews.BrushRegionModel.altIcon
+        : NodeViews.BrushRegionModel.icon;
+    },
     get tagTypes() {
       return {
         stateTypes: "brushlabels",
         controlTagTypes: ["brushlabels", "brush"],
       };
+    },
+    get controls() {
+      return [
+        <Range
+          key="brush-size"
+          value={self.strokeWidth}
+          min={10}
+          max={50}
+          reverse
+          align="vertical"
+          minIcon={<IconDot size={8}/>}
+          maxIcon={<IconDot size={16}/>}
+          onChange={(value) => {
+            self.setStroke(value);
+          }}
+        />,
+      ];
     },
     get extraShortcuts() {
       return {

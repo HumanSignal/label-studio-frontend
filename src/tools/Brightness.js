@@ -9,25 +9,33 @@ import SliderDropDownTool from "../components/Tools/SliderDropDown";
 import ToolMixin from "../mixins/Tool";
 
 import styles from "./Tools.module.scss";
+import { Tool } from "../components/Toolbar/Tool";
+import { Range } from "../common/Range/Range";
+import { IconBrightnessTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
-    <Fragment>
-      <SliderDropDownTool
-        default={Constants.BRIGHTNESS_VALUE}
-        value={item.brightness}
-        max={Constants.BRIGHTNESS_MAX}
-        selected={item.selected}
-        icon={<ControlOutlined />}
-        onResetClick={() => {
-          item.setStroke(Constants.BRIGHTNESS_VALUE);
-        }}
-        onChange={val => {
-          item.setStroke(val);
-        }}
-      />
-      <span className={styles.tooltitle}>Brightness</span>
-    </Fragment>
+    <Tool
+      active={item.selected}
+      label="Brightness"
+      controlsOnHover
+      controls={[
+        <Range
+          key="brightness"
+          align="vertical"
+          reverse
+          continuous
+          minIcon={<IconBrightnessTool style={{ width: 22, height: 22, opacity: 0.2 }}/>}
+          maxIcon={<IconBrightnessTool style={{ width: 22, height: 22, opacity: 0.8 }}/>}
+          value={item.brightness}
+          max={Constants.BRIGHTNESS_MAX}
+          onChange={val => {
+            item.setStroke(val);
+          }}
+        />,
+      ]}
+      icon={<IconBrightnessTool />}
+    />
   );
 });
 

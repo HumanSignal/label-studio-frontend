@@ -14,7 +14,7 @@ import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
 import { guidGenerator } from "../utils/unique";
 
-const hotkeys = Hotkey("AppStore");
+const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
 export default types
   .model("AppStore", {
@@ -229,17 +229,13 @@ export default types
       );
 
       // create relation
-      hotkeys.addKey(
-        "r",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.overwriteKey("alt+r", function() {
+        const c = self.annotationStore.selected;
 
-          if (c && c.highlightedNode && !c.relationMode) {
-            c.startRelationMode(c.highlightedNode);
-          }
-        },
-        "Create relation when region is selected",
-      );
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.startRelationMode(c.highlightedNode);
+        }
+      }, "Create relation between regions");
 
       // Focus fist focusable perregion when region is selected
       hotkeys.addKey(
@@ -255,7 +251,7 @@ export default types
       );
 
       // unselect region
-      hotkeys.addKey("u", function() {
+      hotkeys.addKey("alt+u", function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode) {
@@ -263,7 +259,7 @@ export default types
         }
       });
 
-      hotkeys.addKey("h", function() {
+      hotkeys.addKey("alt+h", function() {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {

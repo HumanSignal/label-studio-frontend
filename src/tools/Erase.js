@@ -31,12 +31,13 @@ const ToolView = observer(({ item }) => {
       shortcut="E"
       active={item.selected}
       extraShortcuts={item.extraShortcuts}
+      tool={item}
       onClick={() => {
         if (item.selected) return;
 
         item.manager.selectTool(item, true);
       }}
-      icon={<IconEraserTool />}
+      icon={item.iconClass}
 
       controls={[
         <Range
@@ -60,11 +61,17 @@ const ToolView = observer(({ item }) => {
 const _Tool = types
   .model("EraserTool", {
     strokeWidth: types.optional(types.number, 10),
-    group: "eraser",
+    group: "segmentation",
   })
+  .volatile(() => ({
+    index: 9999,
+  }))
   .views(self => ({
     get viewClass() {
       return <ToolView item={self} />;
+    },
+    get iconComponent() {
+      return IconEraserTool;
     },
     get extraShortcuts() {
       return {

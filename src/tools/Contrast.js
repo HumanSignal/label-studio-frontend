@@ -9,25 +9,33 @@ import SliderDropDownTool from "../components/Tools/SliderDropDown";
 import ToolMixin from "../mixins/Tool";
 
 import styles from "./Tools.module.scss";
+import { Tool } from "../components/Toolbar/Tool";
+import { Range } from "../common/Range/Range";
+import { IconContrastTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
-    <Fragment>
-      <SliderDropDownTool
-        default={Constants.CONTRAST_VALUE}
-        value={item.contrast}
-        max={Constants.CONTRAST_MAX}
-        selected={item.selected}
-        icon={<ControlOutlined />}
-        onResetClick={() => {
-          item.setStroke(Constants.CONTRAST_VALUE);
-        }}
-        onChange={val => {
-          item.setStroke(val);
-        }}
-      />
-      <span className={styles.tooltitle}>Contrast</span>
-    </Fragment>
+    <Tool
+      active={item.selected}
+      label="Brightness"
+      controlsOnHover
+      controls={[
+        <Range
+          key="brightness"
+          align="vertical"
+          reverse
+          continuous
+          minIcon={<IconContrastTool style={{ width: 22, height: 22, opacity: 0.2 }}/>}
+          maxIcon={<IconContrastTool style={{ width: 22, height: 22, opacity: 0.8 }}/>}
+          value={item.contrast}
+          max={Constants.CONTRAST_MAX}
+          onChange={val => {
+            item.setStroke(val);
+          }}
+        />,
+      ]}
+      icon={<IconContrastTool />}
+    />
   );
 });
 

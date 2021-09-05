@@ -141,7 +141,7 @@ export default class Waveform extends React.Component {
   constructor(props) {
     super(props);
 
-    this.hotkeys = Hotkey();
+    this.hotkeys = Hotkey("Audio", "Audio Segmentation");
 
     this.state = {
       src: this.props.src,

@@ -25,11 +25,15 @@ export { ReactComponent as IconPlayerPlay } from "./player/play.svg";
 export { ReactComponent as IconPlayerStep } from "./player/step.svg";
 
 export { ReactComponent as IconBrushTool } from './brush-tool.svg';
+export { ReactComponent as IconBrushToolSmart } from './brush-tool-smart.svg';
 export { ReactComponent as IconCircleTool } from './circle-tool.svg';
 export { ReactComponent as IconKeypointsTool } from './keypoints-tool.svg';
 export { ReactComponent as IconPolygonTool } from './polygon-tool.svg';
 export { ReactComponent as IconRectangleTool } from './rectangle-tool.svg';
 export { ReactComponent as IconEraserTool } from './eraser-tool.svg';
+export { ReactComponent as IconHandTool } from './hand-tool.svg';
+export { ReactComponent as IconBrightnessTool } from "./brightness-tool.svg";
+export { ReactComponent as IconContrastTool } from "./contrast-tool.svg";
 
 export { ReactComponent as IconMagnifyTool } from './magnify-tool.svg';
 export { ReactComponent as IconMinifyTool } from './minify-tool.svg';

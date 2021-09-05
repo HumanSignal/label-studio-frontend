@@ -5,16 +5,16 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { Tool } from "../components/Toolbar/Tool";
-import { IconMagnifyTool, IconMinifyTool, IconMoveTool } from "../assets/icons";
+import { IconHandTool, IconMagnifyTool, IconMinifyTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
     <Fragment>
       <Tool
         active={item.selected}
-        icon={<IconMoveTool />}
+        icon={<IconHandTool />}
         label="Pan Image"
-        shortcut="M"
+        shortcut="H"
         onClick={() => {
           const sel = item.selected;
 
