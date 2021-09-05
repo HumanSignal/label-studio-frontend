@@ -366,7 +366,7 @@ export default types
       if (self.isSubmitting) return;
 
       const entity = self.annotationStore.selected;
-      const event = entity.exists ? 'updateAnnotation' : 'submitAnnotation';
+      const event = (entity.exists && self.annotationStore.predictions.length === 0) ? 'updateAnnotation' : 'submitAnnotation';
 
       entity.beforeSend();
 
