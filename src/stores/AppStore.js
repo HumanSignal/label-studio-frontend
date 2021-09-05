@@ -188,10 +188,10 @@ export default types
         hotkeys.addKey("ctrl+enter", () => {
           const entity = self.annotationStore.selected;
 
-          if (entity.exists) {
-            self.updateAnnotation();
-          } else {
+          if (!isDefined(entity.pk)) {
             self.submitAnnotation();
+          } else {
+            self.updateAnnotation();
           }
         }, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
       }
