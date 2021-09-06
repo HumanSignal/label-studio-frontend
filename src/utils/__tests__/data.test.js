@@ -1,6 +1,6 @@
 /* global describe, test, expect */
 import { timeFormat } from "d3";
-import { parseCSV } from "../data";
+import { parseCSV, parseValue } from "../data";
 
 const now = +new Date();
 const dateISO = timeFormat("%Y-%m-%d %H:%M:%S");
@@ -110,5 +110,33 @@ describe("parseCSV; headless csv", () => {
     const expected = { "0": [123, 125, 135], "1": [0.01, 0, 0.04], "2": ["M", "F", 0] };
 
     expect(parseCSV(csv, ",")).toStrictEqual(expected);
+  });
+});
+
+describe("parseValue", () => {
+  const data = {
+    html: "<a href=\"https://labelstud.io\">Label Studio</a>",
+    url: "https://labelstud.io",
+    name: "Label Studio",
+    messages: {
+      greeting: "Hey!",
+      error: "It's broken.",
+    },
+  };
+
+  test("Plain text", () => {
+    expect(parseValue("just text", data)).toEqual("just text");
+  });
+
+  test("Variable", () => {
+    expect(parseValue("$url", data)).toEqual("https://labelstud.io");
+  });
+
+  test("Text with variables", () => {
+    expect(parseValue("URL of $name is $url", data)).toEqual("URL of Label Studio is https://labelstud.io");
+  });
+
+  test("Nested values", () => {
+    expect(parseValue("$messages.greeting $messages.error [error]", data)).toEqual("Hey! It's broken. [error]");
   });
 });
