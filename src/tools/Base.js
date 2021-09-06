@@ -33,7 +33,7 @@ const BaseTool = types
         return self.control.isSeparated;
       },
       get viewClass() {
-        return self.isSeparated && self.iconClass ? <ToolView item={self} /> : null;
+        return (self.isSeparated || self.smart) && self.iconClass ? <ToolView item={self} /> : null;
       },
       get viewTooltip() {
         return null;
