@@ -174,6 +174,7 @@ const HtxKeyPointView = ({ item }) => {
           const t = e.target;
 
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
+          item.notifyDrawingFinished();
         }}
         dragBoundFunc={item.parent.fixForZoom(pos => {
           const r = item.parent.stageWidth;

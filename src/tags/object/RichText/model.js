@@ -206,6 +206,7 @@ const Model = types
 
       self.regions.push(region);
       self.annotation.addRegion(region);
+      region.notifyDrawingFinished();
 
       region.applyHighlight();
 
@@ -234,6 +235,8 @@ const Model = types
       area.updateGlobalOffsets(soff, eoff);
 
       area.applyHighlight();
+
+      area.notifyDrawingFinished();
 
       return area;
     },

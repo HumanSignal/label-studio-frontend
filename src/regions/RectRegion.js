@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from "react";
+import React, { useContext } from "react";
 import { Rect } from "react-konva";
 import { getRoot, types } from "mobx-state-tree";
 
@@ -17,7 +17,6 @@ import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import { SuggestionControls } from "../components/ImageView/SuggestionControls";
 import { RegionWrapper } from "./RegionWrapper";
 
 /**

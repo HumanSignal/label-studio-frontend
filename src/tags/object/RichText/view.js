@@ -193,7 +193,11 @@ class RichTextPieceView extends Component {
       : content;
 
     if (item.inline) {
-      const style = { overflow: "auto" };
+      const style = {
+        overflow: "auto",
+        fontSize: 16,
+        lineHeight: '26px',
+      };
       const eventHandlers = {
         onClickCapture: this._onRegionClick,
         onMouseUp: this._onMouseUp,

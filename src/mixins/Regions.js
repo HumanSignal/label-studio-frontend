@@ -13,6 +13,11 @@ const RegionsMixin = types
     hidden: types.optional(types.boolean, false),
 
     parentID: types.optional(types.string, ""),
+
+    fromSuggestion: false,
+
+    // Dynamic preannotations enabled
+    dynamic: false,
   })
   .volatile(() => ({
     // selected: false,
@@ -55,7 +60,7 @@ const RegionsMixin = types
       setDrawing(val) {
         self.isDrawing = val;
 
-        self.notifyDrawing();
+        self.notifyDrawingFinished();
       },
 
       setShapeRef(ref) {
@@ -256,14 +261,18 @@ const RegionsMixin = types
         e && e.stopPropagation();
       },
 
-      notifyDrawing() {
+      notifyDrawingFinished() {
+        if (!self.dynamic || self.fromSuggestion) return;
+
         clearTimeout(self.drawingTimeout);
 
+        console.log("finished");
         if (self.isDrawing === false) {
           const timeout = getType(self).name.match(/brush/i) ? 1200 : 0;
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
+            console.log("timeout reached", env);
             env.events.invoke("regionFinishedDrawing", self);
           }, timeout);
         }

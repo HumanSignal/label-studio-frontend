@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { guidGenerator } from "../../utils/unique";
 import './Toolbar.styl';
@@ -6,7 +6,7 @@ import './Tool.styl';
 import { useWindowSize } from "../../common/Utils/useWindowSize";
 import { isDefined } from "../../utils/utilities";
 import { inject, observer } from "mobx-react";
-import { SmartToolsProvider, ToolbarProvider } from "./ToolbarContext";
+import { ToolbarProvider } from "./ToolbarContext";
 import { Tool } from "./Tool";
 
 export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => {
@@ -41,9 +41,11 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
     <ToolbarProvider value={{ expanded, alignment }}>
       <Block ref={(el) => setToolbar(el)} name="toolbar" mod={{ alignment, expanded }}>
         {Object.entries(toolGroups).map(([name, tools], i) => {
-          return tools.length ? (
+          const visibleTools = tools.filter(t => t.viewClass);
+
+          return visibleTools.length ? (
             <Elem name="group" key={`toolset-${name}-${i}`}>
-              {tools.sort((a, b) => a.index - b.index).map(tool => {
+              {visibleTools.sort((a, b) => a.index - b.index).map(tool => {
                 return (
                   <Fragment key={guidGenerator()}>
                     {tool.viewClass}

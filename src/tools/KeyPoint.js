@@ -39,6 +39,7 @@ const _Tool = types
         y,
         width: Number(c.strokewidth),
         coordstype: "px",
+        dynamic: self.dynamic,
       });
 
       keyPoint.setDrawing(false);

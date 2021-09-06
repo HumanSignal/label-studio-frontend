@@ -110,7 +110,9 @@ class App extends Component {
               {this.renderRelations(as.selected)}
             </Elem>
             {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
-            <DynamicPreannotationsControl />
+            {as.selected.onlyTextObjects === false && (
+              <DynamicPreannotationsControl />
+            )}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}

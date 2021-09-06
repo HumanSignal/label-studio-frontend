@@ -1,7 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { IconBrushTool } from '../assets/icons';
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
@@ -116,7 +115,9 @@ const _Tool = types
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
-        const value = { coordstype: "px", touches: source.touches };
+
+        console.log({ source });
+        const value = { coordstype: "px", touches: source.touches, dynamic: source.dynamic };
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
         self.applyActiveStates(newArea);

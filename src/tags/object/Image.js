@@ -339,7 +339,8 @@ const Model = types
       //self.annotation.history.freeze();
     },
 
-    createDrawingRegion(areaValue, resultValue, control) {
+    createDrawingRegion(areaValue, resultValue, control, dynamic) {
+      console.log({ dynamic });
       const result = {
         from_name: control.name,
         to_name: self,
@@ -352,6 +353,7 @@ const Model = types
         object: self,
         ...areaValue,
         results: [result],
+        dynamic,
       };
 
       self.drawingRegion = areaRaw;

@@ -1,4 +1,4 @@
-import { getEnv, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Utils from "../utils";
 import throttle from "lodash.throttle";
@@ -100,7 +100,7 @@ const DrawingTool = types
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control);
+        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, self.dynamic);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
@@ -112,8 +112,10 @@ const DrawingTool = types
           value[key] = source[key];
           return value;
         }, { coordstype: "px" });
+
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
+        currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
         self.deleteRegion();
         return newArea;

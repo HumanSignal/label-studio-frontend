@@ -143,6 +143,12 @@ const Annotation = types
 
       return dataExists && pkExists;
     },
+
+    get onlyTextObjects() {
+      return self.objects.reduce((res, obj) => {
+        return res && ['text', 'hypertext'].includes(obj.type);
+      }, true);
+    },
   }))
   .volatile(() => ({
     hidden: false,
@@ -703,7 +709,15 @@ const Annotation = types
 
       if (getRoot(self).autoAcceptSuggestions) {
         self.acceptAllSuggestions();
+      } else {
+        self.suggestions.forEach((suggestion) => {
+          if (['richtextregion', 'text'].includes(suggestion.type)) {
+            self.acceptSuggestion(suggestion.id);
+          }
+        });
       }
+
+      self.objects.forEach(obj => obj.needsUpdate?.());
     },
 
     /**
@@ -815,9 +829,8 @@ const Annotation = types
     },
 
     acceptAllSuggestions() {
-      Array.from(self.suggestions).forEach(([id, item]) => {
-        self.areas.set(id, item.toJSON());
-        self.suggestions.delete(id);
+      Array.from(self.suggestions.keys()).forEach((id) => {
+        self.acceptSuggestion(id);
       });
     },
 
@@ -830,7 +843,10 @@ const Annotation = types
     acceptSuggestion(id) {
       const item = self.suggestions.get(id);
 
-      self.areas.set(id, item.toJSON());
+      self.areas.set(id, {
+        ...item.toJSON(),
+        fromSuggestion: true,
+      });
       self.suggestions.delete(id);
     },
 

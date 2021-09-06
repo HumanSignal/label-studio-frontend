@@ -1,5 +1,5 @@
 import { inject, observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { getType, types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import React from "react";
 
@@ -148,8 +148,9 @@ const Model = types.model({
 
       // unselect other tools if they exist and selected
       const tool = Object.values(self.parent?.tools || {})[0];
+      const selectedTool = tool.manager.findSelectedTool();
 
-      if (tool && tool.manager.findSelectedTool() !== tool) {
+      if (tool && (!selectedTool || getType(selectedTool).name !== getType(tool).name)) {
         tool.manager.selectTool(tool, true);
       }
     }
