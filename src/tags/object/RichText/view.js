@@ -95,6 +95,10 @@ class RichTextPieceView extends Component {
    */
   _handleUpdate(initial = false) {
     const { item } = this.props;
+    const rootEl = this.rootNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+
+    if (!root || root.tagName === "IFRAME" || !root.childElementCount) return;
 
     // Make refs accessible to the model
     this.props.item.setRef(
@@ -105,8 +109,6 @@ class RichTextPieceView extends Component {
     if (initial) {
       item.regs.forEach((richTextRegion) => {
         try {
-          const rootEl = this.rootNodeRef.current;
-          const root = rootEl?.contentDocument?.body ?? rootEl;
           const { start, startOffset, end, endOffset } = richTextRegion;
           const range = xpath.toRange(start, startOffset, end, endOffset, root);
           const [soff, eoff] = rangeToGlobalOffset(range, root);
@@ -227,7 +229,7 @@ class RichTextPieceView extends Component {
       return (
         <ObjectTag item={item}>
           <iframe
-            referrerpolicy="no-referrer"
+            referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={this.rootNodeRef}
             style={style}
@@ -236,7 +238,7 @@ class RichTextPieceView extends Component {
             onLoad={this.onIFrameLoad}
           />
           <iframe
-            referrerpolicy="no-referrer"
+            referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={this.originalContentRef}
             className="htx-richtext-orig"
