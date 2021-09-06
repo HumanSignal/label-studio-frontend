@@ -135,7 +135,11 @@ const Result = types
         const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
 
         if (tagName) {
-          const result = results.find(r => r.from_name.name === tagName);
+          const result = results.find(r => {
+            if (r.from_name.name !== tagName) return false;
+            // for perRegion choices we should check that they are in the same area
+            return !r.from_name.perregion || r.area === self.area;
+          });
 
           if (!result) return false;
           if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;

@@ -135,6 +135,14 @@ const Annotation = types
         .filter(Boolean)
         .concat(self.relationStore.serializeAnnotation());
     },
+
+    // existing annotation which can be updated
+    get exists() {
+      const dataExists = (self.userGenerate && self.sentUserGenerate) || isDefined(self.versions.result);
+      const pkExists = isDefined(self.pk);
+
+      return dataExists && pkExists;
+    },
   }))
   .volatile(() => ({
     hidden: false,
