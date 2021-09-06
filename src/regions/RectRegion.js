@@ -72,6 +72,14 @@ const Model = types
     get parent() {
       return self.object;
     },
+    get bboxCoords() {
+      return {
+        left: self.x,
+        top: self.y,
+        right: self.x + self.width,
+        bottom: self.y + self.height,
+      };
+    },
   }))
   .actions(self => ({
     afterCreate() {

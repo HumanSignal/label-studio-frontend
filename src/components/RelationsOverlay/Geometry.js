@@ -288,7 +288,7 @@ export class Geometry {
         }
       }
     }
-    return { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y };
+    return min.x <= max.x && min.y <= max.y ? { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y } : null;
   }
   /**
    * Combine two or more BBoxes into one

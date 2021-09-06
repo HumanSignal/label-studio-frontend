@@ -16,6 +16,7 @@ import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
 import { defaultStyle } from "../core/Constants";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { Geometry } from "../components/RelationsOverlay/Geometry";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -144,6 +145,17 @@ const Model = types
     },
     get touchesLength() {
       return self.touches.length;
+    },
+    get bboxCoords() {
+      if (!self.imageData) return null;
+      const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
+
+      return imageBBox && {
+        left: imageBBox.x,
+        top: imageBBox.y,
+        right: imageBBox.x + imageBBox.width,
+        bottom: imageBBox.y + imageBBox.height,
+      };
     },
   }))
   .actions(self => {
