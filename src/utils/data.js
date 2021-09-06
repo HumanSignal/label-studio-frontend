@@ -10,7 +10,7 @@ import get from "lodash.get";
 export const parseValue = (value, task) => {
   if (!value) return;
 
-  return value.replace(/\$[a-z.]+/ig, v => get(task, v.substr(1)));
+  return value.replace(/\$[a-z_.]+/ig, v => get(task, v.substr(1)));
 };
 
 /**
