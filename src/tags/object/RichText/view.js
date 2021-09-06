@@ -180,7 +180,7 @@ class RichTextPieceView extends Component {
       body.addEventListener(event, ...eventHandlers[event]);
     }
 
-    this._handleUpdate();
+    this._handleUpdate(true);
   }
 
   render() {

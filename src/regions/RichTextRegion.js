@@ -61,7 +61,7 @@ const Model = types
           start: self.startOffset,
           end: self.endOffset,
         });
-      } else {
+      } else if (self.globalOffsets) {
         // Calculate proper XPath right before serialization
         const root = self._getRootNode(true);
         const range = findRangeNative(
@@ -76,6 +76,11 @@ const Model = types
           ...xpathRange,
           globalOffsets: self.globalOffsets?.toJSON(),
         });
+      } else {
+        // broken regions may not have globalOffsets, so just keep them untouched
+        const { start, end, startOffset, endOffset } = self;
+
+        Object.assign(res.value, { start, end, startOffset, endOffset });
       }
 
       if (self.object.savetextresult === "yes" && isDefined(self.text)) {
