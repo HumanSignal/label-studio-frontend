@@ -106,8 +106,8 @@ class RichTextPieceView extends Component {
       this.originalContentRef,
     );
 
-    if (initial) {
-      item.regs.forEach((richTextRegion) => {
+    item.regs.forEach((richTextRegion) => {
+      if (initial) {
         try {
           const { start, startOffset, end, endOffset } = richTextRegion;
           const range = xpath.toRange(start, startOffset, end, endOffset, root);
@@ -118,11 +118,9 @@ class RichTextPieceView extends Component {
           // should never happen
           // doesn't break anything if happens
         }
-      });
-    }
+      }
 
-    // Apply highlight to ranges of a current tag
-    item.regs.forEach(richTextRegion => {
+      // Apply highlight to ranges of a current tag
       try {
         richTextRegion.applyHighlight();
       } catch (err) {
