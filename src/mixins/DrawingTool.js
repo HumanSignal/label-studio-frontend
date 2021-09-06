@@ -153,6 +153,7 @@ const DrawingTool = types
         self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
+        console.log('finishing');
         if (!self.beforeCommitDrawing()) {
           self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
@@ -166,6 +167,7 @@ const DrawingTool = types
       _finishDrawing() {
         self.commitDrawingRegion();
         self._resetState();
+        console.log("finish");
       },
       _resetState(){
         self.annotation.history.unfreeze();

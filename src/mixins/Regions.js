@@ -1,4 +1,4 @@
-import { getParent, getRoot, types } from "mobx-state-tree";
+import { getEnv, getParent, getRoot, getType, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -20,6 +20,7 @@ const RegionsMixin = types
     isDrawing: false,
     perRegionFocusRequest: null,
     shapeRef: null,
+    drawingTimeout: null,
   }))
   .views(self => ({
     get perRegionStates() {
@@ -53,6 +54,8 @@ const RegionsMixin = types
 
       setDrawing(val) {
         self.isDrawing = val;
+
+        self.notifyDrawing();
       },
 
       setShapeRef(ref) {
@@ -251,6 +254,19 @@ const RegionsMixin = types
       toggleHidden(e) {
         self.hidden = !self.hidden;
         e && e.stopPropagation();
+      },
+
+      notifyDrawing() {
+        clearTimeout(self.drawingTimeout);
+
+        if (self.isDrawing === false) {
+          const timeout = getType(self).name.match(/brush/i) ? 1200 : 0;
+          const env = getEnv(self);
+
+          self.drawingTimeout = setTimeout(() => {
+            env.events.invoke("regionFinishedDrawing", self);
+          }, timeout);
+        }
       },
     };});
 

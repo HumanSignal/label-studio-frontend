@@ -184,6 +184,7 @@ const _Tool = types
           return;
         const c = self.control;
 
+        // Reset the timer if a user started drawing again
         brush = self.getSelectedShape;
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
