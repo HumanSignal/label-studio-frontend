@@ -610,7 +610,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       onClick={e => {
         // create regions over another regions with Cmd/Ctrl pressed
-        if (e.evt.metaKey || e.evt.ctrlKey || item.parent.getSkipInteractions()) return;
+        if (item.parent.getSkipInteractions()) return;
         if (item.isDrawing) return;
 
         e.cancelBubble = true;

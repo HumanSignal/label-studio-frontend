@@ -105,7 +105,6 @@ export default class TransformerComponent extends Component {
         ref={node => {
           this.transformer = node;
         }}
-        shouldOverdrawWholeArea
       />
     );
   }
