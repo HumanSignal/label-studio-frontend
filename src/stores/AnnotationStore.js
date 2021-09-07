@@ -164,6 +164,11 @@ const Annotation = types
     get selectedRegions() {
       return Array.from(self.regionStore.selection.selected.values());
     },
+
+    // existing annotation which can be updated
+    get exists() {
+      return self.sentUserGenerate || self.versions.result;
+    },
   }))
   .volatile(() => ({
     hidden: false,

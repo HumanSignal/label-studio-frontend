@@ -6,7 +6,7 @@
  * data -> object: extra data (the props of the highlight component)
  */
 export default class Range {
-  constructor (start, end, text, data = {}) {
+  constructor(start, end, text, data = {}) {
     this.start = start;
     this.end = end;
     this.text = text;

@@ -1,5 +1,5 @@
 /* global describe, test, expect */
-import { prettyDate, msToHMS } from "../date";
+import { msToHMS, prettyDate } from "../date";
 
 describe("Helper function prettyDate", () => {
   test("Undefined", () => {

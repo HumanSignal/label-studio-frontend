@@ -55,6 +55,17 @@ export function getUrl(i, text) {
 }
 
 /**
+ * Check if given string is a valid url for object data
+ * @param {string} str              - String to check
+ * @param {boolean} [relative=true] - Whether relative urls are good or nood
+ */
+export function isValidObjectURL(str, relative = false) {
+  if (!str) return false;
+  if (relative && str.startsWith("/")) return true;
+  return /^https?:\/\//.test(str);
+}
+
+/**
  * Convert MS to Time String
  * Example: 2000 -> 00:00:02
  * @param {number} ms

@@ -87,11 +87,6 @@ export const AreaMixin = types
       return (self.style || defaultStyle).fillcolor;
     },
 
-    get bboxCoords() {
-      console.warn("AreaMixin needs to implement bboxCoords getter in regions");
-      return null;
-    },
-
     get highlighted() {
       return self.parent.selectionArea?.isActive ? self.isInSelectionArea : self._highlighted;
     },

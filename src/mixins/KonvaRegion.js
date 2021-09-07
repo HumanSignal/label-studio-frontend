@@ -1,8 +1,12 @@
 import { types } from "mobx-state-tree";
 
 export const KonvaRegionMixin = types.model({})
-  .views(self => {
+  .views((self) => {
     return {
+      get bboxCoords() {
+        console.warn("KonvaRegionMixin needs to implement bboxCoords getter in regions");
+        return null;
+      },
       get control() {
         // that's a little bit tricky, but it seems that having a tools field is necessary for the region-creating control tag and it's might be a clue
         return self.results.find(result => result.from_name.tools)?.from_name;

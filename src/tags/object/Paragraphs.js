@@ -19,6 +19,7 @@ import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { isSelectionContainsSpan } from "../../utils/selection-tools";
+import { isValidObjectURL } from "../../utils/utilities";
 
 /**
  * Paragraphs tag shows paragraph markup that can be labeled.
@@ -210,7 +211,7 @@ const Model = types
       if (self.valuetype === "url") {
         const url = value;
 
-        if (!/^https?:\/\//.test(url)) {
+        if (!isValidObjectURL(url, true)) {
           const message = [];
 
           if (url) {

@@ -124,24 +124,12 @@ const Model = types
     needsUpdate: 1,
     hideable: true,
     layerRef: undefined,
+    imageData: null,
   }))
   .views(self => {
-    let cachedImageData;
-
     return {
       get parent() {
         return self.object;
-      },
-      get imageData() {
-        if (cachedImageData && (!self.layerRef || Math.abs(cachedImageData.width - self.layerRef.canvas.width) < 1 &&
-          Math.abs(cachedImageData.height - self.layerRef.canvas.height) < 1)) {
-          return cachedImageData;
-        }
-        if (!self.layerRef) return null;
-        const ctx = self.layerRef.canvas.context;
-
-        cachedImageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
-        return cachedImageData;
       },
       get colorParts() {
         const style = self.style || self.tag || defaultStyle;
@@ -158,7 +146,7 @@ const Model = types
         if (!self.imageData) return null;
         const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
 
-        return {
+        return imageBBox && {
           left: imageBBox.x,
           top: imageBBox.y,
           right: imageBBox.x + imageBBox.width,
@@ -191,6 +179,16 @@ const Model = types
           ref.canvas._canvas.style.opacity = self.opacity;
         }
         self.layerRef = ref;
+      },
+
+      cacheImageData() {
+        if (!self.layerRef) {
+          self.imageData = null;
+        } else {
+          const ctx = self.layerRef.canvas.context;
+
+          self.imageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
+        }
       },
 
       prepareCoords([x, y]) {
@@ -433,7 +431,7 @@ const HtxBrushView = ({ item }) => {
   const layerRef = useRef();
   const highlightedRef = useRef({});
 
-  highlightedRef.current.highlighted = item.highlighted || item.inSelection;
+  highlightedRef.current.highlighted = item.highlighted;
   highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   const drawCallback = useMemo(()=>{
@@ -442,26 +440,27 @@ const HtxBrushView = ({ item }) => {
     return () => {
       const { highlighted } = highlightedRef.current;
       const layer = layerRef.current;
+      const isDrawing = item.parent?.drawingRegion === item;
 
-      if (layer && !done) {
-        let dataUrl;
+      if (isDrawing || !layer || done) return;
+      let dataUrl;
+      let highlightEl;
 
-        if (!highlighted) {
-          layer.draw();
-          dataUrl = layer.canvas.toDataURL();
-        } else {
-          const highlightEl = layer.findOne(".highlight");
-
-          highlightEl.hide();
-          layer.draw();
-          dataUrl = layer.canvas.toDataURL();
-          highlightEl.show();
-          layer.draw();
-        }
-
-        highlightedImageRef.current.src = dataUrl;
-        done = true;
+      if (highlighted) {
+        highlightEl = layer.findOne(".highlight");
+        highlightEl.hide();
       }
+      layer.draw();
+      dataUrl = layer.canvas.toDataURL();
+      item.cacheImageData();
+
+      if (highlighted) {
+        highlightEl.show();
+        layer.draw();
+      }
+
+      highlightedImageRef.current.src = dataUrl;
+      done = true;
     };
   }, [item.touches.length]);
 
@@ -470,86 +469,99 @@ const HtxBrushView = ({ item }) => {
   const stage = item.parent?.stageRef;
 
   return (
-    <Layer
-      id={item.cleanId}
-      ref={ref => {
-        item.setLayerRef(ref);
-        layerRef.current = ref;
-      }}
-      onDraw={() => {
-        setTimeout(drawCallback);
-      }}
-    >
-      <Group
-        attrMy={item.needsUpdate}
-        name="segmentation"
-        // onClick={e => {
-        //     e.cancelBubble = false;
-        // }}
-        onMouseDown={e => {
-          if (store.annotationStore.selected.relationMode) {
-            e.cancelBubble = true;
-          }
+    <>
+      <Layer
+        id={item.cleanId}
+        ref={ref => {
+          item.setLayerRef(ref);
+          layerRef.current = ref;
         }}
-        onMouseOver={() => {
-          if (store.annotationStore.selected.relationMode) {
-            item.setHighlight(true);
-            stage.container().style.cursor = "crosshair";
-          } else {
-            // no tool selected
-            if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = "pointer";
-          }
+        onDraw={() => {
+          setTimeout(drawCallback);
         }}
-        onMouseOut={() => {
-          if (store.annotationStore.selected.relationMode) {
+        clearBeforeDraw={false}
+      >
+        <Group
+          attrMy={item.needsUpdate}
+          name="segmentation"
+          // onClick={e => {
+          //     e.cancelBubble = false;
+          // }}
+          onMouseDown={e => {
+            if (store.annotationStore.selected.relationMode) {
+              e.cancelBubble = true;
+            }
+          }}
+          onMouseOver={() => {
+            if (store.annotationStore.selected.relationMode) {
+              item.setHighlight(true);
+              stage.container().style.cursor = "crosshair";
+            } else {
+              // no tool selected
+              if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = "pointer";
+            }
+          }}
+          onMouseOut={() => {
+            if (store.annotationStore.selected.relationMode) {
+              item.setHighlight(false);
+            }
+
+            if (!item.parent?.getToolsManager().findSelectedTool()) {
+              stage.container().style.cursor = "default";
+            }
+          }}
+          onClick={e => {
+            if (item.parent.getSkipInteractions()) return;
+            if (store.annotationStore.selected.relationMode) {
+              item.onClickRegion();
+              return;
+            }
+
+            if (item.parent.getToolsManager().findSelectedTool()) return;
+
+            if (store.annotationStore.selected.relationMode) {
+              stage.container().style.cursor = "default";
+            }
+
             item.setHighlight(false);
-          }
+            item.onClickRegion(e);
+          }}
+        >
+          <Image image={image} hitFunc={imageHitFunc} width={item.parent.stageWidth} height={item.parent.stageHeight} />
 
-          if (!item.parent?.getToolsManager().findSelectedTool()) {
-            stage.container().style.cursor = "default";
-          }
-        }}
-        onClick={e => {
-          if (item.parent.getSkipInteractions()) return;
-          if (store.annotationStore.selected.relationMode) {
-            item.onClickRegion();
-            return;
-          }
+          <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+            <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
+          </Group>
 
-          if (item.parent.getToolsManager().findSelectedTool()) return;
-
-          if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = "default";
+          <Image
+            name="highlight"
+            image={highlightedImageRef.current}
+            sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
+            hitFunc={() => {}}
+            {...highlightedRef.current.highlight}
+            scaleX={1/item.parent.stageScale}
+            scaleY={1/item.parent.stageScale}
+            x={-item.parent.zoomingPositionX/item.parent.stageScale}
+            y={-item.parent.zoomingPositionY/item.parent.stageScale}
+            width={item.parent.stageWidth}
+            height={item.parent.stageHeight}
+            listening={false}
+          />
+        </Group>
+      </Layer>
+      <Layer
+        id={item.cleanId+"_labels"}
+        ref={ref => {
+          if (ref) {
+            ref.canvas._canvas.style.opacity = item.opacity;
           }
-
-          item.setHighlight(false);
-          item.onClickRegion(e);
         }}
       >
-        <Image image={image} hitFunc={imageHitFunc} width={item.parent.stageWidth} height={item.parent.stageHeight} />
-
         <Group scaleX={item.scaleX} scaleY={item.scaleY}>
-          <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
           <LabelOnMask item={item} color={item.strokeColor}/>
         </Group>
-
-        <Image
-          name="highlight"
-          image={highlightedImageRef.current}
-          sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
-          hitFunc={() => {}}
-          {...highlightedRef.current.highlight}
-          scaleX={1/item.parent.stageScale}
-          scaleY={1/item.parent.stageScale}
-          x={-item.parent.zoomingPositionX/item.parent.stageScale}
-          y={-item.parent.zoomingPositionY/item.parent.stageScale}
-          width={item.parent.stageWidth}
-          height={item.parent.stageHeight}
-          listening={false}
-        />
-      </Group>
-
-    </Layer>
+      </Layer>
+    </>
   );
 };
 
