@@ -287,6 +287,10 @@ const Model = types
     get zoomBy() {
       return parseFloat(self.zoomby);
     },
+
+    get isDrawing() {
+      return !!self.drawingRegion;
+    },
   }))
 
   // actions for the tools
