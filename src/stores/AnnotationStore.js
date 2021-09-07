@@ -167,7 +167,10 @@ const Annotation = types
 
     // existing annotation which can be updated
     get exists() {
-      return self.sentUserGenerate || self.versions.result;
+      const dataExists = (self.userGenerate && self.sentUserGenerate) || isDefined(self.versions.result);
+      const pkExists = isDefined(self.pk);
+
+      return dataExists && pkExists;
     },
   }))
   .volatile(() => ({
