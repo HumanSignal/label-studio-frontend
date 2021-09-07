@@ -109,8 +109,8 @@ class RichTextPieceView extends Component {
     );
 
     // @todo both loops should be merged to fix old broken xpath using "dirty" html
-    item.regs.forEach((richTextRegion) => {
-      if (initial) {
+    if (initial) {
+      item.regs.forEach((richTextRegion) => {
         try {
           const { start, startOffset, end, endOffset } = richTextRegion;
           const range = xpath.toRange(start, startOffset, end, endOffset, root);
@@ -121,11 +121,11 @@ class RichTextPieceView extends Component {
           // should never happen
           // doesn't break anything if happens
         }
-      }
-    });
+      });
+    }
 
-    item.regs.forEach((richTextRegion) => {
-      // Apply highlight to ranges of a current tag
+    // Apply highlight to ranges of a current tag
+    item.regs.forEach(richTextRegion => {
       try {
         richTextRegion.applyHighlight();
       } catch (err) {
