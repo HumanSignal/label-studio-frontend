@@ -15,13 +15,27 @@ export const DrawingToolExtension = types.model().actions(self => ({
     let newArea;
 
     if (control.gettextfromocr) {
-      const foundBboxes = getRoot(self.annotation).task.getTextFromBbox(value.x, value.y, value.width, value.height);
+
+      // New scale ratios
+      const scaleX = obj.naturalWidth / obj.stageWidth;
+      const scaleY = obj.naturalHeight / obj.stageHeight;
+
+      const foundBboxes = getRoot(self.annotation).task.getTextFromBbox(value.x * scaleX, value.y * scaleY, value.width * scaleX, value.height * scaleY);
 
       if (foundBboxes && foundBboxes.length > 0) {
 
         foundBboxes.forEach(bbox => {
 
-          const bboxNewArea = self.annotation.createResult(bbox.area, {}, control, obj, bbox.description);
+          const area = {
+            x: bbox.area.x / scaleX,
+            y: bbox.area.y / scaleY,
+            width: bbox.area.width / scaleX,
+            height: bbox.area.height / scaleY,
+            rotation: obj.rotation,
+            coordstype: "px",
+          };
+
+          const bboxNewArea = self.annotation.createResult(area, {}, control, obj, bbox.description);
 
           self.applyActiveStates(bboxNewArea);
           newArea = bboxNewArea;

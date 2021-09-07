@@ -34,6 +34,7 @@ import { guidGenerator } from "../../utils/unique";
  * @param {string} value                      - Value
  * @param {string=} [width=100%]              - Image width
  * @param {string=} [maxWidth=750px]          - Maximum image width
+ * @param {string=} [allowResize=true]        - Allow image resize
  * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
  * @param {boolean=} [negativeZoom=false]     - Enable zooming out an image
  * @param {float=} [zoomBy=1.1]               - Scale factor
@@ -51,7 +52,9 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
-  maxwidth: types.optional(types.string, "2500px"),
+  maxwidth: types.optional(types.string, "750px"),
+
+  allowresize: types.optional(types.boolean, true),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),

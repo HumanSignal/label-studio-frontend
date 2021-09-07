@@ -23,6 +23,7 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  * @param {string=} [strokeColor=#f48a42] - Stroke color
  * @param {number=} [strokeWidth=1]       - Width of the stroke
  * @param {boolean=} [canRotate=true]     - Show or hide rotation control
+ * @param {boolean=} [getTextFromOcr=true] - Activate OCR text calculation from metadata
  */
 const TagAttrs = types.model({
   name: types.identifier,
