@@ -11,14 +11,14 @@ import Utils from "../../../utils";
 import { parseValue } from "../../../utils/data";
 import messages from "../../../utils/messages";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
-import { isValidObjectURL } from "../../../utils/utilities";
+import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
 const WARNING_MESSAGES = {
   dataTypeMistmatch: () => "Do not put text directly in task data if you use valueType=url.",
-  badURL: url => `URL (${url}) is not valid.`,
+  badURL: url => `URL (${escapeHtml(url)}) is not valid.`,
   secureMode: () => 'In SECURE MODE valueType is set to "url" by default.',
   loadingError: (url, error) => `Loading URL (${url}) unsuccessful: ${error}`,
 };
