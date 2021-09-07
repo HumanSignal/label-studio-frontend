@@ -108,6 +108,7 @@ class RichTextPieceView extends Component {
       this.originalContentRef,
     );
 
+    // @todo both loops should be merged to fix old broken xpath using "dirty" html
     item.regs.forEach((richTextRegion) => {
       if (initial) {
         try {
@@ -121,7 +122,9 @@ class RichTextPieceView extends Component {
           // doesn't break anything if happens
         }
       }
+    });
 
+    item.regs.forEach((richTextRegion) => {
       // Apply highlight to ranges of a current tag
       try {
         richTextRegion.applyHighlight();
