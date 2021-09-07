@@ -51,5 +51,3 @@ const _Tool = types
 const Rotate = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 export { Rotate };
-
-// ImageTools.addTool(RotateTool);

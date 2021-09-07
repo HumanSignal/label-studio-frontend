@@ -40,6 +40,7 @@ const _Tool = types
         width: Number(c.strokewidth),
         coordstype: "px",
         dynamic: self.dynamic,
+        negative: self.dynamic && ev.altKey,
       });
 
       keyPoint.setDrawing(false);
@@ -47,7 +48,5 @@ const _Tool = types
   }));
 
 const KeyPoint = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
-
-// Registry.addTool("keypoint", KeyPoint);
 
 export { KeyPoint };

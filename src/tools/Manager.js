@@ -1,3 +1,4 @@
+import { destroy } from "mobx-state-tree";
 import { guidGenerator } from "../utils/unique";
 
 /** @type {ToolsManager} */
@@ -86,6 +87,19 @@ class ToolsManager {
       selectedTool.event(name, ev, args);
       return;
     }
+  }
+
+  reload({ obj }) {
+    this.removeAllTools();
+
+    this.obj = obj;
+    this.tools = {};
+    this._default_tool = null;
+  }
+
+  removeAllTools() {
+    Object.values(this.tools).forEach(t => destroy(t));
+    this.tools = {};
   }
 }
 

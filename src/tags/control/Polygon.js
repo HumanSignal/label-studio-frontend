@@ -63,9 +63,6 @@ const Model = types
       const poly = Tools.Polygon.create({}, env);
       const floodFill = Tools.FloodFill.create({}, env);
 
-      poly._control = self;
-      floodFill._control = self;
-
       self.tools = {
         poly,
         // floodfill: floodFill,

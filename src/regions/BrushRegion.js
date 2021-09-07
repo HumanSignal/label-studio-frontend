@@ -18,7 +18,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import Konva from "konva";
 import { RegionWrapper } from "./RegionWrapper";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { isDefined } from "../utils/utilities";
 import chroma from "chroma-js";
 
@@ -379,11 +379,11 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
 
 const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
-  const color = useRegionColors(item);
+  const regionStyles = useRegionStyles(item);
 
   useMemo(() => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
-    const img = Canvas.RLE2Region(item.rle, item.parent, { color: color.strokeColor });
+    const img = Canvas.RLE2Region(item.rle, item.parent, { color: regionStyles.strokeColor });
 
     img.onload = () => setImage(img);
   }, [item.rle, item.parent, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
@@ -429,9 +429,9 @@ const HtxBrushView = ({ item }) => {
 
   const applyTint = (node) => {
     if (!isDefined(node)) return;
-    if (!isDefined(color)) return;
+    if (!isDefined(regionStyles)) return;
 
-    const [red, green, blue] = chroma(color.strokeColor).rgba();
+    const [red, green, blue] = chroma(regionStyles.strokeColor).rgba();
 
     node.cache();
     node.setAttrs({ red, green, blue });

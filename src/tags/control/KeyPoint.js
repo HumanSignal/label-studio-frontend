@@ -32,7 +32,7 @@ const TagAttrs = types.model({
   fillcolor: types.optional(customTypes.color, "#8bad00"),
 
   strokecolor: types.optional(customTypes.color, "#8bad00"),
-  strokewidth: types.optional(types.string, "1"),
+  strokewidth: types.optional(types.string, "2"),
 });
 
 const Model = types
@@ -56,8 +56,6 @@ const Model = types
       const env = { manager, control: self };
 
       const kp = Tools.KeyPoint.create({}, env);
-
-      kp._control = self;
 
       self.tools = { keypoint: kp };
     },

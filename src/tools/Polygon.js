@@ -103,5 +103,3 @@ const _Tool = types
 const Polygon = types.compose(_Tool.name, ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
 
 export { Polygon };
-
-// ImageTools.addTool(PolygonTool);

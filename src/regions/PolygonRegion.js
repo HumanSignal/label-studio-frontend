@@ -14,7 +14,7 @@ import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
@@ -335,7 +335,7 @@ function removeHoverAnchor({ layer }) {
 const HtxPolygonView = ({ item }) => {
   const { store } = item;
 
-  const colors = useRegionColors(item, {
+  const regionStyles = useRegionStyles(item, {
     useStrokeAsFill: true,
   });
 
@@ -352,11 +352,11 @@ const HtxPolygonView = ({ item }) => {
 
     const lineProps = closed ? {
       stroke: 'transparent',
-      strokeWidth: colors.strokeWidth,
+      strokeWidth: regionStyles.strokeWidth,
       strokeScaleEnabled: false,
     } : {
-      stroke: colors.strokeColor,
-      strokeWidth: colors.strokeWidth,
+      stroke: regionStyles.strokeColor,
+      strokeWidth: regionStyles.strokeWidth,
       strokeScaleEnabled: false,
     };
 
@@ -407,11 +407,11 @@ const HtxPolygonView = ({ item }) => {
         <Line
           lineJoin="round"
           lineCap="square"
-          stroke={colors.strokeColor}
-          strokeWidth={colors.strokeWidth}
+          stroke={regionStyles.strokeColor}
+          strokeWidth={regionStyles.strokeWidth}
           strokeScaleEnabled={false}
           points={flattenedPoints}
-          fill={colors.fillColor}
+          fill={regionStyles.fillColor}
           closed={true}
         />
       </Group>
@@ -529,7 +529,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       draggable={item.editable}
     >
-      <LabelOnPolygon item={item} color={colors.strokeColor} />
+      <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
       {item.mouseOverStartPoint}
 

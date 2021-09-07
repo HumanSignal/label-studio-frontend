@@ -13,7 +13,7 @@ import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
@@ -234,7 +234,7 @@ const HtxRectangleView = ({ item }) => {
   const { store } = item;
 
   const { suggestion } = useContext(ImageViewContext) ?? {};
-  const colors = useRegionColors(item, { suggestion });
+  const regionStyles = useRegionStyles(item, { suggestion });
   const stage = item.parent.stageRef;
 
   const eventHandlers = {};
@@ -303,9 +303,9 @@ const HtxRectangleView = ({ item }) => {
         ref={node => item.setShapeRef(node)}
         width={item.width}
         height={item.height}
-        fill={colors.fillColor}
-        stroke={colors.strokeColor}
-        strokeWidth={colors.strokeWidth}
+        fill={regionStyles.fillColor}
+        stroke={regionStyles.strokeColor}
+        strokeWidth={regionStyles.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         dash={suggestion ? [10, 10] : null}
@@ -341,7 +341,7 @@ const HtxRectangleView = ({ item }) => {
           item.onClickRegion(e);
         }}
       />
-      <LabelOnRect item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth} />
+      <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>
   );
 };

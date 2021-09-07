@@ -31,9 +31,6 @@ const Model = types
       const brush = Tools.Brush.create({}, env);
       const erase = Tools.Erase.create({}, env);
 
-      brush._control = self;
-      erase._control = self;
-
       self.tools = {
         brush,
         erase,

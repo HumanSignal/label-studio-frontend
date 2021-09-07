@@ -298,6 +298,8 @@ const Model = types
     const manager = ToolsManager.getInstance({ obj: self });
     const env = { manager, control: self };
 
+    manager.reload({ obj: self });
+
     function afterCreate() {
       if (self.zoomcontrol)
         manager.addTool("zoom", Tools.Zoom.create({}, env));

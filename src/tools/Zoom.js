@@ -50,17 +50,21 @@ const _Tool = types
     get viewClass() {
       return <ToolView item={self} />;
     },
+
+    get stageContainer() {
+      return self.obj.stageRef.container();
+    },
   }))
   .actions(self => ({
     mouseupEv() {
       self.mode = "viewing";
+      self.stageContainer.style.cursor = "grab";
     },
 
     updateCursor() {
       if (!self.selected || !self.obj.stageRef) return;
-      const stage = self.obj.stageRef;
 
-      stage.container().style.cursor = "all-scroll";
+      self.stageContainer.style.cursor = "grab";
     },
 
     afterUpdateSelected() {
@@ -79,11 +83,15 @@ const _Tool = types
       const zoomScale = self.obj.zoomScale;
 
       if (zoomScale <= 1) return;
-      if (self.mode === "moving") self.handleDrag(ev);
+      if (self.mode === "moving") {
+        self.handleDrag(ev);
+        self.stageContainer.style.cursor = "grabbing";
+      }
     },
 
     mousedownEv() {
       self.mode = "moving";
+      self.stageContainer.style.cursor = "grabbing";
     },
 
     handleZoom(val) {
@@ -95,8 +103,4 @@ const _Tool = types
 
 const Zoom = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
-// Registry.addTool("zoom", Zoom);
-
 export { Zoom };
-
-// ImageTools.addTool(ZoomTool);

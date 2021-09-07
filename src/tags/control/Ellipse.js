@@ -59,8 +59,6 @@ const Model = types
 
       const ellipse = Tools.Ellipse.create({ activeShape: null }, env);
 
-      ellipse._control = self;
-
       self.tools = { ellipse };
     },
   }));

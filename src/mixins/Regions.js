@@ -266,13 +266,11 @@ const RegionsMixin = types
 
         clearTimeout(self.drawingTimeout);
 
-        console.log("finished");
         if (self.isDrawing === false) {
           const timeout = getType(self).name.match(/brush/i) ? 1200 : 0;
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            console.log("timeout reached", env);
             env.events.invoke("regionFinishedDrawing", self);
           }, timeout);
         }
