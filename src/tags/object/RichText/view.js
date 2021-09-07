@@ -98,8 +98,6 @@ class RichTextPieceView extends Component {
     const rootEl = this.rootNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
-    if (!root || root.tagName === "IFRAME" || !root.childElementCount) return;
-
     // Make refs accessible to the model
     this.props.item.setRef(
       this.rootNodeRef,
