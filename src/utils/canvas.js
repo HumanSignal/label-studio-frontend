@@ -68,7 +68,7 @@ function Region2RLE(region, image) {
     return [];
   }
   // hide labels on regions and show them later
-  layer.find(".region-label").hide();
+  layer.findOne(".highlight").hide();
 
   const width = stage.getWidth(),
     height = stage.getHeight(),
@@ -101,7 +101,7 @@ function Region2RLE(region, image) {
   for (let i = data.data.length / 4; i--; ) {
     data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
   }
-  layer.find(".region-label").show();
+  layer.findOne(".highlight").show();
   stage
     .setWidth(width)
     .setHeight(height)
