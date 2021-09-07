@@ -61,26 +61,35 @@ const Model = types
           start: self.startOffset,
           end: self.endOffset,
         });
-      } else if (self.globalOffsets) {
-        // Calculate proper XPath right before serialization
-        const root = self._getRootNode(true);
-        const range = findRangeNative(
-          self.globalOffsets.start,
-          self.globalOffsets.end,
-          root,
-        );
-
-        const xpathRange = xpath.fromRange(range, root);
-
-        Object.assign(res.value, {
-          ...xpathRange,
-          globalOffsets: self.globalOffsets?.toJSON(),
-        });
       } else {
-        // broken regions may not have globalOffsets, so just keep them untouched
-        const { start, end, startOffset, endOffset } = self;
+        try {
+          // Calculate proper XPath right before serialization
+          const root = self._getRootNode(true);
+          const range = findRangeNative(
+            self.globalOffsets.start,
+            self.globalOffsets.end,
+            root,
+          );
 
-        Object.assign(res.value, { start, end, startOffset, endOffset });
+          const xpathRange = xpath.fromRange(range, root);
+
+          Object.assign(res.value, {
+            ...xpathRange,
+            globalOffsets: self.globalOffsets?.toJSON(),
+          });
+        } catch(e) {
+          // regions may be broken, so they don't have globalOffsets
+          // or they can't be applied on current html, so just keep them untouched
+          const { start, end, startOffset, endOffset } = self;
+
+          Object.assign(res.value, { start, end, startOffset, endOffset });
+
+          if (self.globalOffsets) {
+            Object.assign(res.value, {
+              globalOffsets: self.globalOffsets?.toJSON(),
+            });
+          }
+        }
       }
 
       if (self.object.savetextresult === "yes" && isDefined(self.text)) {
