@@ -67,6 +67,10 @@ const RegionsMixin = types
         self.shapeRef = ref;
       },
 
+      beforeDestroy() {
+        self.notifyDrawingFinished({ destroy: true });
+      },
+
       // All of the below accept size as an argument
       moveTop() {},
       moveBottom() {},
@@ -261,11 +265,12 @@ const RegionsMixin = types
         e && e.stopPropagation();
       },
 
-      notifyDrawingFinished() {
+      notifyDrawingFinished({ destroy = false } = {}) {
         if (!self.dynamic || self.fromSuggestion) return;
         const { regions } = getRoot(self).annotationStore.selected;
 
         const connectedRegions = regions.filter(r => {
+          if (destroy && r === self) return false;
           return r.dynamic && r.type === self.type && r.labelName === self.labelName;
         });
 
