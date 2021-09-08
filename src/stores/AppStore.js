@@ -1,6 +1,6 @@
 /* global LSF_VERSION */
 
-import { getEnv, types } from "mobx-state-tree";
+import { flow, getEnv, types } from "mobx-state-tree";
 
 import AnnotationStore from "./AnnotationStore";
 import { Hotkey } from "../core/Hotkey";
@@ -115,6 +115,11 @@ export default types
      */
     autoAcceptSuggestions: false,
 
+    /**
+     * Indicator for suggestions awaiting
+     */
+    awaitingSuggestions: false,
+
     users: types.optional(types.array(UserExtended), []),
   })
   .preProcessSnapshot((sn) => {
@@ -166,6 +171,7 @@ export default types
         "noTask",
         "noAccess",
         "labeledSuccess",
+        "awaitingSuggestions",
       ];
 
       for (let n of names) if (n in flags) self[n] = flags[n];
@@ -531,6 +537,14 @@ export default types
       localStorage.setItem("autoAcceptSuggestions", value);
     };
 
+    const loadSuggestions = flow(function *(request, dataParser) {
+      self.setFlags({ awaitingSuggestions: true });
+      const response = yield request;
+
+      self.annotationStore.selected.setSuggestions(dataParser(response));
+      self.setFlags({ awaitingSuggestions: false });
+    });
+
     return {
       setFlags,
       addInterface,
@@ -557,5 +571,6 @@ export default types
 
       setDynamicPreannotation,
       setAutoAcceptSuggestions,
+      loadSuggestions,
     };
   });

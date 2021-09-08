@@ -6,6 +6,9 @@ import "./DynamicPreannotationsControl.styl";
 export const DynamicPreannotationsControl = inject("store")(observer(({ store }) => {
   return store.dynamicPreannotations ? (
     <Block name="dynamic-preannotations-control">
+      {store.awaitingSuggestions && (
+        <div>loading...</div>
+      )}
       <Input
         type="checkbox"
         checked={store.autoAcceptSuggestions}

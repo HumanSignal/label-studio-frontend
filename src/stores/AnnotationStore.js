@@ -646,6 +646,7 @@ const Annotation = types
         if (obj.type === 'relation') return true;
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
+        const tagNames = self.names;
 
         // Clear non-existent labels
         if (obj.type.endsWith("labels")) {
@@ -653,26 +654,34 @@ const Annotation = types
 
           for (const key of keys) {
             if (key.endsWith("labels")) {
-              if (self.names.has(obj.from_name)) {
-                const labelsContainer = self.names.get(obj.from_name);
+              const hasControlTag = tagNames.has(obj.from_name) || tagNames.has("labels");
+
+              if (hasControlTag) {
+                const labelsContainer = tagNames.get(obj.from_name) ?? tagNames.get("labels");
                 const value = obj.value[key];
 
                 if (value && value.length && labelsContainer.type.endsWith("labels")) {
                   const filteredValue = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                  const newKey = key === labelsContainer.type ? key : labelsContainer.type;
+
+                  if (newKey !== key) {
+                    obj.value[newKey] = obj.value[key];
+                  }
 
                   if (filteredValue.length !== value.length) {
-                    obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                    obj.value[newKey] = filteredValue;
                   }
                 }
               }
+
               if (
-                !self.names.has(obj.from_name) ||
-                (!obj.value[key].length && !self.names.get(obj.from_name).allowempty)
+                !tagNames.has(obj.from_name) ||
+                (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
               ) {
                 delete obj.value[key];
-                if (self.names.has(obj.to_name)) {
+                if (tagNames.has(obj.to_name)) {
                   // Redirect references to existent tool
-                  const targetObject = self.names.get(obj.to_name);
+                  const targetObject = tagNames.get(obj.to_name);
                   const states = targetObject.states();
 
                   if (states?.length) {
@@ -696,7 +705,7 @@ const Annotation = types
           }
         }
 
-        return self.names.has(obj.from_name) && self.names.has(obj.to_name);
+        return tagNames.has(obj.from_name) && tagNames.has(obj.to_name);
       });
     },
 

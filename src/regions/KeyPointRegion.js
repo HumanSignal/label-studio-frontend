@@ -124,7 +124,7 @@ const Model = types
       };
 
       if (self.dynamic) {
-        result.is_negative = self.negative;
+        result[self.negative ? 'is_negative' : 'is_positive'] = true;
       }
 
       return result;
