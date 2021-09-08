@@ -263,6 +263,11 @@ const RegionsMixin = types
 
       notifyDrawingFinished() {
         if (!self.dynamic || self.fromSuggestion) return;
+        const { regions } = getRoot(self).annotationStore.selected;
+
+        const connectedRegions = regions.filter(r => {
+          return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+        });
 
         clearTimeout(self.drawingTimeout);
 
@@ -270,8 +275,10 @@ const RegionsMixin = types
           const timeout = getType(self).name.match(/brush/i) ? 1200 : 0;
           const env = getEnv(self);
 
+          console.log({ connectedRegions });
+
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke("regionFinishedDrawing", self);
+            env.events.invoke("regionFinishedDrawing", self, connectedRegions);
           }, timeout);
         }
       },

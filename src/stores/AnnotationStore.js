@@ -119,6 +119,10 @@ const Annotation = types
       return Array.from(self.names.values()).filter(tag => !tag.toname);
     },
 
+    get regions() {
+      return Array.from(self.areas.values());
+    },
+
     get results() {
       const results = [];
 

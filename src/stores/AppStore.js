@@ -132,6 +132,7 @@ export default types
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
     initialized: false,
+    suggestionsRequest: null,
   }))
   .views(self => ({
     /**
@@ -538,11 +539,15 @@ export default types
     };
 
     const loadSuggestions = flow(function *(request, dataParser) {
-      self.setFlags({ awaitingSuggestions: true });
-      const response = yield request;
+      self.suggestionsRequest = request;
 
-      self.annotationStore.selected.setSuggestions(dataParser(response));
-      self.setFlags({ awaitingSuggestions: false });
+      self.setFlags({ awaitingSuggestions: true });
+      const response = yield self.suggestionsRequest;
+
+      if (request !== self.suggestionsRequest) {
+        self.annotationStore.selected.setSuggestions(dataParser(response));
+        self.setFlags({ awaitingSuggestions: false });
+      }
     });
 
     return {
