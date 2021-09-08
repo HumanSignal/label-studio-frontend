@@ -460,6 +460,8 @@ const HtxPolygonView = ({ item }) => {
     }, []);
   }
 
+  if (!item.parent) return null;
+
   let minX = 0,
     maxX = 0,
     minY = 0,
