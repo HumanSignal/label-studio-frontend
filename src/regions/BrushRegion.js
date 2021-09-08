@@ -480,7 +480,7 @@ const HtxBrushView = ({ item }) => {
         onDraw={() => {
           setTimeout(drawCallback);
         }}
-        clearBeforeDraw={!item.parent?.isDrawing}
+        clearBeforeDraw={!item.isDrawing}
       >
         <Group
           attrMy={item.needsUpdate}
