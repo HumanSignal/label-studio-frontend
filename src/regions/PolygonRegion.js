@@ -515,7 +515,7 @@ const HtxPolygonView = ({ item }) => {
   }
 
   function renderCircle({ points, idx }) {
-    const name = `anchor_${points.length}_${idx} _transformable`;
+    const name = `anchor_${points.length}_${idx}`;
     const point = points[idx];
 
     if (!item.closed || (item.closed && item.selected)) {
