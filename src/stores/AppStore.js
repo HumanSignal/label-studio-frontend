@@ -185,7 +185,15 @@ export default types
        * Hotkey for submit
        */
       if (self.hasInterface("submit")) {
-        hotkeys.addKey("ctrl+enter", self.submitAnnotation, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+        hotkeys.addKey("ctrl+enter", () => {
+          const entity = self.annotationStore.selected;
+
+          if (!isDefined(entity.pk)) {
+            self.submitAnnotation();
+          } else {
+            self.updateAnnotation();
+          }
+        }, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
       }
 
       /**
