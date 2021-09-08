@@ -9,7 +9,7 @@ class ToolsManager {
     return instance ?? (instance = new ToolsManager(...args));
   }
 
-  constructor({ obj }) {
+  constructor({ obj } = {}) {
     this.obj = obj;
     this.tools = {};
     this._default_tool = null;
@@ -89,7 +89,7 @@ class ToolsManager {
     }
   }
 
-  reload({ obj }) {
+  reload({ obj } = {}) {
     this.removeAllTools();
 
     this.obj = obj;

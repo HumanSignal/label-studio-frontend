@@ -77,7 +77,7 @@ Scenario("NER labeling for HyperText", async function({ I }) {
   I.doubleClick("b:nth-child(2)");
 
   I.click("[data-testid=r1-mid]");
-  I.pressKey('r');
+  I.pressKey('alt+r');
   I.click("b:nth-child(2)");
   I.switchTo();
 
