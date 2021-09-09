@@ -95,9 +95,9 @@ const Model = types.model({
     return used;
   },
 
-  canBeUsed() {
+  canBeUsed(count = 1) {
     if (!self.maxUsages) return true;
-    return self.usedAlready() < self.maxUsages;
+    return self.usedAlready() + count <= self.maxUsages;
   },
 })).actions(self => ({
   setEmpty() {
@@ -110,16 +110,21 @@ const Model = types.model({
     // here we check if you click on label from labels group
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
-    const region = self.annotation.highlightedNode;
-    const sameObject = region && region.parent?.name === self.parent?.toname;
+    const sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
+      return region.parent?.name === self.parent?.toname;
+    });
+    let affectedRegions = sameObjectSelectedRegions.filter(region => {
+      return region.editable;
+    });
 
-    if (region && region.readonly === true && sameObject) return;
 
     // one more check if that label can be selected
     if (!self.annotation.editable) return;
 
+    if (sameObjectSelectedRegions.length > 0 && affectedRegions.length === 0) return;
+
     // don't select if it can not be used
-    if (!self.selected && !self.canBeUsed()) {
+    if (!!affectedRegions.length && !self.selected && !self.canBeUsed(affectedRegions.filter(region => region.results).length)) {
       InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
       return;
     }
@@ -129,16 +134,19 @@ const Model = types.model({
     // check if there is a region selected and if it is and user
     // is changing the label we need to make sure that region is
     // not going to endup without results at all
-    if (region && sameObject) {
+    let applicableRegions =  affectedRegions.filter(region => {
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
         region.results.length === 1 &&
         (!self.parent?.allowempty || self.isEmpty)
       )
-        return;
-      if (self.parent?.type !== "labels" && !self.parent?.type.includes(region?.results[0].type)) return;
-    }
+        return false;
+      if (self.parent?.type !== "labels" && !self.parent?.type.includes(region.results[0].type)) return false;
+      return true;
+    });
+
+    if (sameObjectSelectedRegions.length > 0 && applicableRegions.length === 0) return;
 
     // if we are going to select label and it would be the first in this labels group
     if (!labels.selectedLabels.length && !self.selected) {
@@ -187,7 +195,7 @@ const Model = types.model({
     }
 
     if (labels.allowempty && !self.isEmpty) {
-      if (sameObject) {
+      if (applicableRegions.length) {
         labels.findLabel().setSelected(!labels.selectedValues()?.length);
       } else {
         if (self.selected) {
@@ -196,12 +204,14 @@ const Model = types.model({
       }
     }
 
-    if (region && sameObject) {
-      region.setValue(self.parent);
+    applicableRegions.forEach(region => {
+      if (region) {
+        region.setValue(self.parent);
 
-      // hack to trigger RichText re-render the region
-      region.updateSpans?.();
-    }
+        // hack to trigger RichText re-render the region
+        region.updateSpans?.();
+      }
+    });
   },
 
   setVisible(val) {

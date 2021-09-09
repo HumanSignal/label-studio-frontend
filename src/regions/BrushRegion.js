@@ -21,6 +21,7 @@ import { RegionWrapper } from "./RegionWrapper";
 import { useRegionStyles } from "../hooks/useRegionColor";
 import { isDefined } from "../utils/utilities";
 import chroma from "chroma-js";
+import { Geometry } from "../components/RelationsOverlay/Geometry";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -132,29 +133,37 @@ const Model = types
     needsUpdate: 1,
     hideable: true,
     layerRef: undefined,
+    imageData: null,
   }))
-  .views(self => ({
-    get parent() {
-      return self.object;
-    },
-    get imageData() {
-      if (!self.layerRef) return null;
-      const ctx = self.layerRef.canvas.context;
+  .views(self => {
+    return {
+      get parent() {
+        return self.object;
+      },
+      get colorParts() {
+        const style = self.style || self.tag || defaultStyle;
 
-      return ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
-    },
-    get colorParts() {
-      const style = self.style || self.tag || defaultStyle;
+        return colorToRGBAArray(style.strokecolor);
+      },
+      get strokeColor() {
+        return rgbArrayToHex(self.colorParts);
+      },
+      get touchesLength() {
+        return self.touches.length;
+      },
+      get bboxCoords() {
+        if (!self.imageData) return null;
+        const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
 
-      return colorToRGBAArray(style.strokecolor);
-    },
-    get strokeColor() {
-      return rgbArrayToHex(self.colorParts);
-    },
-    get touchesLength() {
-      return self.touches.length;
-    },
-  }))
+        return imageBBox && {
+          left: imageBBox.x,
+          top: imageBBox.y,
+          right: imageBBox.x + imageBBox.width,
+          bottom: imageBBox.y + imageBBox.height,
+        };
+      },
+    };
+  })
   .actions(self => {
     let pathPoints,
       cachedPoints,
@@ -175,9 +184,19 @@ const Model = types
       },
 
       setLayerRef(ref) {
+        if (ref) {
+          ref.canvas._canvas.style.opacity = self.opacity;
+        }
         self.layerRef = ref;
-        if (self.layerRef) {
-          self.layerRef.canvas._canvas.style.opacity = self.opacity;
+      },
+
+      cacheImageData() {
+        if (!self.layerRef) {
+          self.imageData = null;
+        } else {
+          const ctx = self.layerRef.canvas.context;
+
+          self.imageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
         }
       },
 
@@ -388,43 +407,70 @@ const HtxBrushView = ({ item }) => {
     img.onload = () => setImage(img);
   }, [item.rle, item.parent, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
 
-  const imageHitFunc = useCallback(
-    (context, shape) => {
-      if (image) {
-        context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-        const imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
-        const colorParts = colorToRGBAArray(shape.colorKey);
+  const imageHitFunc = useMemo(()=>{
+    let imageData;
 
-        for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
-          if (imageData.data[i * 4 + 3] > 0) {
-            for (let k = 0; k < 3; k++) {
-              imageData.data[i * 4 + k] = colorParts[k];
+    return (context, shape) => {
+      if (image) {
+        if (!imageData) {
+          context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          const colorParts = colorToRGBAArray(shape.colorKey);
+
+          for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
+            if (imageData.data[i * 4 + 3] > 0) {
+              for (let k = 0; k < 3; k++) {
+                imageData.data[i * 4 + k] = colorParts[k];
+              }
             }
           }
         }
         context.putImageData(imageData, 0, 0);
       }
-    },
-    [image, item.parent?.stageWidth, item.parent?.stageHeight],
-  );
-  const { store } = item;
+    };
+  }, [image, item.parent?.stageWidth, item.parent?.stageHeight]);
 
-  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
+  const { store } = item;
 
   const highlightedImageRef = useRef(new window.Image());
   const layerRef = useRef();
-  const highlightedRef = useRef();
-  const drawCallback = useCallback(() => {
-    if (layerRef.current && !highlightedRef.current) {
-      const dataUrl = layerRef.current.canvas.toDataURL();
+  const highlightedRef = useRef({});
+
+  highlightedRef.current.highlighted = item.highlighted;
+  highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
+
+  const drawCallback = useMemo(()=>{
+    let done = false;
+
+    return () => {
+      const { highlighted } = highlightedRef.current;
+      const layer = layerRef.current;
+      const isDrawing = item.parent?.drawingRegion === item;
+
+      if (isDrawing || !layer || done) return;
+      let dataUrl;
+      let highlightEl;
+
+      if (highlighted) {
+        highlightEl = layer.findOne(".highlight");
+        highlightEl.hide();
+      }
+      layer.draw();
+      dataUrl = layer.canvas.toDataURL();
+      item.cacheImageData();
+
+      if (highlighted) {
+        highlightEl.show();
+        layer.draw();
+      }
 
       highlightedImageRef.current.src = dataUrl;
-    }
-  }, []);
+      done = true;
+    };
+  }, [item.touches.length]);
 
   if (!item.parent) return null;
 
-  highlightedRef.current = item.highlighted;
   const stage = item.parent?.stageRef;
 
   const applyTint = (node) => {
@@ -444,8 +490,12 @@ const HtxBrushView = ({ item }) => {
         ref={ref => {
           item.setLayerRef(ref);
           layerRef.current = ref;
+          applyTint(ref);
         }}
-        onDraw={drawCallback}
+        onDraw={() => {
+          setTimeout(drawCallback);
+        }}
+        clearBeforeDraw={!item.isDrawing}
       >
         <Group
           attrMy={item.needsUpdate}
@@ -479,7 +529,7 @@ const HtxBrushView = ({ item }) => {
           onClick={e => {
             if (item.parent.getSkipInteractions()) return;
             if (store.annotationStore.selected.relationMode) {
-              item.onClickRegion();
+              item.onClickRegion(e);
               return;
             }
 
@@ -505,25 +555,38 @@ const HtxBrushView = ({ item }) => {
           <Group scaleX={item.scaleX} scaleY={item.scaleY}>
             <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
           </Group>
-          <Group scaleX={item.scaleX} scaleY={item.scaleY}>
-            <LabelOnMask item={item} color={item.strokeColor}/>
-          </Group>
 
           <Image
+            name="highlight"
             image={highlightedImageRef.current}
-            sceneFunc={item.highlighted ? null : () => {}}
+            sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
             hitFunc={() => {}}
-            {...highlight}
+            {...highlightedRef.current.highlight}
             scaleX={1/item.parent.stageScale}
             scaleY={1/item.parent.stageScale}
             x={-item.parent.zoomingPositionX/item.parent.stageScale}
             y={-item.parent.zoomingPositionY/item.parent.stageScale}
             width={item.parent.stageWidth}
             height={item.parent.stageHeight}
+            listening={false}
           />
         </Group>
       </Layer>
+      <Layer
+        id={item.cleanId+"_labels"}
+        ref={ref => {
+          if (ref) {
+            ref.canvas._canvas.style.opacity = item.opacity;
+          }
+        }}
+        onDraw={drawCallback}
+      >
+        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+          <LabelOnMask item={item} color={item.strokeColor}/>
+        </Group>
+      </Layer>
     </RegionWrapper>
+
   );
 };
 

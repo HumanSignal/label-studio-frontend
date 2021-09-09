@@ -18,6 +18,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import { RegionWrapper } from "./RegionWrapper";
+import { rotateBboxCoords } from "../utils/bboxCoords";
 
 /**
  * Rectangle object for Bounding Box
@@ -67,12 +68,30 @@ const Model = types
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
   }))
+  .volatile(() => {
+    return {
+      useTransformer: true,
+      preferTransformer: true,
+      supportsRotate: true,
+      supportsScale: true,
+    };
+  })
   .views(self => ({
     get store() {
       return getRoot(self);
     },
     get parent() {
       return self.object;
+    },
+    get bboxCoords() {
+      const bboxCoords= {
+        left: self.x,
+        top: self.y,
+        right: self.x + self.width,
+        bottom: self.y + self.height,
+      };
+
+      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
     },
   }))
   .actions(self => ({
@@ -240,7 +259,7 @@ const HtxRectangleView = ({ item }) => {
   const eventHandlers = {};
 
   if (!suggestion) {
-    eventHandlers.onTransformEnd= (e) => {
+    eventHandlers.onTransformEnd = (e) => {
       const t = e.target;
 
       item.setPosition(
@@ -255,14 +274,14 @@ const HtxRectangleView = ({ item }) => {
       t.setAttr("scaleY", 1);
     };
 
-    eventHandlers.onDragStart= (e) => {
+    eventHandlers.onDragStart = (e) => {
       if (item.parent.getSkipInteractions()) {
         e.currentTarget.stopDrag(e.evt);
         return;
       }
     };
 
-    eventHandlers.onDragEnd= (e) => {
+    eventHandlers.onDragEnd = (e) => {
       const t = e.target;
 
       item.setPosition(
@@ -275,7 +294,7 @@ const HtxRectangleView = ({ item }) => {
       item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
     };
 
-    eventHandlers.dragBoundFunc= item.parent.fixForZoom(pos => {
+    eventHandlers.dragBoundFunc = item.parent.fixForZoom(pos => {
       let { x, y } = pos;
       const { width, height, rotation } = item;
       const { stageHeight, stageWidth } = item.parent;
@@ -314,7 +333,7 @@ const HtxRectangleView = ({ item }) => {
         opacity={1}
         rotation={item.rotation && !suggestion}
         draggable={item.editable && !suggestion}
-        name={item.id}
+        name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {

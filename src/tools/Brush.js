@@ -190,6 +190,7 @@ const _Tool = types
         brush = self.getSelectedShape;
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
+          brush.setDrawing(true);
           isFirstBrushStroke = false;
           brush.beginPath({
             type: "add",

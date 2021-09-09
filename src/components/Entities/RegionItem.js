@@ -1,6 +1,6 @@
 import { Badge, List } from "antd";
 import { observer } from "mobx-react";
-import { getRoot, isAlive } from "mobx-state-tree";
+import { isAlive } from "mobx-state-tree";
 import { Button } from "../../common/Button/Button";
 import { Node, NodeIcon } from "../Node/Node";
 import { LsCollapse, LsExpand, LsInvisible, LsVisible } from "../../assets/icons";
@@ -102,7 +102,7 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   );
 });
 
-export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
+export const RegionItem = observer(({ item, idx, flat, setDraggable, onClick }) => {
   const getVars = useMemo(()=>{
     let vars;
 
@@ -118,13 +118,11 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
 
   if (!isAlive(item)) return null;
 
-  const as = getRoot(item).annotationStore;
-  const anno = as.selectedHistory ?? as.selected;
   const classnames = [
     styles.lstitem,
     flat && styles.flat,
     item.hidden === true && styles.hidden,
-    item.selected && styles.selected,
+    item.inSelection && styles.selected,
   ].filter(Boolean);
 
   const vars = getVars();
@@ -133,7 +131,7 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable }) => {
     <List.Item
       key={item.id}
       className={classnames.join(" ")}
-      onClick={() => anno.selectArea(item)}
+      onClick={(e)=>{onClick(e, item);}}
       onMouseOver={() => item.setHighlight(true)}
       onMouseOut={() => item.setHighlight(false)}
       style={vars}

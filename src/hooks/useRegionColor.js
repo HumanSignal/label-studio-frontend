@@ -19,7 +19,7 @@ export const useRegionStyles = (region, {
   const { suggestion } = useContext(ImageViewContext) ?? {};
   const [highlighted, setHighlighted] = useState(region.highlighted);
   const [shouldFill, setShouldFill] = useState(region.fill ?? (useStrokeAsFill || includeFill));
-
+  const selected = region.inSelection || highlighted;
   const fillColor = useMemo(() => {
     return shouldFill ? (
       chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
@@ -30,22 +30,22 @@ export const useRegionStyles = (region, {
   }, [shouldFill, style, defaultFillColor, defaultFillOpacity]);
 
   const strokeColor = useMemo(() => {
-    if (highlighted) {
-      return defaultStrokeColorHighlighted;
+    if (selected) {
+      return ;
     } else {
       return chroma(style?.strokecolor ?? defaultStrokeColor).css();
     }
-  }, [highlighted, style, defaultStrokeColorHighlighted, defaultStrokeColor]);
+  }, [selected, style, defaultStrokeColorHighlighted, defaultStrokeColor]);
 
   const strokeWidth = useMemo(() => {
     if (suggestion) {
       return defaultSuggestionWidth;
-    } else if (highlighted) {
+    } else if (selected) {
       return defaultStrokeWidthHighlighted;
     } else {
       return +(style?.strokewidth ?? defaultStrokeWidth);
     }
-  }, [highlighted, style, defaultSuggestionWidth, defaultStrokeWidthHighlighted, defaultStrokeWidth]);
+  }, [selected, style, defaultSuggestionWidth, defaultStrokeWidthHighlighted, defaultStrokeWidth]);
 
   useEffect(() => {
     const disposeObserver = [

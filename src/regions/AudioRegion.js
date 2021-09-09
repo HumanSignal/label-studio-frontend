@@ -144,7 +144,7 @@ const Model = types
     },
 
     setHighlight(val) {
-      self.highlighted = val;
+      self._highlighted = val;
 
       if (val) {
         self.updateColor(0.8);
@@ -159,7 +159,7 @@ const Model = types
       if (self._ws_region) self._ws_region.remove();
     },
 
-    onClick() {
+    onClick(wavesurfer, ev) {
       // if (! self.editable) return;
 
       if (!self.annotation.relationMode) {
@@ -170,7 +170,7 @@ const Model = types
         self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
 
-      self.onClickRegion();
+      self.onClickRegion(ev);
     },
 
     onMouseOver() {

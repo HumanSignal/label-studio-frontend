@@ -12,5 +12,6 @@ import { Rotate } from "./Rotate";
 import { Brightness } from "./Brightness";
 import { Contrast } from "./Contrast";
 import { FloodFill } from "./FloodFill";
+import { Selection } from "./Selection";
 
-export { Brush, Erase, KeyPoint, Polygon, Rect, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill };
+export { Brush, Erase, KeyPoint, Polygon, Rect, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill, Selection };

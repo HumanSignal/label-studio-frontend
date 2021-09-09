@@ -104,7 +104,7 @@ const convertToFixed = data => {
  * @param {number} height
  */
 const getSizeConvertor = (width, height) =>
-  function convert (data, size = width) {
+  function convert(data, size = width) {
     if (typeof data === "number") return convertToFixed((data * 100) / size);
     if (Array.isArray(data)) {
       if (data.length === 2) return [convert(data[0]), convert(data[1], height)];
@@ -330,10 +330,12 @@ const setZoom = (scale, x, y, done) => {
  */
 const countKonvaShapes = async done => {
   const stage = window.Konva.stages[0];
-  const count = stage.find(node => {
-    return node.getType() === "Shape" && node.isVisible();
-  }).length;
+  const regions = Htx.annotationStore.selected.regionStore.regions;
+  let count = 0;
 
+  regions.forEach(region => {
+    count +=  stage.find("."+region.id).filter(node => node.isVisible()).length;
+  });
   done(count);
 };
 
@@ -424,13 +426,13 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
-function _isObject (value) {
+function _isObject(value) {
   var type = typeof value;
 
   return value !== null && (type === "object" || type === "function");
 }
 
-function _pickBy (obj, predicate, path = []) {
+function _pickBy(obj, predicate, path = []) {
   if (!_isObject(obj) || Array.isArray(obj)) return obj;
   return Object.keys(obj).reduce((res, key) => {
     const val = obj[key];
@@ -443,17 +445,17 @@ function _pickBy (obj, predicate, path = []) {
   }, {});
 }
 
-function _not (predicate) {
+function _not(predicate) {
   return (...args) => {
     return !predicate(...args);
   };
 }
 
-function omitBy (object, predicate) {
+function omitBy(object, predicate) {
   return _pickBy(object, _not(predicate));
 }
 
-function hasSelectedRegion (done) {
+function hasSelectedRegion(done) {
   done(!!Htx.annotationStore.selected.highlightedNode);
 }
 
