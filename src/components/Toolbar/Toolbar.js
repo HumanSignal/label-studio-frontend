@@ -78,7 +78,7 @@ const SmartTools = observer(({ tools }) => {
         active={hasSelected}
         icon={selected.iconClass}
         shortcut="M"
-        extra={(
+        extra={tools.length > 1 ? (
           <Elem name="smart">
             {tools.map((t, i) => (
               <div key={`${i}`} onClickCapture={(e) => {
@@ -90,7 +90,7 @@ const SmartTools = observer(({ tools }) => {
               </div>
             ))}
           </Elem>
-        )}
+        ) : null}
         controls={selected.controls}
         onClick={() => {
           let nextIndex = selectedIndex + 1;

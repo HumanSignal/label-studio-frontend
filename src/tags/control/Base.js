@@ -1,6 +1,9 @@
 import { types } from "mobx-state-tree";
 
-const ControlBase = types.model({}).views(self => ({
+const ControlBase = types.model({
+  smart: true,
+  smartonly: false,
+}).views(self => ({
   // historically two "types" were used and we should keep that backward compatibility:
   // 1. name of control tag for describing labeled region;
   // 2. label type to attach corresponding value to this region.

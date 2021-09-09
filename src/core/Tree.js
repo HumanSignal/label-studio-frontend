@@ -218,7 +218,7 @@ function treeToModel(html, store) {
           const cloned = cloneXmlTreeAndReplaceKeys(chld, i, chld.$['indexFlag']);
 
           createdView.children = addNode(cloned);
-  
+
           res.push(createdView);
         }
       }

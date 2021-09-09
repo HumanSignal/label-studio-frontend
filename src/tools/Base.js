@@ -54,12 +54,20 @@ const BaseTool = types
       get iconComponent() {
         return null;
       },
+      get smartEnabled() {
+        const smart = self.control?.smart || false;
+
+        return smart || self.smartOnly;
+      },
+      get smartOnly() {
+        return self.control?.smartonly ?? false;
+      },
     };
   })
   .actions((self) => {
     return  {
       afterCreate() {
-        if (self.smart) {
+        if (self.smart && self.smartEnabled) {
           const currentEnv = getEnv(self);
           const toolType = getType(self);
           const snapshot = {
