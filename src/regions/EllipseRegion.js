@@ -15,6 +15,7 @@ import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { rotateBboxCoords } from "../utils/bboxCoords";
 
 /**
  * Ellipse object for Bounding Box
@@ -79,12 +80,14 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      return {
+      const bboxCoords= {
         left: self.x - self.radiusX,
         top: self.y - self.radiusY,
         right: self.x + self.radiusX,
         bottom: self.y + self.radiusY,
       };
+
+      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y:self.y }) : bboxCoords;
     },
   }))
   .actions(self => ({
