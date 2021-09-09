@@ -7,21 +7,24 @@ import { customTypes } from "../../core/CustomTypes";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
- * KeyPoint is used to add a keypoint to an image without label selection. It's useful when you have only one label.
+ * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic keypoint image labeling configuration-->
  * <View>
  *   <KeyPoint name="kp-1" toName="img-1" />
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPoint
- * @meta_title Keypoint Tags for Adding Keypoints to Images
- * @meta_description Label Studio Keypoint Tags customize Label Studio for adding keypoints to images for machine learning and data science projects.
+ * @meta_title Keypoint Tag for Adding Keypoints to Images
+ * @meta_description Customize Label Studio with the KeyPoint tag to add key points to images for computer vision machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {float=} [opacity=0.9]         - Opacity of keypoint
- * @param {string=} [fillColor=#8bad00]  - Keypoint fill color
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
- * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color
+ * @param {string=} [strokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  */
 const TagAttrs = types.model({
   name: types.identifier,

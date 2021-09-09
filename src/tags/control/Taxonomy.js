@@ -14,16 +14,18 @@ import VisibilityMixin from "../../mixins/Visibility";
 import ControlBase from "./Base";
 
 /**
- * Taxonomy tag allows to select one or more hierarchical labels
- * storing both label and their ancestors.
+ * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
+ * <!--Labeling configuration for providing a taxonomy of choices in response to a passage of text -->
  * <View>
  *   <Taxonomy name="media" toName="text">
  *     <Choice value="Online">
  *       <Choice value="UGC" />
  *       <Choice value="Free" />
  *       <Choice value="Paywall">
- *         <Choice value="NYC Times" />
+ *         <Choice value="NY Times" />
  *         <Choice value="The Wall Street Journal" />
  *       </Choice>
  *     </Choice>
@@ -32,14 +34,14 @@ import ControlBase from "./Base";
  *   <Text name="text" value="You'd never believe what he did to the country" />
  * </View>
  * @name Taxonomy
- * @meta_title Taxonomy Tags for Hierarchical Labels
- * @meta_description Label Studio Taxonomy Tags customize Label Studio by using hierarchical labels for machine learning and data science projects.
+ * @meta_title Taxonomy Tag for Hierarchical Labels
+ * @meta_description Customize Label Studio with the Taxonomy tag and use hierarchical labels for machine learning and data science projects.
  * @param {string} name                - Name of the element
  * @param {string} toName              - Name of the element that you want to classify
- * @param {boolean} [leafsOnly=false]  - Allow to select only leaf nodes of taxonomy
- * @param {boolean} [showFullPath=false] - Show full path of selected items
+ * @param {boolean} [leafsOnly=false]  - Allow annotators to select only leaf nodes of taxonomy
+ * @param {boolean} [showFullPath=false] - Whether to show the full path of selected items
  * @param {string} [pathSeparator= / ] - Separator to show in the full path
- * @param {number} [maxUsages]         - Maximum available usages
+ * @param {number} [maxUsages]         - Maximum number of times a choice can be selected per task
  * @param {boolean} [required=false]   - Whether taxonomy validation is required
  * @param {string} [requiredMessage]   - Message to show if validation fails
  * @param {string} [placeholder=]      - What to display as prompt on the input

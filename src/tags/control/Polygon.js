@@ -9,20 +9,23 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 
 /**
- * Use the Polygon tag to add polygons to an image without selecting a label. It's useful when you have only one label.
+ * Use the Polygon tag to add polygons to an image without selecting a label. This can be useful when you have only one label to assign to the polygon. Use for image segmentation tasks.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic labeling configuration for polygonal image segmentation -->
  * <View>
  *   <Polygon name="rect-1" toName="img-1" />
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Polygon
- * @meta_title Polygon Tags for Adding Polygons to Images
- * @meta_description Label Studio Polygon Tags customize Label Studio for adding polygons to images for machine learning and data science projects.
+ * @meta_title Polygon Tag for Adding Polygons to Images
+ * @meta_description Customize Label Studio with the Polygon tag by adding polygons to images for segmentation machine learning and data science projects.
  * @param {string} name                           - Name of tag
  * @param {string} toname                         - Name of image to label
  * @param {number} [opacity=0.6]                  - Opacity of polygon
- * @param {string} [fillColor=transparent]        - Polygon fill color
- * @param {string} [strokeColor=#f48a42]          - Stroke color
+ * @param {string} [fillColor=transparent]        - Polygon fill color in hexadecimal or HTML color name
+ * @param {string} [strokeColor=#f48a42]          - Stroke color in hexadecimal
  * @param {number} [strokeWidth=3]                - Width of stroke
  * @param {small|medium|large} [pointSize=small]  - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=circle]  - Style of points

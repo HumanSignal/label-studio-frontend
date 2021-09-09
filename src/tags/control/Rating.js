@@ -13,17 +13,20 @@ import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Rating adds rating selection
+ * The Rating tag adds a rating selection to the labeling interface. Use for labeling tasks involving ratings.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  *
  * @example
+ * <!--Basic labeling configuration to rate the content of a text passage -->
  * <View>
  *   <Text name="txt" value="$text" />
  *   <Rating name="rating" toName="txt" maxRating="10" icon="star" size="medium" />
  * </View>
  *
  * @name Rating
- * @meta_title Rating Tags for Ratings
- * @meta_description Label Studio Rating Tags customize Label Studio for ratings for machine learning and data science projects.
+ * @meta_title Rating Tag for Ratings
+ * @meta_description Customize Label Studio to add ratings to tasks with the Rating tag in your machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} toName                     - Name of the element that you want to label
  * @param {number} [maxRating=5]              - Maximum rating value
@@ -33,7 +36,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {string} hotkey                     - HotKey for changing rating value
  * @param {boolean} [required=false]          - Whether rating validation is required
  * @param {string} [requiredMessage]          - Message to show if validation fails
- * @param {boolean} [perRegion]               - Use this tag to label regions instead of the whole object
+ * @param {boolean} [perRegion]               - Use this tag to rate regions instead of the whole object
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -177,8 +180,8 @@ const HtxRating = inject("store")(
     const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
     // rc-rate component listens for keypress event and hit the star if the key is Enter
-    // but it doesn't check for any modificators, so it removes star during submit (ctrl+enter)
-    // so we'll just remove focus from component at the moment any modificator pressed
+    // but it doesn't check for any modifiers, so it removes star during submit (ctrl+enter)
+    // so we'll just remove focus from component at the moment any modifier pressed
     const dontBreakSubmit = e => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) {
         // should be a star, because that's the only way this event can happen

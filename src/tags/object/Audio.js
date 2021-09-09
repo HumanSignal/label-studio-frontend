@@ -12,8 +12,11 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Audio tag plays a simple audio file.
+ * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
+ *
+ * Use with the following data types: audio
  * @example
+ * <!--Play audio on the labeling interface-->
  * <View>
  *   <Audio name="audio" value="$audio" />
  * </View>
@@ -33,11 +36,11 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   <TextArea name="ta" toName="audio" />
  * </View>
  * @regions AudioRegion
- * @meta_title Audio Tags for Labeling Audio
- * @meta_description Label Studio Audio Tags customize Label Studio for labeling audio for machine learning and data science projects.
+ * @meta_title Audio Tag for Labeling Audio
+ * @meta_description Customize Label Studio to label audio data for machine learning and data science projects.
  * @name Audio
  * @param {string} name Name of the element
- * @param {string} value Value of the element
+ * @param {string} value Data field containing path or a URL to the audio
  * @param {string} hotkey Hotkey used to play or pause audio
  */
 

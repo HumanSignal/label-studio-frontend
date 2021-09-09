@@ -12,9 +12,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
 
 /**
- * Choice tag represents a single choice for annotations.
+ * The Choice tag represents a single choice for annotations. Use with the Choices tag or Taxonomy tag to provide specific choice options.
  *
  * @example
+ * <!--Basic text classification labeling configuration-->
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single">
  *     <Choice value="Man" />
@@ -25,11 +26,11 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
  *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choice
- * @meta_title Choice Tags for Single Choice Labels
- * @meta_description Label Studio Choice Tags customize Label Studio for single choice labels for machine learning and data science projects.
+ * @meta_title Choice Tag for Single Choice Labels
+ * @meta_description Customize Label Studio with choice tags for simple classification tasks in machine learning and data science projects.
  * @param {string} value       - Choice value
- * @param {boolean} [selected] - Specify whether to preselect this label on the labeling interface
- * @param {string} [alias]     - Alias for the label
+ * @param {boolean} [selected] - Specify whether to preselect this choice on the labeling interface
+ * @param {string} [alias]     - Alias for the choice. If used, the alias replaces the choice value in the annotation results. Alias does not display in the interface.
  * @param {style} [style]      - CSS style of the checkbox element
  * @param {string} [hotkey]    - Hotkey for the selection
  */
