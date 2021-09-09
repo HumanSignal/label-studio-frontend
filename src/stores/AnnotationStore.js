@@ -186,6 +186,7 @@ const Annotation = types
     reinitHistory() {
       self.history.reinit();
       self.autosave && self.autosave.cancel();
+      if (self.type === "annotation") self.setInitialValues();
     },
 
     setEdit(val) {

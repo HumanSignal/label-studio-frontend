@@ -76,7 +76,7 @@ const Model = types.model({
     "TimeSeriesLabels",
     "ParagraphLabels",
   ]),
-}).volatile(() => {
+}).volatile(self => {
   return {
     initiallySelected: self.selected,
     isEmpty: false,
