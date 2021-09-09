@@ -16,6 +16,7 @@ import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { rotateBboxCoords } from "../utils/bboxCoords";
 
 /**
  * Rectangle object for Bounding Box
@@ -65,12 +66,30 @@ const Model = types
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
   }))
+  .volatile(() => {
+    return {
+      useTransformer: true,
+      preferTransformer: true,
+      supportsRotate: true,
+      supportsScale: true,
+    };
+  })
   .views(self => ({
     get store() {
       return getRoot(self);
     },
     get parent() {
       return self.object;
+    },
+    get bboxCoords() {
+      const bboxCoords= {
+        left: self.x,
+        top: self.y,
+        right: self.x + self.width,
+        bottom: self.y + self.height,
+      };
+
+      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
     },
   }))
   .actions(self => ({
@@ -251,7 +270,7 @@ const HtxRectangleView = ({ item }) => {
         opacity={1}
         rotation={item.rotation}
         draggable={item.editable}
-        name={item.id}
+        name={`${item.id} _transformable`}
         onTransformEnd={e => {
           const t = e.target;
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo, useContext, FormEvent } from "react";
+import React, { FormEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";

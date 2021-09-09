@@ -295,8 +295,8 @@ export default types
         function() {
           const c = self.annotationStore.selected;
 
-          if (c && c.highlightedNode) {
-            c.highlightedNode.deleteRegion();
+          if (c) {
+            c.deleteSelectedRegions();
           }
         },
         "Delete selected region",
@@ -311,6 +311,18 @@ export default types
         },
         "Circle through entities",
       );
+
+      // duplicate selected regions
+      hotkeys.addKey("command+d, ctrl+d", function(e) {
+        const { selected } = self.annotationStore;
+        const { serializedSelection } = selected || {};
+
+        if (!serializedSelection?.length) return;
+        e.preventDefault();
+        const results = selected.appendResults(serializedSelection);
+
+        selected.selectAreas(results);
+      });
 
       getEnv(self).events.invoke('labelStudioLoad', self);
     }

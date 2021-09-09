@@ -16,7 +16,7 @@ const RegionsMixin = types
   })
   .volatile(() => ({
     // selected: false,
-    highlighted: false,
+    _highlighted: false,
     isDrawing: false,
     perRegionFocusRequest: null,
   }))
@@ -41,6 +41,14 @@ const RegionsMixin = types
 
     get isCompleted() {
       return !self.isDrawing;
+    },
+
+    get highlighted() {
+      return self._highlighted;
+    },
+
+    get inSelection() {
+      return self.annotation.regionStore.isSelected(self);
     },
 
   }))
@@ -202,7 +210,7 @@ const RegionsMixin = types
 
       afterUnselectRegion() {},
 
-      onClickRegion() {
+      onClickRegion(ev) {
         const annotation = self.annotation;
 
         if (!annotation.editable || self.isDrawing) return;
@@ -212,18 +220,24 @@ const RegionsMixin = types
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
-          self._selectArea();
+          self._selectArea(ev?.ctrlKey || ev?.metaKey);
         }
       },
 
-      _selectArea() {
+      _selectArea(additiveMode = false) {
         this.cancelPerRegionFocus();
         const annotation = self.annotation;
-        const wasNotSelected = !self.selected;
 
-        annotation.unselectAll();
-        if (wasNotSelected) {
-          annotation.selectArea(self);
+        if (additiveMode) {
+          annotation.toggleRegionSelection(self);
+        } else {const wasNotSelected = !self.selected;
+
+
+          if (wasNotSelected) {
+            annotation.selectArea(self);
+          } else {
+            annotation.unselectAll();
+          }
         }
       },
 
@@ -236,11 +250,11 @@ const RegionsMixin = types
       },
 
       setHighlight(val) {
-        self.highlighted = val;
+        self._highlighted = val;
       },
 
       toggleHighlight() {
-        self.setHighlight(!self.highlighted);
+        self.setHighlight(!self._highlighted);
       },
 
       toggleHidden(e) {

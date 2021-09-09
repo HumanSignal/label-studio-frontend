@@ -7,7 +7,7 @@ import Relations from "../Relations/Relations";
 export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
   const annotation = as.selectedHistory ?? as.selected;
-  const node = annotation.highlightedNode;
+  const { selectionSize } = annotation || {};
   const hasSegmentation = store.hasSegmentation;
 
   return (
@@ -22,7 +22,7 @@ export const AnnotationTab = observer(({ store }) => {
         />
       )}
 
-      {node ? (
+      {selectionSize ? (
         <Entity store={store} annotation={annotation} />
       ) : hasSegmentation ? (
         <p style={{ marginTop: 12, marginBottom: 0, paddingInline: 15 }}>

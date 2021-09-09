@@ -10,7 +10,6 @@ import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import Types from "../core/Types";
 import Utils from "../utils";
 import { delay, isDefined } from "../utils/utilities";
-import { AllRegionsType } from "../regions";
 import { guidGenerator } from "../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../core/DataValidator";
 import { errorBuilder } from "../core/DataValidator/ConfigValidator";
@@ -75,7 +74,6 @@ const Annotation = types
       regions: [],
     }),
 
-    highlightedNode: types.maybeNull(types.safeReference(AllRegionsType)),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
@@ -132,6 +130,39 @@ const Annotation = types
         .map(r => r.serialize())
         .filter(Boolean)
         .concat(self.relationStore.serializeAnnotation());
+    },
+
+    get serializedSelection() {
+      // Dirty hack to force MST track changes
+      self.areas.toJSON();
+
+      const selectedResults = [];
+
+      self.areas.forEach(a => {
+        if (!a.inSelection) return;
+        a.results.forEach(r => {
+          selectedResults.push(r);
+        });
+      });
+
+      return selectedResults
+        .map(r => r.serialize())
+        .filter(Boolean);
+    },
+
+    get highlightedNode() {
+      return self.regionStore.selection.highlighted;
+    },
+
+    get hasSelection() {
+      return self.regionStore.selection.hasSelection;
+    },
+    get selectionSize() {
+      return self.regionStore.selection.size;
+    },
+
+    get selectedRegions() {
+      return Array.from(self.regionStore.selection.selected.values());
     },
 
     // existing annotation which can be updated
@@ -209,33 +240,40 @@ const Annotation = types
     selectArea(area) {
       if (self.highlightedNode === area) return;
       // if (current) current.setSelected(false);
-      self.unselectAll();
-      self.highlightedNode = area;
+      self.regionStore.highlight(area);
       // area.setSelected(true);
-      // @todo some backward compatibility, should be rewritten to state handling
-      // @todo but there are some actions should be performed like scroll to region
-      area.selectRegion && area.selectRegion();
-      area.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
-      area.results.forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+    },
+
+    toggleRegionSelection(area, isSelected) {
+      self.regionStore.toggleSelection(area, isSelected);
+    },
+
+    selectAreas(areas) {
+      self.unselectAreas();
+      self.extendSelectionWith(areas);
+    },
+
+    extendSelectionWith(areas) {
+      for (let area of (Array.isArray(areas) ? areas : [areas])) {
+        self.regionStore.toggleSelection(area, true);
+      }
     },
 
     unselectArea(area) {
       if (self.highlightedNode !== area) return;
       // area.setSelected(false);
-      self.unselectAll();
+      self.regionStore.toggleSelection(area, false);
     },
 
     unselectAreas() {
-      const node = self.highlightedNode;
+      if (!self.selectionSize) return;
+      self.regionStore.clearSelection();
+    },
 
-      if (!node) return;
-
-      // eslint-disable-next-line no-unused-expressions
-      node.perRegionTags.forEach(tag => tag.submitChanges?.());
-
-      self.highlightedNode = null;
-      // eslint-disable-next-line no-unused-expressions
-      node.afterUnselectRegion?.();
+    deleteSelectedRegions() {
+      self.selectedRegions.forEach(region => {
+        region.deleteRegion();
+      });
     },
 
     unselectStates() {
@@ -625,6 +663,25 @@ const Annotation = types
       }
 
       return area;
+    },
+
+    appendResults(results) {
+      const regionIdMap = {};
+      const prevSize = self.regionStore.regions.length;
+
+      // Generate new ids to prevent collisions
+      results.forEach((result)=>{
+        const regionId = result.id;
+
+        if (!regionIdMap[regionId]) {
+          regionIdMap[regionId] = guidGenerator();
+        }
+        result.id = regionIdMap[regionId];
+      });
+
+      self.deserializeAnnotation(results);
+      self.updateObjects();
+      return self.regionStore.regions.slice(prevSize);
     },
 
     serializeAnnotation() {

@@ -31,10 +31,22 @@ const Model = types
     relativeX: 0,
     relativeY: 0,
     hideable: true,
+    supportsTransform: true,
+    useTransformer: false,
+    supportsRotate: false,
+    supportsScale: false,
   }))
   .views(self => ({
     get store() {
       return getRoot(self);
+    },
+    get bboxCoords() {
+      return {
+        left: self.x - self.width,
+        top: self.y - self.width,
+        right: self.x + self.width,
+        bottom: self.y + self.width,
+      };
     },
   }))
   .actions(self => ({
@@ -163,7 +175,7 @@ const HtxKeyPointView = ({ item }) => {
         perfectDrawEnabled={false}
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
-        name={item.id}
+        name={`${item.id} _transformable`}
         onDragStart={e => {
           if (item.parent.getSkipInteractions()) {
             e.currentTarget.stopDrag(e.evt);
@@ -189,6 +201,18 @@ const HtxKeyPointView = ({ item }) => {
 
           return { x, y };
         })}
+        transformsEnabled="position"
+        onTransformEnd={e => {
+          const t = e.target;
+
+          item.setPosition(
+            t.getAttr("x"),
+            t.getAttr("y"),
+          );
+
+          t.setAttr("scaleX", 1);
+          t.setAttr("scaleY", 1);
+        }}
         onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);

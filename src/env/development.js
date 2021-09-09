@@ -56,13 +56,14 @@ import { Repeater } from "../examples/repeater";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
+import { SandboxConfig } from "../examples/_sandbox_config";
 
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = Taxonomy;
+const data = SandboxConfig;
 
 function getData(task) {
   if (task && task.data) {

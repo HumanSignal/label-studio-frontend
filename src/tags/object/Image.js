@@ -1,4 +1,4 @@
-import { destroy, getRoot, getType, types } from "mobx-state-tree";
+import { destroy, getParent, getRoot, getType, types } from "mobx-state-tree";
 import { inject } from "mobx-react";
 
 import * as Tools from "../../tools";
@@ -67,6 +67,7 @@ const TagAttrs = types.model({
   contrastcontrol: types.optional(types.boolean, false),
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
+  selectioncontrol: types.optional(types.boolean, true),
 });
 
 const IMAGE_CONSTANTS = {
@@ -100,200 +101,288 @@ const DrawingRegion = types.union(
   },
 );
 
-const Model = types
-  .model({
-    type: "image",
-
-    // tools: types.array(BaseTool),
-
-    rotation: types.optional(types.number, 0),
-
-    sizeUpdated: types.optional(types.boolean, false),
-
-    /**
-     * Natural sizes of Image
-     * Constants
-     */
-    naturalWidth: types.optional(types.integer, 1),
-    naturalHeight: types.optional(types.integer, 1),
-
-    /**
-     * Initial width and height of the image
-     */
-    initialWidth: types.optional(types.integer, 1),
-    initialHeight: types.optional(types.integer, 1),
-
-    stageWidth: types.optional(types.integer, 1),
-    stageHeight: types.optional(types.integer, 1),
-
-    /**
-     * Zoom Scale
-     */
-    zoomScale: types.optional(types.number, 1),
-
-    /**
-     * Coordinates of left top corner
-     * Default: { x: 0, y: 0 }
-     */
-    zoomingPositionX: types.maybeNull(types.number),
-    zoomingPositionY: types.maybeNull(types.number),
-
-    /**
-     * Brightness of Canvas
-     */
-    brightnessGrade: types.optional(types.number, 100),
-
-    contrastGrade: types.optional(types.number, 100),
-
-    /**
-     * Cursor coordinates
-     */
-    cursorPositionX: types.optional(types.number, 0),
-    cursorPositionY: types.optional(types.number, 0),
-
-    brushControl: types.optional(types.string, "brush"),
-
-    brushStrokeWidth: types.optional(types.number, 15),
-
-    /**
-     * Mode
-     * brush for Image Segmentation
-     * eraser for Image Segmentation
-     */
-    mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
-
-    regions: types.array(
-      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
-      [],
-    ),
-
-    drawingRegion: types.optional(DrawingRegion, null),
-  })
-  .volatile(() => ({
-    currentImage: 0,
-    stageRatio: 1,
-  }))
-  .views(self => ({
-    get store() {
-      return getRoot(self);
+const ImageSelectionPoint = types.model({
+  x: types.number,
+  y: types.number,
+});
+const ImageSelection = types.model({
+  start: types.maybeNull(ImageSelectionPoint),
+  end: types.maybeNull(ImageSelectionPoint),
+}).views( self => {
+  return {
+    get obj() {
+      return getParent(self);
     },
-
-    get parsedValue() {
-      return parseValue(self.value, self.store.task.dataObj);
+    get annotation() {
+      return self.obj.annotation;
     },
-
-    // @todo the name is for backward compatibility; change the name later
-    get _value() {
-      const value = self.parsedValue;
-
-      if (Array.isArray(value)) return value[self.currentImage];
-      return value;
+    get highlightedNodeExists() {
+      return !!self.annotation.highlightedNode;
     },
-
-    get images() {
-      const value = self.parsedValue;
-
-      if (!value) return [];
-      if (Array.isArray(value)) return value;
-      return [value];
+    get isActive() {
+      return self.start && self.end;
     },
-
-    /**
-     * @return {boolean}
-     */
-    get hasStates() {
-      const states = self.states();
-
-      return states && states.length > 0;
+    get x() {
+      return Math.min(self.start.x, self.end.x);
     },
-
-    get regs() {
-      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+    get y() {
+      return Math.min(self.start.y, self.end.y);
     },
-
-    get selectedShape() {
-      return self.regs.find(r => r.selected);
+    get width() {
+      return Math.abs(self.end.x - self.start.x);
     },
-
-    get stageTranslate() {
-      return {
-        0: { x: 0, y: 0 },
-        90: { x: 0, y: self.stageHeight },
-        180: { x: self.stageWidth, y: self.stageHeight },
-        270: { x: self.stageWidth, y: 0 },
-      }[self.rotation];
+    get height() {
+      return Math.abs(self.end.y - self.start.y);
     },
+    get bbox() {
+      const { start, end } = self;
 
-    get stageScale() {
-      return self.zoomScale * self.stageRatio;
+      return self.isActive ? {
+        left: Math.min(start.x, end.x),
+        top: Math.min(start.y, end.y),
+        right: Math.max(start.x, end.x),
+        bottom: Math.max(start.y, end.y),
+      } : null;
     },
-
-    get hasTools() {
-      return !!self.getToolsManager().allTools()?.length;
+    includesBbox(bbox) {
+      return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
     },
-
-    /**
-     * @return {object}
-     */
-    states() {
-      return self.annotation.toNames.get(self.name);
-    },
-
-    activeStates() {
-      const states = self.states();
-
-      return states && states.filter(s => s.isSelected && s.type.includes("labels"));
-    },
-
-    controlButton() {
-      const names = self.states();
-
-      if (!names || names.length === 0) return;
-
-      let returnedControl = names[0];
-
-      names.forEach(item => {
-        if (
-          item.type === IMAGE_CONSTANTS.rectanglelabels ||
-          item.type === IMAGE_CONSTANTS.brushlabels ||
-          item.type === IMAGE_CONSTANTS.ellipselabels
-        ) {
-          returnedControl = item;
-        }
+    get selectionBorders() {
+      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
+        return  region.bboxCoords ? {
+          left: Math.min(borders.left, region.bboxCoords.left),
+          top: Math.min(borders.top,region.bboxCoords.top),
+          right: Math.max(borders.right, region.bboxCoords.right),
+          bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
+        } : borders;
+      }, {
+        left: self.obj.stageWidth,
+        top: self.obj.stageHeight,
+        right: 0,
+        bottom: 0,
       });
-
-      return returnedControl;
     },
-
-    get controlButtonType() {
-      const name = self.controlButton();
-
-      return getType(name).name;
+  };
+}).actions(self => {
+  return {
+    setStart(point) {
+      self.start = point;
     },
+    setEnd(point) {
+      self.end = point;
+    },
+  };
+});
 
-    get stageComponentSize() {
-      if ((self.rotation + 360) % 180 === 90) {
-        return {
-          width: self.stageHeight * self.stageRatio,
-          height: self.stageWidth * self.stageRatio,
-        };
+const Model = types.model({
+  type: "image",
+
+  // tools: types.array(BaseTool),
+
+  rotation: types.optional(types.number, 0),
+
+  sizeUpdated: types.optional(types.boolean, false),
+
+  /**
+   * Natural sizes of Image
+   * Constants
+   */
+  naturalWidth: types.optional(types.integer, 1),
+  naturalHeight: types.optional(types.integer, 1),
+
+  /**
+   * Initial width and height of the image
+   */
+  initialWidth: types.optional(types.integer, 1),
+  initialHeight: types.optional(types.integer, 1),
+
+  stageWidth: types.optional(types.integer, 1),
+  stageHeight: types.optional(types.integer, 1),
+
+  /**
+   * Zoom Scale
+   */
+  zoomScale: types.optional(types.number, 1),
+
+  /**
+   * Coordinates of left top corner
+   * Default: { x: 0, y: 0 }
+   */
+  zoomingPositionX: types.maybeNull(types.number),
+  zoomingPositionY: types.maybeNull(types.number),
+
+  /**
+   * Brightness of Canvas
+   */
+  brightnessGrade: types.optional(types.number, 100),
+
+  contrastGrade: types.optional(types.number, 100),
+
+  /**
+   * Cursor coordinates
+   */
+  cursorPositionX: types.optional(types.number, 0),
+  cursorPositionY: types.optional(types.number, 0),
+
+  brushControl: types.optional(types.string, "brush"),
+
+  brushStrokeWidth: types.optional(types.number, 15),
+
+  /**
+   * Mode
+   * brush for Image Segmentation
+   * eraser for Image Segmentation
+   */
+  mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
+
+  regions: types.array(
+    types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+    [],
+  ),
+
+  drawingRegion: types.optional(DrawingRegion, null),
+  selectionArea: types.optional(ImageSelection, { start: null, end: null }),
+}).volatile(() => ({
+  currentImage: 0,
+  stageRatio: 1,
+})).views(self => ({
+  get store() {
+    return getRoot(self);
+  },
+
+  get parsedValue() {
+    return parseValue(self.value, self.store.task.dataObj);
+  },
+
+  // @todo the name is for backward compatibility; change the name later
+  get _value() {
+    const value = self.parsedValue;
+
+    if (Array.isArray(value)) return value[self.currentImage];
+    return value;
+  },
+
+  get images() {
+    const value = self.parsedValue;
+
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+  },
+
+  /**
+   * @return {boolean}
+   */
+  get hasStates() {
+    const states = self.states();
+
+    return states && states.length > 0;
+  },
+
+  get regs() {
+    return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+  },
+
+  get selectedRegions() {
+    return self.regs.filter(region => region.inSelection);
+  },
+
+  get regionsInSelectionArea() {
+    return self.regs.filter(region => region.isInSelectionArea);
+  },
+
+  get selectedShape() {
+    return self.regs.find(r => r.selected);
+  },
+
+  get useTransformer() {
+    return self.getToolsManager().findSelectedTool()?.useTransformer === true;
+  },
+
+  get stageTranslate() {
+    return {
+      0: { x: 0, y: 0 },
+      90: { x: 0, y: self.stageHeight },
+      180: { x: self.stageWidth, y: self.stageHeight },
+      270: { x: self.stageWidth, y: 0 },
+    }[self.rotation];
+  },
+
+  get stageScale() {
+    return self.zoomScale * self.stageRatio;
+  },
+
+  get hasTools() {
+    return !!self.getToolsManager().allTools()?.length;
+  },
+
+  /**
+   * @return {object}
+   */
+  states() {
+    return self.annotation.toNames.get(self.name);
+  },
+
+  activeStates() {
+    const states = self.states();
+
+    return states && states.filter(s => s.isSelected && s.type.includes("labels"));
+  },
+
+  controlButton() {
+    const names = self.states();
+
+    if (!names || names.length === 0) return;
+
+    let returnedControl = names[0];
+
+    names.forEach(item => {
+      if (
+        item.type === IMAGE_CONSTANTS.rectanglelabels ||
+        item.type === IMAGE_CONSTANTS.brushlabels ||
+        item.type === IMAGE_CONSTANTS.ellipselabels
+      ) {
+        returnedControl = item;
       }
-      return {
-        width: self.stageWidth * self.stageRatio,
-        height: self.stageHeight * self.stageRatio,
-      };
-    },
+    });
 
-    get zoomBy() {
-      return parseFloat(self.zoomby);
-    },
-  }))
+    return returnedControl;
+  },
+
+  get controlButtonType() {
+    const name = self.controlButton();
+
+    return getType(name).name;
+  },
+
+  get stageComponentSize() {
+    if ((self.rotation + 360) % 180 === 90) {
+      return {
+        width: self.stageHeight * self.stageRatio,
+        height: self.stageWidth * self.stageRatio,
+      };
+    }
+    return {
+      width: self.stageWidth * self.stageRatio,
+      height: self.stageHeight * self.stageRatio,
+    };
+  },
+
+  get zoomBy() {
+    return parseFloat(self.zoomby);
+  },
+  get isDrawing() {
+    return !!self.drawingRegion;
+  },
+}))
 
   // actions for the tools
   .actions(self => {
     const toolsManager = new ToolsManager({ obj: self });
 
     function afterCreate() {
+      if (self.selectioncontrol) toolsManager.addTool("selection", Tools.Selection.create({}, { manager: toolsManager }));
+
       if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
 
       if (self.brightnesscontrol)
@@ -309,8 +398,7 @@ const Model = types
     }
 
     return { afterCreate, getToolsManager };
-  })
-  .extend(() => {
+  }).extend((self) => {
     let skipInteractions = false;
 
     return {
@@ -323,10 +411,17 @@ const Model = types
         setSkipInteractions(value) {
           skipInteractions = value;
         },
+        updateSkipInteractions(e) {
+          const currentTool = self.getToolsManager().findSelectedTool();
+
+          if (currentTool.shouldSkipInteractions) {
+            return self.setSkipInteractions(currentTool.shouldSkipInteractions(e));
+          }
+          self.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
+        },
       },
     };
-  })
-  .actions(self => ({
+  }).actions(self => ({
     freezeHistory() {
       //self.annotation.history.freeze();
     },
@@ -355,6 +450,17 @@ const Model = types
 
       self.drawingRegion = null;
       destroy(drawingRegion);
+    },
+
+    setSelectionStart(point) {
+      self.selectionArea.setStart(point);
+    },
+    setSelectionEnd(point) {
+      self.selectionArea.setEnd(point);
+    },
+    resetSelection() {
+      self.selectionArea.setStart(null);
+      self.selectionArea.setEnd(null);
     },
 
     updateBrushControl(arg) {
@@ -496,15 +602,15 @@ const Model = types
         this.setZoomPosition(
           self.zoomingPositionY * ratioK,
           self.stageComponentSize.height -
-            self.zoomingPositionX * ratioK -
-            self.stageComponentSize.height * self.zoomScale,
+          self.zoomingPositionX * ratioK -
+          self.stageComponentSize.height * self.zoomScale,
         );
       }
       if (degree === 90) {
         this.setZoomPosition(
           self.stageComponentSize.width -
-            self.zoomingPositionY * ratioK -
-            self.stageComponentSize.width * self.zoomScale,
+          self.zoomingPositionY * ratioK -
+          self.stageComponentSize.width * self.zoomScale,
           self.zoomingPositionX * ratioK,
         );
       }
@@ -578,11 +684,7 @@ const Model = types
       }
 
       // good official way, but maybe a bit slower and with repeating cloning
-      const p = self.stageRef
-        .getAbsoluteTransform()
-        .copy()
-        .invert()
-        .point({ x, y });
+      const p = self.stageRef.getAbsoluteTransform().copy().invert().point({ x, y });
 
       return [p.x, p.y];
     },

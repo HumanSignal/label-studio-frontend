@@ -1,5 +1,5 @@
 import { inject, observer } from "mobx-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { IconInfo, LsSettings, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
@@ -25,6 +25,64 @@ export const CurrentEntity = injector(observer(({
 }) => {
   const isPrediction = entity?.type === 'prediction';
   const saved = !entity.userGenerate || entity.sentUserGenerate;
+
+  useEffect(()=>{
+    const copyToClipboard = (ev) => {
+      const { clipboardData } = ev;
+      const results = entity.serializedSelection;
+
+      clipboardData.setData('application/json', JSON.stringify(results));
+      ev.preventDefault();
+
+    };
+    const pasteFromClipboard = (ev) => {
+      const { clipboardData } = ev;
+      const data = clipboardData.getData('application/json');
+
+      try {
+        const results = JSON.parse(data);
+
+        entity.appendResults(results);
+        ev.preventDefault();
+      } catch (e) {
+        return;
+      }
+    };
+
+    const copyHandler = (ev) =>{
+      const selection = window.getSelection();
+
+      if (!selection.isCollapsed) return;
+
+      copyToClipboard(ev);
+    };
+    const pasteHandler = (ev) =>{
+      const selection = window.getSelection();
+
+      if (Node.ELEMENT_NODE === selection.focusNode?.nodeType && selection.focusNode?.focus) return;
+
+      pasteFromClipboard(ev);
+    };
+    const cutHandler = (ev) =>{
+      const selection = window.getSelection();
+
+      if (!selection.isCollapsed) return;
+
+      copyToClipboard(ev);
+      entity.deleteSelectedRegions();
+
+      console.log("Window event: cutHandler", ev);
+    };
+
+    window.addEventListener("copy", copyHandler);
+    window.addEventListener("paste", pasteHandler);
+    window.addEventListener("cut", cutHandler);
+    return () => {
+      window.removeEventListener("copy", copyHandler);
+      window.removeEventListener("paste", pasteHandler);
+      window.removeEventListener("cut", cutHandler);
+    };
+  }, [entity.pk ?? entity.id]);
 
   return entity ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>

@@ -1,5 +1,5 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
-import { Group, Layer, Line, Stage } from "react-konva";
+import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 
@@ -15,6 +15,7 @@ import Konva from "konva";
 import { observe } from "mobx";
 import { guidGenerator } from "../../utils/unique";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useObserver } from "mobx-react-lite";
 
 Konva.showWarnings = false;
 
@@ -40,13 +41,13 @@ const splitRegions = (regions) => {
   };
 };
 
-const Region = memo(({ region }) => {
-  return Tree.renderItem(region, false);
+const Region = memo(({ region, showSelected = false }) => {
+  return useObserver(()=>(region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
 });
 
-const RegionsLayer = memo(({ regions, name, useLayers }) => {
+const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
   const content = regions.map((el) => (
-    <Region key={`region-${el.id}`} region={el}/>
+    <Region key={`region-${el.id}`} region={el} showSelected={showSelected}/>
   ));
 
   return useLayers === false ? (
@@ -58,13 +59,14 @@ const RegionsLayer = memo(({ regions, name, useLayers }) => {
   );
 });
 
-const Regions = memo(({ regions, useLayers = true }) => {
-  return chunks(regions, 15).map((chunk, i) => (
+const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, showSelected = false }) => {
+  return (chunkSize ? chunks(regions, chunkSize) : regions).map((chunk, i) => (
     <RegionsLayer
       key={`chunk-${i}`}
       name={`chunk-${i}`}
       regions={chunk}
       useLayers={useLayers}
+      showSelected={showSelected}
     />
   ));
 });
@@ -77,6 +79,153 @@ const DrawingRegion = observer(({ item }) => {
     <Wrapper>
       {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
     </Wrapper>
+  );
+});
+
+const SELECTION_COLOR = "#40A9FF";
+const SELECTION_SECOND_COLOR = "white";
+const SELECTION_DASH = [3,3];
+
+const SelectionBorders = observer(({ item }) => {
+  const { selectionBorders: bbox } = item;
+
+  const points = bbox? [
+    {
+      x: bbox.left,
+      y: bbox.top,
+    },
+    {
+      x: bbox.right,
+      y: bbox.top,
+    },
+    {
+      x: bbox.left,
+      y: bbox.bottom,
+    },
+    {
+      x: bbox.right,
+      y: bbox.bottom,
+    },
+  ] : [];
+
+  return (
+    <>
+      {bbox && (
+        <Rect
+          name="regions_selection"
+          x={bbox.left}
+          y={bbox.top}
+          width={bbox.right - bbox.left}
+          height={bbox.bottom - bbox.top}
+          stroke={SELECTION_COLOR}
+          strokeWidth={1}
+          listening={false}
+        />
+      )}
+      {points.map((point, idx) => {
+        return (
+          <Rect
+            key={idx}
+            x={point.x-3}
+            y={point.y-3}
+            width={6}
+            height={6}
+            fill={SELECTION_COLOR}
+            stroke={SELECTION_SECOND_COLOR}
+            strokeWidth={2}
+            listening={false}
+          />
+        );
+      })}
+    </>
+  );
+});
+
+const SelectionRect = observer(({ item }) => {
+  return (
+    <>
+      <Rect
+        x={item.x}
+        y={item.y}
+        width={item.width}
+        height={item.height}
+        stroke={SELECTION_COLOR}
+        strokeWidth={1}
+        dash={SELECTION_DASH}
+        listening={false}
+      />
+      <Rect
+        x={item.x}
+        y={item.y}
+        width={item.width}
+        height={item.height}
+        stroke={SELECTION_SECOND_COLOR}
+        strokeWidth={1}
+        dash={SELECTION_DASH}
+        dashOffset={SELECTION_DASH[0]}
+        listening={false}
+      />
+    </>
+  );
+});
+
+const SelectedRegions = observer(({ selectedRegions }) => {
+  if (!selectedRegions) return null;
+  const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
+
+  return (
+    <>
+      {brushRegions.length > 0 && (
+        <Regions
+          key="brushes"
+          name="brushes"
+          regions={brushRegions}
+          useLayers={false}
+          showSelected
+          chankSize={0}
+        />
+      )}
+
+      {shapeRegions.length > 0 && (
+        <Regions
+          key="shapes"
+          name="shapes"
+          regions={shapeRegions}
+          showSelected
+          chankSize={0}
+        />
+      )}
+    </>
+  );
+});
+
+const SelectionLayer = observer(({ item, selectionArea }) => {
+  let supportsTransform = true;
+  let supportsRotate = true;
+  let supportsScale = true;
+
+  item.selectedRegions?.forEach(shape => {
+    supportsTransform = supportsTransform && shape.supportsTransform === true;
+    supportsRotate = supportsRotate && shape.canRotate === true;
+    supportsScale = supportsScale && true;
+  });
+  supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
+  return (
+    <Layer>
+      { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
+      <ImageTransformer rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
+    </Layer>
+  );
+});
+
+const Selection = observer(({ item, selectionArea }) => {
+  return (
+    <>
+      <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
+
+      <SelectionLayer item={item} selectionArea={selectionArea} />
+
+    </>
   );
 });
 
@@ -175,7 +324,7 @@ export default observer(
     handleMouseDown = e => {
       const { item } = this.props;
 
-      item.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
+      item.updateSkipInteractions(e);
 
       // item.freezeHistory();
       const p = e.target.getParent();
@@ -482,9 +631,8 @@ export default observer(
       // TODO fix me
       if (!store.task || !item._value) return null;
 
-      const selected = item.selectedShape;
-      const regions = item.regs.filter(r => r !== selected);
-      const cb = item.controlButton();
+      const regions = item.regs;
+
       const containerStyle = {};
 
       let containerClassName = styles.container;
@@ -591,19 +739,7 @@ export default observer(
                 />
               )}
 
-              {selected && (
-                (selected.type === 'brushregion') ? (
-                  Tree.renderItem(selected)
-                ) : (
-                  <Layer name="selected">
-                    {Tree.renderItem(selected)}
-                    {selected.type !== 'brushregion' && selected.editable && (
-                      <ImageTransformer rotateEnabled={cb && cb.canrotate} selectedShape={item.selectedShape} />
-                    )}
-                  </Layer>
-                )
-              )}
-
+              <Selection item={item} selectionArea={item.selectionArea}/>
               <DrawingRegion item={item}/>
 
               {item.crosshair && (

@@ -9,7 +9,7 @@ export const useRegionColors = (region, {
   const style = region.style || region.tag || defaultStyle;
   const [highlighted, setHighlighted] = useState(region.highlighted);
   const [shouldFill, setShouldFill] = useState(region.fill ?? useStrokeAsFill);
-
+  const selected = region.inSelection || highlighted;
   const fillColor = useMemo(() => {
     return shouldFill ? (
       chroma(useStrokeAsFill ? style.strokecolor : style.fillcolor)
@@ -20,20 +20,20 @@ export const useRegionColors = (region, {
   }, [shouldFill, style]);
 
   const strokeColor = useMemo(() => {
-    if (highlighted) {
+    if (selected) {
       return Constants.HIGHLIGHTED_STROKE_COLOR;
     } else {
       return chroma(style.strokecolor).css();
     }
-  }, [highlighted, style]);
+  }, [selected, style]);
 
   const strokeWidth = useMemo(() => {
-    if (highlighted) {
+    if (selected) {
       return Constants.HIGHLIGHTED_STROKE_WIDTH;
     } else {
       return +style.strokewidth;
     }
-  }, [highlighted, style]);
+  }, [selected, style]);
 
   useEffect(() => {
     const disposeObserver = [

@@ -129,5 +129,5 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
     height = stageHeight - y;
   }
 
-  return { x, y, width, height };
+  return { ...rect, x, y, width, height };
 }
