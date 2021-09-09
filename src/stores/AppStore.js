@@ -108,7 +108,7 @@ export default types
     /**
      * Dynamic preannotations
      */
-    dynamicPreannotations: false,
+    autoAnnotation: false,
 
     /**
      * Auto accept suggested annotations
@@ -125,7 +125,7 @@ export default types
   .preProcessSnapshot((sn) => {
     return {
       ...sn,
-      dynamicPreannotations: localStorage.getItem("dynamicPreannotations") === "true",
+      autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
       autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
     };
   })
@@ -528,9 +528,9 @@ export default types
       });
     }
 
-    const setDynamicPreannotation = (value) => {
-      self.dynamicPreannotations = value;
-      localStorage.setItem("dynamicPreannotations", value);
+    const setAutoAnnotation = (value) => {
+      self.autoAnnotation = value;
+      localStorage.setItem("autoAnnotation", value);
     };
 
     const setAutoAcceptSuggestions = (value) => {
@@ -539,12 +539,14 @@ export default types
     };
 
     const loadSuggestions = flow(function *(request, dataParser) {
-      self.suggestionsRequest = request;
+      const requestId = guidGenerator();
+
+      self.suggestionsRequest = requestId;
 
       self.setFlags({ awaitingSuggestions: true });
-      const response = yield self.suggestionsRequest;
+      const response = yield request;
 
-      if (request !== self.suggestionsRequest) {
+      if (requestId === self.suggestionsRequest) {
         self.annotationStore.selected.setSuggestions(dataParser(response));
         self.setFlags({ awaitingSuggestions: false });
       }
@@ -574,7 +576,7 @@ export default types
       toggleSettings,
       toggleDescription,
 
-      setDynamicPreannotation,
+      setAutoAnnotation,
       setAutoAcceptSuggestions,
       loadSuggestions,
     };

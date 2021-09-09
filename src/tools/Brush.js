@@ -27,6 +27,7 @@ const ToolView = observer(({ item }) => {
   return (
     <Tool
       label="Brush"
+      ariaLabel="brush"
       active={item.selected}
       shortcut={item.shortcut}
       extraShortcuts={item.extraShortcuts}

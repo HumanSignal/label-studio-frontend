@@ -1,14 +1,11 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { ControlOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import Constants from "../core/Constants";
-import SliderDropDownTool from "../components/Tools/SliderDropDown";
 import ToolMixin from "../mixins/Tool";
 
-import styles from "./Tools.module.scss";
 import { Tool } from "../components/Toolbar/Tool";
 import { Range } from "../common/Range/Range";
 import { IconBrightnessTool } from "../assets/icons";
@@ -17,6 +14,7 @@ const ToolView = observer(({ item }) => {
   return (
     <Tool
       active={item.selected}
+      ariaLabel="brightness"
       label="Brightness"
       controlsOnHover
       controls={[

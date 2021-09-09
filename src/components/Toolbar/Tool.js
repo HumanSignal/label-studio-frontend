@@ -23,6 +23,7 @@ export const Tool = ({
   tool = null,
   controlsOnHover = false,
   extraShortcuts = {},
+  ariaLabel,
   controls,
   icon,
   label,
@@ -100,8 +101,10 @@ export const Tool = ({
     ) : null;
   }, [smart, extra]);
 
+  const showControls = dynamic === false && controls?.length && (active || (controlsOnHover && hovered));
+
   return (
-    <Block name="tool" mod={{
+    <Block name="tool" aria-label={ariaLabel} mod={{
       active,
       disabled,
       alignment,
@@ -128,7 +131,7 @@ export const Tool = ({
               {shortcutView}
             </Elem>
           </>
-        ) : (isDefined(label) || isDefined(shortcutView)) && (
+        ) : (isDefined(label) || isDefined(shortcutView)) && !showControls && (
           <Elem name="tooltip" mod={{ controlled: !!(smart && extra) }}>
             <Elem name="tooltip-body">
               {extraContent}
@@ -138,7 +141,7 @@ export const Tool = ({
           </Elem>
         )
       )}
-      {dynamic === false && controls?.length && (active || (controlsOnHover && hovered)) && (
+      {showControls && (
         <Elem name="controls" onClickCapture={e => e.stopPropagation()}>
           <Elem name="controls-body">
             {controls}

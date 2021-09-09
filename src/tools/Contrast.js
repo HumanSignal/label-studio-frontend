@@ -17,11 +17,12 @@ const ToolView = observer(({ item }) => {
   return (
     <Tool
       active={item.selected}
-      label="Brightness"
+      ariaLabel="contrast"
+      label="Contrast"
       controlsOnHover
       controls={[
         <Range
-          key="brightness"
+          key="contrast"
           align="vertical"
           reverse
           continuous

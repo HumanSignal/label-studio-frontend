@@ -1,8 +1,10 @@
 import { inject, observer } from "mobx-react";
+import { useEffect } from "react";
 import { IconCheck, IconCross } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 import Toggle from "../../common/Toggle/Toggle";
+import ToolsManager from "../../tools/Manager";
 import { Block, Elem } from "../../utils/bem";
 import "./DynamicPreannotationsToggle.styl";
 
@@ -22,14 +24,24 @@ export const DynamicPreannotationsToggle = injector(observer(({
   annotation,
   suggestions,
 }) => {
-  return (
+  const enabled = store.hasInterface('auto-annotation');
+
+  useEffect(() => {
+    if (!enabled) store.setAutoAnnotation(false);
+  }, [enabled]);
+
+  return enabled ? (
     <Block name="dynamic-preannotations">
       <Elem name="wrapper">
         <Space spread>
           <Toggle
-            checked={store.dynamicPreannotations}
+            checked={store.autoAnnotation}
             onChange={(e) => {
-              store.setDynamicPreannotation(e.target.checked);
+              const checked = e.target.checked;
+
+              store.setAutoAnnotation(checked);
+
+              if (!checked) ToolsManager.getInstance().selectDefault();
             }}
             label="Auto-Annotation"
             style={{ color: "#7F64FF" }}
@@ -47,5 +59,5 @@ export const DynamicPreannotationsToggle = injector(observer(({
         </Space>
       </Elem>
     </Block>
-  );
+  ) : null;
 }));

@@ -13,6 +13,7 @@ const ToolView = observer(({ item }) => {
       <Tool
         active={item.selected}
         icon={<IconHandTool />}
+        ariaLabel="pan"
         label="Pan Image"
         shortcut="H"
         onClick={() => {
@@ -23,6 +24,7 @@ const ToolView = observer(({ item }) => {
       />
       <Tool
         icon={<IconMagnifyTool />}
+        ariaLabel="zoom-in"
         label="Zoom In"
         shortcut="alt+plus"
         onClick={() => {
@@ -31,6 +33,7 @@ const ToolView = observer(({ item }) => {
       />
       <Tool
         icon={<IconMinifyTool />}
+        ariaLabel="zoom-out"
         label="Zoom Out"
         shortcut="alt+minus"
         onClick={() => {

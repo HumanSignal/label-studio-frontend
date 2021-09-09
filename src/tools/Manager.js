@@ -23,7 +23,7 @@ class ToolsManager {
 
     this.tools[key] = tool;
 
-    if (tool.default && !this._default_tool) {
+    if (tool.default && !this._default_tool && !this.hasSelected) {
       this._default_tool = tool;
       if (tool.setSelected) tool.setSelected(true);
     }
@@ -52,6 +52,15 @@ class ToolsManager {
 
       if (drawingTool) return this.selectTool(drawingTool, true);
       if (tool.setSelected) tool.setSelected(false);
+    }
+  }
+
+  selectDefault() {
+    const tool = this.findSelectedTool();
+
+    if (this._default_tool && tool?.dynamic === true) {
+      this.unselectAll();
+      this._default_tool.setSelected(true);
     }
   }
 
@@ -101,6 +110,12 @@ class ToolsManager {
     Object.values(this.tools).forEach(t => destroy(t));
     this.tools = {};
   }
+
+  get hasSelected() {
+    return Object.values(this.tools).some(t => t.selected);
+  }
 }
+
+window.ToolManager = ToolsManager;
 
 export default ToolsManager;
