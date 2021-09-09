@@ -126,7 +126,7 @@ export const HighlightMixin = types
     setHighlight(val) {
       if (!self._stylesheet) return;
 
-      self.highlighted = val;
+      self._highlighted = val;
 
       if (self.highlighted) {
         self.addClass(self._stylesheet.state.highlighted);

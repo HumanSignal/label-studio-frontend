@@ -13,7 +13,11 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
     const root = getRoot(self);
 
     if (root === self) {
-      return getRoot(self.control).annotationStore;
+      if (self.control) {
+        return getRoot(self.control).annotationStore;
+      } else if (self.obj) {
+        return getRoot(self.obj).annotationStore;
+      }
     }
 
     return root.annotationStore;

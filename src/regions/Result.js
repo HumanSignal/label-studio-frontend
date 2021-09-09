@@ -94,6 +94,17 @@ const Result = types
       return self.value[self.from_name.valueType];
     },
 
+    mergeMainValue(value) {
+      value =  value?.toJSON ? value.toJSON() : value;
+      const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
+
+      if (typeof value !== typeof mainValue) return null;
+      if (self.type.endsWith("labels")) {
+        return value.filter(x => mainValue.includes(x));
+      }
+      return value === mainValue ? value : null;
+    },
+
     get hasValue() {
       const value = self.mainValue;
 
@@ -317,11 +328,11 @@ const Result = types
     },
 
     setHighlight(val) {
-      self.highlighted = val;
+      self._highlighted = val;
     },
 
     toggleHighlight() {
-      self.setHighlight(!self.highlighted);
+      self.setHighlight(!self._highlighted);
     },
 
     toggleHidden() {

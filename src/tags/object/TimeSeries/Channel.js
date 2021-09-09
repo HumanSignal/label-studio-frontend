@@ -154,7 +154,7 @@ class ChannelD3 extends React.Component {
 
     if (isJustClick) {
       parent?.annotation.unselectAreas();
-      r.onClickRegion();
+      r.onClickRegion(d3.event.sourceEvent);
     } else {
       parent?.regionChanged(moved, i);
     }
@@ -205,15 +205,28 @@ class ChannelD3 extends React.Component {
       const nextIndex = regions.findIndex(r => r.selected) + 1;
       const region = regions[nextIndex];
 
-      parent?.annotation.unselectAreas();
-      region && region.onClickRegion();
-
+      if (region) {
+        region.onClickRegion(d3.event.sourceEvent);
+      } else {
+        parent?.annotation.unselectAreas();
+      }
       return;
     }
     const region = this.getRegion(d3.event.selection);
 
     this.brushCreator.move(this.gCreator, null);
-    if (!statesSelected) return;
+    const additionalSelection = d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.metaKey;
+
+    if (additionalSelection || !statesSelected) {
+      const regions = ranges.filter(r => r.start >= region.start && r.end <= region.end);
+
+      if (additionalSelection) {
+        parent?.annotation.extendSelectionWith(regions);
+      } else {
+        parent?.annotation.selectAreas(regions);
+      }
+      return;
+    }
     parent?.addRegion(region.start, region.end);
   };
 
@@ -283,8 +296,8 @@ class ChannelD3 extends React.Component {
 
         if (r.instant) {
           selection
-            .attr("stroke-opacity", r.selected || r.highlighted ? 0.6 : 0.2)
-            .attr("fill-opacity", r.selected || r.highlighted ? 1 : 0.6)
+            .attr("stroke-opacity", r.inSelection || r.highlighted ? 0.6 : 0.2)
+            .attr("fill-opacity", r.inSelection || r.highlighted ? 1 : 0.6)
             .attr("stroke-width", 3)
             .attr("stroke", color)
             .attr("fill", color);
@@ -293,8 +306,8 @@ class ChannelD3 extends React.Component {
           managerBrush.move(group, [at, at + 1]);
         } else {
           selection
-            .attr("stroke-opacity", r.selected || r.highlighted ? 0.8 : 0.5)
-            .attr("fill-opacity", r.selected || r.highlighted ? 0.6 : 0.3)
+            .attr("stroke-opacity", r.inSelection || r.highlighted ? 0.8 : 0.5)
+            .attr("fill-opacity", r.inSelection || r.highlighted ? 0.6 : 0.3)
             .attr("stroke", color)
             .attr("fill", color);
           managerBrush.move(group, [r.start, r.end].map(x));
@@ -327,7 +340,12 @@ class ChannelD3 extends React.Component {
         brush.move(block, [x(sticked.start), x(sticked.end)]);
         updateTracker(d3.mouse(this)[0]);
       })
-      .on("end", this.newBrushHandler));
+      .on("end", this.newBrushHandler)
+      // replacing default filter to allow ctrl-click action
+      .filter(()=>{
+        return !d3.event.button;
+      })
+    );
 
     this.gCreator.call(this.brushCreator);
   }
@@ -734,7 +752,7 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.hidden, r.style?.fillcolor));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end,  r.selected, r.inSelection, r.highlighted, r.hidden, r.style?.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div className="htx-timeseries-channel" ref={this.ref} />;

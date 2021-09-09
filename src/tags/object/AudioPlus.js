@@ -190,6 +190,19 @@ const Model = types
       return r;
     },
 
+    selectRange(ev, ws_region) {
+      const selectedRegions = self.regs.filter(r=>r.start >= ws_region.start && r.end <= ws_region.end);
+
+      ws_region.remove && ws_region.remove();
+      if (!selectedRegions.length) return;
+      // @todo: needs preventing drawing with ctrl pressed
+      // if (ev.ctrlKey || ev.metaKey) {
+      //   self.annotation.extendSelectionWith(selectedRegions);
+      //   return;
+      // }
+      self.annotation.selectAreas(selectedRegions);
+    },
+
     addRegion(ws_region) {
       // area id is assigned to WS region during deserealization
       const find_r = self.annotation.areas.get(ws_region.id);
@@ -204,7 +217,7 @@ const Model = types
       const states = self.getAvailableStates();
 
       if (states.length === 0) {
-        ws_region.remove && ws_region.remove();
+        ws_region.on("update-end", ev=>self.selectRange(ev,ws_region));
         return;
       }
 

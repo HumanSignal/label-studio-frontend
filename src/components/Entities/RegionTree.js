@@ -30,10 +30,10 @@ export const RegionTree = observer(({ regionStore }) => {
     );
 
   const isFlat = !regionStore.sortedRegions.some(r => r.parentID);
-  const regions = regionStore.asTree((item, idx) => {
+  const regions = regionStore.asTree((item, idx, onClick) => {
     return {
       key: item.id,
-      title: <RegionItem item={item} idx={idx} flat={isFlat} setDraggable={setDraggable}/>,
+      title: <RegionItem item={item} idx={idx} flat={isFlat} setDraggable={setDraggable} onClick={onClick}/>,
     };
   });
 
