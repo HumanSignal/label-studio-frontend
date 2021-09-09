@@ -29,7 +29,7 @@ export const KonvaRegionMixin = types.model({})
       },
       onClickRegion(e) {
         const annotation = self.annotation;
-        const ev = e.evt || e;
+        const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
         if (!annotation.editable || self.isDrawing) return;
