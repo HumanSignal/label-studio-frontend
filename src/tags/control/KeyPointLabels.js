@@ -11,9 +11,11 @@ import { KeyPointModel } from "./KeyPoint";
 import ControlBase from "./Base";
 
 /**
- * KeyPointLabels tag
- * KeyPointLabels tag creates labeled keypoints
+ * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic keypoint image labeling configuration for multiple regions-->
  * <View>
  *   <KeyPointLabels name="kp-1" toName="img-1">
  *     <Label value="Face" />
@@ -23,17 +25,17 @@ import ControlBase from "./Base";
  * </View>
  * @name KeyPointLabels
  * @regions KeyPointRegion
- * @meta_title Keypoint Label Tags for Labeling Keypoints
- * @meta_description Label Studio Keypoint Label Tags customize Label Studio for labeling keypoints for machine learning and data science projects.
+ * @meta_title Keypoint Label Tag for Labeling Keypoints
+ * @meta_description Customize Label Studio with the KeyPointLabels tag to label keypoints for computer vision machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]           - Maximum available uses of the label
- * @param {boolean} [showInline=true]    - Show items in the same visual line
+ * @param {number} [maxUsages]           - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]    - Show labels in the same visual line
  * @param {float=} [opacity=0.9]         - Opacity of the keypoint
- * @param {string=} [fillColor=#8bad00]  - Keypoint fill color
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
- * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color
+ * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -45,7 +47,7 @@ const Validation = types.model({
 });
 
 const ModelAttrs = types
-  .model("KeyPointLabelesModel", {
+  .model("KeyPointLabelsModel", {
     type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })

@@ -18,8 +18,10 @@ import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
 
 /**
- * Label tag represents a single label.
+ * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
+ *
  * @example
+ * <!--Basic named entity recognition labeling configuration for text-->
  * <View>
  *   <Labels name="type" toName="txt-1">
  *     <Label alias="B" value="Brand" />
@@ -28,19 +30,19 @@ import { parseValue } from "../../utils/data";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
- * @meta_title Label Tags for Single Label Tags
- * @meta_description Label Studio Label Tags customize Label Studio with single label tags for machine learning and data science projects.
+ * @meta_title Label Tag for Single Label Tags
+ * @meta_description Customize Label Studio with the Label tag to assign a single label to regions in a task for machine learning and data science projects.
  * @param {string} value                    - Value of the label
  * @param {boolean} [selected=false]        - Whether to preselect this label
- * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {number} [maxUsages]              - Maximum number of times this label can be used per task
  * @param {string} [hint]                   - Hint for label on hover
  * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
  * @param {string} [alias]                  - Label alias
  * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
- * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
+ * @param {string} [aliasStyle=opacity:0.6] - CSS style for the alias
  * @param {string} [size=medium]            - Size of text in the label
- * @param {string} [background=#36B37E]     - Background color of an active label
- * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {string} [background=#36B37E]     - Background color of an active label in hexadecimal
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label in hexadecimal
  * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({

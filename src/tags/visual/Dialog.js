@@ -10,8 +10,9 @@ import { convertToRGBA, stringToColor } from "../../utils/colors";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Dialog tag renders a dialog.
+ * The Dialog tag renders a dialog box on a task with instructions or other content that you define.
  * @example
+ * <!--Basic labeling configuration to display a dialog box -->
  * <View>
  *  <Dialog name="dialog" value="$dialog"></Dialog>
  * <View>

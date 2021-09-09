@@ -17,8 +17,11 @@ import { defaultStyle } from "../../../core/Constants";
 import "../Label";
 
 /**
- * Labels tag, create a group of labels.
+ * Use the Labels tag to create a set of labels that can be assigned to identified regions. Use with the Label tag to specify the values of labels to assign to regions.
+ *
+ * Use with the following data types: audio, text. Other data types have type-specific Labels tags.
  * @example
+ * <!--Basic labeling configuration to apply labels to a passage of text -->
  * <View>
  *   <Labels name="type" toName="txt-1">
  *     <Label alias="B" value="Brand" />
@@ -27,16 +30,16 @@ import "../Label";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Labels
- * @meta_title Labels Tags for Label Groups
- * @meta_description Label Studio Labels Tags customize Label Studio with label groups for machine learning and data science projects.
+ * @meta_title Labels Tag for Labeling Regions
+ * @meta_description Customize Label Studio by using the Labels tag to provide a set of labels for labeling regions in tasks for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the element that you want to label
- * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]               - Maximum available uses of the label
- * @param {boolean} [showInline=true]        - Show items in the same visual line
- * @param {float=} [opacity=0.6]             - Opacity of rectangle
- * @param {string=} [fillColor]              - Rectangle fill color
- * @param {string=} [strokeColor=#f48a42]    - Stroke color
+ * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels for a region
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Whether to show labels in the same visual line
+ * @param {float=} [opacity=0.6]             - Opacity of rectangle highlighting the label
+ * @param {string=} [fillColor]              - Rectangle fill color in hexadecimal
+ * @param {string=} [strokeColor=#f48a42]    - Stroke color in hexadecimal
  * @param {number=} [strokeWidth=1]          - Width of the stroke
  */
 const TagAttrs = types.model({

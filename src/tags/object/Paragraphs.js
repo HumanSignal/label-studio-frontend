@@ -22,29 +22,33 @@ import { isSelectionContainsSpan } from "../../utils/selection-tools";
 import { isValidObjectURL } from "../../utils/utilities";
 
 /**
- * Paragraphs tag shows paragraph markup that can be labeled.
- * it expects an array of objects like this: [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
+ * The Paragraphs tag expects task data formatted as an array of objects like the following:
+ * [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ *
+ * Use with the following data types: text
  * @example
+ * <!--Labeling configuration to label paragraph regions of text containing dialogue-->
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
  *   <ParagraphLabels name="importance" toName="dialogue-1">
- *     <Label value="Important Stuff"></Label>
+ *     <Label value="Important content"></Label>
  *     <Label value="Random talk"></Label>
  *   </ParagraphLabels>
  * </View>
  * @name Paragraphs
  * @regions ParagraphsRegion
  * @meta_title Paragraph Tags for Paragraphs
- * @meta_description Label Studio Paragraph Tags customize Label Studio for paragraphs for machine learning and data science projects.
+ * @meta_description Customize Label Studio with the Paragraphs tag to annotate paragraphs for NLP and NER machine learning and data science projects.
  * @param {string} name                  - Name of the element
- * @param {string} value                 - Value of the element
- * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} value                 - Data field containing the paragraph content
+ * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
  * @param {string} audioUrl              - Audio to sync phrases with
  * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
- * @param {no|yes} [saveTextResult=yes]  - Whether to save `text` to `value` or not
- * @param {none|dialogue} [layout=none]  - The styles layout to use
- * @param {string} [nameKey=author]      - The name key to use
- * @param {string} [textKey=text]        - The text key to use
+ * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
+ * @param {string} [nameKey=author]      - The key field to use for name
+ * @param {string} [textKey=text]        - The key field to use for the text
  */
 const TagAttrs = types.model("ParagraphsModel", {
   name: types.identifier,

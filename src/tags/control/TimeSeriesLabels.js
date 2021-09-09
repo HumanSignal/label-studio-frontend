@@ -12,8 +12,11 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * TimeSeriesLabels tag creates labeled time range
+ * Use the TimeSeriesLabels tag to create a labeled time range.
+ *
+ * Use with the following data types: time series
  * @example
+ * <!--Basic labeling configuration to apply labels to identified regions of a time series with one channel -->
  * <View>
  *   <TimeSeriesLabels name="label" toName="ts">
  *       <Label value="Run"/>
@@ -26,16 +29,16 @@ import ControlBase from "./Base";
  * </View>
  *
  * @name TimeSeriesLabels
- * @meta_title Time Series Label Tags for Labeling Time Series Data
- * @meta_description Label Studio Time Series Label Tags customize Label Studio for Labeling Time Series Data for machine learning and data science projects.
+ * @meta_title Time Series Label Tag for Labeling Time Series Data
+ * @meta_description Customize Label Studio for with the TimeSeriesLabel tag to label time series data for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toname                    - Name of the timeseries to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]               - Maximum available uses of the label
- * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  * @param {float=} [opacity=0.9]             - Opacity of the range
- * @param {string=} fillColor                - Range fill color, default is transparent
- * @param {string} [strokeColor=#f48a42]     - Stroke color
+ * @param {string=} [fillColor=transparent]  - Range fill color in hexadecimal or HTML color name
+ * @param {string} [strokeColor=#f48a42]     - Stroke color in hexadecimal
  * @param {number=} [strokeWidth=1]          - Width of the stroke
  */
 const TagAttrs = types.model({

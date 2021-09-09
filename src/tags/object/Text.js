@@ -19,10 +19,13 @@ import messages from "../../utils/messages";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Text tag shows text markup that can be labeled.
- * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all the spaces.
- * In any case every space counts for result offsets.
+ * The Text tag shows text that can be labeled. Use to display any type of text on the labeling interface.
+ * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all spaces in the text, otherwise spaces are trimmed when displayed.
+ * Every space in the text sample is counted when calculating result offsets, for example for NER labeling tasks.
+ *
+ * Use with the following data types: text
  * @example
+ * <!--Labeling configuration to label text for NER tasks with a word-level granularity -->
  * <View>
  *   <Text name="text-1" value="$text" granularity="word" highlightColor="#ff0000" />
  *   <Labels name="ner" toName="text-1">
@@ -33,16 +36,16 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @name Text
  * @regions TextRegion
  * @meta_title Text Tags for Text Objects
- * @meta_description Label Studio Text Tags customize Label Studio for Text for machine learning and data science projects.
- * @param {string} name                      - name of the element
- * @param {string} value                     - data field with text or url
- * @param {url|text} [valueType]             - where is the text stored — directly in task or should be loaded by url
- * @param {yes|no} [saveTextResult]          - store labeled text along with result or not; by default doesn't store text for `valueType=url`
- * @param {boolean} [selectionEnabled=true]  - enable or disable selection
- * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
- * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
- * @param {boolean} [showLabels=true]        - show labels next to the region
- * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
+ * @meta_description Customize Label Studio with the Text tag to annotate text for NLP and NER machine learning and data science projects.
+ * @param {string} name                      - Name of the element
+ * @param {string} value                     - Data field containing text or a URL
+ * @param {url|text} [valueType]             - Whether the text is stored directly in task or needs to be loaded by url
+ * @param {yes|no} [saveTextResult]          - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {boolean} [selectionEnabled=true]  - Whether to enable or disable text selection
+ * @param {string} [highlightColor]          - Hex color string to highlight text. If not provided, label color is used
+ * @param {symbol|word} [granularity=symbol] - Whether to select text per symbol or word
+ * @param {boolean} [showLabels=true]        - Whether to show labels next to the region
+ * @param {string} [encoding=none|base64|base64unicode]  - How to decode values from encoded strings
  */
 const TagAttrs = types.model("TextModel", {
   name: types.identifier,
