@@ -17,6 +17,7 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
 import ToolsManager from "../../tools/Manager";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
+import { isDefined } from "../../utils/utilities";
 
 /**
  * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
@@ -161,10 +162,10 @@ const Model = types.model({
       const manager = ToolsManager.getInstance();
       const tool = Object.values(self.parent?.tools || {})[0];
       const selectedTool = manager.findSelectedTool();
-      const sameType = getType(selectedTool).name === getType(tool).name;
-      const sameLabel = tool?.control?.name === selectedTool?.control?.name;
+      const sameType = selectedTool ? getType(selectedTool).name === getType(tool).name : false;
+      const sameLabel = selectedTool ? tool?.control?.name === selectedTool?.control?.name : false;
 
-      if (tool && (!selectedTool || !sameType || !sameLabel)) {
+      if (tool && !selectedTool || (selectedTool && (!sameType || !sameLabel))) {
         manager.selectTool(tool, true);
       }
     }
