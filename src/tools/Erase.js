@@ -3,7 +3,6 @@ import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
-import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
 import { findClosestParent } from "../utils/utilities";

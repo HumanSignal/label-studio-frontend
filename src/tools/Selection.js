@@ -3,18 +3,21 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
-import { SelectOutlined } from "@ant-design/icons";
+import { IconMoveTool } from "../assets/icons";
 
-const _Tool = types.model("SelectionTool").views(() => {
+const _Tool = types.model("SelectionTool", {
+  shortcut: "V",
+  group: "control",
+}).views(() => {
   return {
     get isSeparated() {
       return true;
     },
     get viewTooltip() {
-      return "Selection tool";
+      return "Move";
     },
     get iconComponent() {
-      return SelectOutlined;
+      return IconMoveTool;
     },
     get useTransformer() {
       return true;

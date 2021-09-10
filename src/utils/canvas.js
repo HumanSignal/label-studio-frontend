@@ -1,7 +1,8 @@
 import { decode, encode } from "@thi.ng/rle-pack";
+import chroma from "chroma-js";
+import Constants from "../core/Constants";
 
 import * as Colors from "./colors";
-import { colorToRGBAArray } from "./colors";
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
@@ -19,7 +20,7 @@ function imageData2Image(imagedata) {
 }
 
 // given the RLE array returns the DOM Image element with loaded image
-function RLE2Region(rle, image, { color }) {
+function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
@@ -32,7 +33,15 @@ function RLE2Region(rle, image, { color }) {
   const newdata = ctx.createImageData(nw, nh);
 
   newdata.data.set(decode(rle));
+  const rgb = chroma(color).rgb();
 
+  for (let i = newdata.data.length / 4; i--; ) {
+    if (newdata.data[i * 4 + 3]) {
+      newdata.data[i * 4] = rgb[0];
+      newdata.data[i * 4 + 1] = rgb[1];
+      newdata.data[i * 4 + 2] = rgb[2];
+    }
+  }
   ctx.putImageData(newdata, 0, 0);
 
   var new_image = new Image();

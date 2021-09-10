@@ -4,6 +4,16 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import Constants, { defaultStyle } from "../core/Constants";
 
+const defaultStyles = {
+  defaultFillOpacity: defaultStyle.fillopacity,
+  defaultFillColor: defaultStyle.fillcolor,
+  defaultStrokeColor: defaultStyle.strokecolor,
+  defaultStrokeColorHighlighted: Constants.HIGHLIGHTED_STROKE_COLOR,
+  defaultStrokeWidth: defaultStyle.strokewidth,
+  defaultStrokeWidthHighlighted: Constants.HIGHLIGHTED_STROKE_WIDTH,
+  defaultSuggestionWidth: Constants.SUGGESTION_STROKE_WIDTH,
+};
+
 export const useRegionStyles = (region, {
   includeFill = false,
   useStrokeAsFill = false,
@@ -14,12 +24,16 @@ export const useRegionStyles = (region, {
   defaultStrokeWidth = defaultStyle.strokewidth,
   defaultStrokeWidthHighlighted = Constants.HIGHLIGHTED_STROKE_WIDTH,
   defaultSuggestionWidth = Constants.SUGGESTION_STROKE_WIDTH,
-} = {}) => {
+} = defaultStyles) => {
   const style = region.style || region.tag;
   const { suggestion } = useContext(ImageViewContext) ?? {};
   const [highlighted, setHighlighted] = useState(region.highlighted);
   const [shouldFill, setShouldFill] = useState(region.fill ?? (useStrokeAsFill || includeFill));
-  const selected = region.inSelection || highlighted;
+
+  const selected = useMemo(() => {
+    return region.inSelection || highlighted;
+  }, [region.inSelection, highlighted]);
+
   const fillColor = useMemo(() => {
     return shouldFill ? (
       chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
@@ -31,7 +45,7 @@ export const useRegionStyles = (region, {
 
   const strokeColor = useMemo(() => {
     if (selected) {
-      return ;
+      return defaultStrokeColorHighlighted;
     } else {
       return chroma(style?.strokecolor ?? defaultStrokeColor).css();
     }

@@ -16,11 +16,8 @@ import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
 import { defaultStyle } from "../core/Constants";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
-import Konva from "konva";
 import { RegionWrapper } from "./RegionWrapper";
 import { useRegionStyles } from "../hooks/useRegionColor";
-import { isDefined } from "../utils/utilities";
-import chroma from "chroma-js";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
 
 const highlightOptions = {
@@ -400,12 +397,20 @@ const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
   const regionStyles = useRegionStyles(item);
 
+  console.log({ ...regionStyles });
+
   useMemo(() => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: regionStyles.strokeColor });
 
     img.onload = () => setImage(img);
-  }, [item.rle, item.parent, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
+  }, [
+    item.rle,
+    item.parent,
+    item.parent?.naturalWidth,
+    item.parent?.naturalHeight,
+    item.strokeColor,
+  ]);
 
   const imageHitFunc = useMemo(()=>{
     let imageData;
@@ -473,16 +478,6 @@ const HtxBrushView = ({ item }) => {
 
   const stage = item.parent?.stageRef;
 
-  const applyTint = (node) => {
-    if (!isDefined(node)) return;
-    if (!isDefined(regionStyles)) return;
-
-    const [red, green, blue] = chroma(regionStyles.strokeColor).rgba();
-
-    node.cache();
-    node.setAttrs({ red, green, blue });
-  };
-
   return (
     <RegionWrapper item={item}>
       <Layer
@@ -490,7 +485,6 @@ const HtxBrushView = ({ item }) => {
         ref={ref => {
           item.setLayerRef(ref);
           layerRef.current = ref;
-          applyTint(ref);
         }}
         onDraw={() => {
           setTimeout(drawCallback);
@@ -548,8 +542,6 @@ const HtxBrushView = ({ item }) => {
             hitFunc={imageHitFunc}
             width={item.parent.stageWidth}
             height={item.parent.stageHeight}
-            ref={node => applyTint(node)}
-            filters={[Konva.Filters.RGB]}
           />
 
           <Group scaleX={item.scaleX} scaleY={item.scaleY}>

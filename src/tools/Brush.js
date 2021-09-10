@@ -117,7 +117,6 @@ const _Tool = types
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
 
-        console.log({ source });
         const value = { coordstype: "px", touches: source.touches, dynamic: source.dynamic };
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 

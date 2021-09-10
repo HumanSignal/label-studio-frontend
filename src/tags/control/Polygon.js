@@ -61,7 +61,7 @@ const Model = types
       const env = { manager, control: self };
 
       const poly = Tools.Polygon.create({}, env);
-      const floodFill = Tools.FloodFill.create({}, env);
+      // const floodFill = Tools.FloodFill.create({}, env);
 
       self.tools = {
         poly,
