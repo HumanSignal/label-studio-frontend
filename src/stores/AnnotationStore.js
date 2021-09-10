@@ -221,7 +221,6 @@ const Annotation = types
 
       if (ivokeEvent) {
         getEnv(self).events.invoke('groundTruth', self.store, self, value);
-        console.log('invoked');
       }
     },
 
@@ -729,13 +728,10 @@ const Annotation = types
 
                   key = key === labelsContainer.type ? key : labelsContainer.type;
 
-                  console.log({ key, oldKey });
-
                   if (oldKey !== key) {
                     obj.type = key;
                     obj.value[key] = obj.value[oldKey];
                     delete obj.value[oldKey];
-                    console.log(key, oldKey, obj.value);
                   }
 
                   if (filteredValue.length !== value.length) {
@@ -748,7 +744,6 @@ const Annotation = types
                 !tagNames.has(obj.from_name) ||
                 (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
               ) {
-                console.log('deleting', key, obj.from_name);
                 delete obj.value[key];
                 if (tagNames.has(obj.to_name)) {
                   // Redirect references to existent tool
@@ -777,7 +772,6 @@ const Annotation = types
         }
 
         if (tagNames.has(obj.from_name) && tagNames.has(obj.to_name)) {
-          console.log({ ...obj });
           res.push(obj);
         }
 

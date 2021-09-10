@@ -15,7 +15,7 @@
                     "end": 105
                 },
                 "text": "Vincent: Look, Mr. Wolfe",
-                "htmllabels": [
+                "hypertextlabels": [
                     "Date"
                 ]
             }
@@ -35,7 +35,7 @@
                     "end": 5
                 },
                 "text": "Jules",
-                "htmllabels": [
+                "hypertextlabels": [
                     "Person"
                 ]
             }
@@ -55,7 +55,7 @@
                     "end": 188
                 },
                 "text": "The Wolf",
-                "htmllabels": [
+                "hypertextlabels": [
                     "Person"
                 ]
             }
@@ -75,7 +75,7 @@
                     "end": 104
                 },
                 "text": "appreciated.\\n\\nVincent: Look, Mr. Wolfe, I respect you.",
-                "htmllabels": [
+                "hypertextlabels": [
                     "Date"
                 ]
             }

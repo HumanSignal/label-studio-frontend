@@ -21,7 +21,7 @@
                             "startOffset": 0,
                             "endOffset": 17,
                             "text": "Vincent: Look, Mr. Wolfe",
-                            "htmllabels": [
+                            "hypertextlabels": [
                                 "Date"
                             ]
                         }
@@ -39,7 +39,7 @@
                             "startOffset": 0,
                             "endOffset": 5,
                             "text": "Jules",
-                            "htmllabels": [
+                            "hypertextlabels": [
                                 "Person"
                             ]
                         }
@@ -57,7 +57,7 @@
                             "startOffset": 0,
                             "endOffset": 8,
                             "text": "The Wolf",
-                            "htmllabels": [
+                            "hypertextlabels": [
                                 "Person"
                             ]
                         }
@@ -75,7 +75,7 @@
                             "startOffset": 64,
                             "endOffset": 16,
                             "text": "appreciated.\\n\\nVincent: Look, Mr. Wolfe, I respect you.",
-                            "htmllabels": [
+                            "hypertextlabels": [
                                 "Date"
                             ]
                         }
