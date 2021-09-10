@@ -397,8 +397,6 @@ const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
   const regionStyles = useRegionStyles(item);
 
-  console.log({ ...regionStyles });
-
   useMemo(() => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: regionStyles.strokeColor });
