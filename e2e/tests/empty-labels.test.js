@@ -34,6 +34,7 @@ examples.forEach(example => {
     I.amOnPage("/");
     LabelStudio.init(params);
     AtSidebar.seeRegions(regionsCount);
+    Helpers.dumpJSON(result);
 
     if (Utils.xmlTreeHasTag(configTree, "Image")) {
       AtImageView.waitForImage();
@@ -44,6 +45,8 @@ examples.forEach(example => {
 
     if (regionsCount) {
       const restored = await LabelStudio.serialize();
+
+      Helpers.dumpJSON({ restored });
 
       Asserts.notDeepEqualWithTolerance(result, restored);
       for (let i = result.length; i--; ) {

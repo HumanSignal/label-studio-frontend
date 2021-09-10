@@ -703,7 +703,9 @@ const Annotation = types
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      return (json ?? []).filter(obj => {
+      return (json ?? []).reduce((res, objRaw) => {
+        const obj = JSON.parse(JSON.stringify(objRaw));
+
         if (obj.type === 'relation') return true;
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
@@ -713,7 +715,7 @@ const Annotation = types
         if (obj.type.endsWith("labels")) {
           const keys = Object.keys(obj.value);
 
-          for (const key of keys) {
+          for (let key of keys) {
             if (key.endsWith("labels")) {
               const hasControlTag = tagNames.has(obj.from_name) || tagNames.has("labels");
 
@@ -723,14 +725,21 @@ const Annotation = types
 
                 if (value && value.length && labelsContainer.type.endsWith("labels")) {
                   const filteredValue = value.filter(labelName => !!labelsContainer.findLabel(labelName));
-                  const newKey = key === labelsContainer.type ? key : labelsContainer.type;
+                  const oldKey = key;
 
-                  if (newKey !== key && !(newKey in obj.value)) {
-                    obj.value[newKey] = obj.value[key];
+                  key = key === labelsContainer.type ? key : labelsContainer.type;
+
+                  console.log({ key, oldKey });
+
+                  if (oldKey !== key) {
+                    obj.type = key;
+                    obj.value[key] = obj.value[oldKey];
+                    delete obj.value[oldKey];
+                    console.log(key, oldKey, obj.value);
                   }
 
                   if (filteredValue.length !== value.length) {
-                    obj.value[newKey] = filteredValue;
+                    obj.value[key] = filteredValue;
                   }
                 }
               }
@@ -739,6 +748,7 @@ const Annotation = types
                 !tagNames.has(obj.from_name) ||
                 (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
               ) {
+                console.log('deleting', key, obj.from_name);
                 delete obj.value[key];
                 if (tagNames.has(obj.to_name)) {
                   // Redirect references to existent tool
@@ -766,8 +776,13 @@ const Annotation = types
           }
         }
 
-        return tagNames.has(obj.from_name) && tagNames.has(obj.to_name);
-      });
+        if (tagNames.has(obj.from_name) && tagNames.has(obj.to_name)) {
+          console.log({ ...obj });
+          res.push(obj);
+        }
+
+        return res;
+      }, []);
     },
 
     setSuggestions(rawSuggestions) {

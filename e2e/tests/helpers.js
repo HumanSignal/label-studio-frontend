@@ -426,6 +426,10 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
+const dumpJSON = (obj) => {
+  console.log(JSON.stringify(obj, null, '  '));
+};
+
 function _isObject(value) {
   var type = typeof value;
 
@@ -490,4 +494,5 @@ module.exports = {
   selectText,
 
   omitBy,
+  dumpJSON,
 };
