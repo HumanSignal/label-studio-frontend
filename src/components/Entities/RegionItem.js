@@ -135,6 +135,7 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable, onClick }) 
       onMouseOver={() => item.setHighlight(true)}
       onMouseOut={() => item.setHighlight(false)}
       style={vars}
+      aria-label="region"
     >
       <RegionItemContent idx={idx} item={item} setDraggable={setDraggable}/>
     </List.Item>

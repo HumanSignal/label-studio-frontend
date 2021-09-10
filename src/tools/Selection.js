@@ -57,6 +57,6 @@ const _Tool = types.model("SelectionTool", {
   };
 });
 
-const Selection = types.compose(ToolMixin, BaseTool, AnnotationMixin, _Tool);
+const Selection = types.compose("MoveTool", ToolMixin, BaseTool, AnnotationMixin, _Tool);
 
 export { Selection };

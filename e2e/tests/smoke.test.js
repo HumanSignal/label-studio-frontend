@@ -17,7 +17,7 @@ const examples = [
 
 const assert = require("assert");
 
-function roundFloats (struct) {
+function roundFloats(struct) {
   return JSON.parse(
     JSON.stringify(struct, (key, value) => {
       if (typeof value === "number") {
@@ -27,14 +27,14 @@ function roundFloats (struct) {
     }),
   );
 }
-function assertWithTolerance (actual, expected) {
+function assertWithTolerance(actual, expected) {
   assert.deepEqual(roundFloats(actual), roundFloats(expected));
 }
 
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function ({ I, AtImageView, AtAudioView, AtSidebar }) {
+  Scenario(example.title || "Noname smoke test", async function({ I, AtImageView, AtAudioView, AtSidebar }) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };

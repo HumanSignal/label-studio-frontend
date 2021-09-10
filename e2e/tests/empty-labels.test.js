@@ -8,10 +8,10 @@ Feature("Empty labels");
 
 const { examples, Utils } = require("../examples/");
 
-function isLabelType (type) {
+function isLabelType(type) {
   return type.toLowerCase().endsWith("labels");
 }
-function isLabels (val, key) {
+function isLabels(val, key) {
   return isLabelType(key);
 }
 
@@ -114,12 +114,12 @@ const MULTIPLE_TYPE = "multiple";
 
 [SINGLE_TYPE, MULTIPLE_TYPE].forEach(type => {
   Scenario(`Making labels empty -> choice="${type}"`, async ({ I, LabelStudio, AtSidebar, AtAudioView, AtLabels }) => {
-    async function expectSelectedLabels (expectedNum) {
+    async function expectSelectedLabels(expectedNum) {
       let selectedLabelsNum = await I.grabNumberOfVisibleElements(AtLabels.locateSelected());
 
       assert.strictEqual(selectedLabelsNum, expectedNum);
     }
-    async function clickLabelWithLengthExpection (labelNumber, expectedLength, expectSelectedNum) {
+    async function clickLabelWithLengthExpection(labelNumber, expectedLength, expectSelectedNum) {
       AtLabels.clickLabel(`${labelNumber}`);
       let restored = await LabelStudio.serialize();
 
@@ -130,7 +130,7 @@ const MULTIPLE_TYPE = "multiple";
       I.click(locate(".lsf-region-item"));
       await expectSelectedLabels(expectSelectedNum);
     }
-    async function clickLabelWithSelectedExpection (labelNumber, expectSelectedNum) {
+    async function clickLabelWithSelectedExpection(labelNumber, expectSelectedNum) {
       AtLabels.clickLabel(`${labelNumber}`);
       await expectSelectedLabels(expectSelectedNum);
     }

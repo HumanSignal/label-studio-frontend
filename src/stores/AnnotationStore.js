@@ -725,7 +725,7 @@ const Annotation = types
                   const filteredValue = value.filter(labelName => !!labelsContainer.findLabel(labelName));
                   const newKey = key === labelsContainer.type ? key : labelsContainer.type;
 
-                  if (newKey !== key) {
+                  if (newKey !== key && !(newKey in obj.value)) {
                     obj.value[newKey] = obj.value[key];
                   }
 
