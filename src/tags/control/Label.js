@@ -161,8 +161,10 @@ const Model = types.model({
       const manager = ToolsManager.getInstance();
       const tool = Object.values(self.parent?.tools || {})[0];
       const selectedTool = manager.findSelectedTool();
+      const sameType = getType(selectedTool).name === getType(tool).name;
+      const sameLabel = tool?.control?.name === selectedTool?.control?.name;
 
-      if (tool && (!selectedTool || getType(selectedTool).name !== getType(tool).name)) {
+      if (tool && (!selectedTool || !sameType || !sameLabel)) {
         manager.selectTool(tool, true);
       }
     }
