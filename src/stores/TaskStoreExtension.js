@@ -42,6 +42,7 @@ export const TaskStoreExtension = types.model()
             w: bbVertices[2].x - bbVertices[0].x,
             h: bbVertices[2].y - bbVertices[0].y,
           }, {
+            textAnnotation: JSON.stringify(box),
             description: box.description,
             area: {
               x: bbVertices[0].x,

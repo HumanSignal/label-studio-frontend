@@ -27,6 +27,7 @@ export const DrawingToolExtension = types.model().actions(self => ({
         foundBboxes.forEach(bbox => {
 
           const area = {
+            textAnnotation: bbox.textAnnotation,
             x: bbox.area.x / scaleX,
             y: bbox.area.y / scaleY,
             width: bbox.area.width / scaleX,

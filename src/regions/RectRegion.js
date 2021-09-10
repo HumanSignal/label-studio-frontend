@@ -16,12 +16,13 @@ import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
 import { useRegionColors } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { RectRegionExtension } from "./RectRegionExtension";
 
 /**
  * Rectangle object for Bounding Box
  *
  */
-const Model = types
+const Model = types.compose(types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
@@ -186,7 +187,7 @@ const Model = types
         },
       };
     },
-  }));
+  })), RectRegionExtension);
 
 const RectRegionModel = types.compose(
   "RectRegionModel",
