@@ -122,7 +122,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({ I, LabelStudio, A
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (let region of current.regions) {
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey("1");
     AtImageView[current.action](...region.params);
   }
@@ -161,7 +161,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({ I, LabelStudio, AtI
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (let region of current.regions) {
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey("1");
     AtImageView[current.action](...region.params);
   }

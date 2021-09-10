@@ -91,7 +91,7 @@ shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-function convertParamsToPixels (params, canvasSize, key = "width") {
+function convertParamsToPixels(params, canvasSize, key = "width") {
   if (Array.isArray(params)) {
     for (const idx in params) {
       params[idx] = convertParamsToPixels(params[idx], canvasSize, idx % 2 ? "height" : "width");
@@ -102,7 +102,7 @@ function convertParamsToPixels (params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function ({ I, AtImageView, AtSidebar, current }) {
+Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -116,11 +116,11 @@ Data(shapesTable).Scenario("Selecting after creation", async function ({ I, AtIm
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (let region of current.regions) {
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey("1");
     AtImageView[current.action](...convertParamsToPixels(region.params, canvasSize));
   }
-  I.pressKey("u");
+  I.pressKey(["alt", "u"]);
   if (current.shape === "Brush") {
     I.click(locate("button.ant-btn-primary").withDescendant(".anticon.anticon-highlight"));
   }

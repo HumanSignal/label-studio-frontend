@@ -153,7 +153,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       regions.forEach((region, idx) => {
         toolSelectors[idx](shapeName, shapeIdx);
         AtImageView[region.action](...region.params);
-        I.pressKey("u");
+        I.pressKey(["alt", "u"]);
         AtSidebar.seeRegions(idx + 1);
       });
       I.click(locate(".lsf-main-view__annotation").find("button").at(1));
@@ -166,7 +166,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
           AtSidebar.clickRegion(+idx + 1);
           AtLabels.clickLabel(currentLabelName);
           expectedCount += shapeName === currentShapeName;
-          I.pressKey("u");
+          I.pressKey(["alt", "u"]);
         });
         const results = await LabelStudio.serialize();
         const labelsCounter = results.reduce((counter, result) => {

@@ -27,7 +27,7 @@ const getConfigWithShapes = (shapes, props = "") => `
 
 const createShape = {
   Rectangle: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -43,7 +43,7 @@ const createShape = {
     },
   },
   Ellipse: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByDrag",
@@ -53,7 +53,7 @@ const createShape = {
     },
   },
   Polygon: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       const points = [];
 
       points.push([x, y]);
@@ -71,7 +71,7 @@ const createShape = {
     },
   },
   Brush: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       const points = [];
       const startPoint = { x: x + 5, y: y + 5 };
       const endPoint = { x: x + width - 5, y: y + height - 5 };
@@ -92,7 +92,7 @@ const createShape = {
     },
   },
   KeyPoint: {
-    byBBox (x, y, width, height, opts = {}) {
+    byBBox(x, y, width, height, opts = {}) {
       return {
         ...opts,
         action: "drawByClickingPoints",
@@ -107,7 +107,7 @@ const createShape = {
   },
 };
 
-Scenario("Drawing with ctrl pressed", async function ({ I, LabelStudio, AtSidebar, AtImageView }) {
+Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar, AtImageView }) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape), `strokewidth="5"`),
     data: { image: IMAGE },
@@ -151,7 +151,7 @@ Scenario("Drawing with ctrl pressed", async function ({ I, LabelStudio, AtSideba
     I.pressKey(outerRegion.hotKey);
     AtImageView[outerRegion.action](...outerRegion.params);
     await Helpers.delay(10);
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey(innerRegion.hotKey);
     I.pressKeyDown("Control");
     AtImageView[innerRegion.action](...innerRegion.params);
@@ -167,7 +167,7 @@ Scenario("Drawing with ctrl pressed", async function ({ I, LabelStudio, AtSideba
   }
 });
 
-Scenario("How it works without ctrl", async function ({ I, LabelStudio, AtSidebar, AtImageView }) {
+Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar, AtImageView }) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
@@ -208,11 +208,11 @@ Scenario("How it works without ctrl", async function ({ I, LabelStudio, AtSideba
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);
     I.say(`Drawing ${innerRegion.shape} on ${outerRegion.shape}`);
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     await AtImageView.lookForStage();
     I.pressKey(outerRegion.hotKey);
     AtImageView[outerRegion.action](...outerRegion.params);
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey(innerRegion.hotKey);
     AtImageView[innerRegion.action](...innerRegion.params);
     AtSidebar.seeRegions(1);
