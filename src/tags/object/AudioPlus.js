@@ -15,8 +15,11 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * AudioPlus tag plays audio and shows its waveform.
+ * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
+ *
+ * Use with the following data types: audio
  * @example
+ * <!--Labeling configuration to label regions of audio and rate the audio sample-->
  * <View>
  *   <Labels name="lbl-1" toName="audio-1">
  *     <Label value="Guitar" />
@@ -26,10 +29,10 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   <AudioPlus name="audio-1" value="$audio" />
  * </View>
  * @name AudioPlus
- * @meta_title
- * @meta_description
+ * @meta_title AudioPlus Tag for Audio Labeling
+ * @meta_description Customize Label Studio with the AudioPlus tag for advanced audio annotation tasks for machine learning and data science projects.
  * @param {string} name - Name of the element
- * @param {string} value - Value of the element
+ * @param {string} value - Data field containing path or a URL to the audio
  * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
  * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
  * @param {boolean} [zoom=true] - Whether to show the zoom slider

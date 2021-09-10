@@ -11,9 +11,11 @@ import { EllipseModel } from "./Ellipse";
 import ControlBase from "./Base";
 
 /**
- * EllipseLabels tag creates labeled ellipses
- * Used only for Image
+ * The EllipseLabels tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic semantic image segmentation labeling configuration-->
  * <View>
  *   <EllipseLabels name="labels" toName="image">
  *     <Label value="Person" />
@@ -23,18 +25,18 @@ import ControlBase from "./Base";
  * </View>
  * @name EllipseLabels
  * @regions EllipseRegion
- * @meta_title Ellipse Label Tags for Labeling Images with Elliptical Bounding Boxes
- * @meta_description Label Studio Ellipse Label Tags customize Label Studio for labeling images with elliptical bounding boxes for machine learning and data science projects.
+ * @meta_title Ellipse Label Tag for Labeling Images with Elliptical Bounding Boxes
+ * @meta_description Customize Label Studio with the EllipseLabels tag to label images with elliptical bounding boxes for semantic image segmentation machine learning and data science projects.
  * @param {string} name               - Name of the element
  * @param {string} toName             - Name of the image to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]        - Maximum available uses of the label
- * @param {boolean} [showInline=true] - Show items in the same visual line
+ * @param {number} [maxUsages]        - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true] - Show labels in the same visual line
  * @param {float=} [opacity=0.6]      - Opacity of ellipse
- * @param {string=} [fillColor]       - Ellipse fill color
- * @param {string=} [strokeColor]     - Stroke color
+ * @param {string=} [fillColor]       - Ellipse fill color in hexadecimal
+ * @param {string=} [strokeColor]     - Stroke color in hexadecimal
  * @param {number=} [strokeWidth=1]   - Width of stroke
- * @param {boolean=} [canRotate=true] - Show or hide rotation handle
+ * @param {boolean=} [canRotate=true] - Show or hide rotation option
  */
 const TagAttrs = types.model({
   name: types.identifier,

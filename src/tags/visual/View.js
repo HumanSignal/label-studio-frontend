@@ -9,8 +9,9 @@ import VisibilityMixin from "../../mixins/Visibility";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Use the View element to configure a display of blocks, similar to the div tag in HTML.
+ * Use the View element to configure the display of blocks, similar to the div tag in HTML.
  * @example
+ * <!-- Create two cards that flex to take up 50% of the screen width on the labeling interface -->
  * <View style="display: flex;">
  *   <View style="flex: 50%">
  *     <Header value="Facts:" />
@@ -22,13 +23,13 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  *   </View>
  * </View>
  * @name View
- * @meta_title View Tags for Defining How Blocks are Displayed
- * @meta_description Label Studio View Tags customize how blocks are displayed in Label Studio for machine learning and data science projects.
+ * @meta_title View Tag for Defining How Blocks are Displayed
+ * @meta_description Customize how blocks are displayed on the labeling interface in Label Studio for machine learning and data science projects.
  * @param {block|inline} display
  * @param {string} [style] CSS style string
- * @param {string} [className] - Class name of the css style to apply
+ * @param {string} [className] - Class name of the CSS style to apply. Use with the Style tag
  * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] Show the contents of a view when condition is true
- * @param {string} [whenTagName] Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices use the name of the choices tag.
+ * @param {string} [whenTagName] Narrow down visibility by tag name. For regions, use the name of the object tag, for choices, use the name of the choices tag.
  * @param {string} [whenLabelValue] Narrow down visibility by label value
  * @param {string} [whenChoiceValue] Narrow down visibility by choice value
  */
