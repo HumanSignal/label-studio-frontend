@@ -5,6 +5,7 @@ import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
 import { EntityTab } from '../AnnotationTabs/AnnotationTabs';
 import { observe } from "mobx";
+import Konva from "konva";
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -40,15 +41,32 @@ export default class Grid extends Component {
   };
   container = React.createRef();
 
+  shouldComponentUpdate(nextProps, nexState) {
+    return !nextProps.store.selected.selected || nexState.item >= nextProps.annotations.length || nextProps.annotations[nexState.item] === nextProps.store.selected;
+  }
+
+  componentDidMount() {
+    if (this.props.annotations.length) {
+      this.props.store._unselectAll();
+      setTimeout(()=>{
+        this.props.store._selectItem(this.props.annotations[0]);
+      });
+    }
+  }
+
   onFinish = () => {
     const c = this.container.current;
 
     if (!c) return;
 
-    const item = c.children[c.children.length - 1];
+    const itemWrapper = c.children[c.children.length - 1];
+    const item = itemWrapper.children[itemWrapper.children.length - 1];
     const clone = item.cloneNode(true);
 
     c.children[this.state.item].appendChild(clone);
+
+    // Force redraw
+    Konva.stages.map(stage=>stage.draw());
 
     /* canvas are cloned empty, so clone their content */
     const sourceCanvas = item.querySelectorAll("canvas");
@@ -58,7 +76,14 @@ export default class Grid extends Component {
       canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
     });
 
-    this.setState({ item: this.state.item + 1 });
+    this.setState({ item: this.state.item + 1 }, ()=>{
+      if (this.state.item<this.props.annotations.length) {
+        this.props.store._selectItem(this.props.annotations[this.state.item]);
+      } else {
+        this.props.store._unselectAll();
+      }
+    });
+
   };
 
   shift = delta => {
@@ -94,12 +119,6 @@ export default class Grid extends Component {
     const { annotations } = this.props;
     const renderNext = i < annotations.length;
 
-    if (renderNext) {
-      this.props.store._selectItem(annotations[i]);
-    } else {
-      this.props.store._unselectAll();
-    }
-
     return (
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
@@ -115,7 +134,15 @@ export default class Grid extends Component {
             </div>
           ))}
           {renderNext && (
-            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} annotation={this.props.store.selected}/>
+            <div id={`c-tmp`} key={`anno-tmp`}>
+              <EntityTab
+                entity={this.props.store.selected}
+                prediction={this.props.store.selected.type === "prediction"}
+                bordered={false}
+                style={{ height: 44 }}
+              />
+              <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} annotation={this.props.store.selected}/>
+            </div>
           )}
         </div>
         <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />
