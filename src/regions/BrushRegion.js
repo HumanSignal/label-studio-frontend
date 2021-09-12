@@ -144,6 +144,7 @@ const Model = types
     hideable: true,
     layerRef: undefined,
     imageData: null,
+    _isReady: false,
   }))
   .views(self => {
     return {
@@ -198,6 +199,10 @@ const Model = types
         // const newdata = ctx.createImageData(750, 937);
         //     newdata.data.set(item._cached_mask);
         //     var img = imagedata_to_image(newdata);
+      },
+
+      setReady(value = true) {
+        self._isReady = value;
       },
 
       setLayerRef(ref) {
@@ -414,11 +419,13 @@ const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
 
   useMemo(() => {
+    item.setReady(false);
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
 
     img.onload = () => {
       setImage(img);
+      item.setReady(true);
     };
   }, [item.rle, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
 

@@ -320,6 +320,9 @@ const Model = types.model({
     return !!self.getToolsManager().allTools()?.length;
   },
 
+  get isReady() {
+    return self._isReady && !self.regs.filter(r => !r.isReady).length;
+  },
   /**
    * @return {object}
    */

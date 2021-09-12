@@ -10,7 +10,7 @@ const ObjectBase = types
   })
   .volatile(() => {
     return {
-      isReady: true,
+      _isReady: true,
     };
   })
   .views(self => ({
@@ -23,6 +23,9 @@ const ObjectBase = types
 
       return obj || self.regions.find(r => isMatch(r, params));
     },
+    get isReady() {
+      return self._isReady;
+    },
   }))
   .actions(self => ({
     toStateJSON() {
@@ -33,7 +36,7 @@ const ObjectBase = types
       return objectsToReturn;
     },
     setReady(value) {
-      self.isReady = value;
+      self._isReady = value;
     },
   }))
   .actions(self => {

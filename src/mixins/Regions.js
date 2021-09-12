@@ -51,6 +51,10 @@ const RegionsMixin = types
       return self.annotation.regionStore.isSelected(self);
     },
 
+    get isReady() {
+      return true;
+    },
+
   }))
   .actions(self => {
     return {
