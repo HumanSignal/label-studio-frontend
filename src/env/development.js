@@ -56,14 +56,13 @@ import { Repeater } from "../examples/repeater";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
-import { SandboxConfig } from "../examples/_sandbox_config";
 
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = SandboxConfig;
+const data = ImageBbox;
 
 function getData(task) {
   if (task && task.data) {
