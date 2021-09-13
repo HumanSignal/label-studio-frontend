@@ -87,10 +87,10 @@ export default observer(({
                   tag={Button}
                   size="small"
                   type="link"
+                  style={{ padding: 0 }}
                   onClick={toggleVisibility}
                   mod={{ hidden: regionStore.isAllHidden }}
-                  icon={regionStore.isAllHidden ? <LsInvisible/> : <LsVisible/>}
-                />
+                >{regionStore.isAllHidden ? <LsInvisible/> : <LsVisible/>}</Elem>
               ) : null}
 
 
