@@ -52,7 +52,7 @@ const _Tool = types
   })
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return self.shouldRenderView ? <ToolView item={self} /> : null;
     },
     get iconComponent() {
       return self.dynamic

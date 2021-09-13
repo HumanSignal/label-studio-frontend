@@ -1,6 +1,7 @@
 /* global Feature, Scenario, locate */
 const assert = require("assert");
 const { toKebabCase } = require("strman");
+const Helpers = require("./helpers.js");
 
 Feature("Images' labels type matching");
 
@@ -108,6 +109,7 @@ const createShape = {
 Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
   const shapes = Object.keys(createShape);
   const config = createConfig({ shapes, props: `strokewidth="5"` });
+
   const params = {
     config,
     data: { image: IMAGE },
@@ -147,13 +149,13 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
 
       const labelsCounter = (results, currentLabelName = "Label") => {
         return results.reduce((counter, result) => {
-          return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf(currentLabelName) > -1);
+          const { type, value } = result;
+
+          return counter + (type.endsWith("labels") && value[type] && value[type].includes(currentLabelName));
         }, 0);
       };
 
       const toolSelector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
-
-      console.log({ toolSelector });
 
       LabelStudio.init(params);
       AtImageView.waitForImage();
@@ -183,7 +185,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         });
         const results = await LabelStudio.serialize();
 
-        assert.strictEqual(expectedCount, labelsCounter(results));
+        assert.strictEqual(expectedCount, labelsCounter(results, currentLabelName));
       }
 
       let expectedCount = 3;

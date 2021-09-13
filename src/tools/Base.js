@@ -1,8 +1,8 @@
-import { getEnv, getSnapshot, getType, types } from "mobx-state-tree";
+import { getEnv, getRoot, getSnapshot, getType, types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import React from "react";
 import { Tool } from "../components/Toolbar/Tool";
-import { toKebabCase } from "strman";
+import { slugify, toKebabCase } from "strman";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -31,17 +31,23 @@ const BaseTool = types
   }))
   .views(self => {
     return {
+      get toolName() {
+        return getType(self).name;
+      },
       get isSeparated() {
         return self.control.isSeparated;
       },
       get viewClass() {
-        return (self.isSeparated || self.smart) && self.iconClass ? <ToolView item={self} /> : null;
+        return self.shouldRenderView ? <ToolView item={self} /> : null;
       },
       get viewTooltip() {
         return null;
       },
       get controls() {
         return null;
+      },
+      get shouldRenderView() {
+        return (self.isSeparated || self.smartEnabled) && self.iconClass;
       },
       get iconClass() {
         if (self.iconComponent) {
@@ -56,8 +62,9 @@ const BaseTool = types
       },
       get smartEnabled() {
         const smart = self.control?.smart || false;
+        const autoAnnotation = self.control ? getRoot(self.control)?.autoAnnotation ?? false : false;
 
-        return smart || self.smartOnly;
+        return (autoAnnotation && smart) || self.smartOnly;
       },
       get smartOnly() {
         return self.control?.smartonly ?? false;
@@ -67,7 +74,7 @@ const BaseTool = types
   .actions((self) => {
     return  {
       afterCreate() {
-        if (self.smart && self.smartEnabled) {
+        if (self.smart) {
           const currentEnv = getEnv(self);
           const toolType = getType(self);
           const snapshot = {
