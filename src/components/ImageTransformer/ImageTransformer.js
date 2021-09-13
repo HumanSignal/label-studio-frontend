@@ -102,6 +102,7 @@ export default class TransformerComponent extends Component {
         // borderStroke={"red"}
         boundBoxFunc={this.constrainSizes}
         anchorSize={8}
+        flipEnabled={false}
         ref={node => {
           this.transformer = node;
         }}
