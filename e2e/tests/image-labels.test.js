@@ -145,6 +145,12 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         });
       });
 
+      const labelsCounter = (results, currentLabelName = "Label") => {
+        return results.reduce((counter, result) => {
+          return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf(currentLabelName) > -1);
+        }, 0);
+      };
+
       const toolSelector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
 
       console.log({ toolSelector });
@@ -176,11 +182,8 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
           I.pressKey(["alt", "u"]);
         });
         const results = await LabelStudio.serialize();
-        const labelsCounter = results.reduce((counter, result) => {
-          return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf(currentLabelName) > -1);
-        }, 0);
 
-        assert.strictEqual(expectedCount, labelsCounter);
+        assert.strictEqual(expectedCount, labelsCounter(results));
       }
 
       let expectedCount = 3;
@@ -190,11 +193,8 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         AtLabels.clickLabel("Label");
       });
       const results = await LabelStudio.serialize();
-      const labelsCounter = results.reduce((counter, result) => {
-        return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf("Label") > -1);
-      }, 0);
 
-      assert.strictEqual(expectedCount, labelsCounter);
+      assert.strictEqual(expectedCount, labelsCounter(results, "Label"));
     }
   }
 });
