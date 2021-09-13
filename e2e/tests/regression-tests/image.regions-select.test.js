@@ -122,7 +122,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   }
   I.pressKey(["alt", "u"]);
   if (current.shape === "Brush") {
-    I.click(locate("button.ant-btn-primary").withDescendant(".anticon.anticon-highlight"));
+    I.click('[aria-label=brush-tool]');
   }
 
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);
