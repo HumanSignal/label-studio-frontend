@@ -294,8 +294,6 @@ const RegionsMixin = types
           const timeout = getType(self).name.match(/brush/i) ? 1200 : 0;
           const env = getEnv(self);
 
-          console.log({ connectedRegions });
-
           self.drawingTimeout = setTimeout(() => {
             env.events.invoke("regionFinishedDrawing", self, connectedRegions);
           }, timeout);

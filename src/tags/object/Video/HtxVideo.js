@@ -52,7 +52,6 @@ const FrameStep = ({ item, video }) => {
       onBackward();
     });
     return () => {
-      console.log("removing video hotkeys");
       hotkeys.removeKey("alt+right");
       hotkeys.removeKey("alt+left");
     };

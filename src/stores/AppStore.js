@@ -498,7 +498,6 @@ export default types
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
         const obj = as.addAnnotation(c);
 
-        console.log(c, c.draft, c.result);
         as.selectAnnotation(obj.id);
         obj.deserializeResults(c.draft || c.result);
         obj.reinitHistory();

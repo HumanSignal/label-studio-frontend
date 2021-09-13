@@ -136,7 +136,6 @@ const _Tool = types
       },
 
       setStroke(val) {
-        console.log({ self });
         self.strokeWidth = val;
       },
 

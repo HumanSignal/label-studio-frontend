@@ -442,7 +442,6 @@ const Model = types.model({
     },
 
     createDrawingRegion(areaValue, resultValue, control, dynamic) {
-      console.log({ dynamic });
       const result = {
         from_name: control.name,
         to_name: self,
