@@ -1,12 +1,10 @@
 import { getRoot, onSnapshot, types } from "mobx-state-tree";
 
-import { Hotkey } from "../core/Hotkey";
+import Hotkey from "../core/Hotkey";
 import Utils from "../utils";
-import { isDefined } from "../utils/utilities";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
 const SIDEPANEL_MODE_LABELS = "SIDEPANEL_MODE_LABELS";
-const LS_SETTINGS_KEY = "labelStudio:settings";
 
 /**
  * Setting store of Label Studio
@@ -66,40 +64,35 @@ const SettingsModel = types
       return self.sidePanelMode === SIDEPANEL_MODE_LABELS;
     },
   }))
-  .preProcessSnapshot((snapshot) => {
-    console.log('BEFORE', { ...snapshot });
-    // sandboxed environment may break even on check of this property
-    try {
-      const { localStorage } = window;
-
-      if (!localStorage) return snapshot;
-    } catch (e) {
-      return snapshot;
-    }
-
-    // load settings from the browser store
-    const lss = localStorage.getItem(LS_SETTINGS_KEY);
-
-    if (lss) {
-      const lsp = JSON.parse(lss);
-
-      if (isDefined(lsp) && typeof lsp === "object") {
-        Object.entries(lsp).forEach(([key, value]) => {
-          console.log({ key, value });
-          if (!isDefined(snapshot[key])) snapshot[key] = value;
-        });
-      }
-    }
-
-    console.log('AFTER', { ...snapshot });
-
-    return snapshot;
-  })
   .actions(self => ({
     afterCreate() {
+      // sandboxed environment may break even on check of this property
+      try {
+        const { localStorage } = window;
+
+        if (!localStorage) return;
+      } catch (e) {
+        return;
+      }
+
+      const lsKey = "labelStudio:settings";
+
+      // load settings from the browser store
+      const lss = localStorage.getItem(lsKey);
+
+      if (lss) {
+        const lsp = JSON.parse(lss);
+
+        typeof lsp === "object" &&
+          lsp !== null &&
+          Object.keys(lsp).forEach(k => {
+            if (k in self) self[k] = lsp[k];
+          });
+      }
+
       // capture changes and save it
       onSnapshot(self, ss => {
-        localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(ss));
+        localStorage.setItem(lsKey, JSON.stringify(ss));
       });
     },
 
