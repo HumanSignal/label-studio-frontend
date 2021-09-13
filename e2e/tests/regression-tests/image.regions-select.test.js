@@ -1,4 +1,4 @@
-/* global Feature, DataTable, Data, locate */
+/* global Htx, Feature, DataTable, Data, locate */
 
 const { initLabelStudio } = require("../helpers");
 
@@ -107,9 +107,15 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
   };
+  const setSelectAfterCreate = async (state, done) => {
+    Htx.settings.toggleSelectAfterCreate(state);
+    done();
+  };
 
   I.amOnPage("/");
   await I.executeAsyncScript(initLabelStudio, params);
+  await I.executeAsyncScript(setSelectAfterCreate, false);
+
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
@@ -122,6 +128,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   }
   I.pressKey(["alt", "u"]);
   if (current.shape === "Brush") {
+    await I.executeAsyncScript(setSelectAfterCreate, true);
     I.click('[aria-label=brush-tool]');
   }
 
