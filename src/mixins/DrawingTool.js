@@ -100,7 +100,7 @@ const DrawingTool = types
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control);
+        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, self.dynamic);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
@@ -112,8 +112,10 @@ const DrawingTool = types
           value[key] = source[key];
           return value;
         }, { coordstype: "px" });
+
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
+        currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
         self.deleteRegion();
         return newArea;
@@ -224,7 +226,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         modeAfterMouseMove = DEFAULT_MODE;
       },
 
-      mousedownEv(ev, [x, y]) {
+      mousedownEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
         startPoint = { x, y };
         if (currentMode === DEFAULT_MODE) {
@@ -232,7 +234,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         }
       },
 
-      mousemoveEv(ev, [x, y]) {
+      mousemoveEv(_, [x, y]) {
         if (currentMode === DEFAULT_MODE && startPoint) {
           if (!self.comparePointsWithThreshold(startPoint, { x, y })) {
             currentMode = modeAfterMouseMove;
@@ -251,7 +253,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         }
       },
 
-      mouseupEv(ev, [x, y]) {
+      mouseupEv(_, [x, y]) {
         if (currentMode !== DRAG_MODE) return;
         endPoint = { x, y };
         if (!self.isDrawing) return;
@@ -259,7 +261,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         self.finishDrawing(x, y);
       },
 
-      clickEv(ev, [x, y]) {
+      clickEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
         if (startPoint && endPoint && !self.comparePointsWithThreshold(startPoint, endPoint)) return;
         if (currentMode === DEFAULT_MODE) {
@@ -271,7 +273,7 @@ const TwoPointsDrawingTool = DrawingTool.named("TwoPointsDrawingTool")
         }
       },
 
-      dblclickEv(ev, [x, y]) {
+      dblclickEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);

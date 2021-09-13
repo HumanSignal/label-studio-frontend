@@ -6,6 +6,7 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * Use the Rectangle tag to add a rectangle (Bounding Box) to an image without selecting a label. This can be useful when you have only one label to assign to a rectangle.
@@ -50,9 +51,10 @@ const Model = types
     fromStateJSON() {},
 
     afterCreate() {
-      const rect = Tools.Rect.create({ activeShape: null });
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
 
-      rect._control = self;
+      const rect = Tools.Rect.create({ activeShape: null }, env);
 
       self.tools = { rect };
     },

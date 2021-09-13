@@ -86,10 +86,6 @@ class _Registry {
     return model;
   }
 
-  addTool(name, model) {
-    this.tools[name] = model;
-  }
-
   /**
    * Get model
    * @param {string} tag

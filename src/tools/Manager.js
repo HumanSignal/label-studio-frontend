@@ -1,20 +1,30 @@
+import { destroy } from "mobx-state-tree";
 import { guidGenerator } from "../utils/unique";
 
+/** @type {ToolsManager} */
+let instance = null;
+
 class ToolsManager {
-  constructor({ obj }) {
+  static getInstance(...args) {
+    return instance ?? (instance = new ToolsManager(...args));
+  }
+
+  constructor({ obj } = {}) {
     this.obj = obj;
     this.tools = {};
     this._default_tool = null;
   }
 
   addTool(name, tool, prefix = guidGenerator()) {
-    // todo: It seems that key is using only for storing, but not for finding tools, so may be there might be an array instead of an object
+    if (tool.smart && tool.smartOnly) return;
+    // todo: It seems that key is using only for storing,
+    // but not for finding tools, so may be there might
+    // be an array instead of an object
     const key = `${prefix}#${name}`;
 
     this.tools[key] = tool;
-    tool._manager = this;
 
-    if (tool.default && !this._default_tool) {
+    if (tool.default && !this._default_tool && !this.hasSelected) {
       this._default_tool = tool;
       if (tool.setSelected) tool.setSelected(true);
     }
@@ -43,6 +53,15 @@ class ToolsManager {
 
       if (drawingTool) return this.selectTool(drawingTool, true);
       if (tool.setSelected) tool.setSelected(false);
+    }
+  }
+
+  selectDefault() {
+    const tool = this.findSelectedTool();
+
+    if (this._default_tool && tool?.dynamic === true) {
+      this.unselectAll();
+      this._default_tool.setSelected(true);
     }
   }
 
@@ -79,6 +98,25 @@ class ToolsManager {
       return;
     }
   }
+
+  reload({ obj } = {}) {
+    this.removeAllTools();
+
+    this.obj = obj;
+    this.tools = {};
+    this._default_tool = null;
+  }
+
+  removeAllTools() {
+    Object.values(this.tools).forEach(t => destroy(t));
+    this.tools = {};
+  }
+
+  get hasSelected() {
+    return Object.values(this.tools).some(t => t.selected);
+  }
 }
+
+window.ToolManager = ToolsManager;
 
 export default ToolsManager;

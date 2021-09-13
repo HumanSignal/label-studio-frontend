@@ -16,6 +16,7 @@ import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
 import { defaultStyle } from "../core/Constants";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { RegionWrapper } from "./RegionWrapper";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
 
 const highlightOptions = {
@@ -35,6 +36,10 @@ const Points = types
      * Stroke width
      */
     strokeWidth: types.optional(types.number, 25),
+    /**
+     * Eraser size
+     */
+    eraserSize: types.optional(types.number, 25),
   })
   .views(self => ({
     get store() {
@@ -185,7 +190,8 @@ const Model = types
         if (!self.layerRef) {
           self.imageData = null;
         } else {
-          const ctx = self.layerRef.canvas.context;
+          const canvas = self.layerRef.toCanvas();
+          const ctx = canvas.getContext("2d");
 
           self.imageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
         }
@@ -384,48 +390,51 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
     [pointsList, pointsList.length],
   );
 
-  return <Shape sceneFunc={sceneFunc} hitFunc={hitFunc} />;
+  return <Shape ref={node => item.setShapeRef(node)} sceneFunc={sceneFunc} hitFunc={hitFunc} />;
 });
 
 const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
 
+  // Prepare brush stroke from RLE with current stroke color
   useMemo(() => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
 
-    img.onload = () => {
-      setImage(img);
-    };
-  }, [item.rle, item.parent?.naturalWidth, item.parent?.naturalHeight, item.strokeColor]);
+    img.onload = () => setImage(img);
+  }, [
+    item.rle,
+    item.parent,
+    item.parent?.naturalWidth,
+    item.parent?.naturalHeight,
+    item.strokeColor,
+  ]);
 
-  const imageHitFunc = useMemo(
-    ()=>{
-      let imageData;
+  // Drawing hit area by shape color to detect interactions inside the Konva
+  const imageHitFunc = useMemo(()=>{
+    let imageData;
 
-      return (context, shape) => {
-        if (image) {
-          if (!imageData) {
-            context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-            imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
-            const colorParts = colorToRGBAArray(shape.colorKey);
+    return (context, shape) => {
+      if (image) {
+        if (!imageData) {
+          context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          const colorParts = colorToRGBAArray(shape.colorKey);
 
-            for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
-              if (imageData.data[i * 4 + 3] > 0) {
-                for (let k = 0; k < 3; k++) {
-                  imageData.data[i * 4 + k] = colorParts[k];
-                }
+          for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
+            if (imageData.data[i * 4 + 3] > 0) {
+              for (let k = 0; k < 3; k++) {
+                imageData.data[i * 4 + k] = colorParts[k];
               }
             }
           }
-          context.putImageData(imageData, 0, 0);
         }
-      };
-    },
-    [image, item.parent?.stageWidth, item.parent?.stageHeight],
-  );
-  const { store } = item;
+        context.putImageData(imageData, 0, 0);
+      }
+    };
+  }, [image, item.parent?.stageWidth, item.parent?.stageHeight]);
 
+  const { store } = item;
 
   const highlightedImageRef = useRef(new window.Image());
   const layerRef = useRef();
@@ -434,6 +443,7 @@ const HtxBrushView = ({ item }) => {
   highlightedRef.current.highlighted = item.highlighted;
   highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
+  // Caching drawn brush strokes (from the rle field and from the touches field) for bounding box calculations and highlight applying
   const drawCallback = useMemo(()=>{
     let done = false;
 
@@ -469,7 +479,7 @@ const HtxBrushView = ({ item }) => {
   const stage = item.parent?.stageRef;
 
   return (
-    <>
+    <RegionWrapper item={item}>
       <Layer
         id={item.cleanId}
         ref={ref => {
@@ -527,7 +537,12 @@ const HtxBrushView = ({ item }) => {
             item.onClickRegion(e);
           }}
         >
-          <Image image={image} hitFunc={imageHitFunc} width={item.parent.stageWidth} height={item.parent.stageHeight} />
+          <Image
+            image={image}
+            hitFunc={imageHitFunc}
+            width={item.parent.stageWidth}
+            height={item.parent.stageHeight}
+          />
 
           <Group scaleX={item.scaleX} scaleY={item.scaleY}>
             <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
@@ -561,7 +576,8 @@ const HtxBrushView = ({ item }) => {
           <LabelOnMask item={item} color={item.strokeColor}/>
         </Group>
       </Layer>
-    </>
+    </RegionWrapper>
+
   );
 };
 

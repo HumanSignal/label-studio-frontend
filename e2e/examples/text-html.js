@@ -30,7 +30,7 @@ const result = [
         end: 105,
       },
       text: "Vincent: Look, Mr. Wolfe",
-      htmllabels: ["Date"],
+      hypertextlabels: ["Date"],
     },
   },
   {
@@ -48,7 +48,7 @@ const result = [
         end: 5,
       },
       text: "Jules",
-      htmllabels: ["Person"],
+      hypertextlabels: ["Person"],
     },
   },
   {
@@ -66,7 +66,7 @@ const result = [
         end: 188,
       },
       text: "The Wolf",
-      htmllabels: ["Person"],
+      hypertextlabels: ["Person"],
     },
   },
   {
@@ -84,7 +84,7 @@ const result = [
         end: 104,
       },
       text: "appreciated.\\n\\nVincent: Look, Mr. Wolfe, I respect you.",
-      htmllabels: ["Date"],
+      hypertextlabels: ["Date"],
     },
   },
 ];

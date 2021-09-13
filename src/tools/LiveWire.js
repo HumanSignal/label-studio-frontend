@@ -20,7 +20,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({})
+  .model("LiveWireTool", {})
   .views(self => ({
     get viewClass() {
       return <ToolView item={self} />;
@@ -40,6 +40,6 @@ const _Tool = types
     },
   }));
 
-const LiveWire = types.compose(ToolMixin, _Tool, BaseTool);
+const LiveWire = types.compose(_Tool.name, ToolMixin, _Tool, BaseTool);
 
 export { LiveWire };

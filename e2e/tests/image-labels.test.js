@@ -1,5 +1,7 @@
 /* global Feature, Scenario, locate */
 const assert = require("assert");
+const { toKebabCase } = require("strman");
+const Helpers = require("./helpers.js");
 
 Feature("Images' labels type matching");
 
@@ -8,15 +10,14 @@ const IMAGE =
 
 const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
   return `<View>
-    <Image name="image" value="$image" selectionControl="false"></Image>
-    ${shapes.map(shapeName => {
-    return `<${shapeName} name="image${shapeName}" toName="image" ${props} />
-    <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
-        <Label value="${shapeName}Create"/>
-        <Label value="${shapeName}Append"/>
-    </${shapeName}Labels>`;
-  }).join(`
-    `)}
+    <Image name="image" value="$image" zoomControl="false" selectionControl="false"></Image>
+    ${shapes.map(shapeName => (`
+        <${shapeName} name="image${shapeName}" toName="image" ${props} />
+        <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
+            <Label value="${shapeName}Create"/>
+            <Label value="${shapeName}Append"/>
+        </${shapeName}Labels>
+    `)).join(`\n`)}
     <Labels name="imageLabels" toName="image" allowEmpty="true">
         <Label value="Label"/>
     </Labels>
@@ -105,10 +106,12 @@ const createShape = {
   },
 };
 
-Scenario("Preventing applying labels of mismatch types", async({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
+Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
   const shapes = Object.keys(createShape);
+  const config = createConfig({ shapes, props: `strokewidth="5"` });
+
   const params = {
-    config: createConfig({ shapes, props: `strokewidth="5"` }),
+    config,
     data: { image: IMAGE },
   };
 
@@ -121,9 +124,9 @@ Scenario("Preventing applying labels of mismatch types", async({ I, LabelStudio,
   const offset = size * 0.05;
   const toolSelectors = [
     (shapeName, shapeIdx) => {
-      I.click(locate(".lsf-main-view__annotation").find("button").at(+shapeIdx + 1));
+      I.click(locate(".lsf-toolbar").find(".lsf-tool").at(+shapeIdx + 1));
     },
-    (shapeName, shapeIdx) => {
+    (_, shapeIdx) => {
       I.click(AtLabels.locateLabel("blank").at(+shapeIdx + 1));
     },
     (shapeName) => {
@@ -144,19 +147,31 @@ Scenario("Preventing applying labels of mismatch types", async({ I, LabelStudio,
         });
       });
 
+      const labelsCounter = (results, currentLabelName = "Label") => {
+        return results.reduce((counter, result) => {
+          const { type, value } = result;
+
+          return counter + (type.endsWith("labels") && value[type] && value[type].includes(currentLabelName));
+        }, 0);
+      };
+
+      const toolSelector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
+
       LabelStudio.init(params);
       AtImageView.waitForImage();
       AtSidebar.seeRegions(0);
-      I.click(locate(".lsf-main-view__annotation").find("button").at(1));
+      I.click(toolSelector);
       await AtImageView.lookForStage();
       I.say(`${shapeName}: Drawing.`);
+
       regions.forEach((region, idx) => {
         toolSelectors[idx](shapeName, shapeIdx);
         AtImageView[region.action](...region.params);
-        I.pressKey("u");
+        I.pressKey(["alt", "u"]);
         AtSidebar.seeRegions(idx + 1);
       });
-      I.click(locate(".lsf-main-view__annotation").find("button").at(1));
+
+      I.click(toolSelector);
       I.say(`${shapeName}: Labeling.`);
       for (const currentShapeName of shapes) {
         const currentLabelName = currentShapeName + "Append";
@@ -166,14 +181,11 @@ Scenario("Preventing applying labels of mismatch types", async({ I, LabelStudio,
           AtSidebar.clickRegion(+idx + 1);
           AtLabels.clickLabel(currentLabelName);
           expectedCount += shapeName === currentShapeName;
-          I.pressKey("u");
+          I.pressKey(["alt", "u"]);
         });
         const results = await LabelStudio.serialize();
-        const labelsCounter = results.reduce((counter, result) => {
-          return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf(currentLabelName) > -1);
-        }, 0);
 
-        assert.strictEqual(expectedCount, labelsCounter);
+        assert.strictEqual(expectedCount, labelsCounter(results, currentLabelName));
       }
 
       let expectedCount = 3;
@@ -183,11 +195,8 @@ Scenario("Preventing applying labels of mismatch types", async({ I, LabelStudio,
         AtLabels.clickLabel("Label");
       });
       const results = await LabelStudio.serialize();
-      const labelsCounter = results.reduce((counter, result) => {
-        return counter + (result.type.endsWith("labels") && result.value[result.type] && result.value[result.type].indexOf("Label") > -1);
-      }, 0);
 
-      assert.strictEqual(expectedCount, labelsCounter);
+      assert.strictEqual(expectedCount, labelsCounter(results, "Label"));
     }
   }
 });

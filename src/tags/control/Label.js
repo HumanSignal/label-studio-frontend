@@ -1,5 +1,5 @@
 import { inject, observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { getType, types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import React from "react";
 
@@ -14,6 +14,7 @@ import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
+import ToolsManager from "../../tools/Manager";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
 
@@ -157,10 +158,15 @@ const Model = types.model({
         forEach(tag => tag.unselectAll && tag.unselectAll());
 
       // unselect other tools if they exist and selected
+      const manager = ToolsManager.getInstance();
       const tool = Object.values(self.parent?.tools || {})[0];
 
-      if (tool && tool.manager.findSelectedTool() !== tool) {
-        tool.manager.selectTool(tool, true);
+      const selectedTool = manager.findSelectedTool();
+      const sameType = (tool && selectedTool) ? getType(selectedTool).name === getType(tool).name : false;
+      const sameLabel = selectedTool ? tool?.control?.name === selectedTool?.control?.name : false;
+
+      if (tool && (!selectedTool || (selectedTool && (!sameType || !sameLabel)))) {
+        manager.selectTool(tool, true);
       }
     }
 

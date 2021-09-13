@@ -1,33 +1,53 @@
-import { types } from "mobx-state-tree";
+import { getEnv, getRoot, getSnapshot, getType, types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import React from "react";
-import BasicToolView from "../components/Tools/Basic";
+import { Tool } from "../components/Toolbar/Tool";
+import { slugify, toKebabCase } from "strman";
 
 const ToolView = observer(({ item }) => {
   return (
-    <BasicToolView
-      selected={item.selected}
+    <Tool
+      ariaLabel={toKebabCase(getType(item).name)}
+      active={item.selected}
       icon={item.iconClass}
-      tooltip={item.viewTooltip}
+      label={item.viewTooltip}
+      shortcut={item.shortcut}
+      extraShortcuts={item.extraShortcuts}
+      tool={item}
       onClick={() => {
-        item.manager.selectTool(item, !item.selected);
+        item.manager.selectTool(item, true);
       }}
     />
   );
 });
 
 const BaseTool = types
-  .model("BaseTool", {})
+  .model("BaseTool", {
+    smart: false,
+  })
+  .volatile(() => ({
+    dynamic: false,
+    index: 1,
+  }))
   .views(self => {
     return {
+      get toolName() {
+        return getType(self).name;
+      },
       get isSeparated() {
         return self.control.isSeparated;
       },
       get viewClass() {
-        return self.isSeparated && self.iconClass ? <ToolView item={self} /> : null;
+        return self.shouldRenderView ? <ToolView item={self} /> : null;
       },
       get viewTooltip() {
         return null;
+      },
+      get controls() {
+        return null;
+      },
+      get shouldRenderView() {
+        return (self.isSeparated || self.smartEnabled) && self.iconClass;
       },
       get iconClass() {
         if (self.iconComponent) {
@@ -40,9 +60,46 @@ const BaseTool = types
       get iconComponent() {
         return null;
       },
+      get smartEnabled() {
+        const smart = self.control?.smart || false;
+        const autoAnnotation = self.control ? getRoot(self.control)?.autoAnnotation ?? false : false;
+
+        return (autoAnnotation && smart) || self.smartOnly;
+      },
+      get smartOnly() {
+        return self.control?.smartonly ?? false;
+      },
     };
   })
-  .actions(() => ({}));
+  .actions((self) => {
+    return  {
+      afterCreate() {
+        if (self.smart) {
+          const currentEnv = getEnv(self);
+          const toolType = getType(self);
+          const snapshot = {
+            ...getSnapshot(self),
+            smart: false,
+            default: false,
+          };
+          const env = {
+            ...currentEnv,
+          };
+
+          const smartCopy = toolType.create(snapshot, env);
+
+          smartCopy.makeDynamic();
+
+          getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy);
+        }
+      },
+
+      makeDynamic() {
+        self.dynamic = true;
+      },
+    };
+  });
+
 
 export const MIN_SIZE = { X: 3, Y: 3 };
 

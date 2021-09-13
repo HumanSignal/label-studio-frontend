@@ -33,7 +33,7 @@ jobs:
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
     - name: Install dependencies
-      run: yarn install --silent
+      run: rm package-lock.json && yarn install
 
     - name: Build distribution package
       run: yarn run build:module

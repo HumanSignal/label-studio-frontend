@@ -1,4 +1,4 @@
-import { getParent, getRoot, types } from "mobx-state-tree";
+import { getEnv, getParent, getRoot, getType, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -13,12 +13,19 @@ const RegionsMixin = types
     hidden: types.optional(types.boolean, false),
 
     parentID: types.optional(types.string, ""),
+
+    fromSuggestion: false,
+
+    // Dynamic preannotations enabled
+    dynamic: false,
   })
   .volatile(() => ({
     // selected: false,
     _highlighted: false,
     isDrawing: false,
     perRegionFocusRequest: null,
+    shapeRef: null,
+    drawingTimeout: null,
   }))
   .views(self => ({
     get perRegionStates() {
@@ -60,6 +67,16 @@ const RegionsMixin = types
 
       setDrawing(val) {
         self.isDrawing = val;
+
+        self.notifyDrawingFinished();
+      },
+
+      setShapeRef(ref) {
+        self.shapeRef = ref;
+      },
+
+      beforeDestroy() {
+        self.notifyDrawingFinished({ destroy: true });
       },
 
       // All of the below accept size as an argument
@@ -260,6 +277,27 @@ const RegionsMixin = types
       toggleHidden(e) {
         self.hidden = !self.hidden;
         e && e.stopPropagation();
+      },
+
+      notifyDrawingFinished({ destroy = false } = {}) {
+        if (!self.dynamic || self.fromSuggestion) return;
+        const { regions } = getRoot(self).annotationStore.selected;
+
+        const connectedRegions = regions.filter(r => {
+          if (destroy && r === self) return false;
+          return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+        });
+
+        clearTimeout(self.drawingTimeout);
+
+        if (self.isDrawing === false) {
+          const timeout = getType(self).name.match(/brush/i) ? 1200 : 0;
+          const env = getEnv(self);
+
+          self.drawingTimeout = setTimeout(() => {
+            env.events.invoke("regionFinishedDrawing", self, connectedRegions);
+          }, timeout);
+        }
       },
     };});
 

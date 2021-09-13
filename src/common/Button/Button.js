@@ -15,6 +15,7 @@ export const Button = React.forwardRef(
       icon,
       tag,
       look,
+      primary,
       ...rest
     },
     ref,
@@ -30,9 +31,8 @@ export const Button = React.forwardRef(
       withExtra: !!extra,
     };
 
-    if (rest.primary) {
+    if (primary) {
       mods.look = 'primary';
-      delete rest.primary;
     }
 
     const iconElem = React.useMemo(() => {

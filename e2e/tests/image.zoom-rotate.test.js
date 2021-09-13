@@ -109,7 +109,7 @@ shapes.forEach(({ shape, props = "", action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-Data(shapesTable).Scenario("Simple rotation", async function ({ I, LabelStudio, AtImageView, AtSidebar, current }) {
+Data(shapesTable).Scenario("Simple rotation", async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -122,7 +122,7 @@ Data(shapesTable).Scenario("Simple rotation", async function ({ I, LabelStudio, 
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (let region of current.regions) {
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey("1");
     AtImageView[current.action](...region.params);
   }
@@ -133,7 +133,7 @@ Data(shapesTable).Scenario("Simple rotation", async function ({ I, LabelStudio, 
 
   assert.equal(hasPixel, true);
   for (let rotate of rotationQueue) {
-    I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
+    I.click(locate(`[aria-label='rotate-${rotate}']`));
     degree += rotate === "right" ? 90 : -90;
     hasPixel = await AtImageView.hasPixelColor(
       ...rotateCoords([100, 100], degree, canvasSize.width, canvasSize.height).map(Math.round),
@@ -148,7 +148,7 @@ Data(shapesTable).Scenario("Simple rotation", async function ({ I, LabelStudio, 
   }
 });
 
-Data(shapesTable).Scenario("Rotate zoomed", async function ({ I, LabelStudio, AtImageView, AtSidebar, current }) {
+Data(shapesTable).Scenario("Rotate zoomed", async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -161,7 +161,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function ({ I, LabelStudio, At
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (let region of current.regions) {
-    I.pressKey("u");
+    I.pressKey(["alt", "u"]);
     I.pressKey("1");
     AtImageView[current.action](...region.params);
   }
@@ -174,7 +174,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function ({ I, LabelStudio, At
 
   assert.strictEqual(hasPixel, true);
   for (let rotate of rotationQueue) {
-    I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
+    I.click(locate(`[aria-label='rotate-${rotate}']`));
     degree += rotate === "right" ? 90 : -90;
     hasPixel = await AtImageView.hasPixelColor(
       ...rotateCoords([1, 1], degree, canvasSize.width, canvasSize.height).map(Math.round),
@@ -192,7 +192,7 @@ windowSizesTable.add([1920, 1080]);
 windowSizesTable.add([800, 480]);
 windowSizesTable.add([1017, 970]);
 
-Data(windowSizesTable).Scenario("Rotation with different window sizes", async function ({ I, LabelStudio, AtImageView, AtSidebar, current }) {
+Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape("Rectangle"),
     data: { image: IMAGE },
@@ -210,7 +210,7 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   assert(Math.abs(canvasSize.width - imageSize.width) < 1);
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
   for (let rotate of rotationQueue) {
-    I.click(locate("button").withDescendant(`[aria-label='rotate-${rotate}']`));
+    I.click(locate(`[aria-label='rotate-${rotate}']`));
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
 
@@ -239,7 +239,7 @@ const twoColumnsConfigs = [`<View>
     </View>
 </View>`];
 
-Scenario("Rotation in the two columns template", async function ({ I, LabelStudio, AtImageView, AtSidebar, AtSettings }) {
+Scenario("Rotation in the two columns template", async function({ I, LabelStudio, AtImageView, AtSidebar, AtSettings }) {
   I.amOnPage("/");
   let isVerticalLayout = false;
 
@@ -256,7 +256,7 @@ Scenario("Rotation in the two columns template", async function ({ I, LabelStudi
         LabelStudio.init(params);
         AtImageView.waitForImage();
         AtSidebar.seeRegions(0);
-        I.click(locate("button").withDescendant(`[aria-label='rotate-right']`));
+        I.click(locate(`[aria-label='rotate-right']`));
         let rotatedCanvasSize,rotatedImageSize;
 
         rotatedCanvasSize = await AtImageView.getCanvasSize();
@@ -273,7 +273,7 @@ Scenario("Rotation in the two columns template", async function ({ I, LabelStudi
         rotatedImageSize = await AtImageView.getImageFrameSize();
         assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);
         assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1);
-        I.click(locate("button").withDescendant(`[aria-label='rotate-right']`));
+        I.click(locate(`[aria-label='rotate-right']`));
         rotatedCanvasSize = await AtImageView.getCanvasSize();
         rotatedImageSize = await AtImageView.getImageFrameSize();
         assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1);

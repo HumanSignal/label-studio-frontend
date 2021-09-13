@@ -1,7 +1,8 @@
 import { decode, encode } from "@thi.ng/rle-pack";
+import chroma from "chroma-js";
+import Constants from "../core/Constants";
 
 import * as Colors from "./colors";
-import { colorToRGBAArray } from "./colors";
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
@@ -19,7 +20,7 @@ function imageData2Image(imagedata) {
 }
 
 // given the RLE array returns the DOM Image element with loaded image
-function RLE2Region(rle, image, { color }) {
+function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
@@ -32,7 +33,7 @@ function RLE2Region(rle, image, { color }) {
   const newdata = ctx.createImageData(nw, nh);
 
   newdata.data.set(decode(rle));
-  const rgb = colorToRGBAArray(color);
+  const rgb = chroma(color).rgb();
 
   for (let i = newdata.data.length / 4; i--; ) {
     if (newdata.data[i * 4 + 3]) {
@@ -231,10 +232,93 @@ const labelToSVG = (function() {
   };
 })();
 
+/**
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @returns {{
+ * canvas: HTMLCanvasElement,
+ * bbox: {
+ *   left: number,
+ *   top: number,
+ *   right: number,
+ *   bottom: number,
+ *   width: number,
+ *   height: number
+ * }
+ * }}
+ */
+const trim = (canvas) => {
+  let copy, width = canvas.width, height = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const bbox = {
+    top: null,
+    left: null,
+    right: null,
+    bottom: null,
+  };
+
+  try {
+    copy = document.createElement('canvas').getContext('2d');
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const l = pixels.data.length;
+    let i, x, y;
+
+    for (i = 0; i < l; i += 4) {
+      if (pixels.data[i+3] !== 0) {
+        x = (i / 4) % canvas.width;
+        y = ~ ~ ((i / 4) / canvas.width);
+
+        if (bbox.top === null) {
+          bbox.top = y;
+        }
+
+        if (bbox.left === null) {
+          bbox.left = x;
+        } else if (x < bbox.left) {
+          bbox.left = x;
+        }
+
+        if (bbox.right === null) {
+          bbox.right = x;
+        } else if (bbox.right < x) {
+          bbox.right = x;
+        }
+
+        if (bbox.bottom === null) {
+          bbox.bottom = y;
+        } else if (bbox.bottom < y) {
+          bbox.bottom = y;
+        }
+      }
+    }
+
+    width = bbox.right - bbox.left;
+    height = bbox.bottom - bbox.top;
+    const trimmed = ctx.getImageData(bbox.left, bbox.top, width, height);
+
+    copy.canvas.width = width;
+    copy.canvas.height = height;
+    copy.putImageData(trimmed, 0, 0);
+  } catch (err) {
+    /* Gotcha! */
+  }
+
+  // open new window with trimmed image:
+  return {
+    canvas: copy?.canvas ?? canvas,
+    bbox: {
+      ...bbox,
+      width,
+      height,
+    },
+  };
+};
+
 export default {
   imageData2Image,
   Region2RLE,
   RLE2Region,
   brushSizeCircle,
   labelToSVG,
+  trim,
 };

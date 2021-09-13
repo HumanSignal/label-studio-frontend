@@ -39,6 +39,7 @@ import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 import { Block, Elem } from "../../utils/bem";
 import './App.styl';
 import { Space } from "../../common/Space/Space";
+import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 
 /**
  * App
@@ -109,6 +110,9 @@ class App extends Component {
               {this.renderRelations(as.selected)}
             </Elem>
             {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
+            {as.selected.onlyTextObjects === false && (
+              <DynamicPreannotationsControl />
+            )}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}

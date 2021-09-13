@@ -35,6 +35,8 @@ export const HighlightMixin = types
         return;
       }
 
+      if (!root) return;
+
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);

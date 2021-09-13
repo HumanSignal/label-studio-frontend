@@ -80,7 +80,7 @@ const configComplicated = `
 const reviewText =
   "Not much to write about here, but it does exactly what it's supposed to. filters out the pop sounds. now my recordings are much more crisp. it is one of the lowest prices pop filters on amazon so might as well buy it, they honestly work the same despite their pricing,";
 
-Scenario("Check simple nested Choices for Text", async function ({ I }) {
+Scenario("Check simple nested Choices for Text", async function({ I }) {
   const params = {
     config: configSimple,
     data: { reviewText },
@@ -102,7 +102,7 @@ Scenario("Check simple nested Choices for Text", async function ({ I }) {
   assert.deepEqual(result[1].value, { choices: ["Emotional"] });
 });
 
-Scenario("check good nested Choice for Text", async function ({ I, AtLabels, AtSidebar }) {
+Scenario("Check good nested Choice for Text", async function({ I, AtLabels, AtSidebar }) {
   const params = {
     config: configComplicated,
     data: { reviewText },

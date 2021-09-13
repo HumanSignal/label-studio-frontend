@@ -1,22 +1,23 @@
 {
     "annotations": [
         {
-            "id": "1001",
             "result": [
                 {
                     "id": "Umb_V5CIey",
                     "from_name": "ner",
                     "to_name": "text",
-                    "source": "$text",
                     "type": "hypertextlabels",
-                    "parent_id": null,
                     "value": {
-                        "start": "/div[1]/div[2]/div[1]/p[1]/b[1]/text()[1]",
+                        "start": "/div[1]/div[2]",
                         "end": "/div[1]/div[2]/div[1]/p[1]/text()[1]",
                         "startOffset": 0,
                         "endOffset": 17,
+                        "globalOffsets": {
+                            "start": 81,
+                            "end": 105
+                        },
                         "text": "Vincent: Look, Mr. Wolfe",
-                        "htmllabels": [
+                        "hypertextlabels": [
                             "Date"
                         ]
                     }
@@ -25,16 +26,18 @@
                     "id": "FQKKGR1yv5",
                     "from_name": "ner",
                     "to_name": "text",
-                    "source": "$text",
                     "type": "hypertextlabels",
-                    "parent_id": null,
                     "value": {
                         "start": "/div[1]/div[1]/div[1]/p[1]/b[1]/text()[1]",
                         "end": "/div[1]/div[1]/div[1]/p[1]/b[1]/text()[1]",
                         "startOffset": 0,
                         "endOffset": 5,
+                        "globalOffsets": {
+                            "start": 0,
+                            "end": 5
+                        },
                         "text": "Jules",
-                        "htmllabels": [
+                        "hypertextlabels": [
                             "Person"
                         ]
                     }
@@ -43,16 +46,18 @@
                     "id": "SLNxK0a8oW",
                     "from_name": "ner",
                     "to_name": "text",
-                    "source": "$text",
                     "type": "hypertextlabels",
-                    "parent_id": null,
                     "value": {
-                        "start": "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
+                        "start": "/div[1]/div[3]",
                         "end": "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
                         "startOffset": 0,
                         "endOffset": 8,
+                        "globalOffsets": {
+                            "start": 180,
+                            "end": 188
+                        },
                         "text": "The Wolf",
-                        "htmllabels": [
+                        "hypertextlabels": [
                             "Person"
                         ]
                     }
@@ -61,16 +66,18 @@
                     "id": "fyHRX3DdNv",
                     "from_name": "ner",
                     "to_name": "text",
-                    "source": "$text",
                     "type": "hypertextlabels",
-                    "parent_id": null,
                     "value": {
                         "start": "/div[1]/div[1]/div[1]/p[1]/text()[1]",
                         "end": "/div[1]/div[2]/div[1]/p[1]/text()[1]",
                         "startOffset": 64,
                         "endOffset": 16,
+                        "globalOffsets": {
+                            "start": 69,
+                            "end": 104
+                        },
                         "text": "appreciated.\\n\\nVincent: Look, Mr. Wolfe, I respect you.",
-                        "htmllabels": [
+                        "hypertextlabels": [
                             "Date"
                         ]
                     }

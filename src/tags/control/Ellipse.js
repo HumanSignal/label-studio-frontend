@@ -6,6 +6,7 @@ import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * Use the Ellipse tag to add an elliptical bounding box to an image. Use for bounding box image segmentation tasks with ellipses.
@@ -55,9 +56,10 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      const ellipse = Tools.Ellipse.create({ activeShape: null });
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
 
-      ellipse._control = self;
+      const ellipse = Tools.Ellipse.create({ activeShape: null }, env);
 
       self.tools = { ellipse };
     },

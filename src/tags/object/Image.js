@@ -60,13 +60,13 @@ const TagAttrs = types.model({
   gridSize: types.optional(types.number, 30),
   gridColor: types.optional(customTypes.color, "#EEEEF4"),
 
-  zoom: types.optional(types.boolean, false),
+  zoom: types.optional(types.boolean, true),
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
   showlabels: types.optional(types.boolean, false),
 
-  zoomcontrol: types.optional(types.boolean, false),
+  zoomcontrol: types.optional(types.boolean, true),
   brightnesscontrol: types.optional(types.boolean, false),
   contrastcontrol: types.optional(types.boolean, false),
   rotatecontrol: types.optional(types.boolean, false),
@@ -299,6 +299,10 @@ const Model = types.model({
     return self.regs.find(r => r.selected);
   },
 
+  get suggestions() {
+    return self.annotation?.regionStore.suggestions.filter(r => r.object === self) || [];
+  },
+
   get useTransformer() {
     return self.getToolsManager().findSelectedTool()?.useTransformer === true;
   },
@@ -382,23 +386,30 @@ const Model = types.model({
 
   // actions for the tools
   .actions(self => {
-    const toolsManager = new ToolsManager({ obj: self });
+    const manager = ToolsManager.getInstance({ obj: self });
+    const env = { manager, control: self };
+
+    manager.reload({ obj: self });
 
     function afterCreate() {
-      if (self.selectioncontrol) toolsManager.addTool("selection", Tools.Selection.create({}, { manager: toolsManager }));
+      if (self.selectioncontrol)
+        manager.addTool("selection", Tools.Selection.create({}, env));
 
-      if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
+      if (self.zoomcontrol)
+        manager.addTool("zoom", Tools.Zoom.create({}, env));
 
       if (self.brightnesscontrol)
-        toolsManager.addTool("brightness", Tools.Brightness.create({}, { manager: toolsManager }));
+        manager.addTool("brightness", Tools.Brightness.create({}, env));
 
-      if (self.contrastcontrol) toolsManager.addTool("contrast", Tools.Contrast.create({}, { manager: toolsManager }));
+      if (self.contrastcontrol)
+        manager.addTool("contrast", Tools.Contrast.create({}, env));
 
-      if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
+      if (self.rotatecontrol)
+        manager.addTool("rotate", Tools.Rotate.create({}, env));
     }
 
     function getToolsManager() {
-      return toolsManager;
+      return manager;
     }
 
     return { afterCreate, getToolsManager };
@@ -430,7 +441,7 @@ const Model = types.model({
       //self.annotation.history.freeze();
     },
 
-    createDrawingRegion(areaValue, resultValue, control) {
+    createDrawingRegion(areaValue, resultValue, control, dynamic) {
       const result = {
         from_name: control.name,
         to_name: self,
@@ -443,6 +454,7 @@ const Model = types.model({
         object: self,
         ...areaValue,
         results: [result],
+        dynamic,
       };
 
       self.drawingRegion = areaRaw;
