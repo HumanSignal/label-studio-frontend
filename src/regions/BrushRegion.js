@@ -17,7 +17,6 @@ import { defaultStyle } from "../core/Constants";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { RegionWrapper } from "./RegionWrapper";
-import { useRegionStyles } from "../hooks/useRegionColor";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
 
 const highlightOptions = {
@@ -395,11 +394,11 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
 
 const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
-  const regionStyles = useRegionStyles(item);
 
+  // Prepare brush stroke from RLE with current stroke color
   useMemo(() => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
-    const img = Canvas.RLE2Region(item.rle, item.parent, { color: regionStyles.strokeColor });
+    const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
 
     img.onload = () => setImage(img);
   }, [
@@ -410,6 +409,7 @@ const HtxBrushView = ({ item }) => {
     item.strokeColor,
   ]);
 
+  // Drawing hit area by shape color to detect interactions inside the Konva
   const imageHitFunc = useMemo(()=>{
     let imageData;
 
@@ -442,6 +442,7 @@ const HtxBrushView = ({ item }) => {
   highlightedRef.current.highlighted = item.highlighted;
   highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
+  // Caching drawn brush strokes (from the rle field and from the touches field) for bounding box calculations and highlight applying
   const drawCallback = useMemo(()=>{
     let done = false;
 
@@ -569,7 +570,6 @@ const HtxBrushView = ({ item }) => {
             ref.canvas._canvas.style.opacity = item.opacity;
           }
         }}
-        onDraw={drawCallback}
       >
         <Group scaleX={item.scaleX} scaleY={item.scaleY}>
           <LabelOnMask item={item} color={item.strokeColor}/>
