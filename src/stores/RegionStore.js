@@ -169,6 +169,10 @@ export default types.model("RegionStore", {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
+    get suggestions() {
+      return Array.from(self.annotation.suggestions.values()).filter(area => !area.classification);
+    },
+
     get isAllHidden() {
       return !self.regions.find(area => !area.hidden);
     },

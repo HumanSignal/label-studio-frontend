@@ -35,7 +35,7 @@ const results = [
     startOffset: 1,
     end: "/div[1]/h2[1]/span[3]/text()[1]",
     endOffset: 1,
-    htmllabels: ["Term"],
+    hypertextlabels: ["Term"],
     text: "Named-entity recognition",
     globalOffsets: {
       end: 28,
@@ -47,7 +47,7 @@ const results = [
     startOffset: 0,
     end: "/div[1]/p[1]/b[2]/text()[1]",
     endOffset: 3,
-    htmllabels: ["Abbr"],
+    hypertextlabels: ["Abbr"],
     text: "NER",
     globalOffsets: {
       end: 61,
@@ -77,7 +77,7 @@ Scenario("NER labeling for HyperText", async function({ I }) {
   I.doubleClick("b:nth-child(2)");
 
   I.click("[data-testid=r1-mid]");
-  I.pressKey('r');
+  I.pressKey(['alt', 'r']);
   I.click("b:nth-child(2)");
   I.switchTo();
 

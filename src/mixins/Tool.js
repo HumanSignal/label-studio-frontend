@@ -1,22 +1,24 @@
-import { types } from "mobx-state-tree";
+import { getEnv, types } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
 const ToolMixin = types
   .model({
     selected: types.optional(types.boolean, false),
+    group: types.optional(types.string, 'default'),
+    shortcut: types.optional(types.maybeNull(types.string), null),
   })
   .views(self => ({
     get obj() {
-      return self._manager.obj;
+      return self.manager?.obj;
     },
 
     get manager() {
-      return self._manager;
+      return getEnv(self).manager;
     },
 
     get control() {
-      return self._control;
+      return getEnv(self).control;
     },
 
     get viewClass() {
@@ -48,6 +50,10 @@ const ToolMixin = types
 
     get getSelectedShape() {
       return self.control.annotation.highlightedNode;
+    },
+
+    get extraShortcuts() {
+      return {};
     },
   }))
   .actions(self => ({

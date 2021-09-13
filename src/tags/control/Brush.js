@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 const TagAttrs = types.model({
   name: types.identifier,
@@ -25,17 +26,14 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      const brush = Tools.Brush.create();
-      const erase = Tools.Erase.create();
-      // const zoom  = Tools.Zoom.create();
-
-      brush._control = self;
-      erase._control = self;
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
+      const brush = Tools.Brush.create({}, env);
+      const erase = Tools.Erase.create({}, env);
 
       self.tools = {
         brush,
         erase,
-        // zoom: zoom
       };
     },
   }));

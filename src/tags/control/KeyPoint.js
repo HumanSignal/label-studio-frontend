@@ -5,6 +5,7 @@ import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import ToolsManager from "../../tools/Manager";
 
 /**
  * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
@@ -34,7 +35,7 @@ const TagAttrs = types.model({
   fillcolor: types.optional(customTypes.color, "#8bad00"),
 
   strokecolor: types.optional(customTypes.color, "#8bad00"),
-  strokewidth: types.optional(types.string, "1"),
+  strokewidth: types.optional(types.string, "2"),
 });
 
 const Model = types
@@ -54,9 +55,10 @@ const Model = types
     fromStateJSON() {},
 
     afterCreate() {
-      const kp = Tools.KeyPoint.create();
+      const manager = ToolsManager.getInstance();
+      const env = { manager, control: self };
 
-      kp._control = self;
+      const kp = Tools.KeyPoint.create({}, env);
 
       self.tools = { keypoint: kp };
     },

@@ -1,6 +1,6 @@
 /* global LSF_VERSION */
 
-import { getEnv, types } from "mobx-state-tree";
+import { flow, getEnv, types } from "mobx-state-tree";
 
 import AnnotationStore from "./AnnotationStore";
 import { Hotkey } from "../core/Hotkey";
@@ -14,7 +14,7 @@ import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
 import { guidGenerator } from "../utils/unique";
 
-const hotkeys = Hotkey("AppStore");
+const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
 export default types
   .model("AppStore", {
@@ -105,11 +105,34 @@ export default types
      */
     showComments: false,
 
+    /**
+     * Dynamic preannotations
+     */
+    autoAnnotation: false,
+
+    /**
+     * Auto accept suggested annotations
+     */
+    autoAcceptSuggestions: false,
+
+    /**
+     * Indicator for suggestions awaiting
+     */
+    awaitingSuggestions: false,
+
     users: types.optional(types.array(UserExtended), []),
+  })
+  .preProcessSnapshot((sn) => {
+    return {
+      ...sn,
+      autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
+      autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
+    };
   })
   .volatile(() => ({
     version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
     initialized: false,
+    suggestionsRequest: null,
   }))
   .views(self => ({
     /**
@@ -149,6 +172,7 @@ export default types
         "noTask",
         "noAccess",
         "labeledSuccess",
+        "awaitingSuggestions",
       ];
 
       for (let n of names) if (n in flags) self[n] = flags[n];
@@ -222,17 +246,13 @@ export default types
       );
 
       // create relation
-      hotkeys.addKey(
-        "r",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.overwriteKey("alt+r", function() {
+        const c = self.annotationStore.selected;
 
-          if (c && c.highlightedNode && !c.relationMode) {
-            c.startRelationMode(c.highlightedNode);
-          }
-        },
-        "Create relation when region is selected",
-      );
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.startRelationMode(c.highlightedNode);
+        }
+      }, "Create relation between regions");
 
       // Focus fist focusable perregion when region is selected
       hotkeys.addKey(
@@ -248,7 +268,7 @@ export default types
       );
 
       // unselect region
-      hotkeys.addKey("u", function() {
+      hotkeys.addKey("alt+u", function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode) {
@@ -256,7 +276,7 @@ export default types
         }
       });
 
-      hotkeys.addKey("h", function() {
+      hotkeys.addKey("alt+h", function() {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {
@@ -472,14 +492,14 @@ export default types
         const obj = as.addPrediction(p);
 
         as.selectPrediction(obj.id);
-        obj.deserializeAnnotation(p.result);
+        obj.deserializeResults(p.result);
       });
 
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
         const obj = as.addAnnotation(c);
 
         as.selectAnnotation(obj.id);
-        obj.deserializeAnnotation(c.draft || c.result);
+        obj.deserializeResults(c.draft || c.result);
         obj.reinitHistory();
       });
 
@@ -516,9 +536,33 @@ export default types
 
         const result = item.previous_annotation_history_result ?? [];
 
-        obj.deserializeAnnotation(result);
+        obj.deserializeResults(result);
       });
     }
+
+    const setAutoAnnotation = (value) => {
+      self.autoAnnotation = value;
+      localStorage.setItem("autoAnnotation", value);
+    };
+
+    const setAutoAcceptSuggestions = (value) => {
+      self.autoAcceptSuggestions = value;
+      localStorage.setItem("autoAcceptSuggestions", value);
+    };
+
+    const loadSuggestions = flow(function *(request, dataParser) {
+      const requestId = guidGenerator();
+
+      self.suggestionsRequest = requestId;
+
+      self.setFlags({ awaitingSuggestions: true });
+      const response = yield request;
+
+      if (requestId === self.suggestionsRequest) {
+        self.annotationStore.selected.setSuggestions(dataParser(response));
+        self.setFlags({ awaitingSuggestions: false });
+      }
+    });
 
     return {
       setFlags,
@@ -543,5 +587,9 @@ export default types
       toggleComments,
       toggleSettings,
       toggleDescription,
+
+      setAutoAnnotation,
+      setAutoAcceptSuggestions,
+      loadSuggestions,
     };
   });

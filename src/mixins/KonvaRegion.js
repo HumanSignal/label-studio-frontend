@@ -12,7 +12,7 @@ export const KonvaRegionMixin = types.model({})
         return self.results.find(result => result.from_name.tools)?.from_name;
       },
       get canRotate() {
-        return self.control.canrotate && self.supportsRotate;
+        return self.control?.canrotate && self.supportsRotate;
       },
     };
   })

@@ -42,7 +42,7 @@ const Validation = types.model({
 
 const ModelAttrs = types
   .model("HyperTextLabelsModel", {
-    type: "htmllabels",
+    type: "hypertextlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
@@ -65,7 +65,7 @@ const ModelAttrs = types
     },
 
     get valueType() {
-      return "htmllabels";
+      return "hypertextlabels";
     },
   }));
 

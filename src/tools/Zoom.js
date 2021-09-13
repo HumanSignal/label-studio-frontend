@@ -1,35 +1,41 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { DragOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
-import BasicToolView from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
+import { Tool } from "../components/Toolbar/Tool";
+import { IconHandTool, IconMagnifyTool, IconMinifyTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
     <Fragment>
-      <BasicToolView
-        selected={item.selected}
-        icon={<DragOutlined />}
-        tooltip="Move position"
+      <Tool
+        active={item.selected}
+        icon={<IconHandTool />}
+        ariaLabel="pan"
+        label="Pan Image"
+        shortcut="H"
         onClick={() => {
           const sel = item.selected;
 
           item.manager.selectTool(item, !sel);
         }}
       />
-      <BasicToolView
-        icon={<ZoomInOutlined />}
-        tooltip="Zoom into the image"
+      <Tool
+        icon={<IconMagnifyTool />}
+        ariaLabel="zoom-in"
+        label="Zoom In"
+        shortcut="alt+plus"
         onClick={() => {
           item.handleZoom(1);
         }}
       />
-      <BasicToolView
-        icon={<ZoomOutOutlined />}
-        tooltip="Zoom out of the image"
+      <Tool
+        icon={<IconMinifyTool />}
+        ariaLabel="zoom-out"
+        label="Zoom Out"
+        shortcut="alt+minus"
         onClick={() => {
           item.handleZoom(-1);
         }}
@@ -39,24 +45,29 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({
+  .model("ZoomTool", {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
+    group: "control",
   })
   .views(self => ({
     get viewClass() {
       return <ToolView item={self} />;
     },
+
+    get stageContainer() {
+      return self.obj.stageRef.container();
+    },
   }))
   .actions(self => ({
     mouseupEv() {
       self.mode = "viewing";
+      self.stageContainer.style.cursor = "grab";
     },
 
     updateCursor() {
       if (!self.selected || !self.obj.stageRef) return;
-      const stage = self.obj.stageRef;
 
-      stage.container().style.cursor = "all-scroll";
+      self.stageContainer.style.cursor = "grab";
     },
 
     afterUpdateSelected() {
@@ -64,7 +75,7 @@ const _Tool = types
     },
 
     handleDrag(ev) {
-      const item = self._manager.obj;
+      const item = self.obj;
       let posx = item.zoomingPositionX + ev.movementX;
       let posy = item.zoomingPositionY + ev.movementY;
 
@@ -72,27 +83,27 @@ const _Tool = types
     },
 
     mousemoveEv(ev) {
-      const zoomScale = self._manager.obj.zoomScale;
+      const zoomScale = self.obj.zoomScale;
 
       if (zoomScale <= 1) return;
-      if (self.mode === "moving") self.handleDrag(ev);
+      if (self.mode === "moving") {
+        self.handleDrag(ev);
+        self.stageContainer.style.cursor = "grabbing";
+      }
     },
 
     mousedownEv() {
       self.mode = "moving";
+      self.stageContainer.style.cursor = "grabbing";
     },
 
     handleZoom(val) {
-      const item = self._manager.obj;
+      const item = self.obj;
 
       item.handleZoom(val);
     },
   }));
 
-const Zoom = types.compose(ToolMixin, BaseTool, _Tool);
-
-// Registry.addTool("zoom", Zoom);
+const Zoom = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 export { Zoom };
-
-// ImageTools.addTool(ZoomTool);

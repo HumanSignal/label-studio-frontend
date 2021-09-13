@@ -2,27 +2,31 @@ import React from "react";
 
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { RotateLeftOutlined, RotateRightOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
-import BasicToolView from "../components/Tools/Basic";
+import { Tool } from "../components/Toolbar/Tool";
+import { IconRotateLeftTool, IconRotateRightTool } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
     <>
-      <BasicToolView
-        selected={item.selected}
-        icon={<RotateLeftOutlined />}
-        tooltip="Rotate Left"
+      <Tool
+        active={item.selected}
+        icon={<IconRotateLeftTool />}
+        ariaLabel="rotate-left"
+        label="Rotate Left"
+        shortcut="alt+left"
         onClick={() => {
           item.rotate(-90);
         }}
       />
-      <BasicToolView
-        selected={item.selected}
-        icon={<RotateRightOutlined />}
-        tooltip="Rotate Right"
+      <Tool
+        active={item.selected}
+        icon={<IconRotateRightTool />}
+        ariaLabel="rotate-right"
+        label="Rotate Right"
+        shortcut="alt+right"
         onClick={() => {
           item.rotate(90);
         }}
@@ -32,7 +36,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({})
+  .model("RotateTool", {
+    group: "control",
+  })
   .views(self => ({
     get viewClass() {
       return <ToolView item={self} />;
@@ -44,8 +50,6 @@ const _Tool = types
     },
   }));
 
-const Rotate = types.compose(ToolMixin, BaseTool, _Tool);
+const Rotate = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 
 export { Rotate };
-
-// ImageTools.addTool(RotateTool);

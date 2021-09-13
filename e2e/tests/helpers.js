@@ -9,7 +9,7 @@
  * @param {object[]} params.predictions
  * @param {function} done
  */
-const initLabelStudio = async({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
+const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -160,7 +160,7 @@ const clickKonva = (x, y, done) => {
  * @param {number[][]} points array of coords arrays ([[x1, y1], [x2, y2], ...])
  * @param {function} done
  */
-const clickMultipleKonva = async(points, done) => {
+const clickMultipleKonva = async (points, done) => {
   const stage = window.Konva.stages[0];
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
   let lastPoint;
@@ -186,7 +186,7 @@ const clickMultipleKonva = async(points, done) => {
  * @param {number[][]} points array of coords arrays ([[x1, y1], [x2, y2], ...])
  * @param {function} done
  */
-const polygonKonva = async(points, done) => {
+const polygonKonva = async (points, done) => {
   try {
     const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
     const stage = window.Konva.stages[0];
@@ -224,7 +224,7 @@ const polygonKonva = async(points, done) => {
  * @param {number} shiftY
  * @param {function} done
  */
-const dragKonva = async(x, y, shiftX, shiftY, done) => {
+const dragKonva = async (x, y, shiftX, shiftY, done) => {
   const stage = window.Konva.stages[0];
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
 
@@ -346,7 +346,7 @@ const switchRegionTreeView = (viewName, done) => {
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
-const selectText = async({ selector, rangeStart, rangeEnd }, done) => {
+const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
   const findOnPosition = (root, position, borderSide = "left") => {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
@@ -426,6 +426,10 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
   done(points);
 };
 
+const dumpJSON = (obj) => {
+  console.log(JSON.stringify(obj, null, '  '));
+};
+
 function _isObject(value) {
   var type = typeof value;
 
@@ -490,4 +494,5 @@ module.exports = {
   selectText,
 
   omitBy,
+  dumpJSON,
 };

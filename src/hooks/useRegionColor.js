@@ -1,39 +1,65 @@
 import chroma from "chroma-js";
 import { observe } from "mobx";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import Constants, { defaultStyle } from "../core/Constants";
 
-export const useRegionColors = (region, {
+const defaultStyles = {
+  defaultFillOpacity: defaultStyle.fillopacity,
+  defaultFillColor: defaultStyle.fillcolor,
+  defaultStrokeColor: defaultStyle.strokecolor,
+  defaultStrokeColorHighlighted: Constants.HIGHLIGHTED_STROKE_COLOR,
+  defaultStrokeWidth: defaultStyle.strokewidth,
+  defaultStrokeWidthHighlighted: Constants.HIGHLIGHTED_STROKE_WIDTH,
+  defaultSuggestionWidth: Constants.SUGGESTION_STROKE_WIDTH,
+};
+
+export const useRegionStyles = (region, {
+  includeFill = false,
   useStrokeAsFill = false,
-} = {}) => {
-  const style = region.style || region.tag || defaultStyle;
+  defaultFillOpacity = defaultStyle.fillopacity,
+  defaultFillColor = defaultStyle.fillcolor,
+  defaultStrokeColor = defaultStyle.strokecolor,
+  defaultStrokeColorHighlighted = Constants.HIGHLIGHTED_STROKE_COLOR,
+  defaultStrokeWidth = defaultStyle.strokewidth,
+  defaultStrokeWidthHighlighted = Constants.HIGHLIGHTED_STROKE_WIDTH,
+  defaultSuggestionWidth = Constants.SUGGESTION_STROKE_WIDTH,
+} = defaultStyles) => {
+  const style = region.style || region.tag;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
   const [highlighted, setHighlighted] = useState(region.highlighted);
-  const [shouldFill, setShouldFill] = useState(region.fill ?? useStrokeAsFill);
-  const selected = region.inSelection || highlighted;
+  const [shouldFill, setShouldFill] = useState(region.fill ?? (useStrokeAsFill || includeFill));
+
+  const selected = useMemo(() => {
+    return region.inSelection || highlighted;
+  }, [region.inSelection, highlighted]);
+
   const fillColor = useMemo(() => {
     return shouldFill ? (
-      chroma(useStrokeAsFill ? style.strokecolor : style.fillcolor)
+      chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
         .darken(0.3)
-        .alpha(+(style.fillopacity ?? 0.5))
+        .alpha(+(style?.fillopacity ?? defaultFillOpacity ?? 0.5))
         .css()
     ) : null;
-  }, [shouldFill, style]);
+  }, [shouldFill, style, defaultFillColor, defaultFillOpacity]);
 
   const strokeColor = useMemo(() => {
     if (selected) {
-      return Constants.HIGHLIGHTED_STROKE_COLOR;
+      return defaultStrokeColorHighlighted;
     } else {
-      return chroma(style.strokecolor).css();
+      return chroma(style?.strokecolor ?? defaultStrokeColor).css();
     }
-  }, [selected, style]);
+  }, [selected, style, defaultStrokeColorHighlighted, defaultStrokeColor]);
 
   const strokeWidth = useMemo(() => {
-    if (selected) {
-      return Constants.HIGHLIGHTED_STROKE_WIDTH;
+    if (suggestion) {
+      return defaultSuggestionWidth;
+    } else if (selected) {
+      return defaultStrokeWidthHighlighted;
     } else {
-      return +style.strokewidth;
+      return +(style?.strokewidth ?? defaultStrokeWidth);
     }
-  }, [selected, style]);
+  }, [selected, style, defaultSuggestionWidth, defaultStrokeWidthHighlighted, defaultStrokeWidth]);
 
   useEffect(() => {
     const disposeObserver = [

@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -159,7 +159,7 @@ const PolygonPoint = types
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
 
-  const colors = useRegionColors(item.parent);
+  const regionStyles = useRegionStyles(item.parent);
   const sizes = {
     small: 4,
     medium: 8,
@@ -178,7 +178,7 @@ const PolygonPointView = observer(({ item, name }) => {
     item.index === 0
       ? {
         hitStrokeWidth: 12,
-        fill: colors.strokeColor || item.primary,
+        fill: regionStyles.strokeColor || item.primary,
         onMouseOver: item.handleMouseOverStartPoint,
         onMouseOut: item.handleMouseOutStartPoint,
       }

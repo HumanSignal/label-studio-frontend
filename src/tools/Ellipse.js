@@ -6,7 +6,9 @@ import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
-  .model("EllipseTool")
+  .model("EllipseTool", {
+    group: "segmentation",
+  })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,
@@ -23,7 +25,9 @@ const _Tool = types
         return "Ellipse region";
       },
       get iconComponent() {
-        return NodeViews.EllipseRegionModel[1];
+        return self.dynamic
+          ? NodeViews.EllipseRegionModel.altIcon
+          : NodeViews.EllipseRegionModel.icon;
       },
       get defaultDimensions() {
         const { radius } = DEFAULT_DIMENSIONS.ellipse;
@@ -51,6 +55,6 @@ const _Tool = types
     },
   }));
 
-const Ellipse = types.compose(ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool);
+const Ellipse = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool);
 
 export { Ellipse };

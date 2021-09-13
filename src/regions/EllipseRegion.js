@@ -12,7 +12,7 @@ import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { rotateBboxCoords } from "../utils/bboxCoords";
@@ -263,7 +263,7 @@ const EllipseRegionModel = types.compose(
 const HtxEllipseView = ({ item }) => {
   const { store } = item;
 
-  const colors = useRegionColors(item);
+  const regionStyles = useRegionStyles(item);
   const stage = item.parent.stageRef;
 
   return (
@@ -273,9 +273,9 @@ const HtxEllipseView = ({ item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={colors.fillColor}
-        stroke={colors.strokeColor}
-        strokeWidth={colors.strokeWidth}
+        fill={regionStyles.fillColor}
+        stroke={regionStyles.strokeColor}
+        strokeWidth={regionStyles.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
@@ -361,7 +361,7 @@ const HtxEllipseView = ({ item }) => {
         }}
         draggable={item.editable}
       />
-      <LabelOnEllipse item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth}/>
+      <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
     </Fragment>
   );
 };

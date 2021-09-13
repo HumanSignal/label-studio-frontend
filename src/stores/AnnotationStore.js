@@ -18,7 +18,7 @@ import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
 
-const hotkeys = Hotkey("Annotations");
+const hotkeys = Hotkey("Annotations", "Annotations");
 
 const Annotation = types
   .model("Annotation", {
@@ -70,6 +70,8 @@ const Annotation = types
 
     areas: types.map(Area),
 
+    suggestions: types.map(Area),
+
     regionStore: types.optional(RegionStore, {
       regions: [],
     }),
@@ -113,6 +115,10 @@ const Annotation = types
 
     get objects() {
       return Array.from(self.names.values()).filter(tag => !tag.toname);
+    },
+
+    get regions() {
+      return Array.from(self.areas.values());
     },
 
     get results() {
@@ -172,6 +178,12 @@ const Annotation = types
 
       return dataExists && pkExists;
     },
+
+    get onlyTextObjects() {
+      return self.objects.reduce((res, obj) => {
+        return res && ['text', 'hypertext'].includes(obj.type);
+      }, true);
+    },
   }))
   .volatile(() => ({
     hidden: false,
@@ -210,7 +222,6 @@ const Annotation = types
 
       if (ivokeEvent) {
         getEnv(self).events.invoke('groundTruth', self.store, self, value);
-        console.log('invoked');
       }
     },
 
@@ -449,10 +460,10 @@ const Annotation = types
       if (isDraft) self.versions.draft = self.serializeAnnotation();
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
-        self.deserializeAnnotation(self.versions.result);
+        self.deserializeResults(self.versions.result);
         self.draftSelected = false;
       } else {
-        self.deserializeAnnotation(self.versions.draft);
+        self.deserializeResults(self.versions.draft);
         self.draftSelected = true;
       }
       self.updateObjects();
@@ -680,7 +691,7 @@ const Annotation = types
         result.id = regionIdMap[regionId];
       });
 
-      self.deserializeAnnotation(results);
+      self.deserializeResults(results);
       self.updateObjects();
       return self.regionStore.regions.slice(prevSize);
     },
@@ -692,37 +703,52 @@ const Annotation = types
     // Some annotations may be created with wrong assumptions
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
-      return (json ?? []).filter(obj => {
+      return (json ?? []).reduce((res, objRaw) => {
+        const obj = JSON.parse(JSON.stringify(objRaw));
+
         if (obj.type === 'relation') return true;
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
+        const tagNames = self.names;
 
         // Clear non-existent labels
         if (obj.type.endsWith("labels")) {
           const keys = Object.keys(obj.value);
 
-          for (const key of keys) {
+          for (let key of keys) {
             if (key.endsWith("labels")) {
-              if (self.names.has(obj.from_name)) {
-                const labelsContainer = self.names.get(obj.from_name);
+              const hasControlTag = tagNames.has(obj.from_name) || tagNames.has("labels");
+
+              if (hasControlTag) {
+                const labelsContainer = tagNames.get(obj.from_name) ?? tagNames.get("labels");
                 const value = obj.value[key];
 
                 if (value && value.length && labelsContainer.type.endsWith("labels")) {
                   const filteredValue = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                  const oldKey = key;
+
+                  key = key === labelsContainer.type ? key : labelsContainer.type;
+
+                  if (oldKey !== key) {
+                    obj.type = key;
+                    obj.value[key] = obj.value[oldKey];
+                    delete obj.value[oldKey];
+                  }
 
                   if (filteredValue.length !== value.length) {
-                    obj.value[key] = value.filter(labelName => !!labelsContainer.findLabel(labelName));
+                    obj.value[key] = filteredValue;
                   }
                 }
               }
+
               if (
-                !self.names.has(obj.from_name) ||
-                (!obj.value[key].length && !self.names.get(obj.from_name).allowempty)
+                !tagNames.has(obj.from_name) ||
+                (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
               ) {
                 delete obj.value[key];
-                if (self.names.has(obj.to_name)) {
+                if (tagNames.has(obj.to_name)) {
                   // Redirect references to existent tool
-                  const targetObject = self.names.get(obj.to_name);
+                  const targetObject = tagNames.get(obj.to_name);
                   const states = targetObject.states();
 
                   if (states?.length) {
@@ -746,55 +772,58 @@ const Annotation = types
           }
         }
 
-        return self.names.has(obj.from_name) && self.names.has(obj.to_name);
+        if (tagNames.has(obj.from_name) && tagNames.has(obj.to_name)) {
+          res.push(obj);
+        }
+
+        return res;
+      }, []);
+    },
+
+    setSuggestions(rawSuggestions) {
+      self.suggestions.clear();
+
+      self.deserializeResults(rawSuggestions, {
+        suggestions: true,
       });
+
+      if (getRoot(self).autoAcceptSuggestions) {
+        self.acceptAllSuggestions();
+      } else {
+        self.suggestions.forEach((suggestion) => {
+          if (['richtextregion', 'text'].includes(suggestion.type)) {
+            self.acceptSuggestion(suggestion.id);
+          }
+        });
+      }
+
+      self.objects.forEach(obj => obj.needsUpdate?.());
     },
 
     /**
-     * Deserialize annotation of models
+     * Deserialize results
+     * @param {string | Array<any>} json Input results
+     * @param {{
+     * suggestions: boolean
+     * }} options Deserialization options
      */
-    deserializeAnnotation(json) {
+    deserializeResults(json, { suggestions=false } = {}) {
       try {
-        let objAnnotation = json;
-
-        if (typeof objAnnotation !== "object") {
-          objAnnotation = JSON.parse(objAnnotation);
-        }
-
-        objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
+        const objAnnotation = self.prepareAnnotation(json);
+        const areas = suggestions ? self.suggestions : self.areas;
 
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
-          if (obj["type"] !== "relation") {
-            const { id, value: rawValue, type, ...data } = obj;
-
-            const { type: tagType } = self.names.get(obj.to_name) ?? {};
-
-            // avoid duplicates of the same areas in different annotations/predictions
-            const areaId = `${id || guidGenerator()}#${self.id}`;
-            const resultId = `${data.from_name}@${areaId}`;
-            const value = self.prepareValue(rawValue, tagType);
-
-            let area = self.areas.get(areaId);
-
-            if (!area) {
-              const areaSnapshot = {
-                id: areaId,
-                object: data.to_name,
-                ...data,
-                ...value,
-                value,
-              };
-
-              area = self.areas.put(areaSnapshot);
-            }
-
-            area.addResult({ ...data, id: resultId, type, value });
-          }
+          self.deserializeSingleResult(obj,
+            (id) => areas.get(id),
+            (snapshot) => areas.put(snapshot),
+          );
         });
 
-        self.results.filter(r => r.area.classification).forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+        self.results
+          .filter(r => r.area.classification)
+          .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
         objAnnotation.forEach(obj => {
           if (obj["type"] === "relation") {
@@ -806,10 +835,55 @@ const Annotation = types
             );
           }
         });
-
       } catch (e) {
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
+      }
+    },
+
+    deserializeAnnotation(...args) {
+      console.warn('deserializeAnnotation() is deprecated. Use deserializeResults() instead');
+      return self.deserializeResults(...args);
+    },
+
+    prepareAnnotation(rawAnnotation) {
+      let objAnnotation = rawAnnotation;
+
+      if (typeof objAnnotation !== "object") {
+        objAnnotation = JSON.parse(objAnnotation);
+      }
+
+      objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
+
+      return objAnnotation;
+    },
+
+    deserializeSingleResult(obj, getArea, createArea) {
+      if (obj["type"] !== "relation") {
+        const { id, value: rawValue, type, ...data } = obj;
+
+        const { type: tagType } = self.names.get(obj.to_name) ?? {};
+
+        // avoid duplicates of the same areas in different annotations/predictions
+        const areaId = `${id || guidGenerator()}#${self.id}`;
+        const resultId = `${data.from_name}@${areaId}`;
+        const value = self.prepareValue(rawValue, tagType);
+
+        let area = getArea(areaId);
+
+        if (!area) {
+          const areaSnapshot = {
+            id: areaId,
+            object: data.to_name,
+            ...data,
+            ...value,
+            value,
+          };
+
+          area = createArea(areaSnapshot);
+        }
+
+        area.addResult({ ...data, id: resultId, type, value });
       }
     },
 
@@ -837,6 +911,32 @@ const Annotation = types
       }
 
       return value;
+    },
+
+    acceptAllSuggestions() {
+      Array.from(self.suggestions.keys()).forEach((id) => {
+        self.acceptSuggestion(id);
+      });
+    },
+
+    rejectAllSuggestions() {
+      Array.from(self.suggestions.keys).forEach((id) => {
+        self.suggestions.delete(id);
+      });
+    },
+
+    acceptSuggestion(id) {
+      const item = self.suggestions.get(id);
+
+      self.areas.set(id, {
+        ...item.toJSON(),
+        fromSuggestion: true,
+      });
+      self.suggestions.delete(id);
+    },
+
+    rejectSuggestion(id) {
+      self.suggestions.delete(id);
     },
   }));
 
@@ -1154,7 +1254,7 @@ export default types
       });
 
       selectAnnotation(c.id);
-      c.deserializeAnnotation(s);
+      c.deserializeResults(s);
       c.updateObjects();
 
       return c;

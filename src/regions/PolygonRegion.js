@@ -14,7 +14,7 @@ import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { observer } from "mobx-react";
@@ -403,7 +403,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
 const HtxPolygonView = ({ item }) => {
   const { store } = item;
 
-  const colors = useRegionColors(item, {
+  const regionStyles = useRegionStyles(item, {
     useStrokeAsFill: true,
   });
 
@@ -420,11 +420,11 @@ const HtxPolygonView = ({ item }) => {
 
     const lineProps = closed ? {
       stroke: 'transparent',
-      strokeWidth: colors.strokeWidth,
+      strokeWidth: regionStyles.strokeWidth,
       strokeScaleEnabled: false,
     } : {
-      stroke: colors.strokeColor,
-      strokeWidth: colors.strokeWidth,
+      stroke: regionStyles.strokeColor,
+      strokeWidth: regionStyles.strokeWidth,
       strokeScaleEnabled: false,
     };
 
@@ -589,11 +589,11 @@ const HtxPolygonView = ({ item }) => {
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
     >
-      <LabelOnPolygon item={item} color={colors.strokeColor} />
+      <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
       {item.mouseOverStartPoint}
 
-      {item.points && item.closed ? <Poly item={item} colors={colors} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
+      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
       {item.points ? renderLines(item.points, item.closed) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>
