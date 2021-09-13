@@ -122,7 +122,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
   const offset = size * 0.05;
   const toolSelectors = [
     (shapeName, shapeIdx) => {
-      I.click(locate(".lsf-toolbar").find("button").at(+shapeIdx + 1));
+      I.click(locate(".lsf-toolbar").find(".lsf-tool").at(+shapeIdx + 1));
     },
     (_, shapeIdx) => {
       I.click(AtLabels.locateLabel("blank").at(+shapeIdx + 1));
