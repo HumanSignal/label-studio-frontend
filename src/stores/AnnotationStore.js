@@ -691,7 +691,7 @@ const Annotation = types
         result.id = regionIdMap[regionId];
       });
 
-      self.deserializeAnnotation(results);
+      self.deserializeResults(results);
       self.updateObjects();
       return self.regionStore.regions.slice(prevSize);
     },
@@ -839,6 +839,11 @@ const Annotation = types
         console.error(e);
         self.list.addErrors([errorBuilder.generalError(e)]);
       }
+    },
+
+    deserializeAnnotation(...args) {
+      console.warn('deserializeAnnotation() is deprecated. Use deserializeResults() instead');
+      return self.deserializeResults(...args);
     },
 
     prepareAnnotation(rawAnnotation) {

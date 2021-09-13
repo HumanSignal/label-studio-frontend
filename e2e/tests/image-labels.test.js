@@ -1,5 +1,6 @@
 /* global Feature, Scenario, locate */
 const assert = require("assert");
+const { toKebabCase } = require("strman");
 
 Feature("Images' labels type matching");
 
@@ -9,14 +10,13 @@ const IMAGE =
 const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
   return `<View>
     <Image name="image" value="$image" selectionControl="false"></Image>
-    ${shapes.map(shapeName => {
-    return `<${shapeName} name="image${shapeName}" toName="image" ${props} />
-    <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
-        <Label value="${shapeName}Create"/>
-        <Label value="${shapeName}Append"/>
-    </${shapeName}Labels>`;
-  }).join(`
-    `)}
+    ${shapes.map(shapeName => (`
+        <${shapeName} name="image${shapeName}" toName="image" ${props} />
+        <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
+            <Label value="${shapeName}Create"/>
+            <Label value="${shapeName}Append"/>
+        </${shapeName}Labels>
+    `)).join(`\n`)}
     <Labels name="imageLabels" toName="image" allowEmpty="true">
         <Label value="Label"/>
     </Labels>
@@ -107,10 +107,13 @@ const createShape = {
 
 Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
   const shapes = Object.keys(createShape);
+  const config = createConfig({ shapes, props: `strokewidth="5"` });
   const params = {
-    config: createConfig({ shapes, props: `strokewidth="5"` }),
+    config,
     data: { image: IMAGE },
   };
+
+  console.log(config);
 
   I.amOnPage("/");
   LabelStudio.init(params);
@@ -120,8 +123,10 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
   const size = Math.min(canvasSize.width, canvasSize.height);
   const offset = size * 0.05;
   const toolSelectors = [
-    (_, shapeIdx) => {
-      I.click(locate(".lsf-main-view__annotation").find("button").at(+shapeIdx + 1));
+    (shapeName, shapeIdx) => {
+      const selector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
+
+      I.click(selector);
     },
     (_, shapeIdx) => {
       I.click(AtLabels.locateLabel("blank").at(+shapeIdx + 1));
@@ -144,10 +149,14 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         });
       });
 
+      const toolSelector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
+
+      console.log({ toolSelector });
+
       LabelStudio.init(params);
       AtImageView.waitForImage();
       AtSidebar.seeRegions(0);
-      I.click(locate(".lsf-main-view__annotation").find("button").at(1));
+      I.click(toolSelector);
       await AtImageView.lookForStage();
       I.say(`${shapeName}: Drawing.`);
       regions.forEach((region, idx) => {
@@ -156,7 +165,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         I.pressKey(["alt", "u"]);
         AtSidebar.seeRegions(idx + 1);
       });
-      I.click(locate(".lsf-main-view__annotation").find("button").at(1));
+      I.click(toolSelector);
       I.say(`${shapeName}: Labeling.`);
       for (const currentShapeName of shapes) {
         const currentLabelName = currentShapeName + "Append";

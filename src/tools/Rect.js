@@ -7,7 +7,7 @@ import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
-  .model("RectTool", {
+  .model("RectangleTool", {
     group: "segmentation",
     smart: true,
     shortcut: "R",

@@ -104,7 +104,7 @@ export const Tool = ({
   const showControls = dynamic === false && controls?.length && (active || (controlsOnHover && hovered));
 
   return (
-    <Block name="tool" aria-label={ariaLabel} mod={{
+    <Block name="tool" tag="button" aria-label={ariaLabel} mod={{
       active,
       disabled,
       alignment,

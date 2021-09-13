@@ -17,7 +17,6 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
 import ToolsManager from "../../tools/Manager";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
-import { isDefined } from "../../utils/utilities";
 
 /**
  * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
