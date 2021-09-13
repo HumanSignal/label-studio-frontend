@@ -190,7 +190,8 @@ const Model = types
         if (!self.layerRef) {
           self.imageData = null;
         } else {
-          const ctx = self.layerRef.canvas.context;
+          const canvas = self.layerRef.toCanvas();
+          const ctx = canvas.getContext("2d");
 
           self.imageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
         }
