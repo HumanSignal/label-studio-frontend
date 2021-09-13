@@ -9,7 +9,7 @@ const IMAGE =
 
 const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
   return `<View>
-    <Image name="image" value="$image" selectionControl="false"></Image>
+    <Image name="image" value="$image" zoomControl="false" selectionControl="false"></Image>
     ${shapes.map(shapeName => (`
         <${shapeName} name="image${shapeName}" toName="image" ${props} />
         <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
@@ -113,8 +113,6 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
     data: { image: IMAGE },
   };
 
-  console.log(config);
-
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
@@ -124,9 +122,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
   const offset = size * 0.05;
   const toolSelectors = [
     (shapeName, shapeIdx) => {
-      const selector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
-
-      I.click(selector);
+      I.click(locate(".lsf-toolbar").find("button").at(+shapeIdx + 1));
     },
     (_, shapeIdx) => {
       I.click(AtLabels.locateLabel("blank").at(+shapeIdx + 1));
@@ -159,12 +155,14 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       I.click(toolSelector);
       await AtImageView.lookForStage();
       I.say(`${shapeName}: Drawing.`);
+
       regions.forEach((region, idx) => {
         toolSelectors[idx](shapeName, shapeIdx);
         AtImageView[region.action](...region.params);
         I.pressKey(["alt", "u"]);
         AtSidebar.seeRegions(idx + 1);
       });
+
       I.click(toolSelector);
       I.say(`${shapeName}: Labeling.`);
       for (const currentShapeName of shapes) {
