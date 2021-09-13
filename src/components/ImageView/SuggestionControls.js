@@ -8,16 +8,32 @@ import { observer } from "mobx-react";
 import { isDefined } from "../../utils/utilities";
 
 const getItemPosition = (item) => {
-  const shape = item.shapeRef;
+  const { shapeRef: shape, bboxCoords: bbox } = item;
+  let width, height, x, y;
 
-  if (!isDefined(shape)) return null;
-
-  const [width, height] = [shape?.width() ?? 0, shape?.height() ?? 0];
-  // const [x, y];
+  if (isDefined(bbox)) {
+    [width, height, x, y] = [
+      bbox.right - bbox.left,
+      bbox.bottom - bbox.top,
+      bbox.left,
+      bbox.top,
+    ];
+  } else if (isDefined(shape)) {
+    [width, height] = [
+      shape?.width() ?? 0,
+      shape?.height() ?? 0,
+    ];
+    [x, y] = [
+      (item.x + (width / 2) - 32),
+      (item.x + (width / 2) - 32),
+    ];
+  } else {
+    return null;
+  }
 
   return {
-    x: (item.x + (width / 2) - 32),
-    y: (item.y + height + 10),
+    x: (x + (width / 2) - 32),
+    y: (y + height + 10),
   };
 };
 
