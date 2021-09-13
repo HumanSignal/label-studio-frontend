@@ -37,15 +37,11 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
 
   const smartTools = tools.filter(t => t.dynamic);
 
-  console.log(tools.map((t) => t.toolName));
-
   return (
     <ToolbarProvider value={{ expanded, alignment }}>
       <Block ref={(el) => setToolbar(el)} name="toolbar" mod={{ alignment, expanded }}>
         {Object.entries(toolGroups).map(([name, tools], i) => {
           const visibleTools = tools.filter(t => t.viewClass);
-
-          console.log('visible', visibleTools.map((t) => [t.toolName, t]));
 
           return visibleTools.length ? (
             <Elem name="group" key={`toolset-${name}-${i}`}>
