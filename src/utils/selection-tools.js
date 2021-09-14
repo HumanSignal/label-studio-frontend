@@ -358,7 +358,7 @@ export const highlightRange = (range, { label, classNames }) => {
 
   const lastLabel = highlights[highlights.length - 1];
 
-  lastLabel.setAttribute("data-label", label);
+  if (lastLabel) lastLabel.setAttribute("data-label", label);
 
   return highlights;
 };
