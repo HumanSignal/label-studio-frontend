@@ -118,6 +118,7 @@ describe("parseValue", () => {
     html: "<a href=\"https://labelstud.io\">Label Studio</a>",
     url: "https://labelstud.io",
     name: "Label Studio",
+    num2str: "123",
     messages: {
       greeting: "Hey!",
       error: "It's broken.",
@@ -130,6 +131,10 @@ describe("parseValue", () => {
 
   test("Variable", () => {
     expect(parseValue("$url", data)).toEqual("https://labelstud.io");
+  });
+
+  test("Alphanumeric", () => {
+    expect(parseValue("$num2str", data)).toEqual("123");
   });
 
   test("Text with variables", () => {
