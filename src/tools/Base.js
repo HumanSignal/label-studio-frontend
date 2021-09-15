@@ -74,7 +74,7 @@ const BaseTool = types
   .actions((self) => {
     return  {
       afterCreate() {
-        if (self.smart) {
+        if (self.smart && self.control?.smart) {
           const currentEnv = getEnv(self);
           const toolType = getType(self);
           const snapshot = {
