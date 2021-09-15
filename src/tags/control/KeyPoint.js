@@ -26,6 +26,8 @@ import ToolsManager from "../../tools/Manager";
  * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
  * @param {string=} [strokeColor=#8bad00] - Keypoint stroke color in hexadecimal
+ * @param {boolean} [smart]              - Show smart tool for interactive pre-annotations
+ * @param {boolean} [smartOnly]          - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
   name: types.identifier,
