@@ -7,6 +7,8 @@ let root = null;
 
 class ToolsManager {
   static getInstance({ name } = {}) {
+    if (!name) return;
+
     if (INSTANCES.has(name)) {
       return INSTANCES.get(name);
     }
@@ -18,7 +20,7 @@ class ToolsManager {
   }
 
   static allInstances() {
-    return Object.values(INSTANCES);
+    return Array.from(INSTANCES.values());
   }
 
   static setRoot(rootStore) {

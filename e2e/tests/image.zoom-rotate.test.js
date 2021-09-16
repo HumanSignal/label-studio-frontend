@@ -110,8 +110,10 @@ shapes.forEach(({ shape, props = "", action, regions }) => {
 });
 
 Data(shapesTable).Scenario("Simple rotation", async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
+  const config = getConfigWithShape(current.shape, current.props);
+
   const params = {
-    config: getConfigWithShape(current.shape, current.props),
+    config,
     data: { image: IMAGE },
   };
 
@@ -193,8 +195,11 @@ windowSizesTable.add([800, 480]);
 windowSizesTable.add([1017, 970]);
 
 Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
+  const config = getConfigWithShape("Rectangle");
+
+  console.log(config);
   const params = {
-    config: getConfigWithShape("Rectangle"),
+    config,
     data: { image: IMAGE },
   };
 
