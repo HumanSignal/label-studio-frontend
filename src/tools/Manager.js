@@ -27,6 +27,10 @@ class ToolsManager {
     root = rootStore;
   }
 
+  static removeAllTools() {
+    INSTANCES.forEach((manager) => manager.removeAllTools());
+  }
+
   constructor({ name } = {}) {
     this.name = name;
     this.tools = {};

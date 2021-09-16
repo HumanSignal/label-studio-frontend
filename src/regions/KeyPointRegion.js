@@ -137,7 +137,7 @@ const Model = types
 
       if (self.dynamic) {
         result.is_positive = !self.negative;
-        result.value.labels = [self.labelName];
+        result.value.labels = self.labels;
       }
 
       return result;
