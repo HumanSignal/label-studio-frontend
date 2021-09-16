@@ -19,6 +19,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
+import { createDragBoundFunc } from "../utils/image";
 
 const Model = types
   .model({
@@ -510,7 +511,7 @@ const HtxPolygonView = ({ item }) => {
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
       },
-      dragBoundFunc: item.parent.fixForZoom(pos => {
+      dragBoundFunc: createDragBoundFunc(item.parent, pos => {
         if (!isDragging) return pos;
         let { x, y } = pos;
 
