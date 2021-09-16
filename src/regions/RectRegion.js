@@ -331,8 +331,8 @@ const HtxRectangleView = ({ item }) => {
         scaleX={item.scaleX}
         scaleY={item.scaleY}
         opacity={1}
-        rotation={item.rotation && !suggestion}
         draggable={item.editable && !suggestion}
+        rotation={item.rotation}
         name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {
