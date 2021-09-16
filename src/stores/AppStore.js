@@ -326,7 +326,7 @@ export default types
       );
 
       hotkeys.addKey(
-        "alt+tab",
+        "alt+.",
         function() {
           const c = self.annotationStore.selected;
 
