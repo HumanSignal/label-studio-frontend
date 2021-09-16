@@ -13,6 +13,7 @@ import Utils from "../utils";
 import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
 import { guidGenerator } from "../utils/unique";
+import ToolsManager from "../tools/Manager";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -199,6 +200,8 @@ export default types
      * Function
      */
     function afterCreate() {
+      ToolsManager.setRoot(self);
+
       // important thing to detect Area atomatically: it hasn't access to store, only via global
       window.Htx = self;
 

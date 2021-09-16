@@ -158,7 +158,7 @@ const Model = types.model({
         forEach(tag => tag.unselectAll && tag.unselectAll());
 
       // unselect other tools if they exist and selected
-      const manager = ToolsManager.getInstance();
+      const manager = ToolsManager.getInstance({ name: self.parent.toname });
       const tool = Object.values(self.parent?.tools || {})[0];
 
       const selectedTool = manager.findSelectedTool();
