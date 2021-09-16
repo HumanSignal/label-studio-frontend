@@ -706,7 +706,11 @@ const Annotation = types
       return (json ?? []).reduce((res, objRaw) => {
         const obj = JSON.parse(JSON.stringify(objRaw));
 
-        if (obj.type === 'relation') return true;
+        if (obj.type === 'relation') {
+          res.push(objRaw);
+          return res;
+        }
+
         if (obj.type === "htmllabels") obj.type = "hypertextlabels";
         if (obj.normalization) obj.meta = { ...obj.meta, text: [obj.normalization] };
         const tagNames = self.names;
