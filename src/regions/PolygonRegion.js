@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React, { memo, useMemo } from "react";
+import React, { memo, useContext, useMemo } from "react";
 import { Group, Line } from "react-konva";
 import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
@@ -19,6 +19,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 const Model = types
   .model({
@@ -402,6 +403,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
 
 const HtxPolygonView = ({ item }) => {
   const { store } = item;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   const regionStyles = useRegionStyles(item, {
     useStrokeAsFill: true,
@@ -588,6 +590,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
+      listening={!suggestion}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
