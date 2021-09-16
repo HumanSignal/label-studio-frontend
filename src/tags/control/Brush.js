@@ -1,11 +1,10 @@
 import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
-import ToolsManager from "../../tools/Manager";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 const TagAttrs = types.model({
   name: types.identifier,
@@ -24,21 +23,18 @@ const Model = types
       return states && states.length > 0;
     },
   }))
-  .actions(self => ({
-    afterCreate() {
-      const manager = ToolsManager.getInstance();
-      const env = { manager, control: self };
-      const brush = Tools.Brush.create({}, env);
-      const erase = Tools.Erase.create({}, env);
-
-      self.tools = {
-        brush,
-        erase,
-      };
-    },
+  .volatile(() => ({
+    toolNames: ['Brush', 'Erase'],
   }));
 
-const BrushModel = types.compose("BrushModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
+const BrushModel = types.compose("BrushModel",
+  ControlBase,
+  AnnotationMixin,
+  SeparatedControlMixin,
+  TagAttrs,
+  Model,
+  ToolManagerMixin,
+);
 
 const HtxView = () => {
   return null;

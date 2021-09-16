@@ -386,10 +386,10 @@ const Model = types.model({
 
   // actions for the tools
   .actions(self => {
-    const manager = ToolsManager.getInstance({ obj: self });
+    const manager = ToolsManager.getInstance({ name: self.name });
     const env = { manager, control: self };
 
-    manager.reload({ obj: self });
+    manager.reload({ name: self.name });
 
     function afterCreate() {
       if (self.selectioncontrol)

@@ -118,7 +118,6 @@ const ControlButton = ({ x = 0, fill, iconColor, onClick, icon }) => {
     const iconImage = new window.Image();
 
     iconImage.onload = () => {
-      console.log('loaded');
       setImg(iconImage);
     };
     iconImage.width = 12;

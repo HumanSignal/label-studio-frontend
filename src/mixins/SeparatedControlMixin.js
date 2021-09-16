@@ -9,7 +9,7 @@ const SeparatedControlMixin = types
   })
   .views(self => ({
     get obj() {
-      return self.annotation.names.get(self.toname);
+      return self.annotation?.names.get(self.toname);
     },
 
     get selectedLabels() {

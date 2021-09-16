@@ -1,18 +1,40 @@
 import { destroy } from "mobx-state-tree";
 import { guidGenerator } from "../utils/unique";
 
-/** @type {ToolsManager} */
-let instance = null;
+/** @type {Map<any, ToolsManager>} */
+const INSTANCES = new Map();
+let root = null;
 
 class ToolsManager {
-  static getInstance(...args) {
-    return instance ?? (instance = new ToolsManager(...args));
+  static getInstance({ name } = {}) {
+    if (!name) return;
+
+    if (INSTANCES.has(name)) {
+      return INSTANCES.get(name);
+    }
+
+    const instance = new ToolsManager({ name });
+
+    INSTANCES.set(name, instance);
+    return instance;
   }
 
-  constructor({ obj } = {}) {
-    this.obj = obj;
+  static allInstances() {
+    return Array.from(INSTANCES.values());
+  }
+
+  static setRoot(rootStore) {
+    root = rootStore;
+  }
+
+  constructor({ name } = {}) {
+    this.name = name;
     this.tools = {};
     this._default_tool = null;
+  }
+
+  get obj() {
+    return root.annotationStore.names.get(this.name);
   }
 
   addTool(name, tool, prefix = guidGenerator()) {
@@ -99,10 +121,13 @@ class ToolsManager {
     }
   }
 
-  reload({ obj } = {}) {
+  reload({ name } = {}) {
+    INSTANCES.delete(this.name);
+    INSTANCES.set(name, this);
+
     this.removeAllTools();
 
-    this.obj = obj;
+    this.name = name;
     this.tools = {};
     this._default_tool = null;
   }

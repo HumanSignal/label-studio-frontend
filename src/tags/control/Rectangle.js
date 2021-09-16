@@ -1,12 +1,11 @@
 import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
-import ToolsManager from "../../tools/Manager";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
  * Use the Rectangle tag to add a rectangle (Bounding Box) to an image without selecting a label. This can be useful when you have only one label to assign to a rectangle.
@@ -47,20 +46,18 @@ const Model = types
   .model({
     type: "rectangle",
   })
-  .actions(self => ({
-    fromStateJSON() {},
-
-    afterCreate() {
-      const manager = ToolsManager.getInstance();
-      const env = { manager, control: self };
-
-      const rect = Tools.Rect.create({ activeShape: null }, env);
-
-      self.tools = { rect };
-    },
+  .volatile(() => ({
+    toolNames: ['Rect'],
   }));
 
-const RectangleModel = types.compose("RectangleModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
+const RectangleModel = types.compose("RectangleModel",
+  ControlBase,
+  AnnotationMixin,
+  SeparatedControlMixin,
+  TagAttrs,
+  Model,
+  ToolManagerMixin,
+);
 
 const HtxView = () => {
   return null;
