@@ -472,6 +472,8 @@ export default types
      * Reset annotation store
      */
     function resetState() {
+      ToolsManager.removeAllTools();
+
       self.annotationStore = AnnotationStore.create({ annotations: [] });
 
       // const c = self.annotationStore.addInitialAnnotation();
