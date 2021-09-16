@@ -230,8 +230,6 @@ const PolygonPointView = observer(({ item, name }) => {
       t.setAttr("scaleX", 1);
       t.setAttr("scaleY", 1);
     },
-
-    transformsEnabled: "position",
   };
 
   const fill = item.selected ? "green" : "white";
