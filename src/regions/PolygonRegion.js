@@ -545,7 +545,7 @@ const HtxPolygonView = ({ item }) => {
     };
   }, []);
 
-
+  if (!item.parent) return null;
 
   const stage = item.parent.stageRef;
 
