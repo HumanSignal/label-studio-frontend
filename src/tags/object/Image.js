@@ -151,6 +151,20 @@ const ImageSelection = types.model({
     includesBbox(bbox) {
       return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
     },
+    intersectsBbox(bbox) {
+      if (!self.isActive || !bbox) return false;
+      const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
+      const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
+      const selfWidth = self.bbox.right - self.bbox.left;
+      const selfHeight = self.bbox.bottom - self.bbox.top;
+      const targetCenterX = (bbox.left + bbox.right) / 2;
+      const targetCenterY = (bbox.top + bbox.bottom) / 2;
+      const targetWidth = bbox.right - bbox.left;
+      const targetHeight = bbox.bottom - bbox.top;
+
+      return (Math.abs(selfCenterX - targetCenterX) * 2 < (selfWidth + targetWidth)) &&
+        (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
+    },
     get selectionBorders() {
       return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
         return  region.bboxCoords ? {
