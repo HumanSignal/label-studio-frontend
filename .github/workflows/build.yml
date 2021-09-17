@@ -8,16 +8,24 @@ jobs:
   build:
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [12, 14, 16] # even-numbered releases are LTS
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Node ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
       with:
-        node-version: 12
+        node-version: ${{ matrix.node-version }}
 
     - name: Upgrade Yarn
-      run: npm install -g yarn@1.22
+      run: npm install -g yarn
 
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
