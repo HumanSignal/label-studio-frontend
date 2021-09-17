@@ -205,6 +205,12 @@ export default types
       // important thing to detect Area atomatically: it hasn't access to store, only via global
       window.Htx = self;
 
+      self.attachHotkeys();
+
+      getEnv(self).events.invoke('labelStudioLoad', self);
+    }
+
+    function attachHotkeys() {
       // Unbind previous keys in case LS was re-initialized
       hotkeys.unbindAll();
 
@@ -346,8 +352,6 @@ export default types
 
         selected.selectAreas(results);
       });
-
-      getEnv(self).events.invoke('labelStudioLoad', self);
     }
 
     /**
@@ -477,7 +481,8 @@ export default types
       ToolsManager.removeAllTools();
 
       // Same with hotkeys
-      // Hotkey.unbindAll();
+      Hotkey.unbindAll();
+      self.attachHotkeys();
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
 
@@ -585,6 +590,7 @@ export default types
       resetState,
       initializeStore,
       setHistory,
+      attachHotkeys,
 
       skipTask,
       submitDraft,
