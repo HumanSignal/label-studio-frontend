@@ -65,7 +65,6 @@ class LSTransformer extends Konva.Transformer {
     });
   }
   detach(...args) {
-    console.log(`detach`);
     this.nodes().forEach((node) => {
       node.setAttr("transformerDragBoundFunc");
     });
