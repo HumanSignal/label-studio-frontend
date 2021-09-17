@@ -37,6 +37,8 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
 
   const smartTools = tools.filter(t => t.dynamic);
 
+  console.log('render');
+
   return (
     <ToolbarProvider value={{ expanded, alignment }}>
       <Block ref={(el) => setToolbar(el)} name="toolbar" mod={{ alignment, expanded }}>
@@ -45,11 +47,11 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
 
           return visibleTools.length ? (
             <Elem name="group" key={`toolset-${name}-${i}`}>
-              {visibleTools.sort((a, b) => a.index - b.index).map(tool => {
+              {visibleTools.sort((a, b) => a.index - b.index).map((tool, i) => {
+                const ToolComponent = tool.viewClass;
+
                 return (
-                  <Fragment key={guidGenerator()}>
-                    {tool.viewClass}
-                  </Fragment>
+                  <ToolComponent key={`${tool.toolName}-${i}`}/>
                 );
               })}
             </Elem>
@@ -80,15 +82,19 @@ const SmartTools = observer(({ tools }) => {
         shortcut="M"
         extra={tools.length > 1 ? (
           <Elem name="smart">
-            {tools.map((t, i) => (
-              <div key={`${i}`} onClickCapture={(e) => {
-                e.preventDefault();
-                setSelectedIndex(i);
-                t.manager.selectTool(t, true);
-              }}>
-                {t.viewClass}
-              </div>
-            ))}
+            {tools.map((t, i) => {
+              const ToolView = t.viewClass;
+
+              return (
+                <div key={`${i}`} onClickCapture={(e) => {
+                  e.preventDefault();
+                  setSelectedIndex(i);
+                  t.manager.selectTool(t, true);
+                }}>
+                  <ToolView />
+                </div>
+              );
+            })}
           </Elem>
         ) : null}
         controls={selected.controls}

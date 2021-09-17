@@ -22,7 +22,7 @@ const ToolMixin = types
     },
 
     get viewClass() {
-      return null;
+      return () => null;
     },
 
     get clonedStates() {

@@ -26,7 +26,7 @@ const ToolView = observer(({ item }) => {
         icon={<IconMagnifyTool />}
         ariaLabel="zoom-in"
         label="Zoom In"
-        shortcut="alt+plus"
+        shortcut="ctrl+plus"
         onClick={() => {
           item.handleZoom(1);
         }}
@@ -35,7 +35,7 @@ const ToolView = observer(({ item }) => {
         icon={<IconMinifyTool />}
         ariaLabel="zoom-out"
         label="Zoom Out"
-        shortcut="alt+minus"
+        shortcut="ctrl+minus"
         onClick={() => {
           item.handleZoom(-1);
         }}
@@ -51,7 +51,7 @@ const _Tool = types
   })
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
 
     get stageContainer() {

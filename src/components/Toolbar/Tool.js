@@ -60,11 +60,13 @@ export const Tool = ({
   }, [shortcut]);
 
   useEffect(() => {
-    const removeShortcuts = () => {
-      if (currentShortcut && hotkeys.hasKey(currentShortcut)) hotkeys.removeKey(currentShortcut);
+    const removeShortcut = () => {
+      if (currentShortcut && hotkeys.hasKey(currentShortcut)) {
+        hotkeys.removeKey(currentShortcut);
+      }
     };
 
-    removeShortcuts();
+    removeShortcut();
     currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
@@ -72,7 +74,9 @@ export const Tool = ({
       }, label);
     }
 
-    return () => removeShortcuts();
+    return () => {
+      removeShortcut();
+    };
   }, [shortcut]);
 
   useEffect(() => {
