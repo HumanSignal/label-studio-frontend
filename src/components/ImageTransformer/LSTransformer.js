@@ -5,7 +5,6 @@ const EVENTS_NAME = 'tr-konva';
 
 class LSTransformer extends Konva.Transformer {
   _proxyDrag(node) {
-    console.log(`!> _proxyDrag`);
     let lastPos;
 
     node.on(`dragstart.${EVENTS_NAME}`, (e) => {
