@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useContext } from "react";
 import { Ellipse } from "react-konva";
 import { getRoot, types } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
@@ -16,6 +16,7 @@ import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { rotateBboxCoords } from "../utils/bboxCoords";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 /**
  * Ellipse object for Bounding Box
@@ -265,6 +266,7 @@ const HtxEllipseView = ({ item }) => {
 
   const regionStyles = useRegionStyles(item);
   const stage = item.parent.stageRef;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   return (
     <Fragment>
@@ -360,6 +362,7 @@ const HtxEllipseView = ({ item }) => {
           item.onClickRegion(e);
         }}
         draggable={item.editable}
+        listening={!suggestion}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
     </Fragment>

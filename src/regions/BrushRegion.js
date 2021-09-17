@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Group, Image, Layer, Shape } from "react-konva";
 import { observer } from "mobx-react";
 import { cast, getParent, getRoot, types } from "mobx-state-tree";
@@ -18,6 +18,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { RegionWrapper } from "./RegionWrapper";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -395,6 +396,7 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
 
 const HtxBrushView = ({ item }) => {
   const [image, setImage] = useState();
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   // Prepare brush stroke from RLE with current stroke color
   useMemo(() => {
@@ -536,6 +538,7 @@ const HtxBrushView = ({ item }) => {
             item.setHighlight(false);
             item.onClickRegion(e);
           }}
+          listening={!suggestion}
         >
           <Image
             image={image}
