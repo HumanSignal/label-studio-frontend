@@ -124,24 +124,30 @@ export default class TransformerComponent extends Component {
         anchorSize={8}
         flipEnabled={false}
         onDragStart={e => {
-          if (!this.transformer|| e.target !== e.currentTarget) return;
-          const shape = this.transformer.findOne(".back");
-          const x = shape.getAttr("width");
-          const y = shape.getAttr("height");
-          const width = shape.getAttr("width");
-          const height = shape.getAttr("height");
-          const rotation = shape.getAttr("rotation");
+          const { selectedShapes } = this.props;
 
-          this.draggingAreaBBox = getBoundingBoxAfterChanges(
-            {
-              x,
-              y,
-              width,
-              height,
-            },
-            { x:0, y:0 },
-            rotation,
-          );
+          if (!this.transformer|| e.target !== e.currentTarget || !selectedShapes) return;
+          let bboxCoords;
+
+          selectedShapes.forEach((region) => {
+            if (bboxCoords) {
+              bboxCoords = {
+                left: Math.min(region.bboxCoords.left, bboxCoords.left),
+                top: Math.min(region.bboxCoords.top, bboxCoords.top),
+                right: Math.max(region.bboxCoords.right, bboxCoords.right),
+                bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+              };
+            } else {
+              bboxCoords = region.bboxCoords;
+            }
+          });
+
+          this.draggingAreaBBox = {
+            x: bboxCoords.left,
+            y: bboxCoords.top,
+            width: bboxCoords.right - bboxCoords.left,
+            height: bboxCoords.bottom - bboxCoords.top,
+          };
         }}
         dragBoundFunc={this.dragBoundFunc}
         ref={node => {

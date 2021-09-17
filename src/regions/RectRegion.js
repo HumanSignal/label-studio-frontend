@@ -294,7 +294,7 @@ const HtxRectangleView = ({ item }) => {
       item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(pos => {
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item.parent, pos => {
       let { x, y } = pos;
       const { width, height, rotation } = item;
       const { stageHeight, stageWidth } = item.parent;
