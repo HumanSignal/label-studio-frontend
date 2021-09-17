@@ -96,7 +96,7 @@ export const AreaMixin = types
     },
 
     get isInSelectionArea() {
-      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.includesBbox(self.bboxCoords) : false;
+      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
     },
   }))
   .volatile(() => ({
