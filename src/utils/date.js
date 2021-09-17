@@ -14,10 +14,13 @@ export function msToHMS(ms) {
   var seconds = ms / 1000;
   // 2- Extract hours:
   var hours = parseInt(seconds / 3600); // 3,600 seconds in 1 hour
+
   seconds = seconds % 3600; // seconds remaining after extracting hours
   // 3- Extract minutes:
   var minutes = parseInt(seconds / 60); // 60 seconds in 1 minute
   // 4- Keep only seconds not extracted to minutes:
+  
+
   seconds = Math.floor(seconds); // % 60;
 
   return hours + ":" + minutes + ":" + seconds;
@@ -27,9 +30,9 @@ export function msToHMS(ms) {
  * Helper function to pretty date
  */
 export function prettyDate(time) {
-  if (typeof time !== "string" && !checkISO(time)) return;
+  if (typeof time !== "string" && !(time instanceof Date) && !checkISO(time)) return;
 
-  let date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
+  let date = new Date(time),
     diff = (new Date().getTime() - date.getTime()) / 1000,
     day_diff = Math.floor(diff / 86400);
 

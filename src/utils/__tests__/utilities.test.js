@@ -1,4 +1,5 @@
-import { isString, isStringEmpty, isStringJSON, getUrl, toTimeString } from "../utilities";
+/* global it, describe, expect, test */
+import { getUrl, isString, isStringEmpty, isStringJSON, toTimeString } from "../utilities";
 
 /**
  * isString

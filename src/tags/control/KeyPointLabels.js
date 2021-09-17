@@ -6,15 +6,16 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import { KeyPointModel } from "./KeyPoint";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * KeyPointLabels tag
- * KeyPointLabels tag creates labeled keypoints
+ * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic keypoint image labeling configuration for multiple regions-->
  * <View>
  *   <KeyPointLabels name="kp-1" toName="img-1">
  *     <Label value="Face" />
@@ -23,40 +24,48 @@ import ControlBase from "./Base";
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPointLabels
- * @param {string} name                  - name of the element
- * @param {string} toName                - name of the image to label
- * @param {float=} [opacity=0.9]         - opacity of keypoint
- * @param {string=} [fillColor]          - keypoint fill color, default is transparent
- * @param {number=} [strokeWidth=1]      - width of the stroke
- * @param {string=} [stokeColor=#8bad00] - keypoint stroke color
+ * @regions KeyPointRegion
+ * @meta_title Keypoint Label Tag for Labeling Keypoints
+ * @meta_description Customize Label Studio with the KeyPointLabels tag to label keypoints for computer vision machine learning and data science projects.
+ * @param {string} name                  - Name of the element
+ * @param {string} toName                - Name of the image to label
+ * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
+ * @param {number} [maxUsages]           - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]    - Show labels in the same visual line
+ * @param {float=} [opacity=0.9]         - Opacity of the keypoint
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
+ * @param {number=} [strokeWidth=1]      - Width of the stroke
+ * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types
-  .model("KeyPointLabelesModel", {
-    id: types.identifier,
-    pid: types.optional(types.string, guidGenerator),
+  .model("KeyPointLabelsModel", {
     type: "keypointlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
   }));
-
-const Model = LabelMixin.props({ _type: "keypointlabels" });
 
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
   TagAttrs,
-  Model,
+  Validation,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

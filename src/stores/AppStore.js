@@ -1,13 +1,21 @@
-import { types, getEnv } from "mobx-state-tree";
+/* global LSF_VERSION */
 
-import CompletionStore from "./CompletionStore";
-import Hotkey from "../core/Hotkey";
+import { flow, getEnv, types } from "mobx-state-tree";
+
+import AnnotationStore from "./AnnotationStore";
+import { Hotkey } from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
-import User from "./UserStore";
+import User, { UserExtended } from "./UserStore";
 import Utils from "../utils";
+import { delay, isDefined } from "../utils/utilities";
+import messages from "../utils/messages";
+import { guidGenerator } from "../utils/unique";
+import ToolsManager from "../tools/Manager";
+
+const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
 export default types
   .model("AppStore", {
@@ -34,11 +42,12 @@ export default types
     explore: types.optional(types.boolean, false),
 
     /**
-     * Completions Store
+     * Annotations Store
      */
-    completionStore: types.optional(CompletionStore, {
-      completions: [],
+    annotationStore: types.optional(AnnotationStore, {
+      annotations: [],
       predictions: [],
+      history: [],
     }),
 
     /**
@@ -76,6 +85,10 @@ export default types
      */
     isLoading: types.optional(types.boolean, false),
     /**
+     * Submitting task; used to prevent from duplicating requests
+     */
+    isSubmitting: false,
+    /**
      * Flag for disable task in Label Studio
      */
     noTask: types.optional(types.boolean, false),
@@ -87,13 +100,53 @@ export default types
      * Finish of labeling
      */
     labeledSuccess: types.optional(types.boolean, false),
+
+    /**
+     * Show or hide comments section
+     */
+    showComments: false,
+
+    /**
+     * Dynamic preannotations
+     */
+    autoAnnotation: false,
+
+    /**
+     * Auto accept suggested annotations
+     */
+    autoAcceptSuggestions: false,
+
+    /**
+     * Indicator for suggestions awaiting
+     */
+    awaitingSuggestions: false,
+
+    users: types.optional(types.array(UserExtended), []),
   })
+  .preProcessSnapshot((sn) => {
+    return {
+      ...sn,
+      autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
+      autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
+    };
+  })
+  .volatile(() => ({
+    version: typeof LSF_VERSION === "string" ? LSF_VERSION : "0.0.0",
+    initialized: false,
+    suggestionsRequest: null,
+  }))
   .views(self => ({
     /**
      * Get alert
      */
     get alert() {
       return getEnv(self).alert;
+    },
+
+    get hasSegmentation() {
+      const match = Array.from(self.annotationStore.names.values()).map(({ type }) => !!type.match(/labels/));
+
+      return match.find(v => v === true) ?? false;
     },
   }))
   .actions(self => {
@@ -112,7 +165,16 @@ export default types
     }
 
     function setFlags(flags) {
-      const names = ["showingSettings", "showingDescription", "isLoading", "noTask", "noAccess", "labeledSuccess"];
+      const names = [
+        "showingSettings",
+        "showingDescription",
+        "isLoading",
+        "isSubmitting",
+        "noTask",
+        "noAccess",
+        "labeledSuccess",
+        "awaitingSuggestions",
+      ];
 
       for (let n of names) if (n in flags) self[n] = flags[n];
     }
@@ -130,101 +192,162 @@ export default types
       return self.interfaces.push(name);
     }
 
+    function toggleComments(state) {
+      return (self.showComments = state);
+    }
+
     /**
      * Function
      */
     function afterCreate() {
+      ToolsManager.setRoot(self);
+
+      // important thing to detect Area atomatically: it hasn't access to store, only via global
+      window.Htx = self;
+
+      // Unbind previous keys in case LS was re-initialized
+      hotkeys.unbindAll();
+
       /**
        * Hotkey for submit
        */
-      Hotkey.addKey("ctrl+enter", self.submitCompletion, "Submit a task");
+      if (self.hasInterface("submit")) {
+        hotkeys.addKey("ctrl+enter", () => {
+          const entity = self.annotationStore.selected;
+
+          if (!isDefined(entity.pk)) {
+            self.submitAnnotation();
+          } else {
+            self.updateAnnotation();
+          }
+        }, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+      }
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) Hotkey.addKey("ctrl+space", self.skipTask, "Skip a task");
+      if (self.hasInterface("skip")) hotkeys.addKey("ctrl+space", self.skipTask, "Skip a task");
 
       /**
-       * Hotkey for update completion
+       * Hotkey for update annotation
        */
-      if (self.hasInterface("update")) Hotkey.addKey("alt+enter", self.updateCompletion, "Update a task");
+      if (self.hasInterface("update")) hotkeys.addKey("alt+enter", self.updateAnnotation, "Update a task");
 
       /**
        * Hotkey for delete
        */
-      Hotkey.addKey(
-        "ctrl+backspace",
+      hotkeys.addKey(
+        "command+backspace, ctrl+backspace",
         function() {
-          const { selected } = self.completionStore;
-          selected.deleteAllRegions();
+          const { selected } = self.annotationStore;
+
+          if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+            selected.deleteAllRegions();
+          }
         },
         "Delete all regions",
       );
 
       // create relation
-      Hotkey.addKey(
-        "r",
-        function() {
-          const c = self.completionStore.selected;
+      hotkeys.overwriteKey("alt+r", function() {
+        const c = self.annotationStore.selected;
+
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.startRelationMode(c.highlightedNode);
+        }
+      }, "Create relation between regions");
+
+      // Focus fist focusable perregion when region is selected
+      hotkeys.addKey(
+        "enter",
+        function(e) {
+          e.preventDefault();
+          const c = self.annotationStore.selected;
+
           if (c && c.highlightedNode && !c.relationMode) {
-            c.startRelationMode(c.highlightedNode);
+            c.highlightedNode.requestPerRegionFocus();
           }
         },
-        "Create relation when region is selected",
       );
 
       // unselect region
-      Hotkey.addKey("u", function() {
-        const c = self.completionStore.selected;
-        if (c && c.highlightedNode && !c.relationMode) {
-          c.regionStore.unselectAll();
+      hotkeys.addKey("alt+u", function() {
+        const c = self.annotationStore.selected;
+
+        if (c && !c.relationMode) {
+          c.unselectAll();
         }
       });
 
-      Hotkey.addKey("h", function() {
-        const c = self.completionStore.selected;
+      hotkeys.addKey("alt+h", function() {
+        const c = self.annotationStore.selected;
+
         if (c && c.highlightedNode && !c.relationMode) {
           c.highlightedNode.toggleHidden();
         }
       });
 
-      Hotkey.addKey("ctrl+z", function() {
-        const { history } = self.completionStore.selected;
+      hotkeys.addKey("command+z, ctrl+z", function() {
+        const { history } = self.annotationStore.selected;
+
         history && history.canUndo && history.undo();
       });
 
-      Hotkey.addKey(
+      hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
+        const { history } = self.annotationStore.selected;
+
+        history && history.canRedo && history.redo();
+      });
+
+      hotkeys.addKey(
         "escape",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
+
           if (c && c.relationMode) {
             c.stopRelationMode();
+          } else if (c && c.highlightedNode) {
+            c.regionStore.unselectAll();
           }
         },
-        "Exit relation mode",
+        "Unselect region, exit relation mode",
       );
 
-      Hotkey.addKey(
+      hotkeys.addKey(
         "backspace",
         function() {
-          const c = self.completionStore.selected;
-          if (c && c.highlightedNode) {
-            c.highlightedNode.deleteRegion();
+          const c = self.annotationStore.selected;
+
+          if (c) {
+            c.deleteSelectedRegions();
           }
         },
         "Delete selected region",
       );
 
-      Hotkey.addKey(
-        "alt+tab",
+      hotkeys.addKey(
+        "alt+.",
         function() {
-          const c = self.completionStore.selected;
+          const c = self.annotationStore.selected;
+
           c && c.regionStore.selectNext();
         },
         "Circle through entities",
       );
 
-      getEnv(self).onLabelStudioLoad(self);
+      // duplicate selected regions
+      hotkeys.addKey("command+d, ctrl+d", function(e) {
+        const { selected } = self.annotationStore;
+        const { serializedSelection } = selected || {};
+
+        if (!serializedSelection?.length) return;
+        e.preventDefault();
+        const results = selected.appendResults(serializedSelection);
+
+        selected.selectAreas(results);
+      });
+
+      getEnv(self).events.invoke('labelStudioLoad', self);
     }
 
     /**
@@ -235,10 +358,17 @@ export default types
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
-          [taskObject.data]: JSON.stringify(taskObject.data),
+          data: JSON.stringify(taskObject.data),
         };
       }
       self.task = Task.create(taskObject);
+    }
+
+    function assignConfig(config) {
+      const cs = self.annotationStore;
+
+      self.config = config;
+      cs.initRoot(self.config);
     }
 
     /* eslint-disable no-unused-vars */
@@ -249,61 +379,195 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
-    function submitCompletion() {
-      const c = self.completionStore.selected;
-      c.beforeSend();
+    function submitDraft(c) {
+      return new Promise(resolve => {
+        const events = getEnv(self).events;
 
-      if (!c.validate()) return;
+        if (!events.hasEvent('submitDraft')) return resolve();
+        const res = events.invokeFirst('submitDraft', self, c);
 
-      c.sendUserGenerate();
-      getEnv(self).onSubmitCompletion(self, c);
+        if (res && res.then) res.then(resolve);
+        else resolve(res);
+      });
     }
 
-    function updateCompletion() {
-      const c = self.completionStore.selected;
-      c.beforeSend();
+    // Set `isSubmitting` flag to block [Submit] and related buttons during request
+    // to prevent from sending duplicating requests.
+    // Better to return request's Promise from SDK to make this work perfect.
+    function handleSubmittingFlag(fn, defaultMessage = "Error during submit") {
+      self.setFlags({ isSubmitting: true });
+      const res = fn();
+      // Wait for request, max 5s to not make disabled forever broken button;
+      // but block for at least 0.5s to prevent from double clicking.
 
-      getEnv(self).onUpdateCompletion(self, c);
+      Promise.race([Promise.all([res, delay(500)]), delay(5000)])
+        .catch(err => showModal(err?.message || err || defaultMessage))
+        .then(() => self.setFlags({ isSubmitting: false }));
+    }
+
+    function submitAnnotation() {
+      if (self.isSubmitting) return;
+
+      const entity = self.annotationStore.selected;
+      const event = entity.exists ? 'updateAnnotation' : 'submitAnnotation';
+
+      entity.beforeSend();
+
+      if (!entity.validate()) return;
+
+      entity.sendUserGenerate();
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke(event, self, entity);
+      });
+      entity.dropDraft();
+    }
+
+    function updateAnnotation() {
+      const entity = self.annotationStore.selected;
+
+      entity.beforeSend();
+
+      if (!entity.validate()) return;
+
+      getEnv(self).events.invoke('updateAnnotation', self, entity);
+      entity.dropDraft();
+      !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
     function skipTask() {
-      getEnv(self).onSkipTask(self);
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke('skipTask', self);
+      }, "Error during skip, try again");
+    }
+
+    function acceptAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
+        const isDirty = entity.history.canUndo;
+
+        entity.dropDraft();
+        getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
+      }, "Error during skip, try again");
+    }
+
+    function rejectAnnotation() {
+      handleSubmittingFlag(() => {
+        const entity = self.annotationStore.selected;
+
+        entity.beforeSend();
+        if (!entity.validate()) return;
+
+        const isDirty = entity.history.canUndo;
+
+        entity.dropDraft();
+        getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
+      }, "Error during skip, try again");
     }
 
     /**
-     * Reset completion store
+     * Reset annotation store
      */
     function resetState() {
-      self.completionStore = CompletionStore.create({ completions: [] });
+      ToolsManager.removeAllTools();
 
-      // const c = self.completionStore.addInitialCompletion();
+      self.annotationStore = AnnotationStore.create({ annotations: [] });
 
-      // self.completionStore.selectCompletion(c.id);
+      // const c = self.annotationStore.addInitialAnnotation();
+
+      // self.annotationStore.selectAnnotation(c.id);
     }
 
     /**
-     * Function to initilaze completion store
-     * Given completions and predictions
+     * Function to initilaze annotation store
+     * Given annotations and predictions
+     * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ completions, predictions }) {
-      const _init = (addFun, selectFun) => {
-        return item => {
-          const obj = self.completionStore[addFun](item);
+    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+      const as = self.annotationStore;
 
-          self.completionStore[selectFun](obj.id);
-          obj.deserializeCompletion(item.result);
-          obj.reinitHistory();
+      as.initRoot(self.config);
 
-          return obj;
-        };
-      };
+      // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
+      /* eslint-disable no-unused-expressions */
+      (predictions ?? []).forEach(p => {
+        const obj = as.addPrediction(p);
 
-      const addPred = _init("addPrediction", "selectPrediction");
-      const addComp = _init("addCompletion", "selectCompletion");
+        as.selectPrediction(obj.id);
+        obj.deserializeResults(p.result);
+      });
 
-      predictions && predictions.forEach(p => addPred(p));
-      completions && completions.forEach(c => addComp(c));
+      [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
+        const obj = as.addAnnotation(c);
+
+        as.selectAnnotation(obj.id);
+        obj.deserializeResults(c.draft || c.result);
+        obj.reinitHistory();
+      });
+
+      const current = as.annotations[as.annotations.length - 1];
+
+      if (current) current.setInitialValues();
+
+      self.setHistory(annotationHistory);
+      /* eslint-enable no-unused-expressions */
+
+      if (!self.initialized) {
+        self.initialized = true;
+        getEnv(self).events.invoke('storageInitialized', self);
+      }
     }
+
+    function setHistory(history = []) {
+      const as = self.annotationStore;
+
+      as.clearHistory();
+
+      (history ?? []).forEach(item => {
+        const fixed = isDefined(item.fixed_annotation_history_result);
+        const accepted = item.accepted;
+
+        const obj = as.addHistory({
+          ...item,
+          pk: guidGenerator(),
+          user: item.created_by,
+          createdDate: item.created_at,
+          acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
+          editable: false,
+        });
+
+        const result = item.previous_annotation_history_result ?? [];
+
+        obj.deserializeResults(result);
+      });
+    }
+
+    const setAutoAnnotation = (value) => {
+      self.autoAnnotation = value;
+      localStorage.setItem("autoAnnotation", value);
+    };
+
+    const setAutoAcceptSuggestions = (value) => {
+      self.autoAcceptSuggestions = value;
+      localStorage.setItem("autoAcceptSuggestions", value);
+    };
+
+    const loadSuggestions = flow(function *(request, dataParser) {
+      const requestId = guidGenerator();
+
+      self.suggestionsRequest = requestId;
+
+      self.setFlags({ awaitingSuggestions: true });
+      const response = yield request;
+
+      if (requestId === self.suggestionsRequest) {
+        self.annotationStore.selected.setSuggestions(dataParser(response));
+        self.setFlags({ awaitingSuggestions: false });
+      }
+    });
 
     return {
       setFlags,
@@ -312,14 +576,25 @@ export default types
 
       afterCreate,
       assignTask,
+      assignConfig,
       resetState,
       initializeStore,
+      setHistory,
 
       skipTask,
-      submitCompletion,
-      updateCompletion,
+      submitDraft,
+      submitAnnotation,
+      updateAnnotation,
+      acceptAnnotation,
+      rejectAnnotation,
 
+      showModal,
+      toggleComments,
       toggleSettings,
       toggleDescription,
+
+      setAutoAnnotation,
+      setAutoAcceptSuggestions,
+      loadSuggestions,
     };
   });

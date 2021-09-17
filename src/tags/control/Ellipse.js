@@ -1,65 +1,70 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
+import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
- * Ellipse
- * Ellipse is used to add ellipse (elleptic Bounding Box) to an image
+ * Use the Ellipse tag to add an elliptical bounding box to an image. Use for bounding box image segmentation tasks with ellipses.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic image segmentation with ellipses labeling configuration-->
  * <View>
  *   <Ellipse name="ellipse1-1" toName="img-1" />
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name Ellipse
- * @param {string} name                  - name of the element
- * @param {string} toName                - name of the image to label
- * @param {float} [opacity=0.6]          - opacity of ellipse
- * @param {string} [fillColor]           - rectangle fill color, default is transparent
- * @param {string} [strokeColor=#f48a42] - stroke color
- * @param {number} [strokeWidth=1]       - width of the stroke
- * @param {boolean} [canRotate=true]     - show or hide rotation handle
+ * @meta_title Ellipse Tag for Adding Elliptical Bounding Box to Images
+ * @meta_description Customize Label Studio with ellipse tags to add elliptical bounding boxes to images for machine learning and data science projects.
+ * @param {string} name                  - Name of the element
+ * @param {string} toName                - Name of the image to label
+ * @param {float} [opacity=0.6]          - Opacity of ellipse
+ * @param {string} [fillColor]           - Ellipse fill color in hexadecimal
+ * @param {string} [strokeColor=#f48a42] - Stroke color in hexadecimal
+ * @param {number} [strokeWidth=1]       - Width of the stroke
+ * @param {boolean} [canRotate=true]     - Show or hide rotation control
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(types.string, "0.6"),
-  fillcolor: types.optional(types.string, "#f48a42"),
+  opacity: types.optional(customTypes.range(), "1"),
+  fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
-  strokecolor: types.optional(types.string, "#f48a42"),
-  fillopacity: types.optional(types.string, "0.6"),
+  strokecolor: types.optional(customTypes.color, "#f48a42"),
+  fillopacity: types.optional(customTypes.range(), "0.2"),
 
   canrotate: types.optional(types.boolean, true),
 });
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "ellipse",
   })
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
-
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
   }))
-  .actions(self => ({
-    afterCreate() {
-      const ellipse = Tools.Ellipse.create({ activeShape: null });
-      ellipse._control = self;
-
-      self.tools = { ellipse: ellipse };
-    },
+  .volatile(() => ({
+    toolNames: ['Ellipse'],
   }));
 
-const EllipseModel = types.compose("EllipseModel", TagAttrs, Model, ControlBase);
+const EllipseModel = types.compose("EllipseModel",
+  ControlBase,
+  AnnotationMixin,
+  SeparatedControlMixin,
+  TagAttrs,
+  Model,
+  ToolManagerMixin,
+);
 
 const HtxView = () => {
   return null;

@@ -1,17 +1,20 @@
-import { types, destroy, getParentOfType, getRoot } from "mobx-state-tree";
+import { destroy, getParentOfType, getRoot, isValidReference, types } from "mobx-state-tree";
 
-import { cloneNode } from "../core/Helpers";
-import { AllRegionsType } from "../regions";
+import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";
 import { TRAVERSE_SKIP } from "../core/Tree";
+import Area from "../regions/Area";
 
 /**
  * Relation between two different nodes
  */
 const Relation = types
   .model("Relation", {
-    node1: types.reference(AllRegionsType),
-    node2: types.reference(AllRegionsType),
+    id: types.optional(types.identifier, guidGenerator),
+
+    node1: types.reference(Area),
+    node2: types.reference(Area),
+
     direction: types.optional(types.enumeration(["left", "right", "bi"]), "right"),
 
     // labels
@@ -26,16 +29,18 @@ const Relation = types
 
     get hasRelations() {
       const r = self.relations;
+
       return r && r.children && r.children.length > 0;
     },
   }))
   .actions(self => ({
     afterAttach() {
       const root = getRoot(self);
-      const c = root.completionStore.selected;
+      const c = root.annotationStore.selected;
 
       // find <Relations> tag in the tree
       let relations = null;
+
       c.traverseTree(function(node) {
         if (node.type === "relations") {
           relations = node;
@@ -70,22 +75,43 @@ const Relation = types
     toggleMeta() {
       self.showMeta = !self.showMeta;
     },
+
+    setSelfHighlight(highlighted = false) {
+      if (highlighted) {
+        self.parent.setHighlight(self);
+      } else {
+        self.parent.removeHighlight();
+      }
+    },
   }));
 
 const RelationStore = types
   .model("RelationStore", {
-    relations: types.array(Relation),
+    _relations: types.array(Relation),
+    showConnections: types.optional(types.boolean, true),
+    highlighted: types.maybeNull(types.safeReference(Relation)),
   })
+  .views(self => ({
+    get relations() {
+      // @todo fix undo/redo with relations
+      // currently undo/redo doesn't consider relations at all,
+      // so some relations can temporarily lose nodes they are connected to during undo/redo
+      return self._relations.filter(r => isValidReference(() => r.node1) && isValidReference(() => r.node2));
+    },
+  }))
   .actions(self => ({
     findRelations(node1, node2) {
-      if (!node2) {
+      const id1 = node1.id || node1;
+      const id2 = node2?.id || node2;
+
+      if (!id2) {
         return self.relations.filter(rl => {
-          return rl.node1.id === node1.id || rl.node2.id === node1.id;
+          return rl.node1.id === id1 || rl.node2.id === id1;
         });
       }
 
       return self.relations.filter(rl => {
-        return rl.node1.id === node1.id && rl.node2.id === node2.id;
+        return rl.node1.id === id1 && rl.node2.id === id2;
       });
     },
 
@@ -96,13 +122,10 @@ const RelationStore = types
     addRelation(node1, node2) {
       if (self.nodesRelated(node1, node2)) return;
 
-      const rl = Relation.create({
-        node1: node1,
-        node2: node2,
-      });
+      const rl = Relation.create({ node1, node2 });
 
       // self.relations.unshift(rl);
-      self.relations.push(rl);
+      self._relations.push(rl);
 
       return rl;
     },
@@ -114,14 +137,15 @@ const RelationStore = types
     deleteNodeRelation(node) {
       // lookup $node and delete it's relation
       const rl = self.findRelations(node);
+
       rl.length && rl.forEach(self.deleteRelation);
     },
 
-    serializeCompletion() {
+    serializeAnnotation() {
       return self.relations.map(r => {
         const s = {
-          from_id: r.node1.pid,
-          to_id: r.node2.pid,
+          from_id: r.node1.cleanId,
+          to_id: r.node2.cleanId,
           type: "relation",
           direction: r.direction,
         };
@@ -134,13 +158,29 @@ const RelationStore = types
 
     deserializeRelation(node1, node2, direction, labels) {
       const rl = self.addRelation(node1, node2);
+
+      if (!rl) return; // duplicated relation
+
       rl.direction = direction;
 
       if (rl.relations && labels)
         labels.forEach(l => {
           const r = rl.relations.findRelation(l);
+
           if (r) r.setSelected(true);
         });
+    },
+
+    toggleConnections() {
+      self.showConnections = !self.showConnections;
+    },
+
+    setHighlight(relation) {
+      self.highlighted = relation;
+    },
+
+    removeHighlight() {
+      self.highlighted = null;
     },
   }));
 

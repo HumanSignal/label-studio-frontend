@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { getParent, types } from "mobx-state-tree";
 
 const RequiredMixin = types
   .model({
@@ -11,22 +11,17 @@ const RequiredMixin = types
         // validating when choices labeling is done per region,
         // for example choice may be required to be selected for
         // every bbox
-        const objectTag = self.completion.names.get(self.toname);
+        const objectTag = self.annotation.names.get(self.toname);
 
-        for (var i = 0; i < objectTag.regions.length; i++) {
-          const reg = objectTag.regions[i];
-          const s = reg.states.find(s => s.type === self.type);
+        for (let reg of objectTag.regs) {
+          const s = reg.results.find(s => s.type === self.resultType);
 
-          if (self.whenlabelvalue && !reg.hasLabelState(self.whenlabelvalue)) {
-            return true;
+          if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
+            continue;
           }
 
-          if (!s || s.selectedValues().length === 0) {
-            // means that this element is not visible because its
-            // not matching the label value, means we don't need to validation
-
-            self.completion.regionStore.unselectAll();
-            reg.selectRegion();
+          if (!s?.hasValue) {
+            self.annotation.selectArea(reg);
             self.requiredModal();
 
             return false;
@@ -34,7 +29,8 @@ const RequiredMixin = types
         }
       } else {
         // validation when its classifying the whole object
-        if (self.selectedValues().length === 0) {
+        // isVisible can be undefined (so comparison is true) or boolean (so check for visibility)
+        if (!self.holdsState && self.isVisible !== false && getParent(self, 2)?.isVisible !== false) {
           self.requiredModal();
           return false;
         }

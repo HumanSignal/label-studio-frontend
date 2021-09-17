@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, serialize } = require("./helpers");
+const { initLabelStudio, serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
@@ -47,20 +47,30 @@ const configComplicated = `
       <Choice value="Negative"/>
       <Choice value="Neutral"/>
     </Choices>
-    <Textarea name="sentiment2" toName="my_text" perRegion="true"
-              choice="single" showInLine="true" whenLabelValue="Person">
-    </Textarea>
-    <Choices name="sentiment" toName="my_text" perRegion="true"
-             choice="single" showInLine="true" whenLabelValue="Person">
-      <Choice value="Female"/>
-      <Choice value="Male"/>
+    <Choices name="positive" toName="my_text"
+             visibleWhen="choice-selected"
+             whenTagName="sentiment"
+             whenChoiceValue="Positive">
+      <Choice value="Smile" />
+      <Choice value="Laughter" />
     </Choices>
-    <Choices name="sentiment2" toName="my_text" perRegion="true"
+    <View visibleWhen="region-selected" whenLabelValue="Person">
+      <Header>More details about this person:</Header>
+      <Textarea name="description" toName="my_text" perRegion="true"
+                choice="single" showInLine="true" whenLabelValue="Person">
+      </Textarea>
+      <Choices name="gender" toName="my_text" perRegion="true"
+               choice="single" showInLine="true" whenLabelValue="Person">
+        <Choice value="Female"/>
+        <Choice value="Male"/>
+      </Choices>
+    </View>
+    <Choices name="currency" toName="my_text" perRegion="true"
              choice="single" showInLine="true" whenLabelValue="Money">
       <Choice value="USD"/>
       <Choice value="EUR"/>
     </Choices>
-    <Choices name="sentiment3" toName="my_text" 
+    <Choices name="sentiment2" toName="my_text"
              choice="single" showInLine="true" perRegion="true">
       <Choice value="Positive"/>
       <Choice value="Negative"/>
@@ -70,7 +80,7 @@ const configComplicated = `
 const reviewText =
   "Not much to write about here, but it does exactly what it's supposed to. filters out the pop sounds. now my recordings are much more crisp. it is one of the lowest prices pop filters on amazon so might as well buy it, they honestly work the same despite their pricing,";
 
-Scenario("Check simple nested Choices for Text", async function(I) {
+Scenario("Check simple nested Choices for Text", async function({ I }) {
   const params = {
     config: configSimple,
     data: { reviewText },
@@ -86,12 +96,13 @@ Scenario("Check simple nested Choices for Text", async function(I) {
   I.click("Emotional");
 
   const result = await I.executeScript(serialize);
+
   assert.equal(result.length, 2);
   assert.deepEqual(result[0].value, { choices: ["Positive"] });
   assert.deepEqual(result[1].value, { choices: ["Emotional"] });
 });
 
-Scenario("check good nested Choice for Text", async function(I) {
+Scenario("Check good nested Choice for Text", async function({ I, AtLabels, AtSidebar }) {
   const params = {
     config: configComplicated,
     data: { reviewText },
@@ -100,24 +111,38 @@ Scenario("check good nested Choice for Text", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  const personTag = locate(".ant-tag").withText("Person");
+  I.click("Positive");
+  I.see("Laughter");
+  I.click("Laughter");
+
+  const personTag = AtLabels.locateLabel("Person");
+
   I.seeElement(personTag);
   I.click(personTag);
-  I.doubleClick(".htx-text");
-  I.see("Regions (1)");
+  I.executeAsyncScript(selectText, {
+    selector: ".htx-richtext",
+    rangeStart: 51,
+    rangeEnd: 55,
+  });
+  AtSidebar.seeRegions(1);
   I.dontSee("Female");
 
   // the only element of regions tree list
-  const regionInList = locate(".ant-tree").find(".ant-tree-treenode");
+  const regionInList = locate(".lsf-entities__regions").find(".ant-list-item");
   // select this region
+
   I.click(regionInList);
 
-  I.see("Regions (1)");
+  AtSidebar.seeRegions(1);
+  I.see("More details"); // View with visibleWhen
 
   I.click("Female");
 
   const result = await I.executeScript(serialize);
-  assert.equal(result.length, 2);
-  assert.deepEqual(result[0].value.labels, ["Person"]);
-  assert.deepEqual(result[1].value.choices, ["Female"]);
+
+  assert.equal(result.length, 4);
+  assert.deepEqual(result[0].value.choices, ["Positive"]);
+  assert.deepEqual(result[1].value.choices, ["Laughter"]);
+  assert.deepEqual(result[2].value.labels, ["Person"]);
+  assert.deepEqual(result[3].value.choices, ["Female"]);
 });

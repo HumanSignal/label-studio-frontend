@@ -1,21 +1,51 @@
 import React from "react";
-import { Modal, Checkbox, Tabs, Table } from "antd";
+import { Checkbox, Modal, Table, Tabs } from "antd";
 import { observer } from "mobx-react";
 
-import Hotkey from "../../core/Hotkey";
+import { Hotkey } from "../../core/Hotkey";
+
+import "./Settings.styl";
+import { Block, Elem } from "../../utils/bem";
 
 const HotkeysDescription = () => {
-  const descr = Hotkey.keysDescipritions();
   const columns = [
-    { title: "Key", dataIndex: "key", key: "key" },
+    { title: "Shortcut", dataIndex: "combo", key: "combo" },
     { title: "Description", dataIndex: "descr", key: "descr" },
   ];
 
-  const data = Object.keys(descr)
-    .filter(k => descr[k])
-    .map(k => new Object({ key: k, descr: descr[k] })); // eslint-disable-line no-new-object
+  const keyNamespaces = Hotkey.namespaces();
 
-  return <Table columns={columns} dataSource={data} size="small" />;
+  const getData = (descr) => Object.keys(descr)
+    .filter(k => descr[k])
+    .map(k => ({
+      key: k,
+      combo: k.split(",").map(keyGroup => {
+        return (
+          <Elem name="key-group" key={keyGroup}>
+            {keyGroup.trim().split("+").map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
+          </Elem>
+        );
+      }),
+      descr: descr[k],
+    }));
+
+  return (
+    <Block name="keys">
+      <Tabs size="small">
+        {Object.entries(keyNamespaces).map(([ns, data]) => {
+          if (Object.keys(data.descriptions).length === 0) {
+            return null;
+          } else {
+            return (
+              <Tabs.TabPane key={ns} tab={data.description ?? ns}>
+                <Table columns={columns} dataSource={getData(data.descriptions)} size="small" />
+              </Tabs.TabPane>
+            );
+          }
+        })}
+      </Tabs>
+    </Block>
+  );
 };
 
 export default observer(({ store }) => {
@@ -30,8 +60,7 @@ export default observer(({ store }) => {
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="General" key="1">
           <Checkbox
-            value="Enable labeling hotkeys"
-            defaultChecked={store.settings.enableHotkeys}
+            checked={store.settings.enableHotkeys}
             onChange={() => {
               store.settings.toggleHotkeys();
             }}
@@ -40,8 +69,7 @@ export default observer(({ store }) => {
           </Checkbox>
           <br />
           <Checkbox
-            value="Show tooltips"
-            defaultChecked={store.settings.enableTooltips}
+            checked={store.settings.enableTooltips}
             onChange={() => {
               store.settings.toggleTooltips();
             }}
@@ -50,8 +78,7 @@ export default observer(({ store }) => {
           </Checkbox>
           <br />
           <Checkbox
-            value="Show labels tooltips"
-            defaultChecked={store.settings.enableLabelTooltips}
+            checked={store.settings.enableLabelTooltips}
             onChange={() => {
               store.settings.toggleLabelTooltips();
             }}
@@ -60,8 +87,7 @@ export default observer(({ store }) => {
           </Checkbox>
           <br />
           <Checkbox
-            value="Show labels inside the regions"
-            defaultChecked={store.settings.showLabels}
+            checked={store.settings.showLabels}
             onChange={() => {
               store.settings.toggleShowLabels();
             }}
@@ -81,13 +107,22 @@ export default observer(({ store }) => {
 
           <br />
           <Checkbox
-            value="Keep label selected after creating a region"
-            defaultChecked={store.settings.continuousLabeling}
+            checked={store.settings.continuousLabeling}
             onChange={() => {
               store.settings.toggleContinuousLabeling();
             }}
           >
             Keep label selected after creating a region
+          </Checkbox>
+
+          <br />
+          <Checkbox checked={store.settings.selectAfterCreate} onChange={store.settings.toggleSelectAfterCreate}>
+            Select regions after creating
+          </Checkbox>
+
+          <br />
+          <Checkbox checked={store.settings.showLineNumbers} onChange={store.settings.toggleShowLineNumbers}>
+            Show line numbers for Text
           </Checkbox>
 
           {/* <br /> */}
@@ -111,14 +146,40 @@ export default observer(({ store }) => {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Layout" key="3">
           <Checkbox
-            value="Move sidepanel to the bottom"
-            defaultChecked={store.settings.bottomSidePanel}
+            checked={store.settings.bottomSidePanel}
             onChange={() => {
               store.settings.toggleBottomSP();
             }}
           >
             Move sidepanel to the bottom
           </Checkbox>
+
+          <br />
+          <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
+            Display Labels by default in Results panel
+          </Checkbox>
+
+          <br />
+          <Checkbox
+            value="Show Annotations panel"
+            defaultChecked={store.settings.showAnnotationsPanel}
+            onChange={() => {
+              store.settings.toggleAnnotationsPanel();
+            }}
+          >
+            Show Annotations panel
+          </Checkbox>
+          <br />
+          <Checkbox
+            value="Show Predictions panel"
+            defaultChecked={store.settings.showPredictionsPanel}
+            onChange={() => {
+              store.settings.togglePredictionsPanel();
+            }}
+          >
+            Show Predictions panel
+          </Checkbox>
+
           {/* <br/> */}
           {/* <Checkbox */}
           {/*   value="Show image in fullsize" */}

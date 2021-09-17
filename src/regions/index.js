@@ -5,25 +5,28 @@ import { types } from "mobx-state-tree";
 
 import { AudioRegionModel } from "./AudioRegion";
 import { BrushRegionModel, HtxBrush } from "./BrushRegion";
-import { HyperTextRegionModel } from "./HyperTextRegion";
-import { KeyPointRegionModel, HtxKeyPoint } from "./KeyPointRegion";
+import { ParagraphsRegionModel } from "./ParagraphsRegion";
+import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
+import { HtxKeyPoint, KeyPointRegionModel } from "./KeyPointRegion";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
-import { PolygonRegionModel, HtxPolygon } from "./PolygonRegion";
-import { RectRegionModel, HtxRectangle } from "./RectRegion";
+import { HtxPolygon, PolygonRegionModel } from "./PolygonRegion";
+import { HtxRectangle, RectRegionModel } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
-import { TextAreaRegionModel, HtxTextAreaRegion } from "./TextAreaRegion";
-import { TextRegionModel } from "./TextRegion";
+import { HtxTextAreaRegion, TextAreaRegionModel } from "./TextAreaRegion";
+import { RichTextRegionModel } from "./RichTextRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
   BrushRegionModel,
   EllipseRegionModel,
-  HyperTextRegionModel,
+  TimeSeriesRegionModel,
   KeyPointRegionModel,
   PolygonRegionModel,
   RectRegionModel,
   TextAreaRegionModel,
-  TextRegionModel,
+  RichTextRegionModel,
+  TimeSeriesRegionModel,
+  ParagraphsRegionModel,
 );
 
 export {
@@ -37,12 +40,13 @@ export {
   HtxPolygon,
   HtxRectangle,
   HtxTextAreaRegion,
-  HyperTextRegionModel,
+  RichTextRegionModel,
+  ParagraphsRegionModel,
+  TimeSeriesRegionModel,
   KeyPointRegionModel,
   PolygonPoint,
   PolygonPointView,
   PolygonRegionModel,
   RectRegionModel,
-  TextAreaRegionModel,
-  TextRegionModel,
+  TextAreaRegionModel
 };

@@ -1,83 +1,60 @@
-import { types, destroy } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
-import BaseTool, { MIN_SIZE } from "./Base";
+import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { EllipseRegionModel } from "../regions/EllipseRegion";
-import { DrawingTool } from "../mixins/DrawingTool";
+import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
+import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
-  .model({
-    default: true,
-    mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
+  .model("EllipseTool", {
+    group: "segmentation",
   })
-  .views(self => ({
-    get tagTypes() {
-      return {
-        stateTypes: "ellipselabels",
-        controlTagTypes: ["ellipselabels", "ellipse"],
-      };
-    },
-  }))
+  .views(self => {
+    const Super = {
+      createRegionOptions: self.createRegionOptions,
+    };
+
+    return {
+      get tagTypes() {
+        return {
+          stateTypes: "ellipselabels",
+          controlTagTypes: ["ellipselabels", "ellipse"],
+        };
+      },
+      get viewTooltip() {
+        return "Ellipse region";
+      },
+      get iconComponent() {
+        return self.dynamic
+          ? NodeViews.EllipseRegionModel.altIcon
+          : NodeViews.EllipseRegionModel.icon;
+      },
+      get defaultDimensions() {
+        const { radius } = DEFAULT_DIMENSIONS.ellipse;
+
+        return {
+          width: radius,
+          height: radius,
+        };
+      },
+      createRegionOptions({ x, y }) {
+        return Super.createRegionOptions({
+          x,
+          y,
+          radiusX: 1,
+          radiusY: 1,
+        });
+      },
+    };
+  })
   .actions(self => ({
-    createRegion(opts) {
-      const control = self.control;
-
-      const ellipse = EllipseRegionModel.create({
-        opacity: parseFloat(control.opacity),
-        strokeWidth: Number(control.strokewidth),
-        fillOpacity: Number(control.fillopacity),
-        ...opts,
-      });
-
-      self.obj.addShape(ellipse);
-
-      return ellipse;
-    },
-
-    mousedownEv(ev, [x, y]) {
-      if (self.control.type === "ellipselabels" && !self.control.isSelected) return;
-
-      if (!self.obj.checkLabels()) return;
-
-      self.mode = "drawing";
-
-      const sap = self.statesAndParams;
-      const ellipse = self.createRegion({
-        x: x,
-        y: y,
-        radiusX: 1,
-        radiusY: 1,
-        coordstype: "px",
-        ...sap,
-      });
-
-      // if (self.control.type === "ellipselabels") self.control.unselectAll();
-
-      return ellipse;
-    },
-
-    mousemoveEv(ev, [x, y]) {
-      if (self.mode !== "drawing") return;
-
-      self.updateDraw(x, y);
-    },
-
-    mouseupEv(ev, [x, y]) {
-      if (self.mode !== "drawing") return;
-
+    beforeCommitDrawing() {
       const s = self.getActiveShape;
 
-      if (s.radiusX < MIN_SIZE.X || s.radiusY < MIN_SIZE.Y) {
-        destroy(s);
-        if (self.control.type === "ellipselabels") self.control.unselectAll();
-      } else {
-        self.obj.completion.highlightedNode.unselectRegion(true);
-      }
-
-      self.mode = "viewing";
+      return s.radiusX > self.MIN_SIZE.X && s.radiusY > self.MIN_SIZE.Y;
     },
   }));
 
-const Ellipse = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
+const Ellipse = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool);
 
 export { Ellipse };

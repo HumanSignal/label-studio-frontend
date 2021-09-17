@@ -1,6 +1,7 @@
 import React from "react";
-import { getType, getParentOfType } from "mobx-state-tree";
+import { getParentOfType, getType } from "mobx-state-tree";
 import xml2js from "xml2js";
+import { variableNotation } from "./Template";
 
 import Registry from "./Registry";
 import { guidGenerator } from "./Helpers";
@@ -15,6 +16,7 @@ export const TRAVERSE_STOP = "stop";
  */
 function cloneReactTree(items, attrs) {
   let clone = null;
+
   clone = function(children) {
     const res = [];
 
@@ -110,9 +112,9 @@ function attrsToProps(attrs) {
 
 /**
  *
- * @param {*} html
+ * @param {string} html
  */
-function treeToModel(html) {
+function treeToModel(html, store) {
   /**
    * Remove all line breaks from a string
    * @param {string}
@@ -134,6 +136,7 @@ function treeToModel(html) {
 
     for (let i = 0; i < split.length - 1; i++) {
       let edsplit = split[i].split("<");
+
       newData += split[i] + "></" + edsplit[edsplit.length - 1].split(" ")[0] + ">";
     }
 
@@ -149,6 +152,7 @@ function treeToModel(html) {
     let m;
     const res = [];
     const re = /<HyperText.*?>(.*?)<\/HyperText>/gi;
+
     do {
       m = re.exec(html);
       if (m) {
@@ -159,10 +163,34 @@ function treeToModel(html) {
     return res;
   })();
 
-  function findHT(node) {
+  function findHT() {
     htseen = htseen + 1;
     return hypertexts[htseen];
   }
+
+  function cloneXmlTreeAndReplaceKeys(root, idx, indexFlag = "{{idx}}") {
+    function recursiveClone(node) {
+      let copy = {};
+
+      for (let key in node) {
+        if (key === '$$') {
+          copy["$$"] = node["$$"].map(c => recursiveClone(c));
+        } else if (key === '$') {
+          copy["$"] = recursiveClone(node["$"]);
+        } else if (typeof node[key] === 'string') {
+          copy[key] = node[key].replace(indexFlag, idx);
+        } else {
+          copy[key] = node[key];
+        }
+      }
+
+      return copy;
+    }
+
+
+    return recursiveClone(root);
+  }
+
 
   /**
    * Generate new node
@@ -181,7 +209,20 @@ function treeToModel(html) {
     const res = [];
 
     for (let chld of node.$$) {
-      if (chld["#name"] !== "__text__") {
+      if (chld["#name"].toLowerCase() === "repeater") {
+        const repeaterArray = variableNotation(chld.$['on'], store.task.dataObj) || [];
+
+        for (let i = 0; i < repeaterArray.length; i++) {
+          let createdView = buildData({ "#name": "View" });
+
+          const cloned = cloneXmlTreeAndReplaceKeys(chld, i, chld.$['indexFlag']);
+
+          createdView.children = addNode(cloned);
+
+          res.push(createdView);
+        }
+      }
+      else if (chld["#name"] !== "__text__") {
         const data = buildData(chld);
         const children = addNode(chld);
 
@@ -204,6 +245,7 @@ function treeToModel(html) {
    */
   function buildData(node) {
     const data = attrsToProps(node.$);
+    const type = node["#name"].toLowerCase();
 
     /**
      * Generation id of node
@@ -213,7 +255,8 @@ function treeToModel(html) {
     /**
      * Build type name
      */
-    data["type"] = node["#name"].toLowerCase();
+    data["type"] = type;
+    data["tagName"] = node["#name"];
 
     return data;
   }
@@ -232,11 +275,13 @@ function treeToModel(html) {
       charsAsChildren: true,
     },
     function(err, result) {
+      if (err) throw err;
       document = result;
     },
   );
 
   const root = buildData(Object.values(document)[0]);
+
   root.children = addNode(Object.values(document)[0]);
 
   return root;
@@ -246,14 +291,18 @@ function treeToModel(html) {
  * Render items of tree
  * @param {*} el
  */
-function renderItem(el) {
-  const View = Registry.getViewByModel(getType(el).name);
+function renderItem(el, includeKey = true) {
+  const type = getType(el);
+  const identifierAttribute = type.identifierAttribute;
+  const typeName = type.name;
+  const View = Registry.getViewByModel(typeName);
 
   if (!View) {
-    throw new Error("No view for model:" + getType(el).name);
+    throw new Error(`No view for model: ${typeName}`);
   }
+  const key = el[identifierAttribute] || guidGenerator();
 
-  return <View key={guidGenerator()} item={el} />;
+  return <View key={includeKey ? key : undefined} item={el} />;
 }
 
 /**
@@ -277,12 +326,14 @@ function renderChildren(item) {
  */
 function findInterface(name, tree) {
   let fn;
+
   fn = function(node) {
     if (getType(node).name === name) return node;
 
     if (node.children) {
       for (let chld of node.children) {
         const res = fn(chld);
+
         if (res) return res;
       }
     }
@@ -300,8 +351,11 @@ function findParentOfType(obj, classes) {
   for (let c of classes) {
     try {
       const p = getParentOfType(obj, c);
+
       if (p) return p;
-    } catch (err) {}
+    } catch (err) {
+      console.err(err);
+    }
   }
 
   return null;
@@ -314,6 +368,7 @@ function findParentOfType(obj, classes) {
  */
 function filterChildrenOfType(obj, classes) {
   const res = [];
+
   if (!Array.isArray(classes)) classes = [classes];
 
   traverseTree(obj, function(node) {
@@ -330,12 +385,14 @@ function traverseTree(root, cb) {
 
   visitNode = function(node) {
     const res = cb(node);
+
     if (res === TRAVERSE_SKIP) return;
     if (res === TRAVERSE_STOP) return TRAVERSE_STOP;
 
     if (node.children) {
       for (let chld of node.children) {
         const visit = visitNode(chld);
+
         if (visit === TRAVERSE_STOP) return TRAVERSE_STOP;
       }
     }

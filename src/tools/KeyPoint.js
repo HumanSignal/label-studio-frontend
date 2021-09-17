@@ -2,58 +2,51 @@ import { types } from "mobx-state-tree";
 
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { KeyPointRegionModel } from "../regions/KeyPointRegion";
+import { NodeViews } from "../components/Node/Node";
+import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
-  .model({
+  .model("KeyPointTool", {
     default: types.optional(types.boolean, true),
+    group: "segmentation",
+    shortcut: "K",
+    smart: true,
   })
-  .views(self => ({
+  .views(() => ({
     get tagTypes() {
       return {
         stateTypes: "keypointlabels",
         controlTagTypes: ["keypointlabels", "keypoint"],
       };
     },
+    get viewTooltip() {
+      return "Key Point";
+    },
+    get iconComponent() {
+      return self.dynamic
+        ? NodeViews.KeyPointRegionModel.altIcon
+        : NodeViews.KeyPointRegionModel.icon;
+    },
   }))
   .actions(self => ({
-    createRegion(opts) {
-      const image = self.obj;
-      const c = self.control;
-
-      const kp = KeyPointRegionModel.create({
-        opacity: parseFloat(c.opacity),
-        ...opts,
-      });
-
-      image.addShape(kp);
-
-      return kp;
-    },
-
     clickEv(ev, [x, y]) {
       const c = self.control;
+
       if (c.type === "keypointlabels" && !c.isSelected) return;
 
-      if (!self.obj.checkLabels()) return;
-
-      const sap = self.statesAndParams;
-
-      self.createRegion({
-        x: x,
-        y: y,
+      const keyPoint = self.createRegion({
+        x,
+        y,
         width: Number(c.strokewidth),
         coordstype: "px",
-        ...sap,
+        dynamic: self.dynamic,
+        negative: self.dynamic && ev.altKey,
       });
 
-      self.obj.completion.highlightedNode.unselectRegion(true);
-      // if (self.control.type === "keypointlabels") self.control.unselectAll();
+      keyPoint.setDrawing(false);
     },
   }));
 
-const KeyPoint = types.compose(ToolMixin, BaseTool, _Tool);
-
-// Registry.addTool("keypoint", KeyPoint);
+const KeyPoint = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { KeyPoint };

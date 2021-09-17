@@ -1,4 +1,5 @@
-import { hexToRGBA, colorToRGBA, convertToRGBA, stringToColor } from "../colors";
+/* global describe, test, expect, it */
+import { colorToRGBA, convertToRGBA, hexToRGBA, stringToColor } from "../colors";
 
 const defaultRGBA = "rgba(255, 255, 255, 0.1)";
 const defaultHEX = {

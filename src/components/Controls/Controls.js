@@ -1,10 +1,12 @@
 import React from "react";
-import { Button, Tooltip } from "antd";
-import { observer, inject } from "mobx-react";
-import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { inject, observer } from "mobx-react";
+import { CheckCircleOutlined, CheckOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
+import { DraftPanel } from "../Annotations/Annotations";
 import styles from "./Controls.module.scss";
+import { Button } from "../../common/Button/Button";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -19,13 +21,14 @@ export default inject("store")(
       submit: "",
     };
 
-    const { userGenerate, sentUserGenerate } = item;
+    const { userGenerate, sentUserGenerate, versions } = item;
     const { enableHotkeys, enableTooltips } = store.settings;
 
     /**
      * Task information
      */
     let taskInformation;
+
     if (store.task) {
       taskInformation = <h4 className={styles.task + " ls-task-info"}>Task ID: {store.task.id}</h4>;
     }
@@ -42,15 +45,18 @@ export default inject("store")(
     let skipButton;
     let updateButton;
     let submitButton;
+    let draftMenu;
 
     /**
      * Check for Predict Menu
      */
-    if (!store.completionStore.predictSelect || store.explore) {
+    if (!store.annotationStore.predictSelect || store.explore) {
+      const disabled = store.isSubmitting;
+
       if (store.hasInterface("skip")) {
         skipButton = (
-          <Tooltip title="Skip task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
-            <Button type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
+          <Tooltip title="Cancel (skip) task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
+            <Button disabled={disabled} look="danger" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
               Skip {buttons.skip}
             </Button>
           </Tooltip>
@@ -61,9 +67,10 @@ export default inject("store")(
         submitButton = (
           <Tooltip title="Save results: [ Ctrl+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
-              type="primary"
+              disabled={disabled}
+              look="primary"
               icon={<CheckOutlined />}
-              onClick={store.submitCompletion}
+              onClick={store.submitAnnotation}
               className={styles.submit + " ls-submit-btn"}
             >
               Submit {buttons.submit}
@@ -76,15 +83,20 @@ export default inject("store")(
         updateButton = (
           <Tooltip title="Update this task: [ Alt+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
-              type="primary"
+              disabled={disabled}
+              look="primary"
               icon={<CheckCircleOutlined />}
-              onClick={store.updateCompletion}
+              onClick={store.updateAnnotation}
               className="ls-update-btn"
             >
-              Update {buttons.update}
+              {sentUserGenerate || versions.result ? "Update" : "Submit"} {buttons.update}
             </Button>
           </Tooltip>
         );
+      }
+
+      if (!store.hasInterface("annotations:menu")) {
+        draftMenu = <DraftPanel item={item} />;
       }
     }
 
@@ -95,12 +107,13 @@ export default inject("store")(
             {skipButton}
             {updateButton}
             {submitButton}
+            {draftMenu}
           </div>
           {taskInformation}
         </div>
       </div>
     );
 
-    return (item.type === "completion" || store.explore) && content;
+    return (item.type === "annotation" || store.explore) && content;
   }),
 );

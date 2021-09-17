@@ -2,19 +2,42 @@ import React, { Component } from "react";
 import { Button, Card, List, Tooltip } from "antd";
 import { observer } from "mobx-react";
 
-import { CopyOutlined, WindowsOutlined } from "@ant-design/icons";
+import { CopyOutlined, EyeInvisibleOutlined, EyeOutlined, WindowsOutlined } from "@ant-design/icons";
 
 import Utils from "../../utils";
-import styles from "../Completions/Completions.module.scss";
+import styles from "../Annotations/Annotations.module.scss";
 
 const Prediction = observer(({ item, store }) => {
+  const toggleVisibility = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    item.toggleVisibility();
+    const c = document.getElementById(`c-${item.id}`);
+
+    if (c) c.style.display = item.hidden ? "none" : "unset";
+  };
+
+  const highlight = () => {
+    const c = document.getElementById(`c-${item.id}`);
+
+    if (c) c.classList.add("hover");
+  };
+
+  const unhighlight = () => {
+    const c = document.getElementById(`c-${item.id}`);
+
+    if (c) c.classList.remove("hover");
+  };
+
   return (
     <List.Item
       key={item.id}
-      className={item.selected ? `${styles.completion} ${styles.completion_selected}` : styles.completion}
-      onClick={ev => {
-        !item.selected && store.completionStore.selectPrediction(item.id);
+      className={item.selected ? `${styles.annotation} ${styles.annotation_selected}` : styles.annotation}
+      onClick={() => {
+        !item.selected && store.annotationStore.selectPrediction(item.id);
       }}
+      onMouseEnter={highlight}
+      onMouseLeave={unhighlight}
     >
       <div className={styles.itembtns}>
         <div>
@@ -24,25 +47,30 @@ const Prediction = observer(({ item, store }) => {
         </div>
         <div className={styles.buttons}>
           {item.selected && (
-            <Tooltip placement="topLeft" title="Add a new completion based on this prediction">
+            <Tooltip placement="topLeft" title="Add a new annotation based on this prediction">
               <Button
                 size="small"
                 onClick={ev => {
                   ev.preventDefault();
 
-                  const cs = store.completionStore;
+                  const cs = store.annotationStore;
                   const p = cs.selected;
-                  const c = cs.addCompletionFromPrediction(p);
+                  const c = cs.addAnnotationFromPrediction(p);
 
                   // this is here because otherwise React doesn't re-render the change in the tree
                   window.setTimeout(function() {
-                    store.completionStore.selectCompletion(c.id);
+                    store.annotationStore.selectAnnotation(c.id);
                   }, 50);
                 }}
               >
                 <CopyOutlined />
               </Button>
             </Tooltip>
+          )}
+          {store.annotationStore.viewingAllAnnotations && (
+            <Button size="small" type="primary" ghost onClick={toggleVisibility}>
+              {item.hidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            </Button>
           )}
         </div>
       </div>
@@ -53,19 +81,20 @@ const Prediction = observer(({ item, store }) => {
 class Predictions extends Component {
   render() {
     const { store } = this.props;
-    const { predictions } = store.completionStore;
+    const { predictions } = store.annotationStore;
 
     let title = (
       <div className={styles.title + " " + styles.titlespace}>
         <h3>Predictions</h3>
-        {store.completionStore.predictions.length > 0 && (
+        {/* @todo fix View All mode */}
+        {store.annotationStore.predictions.length > 0 && false && (
           <Tooltip placement="topLeft" title="View all predictions">
             <Button
               size="small"
-              type={store.completionStore.viewingAllPredictions ? "primary" : ""}
+              type={store.annotationStore.viewingAllPredictions ? "primary" : ""}
               onClick={ev => {
                 ev.preventDefault();
-                store.completionStore.toggleViewingAllPredictions();
+                store.annotationStore.toggleViewingAllPredictions();
               }}
             >
               <WindowsOutlined />

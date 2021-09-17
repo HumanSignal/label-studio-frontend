@@ -1,21 +1,23 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { types } from "mobx-state-tree";
 import { Divider, Empty } from "antd";
 
 import { guidGenerator } from "../../utils/unique";
 import Registry from "../../core/Registry";
 import DialogView from "../../components/Dialog/Dialog";
-import { stringToColor, convertToRGBA } from "../../utils/colors";
+import { convertToRGBA, stringToColor } from "../../utils/colors";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Dialog tag renders a dialog
+ * The Dialog tag renders a dialog box on a task with instructions or other content that you define.
  * @example
+ * <!--Basic labeling configuration to display a dialog box -->
  * <View>
  *  <Dialog name="dialog" value="$dialog"></Dialog>
  * <View>
- * @param {string} name name of the element
- * @param {object} value value of the element
+ * @param {string} name Name of the element
+ * @param {object} value Value of the element
  */
 const Replica = types.model({
   name: types.string,
@@ -34,11 +36,11 @@ function DialogActions(self) {
   return {
     fromStateJSON(obj) {
       if (obj.value.choices) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
       if (obj.value.text) {
-        self.completion.names.get(obj.from_name).fromStateJSON(obj);
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
     },
   };
@@ -50,14 +52,9 @@ const Model = types
     type: "Dialog",
     data: types.map(Replica),
   })
-  .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-  }))
   .actions(self => DialogActions(self));
 
-const DialogModel = types.compose("DialogModel", TagAttrs, Model);
+const DialogModel = types.compose("DialogModel", TagAttrs, Model, AnnotationMixin);
 
 const HtxDialogView = inject("store")(
   observer(({ store, item }) => {

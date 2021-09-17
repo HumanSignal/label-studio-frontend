@@ -1,20 +1,31 @@
-import React, { Fragment } from "react";
-import { Line, Shape, Group } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Group, Image, Layer, Shape } from "react-konva";
+import { observer } from "mobx-react";
+import { cast, getParent, getRoot, types } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import WithStatesMixin from "../mixins/WithStates";
-import { BrushLabelsModel } from "../tags/control/BrushLabels";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
 import { guidGenerator } from "../core/Helpers";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
+import { defaultStyle } from "../core/Constants";
+import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { RegionWrapper } from "./RegionWrapper";
+import { Geometry } from "../components/RelationsOverlay/Geometry";
+
+const highlightOptions = {
+  shadowColor: "red",
+  shadowBlur: 1,
+  shadowOffsetY: 2,
+  shadowOffsetX: 2,
+  shadowOpacity: 1,
+};
 
 const Points = types
   .model("Points", {
@@ -25,28 +36,54 @@ const Points = types
      * Stroke width
      */
     strokeWidth: types.optional(types.number, 25),
+    /**
+     * Eraser size
+     */
+    eraserSize: types.optional(types.number, 25),
   })
-  .actions(self => ({
-    setType(type) {
-      self.type = type;
+  .views(self => ({
+    get store() {
+      return getRoot(self);
     },
+    get parent() {
+      return getParent(self, 2);
+    },
+    get compositeOperation() {
+      return self.type === "add" ? "source-over" : "destination-out";
+    },
+  }))
+  .actions(self => {
+    return {
+      setType(type) {
+        self.type = type;
+      },
 
-    addPoints(x, y) {
-      self.points.push(x);
-      self.points.push(y);
-    },
+      addPoint(x, y) {
+        // scale it back because it would be scaled on draw
+        x = x / self.parent.scaleX;
+        y = y / self.parent.scaleY;
+        self.points.push(x);
+        self.points.push(y);
+      },
 
-    // rescale points to the new width and height from the original
-    rescale(origW, origH, destW, destH) {
-      const s = destW / origW;
-      return self.points.map(p => p * s);
-    },
+      setPoints(points) {
+        self.points = points.map((c, i) => c / (i % 2 === 0 ? self.parent.scaleX : self.parent.scaleY));
+      },
 
-    scaledStrokeWidth(origW, origH, destW, destH) {
-      const s = destW / origW;
-      return s * self.strokeWidth;
-    },
-  }));
+      // rescale points to the new width and height from the original
+      rescale(origW, origH, destW) {
+        const s = destW / origW;
+
+        return self.points.map(p => p * s);
+      },
+
+      scaledStrokeWidth(origW, origH, destW) {
+        const s = destW / origW;
+
+        return s * self.strokeWidth;
+      },
+    };
+  });
 
 /**
  * Rectangle object for Bounding Box
@@ -58,310 +95,495 @@ const Model = types
     pid: types.optional(types.string, guidGenerator),
 
     type: "brushregion",
+    object: types.late(() => types.reference(ImageModel)),
 
-    states: types.maybeNull(types.array(types.union(BrushLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
 
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
+    rle: types.frozen(),
+
+    touches: types.array(Points),
+    currentTouch: types.maybeNull(types.reference(Points)),
+  })
+  .volatile(() => ({
     /**
      * Higher values will result in a more curvy line. A value of 0 will result in no interpolation.
      */
-    tension: types.optional(types.number, 1.0),
+    tension: 0.0,
     /**
      * Stroke color
      */
-    strokeColor: types.optional(types.string, "red"),
+    // strokeColor: types.optional(types.string, "red"),
 
     /**
      * Determines node opacity. Can be any number between 0 and 1
      */
-    opacity: types.optional(types.number, 1),
-    /**
-     * Set scale x
-     */
-    scaleX: types.optional(types.number, 1),
-    /**
-     * Set scale y
-     */
-    scaleY: types.optional(types.number, 1),
-    /**
-     * Points array of brush
-     */
-
-    touches: types.array(Points),
-    currentTouch: types.maybeNull(types.reference(Points)),
+    opacity: 0.6,
+    scaleX: 1,
+    scaleY: 1,
 
     // points: types.array(types.array(types.number)),
     // eraserpoints: types.array(types.array(types.number)),
 
-    mode: types.optional(types.string, "brush"),
+    mode: "brush",
 
-    needsUpdate: types.optional(types.number, 1),
-  })
-  .views(self => ({
-    get parent() {
-      return getParentOfType(self, ImageModel);
-    },
+    needsUpdate: 1,
+    hideable: true,
+    layerRef: undefined,
+    imageData: null,
   }))
-  .actions(self => ({
-    afterCreate() {
-      // if ()
-      // const newdata = ctx.createImageData(750, 937);
-      // newdata.data.set(decode(item._rle));
-      // const dec = decode(self._rle);
-      // self._rle_image =
-      // item._cached_mask = decode(item._rle);
-      // const newdata = ctx.createImageData(750, 937);
-      //     newdata.data.set(item._cached_mask);
-      //     var img = imagedata_to_image(newdata);
-    },
+  .views(self => {
+    return {
+      get parent() {
+        return self.object;
+      },
+      get colorParts() {
+        const style = self.style || self.tag || defaultStyle;
 
-    addTouch({ type, strokeWidth }) {
-      const p = Points.create({ id: guidGenerator(), type: type, strokeWidth: strokeWidth });
-      self.touches.push(p);
-      self.currentTouch = p;
+        return colorToRGBAArray(style.strokecolor);
+      },
+      get strokeColor() {
+        return rgbArrayToHex(self.colorParts);
+      },
+      get touchesLength() {
+        return self.touches.length;
+      },
+      get bboxCoords() {
+        if (!self.imageData) return null;
+        const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
 
-      return p;
-    },
+        return imageBBox && {
+          left: imageBBox.x,
+          top: imageBBox.y,
+          right: imageBBox.x + imageBBox.width,
+          bottom: imageBBox.y + imageBBox.height,
+        };
+      },
+    };
+  })
+  .actions(self => {
+    let pathPoints,
+      cachedPoints,
+      lastPointX = -1,
+      lastPointY = -1;
 
-    afterAttach() {},
+    return {
+      afterCreate() {
+        // if ()
+        // const newdata = ctx.createImageData(750, 937);
+        // newdata.data.set(decode(item._rle));
+        // const dec = decode(self._rle);
+        // self._rle_image =
+        // item._cached_mask = decode(item._rle);
+        // const newdata = ctx.createImageData(750, 937);
+        //     newdata.data.set(item._cached_mask);
+        //     var img = imagedata_to_image(newdata);
+      },
 
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
-      self.completion.loadRegionState(self);
-    },
+      setLayerRef(ref) {
+        if (ref) {
+          ref.canvas._canvas.style.opacity = self.opacity;
+        }
+        self.layerRef = ref;
+      },
 
-    convertPointsToMask() {},
+      cacheImageData() {
+        if (!self.layerRef) {
+          self.imageData = null;
+        } else {
+          const canvas = self.layerRef.toCanvas();
+          const ctx = canvas.getContext("2d");
 
-    updateAppearenceFromState() {
-      const stroke = self.states[0].getSelectedColor();
-      self.strokeColor = stroke;
-    },
+          self.imageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
+        }
+      },
 
-    // addPoints(x, y, mode) {
-    //   if (mode) self.mode = "eraser";
-    //   self.points.push(x);
-    //   self.points.push(y);
-    // },
+      prepareCoords([x, y]) {
+        return self.parent.zoomOriginalCoords([x, y]);
+      },
 
-    // addEraserPoints(x, y) {
-    //   self.eraserpoints = [...self.eraserpoints, x, y];
-    // },
+      preDraw(x, y) {
+        if (!self.layerRef) return;
+        const layer = self.layerRef;
+        const ctx = layer.canvas.context;
 
-    setScale(x, y) {
-      self.scaleX = x;
-      self.scaleY = y;
-    },
+        ctx.save();
+        ctx.beginPath();
+        if (cachedPoints.length / 2 > 3) {
+          ctx.moveTo(...self.prepareCoords([lastPointX, lastPointY]));
+        } else if (cachedPoints.length === 0) {
+          ctx.moveTo(...self.prepareCoords([x, y]));
+        } else {
+          ctx.moveTo(...self.prepareCoords([cachedPoints[0], cachedPoints[1]]));
+          for (let i = 0; i < cachedPoints.length / 2; i++) {
+            ctx.lineTo(...self.prepareCoords([cachedPoints[2 * i], cachedPoints[2 * i + 1]]));
+          }
+        }
+        ctx.lineTo(...self.prepareCoords([x, y]));
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = pathPoints.strokeWidth * self.scaleX * self.parent.stageScale;
+        ctx.strokeStyle = self.strokeColor;
+        ctx.globalCompositeOperation = pathPoints.compositeOperation;
+        ctx.stroke();
+        ctx.restore();
+        lastPointX = x;
+        lastPointY = y;
+      },
 
-    updateImageSize(wp, hp, sw, sh) {
-      if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
-        let ratioX = self.parent.stageWidth / self.parent.initialWidth;
-        let ratioY = self.parent.stageHeight / self.parent.initialHeight;
+      beginPath({ type, strokeWidth, opacity = self.opacity }) {
+        pathPoints = Points.create({ id: guidGenerator(), type, strokeWidth, opacity });
+        cachedPoints = [];
+        return pathPoints;
+      },
 
-        self.setScale(ratioX, ratioY);
+      addPoint(x, y) {
+        self.preDraw(x, y);
+        cachedPoints.push(x);
+        cachedPoints.push(y);
+      },
 
-        self.needsUpdate = self.needsUpdate + 1;
-      }
-    },
+      endPath() {
+        if (cachedPoints.length === 2) {
+          cachedPoints.push(cachedPoints[0]);
+          cachedPoints.push(cachedPoints[1]);
+        }
+        self.touches.push(pathPoints);
+        self.currentTouch = pathPoints;
+        pathPoints.setPoints(cachedPoints);
+        lastPointX = lastPointY = -1;
+        pathPoints = null;
+        cachedPoints = [];
+      },
 
-    addState(state) {
-      self.states.push(state);
-    },
+      convertPointsToMask() {},
 
-    serialize(control, object) {
-      const rle = Canvas.Region2RLE(self, object, {
-        stroke: self.strokeColor,
-        tension: self.tension,
-      });
+      setScale(x, y) {
+        self.scaleX = x;
+        self.scaleY = y;
+      },
 
-      const res = {
-        original_width: object.naturalWidth,
-        original_height: object.naturalHeight,
-        value: {
-          format: "rle",
-          rle: Array.prototype.slice.call(rle),
-        },
-      };
+      updateImageSize() {
+        if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
+          let ratioX = self.parent.stageWidth / self.parent.initialWidth;
+          let ratioY = self.parent.stageHeight / self.parent.initialHeight;
 
-      res.value = Object.assign(res.value, control.serializableValue);
+          self.setScale(ratioX, ratioY);
 
-      return res;
-    },
-  }));
+          self.needsUpdate = self.needsUpdate + 1;
+        }
+      },
 
-const BrushRegionModel = types.compose("BrushRegionModel", WithStatesMixin, RegionsMixin, NormalizationMixin, Model);
+      addState(state) {
+        self.states.push(state);
+      },
 
-const HtxBrushLayer = observer(({ store, item, points }) => {
-  let currentPoints = [];
-  points.points.forEach(point => {
-    currentPoints.push(point);
+      convertToImage() {
+        if (self.touches.length) {
+          const object = self.object;
+          const rle = Canvas.Region2RLE(self, object, {
+            color: self.strokeColor,
+          });
+
+          self.toches = cast([]);
+          self.rle = Array.from(rle);
+        }
+      },
+
+      /**
+       * @example
+       * {
+       *   "original_width": 1920,
+       *   "original_height": 1280,
+       *   "image_rotation": 0,
+       *   "value": {
+       *     "format": "rle",
+       *     "rle": [0, 1, 1, 2, 3],
+       *     "brushlabels": ["Car"]
+       *   }
+       * }
+       * @typedef {Object} BrushRegionResult
+       * @property {number} original_width width of the original image (px)
+       * @property {number} original_height height of the original image (px)
+       * @property {number} image_rotation rotation degree of the image (deg)
+       * @property {Object} value
+       * @property {"rle"} value.format format of the masks, only RLE is supported for now
+       * @property {number[]} value.rle RLE-encoded image
+       */
+
+      /**
+       * @return {BrushRegionResult}
+       */
+      serialize() {
+        const object = self.object;
+        const rle = Canvas.Region2RLE(self, object);
+
+        if (!rle || !rle.length) return null;
+
+        const res = {
+          original_width: object.naturalWidth,
+          original_height: object.naturalHeight,
+          image_rotation: object.rotation,
+          value: {
+            format: "rle",
+            // UInt8Array serializes as object, not an array :(
+            rle: Array.from(rle),
+          },
+        };
+
+        return res;
+      },
+    };
   });
 
-  return points.type === "add" ? (
-    <HtxBrushAddLine item={item} points={currentPoints} strokeWidth={points.strokeWidth} />
-  ) : (
-    <HtxBrushEraserLine item={item} points={currentPoints} strokeWidth={points.strokeWidth} />
+const BrushRegionModel = types.compose(
+  "BrushRegionModel",
+  WithStatesMixin,
+  RegionsMixin,
+  NormalizationMixin,
+  AreaMixin,
+  KonvaRegionMixin,
+  Model,
+);
+
+const HtxBrushLayer = observer(({ item, pointsList }) => {
+  const drawLine = useCallback((ctx, { points, strokeWidth, strokeColor, compositeOperation }) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(points[0], points[1]);
+    for (let i = 0; i < points.length / 2; i++) {
+      ctx.lineTo(points[2 * i], points[2 * i + 1]);
+    }
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = strokeWidth;
+    ctx.strokeStyle = strokeColor;
+    ctx.globalCompositeOperation = compositeOperation;
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  const sceneFunc = useCallback(
+    (context) => {
+      pointsList.forEach(points => {
+        drawLine(context, {
+          points: points.points,
+          strokeWidth: points.strokeWidth,
+          strokeColor: item.strokeColor,
+          compositeOperation: points.compositeOperation,
+        });
+      });
+    },
+    [pointsList, pointsList.length, item.strokeColor],
   );
+
+  const hitFunc = useCallback(
+    (context, shape) => {
+      pointsList.forEach(points => {
+        drawLine(context, {
+          points: points.points,
+          strokeWidth: points.strokeWidth,
+          strokeColor: points.type === "eraser" ? "#ffffff" : shape.colorKey,
+          compositeOperation: "source-over",
+        });
+      });
+    },
+    [pointsList, pointsList.length],
+  );
+
+  return <Shape ref={node => item.setShapeRef(node)} sceneFunc={sceneFunc} hitFunc={hitFunc} />;
 });
 
-const HtxBrushAddLine = observer(({ store, item, points, strokeWidth }) => {
-  let highlightOptions = {
-    shadowColor: "red",
-    shadowBlur: 1,
-    shadowOffsetY: 2,
-    shadowOffsetX: 2,
-    shadowOpacity: 1,
-  };
+const HtxBrushView = ({ item }) => {
+  const [image, setImage] = useState();
 
-  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
-  //        {...highlight}
+  // Prepare brush stroke from RLE with current stroke color
+  useMemo(() => {
+    if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
+    const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
+
+    img.onload = () => setImage(img);
+  }, [
+    item.rle,
+    item.parent,
+    item.parent?.naturalWidth,
+    item.parent?.naturalHeight,
+    item.strokeColor,
+  ]);
+
+  // Drawing hit area by shape color to detect interactions inside the Konva
+  const imageHitFunc = useMemo(()=>{
+    let imageData;
+
+    return (context, shape) => {
+      if (image) {
+        if (!imageData) {
+          context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          const colorParts = colorToRGBAArray(shape.colorKey);
+
+          for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
+            if (imageData.data[i * 4 + 3] > 0) {
+              for (let k = 0; k < 3; k++) {
+                imageData.data[i * 4 + k] = colorParts[k];
+              }
+            }
+          }
+        }
+        context.putImageData(imageData, 0, 0);
+      }
+    };
+  }, [image, item.parent?.stageWidth, item.parent?.stageHeight]);
+
+  const { store } = item;
+
+  const highlightedImageRef = useRef(new window.Image());
+  const layerRef = useRef();
+  const highlightedRef = useRef({});
+
+  highlightedRef.current.highlighted = item.highlighted;
+  highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
+
+  // Caching drawn brush strokes (from the rle field and from the touches field) for bounding box calculations and highlight applying
+  const drawCallback = useMemo(()=>{
+    let done = false;
+
+    return () => {
+      const { highlighted } = highlightedRef.current;
+      const layer = layerRef.current;
+      const isDrawing = item.parent?.drawingRegion === item;
+
+      if (isDrawing || !layer || done) return;
+      let dataUrl;
+      let highlightEl;
+
+      if (highlighted) {
+        highlightEl = layer.findOne(".highlight");
+        highlightEl.hide();
+      }
+      layer.draw();
+      dataUrl = layer.canvas.toDataURL();
+      item.cacheImageData();
+
+      if (highlighted) {
+        highlightEl.show();
+        layer.draw();
+      }
+
+      highlightedImageRef.current.src = dataUrl;
+      done = true;
+    };
+  }, [item.touches.length]);
+
+  if (!item.parent) return null;
+
+  const stage = item.parent?.stageRef;
 
   return (
-    <Line
-      onMouseDown={e => {
-        e.cancelBubble = false;
-      }}
-      strokeWidth={strokeWidth}
-      points={points}
-      stroke={item.strokeColor}
-      opacity={item.mode === "brush" ? item.opacity : 1}
-      globalCompositeOperation={"source-over"}
-      tension={item.tension}
-      lineJoin={"round"}
-      lineCap="round"
-      {...highlight}
-    />
-  );
-});
-
-const HtxBrushEraserLine = ({ store, item, points, strokeWidth }) => {
-  return (
-    <Line
-      onMouseDown={e => {
-        e.cancelBubble = false;
-      }}
-      strokeWidth={strokeWidth}
-      points={points}
-      tension={item.tension}
-      lineJoin={"round"}
-      lineCap="round"
-      stroke={item.strokeColor}
-      opacity={1}
-      globalCompositeOperation={"destination-out"}
-    />
-  );
-};
-
-const HtxBrushView = ({ store, item }) => {
-  // if (item.parent.stageRef && item._rle) {
-  //     const sref = item.parent.stageRef;
-  //     const ctx = sref.getLayers()[0].getContext("2d");
-  //     const newdata = ctx.createImageData(item.parent.stageWidth, item.parent.stageHeight);
-
-  //     newdata.data.set(decode(item._rle));
-
-  //     // newdata.data.set(RLEdecode(_rle))
-  //     ctx.putImageData(newdata, 0, 0);
-  // }
-
-  let highlightOptions = {
-    shadowColor: "red",
-    shadowBlur: 1,
-    shadowOffsetY: 2,
-    shadowOffsetX: 2,
-    shadowOpacity: 1,
-  };
-
-  let highlight = item.highlighted ? highlightOptions : { shadowOpacity: 0 };
-
-  return (
-    <Fragment>
-      <Group
-        attrMy={item.needsUpdate}
-        name="segmentation"
-        scaleX={item.scaleX}
-        scaleY={item.scaleY}
-        // onClick={e => {
-        //     e.cancelBubble = false;
-        // }}
-        // onMouseDown={e => {
-        //     console.log("down");
-        //     e.cancelBubble = false;
-        // }}
-        onMouseOver={e => {
-          const stage = item.parent.stageRef;
-
-          if (store.completionStore.selected.relationMode) {
-            item.setHighlight(true);
-            stage.container().style.cursor = "crosshair";
-          } else {
-            // no tool selected
-            if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = "pointer";
-          }
+    <RegionWrapper item={item}>
+      <Layer
+        id={item.cleanId}
+        ref={ref => {
+          item.setLayerRef(ref);
+          layerRef.current = ref;
         }}
-        onMouseOut={e => {
-          if (store.completionStore.selected.relationMode) {
-            item.setHighlight(false);
-          }
-
-          if (!item.parent.getToolsManager().findSelectedTool()) {
-            const stage = item.parent.stageRef;
-            stage.container().style.cursor = "default";
-          }
+        onDraw={() => {
+          setTimeout(drawCallback);
         }}
-        onClick={e => {
-          if (item.parent.getToolsManager().findSelectedTool()) return;
-
-          const stage = item.parent.stageRef;
-
-          if (store.completionStore.selected.relationMode) {
-            stage.container().style.cursor = "default";
-          }
-
-          item.setHighlight(false);
-          item.onClickRegion();
-        }}
+        clearBeforeDraw={!item.isDrawing}
       >
-        <Shape
-          sceneFunc={(ctx, shape) => {
-            if (item.parent.naturalWidth === 1) return null;
+        <Group
+          attrMy={item.needsUpdate}
+          name="segmentation"
+          // onClick={e => {
+          //     e.cancelBubble = false;
+          // }}
+          onMouseDown={e => {
+            if (store.annotationStore.selected.relationMode) {
+              e.cancelBubble = true;
+            }
+          }}
+          onMouseOver={() => {
+            if (store.annotationStore.selected.relationMode) {
+              item.setHighlight(true);
+              stage.container().style.cursor = "crosshair";
+            } else {
+              // no tool selected
+              if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = "pointer";
+            }
+          }}
+          onMouseOut={() => {
+            if (store.annotationStore.selected.relationMode) {
+              item.setHighlight(false);
+            }
 
-            if (item._loadedOnce === true) {
-              ctx.drawImage(item._img, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-              ctx.fillStrokeShape(shape);
-
+            if (!item.parent?.getToolsManager().findSelectedTool()) {
+              stage.container().style.cursor = "default";
+            }
+          }}
+          onClick={e => {
+            if (item.parent.getSkipInteractions()) return;
+            if (store.annotationStore.selected.relationMode) {
+              item.onClickRegion(e);
               return;
             }
 
-            if (item._rle) {
-              const img = Canvas.RLE2Region(item._rle, item.parent);
-              item._loadedOnce = true;
+            if (item.parent.getToolsManager().findSelectedTool()) return;
 
-              img.onload = function() {
-                ctx.drawImage(img, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-                ctx.fillStrokeShape(shape);
-              };
-
-              item._img = img;
+            if (store.annotationStore.selected.relationMode) {
+              stage.container().style.cursor = "default";
             }
+
+            item.setHighlight(false);
+            item.onClickRegion(e);
           }}
-          opacity={1}
-          {...highlight}
-        />
+        >
+          <Image
+            image={image}
+            hitFunc={imageHitFunc}
+            width={item.parent.stageWidth}
+            height={item.parent.stageHeight}
+          />
 
-        {item.touches.map(p => (
-          <HtxBrushLayer store={store} item={item} points={p} />
-        ))}
+          <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+            <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
+          </Group>
 
-        <LabelOnMask item={item} />
-      </Group>
-    </Fragment>
+          <Image
+            name="highlight"
+            image={highlightedImageRef.current}
+            sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
+            hitFunc={() => {}}
+            {...highlightedRef.current.highlight}
+            scaleX={1/item.parent.stageScale}
+            scaleY={1/item.parent.stageScale}
+            x={-item.parent.zoomingPositionX/item.parent.stageScale}
+            y={-item.parent.zoomingPositionY/item.parent.stageScale}
+            width={item.parent.stageWidth}
+            height={item.parent.stageHeight}
+            listening={false}
+          />
+        </Group>
+      </Layer>
+      <Layer
+        id={item.cleanId+"_labels"}
+        ref={ref => {
+          if (ref) {
+            ref.canvas._canvas.style.opacity = item.opacity;
+          }
+        }}
+      >
+        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+          <LabelOnMask item={item} color={item.strokeColor}/>
+        </Group>
+      </Layer>
+    </RegionWrapper>
+
   );
 };
 
-const HtxBrush = inject("store")(observer(HtxBrushView));
+const HtxBrush = AliveRegion(HtxBrushView);
 
 Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
+Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);
 
 export { BrushRegionModel, HtxBrush };

@@ -1,5 +1,5 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 
 import TextNode from "../TextNode/TextNode";
 import Utils from "../../utils";
@@ -25,7 +25,7 @@ const HtxTextNodeView = ({ store, range, id, highlightStyle, style, charIndex, c
       });
     }
 
-    store.completionStore.selected.regionStore.regions.forEach(i => {
+    store.annotationStore.selected.regionStore.regions.forEach(i => {
       if (i.selected) {
         overlap.forEach(overlapItem => {
           if (overlapItem === i.id) {
@@ -57,4 +57,5 @@ const HtxTextNodeView = ({ store, range, id, highlightStyle, style, charIndex, c
 };
 
 const HtxTextNode = inject("store")(observer(HtxTextNodeView));
+
 export { HtxTextNode };

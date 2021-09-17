@@ -7,13 +7,15 @@ import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
 import { BrushModel } from "./Brush";
-import { HtxLabels, LabelsModel } from "./Labels";
-import { guidGenerator } from "../../core/Helpers";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * BrushLabels tag creates segmented labeling
+ * Use the BrushLabels tag for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic image segmentation labeling configuration-->
  * <View>
  *   <BrushLabels name="labels" toName="image">
  *     <Label value="Person" />
@@ -22,22 +24,28 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name BrushLabels
- * @param {string} name   - name of the element
- * @param {string} toName - name of the image to label
+ * @regions BrushRegion
+ * @meta_title Brush Label Tag for Image Segmentation Labeling
+ * @meta_description Customize Label Studio with brush label tags for image segmentation labeling for machine learning and data science projects.
+ * @param {string} name                      - Name of the element
+ * @param {string} toName                    - Name of the image to label
+ * @param {single|multiple=} [choice=single] - Configure whether the data labeler can select one or multiple labels
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["Image"]),
+});
+
 const ModelAttrs = types.model("BrushLabelsModel", {
-  id: types.optional(types.identifier, guidGenerator),
-  pid: types.optional(types.string, guidGenerator),
   type: "brushlabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "brushlabels" });
 
 const BrushLabelsModel = types.compose(
   "BrushLabelsModel",
@@ -45,7 +53,8 @@ const BrushLabelsModel = types.compose(
   ModelAttrs,
   BrushModel,
   TagAttrs,
-  Model,
+  Validation,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

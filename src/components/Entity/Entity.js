@@ -1,70 +1,132 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
-import { getType } from "mobx-state-tree";
-import { Form, Input, Button, Tag, Tooltip, Badge } from "antd";
-import { DeleteOutlined, LinkOutlined, PlusOutlined, CompressOutlined } from "@ant-design/icons";
+import { Badge, Form, Input } from "antd";
+import { CompressOutlined, DeleteOutlined, LinkOutlined, PlusOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
+import { Button } from "../../common/Button/Button";
+import { Tag } from "../../common/Tag/Tag";
+import { Space } from "../../common/Space/Space";
+import { Block, Elem } from "../../utils/bem";
+import "./Entity.styl";
+import { PER_REGION_MODES } from "../../mixins/PerRegion";
 
 const { Paragraph, Text } = Typography;
 
-const templateElement = element => {
-  return (
+const renderLabels = element => {
+  return element.selectedLabels?.length ? (
     <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
-      {element.selectedValues().map(title => {
-        let bgColor = element.findLabel(title).background ? element.findLabel(title).background : "#000000";
+      {element.selectedLabels.map(label => {
+        const bgColor = label.background || "#000000";
 
         return (
-          <Tag key={element.findLabel(title).id} color={bgColor} className={styles.tag}>
-            {title}
+          <Tag key={label.id} color={bgColor} solid>
+            {label.value}
           </Tag>
         );
       })}
     </Text>
-  );
+  ) : null;
 };
 
-const RenderStates = observer(({ node }) => {
-  const _render = s => {
-    if (getType(s).name.indexOf("Labels") !== -1) {
-      return templateElement(s);
-    } else if (getType(s).name === "RatingModel") {
-      return <Paragraph>Rating: {s.getSelectedString()}</Paragraph>;
-    } else if (getType(s).name === "TextAreaModel") {
-      const text = s.regions.map(r => r._value).join("\n");
-      return (
-        <Paragraph className={styles.row}>
-          <Text>Text: </Text>
-          <Text mark className={styles.long}>
-            {text}
-          </Text>
-        </Paragraph>
-      );
-    } else if (getType(s).name === "ChoicesModel") {
-      return <Paragraph>Choices: {s.getSelectedString(", ")}</Paragraph>;
-    }
+const renderResult = result => {
+  if (result.type.endsWith("labels")) {
+    return renderLabels(result);
+  } else if (result.type === "rating") {
+    return <Paragraph>Rating: {result.mainValue}</Paragraph>;
+  } else if (result.type === "textarea" && !(result.from_name.perregion && result.from_name.displaymode === PER_REGION_MODES.REGION_LIST)) {
+    return (
+      <Paragraph className={styles.row}>
+        <Text>Text: </Text>
+        <Text mark className={styles.long}>
+          {result.mainValue.join("\n")}
+        </Text>
+      </Paragraph>
+    );
+  } else if (result.type === "choices") {
+    return <Paragraph>Choices: {result.mainValue.join(", ")}</Paragraph>;
+  }
 
-    return null;
-  };
+  return null;
+};
 
-  return <Fragment>{node.states.filter(s => s.holdsState).map(s => _render(s))}</Fragment>;
-});
+export default observer(({ store, annotation }) => {
+  const { highlightedNode: node, selectedRegions: nodes, selectionSize } = annotation;
+  const [editMode, setEditMode] = React.useState(false);
 
-export default observer(({ store, completion }) => {
-  const node = completion.highlightedNode;
+  const entityButtons = [];
+  const hasEditableNodes = !!nodes.find(node => node.editable);
+  const hasEditableRegions = !!nodes.find(node => node.editable && !node.classification);
+
+  if (hasEditableRegions) {
+    entityButtons.push(
+      <Tooltip key="relations" placement="topLeft" title="Create Relation: [r]">
+        <Button
+          aria-label="Create Relation"
+          className={styles.button}
+          onClick={() => {
+            annotation.startRelationMode(node);
+          }}
+          disabled={!node}
+        >
+          <LinkOutlined />
+
+          {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
+        </Button>
+      </Tooltip>,
+    );
+
+    entityButtons.push(
+      <Tooltip key="meta" placement="topLeft" title="Add Meta Information">
+        <Button
+          className={styles.button}
+          onClick={() => {
+            setEditMode(true);
+          }}
+          disabled={!node}
+        >
+          <PlusOutlined />
+        </Button>
+      </Tooltip>,
+    );
+  }
+
+  entityButtons.push(
+    <Tooltip key="unselect" placement="topLeft" title="Unselect: [u]">
+      <Button
+        className={styles.button}
+        type="dashed"
+        onClick={() => {
+          annotation.unselectAll();
+        }}
+      >
+        <CompressOutlined />
+        {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
+      </Button>
+    </Tooltip>,
+  );
 
   return (
-    <Fragment>
-      <p className={styles.row}>
-        <NodeMinimal node={node} /> (id: {node.id}){" "}
-        {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
-      </p>
+    <Block name="entity">
+      <Elem name="info" tag={Space} spread>
+        <Elem name="node">
+          {node ? (
+            <>
+              <NodeMinimal node={node} />
+              {" "}
+              (ID: {node.id})
+            </>
+          ) : `${selectionSize} Region${(selectionSize > 1) ? "s are" : " is"} selected` }
+        </Elem>
+        {!hasEditableNodes && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
+      </Elem>
       <div className={styles.statesblk + " ls-entity-states"}>
-        {node.score && (
+        {node?.score && (
           <Fragment>
             <Text>
               Score: <Text underline>{node.score}</Text>
@@ -72,24 +134,45 @@ export default observer(({ store, completion }) => {
           </Fragment>
         )}
 
-        {node.normalization && (
+        {node?.meta?.text && (
           <Text>
-            Normalization: <Text code>{node.normalization}</Text>
+            Meta: <Text code>{node.meta.text}</Text>
             &nbsp;
             <DeleteOutlined
               type="delete"
               style={{ cursor: "pointer" }}
               onClick={() => {
-                node.deleteNormalization();
+                node.deleteMetaInfo();
               }}
             />
           </Text>
         )}
 
-        {node.states && <RenderStates node={node} />}
+        <Fragment>{node?.results.map(renderResult)}</Fragment>
       </div>
 
       <div className={styles.block + " ls-entity-buttons"}>
+        <Space spread>
+          <Space>
+            {entityButtons}
+          </Space>
+
+          {hasEditableNodes && (
+            <Tooltip placement="topLeft" title={`Delete Entit${node ? "y" : "ies"}: [Backspace]`}>
+              <Button
+                look="danger"
+                className={styles.button}
+                onClick={() => {
+                  annotation.deleteSelectedRegions();
+                }}
+              >
+                <DeleteOutlined />
+
+                {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Bksp ]</Hint>}
+              </Button>
+            </Tooltip>
+          )}
+        </Space>
         {/* <Tooltip placement="topLeft" title="Hide: [h]"> */}
         {/*   <Button */}
         {/*     className={styles.button} */}
@@ -97,91 +180,32 @@ export default observer(({ store, completion }) => {
         {/*         node.toggleHidden(); */}
         {/*         //node.unselectRegion(); */}
         {/*         //node.selectRegion(); */}
-        {/*         // completion.startRelationMode(node); */}
+        {/*         // annotation.startRelationMode(node); */}
         {/*     }} */}
         {/*   > */}
         {/*     { node.hidden ? <EyeOutlined /> : <EyeInvisibleOutlined /> } */}
         {/*     {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ h ]</Hint>} */}
         {/*   </Button> */}
         {/* </Tooltip> */}
-
-        {node.editable && (
-          <Fragment>
-            <Tooltip placement="topLeft" title="Create Relation: [r]">
-              <Button
-                aria-label="Create Relation"
-                className={styles.button}
-                onClick={() => {
-                  completion.startRelationMode(node);
-                }}
-              >
-                <LinkOutlined />
-
-                {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
-              </Button>
-            </Tooltip>
-
-            <Tooltip placement="topLeft" title="Create Normalization">
-              <Button
-                className={styles.button}
-                onClick={() => {
-                  completion.setNormalizationMode(true);
-                }}
-              >
-                <PlusOutlined />
-              </Button>
-            </Tooltip>
-          </Fragment>
-        )}
-
-        <Tooltip placement="topLeft" title="Unselect: [u]">
-          <Button
-            className={styles.button}
-            type="dashed"
-            onClick={() => {
-              completion.highlightedNode.unselectRegion();
-            }}
-          >
-            <CompressOutlined />
-            {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
-          </Button>
-        </Tooltip>
-
-        {node.editable && (
-          <Tooltip placement="topLeft" title="Delete Entity: [Backspace]">
-            <Button
-              type="danger"
-              className={styles.button}
-              onClick={() => {
-                completion.highlightedNode.deleteRegion();
-              }}
-            >
-              <DeleteOutlined />
-
-              {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Bksp ]</Hint>}
-            </Button>
-          </Tooltip>
-        )}
       </div>
 
-      {completion.normalizationMode && (
+      {editMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
-          onFinish={value => {
-            node.setNormalization(node.normInput);
-            completion.setNormalizationMode(false);
-
-            // ev.preventDefault();
-            // return false;
+          onFinish={() => {
+            node.setMetaInfo(node.normInput);
+            setEditMode(false);
           }}
         >
           <Input
+            autoFocus
             onChange={ev => {
               const { value } = ev.target;
+
               node.setNormInput(value);
             }}
             style={{ marginBottom: "0.5em" }}
-            placeholder="Add Normalization"
+            placeholder="Meta Information"
           />
 
           <Button type="primary" htmlType="submit" style={{ marginRight: "0.5em" }}>
@@ -192,7 +216,7 @@ export default observer(({ store, completion }) => {
             type="danger"
             htmlType="reset"
             onClick={ev => {
-              completion.setNormalizationMode(false);
+              setEditMode(false);
 
               ev.preventDefault();
               return false;
@@ -202,6 +226,6 @@ export default observer(({ store, completion }) => {
           </Button>
         </Form>
       )}
-    </Fragment>
+    </Block>
   );
 });

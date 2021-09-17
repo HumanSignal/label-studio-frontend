@@ -1,5 +1,6 @@
 // namespaces
 var dwv = dwv || {};
+
 dwv.math = dwv.math || {};
 
 // Pre-created to reduce allocation in inner loops
@@ -20,6 +21,7 @@ dwv.math.computeGreyscale = function(data, width, height) {
 
     for (var x = 0; x < width; x++) {
       var p = (y * width + x) * 4;
+
       greyscale[y][x] = (data[p] + data[p + 1] + data[p + 2]) / (3 * 255);
     }
   }
@@ -44,12 +46,14 @@ dwv.math.computeGreyscale = function(data, width, height) {
   greyscale.gradMagnitude = function(x, y) {
     var dx = this.dx(x, y);
     var dy = this.dy(x, y);
+
     return Math.sqrt(dx * dx + dy * dy);
   };
 
   greyscale.laplace = function(x, y) {
     // Laplacian of Gaussian
     var lap = -16 * this[y][x];
+
     lap += this[y - 2][x];
     lap += this[y - 1][x - 1] + 2 * this[y - 1][x] + this[y - 1][x + 1];
     lap += this[y][x - 2] + 2 * this[y][x - 1] + 2 * this[y][x + 1] + this[y][x + 2];
@@ -189,6 +193,7 @@ dwv.math.gradUnitVector = function(gradX, gradY, px, py, out) {
   var oy = gradY[py][px];
 
   var gvm = Math.sqrt(ox * ox + oy * oy);
+
   gvm = Math.max(gvm, 1e-100); // To avoid possible divide-by-0 errors
 
   out.x = ox / gvm;
@@ -199,6 +204,7 @@ dwv.math.gradDirection = function(gradX, gradY, px, py, qx, qy) {
   var __dgpuv = new dwv.math.FastPoint2D(-1, -1);
   var __gdquv = new dwv.math.FastPoint2D(-1, -1);
   // Compute the gradiant direction, in radians, between to points
+
   dwv.math.gradUnitVector(gradX, gradY, px, py, __dgpuv);
   dwv.math.gradUnitVector(gradX, gradY, qx, qy, __gdquv);
 
@@ -227,6 +233,7 @@ dwv.math.computeSides = function(dist, gradX, gradY, greyscale) {
   // values are used when using active-learning Intelligent Scissors
 
   var sides = {};
+
   sides.inside = [];
   sides.outside = [];
 
@@ -270,6 +277,7 @@ dwv.math.gaussianBlur = function(buffer, out) {
   }
 
   var len = buffer.length;
+
   out[len - 2] = 0.25 * buffer[len - 1] + 0.4 * buffer[len - 2] + 0.25 * buffer[len - 3] + 0.1 * buffer[len - 4];
   out[len - 1] = 0.4 * buffer[len - 1] + 0.5 * buffer[len - 2] + 0.1 * buffer[len - 3];
 };
@@ -374,6 +382,7 @@ dwv.math.Scissors.prototype.setData = function(data) {
   this.gradY = dwv.math.computeGradY(this.greyscale);
 
   var sides = dwv.math.computeSides(this.edgeWidth, this.gradX, this.gradY, this.greyscale);
+
   this.inside = sides.inside;
   this.outside = sides.outside;
   this.edgeTraining = [];
@@ -409,6 +418,7 @@ dwv.math.Scissors.prototype.doTraining = function(p) {
   }
 
   var buffer = [];
+
   this.calculateTraining(buffer, this.edgeGran, this.greyscale, this.edgeTraining);
   this.calculateTraining(buffer, this.gradGran, this.gradient, this.gradTraining);
   this.calculateTraining(buffer, this.insideGran, this.inside, this.insideTraining);
@@ -426,15 +436,18 @@ dwv.math.Scissors.prototype.doTraining = function(p) {
 dwv.math.Scissors.prototype.calculateTraining = function(buffer, granularity, input, output) {
   var i = 0;
   // Build a map of raw-weights to trained-weights by favoring input values
+
   buffer.length = granularity;
   for (i = 0; i < granularity; i++) {
     buffer[i] = 0;
   }
 
   var maxVal = 1;
+
   for (i = 0; i < this.trainingPoints.length; i++) {
     var p = this.trainingPoints[i];
     var idx = this.getTrainingIdx(granularity, input[p.y][p.x]);
+
     buffer[idx] += 1;
 
     maxVal = Math.max(maxVal, buffer[idx]);
@@ -496,6 +509,7 @@ dwv.math.Scissors.prototype.adj = function(p) {
   var ey = Math.min(p.y + 1, this.greyscale.length - 1);
 
   var idx = 0;
+
   for (var y = sy; y <= ey; y++) {
     for (var x = sx; x <= ex; x++) {
       if (x !== p.x || y !== p.y) {
@@ -555,14 +569,17 @@ dwv.math.Scissors.prototype.doWork = function() {
 
   var pointCount = 0;
   var newPoints = [];
+
   while (!this.pq.isEmpty() && pointCount < this.pointsPerPost) {
     var p = this.pq.pop();
+
     newPoints.push(p);
     newPoints.push(this.parents[p.y][p.x]);
 
     this.visited[p.y][p.x] = true;
 
     var adjList = this.adj(p);
+
     for (var i = 0; i < adjList.length; i++) {
       var q = adjList[i];
 

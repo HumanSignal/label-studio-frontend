@@ -1,17 +1,22 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectBase from "./Base";
+import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
-import { AudioHOCModel } from "./AudioHOC";
+import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Audio tag plays a simple audio file
+ * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
+ *
+ * Use with the following data types: audio
  * @example
+ * <!--Play audio on the labeling interface-->
  * <View>
  *   <Audio name="audio" value="$audio" />
  * </View>
@@ -30,14 +35,17 @@ import { AudioHOCModel } from "./AudioHOC";
  *   <Audio name="audio" value="$audio" />
  *   <TextArea name="ta" toName="audio" />
  * </View>
+ * @regions AudioRegion
+ * @meta_title Audio Tag for Labeling Audio
+ * @meta_description Customize Label Studio to label audio data for machine learning and data science projects.
  * @name Audio
- * @param {string} name of the element
- * @param {string} value of the element
- * @param {string} hotkey hotkey used to play/pause audio
+ * @param {string} name Name of the element
+ * @param {string} value Data field containing path or a URL to the audio
+ * @param {string} hotkey Hotkey used to play or pause audio
  */
 
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
   zoom: types.optional(types.boolean, false),
   volume: types.optional(types.boolean, false),
@@ -45,37 +53,65 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
 });
 
-const Model = AudioHOCModel.named("AudioModel").actions(self => ({
-  fromStateJSON(obj, fromModel) {
-    if (obj.value.choices) {
-      self.completion.names.get(obj.from_name).fromStateJSON(obj);
-    }
+const Model = types
+  .model({
+    type: "audio",
+    _value: types.optional(types.string, ""),
+    playing: types.optional(types.boolean, false),
+    height: types.optional(types.string, "20"),
+  })
+  .volatile(() => ({
+    errors: [],
+  }))
+  .actions(self => ({
+    fromStateJSON(obj) {
+      if (obj.value.choices) {
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
+      }
 
-    if (obj.value.text) {
-      self.completion.names.get(obj.from_name).fromStateJSON(obj);
-    }
-  },
+      if (obj.value.text) {
+        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
+      }
+    },
 
-  onHotKey() {
-    return self._ws.playPause();
-  },
+    handlePlay() {
+      self.playing = !self.playing;
+    },
 
-  onLoad(ws) {
-    self._ws = ws;
-  },
-}));
+    onHotKey() {
+      self._ws.playPause();
+      return false;
+    },
 
-const AudioModel = types.compose("AudioModel", Model, TagAttrs, ObjectBase);
+    onLoad(ws) {
+      self._ws = ws;
+    },
 
-const HtxAudioView = observer(({ store, item }) => {
+    onError(error) {
+      self.errors = [error];
+    },
+
+    wsCreated(ws) {
+      self._ws = ws;
+    },
+  }));
+
+const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
+
+const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
 
   return (
     <ObjectTag item={item}>
+      {item.errors?.map((error, i) => (
+        <ErrorMessage key={`err-${i}`} error={error} />
+      ))}
       <Waveform
+        dataField={item.value}
         src={item._value}
         onCreate={item.wsCreated}
         onLoad={item.onLoad}
+        onError={item.onError}
         handlePlay={item.handlePlay}
         speed={item.speed}
         zoom={item.zoom}
@@ -86,10 +122,11 @@ const HtxAudioView = observer(({ store, item }) => {
       <AudioControls item={item} store={store} />
     </ObjectTag>
   );
-});
+};
 
 const HtxAudio = inject("store")(observer(HtxAudioView));
 
 Registry.addTag("audio", AudioModel, HtxAudio);
+Registry.addObjectType(AudioModel);
 
 export { AudioModel, HtxAudio };

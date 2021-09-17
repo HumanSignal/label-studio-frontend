@@ -1,22 +1,33 @@
 import React from "react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { Input } from "antd";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Filter tag, show filter
+ * Use the Filter tag to add a filter search for a large number of labels or choices. Use with the Labels tag or Choices tag.
  * @example
- * <Filter name="text-1" value="$text" />
- * @example
- * <Filter name="text-1" value="Please select the class" />
+ * <!-- Add a filter to labels for a named entity recognition task -->
+ * <View>
+ *   <Filter name="filter" toName="ner"
+ *           hotkey="shift+f" minlength="0"
+ *           placeholder="Filter" />
+ *   <Labels name="ner" toName="text" showInline="false">
+ *     <Label value="Person" />
+ *     <Label value="Organization" />
+ *   </Labels>
+ *   <Text name="text" value="$text" />
+ * </View>
  * @name Filter
- * @param {string} value              - text of filter
- * @param {number} [size=4]           - size of filter
- * @param {string} [style]            - css style string
- * @param {boolean} [underline=false] - underline of filter
+ * @meta_title Filter Tag for Filter Search
+ * @meta_description Customize Label Studio with the Filter tag to filter labels to accelerate labeling for machine learning and data science projects.
+ * @param {string} [placeholder="Quick Filter"]      - Placeholder text for filter
+ * @param {number} [minlength=3]      - Size of the filter
+ * @param {string} [style]            - CSS style of the string
+ * @param {string} [hotkey]           - Hotkey to use to focus on the filter text area
  */
 
 const TagAttrs = types.model({
@@ -33,16 +44,12 @@ const Model = types
   .model({
     type: "filter",
     _value: types.maybeNull(types.string),
-    name: types.maybeNull(types.string),
+    name: types.identifier,
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-
     get toTag() {
-      return self.completion.names.get(self.toname);
+      return self.annotation.names.get(self.toname);
     },
   }))
   .actions(self => ({
@@ -59,6 +66,7 @@ const Model = types
 
       tch.forEach(ch => {
         let chval = ch._value;
+
         if (!self.casesensetive) chval = chval.toLowerCase();
 
         if (chval.indexOf(value) !== -1) ch.setVisible(true);
@@ -68,6 +76,7 @@ const Model = types
 
     applyFilterEv(e) {
       let { value } = e.target;
+
       self._value = value;
 
       self.applyFilter();
@@ -87,6 +96,7 @@ const Model = types
 
     selectFirstElement() {
       const selected = self.toTag.selectFirstVisible();
+
       if (selected && self.cleanup) {
         self._value = "";
         self.applyFilter();
@@ -94,7 +104,7 @@ const Model = types
     },
   }));
 
-const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin);
+const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin, AnnotationMixin);
 
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;

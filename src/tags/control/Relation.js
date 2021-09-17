@@ -3,23 +3,33 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Constants from "../../core/Constants";
 import { guidGenerator } from "../../core/Helpers";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Relation tag represents a single relation label
+ * The Relation tag represents a single relation label. Use with the Relations tag to specify the value of a label to apply to a relation between regions.
+ *
  * @example
+ * <!--Basic labeling configuration to apply the label "similar" to a relation identified between two labeled regions of text -->
  * <View>
  *   <Relations>
- *     <Relation value="Name 1" />
- *     <Relation value="Name 2" />
+ *     <Relation value="similar" />
  *   </Relations>
+ *
+ *   <Text name="txt-1" value="$text" />
+ *   <Labels name="lbl-1" toName="txt-1">
+ *     <Label value="Relevant" />
+ *     <Label value="Not Relevant" />
+ *   </Labels>
  * </View>
  * @name Relation
- * @param {string} value - value of the relation
- * @param {string} [background] - background color of active label
+ * @meta_title Relation Tag for a Single Relation
+ * @meta_description Customize Label Studio by using the Relation tag to add a single consistent label to relations between regions in machine learning and data science projects.
+ * @param {string} value        - Value of the relation
+ * @param {string} [background] - Background color of the active label in hexadecimal
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
-  background: types.optional(types.string, Constants.RELATION_BACKGROUND),
+  background: types.optional(customTypes.color, Constants.RELATION_BACKGROUND),
 });
 
 const Model = types

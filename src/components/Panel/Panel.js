@@ -2,12 +2,12 @@ import React from "react";
 import { observer } from "mobx-react";
 import { Button } from "antd";
 import {
-  UndoOutlined,
-  RedoOutlined,
-  SettingOutlined,
-  RollbackOutlined,
-  FullscreenOutlined,
   FullscreenExitOutlined,
+  FullscreenOutlined,
+  RedoOutlined,
+  RollbackOutlined,
+  SettingOutlined,
+  UndoOutlined
 } from "@ant-design/icons";
 
 import styles from "./Panel.module.scss";
@@ -22,14 +22,20 @@ import Hint from "../Hint/Hint";
  * Settings
  */
 export default observer(({ store }) => {
-  const { history } = store.completionStore.selected;
+  const { history } = store.annotationStore.selected;
+  const classname = [
+    styles.block,
+    styles.block__controls,
+    store.annotationStore.viewingAllAnnotations ? styles.hidden : "",
+  ].join(" ");
 
   return (
     <div className={styles.container + " ls-panel"}>
-      <div className={`${styles.block} ${styles.block__controls}`}>
+      <div className={classname}>
         <Button
           type="ghost"
           icon={<UndoOutlined />}
+          disabled={!history?.canUndo}
           onClick={ev => {
             history && history.canUndo && history.undo();
             ev.preventDefault();
@@ -40,6 +46,7 @@ export default observer(({ store }) => {
         </Button>
         <Button
           type="ghost"
+          disabled={!history?.canRedo}
           icon={<RedoOutlined />}
           onClick={ev => {
             history && history.canRedo && history.redo();
@@ -50,8 +57,9 @@ export default observer(({ store }) => {
         </Button>
         <Button
           type="ghost"
+          disabled={!history?.canUndo}
           icon={<RollbackOutlined />}
-          onClick={ev => {
+          onClick={() => {
             history && history.reset();
           }}
         >
@@ -60,7 +68,7 @@ export default observer(({ store }) => {
         {store.setPrelabeling && (
           <Button
             style={{ display: "none" }}
-            onClick={ev => {
+            onClick={() => {
               store.resetPrelabeling();
             }}
           >
@@ -68,13 +76,18 @@ export default observer(({ store }) => {
             Reset Prelabeling
           </Button>
         )}
+        {store.hasInterface("debug") && (
+          <span>
+            {history.undoIdx} / {history.history.length}
+            {history.isFrozen && " (frozen)"}
+          </span>
+        )}
       </div>
 
-      <div className={styles.block}>
+      <div className={[styles.block, styles.common].join(" ")}>
         {store.description && store.showingDescription && (
           <Button
-            type="primary"
-            onClick={ev => {
+            onClick={() => {
               store.toggleDescription();
             }}
           >
@@ -83,17 +96,15 @@ export default observer(({ store }) => {
         )}
         {store.description && !store.showingDescription && (
           <Button
-            type="primary"
-            onClick={ev => {
+            onClick={() => {
               store.toggleDescription();
             }}
           >
-            Show Instructions
+            Instructions
           </Button>
         )}
 
         <Button
-          type="dashed"
           icon={<SettingOutlined />}
           onClick={ev => {
             store.toggleSettings();
@@ -102,7 +113,6 @@ export default observer(({ store }) => {
           }}
         />
         <Button
-          type="dashed"
           className="ls-fs"
           icon={store.settings.fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
           onClick={ev => {

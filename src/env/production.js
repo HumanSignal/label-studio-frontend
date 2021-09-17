@@ -13,12 +13,10 @@ function getData(task) {
 }
 
 function getState(task) {
-  const completions = task && task.completions ? task.completions : null;
-  const predictions = task && task.predictions ? task.predictions : null;
-
   return {
-    completions: completions,
-    predictions: predictions,
+    annotations: task?.annotations,
+    completions: task?.completions,
+    predictions: task?.predictions,
   };
 }
 
@@ -26,14 +24,17 @@ function getState(task) {
  * LS will render in this part
  */
 function rootElement(element) {
-  const el = document.createElement("div");
+  let root;
 
-  let root = document.getElementById(element);
+  if (typeof element === "string") {
+    root = document.getElementById(element);
+  } else {
+    root = element;
+  }
 
   root.innerHTML = "";
-  root.appendChild(el);
 
-  return el;
+  return root;
 }
 
 /**
@@ -42,9 +43,9 @@ function rootElement(element) {
  */
 function configureApplication(params) {
   // callbacks for back compatibility
-  const osCB = params.submitCompletion || params.onSubmitCompletion;
-  const ouCB = params.updateCompletion || params.onUpdateCompletion;
-  const odCB = params.deleteCompletion || params.onDeleteCompletion;
+  const osCB = params.submitAnnotation || params.onSubmitAnnotation;
+  const ouCB = params.updateAnnotation || params.onUpdateAnnotation;
+  const odCB = params.deleteAnnotation || params.onDeleteAnnotation;
 
   const options = {
     // communication with the server
@@ -58,16 +59,20 @@ function configureApplication(params) {
     messages: { ...Messages, ...params.messages },
 
     // callbacks and event handlers
-    onSubmitCompletion: params.onSubmitCompletion ? osCB : External.onSubmitCompletion,
-    onUpdateCompletion: params.onUpdateCompletion ? ouCB : External.onUpdateCompletion,
-    onDeleteCompletion: params.onDeleteCompletion ? odCB : External.onDeleteCompletion,
+    onSubmitAnnotation: params.onSubmitAnnotation ? osCB : External.onSubmitAnnotation,
+    onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
+    onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
-    onSelectCompletion: params.onSelectCompletion || External.onSelectCompletion,
+    onSelectAnnotation: params.onSelectAnnotation || External.onSelectAnnotation,
+    onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
+    onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
+    onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
   };
 
   return options;

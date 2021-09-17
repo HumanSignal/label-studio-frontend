@@ -1,108 +1,101 @@
-import React, { Component } from "react";
-import { Form, Button } from "antd";
+import React, { useCallback, useRef } from "react";
+import { Button, Form } from "antd";
 
 import { observer } from "mobx-react";
 
-class DebugComponent extends Component {
-  state = { res: null };
+const toJSON = (annotation) => {
+  const id = annotation.pk || annotation.id;
+  const result = annotation.serializeAnnotation();
+  const draft = annotation.versions.draft;
+  const json = { id, result };
 
-  render() {
-    const self = this;
-    const { store } = this.props;
-    const completion = store.completionStore.selected;
+  if (draft) json.draft = draft;
+  return json;
+};
 
-    return (
+const DebugComponent = ({ store }) => {
+  const refConfig = useRef();
+  const refData = useRef();
+  const refAnnotations = useRef();
+
+  const loadTask = useCallback(() => {
+    const config = refConfig.current?.value;
+    const annotations = JSON.parse(refAnnotations.current?.value || `[{ "result": [] }]`);
+    const data = JSON.parse(refData.current?.value);
+
+    store.resetState();
+    store.assignConfig(config);
+    store.assignTask({ data });
+    store.initializeStore({ annotations, predictions: [] });
+    const cs = store.annotationStore;
+
+    if (cs.annotations.length) cs.selectAnnotation(cs.annotations[0].id);
+  }, []);
+
+  const serializeCurrent = useCallback(() => {
+    const input = refAnnotations.current;
+
+    if (!input) return;
+    const annotation = store.annotationStore.selected;
+    const json = [toJSON(annotation)];
+
+    input.value = JSON.stringify(json, null, 2);
+  }, []);
+
+  const serializeAll = useCallback(() => {
+    const input = refAnnotations.current;
+
+    if (!input) return;
+    const { annotations, predictions } = store.annotationStore;
+    const json = [...annotations, ...predictions].map(toJSON);
+
+    input.value = JSON.stringify(json, null, 2);
+  }, []);
+
+  return (
+    <div style={{ width: "100%" }}>
+      <br />
+      <h2>Debug</h2>
       <div>
-        <br />
-        <h2>Debug</h2>
-
-        <Button
-          basic
-          onClick={ev => {
-            this.setState({ res: JSON.stringify(store.completionStore.selected.toJSON()) });
-          }}
-        >
-          Serialize whole tree
-        </Button>
-
-        <Button
-          basic
-          onClick={ev => {
-            this.setState({ res: JSON.stringify(store.completionStore.selected.serializeCompletion()) });
-          }}
-        >
-          Seriealize results tree
-        </Button>
-
-        <Button
-          basic
-          onClick={ev => {
-            if (self.state.res) completion.deserializeCompletion(JSON.parse(self.state.res));
-          }}
-        >
-          Load Serialized Results
-        </Button>
-
-        <Button
-          basic
-          onClick={ev => {
-            const c = store.completionStore.addInitialCompletion();
-            store.completionStore.selectCompletion(c.id);
-
-            if (self.state.res) c.deserializeCompletion(JSON.parse(self.state.res));
-            // this.setState.res;
-          }}
-        >
-          Load As New Completion
-        </Button>
-
-        <Button
-          basic
-          onClick={ev => {
-            this.setState({ res: store.task.data });
-          }}
-        >
-          Task data
-        </Button>
-
-        <Button
-          basic
-          onClick={ev => {
-            // this.setState.res;
-            const data = JSON.parse(self.state.res);
-            const task = {
-              id: data["id"],
-              project: 2,
-              data: JSON.stringify(data),
-            };
-
-            store.resetState();
-            store.addTask(task);
-            store.addGeneratedCompletion(task);
-            store.markLoading(false);
-
-            if (store.completionStore.selected)
-              store.completionStore.selected.traverseTree(node => node.updateValue && node.updateValue(self));
-          }}
-        >
-          Simulate Loading Task
-        </Button>
-
-        <br />
-        <br />
-        <Form>
-          <Form.TextArea
-            value={this.state.res}
-            className="is-search"
-            // label={item.label}
-            onChange={ev => {
-              this.setState({ res: ev.target.value });
-            }}
-          />
-        </Form>
+        <Button onClick={serializeAll}>↓ Serialize All Annotations</Button>
+        <Button onClick={serializeCurrent}>↓ Serialize Current Annotation</Button>
+        <Button onClick={loadTask}>↑ Simulate Loading Task</Button>
       </div>
-    );
-  }
-}
+
+      <Form>
+        <div style={{ display: "flex" }}>
+          <div style={{ flexBasis: "50%" }}>
+            <p>Data</p>
+            <textarea
+              style={{ width: "100%" }}
+              ref={refData}
+              rows={4}
+              defaultValue={store.task.data}
+              className="is-search"
+            />
+            <p>Config</p>
+            <textarea
+              style={{ width: "100%" }}
+              ref={refConfig}
+              rows={16}
+              defaultValue={store.config}
+              className="is-search"
+            />
+          </div>
+          <div style={{ flexBasis: "50%" }}>
+            <p>Annotations</p>
+            <textarea
+              style={{ width: "100%" }}
+              ref={refAnnotations}
+              rows={22}
+              // defaultValue={}
+              className="is-search"
+            />
+          </div>
+        </div>
+      </Form>
+    </div>
+  );
+};
 
 export default observer(DebugComponent);

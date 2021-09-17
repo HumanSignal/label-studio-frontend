@@ -1,22 +1,24 @@
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
-import Types from "../../core/Types";
-import { runTemplate } from "../../core/Template";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ControlBase from "./Base";
 
 /**
- * Pairwise element. Compare two different objects, works with any label studio object
+ * Use the Pairwise tag to compare two different objects.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
+ * <!--Basic labeling configuration to compare two passages of text -->
  * <View>
  *   <Pairwise name="pairwise" leftClass="text1" rightClass="text2" toName="txt-1,txt-2"></Pairwise>
  *   <Text name="txt-1" value="Text 1" />
  *   <Text name="txt-2" value="Text 2" />
  * </View>
  * @example
- * You can also style the appearence using the View tag:
+ * <!-- You can also style the appearance using the View tag: -->
  * <View>
  *   <Pairwise name="pw" toName="txt-1,txt-2"></Pairwise>
  *   <View style="display: flex;">
@@ -25,14 +27,16 @@ import ControlBase from "./Base";
  *   </View>
  * </View>
  * @name Pairwise
- * @param {string} name               - name of the element
- * @param {string} toName             - names of the elements you want to compare
- * @param {string} [selectionStyle]   - style of the selection
- * @params {string} [leftClass=left]  - class name of the left object
- * @params {string} [rightClass=left] - class name of the right object
+ * @meta_title Pairwise Tag to Compare Objects
+ * @meta_description Customize Label Studio with the Pairwise tag for object comparison tasks for machine learning and data science projects.
+ * @param {string} name               - Name of the element
+ * @param {string} toName             - Comma-separated names of the elements you want to compare
+ * @param {string} [selectionStyle]   - Style for the selection
+ * @params {string} [leftClass=left]  - Class name of the left object
+ * @params {string} [rightClass=left] - Class name of the right object
  */
 const TagAttrs = types.model({
-  name: types.string,
+  name: types.identifier,
   toname: types.maybeNull(types.string),
   selectionstyle: types.maybeNull(types.string),
   leftclass: types.maybeNull(types.string),
@@ -41,28 +45,72 @@ const TagAttrs = types.model({
 
 const Model = types
   .model({
-    id: types.identifier,
     type: "pairwise",
     selected: types.maybeNull(types.enumeration(["left", "right", "none"])),
   })
   .views(self => ({
-    get completion() {
-      return Types.getParentOfTypeString(self, "Completion");
+    get names() {
+      return self.toname.split(",");
+    },
+
+    get left() {
+      return self.annotation.names.get(self.names[0]);
+    },
+
+    get right() {
+      return self.annotation.names.get(self.names[1]);
+    },
+
+    get valueType() {
+      return "selected";
+    },
+
+    get result() {
+      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .actions(self => ({
+    updateResult() {
+      const { result, selected } = self;
+
+      if (selected === "none") {
+        if (result) result.area.removeResult(result);
+      } else {
+        if (result) result.setValue(selected);
+        else {
+          self.annotation.createResult({}, { selected }, self, self.name);
+        }
+      }
+    },
+
+    setResult(dir = "none") {
+      self.selected = dir;
+      self.left.addProp("style", dir === "left" ? self._selection : {});
+      self.right.addProp("style", dir === "right" ? self._selection : {});
+    },
+
     selectLeft() {
-      self.selected === "left" ? (self.selected = "none") : (self.selected = "left");
+      self.setResult(self.selected === "left" ? "none" : "left");
+      self.updateResult();
     },
 
     selectRight() {
-      self.selected === "right" ? (self.selected = "none") : (self.selected = "right");
+      self.setResult(self.selected === "right" ? "none" : "right");
+      self.updateResult();
     },
 
     afterCreate() {
+      if (self.names.length !== 2 || self.names[0] === self.names[1]) {
+        InfoModal.error(
+          `Incorrect toName parameter on Pairwise, must be two names separated by a comma: name1,name2`,
+        );
+      }
+
       let selection = {};
+
       if (self.selectionstyle) {
         const s = Tree.cssConverter(self.selectionstyle);
+
         for (let key in s) {
           selection[key] = s[key];
         }
@@ -76,83 +124,28 @@ const Model = types
       self._selection = selection;
     },
 
-    getLeftRight() {
-      if (!self.toname);
-      const names = self.toname.split(",");
-
-      if (names.length !== 2)
-        InfoModal.error(
-          `Incorrect toName parameter on Pairwise, should be two names separated by the comma: name1,name2`,
-        );
-
-      const left = self.completion.names.get(names[0]);
-      const right = self.completion.names.get(names[1]);
-
-      return { left: left, right: right };
+    needsUpdate() {
+      if (self.result) self.setResult(self.result.value.selected);
+      else self.setResult();
     },
 
-    completionAttached() {
-      const { left, right } = self.getLeftRight();
-
-      left.addProp("onClick", () => {
-        self.selectLeft();
-        left.addProp("style", self._selection);
-        right.addProp("style", {});
+    annotationAttached() {
+      // @todo annotation attached in a weird way, so do that next tick, with fixed tree
+      setTimeout(() => {
+        self.left.addProp("onClick", self.selectLeft);
+        self.right.addProp("onClick", self.selectRight);
+        self.setResult(self.result?.value.selected);
       });
-
-      right.addProp("onClick", () => {
-        self.selectRight();
-        right.addProp("style", self._selection);
-        left.addProp("style", {});
-      });
-    },
-
-    toStateJSON() {
-      const store = getRoot(self);
-      let choice = self.selected === "left" ? self.leftclass : self.selected === "right" ? self.rightclass : null;
-
-      console.log(self.rightclass);
-      console.log(self.selected);
-      console.log(choice);
-
-      console.log(self.rightclass);
-
-      if (choice !== null) choice = [runTemplate(choice, store.task.dataObj)];
-
-      const obj = {
-        id: self.pid,
-        from_name: self.name,
-        to_name: self.name,
-        type: "pairwise",
-        value: {
-          selected: self.selected,
-        },
-      };
-
-      if (choice !== null) {
-        obj.value["pairwise"] = choice;
-      }
-
-      return obj;
-    },
-
-    fromStateJSON(obj, fromModel) {
-      if (obj.id) self.pid = obj.id;
-      self.selected = obj.value.selected;
-
-      const { left, right } = self.getLeftRight();
-
-      if (self.selected === "left") left.addProp("style", self._selection);
-      if (self.selected === "right") right.addProp("style", self._selection);
     },
   }));
 
-const PairwiseModel = types.compose("PairwiseModel", TagAttrs, Model, ControlBase);
+const PairwiseModel = types.compose("PairwiseModel", TagAttrs, ControlBase, Model, AnnotationMixin);
 
 const HtxPairwise = () => {
   return null;
 };
 
 Registry.addTag("pairwise", PairwiseModel, HtxPairwise);
+Registry.addObjectType(PairwiseModel);
 
 export { HtxPairwise, PairwiseModel };

@@ -6,15 +6,16 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import { EllipseModel } from "./Ellipse";
-import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * EllipseLabels tag creates labeled ellipses
- * Used only for Image
+ * The EllipseLabels tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic semantic image segmentation labeling configuration-->
  * <View>
  *   <EllipseLabels name="labels" toName="image">
  *     <Label value="Person" />
@@ -23,34 +24,36 @@ import ControlBase from "./Base";
  *   <Image name="image" value="$image" />
  * </View>
  * @name EllipseLabels
- * @param {string} name               - name of the element
- * @param {string} toName             - name of the image to label
- * @param {float=} [opacity=0.6]      - opacity of rectangle
- * @param {string=} [fillColor]       - ellipse fill color, default is transparent
- * @param {string=} [strokeColor]     - stroke color
- * @param {number=} [strokeWidth=1]   - width of stroke
- * @param {boolean=} [canRotate=true] - show or hide rotation handle
+ * @regions EllipseRegion
+ * @meta_title Ellipse Label Tag for Labeling Images with Elliptical Bounding Boxes
+ * @meta_description Customize Label Studio with the EllipseLabels tag to label images with elliptical bounding boxes for semantic image segmentation machine learning and data science projects.
+ * @param {string} name               - Name of the element
+ * @param {string} toName             - Name of the image to label
+ * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
+ * @param {number} [maxUsages]        - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true] - Show labels in the same visual line
+ * @param {float=} [opacity=0.6]      - Opacity of ellipse
+ * @param {string=} [fillColor]       - Ellipse fill color in hexadecimal
+ * @param {string=} [strokeColor]     - Stroke color in hexadecimal
+ * @param {number=} [strokeWidth=1]   - Width of stroke
+ * @param {boolean=} [canRotate=true] - Show or hide rotation option
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
 const ModelAttrs = types.model("EllipseLabelsModel", {
-  id: types.optional(types.identifier, guidGenerator),
-  pid: types.optional(types.string, guidGenerator),
   type: "ellipselabels",
   children: Types.unionArray(["label", "header", "view", "hypertext"]),
 });
-
-const Model = LabelMixin.props({ _type: "ellipselabels" });
 
 const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   EllipseModel,
   TagAttrs,
-  Model,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,
 );

@@ -1,5 +1,6 @@
-import Konva from "konva";
-import { encode, decode } from "@thi.ng/rle-pack";
+import { decode, encode } from "@thi.ng/rle-pack";
+import chroma from "chroma-js";
+import Constants from "../core/Constants";
 
 import * as Colors from "./colors";
 
@@ -7,92 +8,112 @@ import * as Colors from "./colors";
 function imageData2Image(imagedata) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
+
   canvas.width = imagedata.width;
   canvas.height = imagedata.height;
   ctx.putImageData(imagedata, 0, 0);
 
   var image = new Image();
+
   image.src = canvas.toDataURL();
   return image;
 }
 
 // given the RLE array returns the DOM Image element with loaded image
-function RLE2Region(rle, image) {
+function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
+
   canvas.width = nw;
   canvas.height = nh;
 
   const newdata = ctx.createImageData(nw, nh);
-  newdata.data.set(decode(rle));
 
+  newdata.data.set(decode(rle));
+  const rgb = chroma(color).rgb();
+
+  for (let i = newdata.data.length / 4; i--; ) {
+    if (newdata.data[i * 4 + 3]) {
+      newdata.data[i * 4] = rgb[0];
+      newdata.data[i * 4 + 1] = rgb[1];
+      newdata.data[i * 4 + 2] = rgb[2];
+    }
+  }
   ctx.putImageData(newdata, 0, 0);
 
   var new_image = new Image();
+
   new_image.src = canvas.toDataURL();
   return new_image;
 }
 
 // given the brush region return the RLE encoded array
-function Region2RLE(region, image, lineOpts) {
+function Region2RLE(region, image) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
+  const stage = region.object?.stageRef;
+  const parent = region.parent;
 
-  var cnt = document.createElement("div");
-  cnt.style.display = "none";
+  if (!stage) {
+    console.error(`Stage not found for area #${region.cleanId}`);
+    return;
+  }
 
-  document.body.appendChild(cnt);
+  const layer = stage.findOne(`#${region.cleanId}`);
 
-  cnt.id = "container-2";
+  if (!layer) {
+    console.error(`Layer #${region.id} was not found on Stage`);
+    return [];
+  }
+  // hide labels on regions and show them later
+  layer.findOne(".highlight").hide();
 
-  const stage = new Konva.Stage({
-    container: "container-2",
-    width: nw,
-    height: nh,
-  });
+  const width = stage.getWidth(),
+    height = stage.getHeight(),
+    scaleX = stage.getScaleX(),
+    scaleY = stage.getScaleY(),
+    x = stage.getX(),
+    y = stage.getY(),
+    offsetX = stage.getOffsetX(),
+    offsetY = stage.getOffsetY(),
+    rotation = stage.getRotation();
 
-  const layer = new Konva.Layer();
-  const ctx = layer.getContext("2d");
-
-  // draw the original RLE first
-  if (region._img) ctx.drawImage(region._img, 0, 0);
-
-  // draw all the modifications
-  const lines = region.touches.map(p => {
-    const points = p.rescale(image.stageWidth, image.stageHeight, image.naturalWidth, image.naturalHeight);
-
-    const compOp = p.type === "add" ? "source-over" : "destination-out";
-
-    const l = {
-      points: points,
-      strokeWidth: p.scaledStrokeWidth(image.stageWidth, image.stageHeight, image.naturalWidth, image.naturalHeight),
-      globalCompositeOperation: compOp,
-      lineJoin: "round",
-      lineCap: "round",
-      opacity: 1,
-      ...lineOpts,
-
-      // stroke: 'red',
-      // strokeWidth: 15,
-      // lineCap: 'round',
-      // lineJoin: 'round'
-    };
-
-    // console.log(l);
-
-    return new Konva.Line(l);
-  });
-
-  lines.forEach(line => layer.add(line));
-
-  // add the layer to the stage
-  stage.add(layer);
+  stage
+    .setWidth(parent.stageWidth)
+    .setHeight(parent.stageHeight)
+    .setScaleX(1)
+    .setScaleY(1)
+    .setX(0)
+    .setY(0)
+    .setOffsetX(0)
+    .setOffsetY(0)
+    .setRotation(0);
+  stage.drawScene();
+  // resize to original size
+  const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
+  const ctx = canvas.getContext("2d");
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
+
+  for (let i = data.data.length / 4; i--; ) {
+    data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
+  }
+  layer.findOne(".highlight").show();
+  stage
+    .setWidth(width)
+    .setHeight(height)
+    .setScaleX(scaleX)
+    .setScaleY(scaleY)
+    .setX(x)
+    .setY(y)
+    .setOffsetX(offsetX)
+    .setOffsetY(offsetY)
+    .setRotation(rotation);
+  stage.drawScene();
   const rle = encode(data.data, data.data.length);
 
   return rle;
@@ -101,6 +122,7 @@ function Region2RLE(region, image, lineOpts) {
 function brushSizeCircle(size) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext("2d");
+
   canvas.width = size * 4 + 8;
   canvas.height = size * 4 + 8;
 
@@ -153,6 +175,7 @@ function encodeSVG(data) {
   // var resultCss = `background-image: url();`;
 
   var escaped = data.replace(symbols, encodeURIComponent);
+
   return `${quotes.level1}data:image/svg+xml,${escaped}${quotes.level1}`;
 }
 
@@ -162,13 +185,15 @@ const labelToSVG = (function() {
   function calculateTextWidth(text) {
     const svg = document.createElement("svg");
     const svgText = document.createElement("text");
+
     svgText.style = "font-size: 9.5px; font-weight: bold; color: red; fill: red; font-family: Monaco";
     svgText.innerHTML = text;
 
     svg.appendChild(svgText);
     document.body.appendChild(svg);
 
-    const textLen = svg.getBoundingClientRect().width;
+    const textLen = svgText.getBoundingClientRect().width;
+
     svg.remove();
 
     return textLen;
@@ -176,6 +201,7 @@ const labelToSVG = (function() {
 
   return function({ label, score }) {
     let cacheKey = label;
+
     if (score !== null) cacheKey = cacheKey + score;
 
     if (cacheKey in SVG_CACHE) return SVG_CACHE[cacheKey];
@@ -185,6 +211,7 @@ const labelToSVG = (function() {
 
     if (score !== null && score !== undefined) {
       const fillColor = Colors.getScaleGradient(score);
+
       items.push(`<rect x="0" y="0" rx="2" ry="2" width="24" height="14" style="fill:${fillColor};opacity:0.5" />`);
       items.push(`<text x="3" y="10" style="font-size: 8px; font-family: Monaco">${score.toFixed(2)}</text>`);
       width = width + 26;
@@ -205,10 +232,93 @@ const labelToSVG = (function() {
   };
 })();
 
+/**
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @returns {{
+ * canvas: HTMLCanvasElement,
+ * bbox: {
+ *   left: number,
+ *   top: number,
+ *   right: number,
+ *   bottom: number,
+ *   width: number,
+ *   height: number
+ * }
+ * }}
+ */
+const trim = (canvas) => {
+  let copy, width = canvas.width, height = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const bbox = {
+    top: null,
+    left: null,
+    right: null,
+    bottom: null,
+  };
+
+  try {
+    copy = document.createElement('canvas').getContext('2d');
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const l = pixels.data.length;
+    let i, x, y;
+
+    for (i = 0; i < l; i += 4) {
+      if (pixels.data[i+3] !== 0) {
+        x = (i / 4) % canvas.width;
+        y = ~ ~ ((i / 4) / canvas.width);
+
+        if (bbox.top === null) {
+          bbox.top = y;
+        }
+
+        if (bbox.left === null) {
+          bbox.left = x;
+        } else if (x < bbox.left) {
+          bbox.left = x;
+        }
+
+        if (bbox.right === null) {
+          bbox.right = x;
+        } else if (bbox.right < x) {
+          bbox.right = x;
+        }
+
+        if (bbox.bottom === null) {
+          bbox.bottom = y;
+        } else if (bbox.bottom < y) {
+          bbox.bottom = y;
+        }
+      }
+    }
+
+    width = bbox.right - bbox.left;
+    height = bbox.bottom - bbox.top;
+    const trimmed = ctx.getImageData(bbox.left, bbox.top, width, height);
+
+    copy.canvas.width = width;
+    copy.canvas.height = height;
+    copy.putImageData(trimmed, 0, 0);
+  } catch (err) {
+    /* Gotcha! */
+  }
+
+  // open new window with trimmed image:
+  return {
+    canvas: copy?.canvas ?? canvas,
+    bbox: {
+      ...bbox,
+      width,
+      height,
+    },
+  };
+};
+
 export default {
   imageData2Image,
   Region2RLE,
   RLE2Region,
   brushSizeCircle,
   labelToSVG,
+  trim,
 };

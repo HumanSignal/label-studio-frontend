@@ -3,7 +3,6 @@
 .container {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 2rem;
 
   @include respond("phone") {
     flex-direction: column;
@@ -34,4 +33,12 @@
       margin-bottom: 10px;
     }
   }
+}
+
+.common {
+  margin-left: auto;
+}
+
+.hidden {
+  display: none;
 }

@@ -1,20 +1,16 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
-
-import { Typography } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { observer } from "mobx-react";
+import { getParentOfType, types } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import { TextAreaModel } from "../tags/control/TextArea";
+import { TextAreaModel } from "../tags/control/TextArea/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
-
-const { Paragraph } = Typography;
+import { HtxTextBox } from "../components/HtxTextBox/HtxTextBox";
 
 const Model = types
   .model("TextAreaRegionModel", {
@@ -25,14 +21,36 @@ const Model = types
     _value: types.string,
     // states: types.array(types.union(ChoicesModel)),
   })
+  .volatile(() => ({
+    classification: true,
+    perRegionTags: [],
+    results: [],
+    selected: false,
+  }))
   .views(self => ({
     get parent() {
       return getParentOfType(self, TextAreaModel);
+    },
+    getRegionElement() {
+      return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
   }))
   .actions(self => ({
     setValue(val) {
       self._value = val;
+      self.parent.onChange();
+    },
+
+    deleteRegion() {
+      self.parent.remove(self);
+    },
+
+    selectRegion() {
+      self.selected = true;
+    },
+
+    afterUnselectRegion() {
+      self.selected = false;
     },
   }));
 
@@ -44,11 +62,11 @@ const TextAreaRegionModel = types.compose(
   Model,
 );
 
-const HtxTextAreaRegionView = ({ store, item }) => {
+const HtxTextAreaRegionView = ({ item }) => {
   const classes = [styles.mark];
   const params = {};
   const { parent } = item;
-  const { relationMode } = item.completion;
+  const { relationMode } = item.annotation;
 
   if (relationMode) {
     classes.push(styles.relation);
@@ -60,26 +78,18 @@ const HtxTextAreaRegionView = ({ store, item }) => {
     classes.push(styles.highlighted);
   }
 
-  if (parent.editable) {
-    params["editable"] = {
-      onChange: str => {
-        item.setValue(str);
-
-        // here we update the parent object's state
-        if (parent.perregion) {
-          const reg = item.completion.highlightedNode;
-          reg && reg.updateSingleState(parent);
-
-          // self.regions = [];
-        }
-      },
+  if (parent.editable || parent.transcription) {
+    params.onChange = str => {
+      item.setValue(str);
     };
   }
 
+  params.onDelete = item.deleteRegion;
+
   let divAttrs = {};
+
   if (!parent.perregion) {
     divAttrs = {
-      onClick: item.onClickRegion,
       onMouseOver: () => {
         if (relationMode) {
           item.setHighlight(true);
@@ -96,28 +106,19 @@ const HtxTextAreaRegionView = ({ store, item }) => {
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
-      <Paragraph className={classes.join(" ")} {...params}>
-        {item._value}
-      </Paragraph>
-      {parent.perregion && (
-        <DeleteOutlined
-          className={styles.delete}
-          onClick={ev => {
-            const reg = item.completion.highlightedNode;
-            item.completion.deleteRegion(item);
-
-            reg && reg.updateSingleState(parent);
-
-            ev.preventDefault();
-            return false;
-          }}
-        />
-      )}
+      <HtxTextBox
+        onlyEdit={parent.transcription}
+        id={`TextAreaRegion-${item.id}`}
+        className={classes.join(" ")}
+        rows={parent.rows}
+        text={item._value}
+        {...params}
+      />
     </div>
   );
 };
 
-const HtxTextAreaRegion = inject("store")(observer(HtxTextAreaRegionView));
+const HtxTextAreaRegion = observer(HtxTextAreaRegionView);
 
 Registry.addTag("textarearegion", TextAreaRegionModel, HtxTextAreaRegion);
 

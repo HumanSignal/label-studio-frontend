@@ -222,15 +222,15 @@ class TextHighlight extends Component {
    *
    * @param {*} event
    */
-  onMouseUp(event) {
+  onMouseUp() {
     this.mouseEvent.bind(this)();
   }
 
-  onMouseDown(event) {
+  onMouseDown() {
     // console.log(event)
   }
 
-  onMouseEnter(event) {
+  onMouseEnter() {
     // console.log(event)
   }
 
@@ -238,7 +238,7 @@ class TextHighlight extends Component {
    * Double click on text
    * @param {*} event
    */
-  onDoubleClick(event) {
+  onDoubleClick() {
     // WARN
     // event.stopPropagation();
     // this.doucleckicked = true;

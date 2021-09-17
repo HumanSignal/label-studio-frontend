@@ -1,7 +1,10 @@
-import { types, onSnapshot, getRoot } from "mobx-state-tree";
+import { getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import Hotkey from "../core/Hotkey";
 import Utils from "../utils";
+
+const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
+const SIDEPANEL_MODE_LABELS = "SIDEPANEL_MODE_LABELS";
 
 /**
  * Setting store of Label Studio
@@ -28,9 +31,17 @@ const SettingsModel = types
      */
     continuousLabeling: false,
 
+    // select regions after creating them
+    selectAfterCreate: false,
+
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
+
+    sidePanelMode: types.optional(
+      types.enumeration([SIDEPANEL_MODE_REGIONS, SIDEPANEL_MODE_LABELS]),
+      SIDEPANEL_MODE_REGIONS,
+    ),
 
     imageFullSize: types.optional(types.boolean, false),
 
@@ -38,11 +49,19 @@ const SettingsModel = types
 
     showLabels: types.optional(types.boolean, false),
 
+    showLineNumbers: false,
+
+    showAnnotationsPanel: types.optional(types.boolean, true),
+
+    showPredictionsPanel: types.optional(types.boolean, true),
     // showScore: types.optional(types.boolean, false),
   })
   .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get annotation() {
+      return getRoot(self).annotationStore.selected;
+    },
+    get displayLabelsByDefault() {
+      return self.sidePanelMode === SIDEPANEL_MODE_LABELS;
     },
   }))
   .actions(self => ({
@@ -50,6 +69,7 @@ const SettingsModel = types
       // sandboxed environment may break even on check of this property
       try {
         const { localStorage } = window;
+
         if (!localStorage) return;
       } catch (e) {
         return;
@@ -59,8 +79,10 @@ const SettingsModel = types
 
       // load settings from the browser store
       const lss = localStorage.getItem(lsKey);
+
       if (lss) {
         const lsp = JSON.parse(lss);
+
         typeof lsp === "object" &&
           lsp !== null &&
           Object.keys(lsp).forEach(k => {
@@ -83,15 +105,34 @@ const SettingsModel = types
 
       Utils.HTML.toggleLabelsAndScores(self.showLabels);
 
-      // const c = getRoot(self).completionStore.selected;
+      // const c = getRoot(self).annotationStore.selected;
       // c.regionStore.regions.forEach(r => {
       //   // TODO there is no showLables in the regions right now
       //   return typeof r.showLabels === "boolean" && r.setShowLables(self.showLabels);
       // });
     },
 
+    toggleShowLineNumbers() {
+      self.showLineNumbers = !self.showLineNumbers;
+
+      // hack to enable it from outside, because Text spawns spans on every rerender
+      // @todo it should be enabled inside Text
+      document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
+    },
+
     toggleContinuousLabeling() {
       self.continuousLabeling = !self.continuousLabeling;
+    },
+
+    toggleSelectAfterCreate() {
+      self.selectAfterCreate = !self.selectAfterCreate;
+    },
+
+    toggleSidepanelModel() {
+      self.sidePanelMode =
+        self.sidePanelMode === SIDEPANEL_MODE_LABELS ? SIDEPANEL_MODE_REGIONS : SIDEPANEL_MODE_LABELS;
+      // apply immediately
+      self.annotation.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
     },
 
     toggleAutoSave() {
@@ -101,7 +142,7 @@ const SettingsModel = types
     toggleHotkeys() {
       self.enableHotkeys = !self.enableHotkeys;
       if (self.enableHotkeys) {
-        Hotkey.setScope("__main__");
+        Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
       } else {
         Hotkey.setScope("__none__");
       }
@@ -135,6 +176,14 @@ const SettingsModel = types
 
     toggleLabelTooltips() {
       self.enableLabelTooltips = !self.enableLabelTooltips;
+    },
+
+    toggleAnnotationsPanel() {
+      self.showAnnotationsPanel = !self.showAnnotationsPanel;
+    },
+
+    togglePredictionsPanel() {
+      self.showPredictionsPanel = !self.showPredictionsPanel;
     },
   }));
 

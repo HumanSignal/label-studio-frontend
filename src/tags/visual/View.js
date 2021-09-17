@@ -1,15 +1,17 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import VisibilityMixin from "../../mixins/Visibility";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * View element. It's analogous to div element in html and can be used to visual configure display of blocks
+ * Use the View element to configure the display of blocks, similar to the div tag in HTML.
  * @example
+ * <!-- Create two cards that flex to take up 50% of the screen width on the labeling interface -->
  * <View style="display: flex;">
  *   <View style="flex: 50%">
  *     <Header value="Facts:" />
@@ -21,13 +23,15 @@ import VisibilityMixin from "../../mixins/Visibility";
  *   </View>
  * </View>
  * @name View
+ * @meta_title View Tag for Defining How Blocks are Displayed
+ * @meta_description Customize how blocks are displayed on the labeling interface in Label Studio for machine learning and data science projects.
  * @param {block|inline} display
- * @param {string} [style] css style string
- * @param {string} [className] - class name of the css style to apply
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] show the contents of a view when condition is true
- * @param {string} [whenTagName] narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
- * @param {string} [whenLabelValue] narrow down visibility by label value
- * @param {string} [whenChoiceValue] narrow down visibility by choice value
+ * @param {string} [style] CSS style string
+ * @param {string} [className] - Class name of the CSS style to apply. Use with the Style tag
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] Show the contents of a view when condition is true
+ * @param {string} [whenTagName] Narrow down visibility by tag name. For regions, use the name of the object tag, for choices, use the name of the choices tag.
+ * @param {string} [whenLabelValue] Narrow down visibility by label value
+ * @param {string} [whenChoiceValue] Narrow down visibility by choice value
  */
 const TagAttrs = types.model({
   classname: types.optional(types.string, ""),
@@ -45,8 +49,10 @@ const Model = types
       "labels",
       "label",
       "table",
+      "taxonomy",
       "choices",
       "choice",
+      "number",
       "rating",
       "ranker",
       "rectangle",
@@ -60,10 +66,13 @@ const Model = types
       "keypointlabels",
       "brushlabels",
       "hypertextlabels",
+      "timeserieslabels",
       "text",
       "audio",
       "image",
       "hypertext",
+      "richtext",
+      "timeseries",
       "audioplus",
       "list",
       "dialog",
@@ -73,17 +82,17 @@ const Model = types
       "label",
       "relations",
       "filter",
+      "timeseries",
+      "timeserieslabels",
+      "paragraphs",
+      "paragraphlabels",
+      "video",
     ]),
-  })
-  .views(self => ({
-    get completion() {
-      return getRoot(self).completionStore.selected;
-    },
-  }));
+  });
 
-const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin);
+const ViewModel = types.compose("ViewModel", TagAttrs, Model, VisibilityMixin, AnnotationMixin);
 
-const HtxView = observer(({ item, store }) => {
+const HtxView = observer(({ item }) => {
   let style = {};
 
   if (item.display === "inline") {

@@ -1,3 +1,4 @@
+/* global it, expect */
 import { _index } from "../Template";
 
 const objToInd = { a: { b: { c: 10 } } };

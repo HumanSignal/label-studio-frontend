@@ -10,9 +10,10 @@ export default observer(
       return (
         <Fragment>
           <Slider
+            value={this.props.value}
             defaultValue={this.props.default || 15}
             max={this.props.max || 50}
-            min={0}
+            min={1}
             vertical
             tipFormatter={null}
             style={{ height: this.props.height || 100 }}

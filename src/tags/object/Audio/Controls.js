@@ -5,18 +5,18 @@ import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
 import Hint from "../../../components/Hint/Hint";
 
-const AudioControls = observer(({ item, store }) => {
+const AudioControls = ({ item, store }) => {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1em" }}>
       <Button
         type="primary"
-        onClick={ev => {
+        onClick={() => {
           item._ws.playPause();
         }}
       >
         {item.playing && (
           <Fragment>
-            <PauseCircleOutlined /> Pause
+            <PauseCircleOutlined /> <span>Pause</span>
             {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
               <Hint>[{item.hotkey}]</Hint>
             )}
@@ -24,7 +24,7 @@ const AudioControls = observer(({ item, store }) => {
         )}
         {!item.playing && (
           <Fragment>
-            <PlayCircleOutlined /> Play
+            <PlayCircleOutlined /> <span>Play</span>
             {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
               <Hint>[{item.hotkey}]</Hint>
             )}
@@ -33,6 +33,6 @@ const AudioControls = observer(({ item, store }) => {
       </Button>
     </div>
   );
-});
+};
 
 export default observer(AudioControls);

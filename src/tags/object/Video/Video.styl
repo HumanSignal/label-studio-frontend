@@ -1,0 +1,40 @@
+.video
+  video
+    max-width 100%
+
+  &__controls
+    display flex
+
+  &__play
+  &__frame
+    width 36px
+    height 36px
+    border-radius 8px
+    background-color #09f
+    display flex
+    align-items center
+    justify-content center
+    margin-right 4px
+    cursor pointer
+    box-shadow 0 1px 0 #06c
+
+    &:active
+      box-shadow none
+      transform translate(0, 1px)
+
+    &:hover
+      opacity 0.8
+
+  &__progress
+    flex 1
+    position relative
+    border 1px solid #ccc
+    border-radius 8px
+    overflow hidden
+  &__current-time
+    width 2px
+    height 36px
+    background #333
+    position relative
+    transform translate(-1px, 0)
+    transition 0.1s left

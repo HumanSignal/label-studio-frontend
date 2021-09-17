@@ -1,7 +1,7 @@
 import * as xpath from "xpath-range";
 import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { types } from "mobx-state-tree";
 
 import ObjectBase from "./Base";
 import ObjectTag from "../../components/Tags/Object";
@@ -9,28 +9,46 @@ import RegionsMixin from "../../mixins/Regions";
 import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { TextRegionModel } from "../../regions/TextRegion";
-import { cloneNode } from "../../core/Helpers";
-import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
+import { restoreNewsnapshot } from "../../core/Helpers";
 import { splitBoundaries } from "../../utils/html";
-import { runTemplate } from "../../core/Template";
+import { parseValue } from "../../utils/data";
 import styles from "./Text/Text.module.scss";
-import InfoModal from "../../components/Infomodal/Infomodal";
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import { customTypes } from "../../core/CustomTypes";
+import messages from "../../utils/messages";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Text tag shows an Text markup that can be labeled
+ * The Text tag shows text that can be labeled. Use to display any type of text on the labeling interface.
+ * You can use `<Style>.htx-text{ white-space: pre-wrap; }</Style>` to preserve all spaces in the text, otherwise spaces are trimmed when displayed.
+ * Every space in the text sample is counted when calculating result offsets, for example for NER labeling tasks.
+ *
+ * Use with the following data types: text
  * @example
- * <Text name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
+ * <!--Labeling configuration to label text for NER tasks with a word-level granularity -->
+ * <View>
+ *   <Text name="text-1" value="$text" granularity="word" highlightColor="#ff0000" />
+ *   <Labels name="ner" toName="text-1">
+ *     <Label value="Person" />
+ *     <Label value="Location" />
+ *   </Labels>
+ * </View>
  * @name Text
- * @param {string} name                      - name of the element
- * @param {string} value                     - value of the element
- * @param {boolean} [selectionEnabled=true]  - enable or disable selection
- * @param {string} [highlightColor]          - hex string with highlight color, if not provided uses the labels color
- * @param {symbol|word} [granularity=symbol] - control per symbol or word selection
- * @param {boolean} [showLabels=true]        - show labels next to the region
- * @param {string} [encoding=none|base64|base64unicode]  - decode value from encoded string
+ * @regions TextRegion
+ * @meta_title Text Tags for Text Objects
+ * @meta_description Customize Label Studio with the Text tag to annotate text for NLP and NER machine learning and data science projects.
+ * @param {string} name                      - Name of the element
+ * @param {string} value                     - Data field containing text or a URL
+ * @param {url|text} [valueType]             - Whether the text is stored directly in task or needs to be loaded by url
+ * @param {yes|no} [saveTextResult]          - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {boolean} [selectionEnabled=true]  - Whether to enable or disable text selection
+ * @param {string} [highlightColor]          - Hex color string to highlight text. If not provided, label color is used
+ * @param {symbol|word} [granularity=symbol] - Whether to select text per symbol or word
+ * @param {boolean} [showLabels=true]        - Whether to show labels next to the region
+ * @param {string} [encoding=none|base64|base64unicode]  - How to decode values from encoded strings
  */
 const TagAttrs = types.model("TextModel", {
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   value: types.maybeNull(types.string),
 
   valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
@@ -41,7 +59,7 @@ const TagAttrs = types.model("TextModel", {
 
   selectionenabled: types.optional(types.boolean, true),
 
-  highlightcolor: types.maybeNull(types.string),
+  highlightcolor: types.maybeNull(customTypes.color),
   // matchlabel: types.optional(types.boolean, false),
 
   // [TODO]
@@ -54,30 +72,30 @@ const TagAttrs = types.model("TextModel", {
 
 const Model = types
   .model("TextModel", {
-    id: types.optional(types.identifier, guidGenerator),
     type: "text",
     loaded: types.optional(types.boolean, false),
-    regions: types.array(TextRegionModel),
     _value: types.optional(types.string, ""),
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
-    get completion() {
-      return getRoot(self).completionStore.selected;
+    get regs() {
+      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
-      return self.completion.toNames.get(self.name);
+      return self.annotation.toNames.get(self.name);
     },
 
     activeStates() {
       const states = self.states();
-      return states && states.filter(s => s.isSelected && s._type === "labels");
+
+      return states && states.filter(s => s.isSelected && s.type === "labels");
     },
   }))
   .actions(self => ({
@@ -90,17 +108,24 @@ const Model = types
     },
 
     updateValue(store) {
-      self._value = runTemplate(self.value, store.task.dataObj);
+      const value = parseValue(self.value, store.task.dataObj);
 
       if (self.valuetype === "url") {
-        const url = self._value;
-        if (!/^https?:\/\//.test(url)) {
-          const message = [
-            `You should not put text directly in your task data if you use valuetype=url.`,
-            `URL (${url}) is not valid.`,
-          ];
+        const url = value;
+        // "/..." for local files
+
+        if (!/^https?:\/\/|^\//.test(url)) {
+          const message = [];
+
+          if (url) {
+            // @todo cut long texts ("Lorem ipsum...amet")
+            message.push(`URL (${url}) is not valid.`);
+            message.push(`You should not put text directly in your task data if you use valuetype="url".`);
+          } else {
+            message.push(`URL is empty, check ${self.value} in data JSON.`);
+          }
           if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
-          InfoModal.error(message.map(t => <p>{t}</p>));
+          store.annotationStore.addErrors([errorBuilder.generalError(message.join("\n"))]);
           self.loadedValue("");
           return;
         }
@@ -111,11 +136,13 @@ const Model = types
           })
           .then(self.loadedValue)
           .catch(e => {
-            InfoModal.error(`Loading URL (${url}) unsuccessful: ${e}`);
+            const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
+
+            store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.loadedValue("");
           });
       } else {
-        self.loadedValue(self._value);
+        self.loadedValue(value);
       }
     },
 
@@ -126,10 +153,10 @@ const Model = types
 
       self._value = val;
 
-      self._regionsCache.forEach(({ region, completion }) => {
+      self._regionsCache.forEach(({ region, annotation }) => {
         region.setText(self._value.substring(region.startOffset, region.endOffset));
         self.regions.push(region);
-        completion.addRegion(region);
+        annotation.addRegion(region);
       });
 
       self._regionsCache = [];
@@ -153,25 +180,30 @@ const Model = types
       r._range = p._range;
 
       if (self.valuetype === "url" && self.loaded === false) {
-        self._regionsCache.push({ region: r, completion: self.completion });
+        self._regionsCache.push({ region: r, annotation: self.annotation });
         return;
       }
 
       self.regions.push(r);
-      self.completion.addRegion(r);
+      self.annotation.addRegion(r);
 
       return r;
     },
 
     addRegion(range) {
+      range.start = range.startOffset;
+      range.end = range.endOffset;
+
       const states = self.getAvailableStates();
+
       if (states.length === 0) return;
 
-      const clonedStates = states.map(s => cloneNode(s));
+      const control = states[0];
+      const labels = { [control.valueType]: control.selectedValues() };
+      const area = self.annotation.createResult(range, labels, control, self);
 
-      const r = self.createRegion({ ...range, states: clonedStates });
-
-      return r;
+      area._range = range._range;
+      return area;
     },
 
     /**
@@ -183,7 +215,8 @@ const Model = types
       let r;
       let m;
 
-      const fm = self.completion.names.get(obj.from_name);
+      const fm = self.annotation.names.get(obj.from_name);
+
       fm.fromStateJSON(obj);
 
       if (!fm.perregion && fromModel.type !== "labels") return;
@@ -230,7 +263,7 @@ const Model = types
     },
   }));
 
-const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const TextModel = types.compose("TextModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxTextView extends Component {
   render() {
@@ -251,7 +284,8 @@ class TextPieceView extends Component {
   getValue() {
     const { item, store } = this.props;
 
-    let val = runTemplate(item.value, store.task.dataObj);
+    let val = parseValue(item.value, store.task.dataObj);
+
     if (item.encoding === "base64") val = atob(val);
     if (item.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
@@ -273,8 +307,9 @@ class TextPieceView extends Component {
         r2.setStart(r.startContainer, 0);
       }
 
-      if (idx > 0) {
+      if (idx >= 0) {
         const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
+
         r2.setStart(node, len);
       }
     }
@@ -282,26 +317,22 @@ class TextPieceView extends Component {
     const strright = val.substring(end, val.length);
 
     if (strright.length > 0) {
-      let idxSpace = strright.indexOf(" ");
-      let idxNewline = strright.indexOf("\n");
+      const idxSpace = strright.indexOf(" ");
+      const idxNewline = strright.indexOf("\n");
+      let idx = Math.min(idxSpace, idxNewline);
 
-      let idx;
-
-      if (idxNewline === -1) idx = idxSpace;
-      if (idxSpace === -1) idx = idxNewline;
-
-      if (idxNewline > 0 && idxSpace > 0) {
-        idx = idxSpace > idxNewline ? idxNewline : idxSpace;
+      if (idx === -1) {
+        idx = idxSpace === -1 ? idxNewline : idxSpace;
       }
 
-      idx = idx + end;
-
+      // if no spaces and newlines — we are on the last word of the whole text
       if (idx === -1) {
         r2.setEnd(r.endContainer, r.endContainer.length);
       }
 
       if (idx > 0) {
-        const { node, len } = Utils.HTML.findIdxContainer(this.myRef, idx + 1);
+        const { node, len } = Utils.HTML.findIdxContainer(this.myRef, end + idx + 1);
+
         r2.setEnd(node, len > 0 ? len - 1 : 0);
       }
     }
@@ -311,25 +342,22 @@ class TextPieceView extends Component {
 
   alignRange(r) {
     const item = this.props.item;
+    // there is should be at least one selected label
+    const label = item.activeStates()[0].selectedLabels[0];
+    const granularity = label.granularity || item.granularity;
 
-    if (item.granularity === "symbol") return r;
+    if (granularity === "symbol") return r;
 
     const { start, end } = Utils.HTML.mainOffsets(this.myRef);
 
     // given gobal position and selection node find node
     // with correct position
-    if (item.granularity === "word") {
+    if (granularity === "word") {
       return this.alignWord(r, start, end);
-    }
-
-    if (item.granularity === "sentence") {
-    }
-
-    if (item.granularity === "paragraph") {
     }
   }
 
-  captureDocumentSelection() {
+  captureDocumentSelection(ev) {
     var i,
       self = this,
       ranges = [],
@@ -338,6 +366,8 @@ class TextPieceView extends Component {
 
     if (selection.isCollapsed) return [];
 
+    const granularityDisabled = ev.altKey;
+
     for (i = 0; i < selection.rangeCount; i++) {
       var r = selection.getRangeAt(i);
 
@@ -345,7 +375,9 @@ class TextPieceView extends Component {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
 
-      r = this.alignRange(r);
+      if (!granularityDisabled) {
+        r = this.alignRange(r);
+      }
 
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
@@ -361,6 +393,7 @@ class TextPieceView extends Component {
         const tags = Array.from(r.cloneContents().childNodes);
         // and convert every <br> back to new line
         const text = tags.reduce((str, node) => (str += node.tagName === "BR" ? "\n" : node.textContent), "");
+
         normedRange.text = text;
 
         const ss = Utils.HTML.toGlobalOffset(self.myRef, r.startContainer, r.startOffset);
@@ -376,7 +409,9 @@ class TextPieceView extends Component {
         } else {
           ranges.push(normedRange);
         }
-      } catch (err) {}
+      } catch (err) {
+        // Error
+      }
     }
 
     // BrowserRange#normalize() modifies the DOM structure and deselects the
@@ -387,26 +422,31 @@ class TextPieceView extends Component {
     return ranges;
   }
 
-  onClick(ev) {
+  onClick() {
     // console.log('click');
   }
 
   onMouseUp(ev) {
     const item = this.props.item;
+
     if (!item.selectionenabled) return;
 
     const states = item.activeStates();
+
     if (!states || states.length === 0) return;
 
-    var selectedRanges = this.captureDocumentSelection();
+    var selectedRanges = this.captureDocumentSelection(ev);
+
     if (selectedRanges.length === 0) return;
 
     // prevent overlapping spans from being selected right after this
     item._currentSpan = null;
 
     const htxRange = item.addRegion(selectedRanges[0]);
+
     if (htxRange) {
       const spans = htxRange.createSpans();
+
       htxRange.addEventsToSpans(spans);
     }
   }
@@ -415,7 +455,12 @@ class TextPieceView extends Component {
     const root = this.myRef;
     const { item } = this.props;
 
-    item.regions.forEach(function(r) {
+    item.regs.forEach(function(r) {
+      // spans can be totally missed if this is app init or undo/redo
+      // or they can be disconnected from DOM on annotations switching
+      // so we have to recreate them from regions data
+      if (r._spans?.[0]?.isConnected) return;
+
       const findNode = (el, pos) => {
         let left = pos;
         const traverse = node => {
@@ -431,10 +476,12 @@ class TextPieceView extends Component {
             left = left - 1;
           }
 
-          for (var i = 0; i <= node.childNodes.length; i++) {
+          for (var i = 0; i <= node.childNodes?.length; i++) {
             const n = node.childNodes[i];
+
             if (n) {
               const res = traverse(n);
+
               if (res) return res;
             }
           }
@@ -443,21 +490,27 @@ class TextPieceView extends Component {
         return traverse(el);
       };
 
-      const ss = findNode(root, r.startOffset);
-      const ee = findNode(root, r.endOffset);
+      const ss = findNode(root, r.start);
+      const ee = findNode(root, r.end);
 
       // if (! ss || ! ee)
       //     return;
 
       const range = document.createRange();
+
       range.setStart(ss.node, ss.left);
       range.setEnd(ee.node, ee.left);
+
+      if (!r.text && range.toString()) {
+        r.setText(range.toString());
+      }
 
       splitBoundaries(range);
 
       r._range = range;
 
       const spans = r.createSpans();
+
       r.addEventsToSpans(spans);
     });
   }
@@ -468,6 +521,13 @@ class TextPieceView extends Component {
 
   componentDidMount() {
     this._handleUpdate();
+
+    const ref = this.myRef;
+    const settings = this.props.store.settings;
+
+    if (ref && ref.classList && settings) {
+      ref.classList.toggle("htx-line-numbers", settings.showLineNumbers);
+    }
   }
 
   render() {
@@ -477,7 +537,7 @@ class TextPieceView extends Component {
 
     const val = item._value.split("\n").reduce((res, s, i) => {
       if (i) res.push(<br key={i} />);
-      res.push(s);
+      res.push(<span key={`item-${i}`} className={styles.line}>{s}</span>);
       return res;
     }, []);
 

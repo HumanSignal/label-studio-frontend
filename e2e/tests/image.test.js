@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, clickRect, serialize } = require("./helpers");
+const { initLabelStudio, clickRect, serialize, waitForImage } = require("./helpers");
 
 const assert = require("assert");
 
@@ -41,7 +41,7 @@ const createRegion = (from_name, type, values) => ({
   },
 });
 
-const completionMoonwalker = {
+const annotationMoonwalker = {
   id: "1001",
   lead_time: 15.053,
   result: [createRegion("tag", "rectanglelabels", { rectanglelabels: ["Moonwalker"] })],
@@ -49,28 +49,29 @@ const completionMoonwalker = {
 
 // perregion regions have the same id as main region
 // and their own data (`text` in this case)
-const completionWithPerRegion = {
+const annotationWithPerRegion = {
   id: "1002",
-  result: [completionMoonwalker.result[0], createRegion("answer", "textarea", { text: ["blah"] })],
+  result: [annotationMoonwalker.result[0], createRegion("answer", "textarea", { text: ["blah"] })],
 };
 
 const image =
   "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
 
-Scenario("Check Rect region for Image", async function(I) {
+Scenario("Check Rect region for Image", async function({ I, AtImageView, AtSidebar }) {
   const params = {
     config,
     data: { image },
-    completions: [completionMoonwalker],
+    annotations: [annotationMoonwalker],
   };
 
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  I.waitForVisible("canvas");
-  I.see("Regions (1)");
+  AtImageView.waitForImage();
+  I.executeAsyncScript(waitForImage);
+  AtSidebar.seeRegions(1);
   // select first and only region
-  I.click(locate("li").withText("Rectangle"));
+  I.click(locate('[aria-label="region"]'));
   I.see("Labels:");
 
   // click on region's rect on the canvas
@@ -78,21 +79,22 @@ Scenario("Check Rect region for Image", async function(I) {
   I.dontSee("Labels:");
 });
 
-Scenario("Image with perRegion tags", async function(I) {
+Scenario("Image with perRegion tags", async function({ I, AtImageView, AtSidebar }) {
   let result;
   const params = {
     config: perRegionConfig,
     data: { image },
-    completions: [completionWithPerRegion],
+    annotations: [annotationWithPerRegion],
   };
 
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
-  I.waitForVisible("canvas");
-  I.see("Regions (1)");
+  AtImageView.waitForImage();
+  I.executeAsyncScript(waitForImage);
+  AtSidebar.seeRegions(1);
   // select first and only region
-  I.click(locate("li").withText("Rectangle"));
+  I.click(locate('[aria-label="region"]'));
   I.see("Labels:");
 
   // check that there is deserialized text for this region; and without doubles
@@ -109,11 +111,11 @@ Scenario("Image with perRegion tags", async function(I) {
 
   // serialize with two textarea regions
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 2);
-  assert.equal(result[0].id, "Dx_aB91ISN");
-  assert.equal(result[1].id, "Dx_aB91ISN");
-  assert.deepEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
-  assert.deepEqual(result[1].value.text, ["blah", "another"]);
+  assert.strictEqual(result.length, 2);
+  assert.strictEqual(result[0].id, "Dx_aB91ISN");
+  assert.strictEqual(result[1].id, "Dx_aB91ISN");
+  assert.deepStrictEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
+  assert.deepStrictEqual(result[1].value.text, ["blah", "another"]);
 
   // delete first deserialized text and check that only "another" left
   I.click(locate("[aria-label=delete]").inside('[data-testid="textarea-region"]'));
@@ -121,9 +123,9 @@ Scenario("Image with perRegion tags", async function(I) {
   I.seeElement(locate("mark").withText("another"));
 
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 2);
-  assert.deepEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
-  assert.deepEqual(result[1].value.text, ["another"]);
+  assert.strictEqual(result.length, 2);
+  assert.deepStrictEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
+  assert.deepStrictEqual(result[1].value.text, ["another"]);
 
   // delete also "another" region
   I.click(locate("[aria-label=delete]").inside('[data-testid="textarea-region"]'));
@@ -131,6 +133,6 @@ Scenario("Image with perRegion tags", async function(I) {
   I.dontSeeElement(locate("mark"));
 
   result = await I.executeScript(serialize);
-  assert.equal(result.length, 1);
-  assert.deepEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
+  assert.strictEqual(result.length, 1);
+  assert.deepStrictEqual(result[0].value.rectanglelabels, ["Moonwalker"]);
 });

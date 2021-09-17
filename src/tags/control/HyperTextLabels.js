@@ -6,59 +6,76 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
-import { guidGenerator } from "../../core/Helpers";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * HyperTextLabels tag
- * HyperTextLabels tag creates labeled hyper text (HTML)
+ * The HyperTextLabels tag creates labeled hyper text (HTML). Use with the HyperText object tag to annotate HTML text or HTML elements for named entity recognition tasks.
+ *
+ * Use with the following data types: HTML
  * @example
+ * <!--Basic semantic text labeling configuration-->
  * <View>
  *   <HyperTextLabels name="labels" toName="ht">
- *     <Label value="Face" />
- *     <Label value="Nose" />
+ *     <Label value="Header" />
+ *     <Label value="Body Text" />
  *   </HyperTextLabels>
  *   <HyperText name="ht" value="$html" />
  * </View>
  * @name HyperTextLabels
- * @param {string} name name of the element
- * @param {string} toName name of the html element to label
+ * @meta_title Hypertext Label Tag to Create Labeled Hypertext (HTML)
+ * @meta_description Customize Label Studio with the HyperTextLabels tag to label hypertext (HTML) for machine learning and data science projects.
+ * @param {string} name                      - Name of the element
+ * @param {string} toName                    - Name of the HTML element to label
+ * @param {single|multiple=} [choice=single] - Configure if you can select one or multiple labels
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
 const TagAttrs = types.model({
-  name: types.maybeNull(types.string),
+  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
+const Validation = types.model({
+  controlledTags: Types.unionTag(["HyperText"]),
+});
+
 const ModelAttrs = types
-  .model("HyperTextLabelesModel", {
-    id: types.identifier,
-    pid: types.optional(types.string, guidGenerator),
-    type: "htmllabels",
+  .model("HyperTextLabelsModel", {
+    type: "hypertextlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
     get serializableValue() {
       const obj = {};
-      obj["htmllabels"] = self.selectedValues();
+
+      obj[self.resultType] = self.selectedValues();
 
       return obj;
     },
-  }));
 
-const Model = LabelMixin.props({ _type: "htmllabels" });
+    get resultType() {
+      return "hypertextlabels";
+    },
+
+    get valueType() {
+      return "hypertextlabels";
+    },
+  }));
 
 const Composition = types.compose(
   ControlBase,
   LabelsModel,
   ModelAttrs,
   TagAttrs,
-  Model,
+  Validation,
+  LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
 );
 

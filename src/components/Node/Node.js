@@ -1,124 +1,136 @@
-import React, { Fragment } from "react";
-import { Badge } from "antd";
-import { getType, getRoot } from "mobx-state-tree";
+import React from "react";
+import { getRoot, getType } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
-  FontColorsOutlined,
-  AudioOutlined,
-  MessageOutlined,
-  BlockOutlined,
-  GatewayOutlined,
-  Loading3QuartersOutlined,
-  EyeOutlined,
-  HighlightOutlined,
   ApartmentOutlined,
+  AudioOutlined,
+  FontColorsOutlined,
+  LineChartOutlined,
+  MessageOutlined
 } from "@ant-design/icons";
 
 import styles from "./Node.module.scss";
+import "./Node.styl";
+import { Block, Elem } from "../../utils/bem";
+import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangleTool, IconRectangleToolSmart } from "../../assets/icons";
+import { NodeView } from "./NodeView";
 
 const NodeViews = {
-  TextRegionModel: ["Text", FontColorsOutlined, node => <span className={null}>{node.text.substring(0, 100)}</span>],
+  RichTextRegionModel: NodeView({
+    name: "HTML",
+    icon: FontColorsOutlined,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+  }),
 
-  HyperTextRegionModel: ["HTML", FontColorsOutlined, node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>],
+  ParagraphsRegionModel: NodeView({
+    name: "Paragraphs",
+    icon: FontColorsOutlined,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+  }),
 
-  AudioRegionModel: ["Audio", AudioOutlined, node => `Audio ${node.start.toFixed(2)} - ${node.end.toFixed(2)}`],
+  AudioRegionModel: NodeView({
+    name: "Audio",
+    icon: AudioOutlined,
+  }),
 
-  TextAreaRegionModel: [
-    "Input",
-    MessageOutlined,
-    node => (
-      <Fragment>
-        Input <span style={{ color: "#5a5a5a" }}>{node._value}</span>
-      </Fragment>
-    ),
-  ],
+  TimeSeriesRegionModel: NodeView({
+    name: "TimeSeries",
+    icon: LineChartOutlined,
+  }),
 
-  RectRegionModel: [
-    "Rect",
-    BlockOutlined,
-    node => {
-      const w = node.width * node.scaleX;
-      const y = node.height * node.scaleY;
-      return `Rectangle ${w.toFixed(2)} x ${y.toFixed(2)}`;
-    },
-  ],
+  TextAreaRegionModel: NodeView({
+    name: "Input",
+    icon: MessageOutlined,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node._value}</span>,
+  }),
 
-  PolygonRegionModel: ["Polygon", GatewayOutlined, () => `Polygon`],
+  RectRegionModel: NodeView({
+    name: "Rect",
+    icon: IconRectangleTool,
+    altIcon: IconRectangleToolSmart,
+  }),
 
-  EllipseRegionModel: [
-    "Ellipse",
-    Loading3QuartersOutlined,
-    node => {
-      const radiusX = node.radiusX * node.scaleX;
-      const radiusY = node.radiusY * node.scaleY;
-      const rotation = node.rotation;
-      return `Ellipse ${radiusX.toFixed(2)} x ${radiusY.toFixed(2)}, θ = ${rotation.toFixed(2)}°,
-        center = (${node.x.toFixed(2)}, ${node.y.toFixed(2)})`;
-    },
-  ],
+  PolygonRegionModel: NodeView({
+    name: "Polygon",
+    icon: IconPolygonTool,
+    altIcon: IconPolygonToolSmart,
+  }),
+
+  EllipseRegionModel: NodeView({
+    name: "Ellipse",
+    icon: IconCircleTool,
+    altIcon: IconCircleToolSmart,
+  }),
 
   // @todo add coords
-  KeyPointRegionModel: ["KeyPoint", EyeOutlined, () => `KeyPoint`],
+  KeyPointRegionModel: NodeView({
+    name: "KeyPoint",
+    icon: IconKeypointsTool,
+    altIcon: IconKeypointsToolSmart,
+  }),
 
-  BrushRegionModel: ["Brush", HighlightOutlined, () => `Brush`],
+  BrushRegionModel: NodeView({
+    name: "Brush",
+    icon: IconBrushTool,
+    altIcon: IconBrushToolSmart,
+  }),
 
-  ChoicesModel: ["Classification", ApartmentOutlined, () => `Classification`],
+  ChoicesModel: NodeView({
+    name: "Classification",
+    icon: ApartmentOutlined,
+  }),
 
-  TextAreaModel: ["Input", MessageOutlined, () => `Input`],
+  TextAreaModel: NodeView({
+    name: "Input",
+    icon: MessageOutlined,
+  }),
 };
 
-const Node = observer(({ className, node, onClick }) => {
-  const click = ev => {
-    ev.preventDefault();
-    getRoot(node).completionStore.selected.regionStore.unselectAll();
-
-    node.selectRegion();
-
-    return false;
-  };
-
+const Node = observer(({ className, node }) => {
   const name = getType(node).name;
+
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  const [, Icon, getContent] = NodeViews[name];
+  let { getContent } = NodeViews[name];
+  const labelName = node.labelName;
 
   return (
-    <span onClick={onClick || click} className={[styles.node, className].filter(Boolean).join(" ")}>
-      <Icon />
+    <span className={[styles.node, className].filter(Boolean).join(" ")}>
+      {labelName}
+      {" "}
       {getContent(node)}
     </span>
   );
 });
 
+const NodeIcon = observer(({ node }) => {
+  const name = getType(node).name;
+
+  if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
+
+  const { icon: Icon } = NodeViews[name];
+
+  return <Icon />;
+});
+
 const NodeMinimal = observer(({ node }) => {
-  const { sortedRegions: regions } = getRoot(node).completionStore.selected.regionStore;
+  const { sortedRegions: regions } = getRoot(node).annotationStore.selected.regionStore;
   const index = regions.indexOf(node);
   const name = getType(node).name;
+
   if (!(name in NodeViews)) return null;
 
-  const oneColor = node.getOneColor();
-  let badgeStyle = {};
+  const { name: text, Icon } = NodeViews[name];
 
-  if (oneColor) {
-    badgeStyle = {
-      backgroundColor: oneColor,
-    };
-  } else {
-    badgeStyle = {
-      backgroundColor: "#fff",
-      color: "#999",
-      boxShadow: "0 0 0 1px #d9d9d9 inset",
-    };
-  }
-
-  const [text, Icon] = NodeViews[name];
   return (
-    <span className={styles.minimal}>
-      {index >= 0 && <Badge count={index + 1} style={badgeStyle} />}
-      <Icon />
+    <Block name="node-minimal" tag="span">
+      {index >= 0 && <Elem name="counter">{index + 1}</Elem>}
+
+      <Elem name="icon" tag={Icon}/>
+
       {text}
-    </span>
+    </Block>
   );
 });
 
-export { Node, NodeMinimal };
+export { Node, NodeIcon, NodeMinimal, NodeViews };

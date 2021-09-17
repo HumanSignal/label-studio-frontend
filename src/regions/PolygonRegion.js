@@ -1,62 +1,84 @@
 import Konva from "konva";
-import React from "react";
+import React, { memo, useMemo } from "react";
 import { Group, Line } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types, getParentOfType, destroy, detach } from "mobx-state-tree";
+import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
 import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import WithStatesMixin from "../mixins/WithStates";
-import { ChoicesModel } from "../tags/control/Choices";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnPolygon } from "../components/ImageView/LabelOnRegion";
-import { PolygonLabelsModel } from "../tags/control/PolygonLabels";
 import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { observer } from "mobx-react";
+import { minMax } from "../utils/utilities";
 
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "polygonregion",
+    object: types.late(() => types.reference(ImageModel)),
 
-    opacity: types.number,
-    fillColor: types.maybeNull(types.string),
+    points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
 
-    strokeWidth: types.number,
-    strokeColor: types.string,
-
-    pointSize: types.string,
-    pointStyle: types.string,
-
-    closed: types.optional(types.boolean, false),
-
-    points: types.array(PolygonPoint, []),
-
-    states: types.maybeNull(types.array(types.union(PolygonLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
-
-    mouseOverStartPoint: types.optional(types.boolean, false),
-
-    selectedPoint: types.maybeNull(types.safeReference(PolygonPoint)),
-
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
-
-    fromName: types.maybeNull(types.string),
-
-    wp: types.maybeNull(types.number),
-    hp: types.maybeNull(types.number),
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
+  .volatile(() => ({
+    closed: false,
+    mouseOverStartPoint: false,
+    selectedPoint: null,
+    hideable: true,
+    supportsTransform: true,
+    useTransformer: true,
+    preferTransformer: false,
+    supportsRotate: false,
+    supportsScale: true,
+  }))
   .views(self => ({
-    get parent() {
-      return getParentOfType(self, ImageModel);
+    get store() {
+      return getRoot(self);
+    },
+    get bboxCoords() {
+      return self.points.reduce((bboxCoords, point)=>{
+        return {
+          left: Math.min(bboxCoords.left, point.x),
+          top: Math.min(bboxCoords.top, point.y),
+          right: Math.max(bboxCoords.right, point.x),
+          bottom: Math.max(bboxCoords.bottom, point.y),
+        };
+      }, {
+        left: self.points[0].x,
+        top: self.points[0].y,
+        right: self.points[0].x,
+        bottom: self.points[0].y,
+      });
     },
   }))
   .actions(self => ({
+    afterCreate() {
+      if (!self.points.length) return;
+      if (!self.points[0].id) {
+        self.points = self.points.map(([x, y], index) => ({
+          id: guidGenerator(),
+          x,
+          y,
+          size: self.pointSize,
+          style: self.pointStyle,
+          index,
+        }));
+      }
+      if (self.points.length > 2) self.closed = true;
+      self.checkSizes();
+    },
+
     /**
      * @todo excess method; better to handle click only on start point
      * Handler for mouse on start point of Polygon
@@ -93,9 +115,9 @@ const Model = types
     },
 
     handleLineClick({ e, flattenedPoints, insertIdx }) {
-      e.cancelBubble = true;
-
       if (!self.closed || !self.selected) return;
+
+      e.cancelBubble = true;
 
       removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
@@ -106,45 +128,63 @@ const Model = types
       self.insertPoint(insertIdx, point[0], point[1]);
     },
 
+    deletePoint(point) {
+      if (!self.points.includes(point)) return;
+      if (self.points.length <= 3) return;
+      if (self.selectedPoint === point) {
+        self.selectedPoint = null;
+      }
+      destroy(point);
+    },
+
     addPoint(x, y) {
       if (self.closed) return;
       self._addPoint(x, y);
     },
 
+    setPoints(points) {
+      self.points.forEach((p, idx) => {
+        p.x = points[idx * 2];
+        p.y = points[idx * 2 + 1];
+      });
+    },
+
     insertPoint(insertIdx, x, y) {
       const p = {
         id: guidGenerator(),
-        x: x,
-        y: y,
+        x,
+        y,
         size: self.pointSize,
         style: self.pointStyle,
         index: self.points.length,
       };
+
       self.points.splice(insertIdx, 0, p);
     },
 
     _addPoint(x, y) {
       self.points.push({
         id: guidGenerator(),
-        x: x,
-        y: y,
+        x,
+        y,
         size: self.pointSize,
         style: self.pointStyle,
         index: self.points.length,
       });
     },
 
+    // @todo not used
     // only px coordtype here
     rotate(degree = -90) {
       self.points.forEach(point => {
         const p = self.rotatePoint(point, degree);
+
         point._movePoint(p.x, p.y);
       });
     },
 
     closePoly() {
       self.closed = true;
-      self.selectRegion();
     },
 
     canClose(x, y) {
@@ -176,36 +216,9 @@ const Model = types
       // self.points.forEach(p => p.computeOffset());
     },
 
-    updateAppearenceFromState() {
-      const stroke = self.states[0].getSelectedColor();
-      self.strokeColor = stroke;
-      self.fillColor = stroke;
-    },
-
-    selectRegion() {
-      if (self.parent.selected) {
-        self.parent.selected.closed = true;
-      }
-      // self.points.forEach(p => p.computeOffset());
-
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
-
-      self.completion.loadRegionState(self);
-    },
-
     setScale(x, y) {
       self.scaleX = x;
       self.scaleY = y;
-    },
-
-    addState(state) {
-      self.states.push(state);
-    },
-
-    setFill(color) {
-      self.fill = color;
     },
 
     updateOffset() {
@@ -213,9 +226,6 @@ const Model = types
     },
 
     updateImageSize(wp, hp, sw, sh) {
-      self.wp = wp;
-      self.hp = hp;
-
       if (self.coordstype === "px") {
         self.points.forEach(p => {
           const x = (sw * p.relativeX) / 100;
@@ -225,42 +235,49 @@ const Model = types
         });
       }
 
-      if (!self.completion.sentUserGenerate && self.coordstype === "perc") {
+      if (!self.annotation.sentUserGenerate && self.coordstype === "perc") {
         self.points.forEach(p => {
           const x = (sw * p.x) / 100;
           const y = (sh * p.y) / 100;
+
           self.coordstype = "px";
           p._movePoint(x, y);
         });
       }
     },
 
-    serialize(control, object) {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "points": [[2, 2], [3.5, 8.1], [3.5, 12.6]],
+     *     "polygonlabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} PolygonRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number[][]} value.points list of (x, y) coordinates of the polygon by percentage of the image size (0-100)
+     */
 
-      const perc_points = self.points.map(p => {
-        const normalized = self.rotatePoint(p, degree, false);
-        const res_w = (normalized.x * 100) / width;
-        const res_h = (normalized.y * 100) / height;
-
-        return [res_w, res_h];
-      });
-
-      let res = {
-        value: {
-          points: perc_points,
-        },
-        original_width: natural.width,
-        original_height: natural.height,
+    /**
+     * @return {PolygonRegionResult}
+     */
+    serialize() {
+      if (self.points.length < 3) return null;
+      return {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
+        value: {
+          points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+        },
       };
-
-      res.value = Object.assign(res.value, control.serializableValue);
-
-      return res;
     },
   }));
 
@@ -268,7 +285,9 @@ const PolygonRegionModel = types.compose(
   "PolygonRegionModel",
   WithStatesMixin,
   RegionsMixin,
+  AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 
@@ -296,6 +315,7 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
 
 function getFlattenedPoints(points) {
   const p = points.map(p => [p.x, p.y]);
+
   return p.reduce(function(flattenedPoints, point) {
     return flattenedPoints.concat(point);
   }, []);
@@ -329,33 +349,85 @@ function createHoverAnchor({ point, group, layer, zoom }) {
 
 function moveHoverAnchor({ point, group, layer, zoom }) {
   const hoverAnchor = getHoverAnchor({ layer }) || createHoverAnchor({ point, group, layer, zoom });
+
   hoverAnchor.to({ x: point[0], y: point[1], duration: 0 });
 }
 
 function removeHoverAnchor({ layer }) {
   const hoverAnchor = getHoverAnchor({ layer });
+
   if (!hoverAnchor) return;
   hoverAnchor.destroy();
   layer.draw();
 }
 
-const HtxPolygonView = ({ store, item }) => {
+const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
+  const { points } = item;
+  const name = "poly";
+  const flattenedPoints = getFlattenedPoints(points);
+
+  return (
+    <Group key={name} name={name}>
+      <Line
+        name="_transformable"
+        lineJoin="round"
+        lineCap="square"
+        stroke={colors.strokeColor}
+        strokeWidth={colors.strokeWidth}
+        strokeScaleEnabled={false}
+        points={flattenedPoints}
+        fill={colors.fillColor}
+        closed={true}
+        {...dragProps}
+        onTransformEnd={e => {
+          if (e.target !== e.currentTarget) return;
+
+          const t = e.target;
+
+          const d = [t.getAttr("x", 0), t.getAttr("y", 0)];
+          const scale = [t.getAttr("scaleX", 1), t.getAttr("scaleY", 1)];
+
+          item.setPoints(t.getAttr("points").map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
+
+          t.setAttr("x", 0);
+          t.setAttr("y", 0);
+          t.setAttr("scaleX", 1);
+          t.setAttr("scaleY", 1);
+        }}
+        draggable={draggable}
+      />
+    </Group>
+  );
+}));
+
+const HtxPolygonView = ({ item }) => {
+  const { store } = item;
+
+  const regionStyles = useRegionStyles(item, {
+    useStrokeAsFill: true,
+  });
+
   /**
    * Render line between 2 points
    */
-  function renderLine({ points, idx1, idx2 }) {
+  function renderLine({ points, idx1, idx2, closed }) {
     const name = `border_${idx1}_${idx2}`;
-    let { strokeColor, strokeWidth } = item;
-
-    if (item.highlighted) {
-      strokeColor = Constants.HIGHLIGHTED_STROKE_COLOR;
-      strokeWidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
-    }
 
     if (!item.closed && idx2 === 0) return null;
 
     const insertIdx = idx1 + 1; // idx1 + 1 or idx2
     const flattenedPoints = getFlattenedPoints([points[idx1], points[idx2]]);
+
+    const lineProps = closed ? {
+      stroke: 'transparent',
+      strokeWidth: regionStyles.strokeWidth,
+      strokeScaleEnabled: false,
+    } : {
+      stroke: regionStyles.strokeColor,
+      strokeWidth: regionStyles.strokeWidth,
+      strokeScaleEnabled: false,
+    };
+
     return (
       <Group
         key={name}
@@ -369,41 +441,27 @@ const HtxPolygonView = ({ store, item }) => {
         onMouseLeave={e => item.handleMouseLeave({ e })}
       >
         <Line
+          lineJoin="round"
+          opacity={1}
           points={flattenedPoints}
-          stroke={strokeColor}
-          opacity={item.opacity}
-          lineJoin="bevel"
-          strokeWidth={strokeWidth}
-          strokeScaleEnabled={false}
+          hitStrokeWidth={20}
+          {...lineProps}
         />
       </Group>
     );
   }
 
-  function renderLines(points) {
+  function renderLines(points, closed) {
     const name = "borders";
+
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
-          return renderLine({ points, idx1, idx2 });
-        })}
-      </Group>
-    );
-  }
 
-  function renderPoly(points) {
-    const name = "poly";
-    return (
-      <Group key={name} name={name}>
-        <Line
-          lineJoin="bevel"
-          points={getFlattenedPoints(points)}
-          fill={item.strokeColor}
-          closed={true}
-          opacity={0.2}
-        />
+          return renderLine({ points, idx1, idx2, closed });
+        })}
       </Group>
     );
   }
@@ -419,6 +477,8 @@ const HtxPolygonView = ({ store, item }) => {
 
   function renderCircles(points) {
     const name = "anchors";
+
+    if (item.parent.useTransformer && item.closed) return null;
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => renderCircle({ points, idx }))}
@@ -426,32 +486,32 @@ const HtxPolygonView = ({ store, item }) => {
     );
   }
 
-  function minMax(items) {
-    return items.reduce((acc, val) => {
-      acc[0] = acc[0] === undefined || val < acc[0] ? val : acc[0];
-      acc[1] = acc[1] === undefined || val > acc[1] ? val : acc[1];
-      return acc;
-    }, []);
-  }
 
-  let minX = 0,
-    maxX = 0,
-    minY = 0,
-    maxY = 0;
+  const dragProps = useMemo(()=>{
+    let minX = 0,
+      maxX = 0,
+      minY = 0,
+      maxY = 0,
+      isDragging = false;
 
-  return (
-    <Group
-      key={item.id ? item.id : guidGenerator(5)}
-      onDragStart={e => {
-        item.completion.setDragMode(true);
+    return {
+      onDragStart: e => {
+        if (e.target !== e.currentTarget) return;
+        if (item.parent.getSkipInteractions()) {
+          e.currentTarget.stopDrag(e.evt);
+          return;
+        }
+        isDragging = true;
+        item.annotation.setDragMode(true);
 
         var arrX = item.points.map(p => p.x);
         var arrY = item.points.map(p => p.y);
 
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
-      }}
-      dragBoundFunc={item.parent.fixForZoom(pos => {
+      },
+      dragBoundFunc: item.parent.fixForZoom(pos => {
+        if (!isDragging) return pos;
         let { x, y } = pos;
 
         const sw = item.parent.stageWidth;
@@ -462,68 +522,87 @@ const HtxPolygonView = ({ store, item }) => {
         if (maxY + y > sh) y = sh - maxY;
         if (maxX + x > sw) x = sw - maxX;
 
-        return { x: x, y: y };
-      })}
-      onDragEnd={e => {
+        return { x, y };
+      }),
+      onDragEnd: e => {
+        if (!isDragging) return;
         const t = e.target;
 
-        item.completion.setDragMode(false);
-        if (!item.closed) item.closePoly();
+        if (e.target === e.currentTarget) {
 
-        item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
+          item.annotation.setDragMode(false);
+          if (!item.closed) item.closePoly();
+
+          item.annotation.history.freeze();
+          item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
+          item.annotation.history.unfreeze();
+        }
 
         t.setAttr("x", 0);
         t.setAttr("y", 0);
-      }}
-      onMouseOver={e => {
-        const stage = item.parent.stageRef;
+        isDragging = false;
+      },
+    };
+  }, []);
 
-        if (store.completionStore.selected.relationMode) {
+
+
+  const stage = item.parent.stageRef;
+
+  return (
+    <Group
+      key={item.id ? item.id : guidGenerator(5)}
+      name={item.id}
+      onMouseOver={() => {
+        if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
           stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
         } else {
           stage.container().style.cursor = Constants.POINTER_CURSOR;
         }
       }}
-      onMouseOut={e => {
-        const stage = item.parent.stageRef;
+      onMouseOut={() => {
         stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
-        if (store.completionStore.selected.relationMode) {
+        if (store.annotationStore.selected.relationMode) {
           item.setHighlight(false);
         }
       }}
       onClick={e => {
+        // create regions over another regions with Cmd/Ctrl pressed
+        if (item.parent.getSkipInteractions()) return;
+        if (item.isDrawing) return;
+
         e.cancelBubble = true;
 
         // if (!item.editable) return;
 
         if (!item.closed) return;
 
-        const stage = item.parent.stageRef;
-
-        if (store.completionStore.selected.relationMode) {
+        if (store.annotationStore.selected.relationMode) {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
         }
 
         item.setHighlight(false);
-        item.onClickRegion();
+        item.onClickRegion(e);
       }}
-      draggable={item.editable}
+      {...dragProps}
+      draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
     >
+      <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
+
       {item.mouseOverStartPoint}
 
-      {item.points && item.closed ? renderPoly(item.points) : null}
-      {item.points ? renderLines(item.points) : null}
+      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
+      {item.points ? renderLines(item.points, item.closed) : null}
       {item.points ? renderCircles(item.points) : null}
-
-      <LabelOnPolygon item={item} />
     </Group>
   );
 };
 
-const HtxPolygon = inject("store")(observer(HtxPolygonView));
+const HtxPolygon = AliveRegion(HtxPolygonView);
 
 Registry.addTag("polygonregion", PolygonRegionModel, HtxPolygon);
+Registry.addRegionType(PolygonRegionModel, "image", value => !!value.points);
 
 export { PolygonRegionModel, HtxPolygon };

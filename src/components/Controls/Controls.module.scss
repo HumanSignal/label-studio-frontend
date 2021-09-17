@@ -1,17 +1,16 @@
 @import "../../assets/styles/global.scss";
 
-.skip {
-  margin-bottom: 10px;
-}
-
 .task {
   opacity: 0.4;
 }
 
 .container {
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 
-  & > button {
+  & > button,
+  & > span {
     margin: 0 10px;
 
     &:first-child {
@@ -33,7 +32,6 @@
   }
 
   @include respond("phone") {
-    display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-flow: column;

@@ -1,66 +1,77 @@
 import React, { Fragment } from "react";
 import { Circle } from "react-konva";
-import { observer, inject } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
 import { ImageModel } from "../tags/object/Image";
-import { KeyPointLabelsModel } from "../tags/control/KeyPointLabels";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
-import { ChoicesModel } from "../tags/control/Choices";
-import { RatingModel } from "../tags/control/Rating";
-import { TextAreaModel } from "../tags/control/TextArea";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "keypointregion",
+    object: types.late(() => types.reference(ImageModel)),
 
     x: types.number,
     y: types.number,
 
-    relativeX: types.optional(types.number, 0),
-    relativeY: types.optional(types.number, 0),
-
     width: types.number,
-
-    opacity: types.number,
-    fillColor: types.maybeNull(types.string),
-
-    states: types.maybeNull(types.array(types.union(KeyPointLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
-
-    sw: types.maybeNull(types.number),
-    sh: types.maybeNull(types.number),
-
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "px"),
+    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
+    negative: false,
   })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+    hideable: true,
+    supportsTransform: true,
+    useTransformer: false,
+    supportsRotate: false,
+    supportsScale: false,
+  }))
   .views(self => ({
-    get parent() {
-      return getParentOfType(self, ImageModel);
+    get store() {
+      return getRoot(self);
+    },
+    get bboxCoords() {
+      return {
+        left: self.x - self.width,
+        top: self.y - self.width,
+        right: self.x + self.width,
+        bottom: self.y + self.width,
+      };
     },
   }))
   .actions(self => ({
-    selectRegion() {
-      self.selected = true;
-      self.completion.setHighlightedNode(self);
-      self.parent.setSelected(self.id);
-      self.completion.loadRegionState(self);
+    afterCreate() {
+      if (self.coordstype === "perc") {
+        // deserialization
+        self.relativeX = self.x;
+        self.relativeY = self.y;
+        self.checkSizes();
+      } else {
+        // creation
+        const { stageWidth: width, stageHeight: height } = self.parent;
+
+        if (width && height) {
+          self.relativeX = (self.x / width) * 100;
+          self.relativeY = (self.y / height) * 100;
+        }
+      }
     },
 
-    updateAppearenceFromState() {
-      const stroke = self.states[0].getSelectedColor();
-      self.strokeColor = stroke;
-      self.fillColor = stroke;
-    },
-
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
+
       self.setPosition(p.x, p.y);
     },
 
@@ -72,39 +83,13 @@ const Model = types
       self.relativeY = (y / self.parent.stageHeight) * 100;
     },
 
-    addState(state) {
-      self.states.push(state);
-    },
-
-    setFill(color) {
-      self.fill = color;
-    },
-
-    afterAttach() {
-      if (self.coordstype === "perc") {
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-      }
-
-      if (self.coordstype === "px") {
-        self.relativeX = (self.x / self.parent.stageWidth) * 100;
-        self.relativeY = (self.y / self.parent.stageHeight) * 100;
-      }
-    },
-
     updateImageSize(wp, hp, sw, sh) {
-      // self.wp = wp;
-      // self.hp = hp;
-
-      self.sw = sw;
-      self.sh = sh;
-
       if (self.coordstype === "px") {
         self.x = (sw * self.relativeX) / 100;
         self.y = (sh * self.relativeY) / 100;
       }
 
-      if (!self.completion.sentUserGenerate && self.coordstype === "perc") {
+      if (self.coordstype === "perc") {
         self.x = (sw * self.x) / 100;
         self.y = (sh * self.y) / 100;
         self.width = (sw * self.width) / 100;
@@ -112,29 +97,50 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "x": 3.1,
+     *     "y": 8.2,
+     *     "width": 2,
+     *     "keypointlabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} KeyPointRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number} value.x x coordinate by percentage of the image size (0-100)
+     * @property {number} value.y y coordinate by percentage of the image size (0-100)
+     * @property {number} value.width point size by percentage of the image size (0-100)
+     */
 
-      const { x, y } = self.rotatePoint(self, degree, false);
-
-      const res = {
-        original_width: natural.width,
-        original_height: natural.height,
+    /**
+     * @return {KeyPointRegionResult}
+     */
+    serialize() {
+      const result = {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
-
         value: {
-          x: (x * 100) / width,
-          y: (y * 100) / height,
-          width: (self.width * 100) / width, //  * (self.scaleX || 1)
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
         },
       };
 
-      res.value = Object.assign(res.value, control.serializableValue);
+      if (self.dynamic) {
+        result.is_positive = !self.negative;
+        result.value.labels = self.labels;
+      }
 
-      return res;
+      return result;
     },
   }));
 
@@ -142,44 +148,59 @@ const KeyPointRegionModel = types.compose(
   "KeyPointRegionModel",
   WithStatesMixin,
   RegionsMixin,
+  AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 
-const HtxKeyPointView = ({ store, item }) => {
+const HtxKeyPointView = ({ item }) => {
+  const { store } = item;
+
   const x = item.x;
   const y = item.y;
 
-  const props = {};
+  const regionStyles = useRegionStyles(item, {
+    includeFill: true,
+    defaultFillColor: "#000",
+    defaultStrokeColor: "#fff",
+    defaultFillOpacity: (item.style ?? item.tag) ? 0.6 : 1,
+    defaultStrokeWidth: 2,
+  });
 
-  props["opacity"] = item.opacity;
+  const props = {
+    opacity: 1,
+    fill: regionStyles.fillColor,
+    stroke: regionStyles.strokeColor,
+    strokeWidth: Math.max(2, regionStyles.strokeWidth),
+    strokeScaleEnabled: false,
+    shadowBlur: 0,
+  };
 
-  if (item.fillColor) {
-    props["fill"] = item.fillColor;
-  }
-
-  props["stroke"] = item.strokeColor;
-  props["strokeWidth"] = item.strokeWidth;
-  props["strokeScaleEnabled"] = false;
-  props["shadowBlur"] = 0;
-
-  if (item.highlighted) {
-    props["stroke"] = Constants.HIGHLIGHTED_STROKE_COLOR;
-    props["strokeWidth"] = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const stage = item.parent.stageRef;
 
   return (
     <Fragment>
       <Circle
         x={x}
         y={y}
-        radius={item.width}
+        radius={Math.max(item.width, 2)}
+        // fixes performance, but opactity+borders might look not so good
+        perfectDrawEnabled={false}
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
-        name={item.id}
+        name={`${item.id} _transformable`}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+        }}
         onDragEnd={e => {
           const t = e.target;
+
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
+          item.notifyDrawingFinished();
         }}
         dragBoundFunc={item.parent.fixForZoom(pos => {
           const r = item.parent.stageWidth;
@@ -195,46 +216,57 @@ const HtxKeyPointView = ({ store, item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
-          const stage = item.parent.stageRef;
+        onTransformEnd={e => {
+          const t = e.target;
 
-          if (store.completionStore.selected.relationMode) {
+          item.setPosition(
+            t.getAttr("x"),
+            t.getAttr("y"),
+          );
+
+          t.setAttr("scaleX", 1);
+          t.setAttr("scaleY", 1);
+        }}
+        onMouseOver={() => {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
           } else {
             stage.container().style.cursor = "pointer";
           }
         }}
-        onMouseOut={e => {
-          const stage = item.parent.stageRef;
+        onMouseOut={() => {
           stage.container().style.cursor = "default";
 
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             item.setHighlight(false);
           }
         }}
         onClick={e => {
-          const stage = item.parent.stageRef;
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
-          if (!item.completion.editable) return;
-
-          if (store.completionStore.selected.relationMode) {
+          if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
         {...props}
         draggable={item.editable}
       />
-      <LabelOnKP item={item} />
+      <LabelOnKP item={item} color={regionStyles.strokeColor}/>
     </Fragment>
   );
 };
 
-const HtxKeyPoint = inject("store")(observer(HtxKeyPointView));
+const HtxKeyPoint = AliveRegion(HtxKeyPointView);
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
+Registry.addRegionType(
+  KeyPointRegionModel,
+  "image",
+  value => "x" in value && "y" in value && "width" in value && !("height" in value),
+);
 
 export { KeyPointRegionModel, HtxKeyPoint };

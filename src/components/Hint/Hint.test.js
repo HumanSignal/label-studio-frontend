@@ -1,3 +1,4 @@
+/* global describe, it, expect */
 import React from "react";
 import { shallow } from "enzyme";
 import { shallowToJson } from "enzyme-to-json";
@@ -11,6 +12,7 @@ describe("Hint", () => {
         Test
       </Hint>,
     );
+
     expect(shallowToJson(output)).toMatchSnapshot();
   });
 });
