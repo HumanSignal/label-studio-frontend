@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Group, Image, Layer, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { cast, getParent, getRoot, types } from "mobx-state-tree";
+import { cast, getParent, getRoot, hasParent, types } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -33,10 +33,13 @@ const Points = types
     id: types.optional(types.identifier, guidGenerator),
     type: types.optional(types.enumeration(["add", "eraser"]), "add"),
     points: types.array(types.number),
+    relativePoints: types.array(types.number),
+
     /**
      * Stroke width
      */
     strokeWidth: types.optional(types.number, 25),
+    relativeStrokeWidth: types.optional(types.number, 25),
     /**
      * Eraser size
      */
@@ -47,7 +50,11 @@ const Points = types
       return getRoot(self);
     },
     get parent() {
+      if (!hasParent(self, 2)) return null;
       return getParent(self, 2);
+    },
+    get stage() {
+      return self.parent?.parent;
     },
     get compositeOperation() {
       return self.type === "add" ? "source-over" : "destination-out";
@@ -55,6 +62,16 @@ const Points = types
   }))
   .actions(self => {
     return {
+      updateImageSize(wp, hp,sw,sh) {
+        self.points = self.relativePoints.map((v,idx)=> {
+          const isX = !(idx%2);
+          const stageSize = isX ? sw : sh;
+
+          return (v * stageSize) / 100;
+        });
+        self.strokeWidth = self.relativeStrokeWidth * sw / 100;
+      },
+
       setType(type) {
         self.type = type;
       },
@@ -69,6 +86,8 @@ const Points = types
 
       setPoints(points) {
         self.points = points.map((c, i) => c / (i % 2 === 0 ? self.parent.scaleX : self.parent.scaleY));
+        self.relativePoints = points.map((c, i)=> (c / (i % 2 === 0 ? self.stage.stageWidth : self.stage.stageHeight)* 100));
+        self.relativeStrokeWidth = self.strokeWidth / self.stage.stageWidth * 100;
       },
 
       // rescale points to the new width and height from the original
@@ -152,7 +171,14 @@ const Model = types
         if (!self.imageData) return null;
         const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
 
-        return imageBBox && {
+        if (!imageBBox) return null;
+        const { stageScale: scale = 1, zoomingPositionX: offsetX = 0, zoomingPositionY: offsetY = 0 } = self.parent || {};
+
+        imageBBox.x = imageBBox.x/scale - offsetX/scale;
+        imageBBox.y = imageBBox.y/scale - offsetY/scale;
+        imageBBox.width = imageBBox.width/scale;
+        imageBBox.height = imageBBox.height/scale;
+        return  {
           left: imageBBox.x,
           top: imageBBox.y,
           right: imageBBox.x + imageBBox.width,
@@ -263,12 +289,9 @@ const Model = types
         self.scaleY = y;
       },
 
-      updateImageSize() {
+      updateImageSize(wp, hp, sw, sh) {
         if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
-          let ratioX = self.parent.stageWidth / self.parent.initialWidth;
-          let ratioY = self.parent.stageHeight / self.parent.initialHeight;
-
-          self.setScale(ratioX, ratioY);
+          self.touches.forEach(stroke => stroke.updateImageSize(wp, hp, sw, sh));
 
           self.needsUpdate = self.needsUpdate + 1;
         }
@@ -474,7 +497,7 @@ const HtxBrushView = ({ item }) => {
       highlightedImageRef.current.src = dataUrl;
       done = true;
     };
-  }, [item.touches.length]);
+  }, [item.touches.length, item.strokeColor, item.parent.stageScale, store.annotationStore.selected?.id, item.parent?.zoomingPositionX, item.parent?.zoomingPositionY, item.parent?.stageWidth, item.parent?.stageHeight]);
 
   if (!item.parent) return null;
 
@@ -547,7 +570,7 @@ const HtxBrushView = ({ item }) => {
             height={item.parent.stageHeight}
           />
 
-          <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+          <Group>
             <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
           </Group>
 
@@ -575,7 +598,7 @@ const HtxBrushView = ({ item }) => {
           }
         }}
       >
-        <Group scaleX={item.scaleX} scaleY={item.scaleY}>
+        <Group>
           <LabelOnMask item={item} color={item.strokeColor}/>
         </Group>
       </Layer>
