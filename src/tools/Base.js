@@ -38,7 +38,7 @@ const BaseTool = types
         return self.control.isSeparated;
       },
       get viewClass() {
-        return self.shouldRenderView ? <ToolView item={self} /> : null;
+        return () => self.shouldRenderView ? <ToolView item={self} /> : null;
       },
       get viewTooltip() {
         return null;

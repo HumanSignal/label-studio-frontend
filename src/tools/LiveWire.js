@@ -23,7 +23,7 @@ const _Tool = types
   .model("LiveWireTool", {})
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
   }))
   .actions(self => ({

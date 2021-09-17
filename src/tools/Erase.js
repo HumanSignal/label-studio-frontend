@@ -68,7 +68,7 @@ const _Tool = types
   }))
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
     get iconComponent() {
       return IconEraserTool;
