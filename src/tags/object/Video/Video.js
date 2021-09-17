@@ -37,6 +37,7 @@ import { SyncMixin } from "../../../mixins/SyncMixin";
  * @param {string} value URL of the video
  * @param {number} [frameRate=0.04] frame rate in seconds; default 1/25s
  * @param {string} [sync] object name to sync with
+ * @param {boolean} [muted=false] muted video
  */
 
 const TagAttrs = types.model({
@@ -44,6 +45,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   framerate: types.optional(types.string, "0.04"),
+  muted: false,
 });
 
 const Model = types
@@ -71,7 +73,12 @@ const Model = types
     },
 
     needsUpdate() {
-      if (self.sync) self.initSync();
+      if (self.sync) {
+        self.initSync();
+        if (self.syncedObject?.type?.startsWith("Audio")) {
+          self.muted = true;
+        }
+      }
     },
   }));
 
