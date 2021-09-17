@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useContext } from "react";
 import { Circle } from "react-konva";
 import { getRoot, types } from "mobx-state-tree";
 
@@ -14,6 +14,7 @@ import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { createDragBoundFunc } from "../utils/image";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 const Model = types
   .model({
@@ -138,7 +139,7 @@ const Model = types
 
       if (self.dynamic) {
         result.is_positive = !self.negative;
-        result.value.labels = [self.labelName];
+        result.value.labels = self.labels;
       }
 
       return result;
@@ -157,6 +158,7 @@ const KeyPointRegionModel = types.compose(
 
 const HtxKeyPointView = ({ item }) => {
   const { store } = item;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   const x = item.x;
   const y = item.y;
@@ -217,7 +219,6 @@ const HtxKeyPointView = ({ item }) => {
 
           return { x, y };
         })}
-        transformsEnabled="position"
         onTransformEnd={e => {
           const t = e.target;
 
@@ -256,6 +257,7 @@ const HtxKeyPointView = ({ item }) => {
         }}
         {...props}
         draggable={item.editable}
+        listening={!suggestion}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>
     </Fragment>

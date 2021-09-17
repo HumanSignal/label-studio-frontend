@@ -65,7 +65,7 @@ export default observer(({ store, annotation }) => {
 
   if (hasEditableRegions) {
     entityButtons.push(
-      <Tooltip key="relations" placement="topLeft" title="Create Relation: [r]">
+      <Tooltip key="relations" placement="topLeft" title="Create Relation: [alt+r]">
         <Button
           aria-label="Create Relation"
           className={styles.button}
@@ -76,7 +76,7 @@ export default observer(({ store, annotation }) => {
         >
           <LinkOutlined />
 
-          {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
+          {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ alt + r ]</Hint>}
         </Button>
       </Tooltip>,
     );
@@ -97,7 +97,7 @@ export default observer(({ store, annotation }) => {
   }
 
   entityButtons.push(
-    <Tooltip key="unselect" placement="topLeft" title="Unselect: [u]">
+    <Tooltip key="unselect" placement="topLeft" title="Unselect: [alt+u]">
       <Button
         className={styles.button}
         type="dashed"
@@ -106,7 +106,7 @@ export default observer(({ store, annotation }) => {
         }}
       >
         <CompressOutlined />
-        {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
+        {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ alt + u ]</Hint>}
       </Button>
     </Tooltip>,
   );

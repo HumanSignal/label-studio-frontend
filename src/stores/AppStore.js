@@ -13,6 +13,7 @@ import Utils from "../utils";
 import { delay, isDefined } from "../utils/utilities";
 import messages from "../utils/messages";
 import { guidGenerator } from "../utils/unique";
+import ToolsManager from "../tools/Manager";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -199,9 +200,17 @@ export default types
      * Function
      */
     function afterCreate() {
+      ToolsManager.setRoot(self);
+
       // important thing to detect Area atomatically: it hasn't access to store, only via global
       window.Htx = self;
 
+      self.attachHotkeys();
+
+      getEnv(self).events.invoke('labelStudioLoad', self);
+    }
+
+    function attachHotkeys() {
       // Unbind previous keys in case LS was re-initialized
       hotkeys.unbindAll();
 
@@ -304,7 +313,7 @@ export default types
           if (c && c.relationMode) {
             c.stopRelationMode();
           } else if (c && c.highlightedNode) {
-            c.regionStore.unselectAll();
+            c.unselectAll();
           }
         },
         "Unselect region, exit relation mode",
@@ -323,7 +332,7 @@ export default types
       );
 
       hotkeys.addKey(
-        "alt+tab",
+        "alt+.",
         function() {
           const c = self.annotationStore.selected;
 
@@ -343,8 +352,6 @@ export default types
 
         selected.selectAreas(results);
       });
-
-      getEnv(self).events.invoke('labelStudioLoad', self);
     }
 
     /**
@@ -469,6 +476,14 @@ export default types
      * Reset annotation store
      */
     function resetState() {
+      // Tools are attached to the control and object tags
+      // and need to be recreated when we st a new task
+      ToolsManager.removeAllTools();
+
+      // Same with hotkeys
+      Hotkey.unbindAll();
+      self.attachHotkeys();
+
       self.annotationStore = AnnotationStore.create({ annotations: [] });
 
       // const c = self.annotationStore.addInitialAnnotation();
@@ -575,6 +590,7 @@ export default types
       resetState,
       initializeStore,
       setHistory,
+      attachHotkeys,
 
       skipTask,
       submitDraft,

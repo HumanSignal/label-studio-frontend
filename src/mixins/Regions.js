@@ -55,7 +55,7 @@ const RegionsMixin = types
     },
 
     get inSelection() {
-      return self.annotation.regionStore.isSelected(self);
+      return self.annotation?.regionStore.isSelected(self);
     },
 
   }))

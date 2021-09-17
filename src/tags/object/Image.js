@@ -386,10 +386,10 @@ const Model = types.model({
 
   // actions for the tools
   .actions(self => {
-    const manager = ToolsManager.getInstance({ obj: self });
+    const manager = ToolsManager.getInstance({ name: self.name });
     const env = { manager, control: self };
 
-    manager.reload({ obj: self });
+    manager.reload({ name: self.name });
 
     function afterCreate() {
       if (self.selectioncontrol)
@@ -429,7 +429,7 @@ const Model = types.model({
         updateSkipInteractions(e) {
           const currentTool = self.getToolsManager().findSelectedTool();
 
-          if (currentTool.shouldSkipInteractions) {
+          if (currentTool?.shouldSkipInteractions) {
             return self.setSkipInteractions(currentTool.shouldSkipInteractions(e));
           }
           self.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));

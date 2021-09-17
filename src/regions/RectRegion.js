@@ -331,8 +331,8 @@ const HtxRectangleView = ({ item }) => {
         scaleX={item.scaleX}
         scaleY={item.scaleY}
         opacity={1}
-        rotation={item.rotation && !suggestion}
-        draggable={item.editable && !suggestion}
+        rotation={item.rotation}
+        draggable={item.editable}
         name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {
@@ -359,6 +359,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
+        listening={!suggestion}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

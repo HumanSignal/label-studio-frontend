@@ -1,11 +1,10 @@
 import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
-import ToolsManager from "../../tools/Manager";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
  * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
@@ -51,20 +50,17 @@ const Model = types
       return states && states.length > 0;
     },
   }))
-  .actions(self => ({
-    fromStateJSON() {},
-
-    afterCreate() {
-      const manager = ToolsManager.getInstance();
-      const env = { manager, control: self };
-
-      const kp = Tools.KeyPoint.create({}, env);
-
-      self.tools = { keypoint: kp };
-    },
+  .volatile(() => ({
+    toolNames: ['KeyPoint'],
   }));
 
-const KeyPointModel = types.compose("KeyPointModel", ControlBase, SeparatedControlMixin, TagAttrs, Model);
+const KeyPointModel = types.compose("KeyPointModel",
+  ControlBase,
+  SeparatedControlMixin,
+  TagAttrs,
+  Model,
+  ToolManagerMixin,
+);
 
 const HtxView = () => {
   return null;

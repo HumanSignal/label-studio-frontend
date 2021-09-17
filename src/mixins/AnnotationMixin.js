@@ -6,7 +6,7 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
   get annotation() {
     const as = self.annotationStore;
 
-    return as.selectedHistory ?? as.selected;
+    return as?.selectedHistory ?? as?.selected;
   },
 
   get annotationStore() {
@@ -18,6 +18,7 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
       } else if (self.obj) {
         return getRoot(self.obj).annotationStore;
       }
+      return null;
     }
 
     return root.annotationStore;
