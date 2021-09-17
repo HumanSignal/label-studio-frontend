@@ -379,6 +379,8 @@ export default class Waveform extends React.Component {
      */
     this.wavesurfer.on("play", self.props.handlePlay);
 
+    this.wavesurfer.on("seek", self.props.handleSeek);
+
     if (this.props.regions) {
       this.props.onLoad(this.wavesurfer);
     }

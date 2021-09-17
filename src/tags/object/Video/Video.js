@@ -4,6 +4,7 @@ import React from "react";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
+import { SyncMixin } from "../../../mixins/SyncMixin";
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
@@ -35,6 +36,7 @@ import ObjectBase from "../Base";
  * @param {string} name Name of the element
  * @param {string} value URL of the video
  * @param {number} [frameRate=0.04] frame rate in seconds; default 1/25s
+ * @param {string} [sync] object name to sync with
  */
 
 const TagAttrs = types.model({
@@ -52,6 +54,25 @@ const Model = types
   .volatile(() => ({
     errors: [],
     ref: React.createRef(),
+  }))
+  .actions(self => ({
+    handleSyncSeek(time) {
+      if (self.ref.current) {
+        self.ref.current.currentTime = time;
+      }
+    },
+
+    handleSyncPlay() {
+      self.ref.current?.play();
+    },
+
+    handleSyncPause() {
+      self.ref.current?.pause();
+    },
+
+    needsUpdate() {
+      if (self.sync) self.initSync();
+    },
   }));
 
-export const VideoModel = types.compose("VideoModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
+export const VideoModel = types.compose("VideoModel", SyncMixin, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
