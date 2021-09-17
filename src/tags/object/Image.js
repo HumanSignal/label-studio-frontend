@@ -429,7 +429,7 @@ const Model = types.model({
         updateSkipInteractions(e) {
           const currentTool = self.getToolsManager().findSelectedTool();
 
-          if (currentTool.shouldSkipInteractions) {
+          if (currentTool?.shouldSkipInteractions) {
             return self.setSkipInteractions(currentTool.shouldSkipInteractions(e));
           }
           self.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
