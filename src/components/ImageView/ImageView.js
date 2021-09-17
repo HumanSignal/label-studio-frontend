@@ -341,7 +341,7 @@ export default observer(
 
       if (
         // create regions over another regions with Cmd/Ctrl pressed
-        (e.evt && (e.evt.metaKey || e.evt.ctrlKey)) ||
+        item.getSkipInteractions() ||
         e.target === e.target.getStage() ||
         findClosestParent(
           e.target,
