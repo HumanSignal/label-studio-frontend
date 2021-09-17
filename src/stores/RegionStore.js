@@ -386,14 +386,12 @@ export default types.model("RegionStore", {
     const { regions } = self;
     const idx = self.regions.findIndex(r => r.selected);
 
-    if (idx < 1) {
+    if (idx < 0) {
       const region = regions[0];
 
       region && self.annotation.selectArea(region);
     } else {
-      idx !== -1 && regions[idx].unselectRegion();
-
-      const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
+      const next = isDefined(regions[idx + 1]) ? regions[idx + 1] : regions[0];
 
       next && self.annotation.selectArea(next);
     }

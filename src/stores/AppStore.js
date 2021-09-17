@@ -307,7 +307,7 @@ export default types
           if (c && c.relationMode) {
             c.stopRelationMode();
           } else if (c && c.highlightedNode) {
-            c.regionStore.unselectAll();
+            c.unselectAll();
           }
         },
         "Unselect region, exit relation mode",
@@ -472,7 +472,12 @@ export default types
      * Reset annotation store
      */
     function resetState() {
+      // Tools are attached to the control and object tags
+      // and need to be recreated when we st a new task
       ToolsManager.removeAllTools();
+
+      // Same with hotkeys
+      // Hotkey.unbindAll();
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
 
