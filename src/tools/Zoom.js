@@ -59,6 +59,10 @@ const _Tool = types
     },
   }))
   .actions(self => ({
+    shouldSkipInteractions() {
+      return true;
+    },
+
     mouseupEv() {
       self.mode = "viewing";
       self.stageContainer.style.cursor = "grab";
