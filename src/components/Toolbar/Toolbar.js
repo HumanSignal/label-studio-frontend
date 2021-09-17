@@ -1,6 +1,5 @@
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
-import { guidGenerator } from "../../utils/unique";
 import './Toolbar.styl';
 import './Tool.styl';
 import { useWindowSize } from "../../common/Utils/useWindowSize";
@@ -36,8 +35,6 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
   }, {});
 
   const smartTools = tools.filter(t => t.dynamic);
-
-  console.log('render');
 
   return (
     <ToolbarProvider value={{ expanded, alignment }}>
