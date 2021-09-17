@@ -13,7 +13,7 @@ config.entry.main.unshift(
 );
 
 const compiler = webpack(config);
-const server = new WebpackDevServer(compiler, config.devServer);
+const server = new WebpackDevServer(config.devServer, compiler);
 
 server.listen(port, "localhost", () => {
   console.log(`dev server listening on port ${port}`);
