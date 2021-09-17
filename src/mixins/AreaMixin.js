@@ -92,11 +92,11 @@ export const AreaMixin = types
     },
 
     get highlighted() {
-      return self.parent.selectionArea?.isActive ? self.isInSelectionArea : self._highlighted;
+      return self.parent?.selectionArea?.isActive ? self.isInSelectionArea : self._highlighted;
     },
 
     get isInSelectionArea() {
-      return self.parent.selectionArea?.isActive ? self.parent.selectionArea.includesBbox(self.bboxCoords) : false;
+      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.includesBbox(self.bboxCoords) : false;
     },
   }))
   .volatile(() => ({

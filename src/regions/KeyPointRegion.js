@@ -216,7 +216,6 @@ const HtxKeyPointView = ({ item }) => {
 
           return { x, y };
         })}
-        transformsEnabled="position"
         onTransformEnd={e => {
           const t = e.target;
 
