@@ -46,13 +46,13 @@ const LOCAL_ENV = {
 const babelOptimizeOptions = () => {
   return BUILD.NO_MINIMIZE
     ? {
-        compact: false,
-        cacheCompression: false,
-      }
+      compact: false,
+      cacheCompression: false,
+    }
     : {
-        compact: true,
-        cacheCompression: true,
-      };
+      compact: true,
+      cacheCompression: true,
+    };
 };
 
 const optimizer = () => {
@@ -80,7 +80,7 @@ const optimizer = () => {
 
   if (BUILD.NO_CHUNKS) {
     result.runtimeChunk = false;
-    result.splitChunks = {cacheGroups: { default: false }}
+    result.splitChunks = { cacheGroups: { default: false } }
   }
 
   return result;
@@ -188,7 +188,7 @@ const cssLoader = (withLocalIdent = true) => {
 };
 
 const devServer = () => {
-  return (process.env.NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
+  return (isDevelopment && !BUILD.NO_SERVER) ? {
     devServer: {
       compress: true,
       hot: true,
@@ -257,7 +257,7 @@ if (BUILD.DIAGNOSTICS) {
 
 const sourceMap = isDevelopment ? "cheap-module-source-map" : "source-map";
 
-module.exports = ({withDevServer = true} = {}) => ({
+module.exports = ({ withDevServer = true } = {}) => ({
   mode: DEFAULT_NODE_ENV || "development",
   devtool: sourceMap,
   ...(withDevServer ? devServer() : {}),
