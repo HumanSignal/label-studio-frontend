@@ -6,6 +6,7 @@ const INPUT_SCOPE = "__input__";
 
 let _hotkeys_desc = {};
 let _namespaces = {};
+let _destructors = [];
 
 keymaster.filter = function(event) {
   if (keymaster.getScope() === "__none__") return;
@@ -39,6 +40,19 @@ export const Hotkey = (
     },
   };
 
+  const unbind = () => {
+    for (let scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
+      for (let key of Object.keys(_hotkeys_map)) {
+        keymaster.unbind(key, scope);
+        delete _hotkeys_desc[key];
+      }
+    }
+
+    _hotkeys_map = {};
+  };
+
+  _destructors.push(unbind);
+
   return {
     /**
      * Add key
@@ -50,7 +64,6 @@ export const Hotkey = (
 
       if (_hotkeys_map[key]) {
         console.warn(`Key already added: ${key}. It's possibly a bug.`);
-        return;
       }
 
       const keyName = key.toLowerCase();
@@ -134,13 +147,7 @@ export const Hotkey = (
      * Unbund all hotkeys
      */
     unbindAll() {
-      for (let scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
-        for (let key of Object.keys(_hotkeys_map)) {
-          keymaster.unbind(key, scope);
-        }
-      }
-
-      _hotkeys_map = {};
+      unbind();
     },
 
     /**
@@ -175,6 +182,10 @@ Hotkey.keysDescipritions = function() {
 
 Hotkey.namespaces = () => {
   return _namespaces;
+};
+
+Hotkey.unbindAll = () => {
+  _destructors.forEach((unbind) => unbind());
 };
 
 /**
