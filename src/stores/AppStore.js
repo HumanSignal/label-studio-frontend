@@ -312,7 +312,7 @@ export default types
 
           if (c && c.relationMode) {
             c.stopRelationMode();
-          } else if (c && c.highlightedNode) {
+          } else {
             c.unselectAll();
           }
         },
