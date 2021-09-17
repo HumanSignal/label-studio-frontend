@@ -18,6 +18,7 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
       } else if (self.obj) {
         return getRoot(self.obj).annotationStore;
       }
+      return null;
     }
 
     return root.annotationStore;
