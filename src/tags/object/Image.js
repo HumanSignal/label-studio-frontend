@@ -730,14 +730,15 @@ const Model = types.model({
      * @return {PointFn} outer function do some math with screen coords
      */
     fixForZoom(fn) {
-      return p => {
-        const asArray = p.x === undefined;
-        const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
-        const modified = fn(asArray ? [x, y] : { x, y });
-        const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
+      return p => this.fixForZoomWrapper(p, fn);
+    },
+    fixForZoomWrapper(p, fn) {
+      const asArray = p.x === undefined;
+      const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
+      const modified = fn(asArray ? [x, y] : { x, y });
+      const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
 
-        return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
-      };
+      return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
 
     /**

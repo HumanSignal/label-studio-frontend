@@ -11,7 +11,7 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
@@ -317,7 +317,7 @@ const HtxEllipseView = ({ item }) => {
           );
           item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
         }}
-        dragBoundFunc={item.parent.fixForZoom(pos => {
+        dragBoundFunc={createDragBoundFunc(item.parent,pos => {
           let { x, y } = pos;
           const { radiusX, radiusY, rotation } = item;
           const { stageHeight, stageWidth } = item.parent;

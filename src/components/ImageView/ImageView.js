@@ -221,7 +221,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
   return (
     <Layer>
       { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
-      <ImageTransformer rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
+      <ImageTransformer item={item} rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
     </Layer>
   );
 });

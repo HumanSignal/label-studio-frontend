@@ -131,3 +131,15 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
 
   return { ...rect, x, y, width, height };
 }
+
+export function createDragBoundFunc(image, cb) {
+  return function(pos) {
+    const transformerFunc = this.getAttr("transformerDragBoundFunc");
+
+    if (transformerFunc) {
+      return transformerFunc(pos);
+    } else {
+      return image.fixForZoomWrapper(pos, cb);
+    }
+  };
+}
