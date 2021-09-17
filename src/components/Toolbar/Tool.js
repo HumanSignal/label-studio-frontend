@@ -61,7 +61,7 @@ export const Tool = ({
 
   useEffect(() => {
     const removeShortcuts = () => {
-      if (currentShortcut && hotkeys.hasKey()) hotkeys.removeKey(currentShortcut);
+      if (currentShortcut && hotkeys.hasKey(currentShortcut)) hotkeys.removeKey(currentShortcut);
     };
 
     removeShortcuts();
