@@ -12,7 +12,7 @@ import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
@@ -294,7 +294,7 @@ const HtxRectangleView = ({ item }) => {
       item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
     };
 
-    eventHandlers.dragBoundFunc = item.parent.fixForZoom(pos => {
+    eventHandlers.dragBoundFunc = createDragBoundFunc(pos => {
       let { x, y } = pos;
       const { width, height, rotation } = item;
       const { stageHeight, stageWidth } = item.parent;

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Transformer } from "react-konva";
 import { MIN_SIZE } from "../../tools/Base";
 import { fixRectToFit, getBoundingBoxAfterChanges } from "../../utils/image";
+import LSTransformer from "./LSTransformer";
 
 export default class TransformerComponent extends Component {
   componentDidMount() {
@@ -88,11 +88,31 @@ export default class TransformerComponent extends Component {
     }
   };
 
+  dragBoundFunc = (pos) => {
+    const { item } = this.props;
+    
+    return item.fixForZoomWrapper(pos,pos => {
+      if (!this.transformer || !item) return;
+
+      let { x, y } = pos;
+      const { width, height } = this.draggingAreaBBox;
+      const { stageHeight, stageWidth } = item;
+
+      if (x < 0) x = 0;
+      if (y < 0) y = 0;
+
+      if (x + width > stageWidth) x = stageWidth - width;
+      if (y + height > stageHeight) y = stageHeight - height;
+
+      return { x, y };
+    });
+  }
+
   render() {
     if (!this.props.supportsTransform) return null;
 
     return (
-      <Transformer
+      <LSTransformer
         resizeEnabled={true}
         ignoreStroke={true}
         keepRatio={false}
@@ -103,6 +123,27 @@ export default class TransformerComponent extends Component {
         boundBoxFunc={this.constrainSizes}
         anchorSize={8}
         flipEnabled={false}
+        onDragStart={e => {
+          if (!this.transformer|| e.target !== e.currentTarget) return;
+          const shape = this.transformer.findOne(".back");
+          const x = shape.getAttr("width");
+          const y = shape.getAttr("height");
+          const width = shape.getAttr("width");
+          const height = shape.getAttr("height");
+          const rotation = shape.getAttr("rotation");
+
+          this.draggingAreaBBox = getBoundingBoxAfterChanges(
+            {
+              x,
+              y,
+              width,
+              height,
+            },
+            { x:0, y:0 },
+            rotation,
+          );
+        }}
+        dragBoundFunc={this.dragBoundFunc}
         ref={node => {
           this.transformer = node;
         }}

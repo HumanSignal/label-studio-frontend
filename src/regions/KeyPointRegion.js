@@ -13,6 +13,7 @@ import { AreaMixin } from "../mixins/AreaMixin";
 import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 const Model = types
@@ -204,7 +205,7 @@ const HtxKeyPointView = ({ item }) => {
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
           item.notifyDrawingFinished();
         }}
-        dragBoundFunc={item.parent.fixForZoom(pos => {
+        dragBoundFunc={createDragBoundFunc(item.parent, pos => {
           const r = item.parent.stageWidth;
           const b = item.parent.stageHeight;
 
