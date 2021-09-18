@@ -45,7 +45,7 @@ const ToolView = observer(({ item }) => {
 
 const _Tool = types
   .model("BrushTool", {
-    strokeWidth: types.optional(types.number, 10),
+    strokeWidth: types.optional(types.number, 15),
     group: "segmentation",
     shortcut: "B",
     smart: true,
@@ -70,7 +70,7 @@ const _Tool = types
         <Range
           key="brush-size"
           value={self.strokeWidth}
-          min={10}
+          min={1}
           max={50}
           reverse
           align="vertical"
