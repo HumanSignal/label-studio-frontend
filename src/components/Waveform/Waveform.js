@@ -243,7 +243,7 @@ export default class Waveform extends React.Component {
       height: this.props.height,
       backend: "MediaElement",
       progressColor: this.state.colors.progressColor,
-      audioCenter: false,
+      autoCenter: false,
 
       splitChannels: true,
     };
