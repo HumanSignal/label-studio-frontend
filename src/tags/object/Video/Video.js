@@ -75,7 +75,7 @@ const Model = types
     needsUpdate() {
       if (self.sync) {
         self.initSync();
-        if (self.syncedObject?.type?.startsWith("Audio")) {
+        if (self.syncedObject?.type?.startsWith("audio")) {
           self.muted = true;
         }
       }
