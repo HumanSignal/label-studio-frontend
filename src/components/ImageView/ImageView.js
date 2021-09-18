@@ -29,7 +29,7 @@ const splitRegions = (regions) => {
   const l = regions.length;
   let i = 0;
 
-  for(i; i < l; i++) {
+  for (i; i < l; i++) {
     const region = regions[i];
 
     if (region.type === "brushregion") {
@@ -46,12 +46,12 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(()=>(region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
+  return useObserver(() => (region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
   const content = regions.map((el) => (
-    <Region key={`region-${el.id}`} region={el} showSelected={showSelected}/>
+    <Region key={`region-${el.id}`} region={el} showSelected={showSelected} />
   ));
 
   return useLayers === false ? (
@@ -63,7 +63,7 @@ const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) =
   );
 });
 
-const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, suggestion = false, showSelected = false }) => {
+const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = false, showSelected = false }) => {
   return (
     <ImageViewProvider value={{ suggestion }}>
       {(chunkSize ? chunks(regions, chunkSize) : regions).map((chunk, i) => (
@@ -81,23 +81,23 @@ const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, suggestion =
 
 const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
-  const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment: Layer;
+  const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment : Layer;
 
   return (
     <Wrapper>
-      {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
+      {drawingRegion ? <Region key={`drawing`} region={drawingRegion} /> : drawingRegion}
     </Wrapper>
   );
 });
 
 const SELECTION_COLOR = "#40A9FF";
 const SELECTION_SECOND_COLOR = "white";
-const SELECTION_DASH = [3,3];
+const SELECTION_DASH = [3, 3];
 
 const SelectionBorders = observer(({ item }) => {
   const { selectionBorders: bbox } = item;
 
-  const points = bbox? [
+  const points = bbox ? [
     {
       x: bbox.left,
       y: bbox.top,
@@ -134,8 +134,8 @@ const SelectionBorders = observer(({ item }) => {
         return (
           <Rect
             key={idx}
-            x={point.x-3}
-            y={point.y-3}
+            x={point.x - 3}
+            y={point.y - 3}
             width={6}
             height={6}
             fill={SELECTION_COLOR}
@@ -211,7 +211,7 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-  const scale = 1 / (item.zoomScale ||1);
+  const scale = 1 / (item.zoomScale || 1);
 
   let supportsTransform = true;
   let supportsRotate = true;
@@ -223,13 +223,13 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsScale = supportsScale && true;
   });
 
-  supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
+  supportsTransform = supportsTransform && (item.selectedRegions.length > 1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
 
   return (
     <Layer scaleX={scale} scaleY={scale}>
-      { selectionArea.isActive ? (
-        <SelectionRect item={selectionArea}/>
-      ) : (!supportsTransform && item.selectedRegions.length>1 ? (
+      {selectionArea.isActive ? (
+        <SelectionRect item={selectionArea} />
+      ) : (!supportsTransform && item.selectedRegions.length > 1 ? (
         <SelectionBorders item={selectionArea} />
       ) : null)}
 
@@ -262,7 +262,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
 
   const [visible, setVisible] = useState(false);
   const strokeWidth = 1;
-  const dashStyle = [3,3];
+  const dashStyle = [3, 3];
 
   if (ref) {
     ref.current = {
@@ -571,7 +571,7 @@ export default observer(
       if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
 
-    observerObjectUpdate(){
+    observerObjectUpdate() {
       this.propsObserverDispose.forEach(dispose => dispose());
       this.propsObserverDispose = [
         'width',
@@ -651,7 +651,7 @@ export default observer(
       const tools = item.getToolsManager().allTools();
 
       return (
-        <Toolbar tools={tools}/>
+        <Toolbar tools={tools} />
       );
     }
 
@@ -732,7 +732,7 @@ export default observer(
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-          {item.stageWidth <= 1 ? (item.hasTools?<div className={styles.loading}><LoadingOutlined /></div>:null) : (
+          {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
             <Stage
               ref={ref => {
                 item.setStageRef(ref);
@@ -763,12 +763,12 @@ export default observer(
               onMouseDown={this.handleMouseDown}
               onMouseMove={this.handleMouseMove}
               onMouseUp={this.handleMouseUp}
-              onWheel={item.zoom ? this.handleZoom : () => {}}
+              onWheel={item.zoom ? this.handleZoom : () => { }}
             >
               {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
                 <Layer>
-                  <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
+                  <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
                 </Layer>
               )}
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
@@ -785,11 +785,11 @@ export default observer(
                     useLayers={isBrush === false}
                     suggestion={isSuggestion}
                   />
-                ) : <Fragment key={groupName}/>;
+                ) : <Fragment key={groupName} />;
               })}
 
-              <Selection item={item} selectionArea={item.selectionArea}/>
-              <DrawingRegion item={item}/>
+              <Selection item={item} selectionArea={item.selectionArea} />
+              <DrawingRegion item={item} />
 
               {item.crosshair && (
                 <Crosshair
