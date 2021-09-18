@@ -145,7 +145,7 @@ const HtxVideoView = ({ item }) => {
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
       <Block name="video">
-        <video src={item._value} ref={item.ref} onClick={onPlayPause} />
+        <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} />
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
     </ObjectTag>
