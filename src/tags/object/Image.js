@@ -127,16 +127,19 @@ const ImageSelection = types.model({
       return self.start && self.end;
     },
     get x() {
-      return Math.min(self.start.x, self.end.x);
+      return Math.min((self.start.x * self.scale), (self.end.x * self.scale));
     },
     get y() {
-      return Math.min(self.start.y, self.end.y);
+      return Math.min((self.start.y * self.scale), (self.end.y * self.scale));
     },
     get width() {
-      return Math.abs(self.end.x - self.start.x);
+      return Math.abs((self.end.x * self.scale) - (self.start.x * self.scale));
     },
     get height() {
-      return Math.abs(self.end.y - self.start.y);
+      return Math.abs((self.end.y * self.scale) - (self.start.y * self.scale));
+    },
+    get scale() {
+      return self.obj.zoomScale;
     },
     get bbox() {
       const { start, end } = self;

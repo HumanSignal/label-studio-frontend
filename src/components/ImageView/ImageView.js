@@ -150,28 +150,29 @@ const SelectionBorders = observer(({ item }) => {
 });
 
 const SelectionRect = observer(({ item }) => {
+  const { x, y, width, height } = item;
+
+  const positionProps = {
+    x,
+    y,
+    width,
+    height,
+    listening: false,
+    strokeWidth: 1,
+  };
+
   return (
     <>
       <Rect
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        {...positionProps}
         stroke={SELECTION_COLOR}
-        strokeWidth={1}
         dash={SELECTION_DASH}
-        listening={false}
       />
       <Rect
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
-        strokeWidth={1}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
-        listening={false}
       />
     </>
   );
@@ -208,6 +209,8 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
+  const scale = 1 / (item.zoomScale ||1);
+
   let supportsTransform = true;
   let supportsRotate = true;
   let supportsScale = true;
@@ -217,11 +220,24 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsRotate = supportsRotate && shape.canRotate === true;
     supportsScale = supportsScale && true;
   });
+
   supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
+
   return (
-    <Layer>
-      { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
-      <ImageTransformer item={item} rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
+    <Layer scaleX={scale} scaleY={scale}>
+      { selectionArea.isActive ? (
+        <SelectionRect item={selectionArea}/>
+      ) : (!supportsTransform && item.selectedRegions.length>1 ? (
+        <SelectionBorders item={selectionArea} />
+      ) : null)}
+
+      <ImageTransformer
+        item={item}
+        rotateEnabled={supportsRotate}
+        supportsTransform={supportsTransform}
+        supportsScale={supportsScale}
+        selectedShapes={item.selectedRegions}
+      />
     </Layer>
   );
 });
@@ -232,7 +248,6 @@ const Selection = observer(({ item, selectionArea }) => {
       <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
 
       <SelectionLayer item={item} selectionArea={selectionArea} />
-
     </>
   );
 });
