@@ -1,5 +1,5 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
-import { Group, Layer, Line, Rect, Stage } from "react-konva";
+import { Group, Image, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 
@@ -20,6 +20,7 @@ import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
 
 Konva.showWarnings = false;
+Konva.pixelRatio = 1;
 
 const hotkeys = Hotkey("Image");
 
@@ -696,6 +697,12 @@ export default observer(
         suggestedShape: suggestedShapeRegions,
       });
 
+      const imgEL = document.createElement('img');
+
+      imgEL.addEventListener('load', item.updateImageSize);
+      imgEL.addEventListener('error', this.handleError);
+      imgEL.src = item._value;
+
       return (
         <ObjectTag
           item={item}
@@ -708,6 +715,7 @@ export default observer(
           }}
         >
           <div
+            name="image-container"
             ref={node => {
               this.container = node;
             }}
@@ -720,7 +728,7 @@ export default observer(
                 style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
               />
             )}
-            <img
+            {/* <img
               ref={ref => {
                 item.setImageRef(ref);
                 this.imageRef.current = ref;
@@ -729,7 +737,7 @@ export default observer(
               onLoad={item.updateImageSize}
               onError={this.handleError}
               alt="LS"
-            />
+            /> */}
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
           {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
@@ -765,6 +773,25 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => { }}
             >
+              {item._value !== undefined && (
+                <Layer
+                  name="image-layer"
+                  listening={false}>
+                  <Image
+                    ref={ref => {
+                      item.setImageRef(ref);
+                      this.imageRef.current = ref;
+                    }}
+                    x={0}
+                    y={0}
+                    height={item.naturalHeight}
+                    width={item.naturalWidth}
+                    image={imgEL}
+                    alt="LS"
+                  />
+                </Layer>
+              )}
+
               {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
                 <Layer listening={false}>
