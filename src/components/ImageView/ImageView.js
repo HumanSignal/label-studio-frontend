@@ -767,7 +767,7 @@ export default observer(
             >
               {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
-                <Layer>
+                <Layer listening={false}>
                   <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
                 </Layer>
               )}
