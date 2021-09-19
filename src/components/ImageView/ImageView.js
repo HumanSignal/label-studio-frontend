@@ -1,5 +1,5 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
-import { Group, Image, Layer, Line, Rect, Stage } from "react-konva";
+import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
 
@@ -18,6 +18,7 @@ import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
+import { FilterImage } from "./FilterImage";
 
 Konva.showWarnings = false;
 Konva.pixelRatio = 1;
@@ -335,7 +336,7 @@ export default observer(
       imgStyle: {},
       ratio: 1,
       pointer: [0, 0],
-      brightness: 0,
+      brightness: 1,
       contrast: 0,
     }
 
@@ -606,7 +607,7 @@ export default observer(
         filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
       };
 
-      this.setState({ brightness: (item.brightnessGrade / 100) - 1, contrast: item.contrastGrade });
+      //this.setState({ brightness: (item.brightnessGrade / 100) - 1, contrast: item.contrastGrade });
 
       const imgTransform = [];
 
@@ -784,19 +785,15 @@ export default observer(
               {item._value !== undefined && this.imageRef.current !== undefined && (
                 <Layer
                   name="image-layer">
-                  <Image
-                    ref={ref => {
-                      this.imageCanvasRef.current = ref;
-                    }}
-                    x={0}
-                    y={0}
-                    // height={item.naturalHeight}
-                    // width={item.naturalWidth}
-                    filters={[Konva.Filters.Brighten, Konva.Filters.Contrast]}
+
+                  <FilterImage
+                    alt="LS"
+                    url={item._value}
+                    onLoad={(e) => { console.log(`onLoad ImageView: ${e}`); }}
+                    onError={() => { console.log("onerror"); }}
+                    filters={[Konva.Filters.Grayscale]}
                     brightness={this.state.brightness}
                     contrast={this.state.contrast}
-                    image={this.imageRef.current}
-                    alt="LS"
                   />
                 </Layer>
               )}
