@@ -335,9 +335,13 @@ export default observer(
       imgStyle: {},
       ratio: 1,
       pointer: [0, 0],
+      brightness: 0,
+      contrast: 0,
     }
 
+    containerRef = createRef();
     imageRef = createRef();
+    imageCanvasRef = createRef();
     crosshairRef = createRef();
 
     handleOnClick = e => {
@@ -370,7 +374,7 @@ export default observer(
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
-        const { left, top } = this.container.getBoundingClientRect();
+        const { left, top } = this.containerRef.current.getBoundingClientRect();
 
         this.canvasX = left;
         this.canvasY = top;
@@ -527,12 +531,12 @@ export default observer(
     }
 
     onResize = () => {
-      if (!this.container) return;
-      if (this.container.offsetWidth <= 1) return;
-      if (this.lastOffsetWidth === this.container.offsetWidth) return;
+      if (!this.containerRef.current) return;
+      if (this.containerRef.current.offsetWidth <= 1) return;
+      if (this.lastOffsetWidth === this.containerRef.current.offsetWidth) return;
 
-      this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
-      this.lastOffsetWidth = this.container.offsetWidth;
+      this.props.item.onResize(this.containerRef.current.offsetWidth, this.containerRef.current.offsetHeight, true);
+      this.lastOffsetWidth = this.containerRef.current.offsetWidth;
     };
 
     componentDidMount() {
@@ -602,6 +606,8 @@ export default observer(
         filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
       };
 
+      this.setState({ brightness: (item.brightnessGrade / 100) - 1, contrast: item.contrastGrade });
+
       const imgTransform = [];
 
       if (item.zoomScale !== 1) {
@@ -656,6 +662,13 @@ export default observer(
       );
     }
 
+    onImageLoad = e => {
+      const { item } = this.props;
+
+      // this.containerRef.current.offsetParent,
+      item.updateImageSize(e);
+    }
+
     render() {
       const { item, store } = this.props;
 
@@ -697,14 +710,9 @@ export default observer(
         suggestedShape: suggestedShapeRegions,
       });
 
-      const imgEL = document.createElement('img');
-
-      imgEL.addEventListener('load', item.updateImageSize);
-      imgEL.addEventListener('error', this.handleError);
-      imgEL.src = item._value;
-
       return (
         <ObjectTag
+          id="wrapper-container"
           item={item}
           className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
           style={{
@@ -715,9 +723,9 @@ export default observer(
           }}
         >
           <div
-            name="image-container"
+            id="image-container"
             ref={node => {
-              this.container = node;
+              this.containerRef.current = node;
             }}
             className={containerClassName}
             style={containerStyle}
@@ -728,16 +736,16 @@ export default observer(
                 style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
               />
             )}
-            {/* <img
+            <img
               ref={ref => {
                 item.setImageRef(ref);
                 this.imageRef.current = ref;
               }}
               src={item._value}
-              onLoad={item.updateImageSize}
+              onLoad={this.onImageLoad}
               onError={this.handleError}
               alt="LS"
-            /> */}
+            />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
           {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
@@ -773,20 +781,21 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => { }}
             >
-              {item._value !== undefined && (
+              {item._value !== undefined && this.imageRef.current !== undefined && (
                 <Layer
-                  name="image-layer"
-                  listening={false}>
+                  name="image-layer">
                   <Image
                     ref={ref => {
-                      item.setImageRef(ref);
-                      this.imageRef.current = ref;
+                      this.imageCanvasRef.current = ref;
                     }}
                     x={0}
                     y={0}
-                    height={item.naturalHeight}
-                    width={item.naturalWidth}
-                    image={imgEL}
+                    // height={item.naturalHeight}
+                    // width={item.naturalWidth}
+                    filters={[Konva.Filters.Brighten, Konva.Filters.Contrast]}
+                    brightness={this.state.brightness}
+                    contrast={this.state.contrast}
+                    image={this.imageRef.current}
                     alt="LS"
                   />
                 </Layer>
