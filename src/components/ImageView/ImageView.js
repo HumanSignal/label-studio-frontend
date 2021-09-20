@@ -410,6 +410,7 @@ export default observer(
       const { item } = this.props;
 
       item.freezeHistory();
+      item.setSkipInteractions(false);
 
       return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
     };
@@ -421,9 +422,17 @@ export default observer(
 
       this.updateCrosshair(e);
 
-      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
+      const isMouseWheelClick = e.evt && e.evt.buttons === 4;
+      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+
+      if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
+        item.setSkipInteractions(true);
         e.evt.preventDefault();
-        const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
+
+        const newPos = {
+          x: item.zoomingPositionX + e.evt.movementX,
+          y: item.zoomingPositionY + e.evt.movementY,
+        };
 
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
