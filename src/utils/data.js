@@ -8,9 +8,16 @@ import get from "lodash.get";
  * @param {object} task
  */
 export const parseValue = (value, task) => {
-  if (!value) return;
+  const reVar =      /\$[a-z0-9_.]+/ig;
+  const reVarOnly = /^\$[a-z0-9_.]+$/ig;
 
-  return value.replace(/\$[a-z0-9_.]+/ig, v => get(task, v.substr(1)));
+  if (!value) return;
+  if (reVarOnly.test(value)) {
+    return get(task, value.substr(1));
+  }
+
+  // case for visual Text tags to display some additional info ("Title: $title")
+  return value.replace(reVar, v => get(task, v.substr(1)));
 };
 
 /**
