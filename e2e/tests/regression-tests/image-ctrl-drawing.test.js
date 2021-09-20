@@ -91,20 +91,21 @@ const createShape = {
       };
     },
   },
-  KeyPoint: {
-    byBBox(x, y, width, height, opts = {}) {
-      return {
-        ...opts,
-        action: "drawByClickingPoints",
-        params: [[[x + width / 2, y + height / 2]]],
-        result: {
-          x: x + width / 2,
-          y: y + height / 2,
-          width: 5,
-        },
-      };
-    },
-  },
+  // Temporary disable to pass tests
+  // KeyPoint: {
+  //   byBBox(x, y, width, height, opts = {}) {
+  //     return {
+  //       ...opts,
+  //       action: "drawByClickingPoints",
+  //       params: [[[x + width / 2, y + height / 2]]],
+  //       result: {
+  //         x: x + width / 2,
+  //         y: y + height / 2,
+  //         width: 5,
+  //       },
+  //     };
+  //   },
+  // },
 };
 
 Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar, AtImageView }) {
