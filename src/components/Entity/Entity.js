@@ -97,7 +97,7 @@ export default observer(({ store, annotation }) => {
   }
 
   entityButtons.push(
-    <Tooltip key="unselect" placement="topLeft" title="Unselect: [alt+u]">
+    <Tooltip key="unselect" placement="topLeft" title="Unselect: [u]">
       <Button
         className={styles.button}
         type="dashed"
