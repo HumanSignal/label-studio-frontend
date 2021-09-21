@@ -436,7 +436,11 @@ const Model = types.model({
     return {
       views: {
         getSkipInteractions() {
-          return skipInteractions;
+          const manager = self.getToolsManager();
+
+          const isPanning = manager.findSelectedTool()?.toolName === "ZoomPanTool";
+
+          return skipInteractions || isPanning;
         },
       },
       actions: {

@@ -45,7 +45,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("ZoomTool", {
+  .model("ZoomPanTool", {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
     group: "control",
   })
