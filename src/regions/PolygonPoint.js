@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Circle, Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
@@ -154,11 +154,16 @@ const PolygonPoint = types
 
       self.parent.setMouseOverStartPoint(false);
     },
+
+    getSkipInteractions() {
+      return self.parent.control.obj.getSkipInteractions();
+    },
   }));
 
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
 
+  const [draggable, setDraggable] = useState(true);
   const regionStyles = useRegionStyles(item.parent);
   const sizes = {
     small: 4,
@@ -186,6 +191,7 @@ const PolygonPointView = observer(({ item, name }) => {
 
   const dragOpts = {
     onDragMove: e => {
+      if (item.getSkipInteractions()) return false;
       if (e.target !== e.currentTarget) return;
       let { x, y } = e.target.attrs;
 
@@ -198,10 +204,15 @@ const PolygonPointView = observer(({ item, name }) => {
     },
 
     onDragStart: () => {
+      if (item.getSkipInteractions()) {
+        setDraggable(false);
+        return false;
+      }
       item.annotation.history.freeze();
     },
 
     onDragEnd: e => {
+      setDraggable(true);
       item.annotation.history.unfreeze();
       e.cancelBubble = true;
     },
@@ -265,7 +276,7 @@ const PolygonPointView = observer(({ item, name }) => {
         }}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.parent.editable}
+        draggable={item.parent.editable && draggable}
       />
     );
   } else {
