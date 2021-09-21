@@ -277,7 +277,7 @@ export default types
       );
 
       // unselect region
-      hotkeys.addKey("alt+u", function() {
+      hotkeys.addKey("u", function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode) {

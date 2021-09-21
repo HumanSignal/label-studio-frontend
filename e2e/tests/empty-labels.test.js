@@ -125,7 +125,7 @@ const MULTIPLE_TYPE = "multiple";
 
       assert.strictEqual(restored[0].value.labels.length, expectedLength);
       await expectSelectedLabels(expectSelectedNum);
-      I.pressKey(["alt", "u"]);
+      I.pressKey(["u"]);
       await expectSelectedLabels(0);
       I.click(locate(".lsf-region-item"));
       await expectSelectedLabels(expectSelectedNum);
@@ -178,7 +178,7 @@ const MULTIPLE_TYPE = "multiple";
     await clickLabelWithLengthExpection(2, 0, 1);
     await clickLabelWithLengthExpection(1, 0, 1);
 
-    I.pressKey(["alt", "u"]);
+    I.pressKey(["u"]);
 
     await clickLabelWithSelectedExpection(3, 1);
     switch (type) {
