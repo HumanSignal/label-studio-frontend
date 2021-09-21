@@ -63,11 +63,13 @@ function Region2RLE(region, image) {
   }
 
   const layer = stage.findOne(`#${region.cleanId}`);
+  const isVisible = layer.visible();
 
   if (!layer) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
   }
+  !isVisible && layer.show();
   // hide labels on regions and show them later
   layer.findOne(".highlight").hide();
 
@@ -115,6 +117,8 @@ function Region2RLE(region, image) {
     .setRotation(rotation);
   stage.drawScene();
   const rle = encode(data.data, data.data.length);
+
+  !isVisible && layer.hide();
 
   return rle;
 }
