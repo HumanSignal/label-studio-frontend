@@ -515,6 +515,7 @@ const HtxBrushView = ({ item }) => {
           setTimeout(drawCallback);
         }}
         clearBeforeDraw={!item.isDrawing}
+        visible={!item.hidden}
       >
         <Group
           attrMy={item.needsUpdate}
@@ -607,7 +608,7 @@ const HtxBrushView = ({ item }) => {
   );
 };
 
-const HtxBrush = AliveRegion(HtxBrushView);
+const HtxBrush = AliveRegion(HtxBrushView, { renderHidden: true });
 
 Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
 Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);
