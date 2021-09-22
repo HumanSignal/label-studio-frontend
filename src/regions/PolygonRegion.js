@@ -458,7 +458,7 @@ const HtxPolygonView = ({ item }) => {
     const name = "borders";
 
     return (
-      <Group key={name} name={name}>
+      <Group key={name} name={name} listening={!(item.parent.useTransformer && item.closed)}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
