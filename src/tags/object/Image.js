@@ -308,6 +308,24 @@ const Model = types.model({
     return self.regs.filter(region => region.inSelection);
   },
 
+  get selectedRegionsBBox() {
+    let bboxCoords;
+
+    self.selectedRegions.forEach((region) => {
+      if (bboxCoords) {
+        bboxCoords = {
+          left: Math.min(region.bboxCoords.left, bboxCoords.left),
+          top: Math.min(region.bboxCoords.top, bboxCoords.top),
+          right: Math.max(region.bboxCoords.right, bboxCoords.right),
+          bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+        };
+      } else {
+        bboxCoords = region.bboxCoords;
+      }
+    });
+    return bboxCoords;
+  },
+
   get regionsInSelectionArea() {
     return self.regs.filter(region => region.isInSelectionArea);
   },

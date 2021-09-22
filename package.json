@@ -183,7 +183,8 @@
     "@thi.ng/rle-pack": "^2.1.6",
     "babel-preset-react-app": "^9.1.1",
     "d3": "^5.16.0",
-    "magic-wand-js": "^1.0.0"
+    "magic-wand-js": "^1.0.0",
+    "react-konva-utils": "^0.2.0"
   },
   "nohoist": [
     "**/babel-preset-react-app/@babel/runtime"
