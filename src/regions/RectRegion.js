@@ -279,6 +279,7 @@ const HtxRectangleView = ({ item }) => {
         e.currentTarget.stopDrag(e.evt);
         return;
       }
+      item.annotation.history.freeze(item.id);
     };
 
     eventHandlers.onDragEnd = (e) => {
@@ -292,6 +293,7 @@ const HtxRectangleView = ({ item }) => {
         t.getAttr("rotation"),
       );
       item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
+      item.annotation.history.unfreeze(item.id);
     };
 
     eventHandlers.dragBoundFunc = createDragBoundFunc(item.parent, pos => {

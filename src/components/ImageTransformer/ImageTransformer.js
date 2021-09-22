@@ -12,6 +12,27 @@ export default class TransformerComponent extends Component {
     setTimeout(()=>this.checkNode());
   }
 
+  get freezeKey() {
+    const freezeKey = `ImageTransformer_${this.props.item.id}`;
+
+    console.log(`freezeKey`, freezeKey);
+    return freezeKey;
+  }
+
+  freeze() {
+    const { item } = this.props;
+    const { freezeKey } = this;
+
+    item.annotation.history.freeze(freezeKey);
+  }
+
+  unfreeze() {
+    const { item } = this.props;
+    const { freezeKey } = this;
+
+    item.annotation.history.unfreeze(freezeKey);
+  }
+
   checkNode() {
     if (!this.transformer) return;
 
@@ -126,6 +147,8 @@ export default class TransformerComponent extends Component {
         onDragStart={e => {
           const { selectedShapes } = this.props;
 
+          this.freeze();
+
           if (!this.transformer|| e.target !== e.currentTarget || !selectedShapes) return;
           let bboxCoords;
 
@@ -150,6 +173,9 @@ export default class TransformerComponent extends Component {
           };
         }}
         dragBoundFunc={this.dragBoundFunc}
+        onDragEnd ={() => {
+          this.unfreeze();
+        }}
         ref={node => {
           this.transformer = node;
         }}
