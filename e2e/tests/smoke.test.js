@@ -65,6 +65,8 @@ examples.forEach(example =>
       I.waitForVisible(".htx-richtext", 5);
     }
 
+    I.dontSeeElement(locate(".ls-errors"));
+
     restored = await I.executeScript(serialize);
     assertWithTolerance(restored, result);
 
