@@ -71,6 +71,8 @@ const Model = types
             root,
           );
 
+          if (!range) throw new Error;
+
           const xpathRange = xpath.fromRange(range, root);
 
           Object.assign(res.value, {
@@ -135,6 +137,8 @@ const Model = types
           root,
         );
 
+        if (!rangeFromGlobal) return;
+
         const normedRange = xpath.fromRange(rangeFromGlobal, root);
 
         if (!isDefined(normedRange)) return;
@@ -183,6 +187,8 @@ const Model = types
         if (self.isText) {
           const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
           const range = document.createRange();
+
+          if (!startContainer || !endContainer) return;
 
           range.setStart(startContainer.node, startContainer.position);
           range.setEnd(endContainer.node, endContainer.position);
