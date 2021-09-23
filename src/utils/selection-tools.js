@@ -217,7 +217,9 @@ export const captureSelection = (
 ) => {
   const selection = window.getSelection();
 
-  trimSelection(selection);
+  if (granularity !== "symbol") {
+    trimSelection(selection);
+  }
   const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
