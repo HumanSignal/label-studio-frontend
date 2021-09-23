@@ -528,8 +528,8 @@ export const removeRange = spans => {
  */
 export const findRange = (start, end, root) => {
   return {
-    startContainer: findOnPosition(root, start, "right"),
-    endContainer: findOnPosition(root, end, "left"),
+    startContainer: codePointsToPosition(findOnPosition(root, start, "right")),
+    endContainer: codePointsToPosition(findOnPosition(root, end, "left")),
   };
 };
 
@@ -540,6 +540,28 @@ export const findRangeNative = (start, end, root) => {
 
   range.setStart(startContainer.node, startContainer.position);
   range.setEnd(endContainer.node, endContainer.position);
+
+  return range;
+};
+
+const codePointsToPosition = ({ node, position }) => {
+  const codePoints = [...node.textContent].slice(0, position);
+  const chars = codePoints.join("");
+  const len = chars.length;
+
+  return { node, position: len };
+};
+
+/**
+ * 
+ * @param {Range} range 
+ */
+export const offsetsToCodePoints = (range) => {
+  const start = range.startContainer.textContent.substr(0, range.startOffset);
+  const end = range.endContainer.textContent.substr(0, range.endOffset);
+
+  range.setStart(range.startContainer, [...start].length);
+  range.setEnd(range.endContainer, [...end].length);
 
   return range;
 };
@@ -561,7 +583,7 @@ export const findOnPosition = (root, position, borderSide = "left") => {
     const isBR = currentNode.nodeName === "BR";
 
     if (isText || isBR) {
-      const length = currentNode.length ?? 1;
+      const length = isText ? [...currentNode.textContent].length : 1;
 
       if (length + lastPosition >= position || !nextNode) {
         if (borderSide === "right" && length + lastPosition === position && nextNode) {
