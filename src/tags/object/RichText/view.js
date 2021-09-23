@@ -262,7 +262,6 @@ class RichTextPieceView extends Component {
       const style = {
         border: "none",
         width: "100%",
-        minHeight: "60vh",
       };
 
       return (
