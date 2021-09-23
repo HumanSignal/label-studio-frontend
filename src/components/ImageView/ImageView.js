@@ -178,12 +178,14 @@ const SelectionRect = observer(({ item }) => {
   );
 });
 
+const TRANSFORMER_BACK_NAME = "transformer_back";
 const SelectedRegions = observer(({ selectedRegions }) => {
   if (!selectedRegions) return null;
   const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
 
   return (
     <>
+      <Layer id={TRANSFORMER_BACK_NAME} />
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -237,6 +239,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
         supportsTransform={supportsTransform}
         supportsScale={supportsScale}
         selectedShapes={item.selectedRegions}
+        draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
       />
     </Layer>
   );
@@ -246,7 +249,6 @@ const Selection = observer(({ item, selectionArea }) => {
   return (
     <>
       <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
-
       <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );

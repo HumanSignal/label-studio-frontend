@@ -27,19 +27,24 @@ const TimeTraveller = types
     let targetStore;
     let snapshotDisposer;
     let updateHandlers = new Set();
+    let freezingLockSet = new Set();
 
     function triggerHandlers() {
       updateHandlers.forEach(handler => handler());
     }
 
     return {
-      freeze() {
-        self.isFrozen = true;
+      freeze(key) {
+        freezingLockSet.add(key);
+        self.isFrozen = freezingLockSet.size > 0;
       },
 
-      unfreeze() {
-        self.isFrozen = false;
-        self.recordNow();
+      unfreeze(key) {
+        freezingLockSet.delete(key);
+        self.isFrozen = freezingLockSet.size > 0;
+        if (!self.isFrozen) {
+          self.recordNow();
+        }
       },
 
       recordNow() {
