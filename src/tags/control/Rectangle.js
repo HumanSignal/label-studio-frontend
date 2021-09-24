@@ -27,6 +27,8 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
  * @param {string=} [strokeColor=#f48a42] - Stroke color in hexadecimal
  * @param {number=} [strokeWidth=1]       - Width of the stroke
  * @param {boolean=} [canRotate=true]     - Whether to show or hide rotation control
+ * @param {boolean} [smart]               - Show smart tool for interactive pre-annotations
+ * @param {boolean} [smartOnly]           - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
   name: types.identifier,
