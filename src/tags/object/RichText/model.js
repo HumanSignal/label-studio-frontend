@@ -148,6 +148,12 @@ const Model = types
       if (self.encoding === "base64") val = atob(val);
       if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
 
+      // clean up the html — remove scripts and iframes
+      // nodes count better be the same, so replace them with stubs
+      val = val
+        .replace(/<script\b.*?<\/script>/g, "<ls-stub></ls-stub>")
+        .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>");
+
       self._value = val;
 
       self._regionsCache.forEach(({ region, annotation }) => {

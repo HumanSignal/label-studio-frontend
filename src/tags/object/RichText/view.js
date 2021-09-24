@@ -194,7 +194,8 @@ class RichTextPieceView extends Component {
   }
 
   onIFrameLoad = () => {
-    const body = this.rootNodeRef.current?.contentDocument?.body;
+    const iframe = this.rootNodeRef.current;
+    const body = iframe?.contentDocument?.body;
     const eventHandlers = {
       click: [this._onRegionClick, true],
       keydown: [this._passHotkeys, false],
@@ -208,6 +209,10 @@ class RichTextPieceView extends Component {
 
     for (let event in eventHandlers) {
       body.addEventListener(event, ...eventHandlers[event]);
+    }
+
+    if (body.scrollHeight) {
+      iframe.style.height = body.scrollHeight + "px";
     }
 
     this._handleUpdate(true);
@@ -257,7 +262,6 @@ class RichTextPieceView extends Component {
       const style = {
         border: "none",
         width: "100%",
-        minHeight: "60vh",
       };
 
       return (
