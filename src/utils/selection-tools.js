@@ -538,6 +538,8 @@ export const findRangeNative = (start, end, root) => {
 
   const range = (root.contentDocument ?? root.ownerDocument).createRange();
 
+  if (!startContainer || !endContainer) return;
+
   range.setStart(startContainer.node, startContainer.position);
   range.setEnd(endContainer.node, endContainer.position);
 
