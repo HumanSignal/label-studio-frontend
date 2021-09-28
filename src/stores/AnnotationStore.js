@@ -838,6 +838,11 @@ const Annotation = types
 
       return value;
     },
+
+    resetReady() {
+      self.objects.forEach(object => object.setReady && object.setReady(false));
+      self.areas.forEach(area => area.setReady && area.setReady(false));
+    },
   }));
 
 export default types

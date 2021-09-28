@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import { Button } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
-import Tree from "../../core/Tree";
 import styles from "./App.module.scss";
 import { EntityTab } from '../AnnotationTabs/AnnotationTabs';
 import { observe } from "mobx";
 import Konva from "konva";
+import { Annotation } from "./Annotation";
+import { isDefined } from "../../utils/utilities";
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -31,7 +32,7 @@ class Item extends Component {
   }
 
   render() {
-    return Tree.renderItem(this.props.root);
+    return <Annotation root={this.props.root} annotation={this.props.annotation} />;
   }
 }
 
@@ -46,12 +47,25 @@ export default class Grid extends Component {
   }
 
   componentDidMount() {
-    if (this.props.annotations.length) {
-      this.props.store._unselectAll();
-      setTimeout(()=>{
-        this.props.store._selectItem(this.props.annotations[0]);
-      });
+    if (this.props.annotations[0] !== this.props.store.selected) {
+      this.startRenderCycle();
     }
+  }
+
+  startRenderCycle() {
+    this.renderNext(0);
+  }
+
+  renderNext(idx) {
+    this.setState(
+      { item: isDefined(idx)?idx:this.state.item+1 },
+      () => {
+        if (this.state.item<this.props.annotations.length) {
+          this.props.store._selectItem(this.props.annotations[this.state.item]);
+        } else {
+          this.props.store._unselectAll();
+        }
+      });
   }
 
   onFinish = () => {
@@ -76,14 +90,7 @@ export default class Grid extends Component {
       canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
     });
 
-    this.setState({ item: this.state.item + 1 }, ()=>{
-      if (this.state.item<this.props.annotations.length) {
-        this.props.store._selectItem(this.props.annotations[this.state.item]);
-      } else {
-        this.props.store._unselectAll();
-      }
-    });
-
+    this.renderNext();
   };
 
   shift = delta => {
@@ -116,8 +123,8 @@ export default class Grid extends Component {
 
   render() {
     const i = this.state.item;
-    const { annotations } = this.props;
-    const renderNext = i < annotations.length;
+    const { annotations, store: { selected } } = this.props;
+    const isRenderingNext = i < annotations.length && annotations[i] === selected;
 
     return (
       <div className={styles.container}>
@@ -133,15 +140,15 @@ export default class Grid extends Component {
               />
             </div>
           ))}
-          {renderNext && (
+          {isRenderingNext && (
             <div id={`c-tmp`} key={`anno-tmp`}>
               <EntityTab
-                entity={this.props.store.selected}
-                prediction={this.props.store.selected.type === "prediction"}
+                entity={selected}
+                prediction={selected.type === "prediction"}
                 bordered={false}
                 style={{ height: 44 }}
               />
-              <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} annotation={this.props.store.selected}/>
+              <Item root={this.props.root} onFinish={this.onFinish} key={i} annotation={selected}/>
             </div>
           )}
         </div>

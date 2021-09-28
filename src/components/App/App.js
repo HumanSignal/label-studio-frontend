@@ -39,6 +39,7 @@ import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
 import { Block, Elem } from "../../utils/bem";
 import './App.styl';
 import { Space } from "../../common/Space/Space";
+import { Annotation } from "./Annotation";
 
 /**
  * App
@@ -105,7 +106,7 @@ class App extends Component {
             onScrollCapture={this._notifyScroll}
           >
             <Elem name="annotation">
-              {Tree.renderItem(root)}
+              {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
             {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
