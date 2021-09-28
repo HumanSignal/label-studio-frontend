@@ -1,12 +1,12 @@
 import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
  * Use the Polygon tag to add polygons to an image without selecting a label. This can be useful when you have only one label to assign to the polygon. Use for image segmentation tasks.
@@ -29,6 +29,8 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  * @param {number} [strokeWidth=3]                - Width of stroke
  * @param {small|medium|large} [pointSize=small]  - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=circle]  - Style of points
+ * @param {boolean} [smart]                       - Show smart tool for interactive pre-annotations
+ * @param {boolean} [smartOnly]                   - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -55,21 +57,8 @@ const Model = types
     // regions: types.array(RectRegionModel),
     _value: types.optional(types.string, ""),
   })
-  .actions(self => ({
-    fromStateJSON() {},
-
-    afterCreate() {
-      const poly = Tools.Polygon.create();
-      const floodFill = Tools.FloodFill.create();
-
-      poly._control = self;
-      floodFill._control = self;
-
-      self.tools = {
-        poly,
-        // floodfill: floodFill,
-      };
-    },
+  .volatile(() => ({
+    toolNames: ['Polygon'],
   }));
 
 const PolygonModel = types.compose(
@@ -80,6 +69,7 @@ const PolygonModel = types.compose(
   TagAttrs,
   Validation,
   Model,
+  ToolManagerMixin,
 );
 
 const HtxView = () => null;

@@ -7,7 +7,11 @@ import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { NodeViews } from "../components/Node/Node";
 
 const _Tool = types
-  .model("RectTool")
+  .model("RectangleTool", {
+    group: "segmentation",
+    smart: true,
+    shortcut: "R",
+  })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,
@@ -21,10 +25,12 @@ const _Tool = types
         };
       },
       get viewTooltip() {
-        return "Rectangle region";
+        return "Rectangle";
       },
       get iconComponent() {
-        return NodeViews.RectRegionModel[1];
+        return self.dynamic
+          ? NodeViews.RectRegionModel.altIcon
+          : NodeViews.RectRegionModel.icon;
       },
       get defaultDimensions() {
         return DEFAULT_DIMENSIONS.rect;
@@ -47,6 +53,6 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool, AnnotationMixin);
+const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool, AnnotationMixin);
 
 export { Rect };

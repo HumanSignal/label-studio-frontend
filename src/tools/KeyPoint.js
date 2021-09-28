@@ -6,8 +6,11 @@ import { NodeViews } from "../components/Node/Node";
 import { DrawingTool } from "../mixins/DrawingTool";
 
 const _Tool = types
-  .model({
+  .model("KeyPointTool", {
     default: types.optional(types.boolean, true),
+    group: "segmentation",
+    shortcut: "K",
+    smart: true,
   })
   .views(() => ({
     get tagTypes() {
@@ -17,10 +20,12 @@ const _Tool = types
       };
     },
     get viewTooltip() {
-      return "Key point region";
+      return "Key Point";
     },
     get iconComponent() {
-      return NodeViews.KeyPointRegionModel[1];
+      return self.dynamic
+        ? NodeViews.KeyPointRegionModel.altIcon
+        : NodeViews.KeyPointRegionModel.icon;
     },
   }))
   .actions(self => ({
@@ -34,14 +39,14 @@ const _Tool = types
         y,
         width: Number(c.strokewidth),
         coordstype: "px",
+        dynamic: self.dynamic,
+        negative: self.dynamic && ev.altKey,
       });
 
       keyPoint.setDrawing(false);
     },
   }));
 
-const KeyPoint = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
-
-// Registry.addTool("keypoint", KeyPoint);
+const KeyPoint = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { KeyPoint };

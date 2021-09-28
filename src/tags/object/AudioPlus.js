@@ -13,6 +13,7 @@ import { AudioRegionModel } from "../../regions/AudioRegion";
 import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { SyncMixin } from "../../mixins/SyncMixin";
 
 /**
  * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -37,6 +38,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
  * @param {boolean} [zoom=true] - Whether to show the zoom slider
  * @param {string} [hotkey] - Hotkey used to play or pause audio
+ * @param {string} [sync] object name to sync with
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -89,6 +91,20 @@ const Model = types
   .actions(self => ({
     needsUpdate() {
       self.handleNewRegions();
+
+      if (self.sync) self.initSync();
+    },
+
+    handleSyncPlay() {
+      self._ws?.play();
+    },
+
+    handleSyncPause() {
+      self._ws?.pause();
+    },
+
+    handleSyncSeek(time) {
+      self._ws && (self._ws.setCurrentTime(time));
     },
 
     handleNewRegions() {
@@ -238,6 +254,11 @@ const Model = types
      */
     handlePlay() {
       self.playing = !self.playing;
+      self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+    },
+
+    handleSeek() {
+      self.triggerSyncSeek(self._ws.getCurrentTime());
     },
 
     createWsRegion(region) {
@@ -264,7 +285,7 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, Model, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
+const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
@@ -280,6 +301,7 @@ const HtxAudioView = ({ store, item }) => {
           src={item._value}
           selectRegion={item.selectRegion}
           handlePlay={item.handlePlay}
+          handleSeek={item.handleSeek}
           onCreate={item.wsCreated}
           addRegion={item.addRegion}
           onLoad={item.onLoad}

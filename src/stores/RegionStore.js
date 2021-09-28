@@ -169,6 +169,10 @@ export default types.model("RegionStore", {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
+    get suggestions() {
+      return Array.from(self.annotation.suggestions.values()).filter(area => !area.classification);
+    },
+
     get isAllHidden() {
       return !self.regions.find(area => !area.hidden);
     },
@@ -382,11 +386,15 @@ export default types.model("RegionStore", {
     const { regions } = self;
     const idx = self.regions.findIndex(r => r.selected);
 
-    idx !== -1 && regions[idx].unselectRegion();
+    if (idx < 0) {
+      const region = regions[0];
 
-    const next = regions[idx + 1] !== "undefined" ? regions[idx + 1] : regions[0];
+      region && self.annotation.selectArea(region);
+    } else {
+      const next = isDefined(regions[idx + 1]) ? regions[idx + 1] : regions[0];
 
-    next && next.selectRegion();
+      next && self.annotation.selectArea(next);
+    }
   },
 
   toggleVisibility() {

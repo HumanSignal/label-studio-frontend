@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useContext } from "react";
 import { Ellipse } from "react-konva";
 import { getRoot, types } from "mobx-state-tree";
 import WithStatesMixin from "../mixins/WithStates";
@@ -11,11 +11,12 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnEllipse } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { rotateBboxCoords } from "../utils/bboxCoords";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 /**
  * Ellipse object for Bounding Box
@@ -263,8 +264,9 @@ const EllipseRegionModel = types.compose(
 const HtxEllipseView = ({ item }) => {
   const { store } = item;
 
-  const colors = useRegionColors(item);
+  const regionStyles = useRegionStyles(item);
   const stage = item.parent.stageRef;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   return (
     <Fragment>
@@ -273,9 +275,9 @@ const HtxEllipseView = ({ item }) => {
         y={item.y}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
-        fill={colors.fillColor}
-        stroke={colors.strokeColor}
-        strokeWidth={colors.strokeWidth}
+        fill={regionStyles.fillColor}
+        stroke={regionStyles.strokeColor}
+        strokeWidth={regionStyles.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
@@ -302,6 +304,7 @@ const HtxEllipseView = ({ item }) => {
             e.currentTarget.stopDrag(e.evt);
             return;
           }
+          item.annotation.history.freeze(item.id);
         }}
         onDragEnd={e => {
           const t = e.target;
@@ -314,8 +317,9 @@ const HtxEllipseView = ({ item }) => {
             t.getAttr("rotation"),
           );
           item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
+          item.annotation.history.unfreeze(item.id);
         }}
-        dragBoundFunc={item.parent.fixForZoom(pos => {
+        dragBoundFunc={createDragBoundFunc(item.parent,pos => {
           let { x, y } = pos;
           const { radiusX, radiusY, rotation } = item;
           const { stageHeight, stageWidth } = item.parent;
@@ -360,8 +364,9 @@ const HtxEllipseView = ({ item }) => {
           item.onClickRegion(e);
         }}
         draggable={item.editable}
+        listening={!suggestion}
       />
-      <LabelOnEllipse item={item} color={colors.strokeColor} strokewidth={colors.strokeWidth}/>
+      <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
     </Fragment>
   );
 };

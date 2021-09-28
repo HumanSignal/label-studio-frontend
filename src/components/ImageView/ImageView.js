@@ -13,11 +13,15 @@ import messages from "../../utils/messages";
 import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
 import { observe } from "mobx";
-import { guidGenerator } from "../../utils/unique";
 import { LoadingOutlined } from "@ant-design/icons";
+import { Toolbar } from "../Toolbar/Toolbar";
+import { ImageViewProvider } from "./ImageViewContext";
+import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
 
 Konva.showWarnings = false;
+
+const hotkeys = Hotkey("Image");
 
 const splitRegions = (regions) => {
   const brushRegions = [];
@@ -59,16 +63,20 @@ const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) =
   );
 });
 
-const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, showSelected = false }) => {
-  return (chunkSize ? chunks(regions, chunkSize) : regions).map((chunk, i) => (
-    <RegionsLayer
-      key={`chunk-${i}`}
-      name={`chunk-${i}`}
-      regions={chunk}
-      useLayers={useLayers}
-      showSelected={showSelected}
-    />
-  ));
+const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, suggestion = false, showSelected = false }) => {
+  return (
+    <ImageViewProvider value={{ suggestion }}>
+      {(chunkSize ? chunks(regions, chunkSize) : regions).map((chunk, i) => (
+        <RegionsLayer
+          key={`chunk-${i}`}
+          name={`chunk-${i}`}
+          regions={chunk}
+          useLayers={useLayers}
+          showSelected={showSelected}
+        />
+      ))}
+    </ImageViewProvider>
+  );
 });
 
 const DrawingRegion = observer(({ item }) => {
@@ -142,39 +150,42 @@ const SelectionBorders = observer(({ item }) => {
 });
 
 const SelectionRect = observer(({ item }) => {
+  const { x, y, width, height } = item;
+
+  const positionProps = {
+    x,
+    y,
+    width,
+    height,
+    listening: false,
+    strokeWidth: 1,
+  };
+
   return (
     <>
       <Rect
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        {...positionProps}
         stroke={SELECTION_COLOR}
-        strokeWidth={1}
         dash={SELECTION_DASH}
-        listening={false}
       />
       <Rect
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
-        strokeWidth={1}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
-        listening={false}
       />
     </>
   );
 });
 
+const TRANSFORMER_BACK_NAME = "transformer_back";
 const SelectedRegions = observer(({ selectedRegions }) => {
   if (!selectedRegions) return null;
   const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
 
   return (
     <>
+      <Layer id={TRANSFORMER_BACK_NAME} />
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -200,6 +211,8 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
+  const scale = 1 / (item.zoomScale ||1);
+
   let supportsTransform = true;
   let supportsRotate = true;
   let supportsScale = true;
@@ -209,11 +222,25 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsRotate = supportsRotate && shape.canRotate === true;
     supportsScale = supportsScale && true;
   });
+
   supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
+
   return (
-    <Layer>
-      { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
-      <ImageTransformer rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
+    <Layer scaleX={scale} scaleY={scale}>
+      { selectionArea.isActive ? (
+        <SelectionRect item={selectionArea}/>
+      ) : (!supportsTransform && item.selectedRegions.length>1 ? (
+        <SelectionBorders item={selectionArea} />
+      ) : null)}
+
+      <ImageTransformer
+        item={item}
+        rotateEnabled={supportsRotate}
+        supportsTransform={supportsTransform}
+        supportsScale={supportsScale}
+        selectedShapes={item.selectedRegions}
+        draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
+      />
     </Layer>
   );
 });
@@ -222,9 +249,7 @@ const Selection = observer(({ item, selectionArea }) => {
   return (
     <>
       <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
-
       <SelectionLayer item={item} selectionArea={selectionArea} />
-
     </>
   );
 });
@@ -333,7 +358,7 @@ export default observer(
 
       if (
         // create regions over another regions with Cmd/Ctrl pressed
-        (e.evt && (e.evt.metaKey || e.evt.ctrlKey)) ||
+        item.getSkipInteractions() ||
         e.target === e.target.getStage() ||
         findClosestParent(
           e.target,
@@ -387,6 +412,7 @@ export default observer(
       const { item } = this.props;
 
       item.freezeHistory();
+      item.setSkipInteractions(false);
 
       return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
     };
@@ -398,9 +424,17 @@ export default observer(
 
       this.updateCrosshair(e);
 
-      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
+      const isMouseWheelClick = e.evt && e.evt.buttons === 4;
+      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+
+      if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
+        item.setSkipInteractions(true);
         e.evt.preventDefault();
-        const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
+
+        const newPos = {
+          x: item.zoomingPositionX + e.evt.movementX,
+          y: item.zoomingPositionY + e.evt.movementY,
+        };
 
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
@@ -507,12 +541,17 @@ export default observer(
         this.updateImageTransform();
         this.observerObjectUpdate();
       }
+
       this.updateReadyStatus();
+
+      hotkeys.addDescription("shift", "Pan image");
     }
 
     componentWillUnmount() {
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
+
+      hotkeys.removeDescription("shift");
     }
 
     componentDidUpdate(prevProps) {
@@ -609,15 +648,10 @@ export default observer(
 
       if (cs.viewingAllAnnotations || cs.viewingAllPredictions) return null;
 
+      const tools = item.getToolsManager().allTools();
+
       return (
-        <div className={styles.block}>
-          {item
-            .getToolsManager()
-            .allTools()
-            .map(tool => {
-              return <Fragment key={guidGenerator()}>{tool.viewClass}</Fragment>;
-            })}
-        </div>
+        <Toolbar tools={tools}/>
       );
     }
 
@@ -645,7 +679,22 @@ export default observer(
         containerStyle["maxWidth"] = item.maxwidth;
       }
 
-      const { brushRegions, shapeRegions } = splitRegions(regions);
+      const {
+        brushRegions,
+        shapeRegions,
+      } = splitRegions(regions);
+
+      const {
+        brushRegions: suggestedBrushRegions,
+        shapeRegions: suggestedShapeRegions,
+      } = splitRegions(item.suggestions);
+
+      const renderableRegions = Object.entries({
+        brush: brushRegions,
+        shape: shapeRegions,
+        suggestedBrush: suggestedBrushRegions,
+        suggestedShape: suggestedShapeRegions,
+      });
 
       return (
         <ObjectTag
@@ -716,28 +765,28 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
+              {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
                 <Layer>
                   <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
                 </Layer>
               )}
-
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
-              {brushRegions.length > 0 && (
-                <Regions
-                  name="brushes"
-                  regions={brushRegions}
-                  useLayers={false}
-                />
-              )}
+              {renderableRegions.map(([groupName, list]) => {
+                const isBrush = groupName.match(/brush/i) !== null;
+                const isSuggestion = groupName.match('suggested') !== null;
 
-              {shapeRegions.length > 0 && (
-                <Regions
-                  name="shapes"
-                  regions={shapeRegions}
-                />
-              )}
+                return list.length > 0 ? (
+                  <Regions
+                    key={groupName}
+                    name={groupName}
+                    regions={list}
+                    useLayers={isBrush === false}
+                    suggestion={isSuggestion}
+                  />
+                ) : <Fragment key={groupName}/>;
+              })}
 
               <Selection item={item} selectionArea={item.selectionArea}/>
               <DrawingRegion item={item}/>

@@ -7,7 +7,10 @@ import { NodeViews } from "../components/Node/Node";
 import { observe } from "mobx";
 
 const _Tool = types
-  .model("PolygonTool")
+  .model("PolygonTool", {
+    group: "segmentation",
+    shortcut: "P",
+  })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,
@@ -37,7 +40,9 @@ const _Tool = types
         return "Polygon region";
       },
       get iconComponent() {
-        return NodeViews.PolygonRegionModel[1];
+        return self.dynamic
+          ? NodeViews.PolygonRegionModel.altIcon
+          : NodeViews.PolygonRegionModel.icon;
       },
 
       get defaultDimensions() {
@@ -85,7 +90,7 @@ const _Tool = types
             self.finishDrawing();
           }
         }, true);
-      }, 
+      },
       closeCurrent() {
         if (disposer) disposer();
         if (closed) return;
@@ -95,8 +100,6 @@ const _Tool = types
     };
   });
 
-const Polygon = types.compose(ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
+const Polygon = types.compose(_Tool.name, ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
 
 export { Polygon };
-
-// ImageTools.addTool(PolygonTool);

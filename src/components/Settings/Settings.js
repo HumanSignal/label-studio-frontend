@@ -4,18 +4,48 @@ import { observer } from "mobx-react";
 
 import { Hotkey } from "../../core/Hotkey";
 
+import "./Settings.styl";
+import { Block, Elem } from "../../utils/bem";
+
 const HotkeysDescription = () => {
-  const descr = Hotkey.keysDescipritions();
   const columns = [
-    { title: "Key", dataIndex: "key", key: "key" },
+    { title: "Shortcut", dataIndex: "combo", key: "combo" },
     { title: "Description", dataIndex: "descr", key: "descr" },
   ];
 
-  const data = Object.keys(descr)
-    .filter(k => descr[k])
-    .map(k => new Object({ key: k, descr: descr[k] })); // eslint-disable-line no-new-object
+  const keyNamespaces = Hotkey.namespaces();
 
-  return <Table columns={columns} dataSource={data} size="small" />;
+  const getData = (descr) => Object.keys(descr)
+    .filter(k => descr[k])
+    .map(k => ({
+      key: k,
+      combo: k.split(",").map(keyGroup => {
+        return (
+          <Elem name="key-group" key={keyGroup}>
+            {keyGroup.trim().split("+").map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
+          </Elem>
+        );
+      }),
+      descr: descr[k],
+    }));
+
+  return (
+    <Block name="keys">
+      <Tabs size="small">
+        {Object.entries(keyNamespaces).map(([ns, data]) => {
+          if (Object.keys(data.descriptions).length === 0) {
+            return null;
+          } else {
+            return (
+              <Tabs.TabPane key={ns} tab={data.description ?? ns}>
+                <Table columns={columns} dataSource={getData(data.descriptions)} size="small" />
+              </Tabs.TabPane>
+            );
+          }
+        })}
+      </Tabs>
+    </Block>
+  );
 };
 
 export default observer(({ store }) => {

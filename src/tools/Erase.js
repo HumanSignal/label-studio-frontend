@@ -1,34 +1,92 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { ScissorOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
-import BasicTool from "../components/Tools/Basic";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
-import { findClosestParent } from "../utils/utilities";
+import { clamp, findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
+import { IconEraserTool } from "../assets/icons";
+import { Tool } from "../components/Toolbar/Tool";
+import { Range } from "../common/Range/Range";
+
+const MIN_SIZE = 1;
+const MAX_SIZE = 50;
+
+const IconDot = ({ size }) => {
+  return (
+    <span style={{
+      display: 'block',
+      width: size,
+      height: size,
+      background: 'rgba(0, 0, 0, 0.25)',
+      borderRadius: '100%',
+    }}/>
+  );
+};
 
 const ToolView = observer(({ item }) => {
   return (
-    <BasicTool
-      selected={item.selected}
+    <Tool
+      label="Eraser"
+      ariaLabel="eraser"
+      shortcut="E"
+      active={item.selected}
+      extraShortcuts={item.extraShortcuts}
+      tool={item}
       onClick={() => {
-        const sel = item.selected;
+        if (item.selected) return;
 
-        item.manager.selectTool(item, !sel);
+        item.manager.selectTool(item, true);
       }}
-      icon={<ScissorOutlined />}
+      icon={item.iconClass}
+      controls={item.controls}
     />
   );
 });
 
 const _Tool = types
-  .model({})
+  .model("EraserTool", {
+    strokeWidth: types.optional(types.number, 10),
+    group: "segmentation",
+  })
+  .volatile(() => ({
+    index: 9999,
+  }))
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
+    },
+    get iconComponent() {
+      return IconEraserTool;
+    },
+    get controls() {
+      return [
+        <Range
+          key="eraser-size"
+          value={self.strokeWidth}
+          min={MIN_SIZE}
+          max={MAX_SIZE}
+          reverse
+          align="vertical"
+          minIcon={<IconDot size={8}/>}
+          maxIcon={<IconDot size={16}/>}
+          onChange={(value) => {
+            self.setStroke(value);
+          }}
+        />,
+      ];
+    },
+    get extraShortcuts() {
+      return {
+        "[": ["Decrease size", () => {
+          self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
+        }],
+        "]": ["Increase size", () => {
+          self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
+        }],
+      };
     },
   }))
   .actions(self => {
@@ -51,6 +109,10 @@ const _Tool = types
 
       addPoint(x, y) {
         brush.addPoint(Math.floor(x), Math.floor(y));
+      },
+
+      setStroke(val) {
+        self.strokeWidth = val;
       },
 
       mouseupEv() {
@@ -92,13 +154,17 @@ const _Tool = types
 
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
-          brush.beginPath({ type: "eraser", opacity: 1 });
+          brush.beginPath({
+            type: "eraser",
+            opacity: 1,
+            strokeWidth: self.strokeWidth,
+          });
           self.addPoint(x, y);
         }
       },
     };
   });
 
-const Erase = types.compose(ToolMixin, BaseTool, DrawingTool, _Tool);
+const Erase = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Erase };

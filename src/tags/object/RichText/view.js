@@ -58,28 +58,26 @@ class RichTextPieceView extends Component {
 
     const label = states[0]?.selectedLabels?.[0];
 
-    Utils.Selection.captureSelection(
-      ({ selectionText, range }) => {
-        if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
-          return;
-        }
+    Utils.Selection.captureSelection(({ selectionText, range }) => {
+      if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
+        return;
+      }
 
-        const normedRange = xpath.fromRange(range, root);
+      const normedRange = xpath.fromRange(range, root);
 
-        if (!normedRange) return;
+      if (!normedRange) return;
 
-        normedRange._range = range;
-        normedRange.text = selectionText;
-        normedRange.isText = item.type === "text";
+      normedRange._range = range;
+      normedRange.text = selectionText;
+      normedRange.isText = item.type === "text";
+      normedRange.dynamic = this.props.store.autoAnnotation;
 
-        item.addRegion(normedRange);
-      },
-      {
-        window: rootEl?.contentWindow ?? window,
-        granularity: label?.granularity ?? item.granularity,
-        beforeCleanup: () => (this._selectionMode = true),
-      },
-    );
+      item.addRegion(normedRange);
+    }, {
+      window: rootEl?.contentWindow ?? window,
+      granularity: label?.granularity ?? item.granularity,
+      beforeCleanup: () => (this._selectionMode = true),
+    });
   };
 
   /**
@@ -196,7 +194,8 @@ class RichTextPieceView extends Component {
   }
 
   onIFrameLoad = () => {
-    const body = this.rootNodeRef.current?.contentDocument?.body;
+    const iframe = this.rootNodeRef.current;
+    const body = iframe?.contentDocument?.body;
     const eventHandlers = {
       click: [this._onRegionClick, true],
       keydown: [this._passHotkeys, false],
@@ -210,6 +209,10 @@ class RichTextPieceView extends Component {
 
     for (let event in eventHandlers) {
       body.addEventListener(event, ...eventHandlers[event]);
+    }
+
+    if (body.scrollHeight) {
+      iframe.style.height = body.scrollHeight + "px";
     }
 
     this._handleUpdate(true);
@@ -227,7 +230,11 @@ class RichTextPieceView extends Component {
       : content;
 
     if (item.inline) {
-      const style = { overflow: "auto" };
+      const style = {
+        overflow: "auto",
+        fontSize: 16,
+        lineHeight: '26px',
+      };
       const eventHandlers = {
         onClickCapture: this._onRegionClick,
         onMouseUp: this._onMouseUp,
@@ -255,7 +262,6 @@ class RichTextPieceView extends Component {
       const style = {
         border: "none",
         width: "100%",
-        minHeight: "60vh",
       };
 
       return (

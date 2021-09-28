@@ -1,11 +1,11 @@
 import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
  * Use the Ellipse tag to add an elliptical bounding box to an image. Use for bounding box image segmentation tasks with ellipses.
@@ -27,6 +27,8 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
  * @param {string} [strokeColor=#f48a42] - Stroke color in hexadecimal
  * @param {number} [strokeWidth=1]       - Width of the stroke
  * @param {boolean} [canRotate=true]     - Show or hide rotation control
+ * @param {boolean} [smart]              - Show smart tool for interactive pre-annotations
+ * @param {boolean} [smartOnly]          - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -53,17 +55,18 @@ const Model = types
       return states && states.length > 0;
     },
   }))
-  .actions(self => ({
-    afterCreate() {
-      const ellipse = Tools.Ellipse.create({ activeShape: null });
-
-      ellipse._control = self;
-
-      self.tools = { ellipse };
-    },
+  .volatile(() => ({
+    toolNames: ['Ellipse'],
   }));
 
-const EllipseModel = types.compose("EllipseModel", ControlBase, AnnotationMixin, SeparatedControlMixin, TagAttrs, Model);
+const EllipseModel = types.compose("EllipseModel",
+  ControlBase,
+  AnnotationMixin,
+  SeparatedControlMixin,
+  TagAttrs,
+  Model,
+  ToolManagerMixin,
+);
 
 const HtxView = () => {
   return null;

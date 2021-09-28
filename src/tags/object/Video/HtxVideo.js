@@ -9,10 +9,14 @@ import { Block, Elem } from "../../../utils/bem";
 
 import "./Video.styl";
 
-const hotkeys = Hotkey();
+const hotkeys = Hotkey("Video", "Video Annotation");
 
-const PlayPause = ({ video }) => {
-  const [paused, setPaused] = useState(true);
+const PlayPause = ({ item, video }) => {
+  const [paused, setPausedState] = useState(true);
+  const setPaused = paused => {
+    setPausedState(paused);
+    paused ? item.triggerSyncPause() : item.triggerSyncPlay();
+  };
 
   useEffect(() => {
     video.onplay = () => setPaused(false);
@@ -52,7 +56,6 @@ const FrameStep = ({ item, video }) => {
       onBackward();
     });
     return () => {
-      console.log("removing video hotkeys");
       hotkeys.removeKey("alt+right");
       hotkeys.removeKey("alt+left");
     };
@@ -74,7 +77,7 @@ const FrameStep = ({ item, video }) => {
   );
 };
 
-const Progress = ({ video }) => {
+const Progress = ({ item, video }) => {
   const progressRef = useRef();
   const timeRef = useRef();
 
@@ -84,6 +87,8 @@ const Progress = ({ video }) => {
 
       timeRef.current.style.left = (percent * 100) + "%";
     };
+
+    video.onseeked = () => item.triggerSyncSeek(video.currentTime);
   }, [video]);
 
   const progress = video.currentTime / video.duration;
@@ -111,9 +116,9 @@ const Controls = ({ item, video }) => {
 
   return (
     <Elem name="controls">
-      <PlayPause video={video} />
+      <PlayPause item={item} video={video} />
       <FrameStep item={item} video={video} />
-      <Progress video={video} />
+      <Progress item={item} video={video} />
       <Sound />
     </Elem>
   );
@@ -140,7 +145,7 @@ const HtxVideoView = ({ item }) => {
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
       <Block name="video">
-        <video src={item._value} ref={item.ref} onClick={onPlayPause} />
+        <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} />
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
     </ObjectTag>

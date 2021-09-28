@@ -60,13 +60,13 @@ const TagAttrs = types.model({
   gridSize: types.optional(types.number, 30),
   gridColor: types.optional(customTypes.color, "#EEEEF4"),
 
-  zoom: types.optional(types.boolean, false),
+  zoom: types.optional(types.boolean, true),
   negativezoom: types.optional(types.boolean, false),
   zoomby: types.optional(types.string, "1.1"),
 
   showlabels: types.optional(types.boolean, false),
 
-  zoomcontrol: types.optional(types.boolean, false),
+  zoomcontrol: types.optional(types.boolean, true),
   brightnesscontrol: types.optional(types.boolean, false),
   contrastcontrol: types.optional(types.boolean, false),
   rotatecontrol: types.optional(types.boolean, false),
@@ -127,16 +127,19 @@ const ImageSelection = types.model({
       return self.start && self.end;
     },
     get x() {
-      return Math.min(self.start.x, self.end.x);
+      return Math.min((self.start.x * self.scale), (self.end.x * self.scale));
     },
     get y() {
-      return Math.min(self.start.y, self.end.y);
+      return Math.min((self.start.y * self.scale), (self.end.y * self.scale));
     },
     get width() {
-      return Math.abs(self.end.x - self.start.x);
+      return Math.abs((self.end.x * self.scale) - (self.start.x * self.scale));
     },
     get height() {
-      return Math.abs(self.end.y - self.start.y);
+      return Math.abs((self.end.y * self.scale) - (self.start.y * self.scale));
+    },
+    get scale() {
+      return self.obj.zoomScale;
     },
     get bbox() {
       const { start, end } = self;
@@ -150,6 +153,20 @@ const ImageSelection = types.model({
     },
     includesBbox(bbox) {
       return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
+    },
+    intersectsBbox(bbox) {
+      if (!self.isActive || !bbox) return false;
+      const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
+      const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
+      const selfWidth = self.bbox.right - self.bbox.left;
+      const selfHeight = self.bbox.bottom - self.bbox.top;
+      const targetCenterX = (bbox.left + bbox.right) / 2;
+      const targetCenterY = (bbox.top + bbox.bottom) / 2;
+      const targetWidth = bbox.right - bbox.left;
+      const targetHeight = bbox.bottom - bbox.top;
+
+      return (Math.abs(selfCenterX - targetCenterX) * 2 < (selfWidth + targetWidth)) &&
+        (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
     },
     get selectionBorders() {
       return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
@@ -291,12 +308,34 @@ const Model = types.model({
     return self.regs.filter(region => region.inSelection);
   },
 
+  get selectedRegionsBBox() {
+    let bboxCoords;
+
+    self.selectedRegions.forEach((region) => {
+      if (bboxCoords) {
+        bboxCoords = {
+          left: Math.min(region.bboxCoords.left, bboxCoords.left),
+          top: Math.min(region.bboxCoords.top, bboxCoords.top),
+          right: Math.max(region.bboxCoords.right, bboxCoords.right),
+          bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+        };
+      } else {
+        bboxCoords = region.bboxCoords;
+      }
+    });
+    return bboxCoords;
+  },
+
   get regionsInSelectionArea() {
     return self.regs.filter(region => region.isInSelectionArea);
   },
 
   get selectedShape() {
     return self.regs.find(r => r.selected);
+  },
+
+  get suggestions() {
+    return self.annotation?.regionStore.suggestions.filter(r => r.object === self) || [];
   },
 
   get useTransformer() {
@@ -385,23 +424,30 @@ const Model = types.model({
 
   // actions for the tools
   .actions(self => {
-    const toolsManager = new ToolsManager({ obj: self });
+    const manager = ToolsManager.getInstance({ name: self.name });
+    const env = { manager, control: self };
+
+    manager.reload({ name: self.name });
 
     function afterCreate() {
-      if (self.selectioncontrol) toolsManager.addTool("selection", Tools.Selection.create({}, { manager: toolsManager }));
+      if (self.selectioncontrol)
+        manager.addTool("selection", Tools.Selection.create({}, env));
 
-      if (self.zoomcontrol) toolsManager.addTool("zoom", Tools.Zoom.create({}, { manager: toolsManager }));
+      if (self.zoomcontrol)
+        manager.addTool("zoom", Tools.Zoom.create({}, env));
 
       if (self.brightnesscontrol)
-        toolsManager.addTool("brightness", Tools.Brightness.create({}, { manager: toolsManager }));
+        manager.addTool("brightness", Tools.Brightness.create({}, env));
 
-      if (self.contrastcontrol) toolsManager.addTool("contrast", Tools.Contrast.create({}, { manager: toolsManager }));
+      if (self.contrastcontrol)
+        manager.addTool("contrast", Tools.Contrast.create({}, env));
 
-      if (self.rotatecontrol) toolsManager.addTool("rotate", Tools.Rotate.create({}, { manager: toolsManager }));
+      if (self.rotatecontrol)
+        manager.addTool("rotate", Tools.Rotate.create({}, env));
     }
 
     function getToolsManager() {
-      return toolsManager;
+      return manager;
     }
 
     return { afterCreate, getToolsManager };
@@ -411,7 +457,11 @@ const Model = types.model({
     return {
       views: {
         getSkipInteractions() {
-          return skipInteractions;
+          const manager = self.getToolsManager();
+
+          const isPanning = manager.findSelectedTool()?.toolName === "ZoomPanTool";
+
+          return skipInteractions || isPanning;
         },
       },
       actions: {
@@ -421,7 +471,7 @@ const Model = types.model({
         updateSkipInteractions(e) {
           const currentTool = self.getToolsManager().findSelectedTool();
 
-          if (currentTool.shouldSkipInteractions) {
+          if (currentTool?.shouldSkipInteractions) {
             return self.setSkipInteractions(currentTool.shouldSkipInteractions(e));
           }
           self.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
@@ -433,7 +483,7 @@ const Model = types.model({
       //self.annotation.history.freeze();
     },
 
-    createDrawingRegion(areaValue, resultValue, control) {
+    createDrawingRegion(areaValue, resultValue, control, dynamic) {
       const result = {
         from_name: control.name,
         to_name: self,
@@ -446,6 +496,7 @@ const Model = types.model({
         object: self,
         ...areaValue,
         results: [result],
+        dynamic,
       };
 
       self.drawingRegion = areaRaw;
@@ -721,14 +772,15 @@ const Model = types.model({
      * @return {PointFn} outer function do some math with screen coords
      */
     fixForZoom(fn) {
-      return p => {
-        const asArray = p.x === undefined;
-        const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
-        const modified = fn(asArray ? [x, y] : { x, y });
-        const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
+      return p => this.fixForZoomWrapper(p, fn);
+    },
+    fixForZoomWrapper(p, fn) {
+      const asArray = p.x === undefined;
+      const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
+      const modified = fn(asArray ? [x, y] : { x, y });
+      const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
 
-        return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
-      };
+      return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
 
     /**

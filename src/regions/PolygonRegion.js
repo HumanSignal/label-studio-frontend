@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React, { memo, useMemo } from "react";
+import React, { memo, useContext, useMemo } from "react";
 import { Group, Line } from "react-konva";
 import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
@@ -14,11 +14,13 @@ import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
 import { green } from "@ant-design/colors";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { useRegionColors } from "../hooks/useRegionColor";
+import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
+import { createDragBoundFunc } from "../utils/image";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 const Model = types
   .model({
@@ -402,8 +404,9 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
 
 const HtxPolygonView = ({ item }) => {
   const { store } = item;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
-  const colors = useRegionColors(item, {
+  const regionStyles = useRegionStyles(item, {
     useStrokeAsFill: true,
   });
 
@@ -420,11 +423,11 @@ const HtxPolygonView = ({ item }) => {
 
     const lineProps = closed ? {
       stroke: 'transparent',
-      strokeWidth: colors.strokeWidth,
+      strokeWidth: regionStyles.strokeWidth,
       strokeScaleEnabled: false,
     } : {
-      stroke: colors.strokeColor,
-      strokeWidth: colors.strokeWidth,
+      stroke: regionStyles.strokeColor,
+      strokeWidth: regionStyles.strokeWidth,
       strokeScaleEnabled: false,
     };
 
@@ -455,7 +458,7 @@ const HtxPolygonView = ({ item }) => {
     const name = "borders";
 
     return (
-      <Group key={name} name={name}>
+      <Group key={name} name={name} listening={!(item.parent.useTransformer && item.closed)}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
@@ -509,8 +512,10 @@ const HtxPolygonView = ({ item }) => {
 
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
+
+        item.annotation.history.freeze(item.id);
       },
-      dragBoundFunc: item.parent.fixForZoom(pos => {
+      dragBoundFunc: createDragBoundFunc(item.parent, pos => {
         if (!isDragging) return pos;
         let { x, y } = pos;
 
@@ -533,9 +538,8 @@ const HtxPolygonView = ({ item }) => {
           item.annotation.setDragMode(false);
           if (!item.closed) item.closePoly();
 
-          item.annotation.history.freeze();
           item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
-          item.annotation.history.unfreeze();
+          item.annotation.history.unfreeze(item.id);
         }
 
         t.setAttr("x", 0);
@@ -545,7 +549,7 @@ const HtxPolygonView = ({ item }) => {
     };
   }, []);
 
-
+  if (!item.parent) return null;
 
   const stage = item.parent.stageRef;
 
@@ -588,12 +592,13 @@ const HtxPolygonView = ({ item }) => {
       }}
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
+      listening={!suggestion}
     >
-      <LabelOnPolygon item={item} color={colors.strokeColor} />
+      <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
       {item.mouseOverStartPoint}
 
-      {item.points && item.closed ? <Poly item={item} colors={colors} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
+      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
       {item.points ? renderLines(item.points, item.closed) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>

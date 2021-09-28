@@ -141,7 +141,7 @@ export default class Waveform extends React.Component {
   constructor(props) {
     super(props);
 
-    this.hotkeys = Hotkey();
+    this.hotkeys = Hotkey("Audio", "Audio Segmentation");
 
     this.state = {
       src: this.props.src,
@@ -378,6 +378,8 @@ export default class Waveform extends React.Component {
      * Play trigger of audio
      */
     this.wavesurfer.on("play", self.props.handlePlay);
+
+    this.wavesurfer.on("seek", self.props.handleSeek);
 
     if (this.props.regions) {
       this.props.onLoad(this.wavesurfer);

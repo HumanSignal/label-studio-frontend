@@ -1,10 +1,11 @@
-import React, { Fragment, useCallback, useMemo, useState } from "react";
+import React, { Fragment, useCallback, useContext, useMemo, useState } from "react";
 import { Group, Label, Path, Rect, Tag, Text } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot } from "mobx-state-tree";
 
 import Utils from "../../utils";
 import Constants from "../../core/Constants";
+import { ImageViewContext } from "./ImageViewContext";
 
 const NON_ADJACENT_CORNER_RADIUS = 4;
 const ADJACENT_CORNER_RADIUS = [4, 4, 0, 0];
@@ -24,6 +25,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoo
   const horizontalPaddings = paddingLeft + paddingRight;
   const textMaxWidth = Math.max(0,maxWidth * zoomScale - horizontalPaddings - scoreSpace);
   const isSticking = !!textMaxWidth;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   const width = useMemo(() => {
     if (!showLabels || !textEl || !maxWidth) return null;
@@ -93,6 +95,7 @@ const LabelOnBbox = ({ x, y, text, score, showLabels, showScore, rotation=0, zoo
             onClick={onClickLabel}
             onMouseEnter={onClickLabel ? onMouseEnterLabel : null}
             onMouseLeave={onClickLabel ? onMouseLeaveLabel : null}
+            listening={!suggestion}
           >
             <Tag fill={color} cornerRadius={4} sceneFunc={tagSceneFunc} offsetX={paddingLeft}/>
             <Text ref={setTextEl} text={text}

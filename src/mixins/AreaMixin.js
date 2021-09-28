@@ -52,6 +52,10 @@ export const AreaMixin = types
       return self.labeling?.mainValue?.[0] || self.emptyLabel?._value;
     },
 
+    get labels() {
+      return Array.from(self.labeling?.mainValue ?? []);
+    },
+
     getLabelText(joinstr) {
       const label = self.labeling;
       const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, " ");
@@ -88,11 +92,11 @@ export const AreaMixin = types
     },
 
     get highlighted() {
-      return self.parent.selectionArea?.isActive ? self.isInSelectionArea : self._highlighted;
+      return self.parent?.selectionArea?.isActive ? self.isInSelectionArea : self._highlighted;
     },
 
     get isInSelectionArea() {
-      return self.parent.selectionArea?.isActive ? self.parent.selectionArea.includesBbox(self.bboxCoords) : false;
+      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
     },
   }))
   .volatile(() => ({
