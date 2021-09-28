@@ -454,11 +454,11 @@ const HtxPolygonView = ({ item }) => {
     );
   }
 
-  function renderLines(points, closed) {
+  function renderLines(points, closed, item) {
     const name = "borders";
 
     return (
-      <Group key={name} name={name} listening={!(item.parent.useTransformer && item.closed)}>
+      <Group key={name} name={name} listening={!((item.parent.useTransformer || item.parent.selectedRegions.length>1) && item.closed)}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
@@ -599,7 +599,7 @@ const HtxPolygonView = ({ item }) => {
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
-      {item.points ? renderLines(item.points, item.closed) : null}
+      {item.points ? renderLines(item.points, item.closed, item) : null}
       {item.points ? renderCircles(item.points) : null}
     </Group>
   );
