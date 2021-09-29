@@ -57,8 +57,8 @@ const TagAttrs = types.model({
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
-  gridSize: types.optional(types.number, 30),
-  gridColor: types.optional(customTypes.color, "#EEEEF4"),
+  gridsize: types.optional(types.string, "30"),
+  gridcolor: types.optional(customTypes.color, "#EEEEF4"),
 
   zoom: types.optional(types.boolean, true),
   negativezoom: types.optional(types.boolean, false),
@@ -539,7 +539,7 @@ const Model = types.model({
     },
 
     setGridSize(value) {
-      self.gridSize = value;
+      self.gridsize = String(value);
     },
 
     setCurrentImage(i) {
