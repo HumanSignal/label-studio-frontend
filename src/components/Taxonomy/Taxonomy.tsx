@@ -57,6 +57,11 @@ const SelectedList = () => {
   );
 };
 
+function isSubArray(item: string[], parent: string[]) {
+  if (item.length <= parent.length) return false;
+  return parent.every((n, i) => item[i] === n);
+}
+
 const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { leafsOnly, maxUsages, maxUsagesReached } = useContext(TaxonomyOptionsContext);
@@ -65,6 +70,7 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
   const onClick = () => leafsOnly && toggle();
 
   const checked = selected.some(current => isArraysEqual(current, item.path));
+  const isChildSelected = selected.some(current => isSubArray(current, item.path));
   const hasChilds = Boolean(item.children?.length);
   const onlyLeafsAllowed = leafsOnly && hasChilds;
   const limitReached = maxUsagesReached && !checked;
@@ -72,6 +78,12 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
     ? "Only leaf nodes allowed"
     : (limitReached ? `Maximum ${maxUsages} items already selected` : undefined);
   const disabled = onlyLeafsAllowed || limitReached;
+
+  const ref = useCallback(el => {
+    if (!el) return;
+    if (checked) el.indeterminate = false;
+    else el.indeterminate = isChildSelected;
+  }, [checked, isChildSelected]);
 
   return (
     <div>
@@ -86,6 +98,7 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
             type="checkbox"
             disabled={disabled}
             checked={checked}
+            ref={ref}
             onChange={e => setSelected(item.path, e.currentTarget.checked)}
           />
           {item.label}
