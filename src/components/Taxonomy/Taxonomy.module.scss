@@ -59,11 +59,11 @@
   background: white;
   border-radius: 6px;
   padding: 8px;
-  max-height: 300px;
+  max-height: 60vh;
   overflow-y: auto;
   left: -1px;
   width: max-content;
-  min-width: 200px;
+  min-width: 100%;
   max-width: 50vw; // 100% is not enough
   margin-top: 9px; // 4px padding + 1px border + 4px gap
   box-shadow: 0 0 4px #d9d9d9;
@@ -89,6 +89,10 @@
   border-radius: 3px;
   padding: 6px 16px;
   margin-bottom: 4px;
+  box-shadow: 0 -2px 0 6px white; // white background over scrolled items
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .taxonomy__item ~ div {
