@@ -57,6 +57,7 @@ const SelectedList = () => {
   );
 };
 
+// check if item is child of parent (i.e. parent is leading subset of item)
 function isSubArray(item: string[], parent: string[]) {
   if (item.length <= parent.length) return false;
   return parent.every((n, i) => item[i] === n);
@@ -65,21 +66,27 @@ function isSubArray(item: string[], parent: string[]) {
 const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { leafsOnly, maxUsages, maxUsagesReached } = useContext(TaxonomyOptionsContext);
-  const [isOpen, , , toggle] = useToggle();
-  const prefix = item.children?.length && !flat ? (isOpen ? "-" : "+") : " ";
-  const onClick = () => leafsOnly && toggle();
 
   const checked = selected.some(current => isArraysEqual(current, item.path));
   const isChildSelected = selected.some(current => isSubArray(current, item.path));
   const hasChilds = Boolean(item.children?.length);
   const onlyLeafsAllowed = leafsOnly && hasChilds;
   const limitReached = maxUsagesReached && !checked;
+  const disabled = onlyLeafsAllowed || limitReached;
+
+  const [isOpen, open, , toggle] = useToggle(isChildSelected);
+  const prefix = item.children?.length && !flat ? (isOpen ? "-" : "+") : " ";
+  const onClick = () => leafsOnly && toggle();
+
+  useEffect(() => {
+    if (isChildSelected) open();
+  }, [isChildSelected]);
+
   const title = onlyLeafsAllowed
     ? "Only leaf nodes allowed"
     : (limitReached ? `Maximum ${maxUsages} items already selected` : undefined);
-  const disabled = onlyLeafsAllowed || limitReached;
 
-  const ref = useCallback(el => {
+  const setIndeterminate = useCallback(el => {
     if (!el) return;
     if (checked) el.indeterminate = false;
     else el.indeterminate = isChildSelected;
@@ -98,7 +105,7 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
             type="checkbox"
             disabled={disabled}
             checked={checked}
-            ref={ref}
+            ref={setIndeterminate}
             onChange={e => setSelected(item.path, e.currentTarget.checked)}
           />
           {item.label}
