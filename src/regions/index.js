@@ -14,6 +14,7 @@ import { HtxRectangle, RectRegionModel } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "./TextAreaRegion";
 import { RichTextRegionModel } from "./RichTextRegion";
+import { ChoicesListModel } from "../tags/control";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
@@ -27,6 +28,7 @@ const AllRegionsType = types.union(
   RichTextRegionModel,
   TimeSeriesRegionModel,
   ParagraphsRegionModel,
+  ChoicesListModel,
 );
 
 export {
@@ -48,5 +50,6 @@ export {
   PolygonPointView,
   PolygonRegionModel,
   RectRegionModel,
-  TextAreaRegionModel
+  TextAreaRegionModel,
+  ChoicesListModel
 };

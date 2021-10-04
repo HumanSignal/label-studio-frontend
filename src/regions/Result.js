@@ -31,6 +31,7 @@ const Result = types
     to_name: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
     // @todo some general type, maybe just a `string`
     type: types.enumeration([
+      "choiceslist",
       "labels",
       "hypertextlabels",
       "paragraphlabels",

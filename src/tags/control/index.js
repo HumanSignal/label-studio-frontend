@@ -1,6 +1,7 @@
 import { BrushLabelsModel } from "./BrushLabels";
 import { BrushModel } from "./Brush";
 import { ChoicesModel } from "./Choices";
+import { ChoicesListModel } from "./ChoicesList";
 import { HyperTextLabelsModel } from "./HyperTextLabels";
 import { KeyPointLabelsModel } from "./KeyPointLabels";
 import { KeyPointModel } from "./KeyPoint";
@@ -31,6 +32,7 @@ export {
   BrushLabelsModel,
   BrushModel,
   ChoicesModel,
+  ChoicesListModel,
   HyperTextLabelsModel,
   KeyPointLabelsModel,
   KeyPointModel,

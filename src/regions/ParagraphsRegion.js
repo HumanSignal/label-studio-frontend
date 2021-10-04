@@ -12,6 +12,7 @@ import { RatingModel } from "../tags/control/Rating";
 import { ParagraphsModel } from "../tags/object/Paragraphs";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
+import { ChoicesListModel } from "../tags/control";
 
 const Model = types
   .model("ParagraphsRegionModel", {
@@ -23,7 +24,7 @@ const Model = types
     endOffset: types.integer,
     end: types.string,
 
-    states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
+    states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel, ChoicesListModel))),
   })
   .volatile(() => ({
     text: "",
