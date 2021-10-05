@@ -1,5 +1,5 @@
-import React, { useLayoutEffect } from "react";
-import { Select } from "antd";
+import React, { useCallback, useLayoutEffect, useState } from "react";
+import { Alert, Select } from "antd";
 import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 import isNil from "lodash/isNil";
@@ -38,13 +38,13 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
   options: types.string,
-  multiple: types.maybe(types.boolean)
+  multiple: types.maybe(types.boolean),
 });
 
 const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
-    _options: types.maybe(types.array(types.model({value: types.identifier, label: types.string}))),
+    _options: types.maybe(types.array(types.model({ value: types.identifier, label: types.string }))),
     _sel: types.maybe(types.union(types.array(types.string), types.string)),
     type: "choiceslist",
     // children: Types.,
@@ -58,20 +58,22 @@ const Model = types
       get result() {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
+
           if (!area) return null;
           return self.annotation.results.find(r => r.from_name === self && r.area === area);
         }
         return self.annotation.results.find(r => r.from_name === self);
       },
-    }
+    };
   })
   .actions(self => {
     return {
       initOptions(options) {
-        self._options = options
+        self._options = options;
       },
       setSelected(val) {
-        const valueAdjusted = (Array.isArray(val) ? val : [val]).filter((v) => !isNil(v))
+        const valueAdjusted = (Array.isArray(val) ? val : [val]).filter((v) => !isNil(v));
+
         self._sel = val;
         if (self.result) {
           self.result.area.setValue(self);
@@ -85,9 +87,9 @@ const Model = types
             self.annotation.createResult({}, { choices: valueAdjusted }, self, self.toname);
           }
         }
-      }
-    }
-  })
+      },
+    };
+  });
 
 const ChoicesListModel = types.compose(
   "ChoicesListModel",
@@ -102,13 +104,29 @@ const ChoicesListModel = types.compose(
 
 const HtxChoicesList = inject("store")(observer(({ item, store }) => {
 
-  useLayoutEffect(() => {
-    const options = JSON.parse(parseValue(item.options, store.task.dataObj))
-    item.initOptions(options)
-  }, [])
+  const [isOptionsInvalid, setIsOptionsInvalid] = useState(false);
+  const validateOptions = useCallback((options) => {
+    return options?.every?.((option) => !isNil(option.label) && !isNil(option.value));
+  }, []);
 
-  if (!item._options) return null
-  const valueAdjusted = typeof item._sel === 'object' ? item._sel?.toJSON() : item._sel
+  useLayoutEffect(() => {
+    const options = JSON.parse(parseValue(item.options, store.task.dataObj));
+
+    if (!validateOptions(options)) {
+      setIsOptionsInvalid(true);
+      return;
+    }
+    item.initOptions(options);
+  }, []);
+
+  const valueAdjusted = typeof item._sel === 'object' ? item._sel?.toJSON() : item._sel;
+
+  if (isOptionsInvalid) return (
+    <Alert
+      type="error"
+      message={`Options provided to ${item.name} are invalid`}
+    />
+  );
   return (
     <Select
       allowClear
@@ -117,12 +135,12 @@ const HtxChoicesList = inject("store")(observer(({ item, store }) => {
       options={item._options}
       mode={item.multiple ? 'multiple' : undefined}
       onChange={(val) => {
-        item.setSelected(val)
+        item.setSelected(val);
       }}
     >
 
     </Select>
-  )
+  );
 }));
 
 Registry.addTag("choiceslist", ChoicesListModel, HtxChoicesList);
