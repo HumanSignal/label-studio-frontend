@@ -64,8 +64,8 @@ function tagIntoObject(
     data.type = "view";
     data.children = views;
   } else
-  // childNodes are used to look up for text nodes
-  if (["text", "hypertext"].includes(type) && !props.value && node.childNodes.length) {
+  // contains only text nodes; HyperText can contain any structure
+  if (node.childNodes.length && (!node.children.length || type === "hypertext")) {
     data.value = node.innerHTML?.trim() ?? "";
   } else if (node.children.length) {
     data.children = [...node.children].map(child => tagIntoObject(child, taskData));
