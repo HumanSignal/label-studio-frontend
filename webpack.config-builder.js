@@ -273,10 +273,6 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
-    fallback: {
-      stream: require.resolve("stream-browserify"),
-      timers: require.resolve("timers-browserify"),
-    },
   },
   plugins: withDevServer ? [
     ...plugins,
