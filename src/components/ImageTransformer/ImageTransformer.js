@@ -138,11 +138,11 @@ export default class TransformerComponent extends Component {
 
   get draggableBackground() {
     const { draggableBackgroundAt, item } = this.props;
-    const { selectedRegionsBBox } = item;
+    const { selectedRegionsBBox, selectedRegions } = item;
 
     return draggableBackgroundAt ? (
       <Portal selector={draggableBackgroundAt}>
-        {selectedRegionsBBox && (
+        {selectedRegionsBBox && selectedRegions?.length>1 && (
           <Rect
             ref={this.backgroundRef}
             x={selectedRegionsBBox.left}
