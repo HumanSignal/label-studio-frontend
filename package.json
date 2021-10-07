@@ -30,6 +30,7 @@
     "@babel/plugin-proposal-class-properties": "^7.12.13",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.13",
     "@babel/plugin-proposal-optional-chaining": "^7.12.17",
+    "@babel/plugin-transform-modules-commonjs": "^7.15.4",
     "@babel/plugin-transform-runtime": "^7.12.17",
     "@babel/preset-env": "^7.12.17",
     "@babel/preset-react": "^7.12.13",
@@ -37,10 +38,12 @@
     "@babel/runtime": "^7.12.18",
     "@svgr/webpack": "^5.5.0",
     "@types/chroma-js": "^2.1.3",
+    "@types/jest": "^27.0.1",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
     "antd": "^4.3.3",
     "array-move": "^1.0.0",
+    "babel-jest": "^27.1.1",
     "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.13.0",
     "babel-plugin-remove-webpack": "^1.1.0",
@@ -65,7 +68,9 @@
     "eslint-webpack-plugin": "^3.0.1",
     "html-webpack-plugin": "^5.3.1",
     "husky": "^3.1.0",
+    "identity-obj-proxy": "^3.0.0",
     "insert-after": "^0.1.4",
+    "jest": "^27.1.1",
     "jsdoc-to-markdown": "^5.0.3",
     "keymaster": "git+https://github.com/nicholasrq/keymaster.git",
     "konva": "^8.1.3",
@@ -103,6 +108,7 @@
     "stylus-loader": "^5.0.0",
     "svg.js": "^2.7.0",
     "terser-webpack-plugin": "^5.1.1",
+    "ts-jest": "^27.0.5",
     "typescript": "^4.2.3",
     "url-loader": "^4.1.1",
     "wavesurfer.js": "^3.3.3",
@@ -135,7 +141,7 @@
     "test:e2e:headless": "cd e2e && HEADLESS=true npx codeceptjs run",
     "test:coverage": "npm test -- --coverage",
     "test:watch": "react-scripts test",
-    "test": "set CI=true react-scripts test"
+    "test": "jest src"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -164,6 +170,24 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
+            }
+          ],
+          "@babel/preset-react",
+          "@babel/preset-typescript"
+        ]
+      }
+    }
   },
   "keywords": [
     "image-annotation",
