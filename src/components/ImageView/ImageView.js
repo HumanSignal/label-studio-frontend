@@ -728,6 +728,7 @@ export default observer(
               onLoad={item.updateImageSize}
               onError={this.handleError}
               alt="LS"
+              onDragStart={e=>e.preventDefault()}
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}

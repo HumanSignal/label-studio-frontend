@@ -47,6 +47,11 @@
 .container {
   overflow: hidden;
 
+  img {
+    user-select: none;
+    pointer-events: none;
+  }
+
   &.rotated {
     width: 100%;
     position: relative;
