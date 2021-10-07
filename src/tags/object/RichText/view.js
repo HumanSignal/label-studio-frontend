@@ -226,7 +226,7 @@ class RichTextPieceView extends Component {
 
     // auto-height
     if (body.scrollHeight) {
-      iframe.style.height = doc.children[0].scrollHeight + "px";
+      iframe.style.height = doc.children[0].offsetHeight + "px";
     }
 
     // @todo for better updates, but may be redundant
