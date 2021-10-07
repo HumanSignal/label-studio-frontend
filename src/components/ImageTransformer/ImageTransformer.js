@@ -151,6 +151,7 @@ export default class TransformerComponent extends Component {
             height={selectedRegionsBBox.bottom-selectedRegionsBBox.top}
             fill="rgba(0,0,0,0)"
             draggable
+            dragBoundFunc={this.dragBoundFunc}
             onDragStart={(e)=>{
 
               const { item  } = this.props;
