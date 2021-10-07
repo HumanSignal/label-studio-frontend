@@ -348,6 +348,8 @@ export default observer(
     handleMouseDown = e => {
       const { item } = this.props;
 
+      window.getSelection().removeAllRanges();
+
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
