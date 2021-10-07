@@ -63,7 +63,15 @@ function traverse(root) {
     const obj = { label, path, depth: parents.length };
 
     if (node.children) {
-      obj.children = node.children.map(n => visitNode(n, path));
+      const childs = [];
+
+      for (const child of node.children) {
+        // values should be unique
+        if (childs.some(existing => existing.label === child.value)) continue;
+        childs.push(visitNode(child, path));
+      }
+
+      obj.children = childs;
     }
 
     return obj;
