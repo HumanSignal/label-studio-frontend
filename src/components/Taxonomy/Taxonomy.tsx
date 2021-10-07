@@ -151,7 +151,7 @@ const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
         onInput={onInput}
         ref={inputRef}
       />
-      {list.map(item => <Item key={item.label} item={item} flat={search !== ""} />)}
+      {list.map(item => <Item key={search ? item.path.join("#") : item.label} item={item} flat={search !== ""} />)}
     </div>
   );
 };
