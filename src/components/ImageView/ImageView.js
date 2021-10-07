@@ -150,6 +150,7 @@ const SelectionBorders = observer(({ item }) => {
 });
 
 const SelectionRect = observer(({ item }) => {
+  if (!item.isActive) return null;
   const { x, y, width, height } = item;
 
   const positionProps = {
@@ -167,12 +168,14 @@ const SelectionRect = observer(({ item }) => {
         {...positionProps}
         stroke={SELECTION_COLOR}
         dash={SELECTION_DASH}
+        listening={false}
       />
       <Rect
         {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
+        listening={false}
       />
     </>
   );

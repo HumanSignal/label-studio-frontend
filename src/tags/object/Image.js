@@ -124,7 +124,7 @@ const ImageSelection = types.model({
       return !!self.annotation.highlightedNode;
     },
     get isActive() {
-      return self.start && self.end;
+      return !!(self.start && self.end);
     },
     get x() {
       return Math.min((self.start.x * self.scale), (self.end.x * self.scale));

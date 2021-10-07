@@ -33,7 +33,7 @@ class LSTransformer extends Konva.Transformer {
         if (otherNode === node) {
           return;
         }
-        if (otherNode.isDragging()) {
+        if (otherNode.isDragging() || !otherNode.getStage()) {
           return;
         }
         const otherAbs = otherNode.getAbsolutePosition();
@@ -53,6 +53,9 @@ class LSTransformer extends Konva.Transformer {
 
     node.setAttr("transformerDragBoundFunc", (pos)=>{
       const offset =  node.getAttr("transformerOffset");
+
+      if (!offset) return;
+
       const newPos = dragBoundFunc.call(node, {
         x: pos.x - offset.x,
         y: pos.y - offset.y,
