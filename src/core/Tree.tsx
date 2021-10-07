@@ -49,7 +49,7 @@ function tagIntoObject(
     const views = [];
 
     for (let i = 0; i < repeaterArray.length; i++) {
-      const newReplaces: Record<string, string> = { ...replaces, [props.indexFlag ?? "{{idx}}"]: i };
+      const newReplaces: Record<string, string> = { ...replaces, [props.indexflag ?? "{{idx}}"]: i };
       const view = {
         id: guidGenerator(),
         tagName: "View",
