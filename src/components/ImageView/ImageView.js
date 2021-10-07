@@ -185,7 +185,6 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 
   return (
     <>
-      <Layer id={TRANSFORMER_BACK_NAME} />
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -771,6 +770,8 @@ export default observer(
                   <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
                 </Layer>
               )}
+              <Layer id={TRANSFORMER_BACK_NAME} />
+
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
               {renderableRegions.map(([groupName, list]) => {
