@@ -28,6 +28,7 @@ const TimeTraveller = types
     let snapshotDisposer;
     let updateHandlers = new Set();
     let freezingLockSet = new Set();
+    let frozenChanges = false;
 
     function triggerHandlers() {
       updateHandlers.forEach(handler => handler());
@@ -36,13 +37,16 @@ const TimeTraveller = types
     return {
       freeze(key) {
         freezingLockSet.add(key);
-        self.isFrozen = freezingLockSet.size > 0;
+        if (!self.isFrozen) {
+          frozenChanges = false;
+          self.isFrozen = true;
+        }
       },
 
       unfreeze(key) {
         freezingLockSet.delete(key);
         self.isFrozen = freezingLockSet.size > 0;
-        if (!self.isFrozen) {
+        if (!self.isFrozen && frozenChanges) {
           self.recordNow();
         }
       },
@@ -59,7 +63,10 @@ const TimeTraveller = types
       },
 
       addUndoState(recorder) {
-        if (self.isFrozen) return;
+        if (self.isFrozen) {
+          frozenChanges = true;
+          return;
+        }
         if (self.skipNextUndoState) {
           /**
            * Skip recording if this state was caused by undo / redo
@@ -72,6 +79,7 @@ const TimeTraveller = types
         self.history.splice(self.undoIdx + 1);
         self.history.push(recorder);
         self.undoIdx = self.history.length - 1;
+        frozenChanges = false;
       },
 
       reinit() {
