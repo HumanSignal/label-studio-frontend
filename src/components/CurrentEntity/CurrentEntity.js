@@ -1,6 +1,6 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { IconInfo, LsSettings, LsTrash } from "../../assets/icons";
+import { IconInfo, LsSettings, LsSparks, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
 import { Space } from "../../common/Space/Space";
@@ -89,6 +89,12 @@ export const CurrentEntity = injector(observer(({
       <Elem name="info" tag={Space} spread>
         <Space size="small">
           ID: {entity.pk ?? entity.id}
+          <Tooltip title="Prediction ID from which this annotation was created">
+            <div>
+              <Elem name="parent_prediction"><LsSparks style={{ "padding-top": 3, "margin-right": 5 }} /></Elem>
+              {entity.parent_prediction ? entity.parent_prediction : ''}
+            </div>
+          </Tooltip>
           {showGroundTruth && <GroundTruth entity={entity}/>}
         </Space>
 
