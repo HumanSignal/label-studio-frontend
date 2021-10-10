@@ -41,6 +41,7 @@ const Annotation = types
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
     user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
+    parent_prediction: types.maybeNull(types.integer),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
