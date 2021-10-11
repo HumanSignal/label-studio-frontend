@@ -1,6 +1,6 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { IconInfo, LsSettings, LsSparks, LsTrash } from "../../assets/icons";
+import { IconInfo, LsAnnotation, LsParentLink, LsSettings, LsSparks, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { confirm } from "../../common/Modal/Modal";
 import { Space } from "../../common/Space/Space";
@@ -87,20 +87,14 @@ export const CurrentEntity = injector(observer(({
   return entity ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info" tag={Space} spread>
+        <Elem name="id">
+          {entity.type === 'annotation' ? <LsAnnotation />: <LsSparks color="#944BFF"/>}
+          <span className="text_id">ID: {entity.pk ?? entity.id}</span>
+        </Elem>
+        
         <Space size="small">
-          ID: {entity.pk ?? entity.id}
-          {(entity.parent_prediction) && (
-            <Tooltip title="Prediction ID from which this annotation was created">
-              <div>
-                <Elem name="parent_prediction"><LsSparks style={{ "padding-top": 3, "margin-right": 3 }} /></Elem>
-                { entity.parent_prediction }
-              </div>
-            </Tooltip>
-          )}
           {showGroundTruth && <GroundTruth entity={entity}/>}
-        </Space>
 
-        <Space size="small">
           {store.hasInterface("annotations:add-new") && saved && (
             <Tooltip title={`Create copy of this ${entity.type}`}>
               <Button size="small" look="ghost" onClick={(ev) => {
@@ -130,6 +124,30 @@ export const CurrentEntity = injector(observer(({
                 store.toggleDescription();
               }}
             />
+          )}
+        </Space>
+      </Elem>
+
+      <Elem name="parent_info">
+        <Space size="small">
+          {/*Always show container to keep the interface layout unchangeable*/}
+          {(entity.parent_prediction) && (
+            <Tooltip title="Prediction ID from which this annotation was created">
+              <Elem name="parent-prediction">
+                <Elem component={LsParentLink} name="parent_link"/>
+                <Elem component={LsSparks} name="parent_icon_prediction"/>
+                <Elem name="parent_text_prediction">ID: { entity.parent_prediction }</Elem>
+              </Elem>
+            </Tooltip>
+          )}
+          {(entity.parent_annotation) && (
+            <Tooltip title="Parent annotation ID from which this annotation was created">
+              <Elem name="parent-annotation">
+                <Elem component={LsParentLink} name="parent_link"/>
+                <Elem component={LsAnnotation} name="parent_icon_annotation"/>
+                <Elem name="parent_text_annotation">ID: { entity.parent_annotation }</Elem>
+              </Elem>
+            </Tooltip>
           )}
         </Space>
       </Elem>
