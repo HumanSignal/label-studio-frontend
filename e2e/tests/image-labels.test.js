@@ -167,8 +167,8 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       regions.forEach((region, idx) => {
         toolSelectors[idx](shapeName, shapeIdx);
         AtImageView[region.action](...region.params);
-        I.pressKey(["u"]);
         AtSidebar.seeRegions(idx + 1);
+        I.pressKey(["u"]);
       });
 
       I.click(toolSelector);

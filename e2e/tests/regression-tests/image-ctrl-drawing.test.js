@@ -151,7 +151,7 @@ Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar
     await AtImageView.lookForStage();
     I.pressKey(outerRegion.hotKey);
     AtImageView[outerRegion.action](...outerRegion.params);
-    await Helpers.delay(10);
+    AtSidebar.seeRegions(1);
     I.pressKey(["u"]);
     I.pressKey(innerRegion.hotKey);
     I.pressKeyDown("Control");
