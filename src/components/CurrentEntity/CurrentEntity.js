@@ -92,7 +92,7 @@ export const CurrentEntity = injector(observer(({
           {(entity.parent_prediction) && (
             <Tooltip title="Prediction ID from which this annotation was created">
               <div>
-                <Elem name="parent_prediction"><LsSparks style={{ "padding-top": 3, "margin-right": 3 }} /></Elem>
+                <Elem name="parent_prediction"><LsSparks /></Elem>
                 { entity.parent_prediction }
               </div>
             </Tooltip>
