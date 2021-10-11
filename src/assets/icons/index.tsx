@@ -4,6 +4,8 @@ export { ReactComponent as LsRemove } from "./remove.svg";
 export { ReactComponent as LsTrash } from "./trash.svg";
 export { ReactComponent as LsPlus } from "./plus.svg";
 export { ReactComponent as LsSparks } from "./sparks.svg";
+export { ReactComponent as LsParentLink } from "./parent_link.svg";
+export { ReactComponent as LsAnnotation } from "./annotation.svg";
 export { ReactComponent as LsGrid } from "./grid.svg";
 export { ReactComponent as LsThumbsDown } from './thumbs_down.svg';
 export { ReactComponent as LsThumbsUp } from './thumbs_up.svg';
