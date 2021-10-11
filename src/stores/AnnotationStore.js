@@ -1239,13 +1239,6 @@ export default types
       const s = entity._initialAnnotationObj.map(r => ({ ...r }));
       const c = self.addAnnotation({ userGenerate: true, result: s });
 
-      if (entity.type === 'prediction') {
-        c.parent_prediction = parseInt(entity.pk);
-      }
-      else if (entity.type === 'annotation') {
-        c.parent_annotation = parseInt(entity.pk);
-      }
-
       const ids = {};
 
       // Area id is <uniq-id>#<annotation-id> to be uniq across all tree
@@ -1269,6 +1262,14 @@ export default types
       selectAnnotation(c.id);
       c.deserializeResults(s);
       c.updateObjects();
+
+      // parent link for the new annotations
+      if (entity.type === 'prediction') {
+        c.parent_prediction = parseInt(entity.pk);
+      }
+      else if (entity.type === 'annotation') {
+        c.parent_annotation = parseInt(entity.pk);
+      }
 
       return c;
     }

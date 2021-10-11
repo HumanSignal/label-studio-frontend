@@ -1,12 +1,65 @@
 .annotation
   padding 16px 16px 4px
 
+  &__id
+    display flex
+    align-items center
+    & > *
+      margin-right 5px
+
+  &__text_id
+    position: relative
+    top: -3px
+
   &__info
     height 32px
     display flex
     align-items center
     justify-content space-between
+    margin-left 9px
 
-  &__parent_prediction
+  &__parent_info
+    position relative
+    height 20px
+    display flex
+    align-items center
+    justify-content space-between
+    margin-left 8px
+
+  &__parent_link
+    color: #000
+    display: inline
+    position: absolute
+    top: -22px
+    left: -12px
+    opacity: 20%
+
+  &__parent_icon_prediction
     color #944BFF
     display: inline
+
+  &__parent_text_prediction
+    position: relative
+    top: -5px
+    color: #000
+    display: inline
+    opacity: 40%
+
+  &__parent-annotation
+    display flex
+    align-items: end
+
+  &__parent_icon_annotation
+    color #944BFF
+    display: inline
+    margin-left 1px
+    margin-right 5px
+    margin-top 2px
+
+  &__parent_text_annotation
+    position: relative
+    top: -5px
+    color: #000
+    display: inline
+    opacity: 40%
+    margin-top 3px
