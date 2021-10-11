@@ -42,6 +42,7 @@ const Annotation = types
     createdBy: types.optional(types.string, "Admin"),
     user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
     parent_prediction: types.maybeNull(types.integer),
+    parent_annotation: types.maybeNull(types.integer),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
@@ -1233,10 +1234,17 @@ export default types
       self.selectedHistory = item;
     }
 
-    function addAnnotationFromPrediction(prediction) {
+    function addAnnotationFromPrediction(entity) {
       // immutable work, because we'll change ids soon
-      const s = prediction._initialAnnotationObj.map(r => ({ ...r }));
+      const s = entity._initialAnnotationObj.map(r => ({ ...r }));
       const c = self.addAnnotation({ userGenerate: true, result: s });
+
+      if (entity.type === 'prediction') {
+        c.parent_prediction = parseInt(entity.pk);
+      }
+      else if (entity.type === 'annotation') {
+        c.parent_annotation = parseInt(entity.pk);
+      }
 
       const ids = {};
 
