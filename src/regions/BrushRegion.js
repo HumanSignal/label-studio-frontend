@@ -258,6 +258,9 @@ const Model = types
       },
 
       beginPath({ type, strokeWidth, opacity = self.opacity }) {
+        // don't start to save another regions in the middle of drawing process
+        self.object.annotation.pauseAutosave();
+
         pathPoints = Points.create({ id: guidGenerator(), type, strokeWidth, opacity });
         cachedPoints = [];
         return pathPoints;
@@ -270,6 +273,9 @@ const Model = types
       },
 
       endPath() {
+        // will resume in the next tick...
+        self.object.annotation.startAutosave();
+
         if (cachedPoints.length === 2) {
           cachedPoints.push(cachedPoints[0]);
           cachedPoints.push(cachedPoints[1]);
@@ -280,6 +286,9 @@ const Model = types
         lastPointX = lastPointY = -1;
         pathPoints = null;
         cachedPoints = [];
+
+        // ...so we run this toggled function also delayed
+        setTimeout(() => self.object.annotation.autosave());
       },
 
       convertPointsToMask() {},
@@ -308,7 +317,7 @@ const Model = types
             color: self.strokeColor,
           });
 
-          self.toches = cast([]);
+          self.touches = [];
           self.rle = Array.from(rle);
         }
       },
@@ -337,21 +346,28 @@ const Model = types
       /**
        * @return {BrushRegionResult}
        */
-      serialize() {
+      serialize(options) {
         const object = self.object;
-        const rle = Canvas.Region2RLE(self, object);
+        let value = { format: "rle" };
 
-        if (!rle || !rle.length) return null;
+        if (options?.fast) {
+          value.rle = self.rle;
+
+          if (self.touches.length) value.touches = self.touches;
+        } else {
+          const rle = Canvas.Region2RLE(self, object);
+
+          if (!rle || !rle.length) return null;
+
+          // UInt8Array serializes as object, not an array :(
+          value.rle = Array.from(rle);
+        }
 
         const res = {
           original_width: object.naturalWidth,
           original_height: object.naturalHeight,
           image_rotation: object.rotation,
-          value: {
-            format: "rle",
-            // UInt8Array serializes as object, not an array :(
-            rle: Array.from(rle),
-          },
+          value,
         };
 
         return res;
