@@ -41,6 +41,9 @@ export const HighlightMixin = types
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
 
+      // retrieve the text, it may not be saved, but it should be displayed
+      // later methods may break the range, so do this before
+      self.text = String(range);
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames: ["htx-highlight", stylesheet.className],
