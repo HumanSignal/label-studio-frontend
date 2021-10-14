@@ -43,7 +43,13 @@ export const HighlightMixin = types
 
       // retrieve the text, it may not be saved, but it should be displayed
       // later methods may break the range, so do this before
-      self.text = String(range);
+      // Range swallows all the new lines and <br>s, so we have to create Selection from range
+      const selection = root.ownerDocument.defaultView.getSelection();
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+      self.text = String(selection);
+
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames: ["htx-highlight", stylesheet.className],
