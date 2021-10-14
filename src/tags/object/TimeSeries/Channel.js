@@ -95,6 +95,7 @@ class ChannelD3 extends React.Component {
   gBrushes;
 
   tracker;
+  trackerX = 0;
   trackerPoint;
   trackerTime;
   trackerValue;
@@ -356,6 +357,7 @@ class ChannelD3 extends React.Component {
     if (screenX < 0 || screenX > width) return;
     const [dataX, dataY] = this.stick(screenX);
 
+    this.trackerX = dataX;
     this.tracker.attr("transform", `translate(${this.x(dataX) + 0.5},0)`);
     this.trackerTime.text(this.formatTime(dataX));
     this.trackerValue.text(this.formatValue(dataY) + " " + this.props.item.units);
@@ -621,6 +623,7 @@ class ChannelD3 extends React.Component {
       .attr("stroke", item.strokecolor || "steelblue");
 
     this.renderTracker();
+    this.updateTracker(0); // initial value, will be updated in setRangeWithScaling
     this.renderYAxis();
     this.setRangeWithScaling(range);
     this.renderBrushCreator();
@@ -718,6 +721,7 @@ class ChannelD3 extends React.Component {
 
     this.renderXAxis();
     this.renderYAxis();
+    this.updateTracker(this.x(this.trackerX));
   }
 
   componentDidUpdate(prevProps, prevState) {
