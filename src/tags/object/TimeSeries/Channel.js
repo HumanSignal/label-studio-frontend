@@ -401,12 +401,11 @@ class ChannelD3 extends React.Component {
     const { margin } = item.parent;
     const tickSize = this.height + margin.top;
     const shift = -margin.top;
-    const g = this.main
-      .selectAll(".xaxis")
-      .data([0])
-      .enter()
-      .append("g")
-      .attr("class", "xaxis");
+    let g = this.main.select(".xaxis");
+
+    if (!g.size()) {
+      g = this.main.append("g").attr("class", "xaxis");
+    }
 
     g.attr("transform", `translate(0,${shift})`)
       .call(
