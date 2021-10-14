@@ -1,0 +1,27 @@
+.topbar
+  top 0
+  height 48px
+  width 100%
+  z-index 101
+  display flex
+  position sticky
+  align-items stretch
+  justify-content space-between
+  background-color #fff
+  border-bottom 1px solid rgba(#000, 0.1)
+
+  &__group
+    display flex
+    align-items stretch
+
+  &__section
+    display flex
+    padding 0 16px
+    align-items center
+    box-sizing border-box
+
+    &_flat
+      padding 0
+
+    & + &
+      border-left 1px solid rgba(#000, 0.1)
