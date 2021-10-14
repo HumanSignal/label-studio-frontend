@@ -26,8 +26,8 @@ import { parseValue } from "../../utils/data";
  * <View>
  *   <ChoicesList name="gender" toName="txt-1" options=$dataLinkJSON />
  * </View>
- * @name Choices
- * @meta_title Choices Tag for Multiple Choice Labels
+ * @name ChoicesList
+ * @meta_title ChoicesList Tag for Single/Multiple Choice Labels with json data dependent options prop.
  * @meta_description Customize Label Studio with multiple choice labels for machine learning and data science projects.
  * @param {string} name                - Name of the group of choices
  * @param {string} toName              - Name of the data item that you want to label
