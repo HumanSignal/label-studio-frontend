@@ -49,6 +49,7 @@ export const HighlightMixin = types
       selection.removeAllRanges();
       selection.addRange(range);
       self.text = String(selection);
+      selection.removeAllRanges();
 
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
