@@ -47,3 +47,4 @@ export { ReactComponent as IconMoveTool } from './tools/move-tool.svg';
 export { ReactComponent as IconRotateLeftTool } from './tools/rotate-left-tool.svg';
 export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool.svg';
 export { ReactComponent as IconInfo } from './info.svg';
+export { ReactComponent as IconText } from './text.svg';

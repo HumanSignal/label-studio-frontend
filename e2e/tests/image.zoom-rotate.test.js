@@ -7,7 +7,7 @@ const assert = require("assert");
 Feature("Zooming and rotating");
 
 const IMAGE =
-  "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
+  "/images/astro-visuals.jpg";
 
 const BLUEVIOLET = {
   color: "#8A2BE2",

@@ -22,7 +22,7 @@ const getConfigWithShape = (shape, props = "") => `
   </View>`;
 
 const IMAGE =
-  "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
+  "/images/astro-visuals.jpg";
 
 // precalculated image size on the screen; may change because of different reasons
 const WIDTH = 706;
@@ -127,7 +127,7 @@ const shapes = [
 ];
 
 // eslint-disable-next-line no-undef,codeceptjs/no-skipped-tests
-xScenario("Simple shapes on Image", async function ({ I, AtImageView, AtSidebar }) {
+xScenario("Simple shapes on Image", async function({ I, AtImageView, AtSidebar }) {
   for (let shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),
