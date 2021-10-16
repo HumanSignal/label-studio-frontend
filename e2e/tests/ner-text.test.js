@@ -80,6 +80,7 @@ const newResult = {
   from_name: "ner",
   to_name: "text",
   type: "labels",
+  origin: "manual",
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 

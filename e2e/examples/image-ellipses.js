@@ -41,6 +41,7 @@ const result = [
     id: "CkRNBWbSiK",
     to_name: "img",
     type: "choices",
+    origin: "manual",
     value: {
       choices: ["Space"],
     },

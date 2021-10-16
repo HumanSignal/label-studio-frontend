@@ -37,6 +37,7 @@ const result = [
     original_height: 501,
     original_width: 800,
     type: "keypointlabels",
+    origin: "manual",
     value: {
       x: 47.73333333333334,
       y: 52.765957446808514,
