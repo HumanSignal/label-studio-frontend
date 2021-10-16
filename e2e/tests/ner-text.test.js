@@ -6,7 +6,7 @@ const assert = require("assert");
 
 Feature("NERText");
 
-function removeTextFromResult (result) {
+function removeTextFromResult(result) {
   return result.map(({ value: { start, end, labels }, ...r }) => ({ ...r, value: { start, end, labels } }));
 }
 
@@ -30,6 +30,7 @@ const resultsFromUrl = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
+    origin: "manual",
     value: { start: 0, end: 17, labels: ["Person"], text: "George Washington" },
   },
   {
@@ -37,6 +38,7 @@ const resultsFromUrl = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
+    origin: "manual",
     value: { start: 453, end: 474, labels: ["Words"], text: "Father of His Country" },
   },
 ];
@@ -57,6 +59,7 @@ const results = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
+    origin: "manual",
     value: { start: 175, end: 180, labels: ["Person"], text: "Alice" },
   },
   {
@@ -65,6 +68,7 @@ const results = [
     to_name: "text",
     type: "labels",
     parentID: "abcdef",
+    origin: "manual",
     value: { start: 1, end: 40, labels: ["Words"], text: "But I don’t want to go among mad people" },
   },
 ];
@@ -79,7 +83,7 @@ const newResult = {
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 
-Scenario("NERText", async function ({ I }) {
+Scenario("NERText", async function({ I }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -150,7 +154,7 @@ Scenario("NERText", async function ({ I }) {
   assert.equal(result[3].to_id, result[2].id);
 });
 
-Scenario("NER Text with text field missing", async function ({ I }) {
+Scenario("NER Text with text field missing", async function({ I }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: resultsWithoutText }],
     config: configSimple,
@@ -169,7 +173,7 @@ Scenario("NER Text with text field missing", async function ({ I }) {
 });
 
 // for security reasons text is not saved by default for valueType=url
-Scenario("NER Text from url", async function ({ I }) {
+Scenario("NER Text from url", async function({ I }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
@@ -188,7 +192,7 @@ Scenario("NER Text from url", async function ({ I }) {
   assert.deepEqual(result, resultsFromUrlWithoutText);
 });
 
-Scenario("NER Text from url with text saved", async function ({ I }) {
+Scenario("NER Text from url with text saved", async function({ I }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: resultsFromUrlWithoutText }],
     config: configUrlSaveText,
@@ -207,7 +211,7 @@ Scenario("NER Text from url with text saved", async function ({ I }) {
   assert.deepEqual(result, resultsFromUrl);
 });
 
-Scenario("NER Text with SECURE MODE and wrong valueType", async function ({ I }) {
+Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -229,7 +233,7 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function ({ I })
   });
 });
 
-Scenario("NER Text with SECURE MODE", async function ({ I }) {
+Scenario("NER Text with SECURE MODE", async function({ I }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
