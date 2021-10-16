@@ -286,7 +286,6 @@ const RegionsMixin = types
       },
 
       notifyDrawingFinished({ destroy = false } = {}) {
-        console.log('finished drawing');
         if (self.origin === 'prediction') {
           self.origin = 'prediction-changed';
         }

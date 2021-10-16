@@ -340,7 +340,6 @@ class ChannelD3 extends React.Component {
 
         brush.move(block, [x(sticked.start), x(sticked.end)]);
         updateTracker(d3.mouse(this)[0]);
-        console.log('drawing');
       })
       .on("end", this.newBrushHandler)
       // replacing default filter to allow ctrl-click action
