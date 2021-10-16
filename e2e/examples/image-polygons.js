@@ -3,7 +3,7 @@ const config = `
   <Image name="img" value="$image" showMousePos="true" zoom="true"></Image>
   <PolygonLabels name="tag" toName="img" strokewidth="5" fillcolor="red" pointstyle="circle" pointsize="small">
     <Label value="Hello" background="red"></Label>
-    <Label value="World" background="blue"></Label>  
+    <Label value="World" background="blue"></Label>
   </PolygonLabels>
 </View>
 `;
@@ -21,6 +21,7 @@ const result = [
     original_height: 4542,
     original_width: 10109,
     type: "polygonlabels",
+    origin: "manual",
     value: {
       points: [
         [27.2, 41.24629080118693],

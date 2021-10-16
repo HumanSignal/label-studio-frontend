@@ -191,7 +191,6 @@ const devServer = () => {
   return (process.env.NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
     devServer: {
       compress: true,
-      hot: true,
       port: 3000,
       static: {
         directory: path.join(__dirname, "public")

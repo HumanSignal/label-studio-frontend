@@ -18,6 +18,12 @@ const RegionsMixin = types
 
     // Dynamic preannotations enabled
     dynamic: false,
+
+    origin: types.optional(types.enumeration([
+      'prediction',
+      'prediction-changed',
+      'manual',
+    ]), 'manual'),
   })
   .volatile(() => ({
     // selected: false,
@@ -280,7 +286,13 @@ const RegionsMixin = types
       },
 
       notifyDrawingFinished({ destroy = false } = {}) {
+        if (self.origin === 'prediction') {
+          self.origin = 'prediction-changed';
+        }
+
+        // everything above is related to dynamic preannotations
         if (!self.dynamic || self.fromSuggestion) return;
+
         const { regions } = getRoot(self).annotationStore.selected;
 
         const connectedRegions = regions.filter(r => {
