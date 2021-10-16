@@ -507,7 +507,10 @@ export default types
         const obj = as.addPrediction(p);
 
         as.selectPrediction(obj.id);
-        obj.deserializeResults(p.result);
+        obj.deserializeResults(p.result.map(r => ({
+          ...r,
+          origin: "prediction",
+        })));
       });
 
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {

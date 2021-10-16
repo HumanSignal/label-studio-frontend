@@ -280,6 +280,7 @@ const Model = types
         lastPointX = lastPointY = -1;
         pathPoints = null;
         cachedPoints = [];
+        self.notifyDrawingFinished();
       },
 
       convertPointsToMask() {},

@@ -96,6 +96,7 @@ const Model = types
     updateRegion(start, end) {
       self.start = start;
       self.end = end;
+      self.notifyDrawingFinished();
     },
 
     afterCreate() {

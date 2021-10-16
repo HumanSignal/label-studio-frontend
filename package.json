@@ -141,14 +141,14 @@
     "test:e2e:headless": "cd e2e && HEADLESS=true npx codeceptjs run",
     "test:coverage": "npm test -- --coverage",
     "test:watch": "react-scripts test",
-    "test": "jest src"
+    "test": "npx jest src"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run test",
+      "pre-commit": "lint-staged",
       "post-checkout": "bash scripts/copy.sh"
     }
   },

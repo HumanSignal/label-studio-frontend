@@ -1,7 +1,7 @@
 /* global it, expect */
 import Tree from "../Tree";
 import "../../tags/object/Image";
-import "../../tags/object/HyperText";
+import "../../tags/object/RichText";
 import "../../tags/control/RectangleLabels";
 import "../../tags/control/Label";
 

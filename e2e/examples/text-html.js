@@ -20,6 +20,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "hypertextlabels",
+    origin: "manual",
     value: {
       start: "/div[1]/div[2]",
       end: "/div[1]/div[2]/div[1]/p[1]/text()[1]",
@@ -38,6 +39,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "hypertextlabels",
+    origin: "manual",
     value: {
       start: "/div[1]/div[1]/div[1]/p[1]/b[1]/text()[1]",
       end: "/div[1]/div[1]/div[1]/p[1]/b[1]/text()[1]",
@@ -56,6 +58,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "hypertextlabels",
+    origin: "manual",
     value: {
       start: "/div[1]/div[3]",
       end: "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
@@ -74,6 +77,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "hypertextlabels",
+    origin: "manual",
     value: {
       start: "/div[1]/div[1]/div[1]/p[1]/text()[1]",
       end: "/div[1]/div[2]/div[1]/p[1]/text()[1]",

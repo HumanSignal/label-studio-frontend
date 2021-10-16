@@ -364,8 +364,10 @@ const Model = types
       let needUpdate = false;
 
       if (!r) {
-        self.addRegion(timerange.start, timerange.end, activeStates);
+        const newRegion = self.addRegion(timerange.start, timerange.end, activeStates);
+
         needUpdate = true;
+        newRegion.notifyDrawingFinished();
       } else {
         needUpdate = r.start !== timerange.start || r.end !== timerange.end;
         r.updateRegion(timerange.start, timerange.end);
