@@ -5,7 +5,7 @@ const { initLabelStudio } = require("../helpers");
 Feature("Select region by click on it");
 
 const IMAGE =
-  "/images/astro-visuals.jpg";
+  "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
 
 const BLUEVIOLET = {
   color: "#8A2BE2",
