@@ -263,7 +263,7 @@ Hotkey.keymap = defaultKeymap;
 Hotkey.setKeymap = (newKeymap) => {
   validateKeymap(newKeymap);
 
-  Hotkey.keymap = newKeymap;
+  Object.assign(Hotkey.keymap, newKeymap);
 };
 
 Hotkey.keysDescipritions = function() {
