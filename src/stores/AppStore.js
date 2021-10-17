@@ -184,8 +184,8 @@ export default types
      * @param {string} name
      * @returns {string | undefined}
      */
-    function hasInterface(name) {
-      return self.interfaces.find(i => name === i) !== undefined;
+    function hasInterface(...names) {
+      return self.interfaces.find(i => names.includes(i)) !== undefined;
     }
 
     function addInterface(name) {
@@ -217,67 +217,57 @@ export default types
       /**
        * Hotkey for submit
        */
-      if (self.hasInterface("submit")) {
-        hotkeys.addKey("ctrl+enter", () => {
+      if (self.hasInterface("submit", "update")) {
+        hotkeys.addNamed("annotation:submit", () => {
           const entity = self.annotationStore.selected;
 
-          if (!isDefined(entity.pk)) {
+          if (!isDefined(entity.pk) && self.hasInterface("submit")) {
             self.submitAnnotation();
-          } else {
+          } else if (self.hasInterface("update")) {
             self.updateAnnotation();
           }
-        }, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+        });
       }
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) hotkeys.addKey("ctrl+space", self.skipTask, "Skip a task");
-
-      /**
-       * Hotkey for update annotation
-       */
-      if (self.hasInterface("update")) hotkeys.addKey("alt+enter", self.updateAnnotation, "Update a task");
+      if (self.hasInterface("skip")) {
+        hotkeys.addNamed("annotation:skip", self.skipTask);
+      }
 
       /**
        * Hotkey for delete
        */
-      hotkeys.addKey(
-        "command+backspace, ctrl+backspace",
-        function() {
-          const { selected } = self.annotationStore;
+      hotkeys.addNamed("region:delete-all", () => {
+        const { selected } = self.annotationStore;
 
-          if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
-            selected.deleteAllRegions();
-          }
-        },
-        "Delete all regions",
-      );
+        if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+          selected.deleteAllRegions();
+        }
+      });
 
       // create relation
-      hotkeys.overwriteKey("alt+r", function() {
+      hotkeys.overwriteNamed("region:relation", () => {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {
           c.startRelationMode(c.highlightedNode);
         }
-      }, "Create relation between regions");
+      });
 
       // Focus fist focusable perregion when region is selected
-      hotkeys.addKey(
-        "enter",
-        function(e) {
-          e.preventDefault();
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:focus", (e) => {
+        e.preventDefault();
+        const c = self.annotationStore.selected;
 
-          if (c && c.highlightedNode && !c.relationMode) {
-            c.highlightedNode.requestPerRegionFocus();
-          }
-        },
-      );
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.highlightedNode.requestPerRegionFocus();
+        }
+      });
 
       // unselect region
-      hotkeys.addKey("u", function() {
+      hotkeys.addNamed("region:unselect", function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode) {
@@ -285,7 +275,7 @@ export default types
         }
       });
 
-      hotkeys.addKey("alt+h", function() {
+      hotkeys.addNamed("region:visibility", function() {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {
@@ -293,56 +283,44 @@ export default types
         }
       });
 
-      hotkeys.addKey("command+z, ctrl+z", function() {
+      hotkeys.addNamed("annotation:undo", function() {
         const { history } = self.annotationStore.selected;
 
         history && history.canUndo && history.undo();
       });
 
-      hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
+      hotkeys.addNamed("annotation:redo", function() {
         const { history } = self.annotationStore.selected;
 
         history && history.canRedo && history.redo();
       });
 
-      hotkeys.addKey(
-        "escape",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:exit", () => {
+        const c = self.annotationStore.selected;
 
-          if (c && c.relationMode) {
-            c.stopRelationMode();
-          } else {
-            c.unselectAll();
-          }
-        },
-        "Unselect region, exit relation mode",
-      );
+        if (c && c.relationMode) {
+          c.stopRelationMode();
+        } else {
+          c.unselectAll();
+        }
+      });
 
-      hotkeys.addKey(
-        "backspace",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:delete", () => {
+        const c = self.annotationStore.selected;
 
-          if (c) {
-            c.deleteSelectedRegions();
-          }
-        },
-        "Delete selected region",
-      );
+        if (c) {
+          c.deleteSelectedRegions();
+        }
+      });
 
-      hotkeys.addKey(
-        "alt+.",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:cycle", () => {
+        const c = self.annotationStore.selected;
 
-          c && c.regionStore.selectNext();
-        },
-        "Circle through entities",
-      );
+        c && c.regionStore.selectNext();
+      });
 
       // duplicate selected regions
-      hotkeys.addKey("command+d, ctrl+d", function(e) {
+      hotkeys.addNamed("region:duplicate", (e) => {
         const { selected } = self.annotationStore;
         const { serializedSelection } = selected || {};
 
