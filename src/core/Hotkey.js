@@ -258,7 +258,7 @@ Hotkey.DEFAULT_SCOPE = DEFAULT_SCOPE;
 
 Hotkey.INPUT_SCOPE = INPUT_SCOPE;
 
-Hotkey.keymap = defaultKeymap;
+Hotkey.keymap = { ...defaultKeymap };
 
 Hotkey.setKeymap = (newKeymap) => {
   validateKeymap(newKeymap);
