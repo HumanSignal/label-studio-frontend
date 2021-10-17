@@ -2,18 +2,22 @@ import keymaster from "keymaster";
 import { createElement } from "react";
 import { Tooltip } from "../common/Tooltip/Tooltip";
 import { isDefined, isMacOS } from "../utils/utilities";
-import keymap from "./settings/keymap.json";
+import defaultKeymap from "./settings/keymap.json";
 
 // Validate keymap integrity
 const allowedKeympaKeys = ['key', 'mac', 'description'];
 
-Object.entries(keymap).forEach(([name, settings]) => {
-  Object.keys(settings).forEach(key => {
-    if (!allowedKeympaKeys.includes(key)) {
-      throw new Error(`Unknown keymap property ${key} for key ${name}`);
-    }
+const validateKeymap = (keymap) => {
+  Object.entries(keymap).forEach(([name, settings]) => {
+    Object.keys(settings).forEach(key => {
+      if (!allowedKeympaKeys.includes(key)) {
+        throw new Error(`Unknown keymap property ${key} for key ${name}`);
+      }
+    });
   });
-});
+};
+
+validateKeymap(defaultKeymap);
 
 const DEFAULT_SCOPE = "__main__";
 const INPUT_SCOPE = "__input__";
@@ -147,7 +151,7 @@ export const Hotkey = (
      * @param {DEFAULT_SCOPE | INPUT_SCOPE} scope
      */
     addNamed(name, func, scope) {
-      const hotkey = keymap[name];
+      const hotkey = defaultKeymap[name];
 
       if (isDefined(hotkey)) {
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
@@ -164,7 +168,7 @@ export const Hotkey = (
      * @param {DEFAULT_SCOPE | INPUT_SCOPE} scope
      */
     removeNamed(name, scope) {
-      const hotkey = keymap[name];
+      const hotkey = defaultKeymap[name];
 
       if (isDefined(hotkey)) {
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
@@ -182,7 +186,7 @@ export const Hotkey = (
      * @param {DEFAULT_SCOPE | INPUT_SCOPE} scope
      */
     overwriteNamed(name, func, scope) {
-      const hotkey = keymap[name];
+      const hotkey = defaultKeymap[name];
 
       if (isDefined(hotkey)) {
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
@@ -254,6 +258,14 @@ Hotkey.DEFAULT_SCOPE = DEFAULT_SCOPE;
 
 Hotkey.INPUT_SCOPE = INPUT_SCOPE;
 
+Hotkey.keymap = defaultKeymap;
+
+Hotkey.setKeymap = (newKeymap) => {
+  validateKeymap(newKeymap);
+
+  Hotkey.keymap = newKeymap;
+};
+
 Hotkey.keysDescipritions = function() {
   return _hotkeys_desc;
 };
@@ -275,7 +287,7 @@ Hotkey.setScope = function(scope) {
 };
 
 Hotkey.Tooltip = ({ name, children, ...props }) => {
-  const hotkey = keymap[name];
+  const hotkey = defaultKeymap[name];
 
   if (isDefined(hotkey)) {
     const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
