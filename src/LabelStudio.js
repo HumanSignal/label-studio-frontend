@@ -8,6 +8,7 @@ import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
 import { isDefined } from "./utils/utilities";
+import { Hotkey } from "./core/Hotkey";
 
 configure({
   isolateGlobalState: true,
@@ -22,6 +23,10 @@ export class LabelStudio {
   }
 
   constructor(root, options = {}) {
+    if (options.keymap) {
+      Hotkey.setKeymap(options.keymap);
+    }
+
     this.root = root;
     this.events = new EventInvoker();
     this.supportLgacyEvents(options);
