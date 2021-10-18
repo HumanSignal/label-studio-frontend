@@ -212,7 +212,7 @@ const Model = types.model({
     applicableRegions.forEach(region => {
       if (region) {
         region.setValue(self.parent);
-
+        region.notifyDrawingFinished();
         // hack to trigger RichText re-render the region
         region.updateSpans?.();
       }

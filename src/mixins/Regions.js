@@ -311,6 +311,7 @@ const RegionsMixin = types
           }, timeout);
         }
       },
-    };});
+    };
+  });
 
 export default types.compose(RegionsMixin, AnnotationMixin);

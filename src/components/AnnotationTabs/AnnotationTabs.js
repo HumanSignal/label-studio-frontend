@@ -37,7 +37,7 @@ export const EntityTab = observer(forwardRef(({
           username={prediction ? entity.createdBy : null}
           user={entity.user ?? { email: entity.createdBy }}
           mod={{ prediction }}
-        >{prediction && <LsSparks/>}</Elem>
+        >{prediction && <LsSparks style={{ width: 16, height: 16 }}/>}</Elem>
 
         <Elem name="identifier">
           ID {entity.pk ?? entity.id} {isUnsaved && "*"}

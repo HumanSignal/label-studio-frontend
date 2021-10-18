@@ -69,7 +69,7 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
 
           <Elem name="prediction">
             {item.origin === 'prediction' && (
-              <LsSparks/>
+              <LsSparks style={{ width: 16, height: 16 }}/>
             )}
           </Elem>
 

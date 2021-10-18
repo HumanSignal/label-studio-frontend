@@ -77,7 +77,7 @@ const HistoryItem = observer(({ entity, user, date, extra, acceptedState, select
             showUsername
             username={isPrediction ? entity.createdBy : null}
             mod={{ prediction: isPrediction }}
-          >{isPrediction && <LsSparks/>}</Elem>
+          >{isPrediction && <LsSparks style={{ width: 16, height: 16 }}/>}</Elem>
           {isPrediction ? entity.createdBy : userDisplayName(user)}
         </Space>
 
