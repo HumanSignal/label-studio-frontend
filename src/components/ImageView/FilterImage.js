@@ -16,12 +16,12 @@ const useImage = (url, crossOrigin, onLoad, onError) => {
 
       function onLoadWrapper(e) {
         setRes({ image: img, status: 'loaded' });
-        onLoad(e);
+        if (onLoad) onLoad(e);
       }
 
       function onErrorWrapper() {
         setRes({ image: undefined, status: 'failed' });
-        onError();
+        if (onError) onError();
       }
 
       img.addEventListener('load', onLoadWrapper);
