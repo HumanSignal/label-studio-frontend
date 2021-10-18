@@ -88,10 +88,12 @@ export const CurrentEntity = injector(observer(({
     <Block name="annotation" onClick={e => e.stopPropagation()}>
       <Elem name="info" tag={Space} spread>
         <Elem name="id">
-          {entity.type === 'annotation' ? <LsAnnotation />: <LsSparks color="#944BFF"/>}
+          <Elem name="type">
+            {entity.type === 'annotation' ? <LsAnnotation />: <LsSparks color="#944BFF"/>}
+          </Elem>
           <span className="text_id">ID: {entity.pk ?? entity.id}</span>
         </Elem>
-        
+
         <Space size="small">
           {showGroundTruth && <GroundTruth entity={entity}/>}
 
@@ -133,19 +135,19 @@ export const CurrentEntity = injector(observer(({
           {/*Always show container to keep the interface layout unchangeable*/}
           {(entity.parent_prediction) && (
             <Tooltip title="Prediction ID from which this annotation was created">
-              <Elem name="parent-prediction">
-                <Elem component={LsParentLink} name="parent_link"/>
-                <Elem component={LsSparks} name="parent_icon_prediction"/>
-                <Elem name="parent_text_prediction">ID: { entity.parent_prediction }</Elem>
+              <Elem name="parent">
+                <Elem tag={LsParentLink} name="parent_link"/>
+                <Elem tag={LsSparks} name="parent_icon" mod={{ prediction: true }}/>
+                <Elem name="parent_text">ID: { entity.parent_prediction }</Elem>
               </Elem>
             </Tooltip>
           )}
           {(entity.parent_annotation) && (
             <Tooltip title="Parent annotation ID from which this annotation was created">
-              <Elem name="parent-annotation">
-                <Elem component={LsParentLink} name="parent_link"/>
-                <Elem component={LsAnnotation} name="parent_icon_annotation"/>
-                <Elem name="parent_text_annotation">ID: { entity.parent_annotation }</Elem>
+              <Elem name="parent">
+                <Elem tag={LsParentLink} name="parent_link"/>
+                <Elem tag={LsAnnotation} name="parent_icon" mod={{ annotation: true }}/>
+                <Elem name="parent_text">ID: { entity.parent_annotation }</Elem>
               </Elem>
             </Tooltip>
           )}
