@@ -692,6 +692,7 @@ export default observer(
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle["maxWidth"] = item.maxwidth;
+        containerStyle["minWidth"] = item.maxwidth;
       }
 
       const {
@@ -794,6 +795,8 @@ export default observer(
                     filters={[Konva.Filters.Grayscale]}
                     brightness={this.state.brightness}
                     contrast={this.state.contrast}
+                    width={item.stageComponentSize.width}
+                    height={item.stageComponentSize.height}
                   />
                 </Layer>
               )}
