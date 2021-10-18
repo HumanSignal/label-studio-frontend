@@ -25,11 +25,11 @@ const PlayPause = ({ item, video }) => {
   const onPlayPause = () => video.paused ? video.play() : video.pause();
 
   useEffect(() => {
-    hotkeys.addKey("alt+space", e => {
+    hotkeys.addNamed("video:play", e => {
       e.preventDefault();
       onPlayPause();
     });
-    return () => hotkeys.removeKey("alt+space");
+    return () => hotkeys.removeNamed("video:play");
   }, [video]);
 
   return (
@@ -47,32 +47,32 @@ const FrameStep = ({ item, video }) => {
   const onBackward = () => { video.pause(); video.currentTime -= frameRate; };
 
   useEffect(() => {
-    hotkeys.addKey("alt+right", e => {
+    hotkeys.addNamed("video:frame-forward", e => {
       e.preventDefault();
       onForward();
     });
-    hotkeys.addKey("alt+left", e => {
+    hotkeys.addNamed("video:frame-backward", e => {
       e.preventDefault();
       onBackward();
     });
     return () => {
-      hotkeys.removeKey("alt+right");
-      hotkeys.removeKey("alt+left");
+      hotkeys.removeNamed("video:frame-forward");
+      hotkeys.removeNamed("video:frame-backward");
     };
   }, [video]);
 
   return (
     <>
-      <Tooltip title="One Frame Back [alt+left]" placement="bottomLeft">
+      <Hotkey.Tooltip name="video:frame-backward" placement="bottomLeft">
         <Elem name="frame" onClick={onBackward}>
           <IconPlayerStep style={{ transform: "rotate(180deg)" }} />
         </Elem>
-      </Tooltip>
-      <Tooltip title="One Frame Forward [alt+right]" placement="bottomLeft">
+      </Hotkey.Tooltip>
+      <Hotkey.Tooltip name="video:frame-backward" placement="bottomLeft">
         <Elem name="frame" onClick={onForward}>
           <IconPlayerStep />
         </Elem>
-      </Tooltip>
+      </Hotkey.Tooltip>
     </>
   );
 };

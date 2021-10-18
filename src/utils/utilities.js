@@ -203,3 +203,8 @@ export function minMax(items) {
     return acc;
   }, []);
 }
+
+// Detects if current OS is macOS
+export function isMacOS() {
+  return navigator.platform.indexOf('Mac') > -1;
+}
