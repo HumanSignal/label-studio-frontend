@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Group, Image, Layer, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { cast, getParent, getRoot, hasParent, types } from "mobx-state-tree";
+import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -273,8 +273,10 @@ const Model = types
       },
 
       endPath() {
+        const { annotation } = self.object;
+
         // will resume in the next tick...
-        self.object.annotation.startAutosave();
+        annotation.startAutosave();
 
         if (cachedPoints.length === 2) {
           cachedPoints.push(cachedPoints[0]);
@@ -288,7 +290,7 @@ const Model = types
         cachedPoints = [];
 
         // ...so we run this toggled function also delayed
-        setTimeout(() => self.object.annotation.autosave());
+        annotation.autosave && setTimeout(() => annotation.autosave());
       },
 
       convertPointsToMask() {},
@@ -580,6 +582,7 @@ const HtxBrushView = ({ item }) => {
           }}
           listening={!suggestion}
         >
+          {/* RLE */}
           <Image
             image={image}
             hitFunc={imageHitFunc}
@@ -587,10 +590,12 @@ const HtxBrushView = ({ item }) => {
             height={item.parent.stageHeight}
           />
 
+          {/* Touches */}
           <Group>
             <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
           </Group>
 
+          {/* Highlight */}
           <Image
             name="highlight"
             image={highlightedImageRef.current}
