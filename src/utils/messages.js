@@ -2,7 +2,7 @@
 
 import React from "react";
 
-const URL_CORS_DOCS = "https://app.heartex.ai/docs/guide/FAQ.html#Image-audio-resource-loading-error-while-labeling";
+const URL_CORS_DOCS = "https://labelstud.io/guide/storage.html#Troubleshoot-CORS-and-access-problems";
 
 export default {
   DONE: "Done!",
