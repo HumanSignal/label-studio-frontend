@@ -4,7 +4,7 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
-import { offsetsToCodePoints, rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { fixCodePointsInRange, rangeToGlobalOffset } from "../../../utils/selection-tools";
 import "./RichText.styl";
 
 class RichTextPieceView extends Component {
@@ -63,7 +63,7 @@ class RichTextPieceView extends Component {
         return;
       }
 
-      offsetsToCodePoints(range);
+      fixCodePointsInRange(range);
 
       const normedRange = xpath.fromRange(range, root);
 
