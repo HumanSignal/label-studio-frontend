@@ -151,7 +151,7 @@ export const Hotkey = (
      * @param {DEFAULT_SCOPE | INPUT_SCOPE} scope
      */
     addNamed(name, func, scope) {
-      const hotkey = defaultKeymap[name];
+      const hotkey = Hotkey.keymap[name];
 
       if (isDefined(hotkey)) {
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
@@ -168,7 +168,7 @@ export const Hotkey = (
      * @param {DEFAULT_SCOPE | INPUT_SCOPE} scope
      */
     removeNamed(name, scope) {
-      const hotkey = defaultKeymap[name];
+      const hotkey = Hotkey.keymap[name];
 
       if (isDefined(hotkey)) {
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
@@ -186,7 +186,7 @@ export const Hotkey = (
      * @param {DEFAULT_SCOPE | INPUT_SCOPE} scope
      */
     overwriteNamed(name, func, scope) {
-      const hotkey = defaultKeymap[name];
+      const hotkey = Hotkey.keymap[name];
 
       if (isDefined(hotkey)) {
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
