@@ -4,11 +4,12 @@ import { Button } from "../../common/Button/Button";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import "./HistoryActions.styl";
+import { Hotkey } from '../../core/Hotkey';
 
 export const HistoryActions = observer(({ history }) => {
   return (
     <Block name="history">
-      <Tooltip title="Undo">
+      <Hotkey.Tooltip name="annotation:undo">
         <Elem
           tag={Button}
           name="action"
@@ -18,8 +19,8 @@ export const HistoryActions = observer(({ history }) => {
           onClick={() => history?.canUndo && history.undo()}
           icon={<LsUndo />}
         />
-      </Tooltip>
-      <Tooltip title="Redo">
+      </Hotkey.Tooltip>
+      <Hotkey.Tooltip name="annotation:redo">
         <Elem
           tag={Button}
           name="action"
@@ -29,7 +30,7 @@ export const HistoryActions = observer(({ history }) => {
           onClick={() => history?.canRedo && history.redo()}
           icon={<LsRedo />}
         />
-      </Tooltip>
+      </Hotkey.Tooltip>
       <Tooltip title="Reset">
         <Elem
           tag={Button}

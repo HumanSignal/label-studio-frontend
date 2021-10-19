@@ -35,12 +35,12 @@
   "annotation:submit": {
     "key": "ctrl+enter",
     "mac": "command+enter",
-    "description": "Submit a task"
+    "description": "Submit annotation"
   },
   "annotation:skip": {
     "key": "ctrl+space",
     "mac": "command+space",
-    "description": "Skip a task"
+    "description": "Skip task"
   },
   "annotation:undo": {
     "key": "ctrl+z",
@@ -90,7 +90,7 @@
     "mac": "command+d",
     "description": "Duplicate selected region"
   },
-  "video:play": {
+  "video:playpause": {
     "key": "alt+space",
     "description": "Play/pause video"
   },
