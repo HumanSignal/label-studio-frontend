@@ -1,5 +1,6 @@
 import { observer } from "mobx-react";
 import { Block, Elem } from "../../utils/bem";
+import { DynamicPreannotationsToggle } from "../AnnotationTab/DynamicPreannotationsToggle";
 import { Actions } from "./Actions";
 import { Annotations } from "./Annotations";
 import { Controls } from "./Controls";
@@ -21,6 +22,9 @@ export const TopBar = observer(({ store }) => {
         <Actions store={store}/>
       </Elem>
       <Elem name="group">
+        <Elem name="section">
+          <DynamicPreannotationsToggle />
+        </Elem>
         {store.hasInterface("controls") && (store.hasInterface("review") || !isPrediction) && (
           <Elem name="section" mod={{ flat: true }}>
             <Controls annotation={entity}/>
