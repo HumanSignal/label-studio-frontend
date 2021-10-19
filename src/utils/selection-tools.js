@@ -530,8 +530,8 @@ export const removeRange = spans => {
  */
 export const findRange = (start, end, root) => {
   return {
-    startContainer: findOnPosition(root, start, "right"),
-    endContainer: findOnPosition(root, end, "left"),
+    startContainer: codePointsToChars(findOnPosition(root, start, "right")),
+    endContainer: codePointsToChars(findOnPosition(root, end, "left")),
   };
 };
 
@@ -544,6 +544,50 @@ export const findRangeNative = (start, end, root) => {
 
   range.setStart(startContainer.node, startContainer.position);
   range.setEnd(endContainer.node, endContainer.position);
+
+  return range;
+};
+
+/**
+ * Convert position in node from code points count to chars count
+ * May be useful to do some string operations and then convert it back
+ * @param {{ node: Node, position: number }} container
+ * @return {{ node: Node, position: number }}
+ */
+export const codePointsToChars = ({ node, position }) => {
+  const codePoints = [...node.textContent].slice(0, position);
+  const chars = codePoints.join("").length;
+
+  return { node, position: chars };
+};
+
+/**
+ * Fix position in node from chars count to code points count
+ * In python and other modern tools complex unicode symbols handled as code points, not UTF chars
+ * So for external usage js length should be converted to code points count
+ * string to array conversion splits string into code points array, that's the easiest way
+ * @param {{ node: Node, position: number }} container
+ * @return {{ node: Node, position: number }}
+ */
+export const charsToCodePoints = ({ node, position }) => {
+  const chars = node.textContent.substr(0, position);
+  const codePoints = [...chars].length;
+
+  return { node, position: codePoints };
+};
+
+/**
+ * Fix Range start/end offsets to code points count instead of chars count
+ * Alters given range
+ * @param {Range} range
+ * @return {Range} the same range
+ */
+export const fixCodePointsInRange = (range) => {
+  const start = charsToCodePoints({ node: range.startContainer, position: range.startOffset });
+  const end = charsToCodePoints({ node: range.endContainer, position: range.endOffset });
+
+  range.setStart(range.startContainer, start.position);
+  range.setEnd(range.endContainer, end.position);
 
   return range;
 };
@@ -565,7 +609,8 @@ export const findOnPosition = (root, position, borderSide = "left") => {
     const isBR = currentNode.nodeName === "BR";
 
     if (isText || isBR) {
-      const length = currentNode.length ?? 1;
+      // convert chars count to code points count, see `charsToCodePoints`
+      const length = isText ? [...currentNode.textContent].length : 1;
 
       if (length + lastPosition >= position || !nextNode) {
         if (borderSide === "right" && length + lastPosition === position && nextNode) {
