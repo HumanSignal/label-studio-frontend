@@ -270,6 +270,7 @@ const PolygonPointView = observer(({ item, name }) => {
           ev.cancelBubble = true;
           if (item.parent.mouseOverStartPoint) {
             item.closeStartPoint();
+            item.parent.notifyDrawingFinished();
           } else {
             item.parent.setSelectedPoint(item);
           }

@@ -191,6 +191,7 @@ const Model = types
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
       self.updateColor(self.selected ? 0.8 : 0.3);
+      self.notifyDrawingFinished();
     },
 
     toggleHidden(e) {

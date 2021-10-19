@@ -289,6 +289,8 @@ const Model = types
         pathPoints = null;
         cachedPoints = [];
 
+        self.notifyDrawingFinished();
+
         // ...so we run this toggled function also delayed
         annotation.autosave && setTimeout(() => annotation.autosave());
       },

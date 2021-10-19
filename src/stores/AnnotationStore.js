@@ -1275,11 +1275,13 @@ export default types
       c.updateObjects();
 
       // parent link for the new annotations
-      if (entity.type === 'prediction') {
-        c.parent_prediction = parseInt(entity.pk);
-      }
-      else if (entity.type === 'annotation') {
-        c.parent_annotation = parseInt(entity.pk);
+      if (entity.pk) {
+        if (entity.type === 'prediction') {
+          c.parent_prediction = parseInt(entity.pk);
+        }
+        else if (entity.type === 'annotation') {
+          c.parent_annotation = parseInt(entity.pk);
+        }
       }
 
       return c;
