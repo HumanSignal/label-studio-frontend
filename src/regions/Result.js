@@ -226,10 +226,10 @@ const Result = types
     // label, becuase it takes color from the label
     updateAppearenceFromState() {},
 
-    serialize() {
+    serialize(options) {
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
-      const data = self.area ? self.area.serialize() : {};
+      const data = self.area ? self.area.serialize(options) : {};
 
       if (!data) return null;
       if (!self.isSubmitable) return null;
