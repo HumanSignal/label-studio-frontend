@@ -13,5 +13,6 @@ import { Brightness } from "./Brightness";
 import { Contrast } from "./Contrast";
 import { FloodFill } from "./FloodFill";
 import { Selection } from "./Selection";
+import { Filter } from "./Filter";
 
-export { Brush, Erase, KeyPoint, Polygon, Rect, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill, Selection };
+export { Brush, Erase, Filter, KeyPoint, Polygon, Rect, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill, Selection };
