@@ -18,6 +18,7 @@ export { ReactComponent as LsChevron } from "./chevron.svg";
 export { ReactComponent as LsExpand } from "./expand.svg";
 export { ReactComponent as LsCollapse } from "./collapse.svg";
 export { ReactComponent as LsDate } from "./date.svg";
+export { ReactComponent as IconPlusCircle } from "./plus_circle.svg";
 
 export { ReactComponent as IconCheck } from "./check.svg";
 export { ReactComponent as IconCross } from "./cross.svg";

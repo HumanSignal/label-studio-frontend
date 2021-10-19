@@ -14,12 +14,15 @@ export const TopBar = observer(({ store }) => {
     <Block name="topbar">
       <Elem name="group">
         <CurrentTask store={store}/>
-        <Annotations store={store}/>
+        <Annotations
+          store={store}
+          annotationStore={store.annotationStore}
+        />
         <Actions store={store}/>
       </Elem>
       <Elem name="group">
         {store.hasInterface("controls") && (store.hasInterface("review") || !isPrediction) && (
-          <Elem name="section">
+          <Elem name="section" mod={{ flat: true }}>
             <Controls annotation={entity}/>
           </Elem>
         )}

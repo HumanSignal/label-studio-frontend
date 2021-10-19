@@ -16,7 +16,7 @@ export const Userpic = forwardRef(({
   size,
   src,
   style,
-  user,
+  user = {},
   username,
   useRandomBackground = true,
   children,

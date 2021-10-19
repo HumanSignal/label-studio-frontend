@@ -175,7 +175,7 @@ export const chunks = (source, chunkSize) => {
   return result;
 };
 
-export const userDisplayName = (user) => {
+export const userDisplayName = (user = {}) => {
   const firstName = user.firstName ?? user.firstName;
   const lastName = user.lastName ?? user.lastName;
 
