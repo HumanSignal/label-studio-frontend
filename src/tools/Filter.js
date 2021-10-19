@@ -41,7 +41,7 @@ const FilterView = observer(({ item }) => {
         visible={modalVisible}
         onOk={() => {
           item.setFilters(selectedItems);
-          item.setFiltersEnabled(selectedItems.length() > 0);
+          item.setFiltersEnabled(selectedItems.length > 0);
           setModelVisible(false);
         }}
         onCancel={() => setModelVisible(false)}
@@ -60,7 +60,7 @@ const FilterView = observer(({ item }) => {
             </Select.Option>
           ))}
         </Select >
-        {selectedItems.length() > 0 ? (
+        {selectedItems.length > 0 ? (
           <Collapse
             defaultActiveKey={selectedItems[0]}
             // expandIconPosition={'left'}
