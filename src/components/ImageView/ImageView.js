@@ -590,6 +590,8 @@ export default observer(
         'naturalHeight',
         'zoomingPositionY',
         'zoomingPositionX',
+        'filters',
+        'filtersEnabled',
       ].map((prop) => {
         return observe(this.props.item, prop, this.updateImageTransform, true);
       });
@@ -783,20 +785,21 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => { }}
             >
-              {item._value !== undefined && this.imageRef.current !== undefined && (
+              {item._value !== undefined && this.imageRef.current !== undefined && item.filtercontrol && item.filtersEnabled && (
                 <Layer
                   name="image-layer">
 
                   <FilterImage
                     alt="LS"
                     url={item._value}
-                    onLoad={(e) => { console.log(`onLoad ImageView: ${e}`); }}
-                    onError={() => { console.log("onerror"); }}
-                    filters={[Konva.Filters.Grayscale]}
+                    // onLoad={(e) => { console.log(`onLoad FilterImage: ${e}`); }}
+                    onError={this.handleError}
+                    filters={item.filters.map(f => Konva.Filters[f])}
                     brightness={this.state.brightness}
                     contrast={this.state.contrast}
                     width={item.stageComponentSize.width}
                     height={item.stageComponentSize.height}
+                  // {...item.filterProperties}
                   />
                 </Layer>
               )}
