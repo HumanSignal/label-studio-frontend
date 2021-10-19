@@ -14,6 +14,7 @@ import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import "./Entity.styl";
 import { PER_REGION_MODES } from "../../mixins/PerRegion";
+import { Hotkey } from "../../core/Hotkey";
 
 const { Paragraph, Text } = Typography;
 
@@ -65,7 +66,7 @@ export default observer(({ store, annotation }) => {
 
   if (hasEditableRegions) {
     entityButtons.push(
-      <Tooltip key="relations" placement="topLeft" title="Create Relation: [alt+r]">
+      <Hotkey.Tooltip key="relations" placement="topLeft" name="region:relation">
         <Button
           aria-label="Create Relation"
           className={styles.button}
@@ -78,7 +79,7 @@ export default observer(({ store, annotation }) => {
 
           {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ alt + r ]</Hint>}
         </Button>
-      </Tooltip>,
+      </Hotkey.Tooltip>,
     );
 
     entityButtons.push(
@@ -97,7 +98,7 @@ export default observer(({ store, annotation }) => {
   }
 
   entityButtons.push(
-    <Tooltip key="unselect" placement="topLeft" title="Unselect: [u]">
+    <Hotkey.Tooltip key="unselect" placement="topLeft" name="region:unselect">
       <Button
         className={styles.button}
         type="dashed"
@@ -106,9 +107,9 @@ export default observer(({ store, annotation }) => {
         }}
       >
         <CompressOutlined />
-        {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ alt + u ]</Hint>}
+        <Hotkey.Hint name="region:unselect"/>
       </Button>
-    </Tooltip>,
+    </Hotkey.Tooltip>,
   );
 
   return (
@@ -158,7 +159,7 @@ export default observer(({ store, annotation }) => {
           </Space>
 
           {hasEditableNodes && (
-            <Tooltip placement="topLeft" title={`Delete Entit${node ? "y" : "ies"}: [Backspace]`}>
+            <Hotkey.Tooltip placement="topLeft" name="region:delete">
               <Button
                 look="danger"
                 className={styles.button}
@@ -168,9 +169,9 @@ export default observer(({ store, annotation }) => {
               >
                 <DeleteOutlined />
 
-                {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Bksp ]</Hint>}
+                <Hotkey.Hint name="region:delete"/>
               </Button>
-            </Tooltip>
+            </Hotkey.Tooltip>
           )}
         </Space>
         {/* <Tooltip placement="topLeft" title="Hide: [h]"> */}

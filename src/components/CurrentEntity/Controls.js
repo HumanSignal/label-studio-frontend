@@ -6,18 +6,20 @@ import { isDefined } from "../../utils/utilities";
 import { IconBan } from "../../assets/icons";
 
 import "./Controls.styl";
+import { Hotkey } from "../../core/Hotkey";
 
 const TOOLTIP_DELAY = 0.8;
 
-const ButtonTooltip = inject("store")(observer(({ store, title, children }) => {
+const ButtonTooltip = inject("store")(observer(({ store, name, title, children }) => {
   return (
-    <Tooltip
+    <Hotkey.Tooltip
+      name={name}
       title={title}
       enabled={store.settings.enableTooltips}
       mouseEnterDelay={TOOLTIP_DELAY}
     >
       {children}
-    </Tooltip>
+    </Hotkey.Tooltip>
   );
 }));
 
@@ -39,7 +41,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
   if (isReview) {
     buttons.push(
-      <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
+      <ButtonTooltip key="reject" name="annotation:skip" title="Reject annotation">
         <Button disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
           Reject
         </Button>
@@ -47,7 +49,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     );
 
     buttons.push(
-      <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
+      <ButtonTooltip key="accept" name="annotation:submit" title="Accept annotation">
         <Button disabled={disabled} look="primary" onClick={store.acceptAnnotation}>
           {history.canUndo ? "Fix + Accept" : "Accept"}
         </Button>
@@ -62,7 +64,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   } else {
     if (store.hasInterface("skip")) {
       buttons.push(
-        <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
+        <ButtonTooltip key="skip" name="annotation:skip" title="Cancel (skip) task">
           <Button disabled={disabled} look="danger" onClick={store.skipTask}>
             Skip
           </Button>
@@ -73,11 +75,11 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
       const title = submitDisabled
         ? "Empty annotations denied in this project"
-        : "Save results: [ Ctrl+Enter ]";
+        : "Save results";
       // span is to display tooltip for disabled button
 
       buttons.push(
-        <ButtonTooltip key="submit" title={title}>
+        <ButtonTooltip key="submit" name="annotation:submit" title={title}>
           <Elem name="tooltip-wrapper">
             <Button disabled={disabled || submitDisabled} look="primary" onClick={store.submitAnnotation}>
               Submit
@@ -89,7 +91,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       buttons.push(
-        <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
+        <ButtonTooltip key="update" name="annotation:submit" title="Update this task">
           <Button disabled={disabled || submitDisabled} look="primary" onClick={store.updateAnnotation}>
             {sentUserGenerate || versions.result ? "Update" : "Submit"}
           </Button>
