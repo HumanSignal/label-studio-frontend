@@ -196,7 +196,8 @@ class RichTextPieceView extends Component {
   }
 
   onIFrameLoad = () => {
-    const body = this.rootNodeRef.current?.contentDocument?.body;
+    const iframe = this.rootNodeRef.current;
+    const body = iframe?.contentDocument?.body;
     const eventHandlers = {
       click: [this._onRegionClick, true],
       keydown: [this._passHotkeys, false],
@@ -212,7 +213,26 @@ class RichTextPieceView extends Component {
       body.addEventListener(event, ...eventHandlers[event]);
     }
 
-    this._handleUpdate(true);
+    // fix unselectable links
+    const doc = body.ownerDocument;
+    const style = doc.createElement("style");
+
+    style.textContent = "body a { pointer-events: all; }";
+    doc.head.appendChild(style);
+
+    // // @todo make links selectable; dragstart supressing doesn't help — they are still draggable
+    // body.addEventListener("dragstart", e => {
+    //   e.stopPropagation();
+    //   e.preventDefault();
+    // });
+
+    // auto-height
+    if (body.scrollHeight) {
+      iframe.style.height = doc.children[0].offsetHeight + "px";
+    }
+
+    // @todo for better updates, but may be redundant
+    setTimeout(() => this._handleUpdate(true));
   }
 
   render() {
@@ -259,7 +279,6 @@ class RichTextPieceView extends Component {
       const style = {
         border: "none",
         width: "100%",
-        minHeight: "60vh",
       };
 
       return (

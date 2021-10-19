@@ -1,8 +1,5 @@
 import { types } from "mobx-state-tree";
 
-// export { default as Zoom } from "./Zoom";
-// export { default as KeyPoint } from "./KeyPoint";
-
 import { AudioRegionModel } from "./AudioRegion";
 import { BrushRegionModel, HtxBrush } from "./BrushRegion";
 import { ParagraphsRegionModel } from "./ParagraphsRegion";

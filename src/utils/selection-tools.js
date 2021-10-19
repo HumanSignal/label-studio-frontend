@@ -217,7 +217,9 @@ export const captureSelection = (
 ) => {
   const selection = window.getSelection();
 
-  trimSelection(selection);
+  if (granularity !== "symbol") {
+    trimSelection(selection);
+  }
   const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
@@ -537,6 +539,8 @@ export const findRangeNative = (start, end, root) => {
   const { startContainer, endContainer } = findRange(start, end, root);
 
   const range = (root.contentDocument ?? root.ownerDocument).createRange();
+
+  if (!startContainer || !endContainer) return;
 
   range.setStart(startContainer.node, startContainer.position);
   range.setEnd(endContainer.node, endContainer.position);

@@ -56,6 +56,30 @@ const TagAttrs = types.model({
   maxusages: types.maybeNull(types.string),
 });
 
+function traverse(root) {
+  const visitNode = function(node, parents = []) {
+    const label = node.value;
+    const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
+    const obj = { label, path, depth: parents.length };
+
+    if (node.children) {
+      const childs = [];
+
+      for (const child of node.children) {
+        // values should be unique
+        if (childs.some(existing => existing.label === child.value)) continue;
+        childs.push(visitNode(child, path));
+      }
+
+      obj.children = childs;
+    }
+
+    return obj;
+  };
+
+  return Array.isArray(root) ? root.map(n => visitNode(n)) : visitNode(root);
+}
+
 const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
@@ -87,6 +111,10 @@ const Model = types
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
       return self.annotation.results.find(r => r.from_name === self);
+    },
+
+    get items() {
+      return traverse(self.children);
     },
   }))
   .actions(self => ({
@@ -125,22 +153,6 @@ const Model = types
         }
       }
     },
-
-    traverse(root) {
-      const visitNode = function(node, parents = []) {
-        const label = node.value;
-        const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
-        const obj = { label, path, depth: parents.length };
-
-        if (node.children) {
-          obj.children = node.children.map(n => visitNode(n, path));
-        }
-
-        return obj;
-      };
-
-      return Array.isArray(root) ? root.map(n => visitNode(n)) : visitNode(root);
-    },
   }));
 
 const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, VisibilityMixin, AnnotationMixin);
@@ -159,7 +171,7 @@ const HtxTaxonomy = observer(({ item }) => {
   return (
     <div style={{ ...style, ...visibleStyle }}>
       <Taxonomy
-        items={item.traverse(item.children)}
+        items={item.items}
         selected={item.selected}
         onChange={item.onChange}
         options={options}

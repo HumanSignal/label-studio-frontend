@@ -299,6 +299,8 @@ const Model = types
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
 
+      area.notifyDrawingFinished();
+
       area._range = range._range;
       return area;
     },

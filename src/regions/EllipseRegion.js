@@ -298,12 +298,14 @@ const HtxEllipseView = ({ item }) => {
 
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
+          item.notifyDrawingFinished();
         }}
         onDragStart={e => {
           if (item.parent.getSkipInteractions()) {
             e.currentTarget.stopDrag(e.evt);
             return;
           }
+          item.annotation.history.freeze(item.id);
         }}
         onDragEnd={e => {
           const t = e.target;
@@ -316,6 +318,8 @@ const HtxEllipseView = ({ item }) => {
             t.getAttr("rotation"),
           );
           item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
+          item.annotation.history.unfreeze(item.id);
+          item.notifyDrawingFinished();
         }}
         dragBoundFunc={createDragBoundFunc(item.parent,pos => {
           let { x, y } = pos;

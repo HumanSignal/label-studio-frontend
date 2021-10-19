@@ -33,6 +33,7 @@ const result = [
     from_name: "label",
     to_name: "ts",
     type: "timeserieslabels",
+    origin: "manual",
   },
   {
     value: {
@@ -45,6 +46,7 @@ const result = [
     from_name: "label",
     to_name: "ts",
     type: "timeserieslabels",
+    origin: "manual",
   },
 ];
 

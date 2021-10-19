@@ -8,6 +8,7 @@ import { NodeViews } from "../components/Node/Node";
 const _Tool = types
   .model("EllipseTool", {
     group: "segmentation",
+    shortcut: "O",
   })
   .views(self => {
     const Super = {

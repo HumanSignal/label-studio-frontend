@@ -35,6 +35,9 @@ jobs:
     - name: Install dependencies
       run: rm package-lock.json && yarn install
 
+    - name: Unit tests
+      run: yarn test
+
     - name: Build distribution package
       run: yarn run build:module
       env:
