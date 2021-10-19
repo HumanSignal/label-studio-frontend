@@ -28,6 +28,7 @@ const result = [
     id: "hIj6zg57SY",
     to_name: "audio",
     type: "choices",
+    origin: "manual",
     value: {
       choices: ["Lo-Fi"],
     },
@@ -38,6 +39,7 @@ const result = [
     to_name: "audio",
     original_length: 98.719925,
     type: "labels",
+    origin: "manual",
     value: {
       end: 28.50568583621215,
       labels: ["Beat"],
@@ -50,6 +52,7 @@ const result = [
     to_name: "audio",
     original_length: 98.719925,
     type: "labels",
+    origin: "manual",
     value: {
       end: 59.39854733358493,
       labels: ["Other"],

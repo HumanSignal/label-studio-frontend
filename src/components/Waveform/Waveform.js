@@ -385,7 +385,7 @@ export default class Waveform extends React.Component {
       this.props.onLoad(this.wavesurfer);
     }
 
-    this.hotkeys.addKey("ctrl+b", this.onBack, "Back for one second", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+    this.hotkeys.addNamed("audio:back", this.onBack, Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
   }
 
   componentWillUnmount() {

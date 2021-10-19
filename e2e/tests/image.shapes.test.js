@@ -127,7 +127,7 @@ const shapes = [
 ];
 
 // eslint-disable-next-line no-undef,codeceptjs/no-skipped-tests
-xScenario("Simple shapes on Image", async function ({ I, AtImageView, AtSidebar }) {
+xScenario("Simple shapes on Image", async function({ I, AtImageView, AtSidebar }) {
   for (let shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),

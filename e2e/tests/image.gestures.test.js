@@ -35,7 +35,7 @@ const getConfigWithShapes = (shapes, props = "") => `
 
 const createShape = {
   Polygon: {
-    byMultipleClicks (x, y, radius, opts = {}) {
+    byMultipleClicks(x, y, radius, opts = {}) {
       const points = [];
 
       for (let i = 5; i--; ) {
@@ -54,7 +54,7 @@ const createShape = {
         },
       };
     },
-    byDoubleClick (x, y, radius, opts = {}) {
+    byDoubleClick(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
@@ -75,7 +75,7 @@ const createShape = {
     },
   },
   Rectangle: {
-    byDrag (x, y, radius, opts = {}) {
+    byDrag(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "dragKonva",
@@ -89,7 +89,7 @@ const createShape = {
         },
       };
     },
-    byTwoClicks (x, y, radius, opts = {}) {
+    byTwoClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
@@ -102,7 +102,7 @@ const createShape = {
         result: { width: radius * 2, height: radius * 2, rotation: 0, x: x - radius, y: y - radius },
       };
     },
-    byDoubleClick (x, y, radius, opts = {}) {
+    byDoubleClick(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
@@ -123,7 +123,7 @@ const createShape = {
     },
   },
   Ellipse: {
-    byDrag (x, y, radius, opts = {}) {
+    byDrag(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "dragKonva",
@@ -131,7 +131,7 @@ const createShape = {
         result: { radiusX: radius, radiusY: radius, rotation: 0, x, y },
       };
     },
-    byTwoClicks (x, y, radius, opts = {}) {
+    byTwoClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
@@ -144,7 +144,7 @@ const createShape = {
         result: { radiusX: radius, radiusY: radius, rotation: 0, x, y },
       };
     },
-    byDoubleClick (x, y, radius, opts = {}) {
+    byDoubleClick(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
@@ -166,7 +166,7 @@ const createShape = {
   },
 };
 
-Scenario("Creating regions by various gestures", async function ({ I, AtImageView, AtSidebar }) {
+Scenario("Creating regions by various gestures", async function({ I, AtImageView, AtSidebar }) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },

@@ -41,6 +41,16 @@ export const HighlightMixin = types
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
 
+      // retrieve the text, it may not be saved, but it should be displayed
+      // later methods may break the range, so do this before
+      // Range swallows all the new lines and <br>s, so we have to create Selection from range
+      const selection = root.ownerDocument.defaultView.getSelection();
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+      self.text = String(selection);
+      selection.removeAllRanges();
+
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames: ["htx-highlight", stylesheet.className],
