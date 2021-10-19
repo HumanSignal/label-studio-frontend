@@ -47,6 +47,7 @@ import { guidGenerator } from "../../utils/unique";
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         – Show crosshair cursor
+ * @param {boolean} [filterControl=false]     – Show filter control in toolbar
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -72,6 +73,7 @@ const TagAttrs = types.model({
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
+  filtercontrol: types.optional(types.boolean, false),
 });
 
 const IMAGE_CONSTANTS = {
@@ -112,7 +114,7 @@ const ImageSelectionPoint = types.model({
 const ImageSelection = types.model({
   start: types.maybeNull(ImageSelectionPoint),
   end: types.maybeNull(ImageSelectionPoint),
-}).views( self => {
+}).views(self => {
   return {
     get obj() {
       return getParent(self);
@@ -169,10 +171,10 @@ const ImageSelection = types.model({
         (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
     },
     get selectionBorders() {
-      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
-        return  region.bboxCoords ? {
+      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region) => {
+        return region.bboxCoords ? {
           left: Math.min(borders.left, region.bboxCoords.left),
-          top: Math.min(borders.top,region.bboxCoords.top),
+          top: Math.min(borders.top, region.bboxCoords.top),
           right: Math.max(borders.right, region.bboxCoords.right),
           bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
         } : borders;
@@ -248,6 +250,13 @@ const Model = types.model({
   brushControl: types.optional(types.string, "brush"),
 
   brushStrokeWidth: types.optional(types.number, 15),
+
+  /**
+   * Filters
+   */
+  filters: types.optional(types.array(types.string), []),
+  filtersEnabled: types.optional(types.boolean, false),
+  //filterProperties: types.optional(types.map(types.custom), []),
 
   /**
    * Mode
@@ -441,6 +450,9 @@ const Model = types.model({
 
       if (self.rotatecontrol)
         manager.addTool("rotate", Tools.Rotate.create({}, env));
+
+      if (self.filtercontrol)
+        manager.addTool("filter", Tools.Filter.create({}, env));
     }
 
     function getToolsManager() {
@@ -545,6 +557,21 @@ const Model = types.model({
     setCurrentImage(i) {
       self.currentImage = i;
     },
+
+    /**
+     * Update filter of Image
+     * @param {string} value
+     */
+
+    setFilters(value) {
+      self.filters = value;
+    },
+    setFiltersEnabled(value) {
+      self.filtersEnabled = value;
+    },
+    // setFiltersProperties(value) {
+    //   self.filterProperties = value;
+    // },
 
     /**
      * Set pointer of X and Y

@@ -10,7 +10,7 @@ import ToolMixin from "../mixins/Tool";
 import { Tool } from "../components/Toolbar/Tool";
 //import { Range } from "../common/Range/Range";
 import { FilterOutlined } from "@ant-design/icons";
-import { Collapse, Empty, Modal, Panel, Select } from "antd";
+import { Col, Collapse, Empty, Modal, Row, Select } from "antd";
 
 const FilterView = observer(({ item }) => {
   const [modalVisible, setModelVisible] = useState(false);
@@ -46,34 +46,39 @@ const FilterView = observer(({ item }) => {
         }}
         onCancel={() => setModelVisible(false)}
       >
-        <Select
-          key="filters"
-          mode="multiple"
-          allowClear
-          placeholder="Please select filter(s)"
-          value={selectedItems}
-          onChange={handleChange}
-        >
-          {filteredOptions.map(item => (
-            <Select.Option key={item} value={item}>
-              {item}
-            </Select.Option>
-          ))}
-        </Select >
-        {selectedItems.length > 0 ? (
-          <Collapse
-            defaultActiveKey={selectedItems[0]}
-            // expandIconPosition={'left'}
-            accordion
-          >
-            {selectedItems.map(item => (
-              <Panel header={item} key={item}>
-                <div>{item}</div>
-                <p>Render options...</p>
-              </Panel>
-            ))}
-          </Collapse>
-        ) : (<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />)}
+        <Row>
+          <Col span={24}>
+            <Select
+              key="filters"
+              mode="multiple"
+              allowClear
+              style={{ width: '100%' }}
+              placeholder="Please select filter(s)"
+              value={selectedItems}
+              onChange={handleChange}
+            >
+              {filteredOptions.map(item => (
+                <Select.Option key={item} value={item}>
+                  {item}
+                </Select.Option>
+              ))}
+            </Select >
+            {selectedItems.length > 0 ? (
+              <Collapse
+                defaultActiveKey={selectedItems[0]}
+                // expandIconPosition={'left'}
+                accordion
+              >
+                {selectedItems.map(item => (
+                  <Collapse.Panel header={item} key={item}>
+                    <div>{item}</div>
+                    <p>TODO: Render options...</p>
+                  </Collapse.Panel>
+                ))}
+              </Collapse>
+            ) : (<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />)}
+          </Col>
+        </Row>
       </Modal>
     </>
   );
