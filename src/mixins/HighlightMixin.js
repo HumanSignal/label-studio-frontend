@@ -62,9 +62,9 @@ export const HighlightMixin = types
 
     updateSpans() {
       if (self._hasSpans) {
-        self._spans.forEach(span => {
-          span.setAttribute("data-label", self.getLabels());
-        });
+        const lastSpan = self._spans[self._spans.length - 1];
+
+        lastSpan.setAttribute("data-label", self.getLabels());
       }
     },
 
