@@ -56,6 +56,23 @@ const TagAttrs = types.model({
   maxusages: types.maybeNull(types.string),
 });
 
+/**
+ * Filter uniq nodes by value
+ * @param {ConfigItem} nodes
+ */
+function uniq(nodes) {
+  const filtered = [];
+  const uniqValues = [];
+
+  for (const node of nodes) {
+    if (uniqValues.includes(node.value)) continue;
+    filtered.push(node);
+    uniqValues.push(node.value);
+  }
+
+  return filtered;
+}
+
 function traverse(root) {
   const visitNode = function(node, parents = []) {
     const label = node.value;
@@ -63,21 +80,13 @@ function traverse(root) {
     const obj = { label, path, depth: parents.length };
 
     if (node.children) {
-      const childs = [];
-
-      for (const child of node.children) {
-        // values should be unique
-        if (childs.some(existing => existing.label === child.value)) continue;
-        childs.push(visitNode(child, path));
-      }
-
-      obj.children = childs;
+      obj.children = uniq(node.children).map(child => visitNode(child, path));
     }
 
     return obj;
   };
 
-  return Array.isArray(root) ? root.map(n => visitNode(n)) : visitNode(root);
+  return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : visitNode(root);
 }
 
 const Model = types
