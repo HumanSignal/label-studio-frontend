@@ -5,7 +5,7 @@ import { toCamelCase } from "strman";
  * @param {*} value
  * @returns {boolean}
  */
-export const isString = value => {
+export const isString = (value: any): value is string => {
   return typeof value === "string" || value instanceof String;
 };
 
@@ -14,7 +14,7 @@ export const isString = value => {
  * @param {*} value
  * @returns {boolean}
  */
-export const isStringEmpty = value => {
+export const isStringEmpty = (value: string) => {
   if (!isString(value)) {
     return false;
   }
@@ -27,7 +27,7 @@ export const isStringEmpty = value => {
  * @param {string} value
  * @returns {boolean}
  */
-export const isStringJSON = value => {
+export const isStringJSON = (value: string) => {
   if (isString(value)) {
     try {
       JSON.parse(value);
@@ -46,7 +46,7 @@ export const isStringJSON = value => {
  * @param {*} i
  * @param {*} text
  */
-export function getUrl(i, text) {
+export function getUrl(i: number, text: string) {
   const stringToTest = text.slice(i);
   const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g; // eslint-disable-line no-useless-escape
   const match = myRegexp.exec(stringToTest);
@@ -59,7 +59,7 @@ export function getUrl(i, text) {
  * @param {string} str              - String to check
  * @param {boolean} [relative=true] - Whether relative urls are good or nood
  */
-export function isValidObjectURL(str, relative = false) {
+export function isValidObjectURL(str: string, relative = false) {
   if (!str) return false;
   if (relative && str.startsWith("/")) return true;
   return /^https?:\/\//.test(str);
@@ -71,19 +71,19 @@ export function isValidObjectURL(str, relative = false) {
  * @param {number} ms
  * @returns {string}
  */
-export function toTimeString(ms) {
+export function toTimeString(ms: number) {
   if (typeof ms === "number") {
-    return new Date(ms).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
+    return new Date(ms).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0];
   }
 }
 
-export function flatten(arr) {
-  return arr.reduce(function(flat, toFlatten) {
+export function flatten(arr: any[]): any[] {
+  return arr.reduce<any>(function(flat, toFlatten) {
     return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
   }, []);
 }
 
-export function hashCode(str) {
+export function hashCode(str: string) {
   let hash = 0;
 
   if (str.length === 0) {
@@ -98,7 +98,7 @@ export function hashCode(str) {
   return hash + "";
 }
 
-export function atobUnicode(str) {
+export function atobUnicode(str: string) {
   // Going backwards: from bytestream, to percent-encoding, to original string.
   return decodeURIComponent(
     atob(str)
@@ -114,7 +114,7 @@ export function atobUnicode(str) {
  * Makes string safe to use inside dangerouslySetInnerHTML
  * @param {string} unsafe
  */
-export function escapeHtml(unsafe) {
+export function escapeHtml(unsafe: string) {
   return unsafe
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -129,7 +129,7 @@ export function escapeHtml(unsafe) {
  * @param {T[]} arr1 array 1
  * @param {T[]} arr2 array 2
  */
-export function isArraysEqual(arr1, arr2) {
+export function isArraysEqual(arr1: any[], arr2: any[]) {
   return arr1.length === arr2.length && arr1.every((value, index) => arr2[index] === value);
 }
 
@@ -139,19 +139,23 @@ export function isArraysEqual(arr1, arr2) {
  * @param {T} value
  * @returns {T[]}
  */
-export function wrapArray(value) {
-  return [].concat(...[value]);
+export function wrapArray(value: any[]) {
+  return ([] as any[]).concat(...[value]);
 }
 
 export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export const isDefined = value => {
+export const isDefined = (value: any) => {
   return value !== null && value !== undefined;
 };
 
-export function findClosestParent(el, predicate = () => true, parentGetter = el => el.parent) {
+export function findClosestParent<T extends {parent: any}>(
+  el: T,
+  predicate = (el: T) => true,
+  parentGetter = (el: T) => el.parent,
+) {
   while ((el = parentGetter(el))) {
     if (predicate(el)) {
       return el;
@@ -160,11 +164,11 @@ export function findClosestParent(el, predicate = () => true, parentGetter = el 
   return null;
 }
 
-export function clamp(x, min, max) {
+export function clamp(x: number, min: number, max: number) {
   return Math.min(max, Math.max(min, x));
 }
 
-export const chunks = (source, chunkSize) => {
+export const chunks = <T extends any[]>(source: T, chunkSize: number): T[][] => {
   const result = [];
   let i,j;
 
@@ -175,7 +179,7 @@ export const chunks = (source, chunkSize) => {
   return result;
 };
 
-export const userDisplayName = (user) => {
+export const userDisplayName = (user: any) => {
   const firstName = user.firstName ?? user.firstName;
   const lastName = user.lastName ?? user.lastName;
 
@@ -186,7 +190,7 @@ export const userDisplayName = (user) => {
       : user.email;
 };
 
-export const camelizeKeys = (object) => {
+export const camelizeKeys = (object: any): Record<string, unknown> => {
   return Object.fromEntries(Object.entries(object).map(([key, value]) => {
     if (Object.prototype.toString.call(value) === '[object Object]') {
       return [toCamelCase(key), camelizeKeys(value)];
@@ -196,8 +200,8 @@ export const camelizeKeys = (object) => {
   }));
 };
 
-export function minMax(items) {
-  return items.reduce((acc, val) => {
+export function minMax(items: number[]) {
+  return items.reduce<number[]>((acc, val) => {
     acc[0] = acc[0] === undefined || val < acc[0] ? val : acc[0];
     acc[1] = acc[1] === undefined || val > acc[1] ? val : acc[1];
     return acc;

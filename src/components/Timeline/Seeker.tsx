@@ -1,5 +1,5 @@
 import { clamp } from "lodash";
-import { FC, MouseEvent, useCallback } from "react";
+import { FC, useCallback } from "react";
 import { Block, Elem } from "../../utils/bem";
 
 import "./Seeker.styl";

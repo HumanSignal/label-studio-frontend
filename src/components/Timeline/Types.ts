@@ -1,3 +1,5 @@
+import { MouseEvent } from "react";
+
 export interface TimelineView {
   step: number,
   offset: number,
@@ -9,7 +11,7 @@ export interface TimelineView {
   onResize: (position: number) => void,
   onToggleVisibility: (id: string, visible: boolean) => void,
   onDeleteRegion: (id: string) => void,
-  onSelectRegion: (e: MouseEvent, id: string, visible: boolean) => void,
+  onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void,
 }
 
 export interface TimelineRegion {

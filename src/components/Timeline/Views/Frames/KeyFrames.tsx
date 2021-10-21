@@ -6,15 +6,12 @@ import { Block, Elem } from "../../../../utils/bem";
 import { TimelineRegion } from "../../Types";
 
 import "./KeyFrames.styl";
-
-type ClickEvent = MouseEvent<HTMLElement, globalThis.MouseEvent>
-
 export interface KeyFramesProps {
   region: TimelineRegion,
   step: number
   onToggleVisibility: (id: string, visible: boolean) => void,
   onDeleteRegion: (id: string) => void,
-  onSelectRegion: (e: ClickEvent, id: string) => void,
+  onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void,
 }
 
 export const KeyFrames: FC<KeyFramesProps> = ({
@@ -78,7 +75,7 @@ export const KeyFrames: FC<KeyFramesProps> = ({
       <Elem name="label">
         <Elem
           name="name"
-          onClick={(e) => {
+          onClick={(e: MouseEvent<HTMLDivElement>) => {
             e.stopPropagation();
             onSelectRegion?.(e, region.id);
           }}
@@ -130,13 +127,13 @@ const RegionAction: FC<{
   label: string | JSX.Element
   visible?: boolean
   danger?: boolean
-  onClick?: (e: ClickEvent) => void
+  onClick?: (e: MouseEvent<HTMLDivElement>) => void
 }> = ({ label, onClick, danger, visible }) => {
   return visible ?(
     <Block
       name="region-action"
       mod={{ danger }}
-      onClick={(e) => {
+      onClick={(e: MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
 

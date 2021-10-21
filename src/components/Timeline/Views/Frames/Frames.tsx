@@ -178,7 +178,7 @@ export const Frames: FC<TimelineView> = ({
   };
 
   return (
-    <Block name="timeline-frames" style={styles}>
+    <Block name="timeline-frames" style={styles as any}>
       <Elem
         name="indicator"
         onMouseDown={handleMovement}

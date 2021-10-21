@@ -27,7 +27,6 @@ interface CNOptions {
 
 type CNTagName = keyof ReactHTML | keyof ReactSVG | ComponentClass<unknown, unknown> | FunctionComponent<unknown> | string
 
-
 type CNComponentProps = {
   name: string
   tag?: FC<any> | CNTagName
@@ -39,7 +38,7 @@ type CNComponentProps = {
   component?: FC | CNTagName
 } & DOMAttributes<HTMLElement>
 
-type BemComponent = FunctionComponent<CNComponentProps>
+type BemComponent = FC<CNComponentProps>
 
 const CSS_PREFIX = process.env.CSS_PREFIX ?? 'dm-';
 
@@ -169,7 +168,7 @@ export const cn = (block: string, options: CNOptions = {}): CN => {
 export const BemWithSpecifiContext = (context?: React.Context<CN | null>) => {
   const Context = context ?? React.createContext<CN|null>(null);
 
-  const Block: BemComponent = React.forwardRef(({ tag = 'div', name, mod, mix, ...rest }, ref) => {
+  const Block = React.forwardRef(({ tag = 'div', name, mod, mix, ...rest }: CNComponentProps, ref) => {
     const rootClass = cn(name);
     const finalMix = ([] as [ CNMix? ]).concat(mix).filter(cn => !!cn);
     const className = rootClass.mod(mod).mix(...(finalMix as CNMix[]), rest.className).toClassName();
@@ -184,7 +183,7 @@ export const BemWithSpecifiContext = (context?: React.Context<CN | null>) => {
 
   Block.displayName = 'Block';
 
-  const Elem: BemComponent = React.forwardRef(({ tag = 'div', component, block, name, mod, mix, ...rest }, ref) => {
+  const Elem = React.forwardRef(({ tag = 'div', component, block, name, mod, mix, ...rest }: CNComponentProps, ref) => {
     const blockCtx = React.useContext(Context);
 
     const finalMix = ([] as [ CNMix? ]).concat(mix).filter(cn => !!cn);
