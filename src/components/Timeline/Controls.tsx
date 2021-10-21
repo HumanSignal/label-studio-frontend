@@ -5,16 +5,31 @@ import { Space } from "../../common/Space/Space";
 import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInterpolationDisabled, IconKeyframeAdd, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
-import { useMemo } from "react";
+import { DOMAttributes, FC, MouseEventHandler, useMemo } from "react";
 
-const relativePosition = (pos, fps) => {
+const relativePosition = (pos: number, fps: number) => {
   const value = pos % fps;
   const result = value > 0 ? value : fps;
 
   return result.toString().padStart(fps.toString().length, '0');
 };
 
-export const Controls = ({
+export interface ControlsProps {
+  length: number,
+  position: number,
+  frameRate: number,
+  onRewind: () => void,
+  onForward: () => void,
+  onPlayToggle: (playing: boolean) => void
+  onFullScreenToggle: (fullscreen: boolean) => void
+  onFrameBackward: MouseEventHandler<HTMLButtonElement>
+  onFrameForward: MouseEventHandler<HTMLButtonElement>
+  onKeyframeAdd: () => void
+  onKeyframeRemove: () => void
+  onInterpolationDelete: () => void
+}
+
+export const Controls: FC<ControlsProps> = ({
   length,
   position,
   frameRate,
@@ -51,9 +66,9 @@ export const Controls = ({
       </Elem>
 
       <Elem name="group" tag={Space} collapsed>
-        <ControlButton onClick={onRewind}><IconRewind/></ControlButton>
-        <ControlButton onClick={onPlayToggle}><IconPlay/></ControlButton>
-        <ControlButton onClick={onForward}><IconForward/></ControlButton>
+        <ControlButton onClick={() => onRewind?.()}><IconRewind/></ControlButton>
+        <ControlButton onClick={() => onPlayToggle?.(false)}><IconPlay/></ControlButton>
+        <ControlButton onClick={() => onForward?.()}><IconForward/></ControlButton>
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
@@ -66,7 +81,7 @@ export const Controls = ({
             position={relativePosition(length, frameRate)}
           />
         </Elem>
-        <ControlButton onClick={onFullScreenToggle}>
+        <ControlButton onClick={() => onFullScreenToggle?.(false)}>
           <IconFullscreen/>
         </ControlButton>
       </Elem>
@@ -74,7 +89,7 @@ export const Controls = ({
   );
 };
 
-const ControlButton = ({ children, ...props }) => {
+const ControlButton: FC<DOMAttributes<HTMLButtonElement> & {disabled?: boolean}> = ({ children, ...props }) => {
   return (
     <Button
       {...props}
@@ -87,7 +102,7 @@ const ControlButton = ({ children, ...props }) => {
   );
 };
 
-const Time = ({ time, position }) => {
+const Time: FC<{time: number, position: string}> = ({ time, position }) => {
   const formatted = new Date(time * 1000).toISOString().substr(11, 8);
 
   return (

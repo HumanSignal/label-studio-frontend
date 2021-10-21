@@ -2,11 +2,22 @@ import { Block, Elem } from "../../utils/bem";
 import { Controls } from "./Controls";
 import { Seeker } from "./Seeker";
 import { Frames } from "./Views/Frames/Frames";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
+import * as Views from "./Views";
 
 import "./Timeline.styl";
 
-export const Timeline = ({
+export interface TimelineProps {
+  regions: any[],
+  length: number,
+  position: number,
+  onPositionChange: (value: number) => void,
+  onToggleVisibility: (id: number, visibility: boolean) => void
+  onDeleteRegion: (id: number) => void,
+  onSelectRegion: (event: MouseEvent, id: number) => void
+}
+
+export const Timeline: FC<TimelineProps> = ({
   regions,
   length = 1024,
   position = 1,
@@ -34,7 +45,7 @@ export const Timeline = ({
       <Elem name="topbar">
         <Seeker
           length={length}
-          seek={currentPosition}
+          position={currentPosition}
           seekOffset={seekOffset}
           seekVisible={seekVisibleWidth}
           onIndicatorMove={setSeekOffset}

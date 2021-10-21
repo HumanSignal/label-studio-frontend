@@ -1,11 +1,20 @@
 import { clamp } from "lodash";
-import { useCallback } from "react";
+import { FC, MouseEvent, useCallback } from "react";
 import { Block, Elem } from "../../utils/bem";
 
 import "./Seeker.styl";
 
-export const Seeker = ({
-  seek,
+export interface SeekerProps {
+  position: number
+  length: number,
+  seekOffset: number,
+  seekVisible: number
+  onIndicatorMove: (position: number) => void
+  onSeek: (position: number) => void
+}
+
+export const Seeker: FC<SeekerProps> = ({
+  position,
   length,
   seekOffset,
   seekVisible,
@@ -15,7 +24,7 @@ export const Seeker = ({
   const width = `${seekVisible / length * 100}%`;
   const offsetLimit = length - seekVisible;
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
-  const seekerOffset = seek / length * 100;
+  const seekerOffset = position / length * 100;
 
   const onIndicatorDrag = useCallback((e) => {
     const indicator = e.target;
@@ -23,7 +32,7 @@ export const Seeker = ({
     const startDrag = e.pageX;
     const parentWidth = indicator.parentNode.clientWidth;
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: globalThis.MouseEvent) => {
       const limit = parentWidth - indicator.clientWidth;
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;
@@ -46,7 +55,7 @@ export const Seeker = ({
     const startDrag = e.pageX;
     const parentWidth = indicator.parentNode.clientWidth;
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: globalThis.MouseEvent) => {
       const limit = parentWidth - indicator.clientWidth;
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;

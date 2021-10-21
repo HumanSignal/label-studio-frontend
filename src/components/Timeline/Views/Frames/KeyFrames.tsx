@@ -1,11 +1,29 @@
+import { JSX } from "@babel/types";
 import chroma from "chroma-js";
-import { useMemo, useState } from "react";
+import { FC, MouseEvent, useMemo, useState } from "react";
 import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
+import { TimelineRegion } from "../../Types";
 
 import "./KeyFrames.styl";
 
-export const KeyFrames = ({ region, step, onSelectRegion, onToggleVisibility, onDeleteRegion }) => {
+type ClickEvent = MouseEvent<HTMLElement, globalThis.MouseEvent>
+
+export interface KeyFramesProps {
+  region: TimelineRegion,
+  step: number
+  onToggleVisibility: (id: string, visible: boolean) => void,
+  onDeleteRegion: (id: string) => void,
+  onSelectRegion: (e: ClickEvent, id: string) => void,
+}
+
+export const KeyFrames: FC<KeyFramesProps> = ({
+  region,
+  step,
+  onSelectRegion,
+  onToggleVisibility,
+  onDeleteRegion,
+}) => {
   const { label, color, visible, selected, keyframes } = region;
   const [hovered, setHovered] = useState(false);
 
@@ -108,7 +126,12 @@ export const KeyFrames = ({ region, step, onSelectRegion, onToggleVisibility, on
   );
 };
 
-const RegionAction = ({ label, onClick, danger, visible }) => {
+const RegionAction: FC<{
+  label: string | JSX.Element
+  visible?: boolean
+  danger?: boolean
+  onClick?: (e: ClickEvent) => void
+}> = ({ label, onClick, danger, visible }) => {
   return visible ?(
     <Block
       name="region-action"
@@ -116,7 +139,8 @@ const RegionAction = ({ label, onClick, danger, visible }) => {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        onClick(e);
+
+        onClick?.(e);
       }}>
       {label}
     </Block>

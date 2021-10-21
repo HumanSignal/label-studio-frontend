@@ -1,21 +1,22 @@
 import { clamp } from "lodash";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
+import { TimelineView } from "../../Types";
 import "./Frames.styl";
 import { KeyFrames } from "./KeyFrames";
 
-const toSteps = (num, step) => {
+const toSteps = (num: number, step: number) => {
   return Math.floor(num / step);
 };
 
-const roundToStep = (num, step) => {
+const roundToStep = (num: number, step: number) => {
   const steps = toSteps(num, step);
 
   return (steps * step);
 };
 
-export const Frames = ({
+export const Frames: FC<TimelineView> = ({
   step = 10,
   offset=0,
   position = 1,
@@ -30,8 +31,8 @@ export const Frames = ({
 }) => {
   const scrollMultiplier = 1.25;
 
-  const scrollable = useRef();
-  const [hoverOffset, setHoverOffset] = useState(null);
+  const scrollable = useRef<HTMLDivElement>();
+  const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
   const [offsetY, setOffsetY] = useState(0);
   const [seekerPosition, setSeekerPosition] = useState(0);
@@ -73,7 +74,7 @@ export const Frames = ({
   }, [step, length]);
 
   const scrollHandler = useCallback((e) => {
-    const scroll = scrollable.current;
+    const scroll = scrollable.current!;
 
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
       const limit = scroll.scrollWidth - scroll.clientWidth;
@@ -103,9 +104,9 @@ export const Frames = ({
     const indicator = e.target;
     const startOffset = indicator.offsetLeft + currentOffsetX;
     const startMouse = e.pageX;
-    const limit = scrollable.current.scrollWidth - indicator.clientWidth;
+    const limit = scrollable.current!.scrollWidth - indicator.clientWidth;
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: globalThis.MouseEvent) => {
       const targetOffset = e.pageX - startMouse;
       const finalOffset = clamp(startOffset + targetOffset, 0, limit);
 
@@ -122,16 +123,20 @@ export const Frames = ({
   }, [currentOffsetX, step, setIndicatorOffset]);
 
   const hoverHandler = useCallback((e) => {
-    const offset = roundToStep(e.pageX - scrollable.current.getBoundingClientRect().left, step);
+    if (scrollable.current) {
+      const offset = roundToStep(e.pageX - scrollable.current.getBoundingClientRect().left, step);
 
-    setHoverOffset(offset);
+      setHoverOffset(offset);
+    }
   }, [currentOffsetX, step]);
 
   const scrollClickHandler = useCallback((e) => {
-    const offset = roundToStep(e.pageX - scrollable.current.getBoundingClientRect().left, step);
+    if (scrollable.current) {
+      const offset = roundToStep(e.pageX - scrollable.current.getBoundingClientRect().left, step);
 
-    setIndicatorOffset(offset + currentOffsetX);
-    setHoverOffset(null);
+      setIndicatorOffset(offset + currentOffsetX);
+      setHoverOffset(null);
+    }
   }, [currentOffsetX, step]);
 
   const seekerOffset = useMemo(() => {
@@ -148,15 +153,15 @@ export const Frames = ({
   }, [currentOffsetX, currentOffsetY]);
 
   useEffect(() => {
-    const handler = (e) => e.preventDefault();
+    const handler = (e: globalThis.WheelEvent) => e.preventDefault();
 
-    scrollable.current.addEventListener('wheel', handler);
+    scrollable.current!.addEventListener('wheel', handler);
 
-    return () => scrollable.current.removeEventListener('wheel', handler);
+    return () => scrollable.current!.removeEventListener('wheel', handler);
   }, []);
 
   useEffect(() => {
-    onResize?.(toSteps(scrollable.current.clientWidth, step));
+    onResize?.(toSteps(scrollable.current!.clientWidth, step));
   }, [viewWidth, step]);
 
   useEffect(() => {
@@ -183,7 +188,7 @@ export const Frames = ({
       {isDefined(hoverOffset) && (
         <Elem
           name="hover"
-          style={{ left: hoverOffset }}
+          style={{ left: hoverOffset! }}
         />
       )}
 

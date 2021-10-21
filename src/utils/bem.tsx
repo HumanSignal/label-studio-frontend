@@ -1,4 +1,4 @@
-import React, { ComponentClass, DOMAttributes, FunctionComponent, ReactHTML, ReactSVG } from 'react';
+import React, { ComponentClass, CSSProperties, DOMAttributes, FC, FunctionComponent, ReactHTML, ReactSVG } from 'react';
 
 interface CNMod {
   [key: string]: unknown
@@ -27,14 +27,16 @@ interface CNOptions {
 
 type CNTagName = keyof ReactHTML | keyof ReactSVG | ComponentClass<unknown, unknown> | FunctionComponent<unknown> | string
 
+
 type CNComponentProps = {
   name: string
-  tag?: CNTagName
+  tag?: FC<any> | CNTagName
   block?: string
   mod?: CNMod
   mix?: CNMix | CNMix[]
   className?: string
-  component?: CNTagName
+  style?: CSSProperties
+  component?: FC | CNTagName
 } & DOMAttributes<HTMLElement>
 
 type BemComponent = FunctionComponent<CNComponentProps>
@@ -164,7 +166,7 @@ export const cn = (block: string, options: CNOptions = {}): CN => {
   return classNameBuilder;
 };
 
-export const BemWithSpecifiContext = (context: React.Context<CN | null>) => {
+export const BemWithSpecifiContext = (context?: React.Context<CN | null>) => {
   const Context = context ?? React.createContext<CN|null>(null);
 
   const Block: BemComponent = React.forwardRef(({ tag = 'div', name, mod, mix, ...rest }, ref) => {
