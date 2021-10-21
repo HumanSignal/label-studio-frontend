@@ -1,0 +1,5 @@
+<View>
+  <Header>Label the video:</Header>
+  <Video name="video" value="$video" />
+  <VideoBBox name="box" toName="video" />
+</View>

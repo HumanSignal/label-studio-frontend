@@ -5,6 +5,7 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
+import Types from "../../../core/Types";
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
@@ -56,6 +57,22 @@ const Model = types
   .volatile(() => ({
     errors: [],
     ref: React.createRef(),
+    frame: 0,
+  }))
+  .views(self => ({
+    get annotation() {
+      return Types.getParentOfTypeString(self, "AnnotationStore")?.selected;
+    },
+
+    get regs() {
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+    },
+
+    get frameRate() {
+      const given = self.framerate ?? 25;
+
+      return +(given < 1 ? 1 / given : given);
+    },
   }))
   .actions(self => ({
     handleSyncSeek(time) {
@@ -79,6 +96,36 @@ const Model = types
           self.muted = true;
         }
       }
+    },
+
+    setOnlyFrame(frame) {
+      self.frame = frame;
+    },
+
+    setFrame(frame) {
+      self.frame = frame;
+      self.ref.current.currentTime = frame * self.framerate;
+    },
+
+    addRegion(data) {
+      const sequence = [
+        {
+          frame: self.frame,
+          enabled: true,
+          rotation: 0,
+          ...data,
+        },
+      ];
+      const control = self.annotation?.toNames.get(self.name)?.[0];
+
+      if (!control) {
+        console.error("NO CONTROL");
+        return;
+      }
+
+      const area = self.annotation.createResult({ sequence }, {}, control, self);
+
+      return area;
     },
   }));
 

@@ -1,4 +1,3 @@
-import { Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
@@ -8,6 +7,7 @@ import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 
 import "./Video.styl";
+import { VideoRegions } from "./VideoRegions";
 
 const hotkeys = Hotkey("Video", "Video Annotation");
 
@@ -42,9 +42,8 @@ const PlayPause = ({ item, video }) => {
 };
 
 const FrameStep = ({ item, video }) => {
-  const frameRate = +(item.framerate ?? 1 / 25);
-  const onForward = () => { video.pause(); video.currentTime += frameRate; };
-  const onBackward = () => { video.pause(); video.currentTime -= frameRate; };
+  const onForward = () => { video.pause(); item.setFrame(item.frame + 1); };
+  const onBackward = () => { video.pause(); item.setFrame(item.frame - 1); };
 
   useEffect(() => {
     hotkeys.addNamed("video:frame-forward", e => {
@@ -68,7 +67,7 @@ const FrameStep = ({ item, video }) => {
           <IconPlayerStep style={{ transform: "rotate(180deg)" }} />
         </Elem>
       </Hotkey.Tooltip>
-      <Hotkey.Tooltip name="video:frame-backward" placement="bottomLeft">
+      <Hotkey.Tooltip name="video:frame-forward" placement="bottomLeft">
         <Elem name="frame" onClick={onForward}>
           <IconPlayerStep />
         </Elem>
@@ -85,6 +84,7 @@ const Progress = ({ item, video }) => {
     video.ontimeupdate = () => {
       const percent = video.currentTime / video.duration;
 
+      item.setOnlyFrame(video.currentTime / item.framerate);
       timeRef.current.style.left = (percent * 100) + "%";
     };
 
@@ -134,9 +134,16 @@ function onPlayPause(e) {
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
   const [mounted, setMounted] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (item.ref.current) setMounted(true);
+    const videoEl = item.ref.current;
+
+    if (videoEl) {
+      setMounted(true);
+      if (videoEl.readyState === 4) setLoaded(true);
+      else videoEl.addEventListener("loadedmetadata", () => { console.log("LOADED"); setLoaded(true); });
+    }
   }, [item.ref.current]);
 
   return (
@@ -145,6 +152,13 @@ const HtxVideoView = ({ item }) => {
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
       <Block name="video">
+        {loaded && (
+          <VideoRegions
+            item={item}
+            width={item.ref.current.offsetWidth}
+            height={item.ref.current.offsetHeight}
+          />
+        )}
         <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} />
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>

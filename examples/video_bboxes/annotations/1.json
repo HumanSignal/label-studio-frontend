@@ -1,0 +1,37 @@
+{
+    "annotations": [
+        {
+            "id": "1001",
+            "result": [
+                {
+                    "id": "tJhYZLMC9G",
+                    "type": "videobbox",
+                    "from_name": "box",
+                    "to_name": "video",
+                    "value": {
+                      "sequence": [
+                        {
+                          "frame": 1,
+                          "enabled": true,
+                          "x": 38.266666666666666,
+                          "y": 38.898756660746,
+                          "width": 41.333333333333336,
+                          "height": 22.202486678507995,
+                          "rotation": 0
+                        },
+                        {
+                          "frame": 5,
+                          "enabled": false,
+                          "x": 40.266666666666666,
+                          "y": 49.898756660746,
+                          "width": 41.333333333333336,
+                          "height": 22.202486678507995,
+                          "rotation": 0
+                        }
+                      ]
+                    }
+                }
+            ]
+        }
+    ]
+}

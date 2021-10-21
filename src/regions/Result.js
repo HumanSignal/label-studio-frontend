@@ -51,6 +51,7 @@ const Result = types
       "textarea",
       "rating",
       "pairwise",
+      "videobbox",
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
@@ -72,6 +73,7 @@ const Result = types
       brushlabels: types.maybe(types.array(types.string)),
       timeserieslabels: types.maybe(types.array(types.string)),
       taxonomy: types.frozen(), // array of arrays of strings
+      sequence: types.frozen(),
     }),
     // info about object and region
     // meta: types.frozen(),

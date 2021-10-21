@@ -21,7 +21,7 @@ import { Dialogue } from "../examples/phrases";
 import { AudioClassification } from "../examples/audio_classification";
 import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
-import { VideoRegions } from "../examples/video";
+import { VideoBBoxes } from "../examples/video_bboxes";
 
 /**
  * Image
@@ -62,7 +62,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = RichTextHtml;
+const data = VideoBBoxes;
 
 function getData(task) {
   if (task && task.data) {
