@@ -20,9 +20,12 @@ export const Frames = ({
   offset=0,
   position = 1,
   length = 1024,
+  regions,
   onScroll,
   onChange,
   onResize,
+  onToggleVisibility,
+  onDeleteRegion,
 }) => {
   const scrollMultiplier = 1.25;
 
@@ -63,7 +66,7 @@ export const Frames = ({
   }, [step, length]);
 
   const scrollHandler = useCallback((e) => {
-    const scroll = e.target;
+    const scroll = scrollable.current;
     const limit = scroll.scrollWidth - scroll.clientWidth;
     const newOffsetX = clamp(offsetX + (e.deltaX * scrollMultiplier), 0, limit);
     const newOffsetY = offsetY + (e.deltaY * scrollMultiplier);
@@ -181,45 +184,15 @@ export const Frames = ({
         <Elem name="filler"/>
 
         <Elem name="keyframes">
-          <KeyFrames
-            label="Airplane"
-            color="#FA8C16"
-            step={step}
-            keyframes={[{
-              frame: 10,
-              stop: false,
-            }, {
-              frame: 24,
-              stop: true,
-            }, {
-              frame: 31,
-              stop: false,
-            }, {
-              frame: 84,
-              stop: true,
-            }]}
-          />
-          <KeyFrames
-            label="Car"
-            color="#7F64FF"
-            step={step}
-            keyframes={[{
-              frame: 27,
-              stop: false,
-            }, {
-              frame: 35,
-              stop: true,
-            }, {
-              frame: 38,
-              stop: false,
-            }, {
-              frame: 55,
-              stop: false,
-            }, {
-              frame: 102,
-              stop: true,
-            }]}
-          />
+          {regions.map(region => (
+            <KeyFrames
+              key={region.id}
+              step={step}
+              region={region}
+              onToggleVisibility={onToggleVisibility}
+              onDeleteRegion={onDeleteRegion}
+            />
+          ))}
         </Elem>
       </Elem>
     </Block>

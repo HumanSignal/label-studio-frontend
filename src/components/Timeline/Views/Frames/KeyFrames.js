@@ -1,10 +1,13 @@
 import chroma from "chroma-js";
 import { useMemo } from "react";
+import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
 
 import "./KeyFrames.styl";
 
-export const KeyFrames = ({ label, color, selected, step, keyframes }) => {
+export const KeyFrames = ({ region, step, onToggleVisibility, onDeleteRegion }) => {
+  const { label, color, visible, selected, keyframes } = region;
+
   const background = chroma(color).alpha(0.3).css();
   const borderColor = chroma(color).alpha(0.2);
 
@@ -50,6 +53,17 @@ export const KeyFrames = ({ label, color, selected, step, keyframes }) => {
     <Block name="keyframes" style={styles}>
       <Elem name="label">
         <Elem name="name">{label}</Elem>
+        <Elem name="actions">
+          <RegionAction
+            label={visible ? <IconEyeOpened/> : <IconEyeClosed/>}
+            onClick={() => onToggleVisibility?.(region.id, !visible)}
+          />
+          <RegionAction
+            danger
+            label={<IconCross/>}
+            onClick={() => onDeleteRegion?.(region.id)}
+          />
+        </Elem>
       </Elem>
       <Elem name="keypoints">
         {connections.map((conn, i) => {
@@ -73,6 +87,21 @@ export const KeyFrames = ({ label, color, selected, step, keyframes }) => {
           );
         })}
       </Elem>
+    </Block>
+  );
+};
+
+const RegionAction = ({ label, onClick, danger }) => {
+  return (
+    <Block
+      name="region-action"
+      mod={{ danger }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick(e);
+      }}>
+      {label}
     </Block>
   );
 };

@@ -6,13 +6,18 @@
     height 20px
     width min-content
     position sticky
+    display flex
 
   &__name
     color #fff
     padding 0 6px
+    display flex
     border-radius 4px
     width min-content
     color var(--color)
+    font-size 13px
+    line-height 16px
+    align-items center
     background var(--background)
     box-shadow 0 0 0 1px var(--border) inset
 
@@ -38,5 +43,24 @@
     transform translate3d(-50%, -50%, 0) rotate(45deg)
     background-color var(--point-color)
 
+  &__actions
+    display flex
+
   &:hover
     background-color var(--hover)
+
+.region-action
+  margin 1px
+  margin-left 2px
+  height 18px
+  min-width 18px
+  border-radius 3px
+  background #FFFFFF
+  box-shadow 0px 1px 0px rgba(0, 0, 0, 0.1), 0px 0px 0px 1px rgba(0, 0, 0, 0.15)
+
+  svg
+    width 18px
+    height 18px
+
+  &_danger
+    color $danger_color
