@@ -26,6 +26,7 @@ export const Frames = ({
   onResize,
   onToggleVisibility,
   onDeleteRegion,
+  onSelectRegion,
 }) => {
   const scrollMultiplier = 1.25;
 
@@ -203,6 +204,7 @@ export const Frames = ({
               key={region.id}
               step={step}
               region={region}
+              onSelectRegion={onSelectRegion}
               onToggleVisibility={onToggleVisibility}
               onDeleteRegion={onDeleteRegion}
             />

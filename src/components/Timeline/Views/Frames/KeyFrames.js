@@ -1,12 +1,13 @@
 import chroma from "chroma-js";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
 
 import "./KeyFrames.styl";
 
-export const KeyFrames = ({ region, step, onToggleVisibility, onDeleteRegion }) => {
+export const KeyFrames = ({ region, step, onSelectRegion, onToggleVisibility, onDeleteRegion }) => {
   const { label, color, visible, selected, keyframes } = region;
+  const [hovered, setHovered] = useState(false);
 
   const background = chroma(color).alpha(0.3).css();
   const borderColor = chroma(color).alpha(0.2);
@@ -50,18 +51,33 @@ export const KeyFrames = ({ region, step, onToggleVisibility, onDeleteRegion }) 
   }, [keyframes, start, step]);
 
   return (
-    <Block name="keyframes" style={styles}>
+    <Block
+      name="keyframes"
+      style={styles}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <Elem name="label">
-        <Elem name="name">{label}</Elem>
+        <Elem
+          name="name"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectRegion?.(e, region.id);
+          }}
+        >
+          {label}
+        </Elem>
         <Elem name="actions">
           <RegionAction
             label={visible ? <IconEyeOpened/> : <IconEyeClosed/>}
             onClick={() => onToggleVisibility?.(region.id, !visible)}
+            visible={!visible || hovered}
           />
           <RegionAction
             danger
             label={<IconCross/>}
             onClick={() => onDeleteRegion?.(region.id)}
+            visible={hovered}
           />
         </Elem>
       </Elem>
@@ -71,6 +87,7 @@ export const KeyFrames = ({ region, step, onToggleVisibility, onDeleteRegion }) 
             <Elem
               key={i}
               name="connection"
+              mod={{ hidden: !visible }}
               style={{
                 left: conn.offset + (step / 2),
                 width: conn.width ? conn.width : '100%',
@@ -91,8 +108,8 @@ export const KeyFrames = ({ region, step, onToggleVisibility, onDeleteRegion }) 
   );
 };
 
-const RegionAction = ({ label, onClick, danger }) => {
-  return (
+const RegionAction = ({ label, onClick, danger, visible }) => {
+  return visible ?(
     <Block
       name="region-action"
       mod={{ danger }}
@@ -103,5 +120,5 @@ const RegionAction = ({ label, onClick, danger }) => {
       }}>
       {label}
     </Block>
-  );
+  ) : null;
 };

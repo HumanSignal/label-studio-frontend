@@ -6,7 +6,13 @@ import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInt
 
 import "./Controls.styl";
 import { useMemo } from "react";
-import { formatDuration } from "date-fns";
+
+const relativePosition = (pos, fps) => {
+  const value = pos % fps;
+  const result = value > 0 ? value : fps;
+
+  return result.toString().padStart(fps.toString().length, '0');
+};
 
 export const Controls = ({
   length,
@@ -54,10 +60,10 @@ export const Controls = ({
         <Elem name="time">
           <Time
             time={currentTime}
-            position={`${(position % frameRate) + 1}`.padStart(2, '0')}
+            position={relativePosition(position, frameRate)}
           />/<Time
             time={time}
-            position={`${(length % frameRate) + 1}`.padStart(2, '0')}
+            position={relativePosition(length, frameRate)}
           />
         </Elem>
         <ControlButton onClick={onFullScreenToggle}>

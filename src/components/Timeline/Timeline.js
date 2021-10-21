@@ -13,6 +13,7 @@ export const Timeline = ({
   onPositionChange,
   onToggleVisibility,
   onDeleteRegion,
+  onSelectRegion,
 }) => {
   const [currentPosition, setCurrentPosition] = useState(position);
   const [seekOffset, setSeekOffset] = useState(0);
@@ -62,6 +63,7 @@ export const Timeline = ({
           onResize={setSeekVisibleWidth}
           onToggleVisibility={onToggleVisibility}
           onDeleteRegion={onDeleteRegion}
+          onSelectRegion={onSelectRegion}
         />
       </Elem>
     </Block>

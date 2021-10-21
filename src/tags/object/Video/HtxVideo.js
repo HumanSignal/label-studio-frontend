@@ -157,6 +157,7 @@ const HtxVideoView = ({ item }) => {
       stop: true,
     }],
   }, {
+    id: 2,
     label: "Car",
     color: "#7F64FF",
     visible: true,
@@ -178,6 +179,7 @@ const HtxVideoView = ({ item }) => {
       stop: true,
     }],
   }, {
+    id: 3,
     label: "Car",
     color: "#7F64FF",
     visible: true,
@@ -228,6 +230,12 @@ const HtxVideoView = ({ item }) => {
         }}
         onDeleteRegion={(id) => {
           setRegions(regions.filter(reg => reg.id !== id));
+        }}
+        onSelectRegion={(_, id) => {
+          setRegions(regions.map(reg => {
+            reg.selected = reg.id === id;
+            return reg;
+          }));
         }}
       />
     </ObjectTag>
