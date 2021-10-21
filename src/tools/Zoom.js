@@ -80,8 +80,8 @@ const _Tool = types
 
     handleDrag(ev) {
       const item = self.obj;
-      let posx = item.zoomingPositionX + ev.movementX;
-      let posy = item.zoomingPositionY + ev.movementY;
+      const posx = item.zoomingPositionX + ev.movementX;
+      const posy = item.zoomingPositionY + ev.movementY;
 
       item.setZoomPosition(posx, posy);
     },

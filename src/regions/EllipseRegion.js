@@ -128,8 +128,8 @@ const Model = types
       const cx = self.x;
       const cy = self.y;
       //going to system where center coordinates are (0,0)
-      var rel_x = x - cx;
-      var rel_y = y - cy;
+      let rel_x = x - cx;
+      let rel_y = y - cy;
 
       //going to system where our ellipse has angle 0 to X-Axis via rotate matrix
       const theta = self.rotation;
