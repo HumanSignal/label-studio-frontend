@@ -1,0 +1,42 @@
+.keyframes
+  padding 8px 0
+
+  &__label
+    left 0
+    height 20px
+    width min-content
+    position sticky
+
+  &__name
+    color #fff
+    padding 0 6px
+    border-radius 4px
+    width min-content
+    color var(--color)
+    background var(--background)
+    box-shadow 0 0 0 1px var(--border) inset
+
+  &__keypoints
+    height 10px
+    margin-top 2px
+    position relative
+
+  &__connection
+    top 50%
+    height 2px
+    width 100%
+    position absolute
+    transform translateY(-50%)
+    background-color var(--point-color)
+
+  &__point
+    top 50%
+    width 6px
+    height 6px
+    position absolute
+    border-radius 2px
+    transform translate3d(-50%, -50%, 0) rotate(45deg)
+    background-color var(--point-color)
+
+  &:hover
+    background-color var(--hover)

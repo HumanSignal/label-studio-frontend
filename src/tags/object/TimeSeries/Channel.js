@@ -666,7 +666,7 @@ class ChannelD3 extends React.Component {
       const values = data[column];
       // indices of the first and last displayed values
       let i = d3.bisectRight(data[time], range[0]);
-      let j = d3.bisectRight(data[time], range[1]);
+      const j = d3.bisectRight(data[time], range[1]);
       // find min-max
       let min = values[i];
       let max = values[i];

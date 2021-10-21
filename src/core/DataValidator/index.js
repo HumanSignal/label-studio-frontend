@@ -78,7 +78,7 @@ export class DataValidator {
 
     setTimeout(() => {
       if (errors.length) {
-        for (let callback of this.callbacks) {
+        for (const callback of this.callbacks) {
           callback(errors);
         }
       }

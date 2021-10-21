@@ -111,7 +111,7 @@ export const errorBuilder = {
  * @param {boolean} withNullType
  */
 const getTypeDescription = (type, withNullType = true) => {
-  let description = type
+  const description = type
     .describe()
     .match(/([a-z0-9?|]+)/gi)
     .join("")
@@ -138,7 +138,7 @@ const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
 
   if (!tree.children) return [];
 
-  for (let child of tree.children) {
+  for (const child of tree.children) {
     /* Create a child without children and
     assign id of the parent for quick mathcing */
     const parentTypes = [...parentParentTypes, ...(parent?.type ? [parent?.type] : [])];
@@ -188,7 +188,7 @@ const validateToNameTag = (element, model, flatTree) => {
 
   const names = element.toname.split(","); // for pairwise
 
-  for (let name of names) {
+  for (const name of names) {
     // Find referenced tag in the tree
     const controlledTag = flatTree.find(item => item.name === name);
 
@@ -230,7 +230,7 @@ const validateAttributes = (child, model, fieldsToSkip) => {
   const result = [];
   const properties = Object.keys(model.properties);
 
-  for (let key of properties) {
+  for (const key of properties) {
     if (!{}.hasOwnProperty.call(child, key)) continue;
     if (fieldsToSkip.includes(key)) continue;
     const value = child[key];
@@ -263,7 +263,7 @@ export class ConfigValidator {
     const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags", "parentTypes"];
     const validationResult = [];
 
-    for (let child of flatTree) {
+    for (const child of flatTree) {
       const model = Registry.getModelByTag(child.type);
       // Validate name attribute
       const nameValidation = validateNameTag(child, model);

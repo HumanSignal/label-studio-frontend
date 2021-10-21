@@ -32,7 +32,7 @@ const VisibilityMixin = types
 
           "choice-selected": ({ tagName, choiceValue }) => {
             if (!tagName) {
-              for (let choices of self.annotation.names.values()) {
+              for (const choices of self.annotation.names.values()) {
                 if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
                   return true;
                 }

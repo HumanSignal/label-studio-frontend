@@ -1,9 +1,9 @@
-import { Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
+import { Timeline } from "../../../components/Timeline/Timeline";
 import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 
@@ -148,6 +148,7 @@ const HtxVideoView = ({ item }) => {
         <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} />
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
+      <Timeline/>
     </ObjectTag>
   );
 };

@@ -191,7 +191,7 @@ const Model = types
       const keys = Object.keys(raw);
       const data = [];
 
-      for (let key of keys) {
+      for (const key of keys) {
         for (let i = 0; i < raw[key].length; i++) {
           if (!data[i]) {
             data[i] = { [key]: raw[key][i] };
@@ -696,7 +696,7 @@ const Overview = observer(({ item, data, series }) => {
         .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
 
       gChannels.current.selectAll("path").remove();
-      for (let key of keys) drawPath(key);
+      for (const key of keys) drawPath(key);
 
       drawAxis();
       // gb.current.selectAll("*").remove();

@@ -1,10 +1,40 @@
 /**
+ * Returns element absolute position relative to document
+ * @param {HTMLElement} elem
+ * @returns
+ */
+const getAbsolutePosition = (elem) => { // crossbrowser version
+  const box = elem.getBoundingClientRect();
+
+  const body = document.body;
+  const docEl = document.documentElement;
+
+  const scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+  const scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+  const clientTop = docEl.clientTop || body.clientTop || 0;
+  const clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+  const top  = box.top +  scrollTop - clientTop;
+  const left = box.left + scrollLeft - clientLeft;
+
+  const bbox = elem.getBoundingClientRect();
+
+  return {
+    width: bbox.width,
+    height: bbox.height,
+    top: Math.round(top),
+    left: Math.round(left),
+  };
+};
+
+/**
  * @param {HTMLElement} source
  * @param {HTMLElement} target
  */
 const positioner = (source, target) => {
-  const sourcePosition = source.getBoundingClientRect();
-  const targetPosition = target.getBoundingClientRect();
+  const sourcePosition = getAbsolutePosition(source);
+  const targetPosition = getAbsolutePosition(target);
 
   return {
     source: sourcePosition,
@@ -32,7 +62,7 @@ export const alignElements = (elem, target, align, padding = 0) => {
   let offsetTop = 0;
 
   const pos = positioner(elem, target);
-  let resultAlign = align.split("-");
+  const resultAlign = align.split("-");
 
   switch (align) {
     case "top-center":

@@ -25,7 +25,12 @@ export const Tooltip = forwardRef(({
   const [align, setAlign] = useState("top-center");
 
   const calculatePosition = useCallback(() => {
-    const { left, top, align: resultAlign } = alignElements(triggerElement.current, tooltipElement.current, align, 10);
+    const { left, top, align: resultAlign } = alignElements(
+      triggerElement.current,
+      tooltipElement.current,
+      align,
+      10,
+    );
 
     setOffset({ left, top });
     setAlign(resultAlign);

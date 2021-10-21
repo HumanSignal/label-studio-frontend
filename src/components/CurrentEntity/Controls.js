@@ -1,6 +1,5 @@
 import { inject, observer } from "mobx-react";
 import { Button } from "../../common/Button/Button";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
 import { IconBan } from "../../assets/icons";

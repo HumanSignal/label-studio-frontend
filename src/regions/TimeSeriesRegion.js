@@ -110,7 +110,7 @@ const Model = types
     serialize() {
       // convert to original format from data/csv
       const format = self.parent.timeformat ? d3.timeFormat(self.parent.timeformat) : Number;
-      let res = {
+      const res = {
         value: {
           start: format(self.start),
           end: format(self.end),
