@@ -33,7 +33,7 @@ const PersistentStateMixin = types
       if (!stored || stored.task !== getRoot(self).task?.id) return;
       const values = stored.values || {};
 
-      for (let key of Object.keys(values)) {
+      for (const key of Object.keys(values)) {
         self[key] = values[key];
       }
     },

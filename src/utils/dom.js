@@ -32,7 +32,7 @@ export const alignElements = (elem, target, align, padding = 0) => {
   let offsetTop = 0;
 
   const pos = positioner(elem, target);
-  let resultAlign = align.split("-");
+  const resultAlign = align.split("-");
 
   switch (align) {
     case "top-center":

@@ -69,7 +69,7 @@ const SelectionMap = types.model(
         });
       });
       self.annotation.unselectStates();
-      for (let [controlName, value] of Object.entries(valuesFromControls)) {
+      for (const [controlName, value] of Object.entries(valuesFromControls)) {
         const control = controlsByName[controlName];
 
         control.updateFromResult?.(value);
@@ -81,13 +81,13 @@ const SelectionMap = types.model(
       self.afterUnselect(region);
     },
     clear() {
-      let regionEntries = self.selected.toJS();
+      const regionEntries = self.selected.toJS();
 
-      for (let [, region] of regionEntries) {
+      for (const [, region] of regionEntries) {
         self.beforeUnselect(region);
       }
       self.selected.clear();
-      for (let [, region] of regionEntries) {
+      for (const [, region] of regionEntries) {
         self.afterUnselect(region);
       }
     },
@@ -109,7 +109,7 @@ export default types.model("RegionStore", {
 }).views(self => {
   let lastClickedItem;
   const getShiftClickSelectedRange = (item, tree) => {
-    let regions = [];
+    const regions = [];
     let clickedRegionsFound = 0;
 
     Tree.traverseTree({ children:tree }, (node) => {
@@ -210,7 +210,7 @@ export default types.model("RegionStore", {
 
       Object.keys(lookup).forEach(key => {
         const el = lookup[key];
-        let pid = el["item"].parentID;
+        const pid = el["item"].parentID;
 
         if (pid) {
           let parent = lookup[pid];
@@ -261,7 +261,7 @@ export default types.model("RegionStore", {
         const el = enrich(labels[key], idx, true, map[key]);
 
         el["children"] = map[key].map(r => {
-          let child = enrich(r, idx++, false, null, onClick);
+          const child = enrich(r, idx++, false, null, onClick);
 
           child.item = r;
           child.isArea = true;

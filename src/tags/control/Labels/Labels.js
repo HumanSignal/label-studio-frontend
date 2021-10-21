@@ -104,8 +104,8 @@ const Model = LabelMixin.views(self => ({
   validate() {
     const regions = self.annotation.regionStore.regions;
 
-    for (let r of regions) {
-      for (let s of r.states) {
+    for (const r of regions) {
+      for (const s of r.states) {
         if (s.name === self.name) {
           return true;
         }

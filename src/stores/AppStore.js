@@ -176,7 +176,7 @@ export default types
         "awaitingSuggestions",
       ];
 
-      for (let n of names) if (n in flags) self[n] = flags[n];
+      for (const n of names) if (n in flags) self[n] = flags[n];
     }
 
     /**

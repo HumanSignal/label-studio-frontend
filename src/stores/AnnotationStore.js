@@ -268,7 +268,7 @@ const Annotation = types
     },
 
     extendSelectionWith(areas) {
-      for (let area of (Array.isArray(areas) ? areas : [areas])) {
+      for (const area of (Array.isArray(areas) ? areas : [areas])) {
         self.regionStore.toggleSelection(area, true);
       }
     },
@@ -407,7 +407,7 @@ const Annotation = types
      * @param {*} region
      */
     deleteRegion(region) {
-      let { regions } = self.regionStore;
+      const { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
 
@@ -583,7 +583,7 @@ const Annotation = types
 
       let audiosNum = 0;
       let audioNode = null;
-      let mod = "shift+space";
+      const mod = "shift+space";
       let comb = mod;
 
       // [TODO] we need to traverse this two times, fix
@@ -1171,7 +1171,7 @@ export default types
       const pk = options.pk || options.id;
 
       //
-      let node = {
+      const node = {
         userGenerate: false,
 
         ...options,
