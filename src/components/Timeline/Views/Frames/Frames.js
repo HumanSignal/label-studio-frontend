@@ -47,14 +47,20 @@ export const Frames = ({
     return bg.join(", ");
   }, [step]);
 
-  const setScroll = useCallback((left, top) => {
-    if (offsetX !== left) setOffsetX(left);
-    if (offsetY !== top) setOffsetY(top);
+  const setScroll = useCallback(({ left, top }) => {
     setHoverOffset(null);
 
-    const frame = toSteps(roundToStep(left, step), step);
+    if (isDefined(top) && offsetY !== top) {
+      setOffsetY(top);
+    }
 
-    onScroll?.(clamp(frame + 1, 1, length));
+    if (isDefined(left) && offsetX !== left) {
+      setOffsetX(left);
+
+      const frame = toSteps(roundToStep(left, step), step);
+
+      onScroll?.(clamp(frame + 1, 1, length));
+    }
   }, [offsetX, offsetY, step]);
 
   const setIndicatorOffset = useCallback((value) => {
@@ -67,11 +73,19 @@ export const Frames = ({
 
   const scrollHandler = useCallback((e) => {
     const scroll = scrollable.current;
-    const limit = scroll.scrollWidth - scroll.clientWidth;
-    const newOffsetX = clamp(offsetX + (e.deltaX * scrollMultiplier), 0, limit);
-    const newOffsetY = offsetY + (e.deltaY * scrollMultiplier);
 
-    setScroll(newOffsetX, newOffsetY);
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      const limit = scroll.scrollWidth - scroll.clientWidth;
+      const newOffsetX = clamp(offsetX + (e.deltaX * scrollMultiplier), 0, limit);
+
+      setScroll({ left :newOffsetX });
+    } else {
+      const limit = scroll.scrollHeight - scroll.clientHeight;
+      const newOffsetY = clamp(offsetY + (e.deltaY * scrollMultiplier), 0, limit);
+
+      setScroll({ top: newOffsetY });
+    }
+
   }, [scrollable, offsetX, offsetY, setScroll]);
 
   const currentOffsetX = useMemo(() => {

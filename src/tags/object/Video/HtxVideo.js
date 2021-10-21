@@ -177,6 +177,27 @@ const HtxVideoView = ({ item }) => {
       frame: 102,
       stop: true,
     }],
+  }, {
+    label: "Car",
+    color: "#7F64FF",
+    visible: true,
+    selected: false,
+    keyframes: [{
+      frame: 27,
+      stop: false,
+    }, {
+      frame: 35,
+      stop: true,
+    }, {
+      frame: 38,
+      stop: false,
+    }, {
+      frame: 55,
+      stop: false,
+    }, {
+      frame: 102,
+      stop: true,
+    }],
   }]);
 
   useEffect(() => {
