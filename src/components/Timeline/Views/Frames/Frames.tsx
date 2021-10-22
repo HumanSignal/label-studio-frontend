@@ -69,10 +69,7 @@ export const Frames: FC<TimelineView> = ({
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
 
-    if (frame !== position) {
-      console.log({ frame, length });
-      onChange?.(clamp(frame + 1, 1, length));
-    }
+    onChange?.(clamp(frame + 1, 1, length));
   }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {
@@ -144,20 +141,16 @@ export const Frames: FC<TimelineView> = ({
 
   const hoverHandler = useCallback((e) => {
     if (scrollable.current) {
-      const offset = roundToStep(e.pageX - scrollable.current.getBoundingClientRect().left, step);
-
-      setHoverOffset(offset);
+      setHoverOffset(e.pageX - scrollable.current.getBoundingClientRect().left);
     }
   }, [currentOffsetX, step]);
 
-  const scrollClickHandler = useCallback((e) => {
-    if (scrollable.current) {
-      const offset = roundToStep(e.pageX - scrollable.current.getBoundingClientRect().left, step);
-
-      setIndicatorOffset(offset + currentOffsetX);
+  const scrollClickHandler = useCallback(() => {
+    if (hoverOffset) {
+      setIndicatorOffset(hoverOffset + currentOffsetX);
       setHoverOffset(null);
     }
-  }, [currentOffsetX, step, setIndicatorOffset]);
+  }, [hoverOffset, currentOffsetX, step, setIndicatorOffset]);
 
   const seekerOffset = useMemo(() => {
     const pixelOffset = clamp(position-1, 0, length - 1) * step;
@@ -212,8 +205,8 @@ export const Frames: FC<TimelineView> = ({
         {isDefined(hoverOffset) && hoverEnabled && (
           <Elem
             name="hover"
-            style={{ left: hoverOffset }}
-            data-frame={((currentOffsetX + hoverOffset) / step) + 1}
+            style={{ left: roundToStep(hoverOffset, step) }}
+            data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
           />
         )}
       </Elem>
