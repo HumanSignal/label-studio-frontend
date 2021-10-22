@@ -6,6 +6,7 @@ import { Block, Elem } from "../../../../utils/bem";
 import { TimelineRegion } from "../../Types";
 
 import "./KeyFrames.styl";
+import { visualizeKeyframes } from "./Utils";
 export interface KeyFramesProps {
   region: TimelineRegion,
   step: number
@@ -46,23 +47,7 @@ export const KeyFrames: FC<KeyFramesProps> = ({
   };
 
   const connections = useMemo(() => {
-    const lines = [];
-
-    for(let i = 0, l = keyframes.length; i < l; i++) {
-      const lastLine = lines[lines.length - 1];
-      const point = keyframes[i];
-      const prevPoint = keyframes[i-1];
-      const offset = (point.frame - start - 1) * step;
-
-      if (!lastLine || prevPoint?.stop) {
-        lines.push({ offset, start: point.frame, width: 0, points: [point] });
-      } else if (!prevPoint?.stop) {
-        lastLine.width = (point.frame - lastLine.points[0].frame) * step;
-        lastLine.points.push(point);
-      }
-    }
-
-    return lines;
+    return visualizeKeyframes(keyframes, step);
   }, [keyframes, start, step]);
 
   return (

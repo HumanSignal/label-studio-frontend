@@ -13,6 +13,7 @@ export interface TimelineProps {
   position: number,
   mode: keyof typeof Views,
   framerate: number,
+  zoom?: number,
   onPositionChange: (value: number) => void,
   onToggleVisibility: (id: string, visibility: boolean) => void
   onDeleteRegion: (id: string) => void,
@@ -21,6 +22,7 @@ export interface TimelineProps {
 
 export const Timeline: FC<TimelineProps> = ({
   regions,
+  zoom = 1,
   mode = "FramesView",
   length = 1024,
   position = 1,
@@ -31,6 +33,7 @@ export const Timeline: FC<TimelineProps> = ({
   onSelectRegion,
 }) => {
   const View = Views[mode];
+  const step = 10 * zoom;
   const [currentPosition, setCurrentPosition] = useState(position);
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
@@ -75,7 +78,7 @@ export const Timeline: FC<TimelineProps> = ({
 
       <Elem name="view">
         <View.View
-          step={10}
+          step={step}
           length={length}
           regions={regions}
           offset={seekOffset}

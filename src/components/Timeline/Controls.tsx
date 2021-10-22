@@ -8,7 +8,7 @@ import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, useMemo } from "react";
 
 const relativePosition = (pos: number, fps: number) => {
-  const value = pos % fps;
+  const value = Math.round(pos % fps);
   const result = value > 0 ? value : fps;
 
   return result.toString().padStart(fps.toString().length, '0');

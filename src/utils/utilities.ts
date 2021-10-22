@@ -147,7 +147,7 @@ export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export const isDefined = (value: any) => {
+export const isDefined = <T>(value: T | null | undefined): value is T => {
   return value !== null && value !== undefined;
 };
 

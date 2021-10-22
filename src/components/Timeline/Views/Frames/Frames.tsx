@@ -112,8 +112,8 @@ export const Frames: FC<TimelineView> = ({
     let lastOffset = 0;
 
     const onMouseMove = (e: globalThis.MouseEvent) => {
-      const targetOffset = e.pageX - startMouse;
-      const finalOffset = roundToStep(clamp(startOffset + targetOffset, 0, limit), step) - step;
+      const targetOffset = roundToStep(e.pageX - startMouse, step);
+      const finalOffset = clamp(startOffset + targetOffset, 0, limit);
 
       if (finalOffset !== lastOffset) {
         lastOffset = finalOffset;
@@ -185,18 +185,21 @@ export const Frames: FC<TimelineView> = ({
 
   return (
     <Block name="timeline-frames" style={styles as any}>
-      <Elem
-        name="indicator"
-        onMouseDown={handleMovement}
-        style={{ left: seekerOffset }}
-      />
-
-      {isDefined(hoverOffset) && hoverEnabled && (
+      <Elem name="controls">
         <Elem
-          name="hover"
-          style={{ left: hoverOffset! }}
+          name="indicator"
+          onMouseDown={handleMovement}
+          style={{ left: seekerOffset }}
         />
-      )}
+
+        {isDefined(hoverOffset) && hoverEnabled && (
+          <Elem
+            name="hover"
+            style={{ left: hoverOffset }}
+            data-frame={((currentOffsetX + hoverOffset) / step) + 1}
+          />
+        )}
+      </Elem>
 
       <Elem
         name="scroll"
