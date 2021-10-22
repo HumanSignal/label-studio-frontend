@@ -77,6 +77,7 @@ export const Timeline: FC<TimelineProps> = ({
           onFrameForward={() => onInternalPositionChange(currentPosition + 1)}
           onRewind={() => onInternalPositionChange(0)}
           onForward={() => onInternalPositionChange(length)}
+          onPositionChange={(value) => onInternalPositionChange(value)}
         />
       </Elem>
 

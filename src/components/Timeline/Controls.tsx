@@ -5,7 +5,7 @@ import { Space } from "../../common/Space/Space";
 import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInterpolationDisabled, IconKeyframeAdd, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
-import { DOMAttributes, FC, MouseEventHandler, useMemo } from "react";
+import { DOMAttributes, FC, MouseEventHandler, useMemo, useState } from "react";
 
 const relativePosition = (pos: number, fps: number) => {
   const value = Math.round(pos % fps);
@@ -25,6 +25,7 @@ export interface ControlsProps {
   onFullScreenToggle: (fullscreen: boolean) => void;
   onFrameBackward: MouseEventHandler<HTMLButtonElement>;
   onFrameForward: MouseEventHandler<HTMLButtonElement>;
+  onPositionChange: (position: number) => void;
   onKeyframeAdd: () => void;
   onKeyframeRemove: () => void;
   onInterpolationDelete: () => void;
@@ -40,11 +41,14 @@ export const Controls: FC<ControlsProps> = ({
   onPlayToggle,
   onFullScreenToggle,
   onFrameBackward,
+  onPositionChange,
   onFrameForward,
   onKeyframeAdd,
   onKeyframeRemove,
   onInterpolationDelete,
 }) => {
+  const [inputMode, setInputMode] = useState(false);
+
   const time = useMemo(() => {
     return length / frameRate;
   }, [length, frameRate]);
@@ -56,8 +60,25 @@ export const Controls: FC<ControlsProps> = ({
   return (
     <Block name="timeline-controls" tag={Space} spread>
       <Elem name="group"  tag={Space} size="small">
-        <Elem name="counter">
-          {position} <span>of {length}</span>
+        <Elem name="counter" onClick={() => setInputMode(true)}>
+          {inputMode ? (
+            <input
+              type="text"
+              defaultValue={position}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onPositionChange?.(parseInt(e.target.value));
+                  setInputMode(false);
+                } else if (e.key === 'Escape') {
+                  setInputMode(false);
+                }
+              }}
+              onBlur={(e) => setInputMode(false)}
+            />
+          ) : (
+            <>{position} <span>of {length}</span></>
+          )}
         </Elem>
         <Elem name="actions" tag={Space} collapsed>
           <ControlButton onClick={onFrameBackward}><IconChevronLeft/></ControlButton>
