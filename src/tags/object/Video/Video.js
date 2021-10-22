@@ -57,7 +57,7 @@ const Model = types
   .volatile(() => ({
     errors: [],
     ref: React.createRef(),
-    frame: 0,
+    frame: 1,
   }))
   .views(self => ({
     get annotation() {

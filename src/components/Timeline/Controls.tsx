@@ -8,10 +8,11 @@ import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, useMemo, useState } from "react";
 
 const relativePosition = (pos: number, fps: number) => {
-  const value = Math.round(pos % fps);
-  const result = value > 0 ? value : fps;
+  const roundedFps = Math.floor(fps);
+  const value = Math.floor(pos % roundedFps);
+  const result = Math.floor(value > 0 ? value : roundedFps);
 
-  return result.toString().padStart(fps.toString().length, '0');
+  return result.toString().padStart(roundedFps.toString().length, '0');
 };
 
 export interface ControlsProps {
@@ -104,9 +105,9 @@ export const Controls: FC<ControlsProps> = ({
             position={relativePosition(length, frameRate)}
           />
         </Elem>
-        <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+        {/* <ControlButton onClick={() => onFullScreenToggle?.(false)}>
           <IconFullscreen/>
-        </ControlButton>
+        </ControlButton> */}
       </Elem>
     </Block>
   );

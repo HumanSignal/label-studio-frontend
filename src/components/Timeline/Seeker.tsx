@@ -37,7 +37,7 @@ export const Seeker: FC<SeekerProps> = ({
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;
 
-      onIndicatorMove?.(Math.ceil(length * percent) - 1);
+      onIndicatorMove?.(Math.ceil(length * percent));
     };
 
     const onMouseUp = () => {

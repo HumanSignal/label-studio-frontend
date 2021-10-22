@@ -179,7 +179,11 @@ export const Frames: FC<TimelineView> = ({
   }, [viewWidth, step]);
 
   useEffect(() => {
-    setOffsetX(offset * step);
+    const scroll = scrollable.current;
+
+    if (isDefined(scroll)) {
+      setOffsetX(clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth));
+    }
   }, [offset, step]);
 
   useEffect(() => {

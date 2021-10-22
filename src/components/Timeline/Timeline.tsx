@@ -43,11 +43,13 @@ export const Timeline: FC<TimelineProps> = ({
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
 
   const onInternalPositionChange = useCallback((value: number) => {
+    console.log('out', value);
     setCurrentPosition(value);
     onPositionChange?.(value);
   }, [setCurrentPosition]);
 
   useEffect(() => {
+    console.log('in', position);
     setCurrentPosition(position);
   }, [position]);
 

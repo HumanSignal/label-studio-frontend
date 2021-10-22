@@ -195,7 +195,7 @@ const HtxVideoView = ({ item }) => {
       <Timeline
         playing={playing}
         length={videoLength}
-        position={clamp(Math.ceil(item.frame) + 1, 0, videoLength)}
+        position={clamp(Math.ceil(item.frame), 0, videoLength)}
         regions={regions}
         framerate={item.frameRate}
         onPositionChange={item.setFrame}
