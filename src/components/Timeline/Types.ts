@@ -27,3 +27,9 @@ export interface TimelineRegionKeyframe {
   frame: number
   stop: boolean
 }
+
+export interface TimelineContext {
+  position: number,
+  viewOffset: number,
+  enableKeyframes?: boolean
+}

@@ -14,7 +14,7 @@ const BBoxPure = ({ reg, frame, stageWidth, stageHeight, ...rest }) => {
     height: box.height * stageHeight / 100,
   };
 
-  console.log("DRAW BOX", box, newBox, stageWidth, stageHeight);
+  // console.log("DRAW BOX", box, newBox, stageWidth, stageHeight);
 
   return (
     <Rect

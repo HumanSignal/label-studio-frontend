@@ -6,6 +6,7 @@ import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
+import { clamp } from "../../../utils/utilities";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
@@ -136,6 +137,7 @@ const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
   const [mounted, setMounted] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [videoLength, setVideoLength] = useState(0);
 
   useEffect(() => {
     const videoEl = item.ref.current;
@@ -143,7 +145,11 @@ const HtxVideoView = ({ item }) => {
     if (videoEl) {
       setMounted(true);
       if (videoEl.readyState === 4) setLoaded(true);
-      else videoEl.addEventListener("loadedmetadata", () => { console.log("LOADED"); setLoaded(true); });
+      else videoEl.addEventListener("loadedmetadata", () => {
+        console.log("LOADED", videoEl.duration, item.framerate);
+        setLoaded(true);
+        setVideoLength(Math.ceil(videoEl.duration * item.frameRate));
+      });
     }
   }, [item.ref.current]);
 
@@ -158,6 +164,8 @@ const HtxVideoView = ({ item }) => {
       stop: false,
     })),
   }));
+
+  console.log({ 'item.frame': item.frame, videoLength, fps: item.frameRate, item });
 
   return (
     <ObjectTag item={item}>
@@ -176,10 +184,11 @@ const HtxVideoView = ({ item }) => {
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
       <Timeline
-        length={1024}
-        position={item.frame}
+        length={videoLength}
+        position={clamp(Math.ceil(item.frame), 0, videoLength)}
         regions={regions}
-        onPositionChange={item.setOnlyFrame}
+        framerate={item.frameRate}
+        onPositionChange={item.setFrame}
         onToggleVisibility={(id) => {
           // setRegions(regions.map(reg => {
           //   if (reg.id === id) {

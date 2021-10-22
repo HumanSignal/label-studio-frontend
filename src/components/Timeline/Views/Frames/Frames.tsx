@@ -32,10 +32,10 @@ export const Frames: FC<TimelineView> = ({
   const scrollMultiplier = 1.25;
 
   const scrollable = useRef<HTMLDivElement>();
+  const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
   const [offsetY, setOffsetY] = useState(0);
-  const [seekerPosition, setSeekerPosition] = useState(0);
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
@@ -66,12 +66,13 @@ export const Frames: FC<TimelineView> = ({
   }, [offsetX, offsetY, step]);
 
   const setIndicatorOffset = useCallback((value) => {
-    setSeekerPosition(value);
-
     const frame = toSteps(roundToStep(value, step), step);
 
-    onChange?.(clamp(frame + 1, 1, length));
-  }, [step, length]);
+    if (frame !== position) {
+      console.log({ frame, length });
+      onChange?.(clamp(frame + 1, 1, length));
+    }
+  }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {
     const scroll = scrollable.current!;
@@ -101,26 +102,34 @@ export const Frames: FC<TimelineView> = ({
   }, [offsetY]);
 
   const handleMovement = useCallback((e) => {
+    setHoverEnabled(false);
+
     const indicator = e.target;
     const startOffset = indicator.offsetLeft + currentOffsetX;
     const startMouse = e.pageX;
     const limit = scrollable.current!.scrollWidth - indicator.clientWidth;
 
+    let lastOffset = 0;
+
     const onMouseMove = (e: globalThis.MouseEvent) => {
       const targetOffset = e.pageX - startMouse;
-      const finalOffset = clamp(startOffset + targetOffset, 0, limit);
+      const finalOffset = roundToStep(clamp(startOffset + targetOffset, 0, limit), step) - step;
 
-      setIndicatorOffset(finalOffset);
+      if (finalOffset !== lastOffset) {
+        lastOffset = finalOffset;
+        setIndicatorOffset(finalOffset);
+      }
     };
 
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      setHoverEnabled(true);
     };
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
-  }, [currentOffsetX, step, setIndicatorOffset]);
+  }, [currentOffsetX, setIndicatorOffset, step]);
 
   const hoverHandler = useCallback((e) => {
     if (scrollable.current) {
@@ -137,13 +146,14 @@ export const Frames: FC<TimelineView> = ({
       setIndicatorOffset(offset + currentOffsetX);
       setHoverOffset(null);
     }
-  }, [currentOffsetX, step]);
+  }, [currentOffsetX, step, setIndicatorOffset]);
 
   const seekerOffset = useMemo(() => {
-    const value = roundToStep(seekerPosition, step);
+    const pixelOffset = clamp(position-1, 0, length - 1) * step;
+    const value = roundToStep(pixelOffset, step);
 
     return value - currentOffsetX;
-  }, [seekerPosition, currentOffsetX, step, length]);
+  }, [position, currentOffsetX, step, length]);
 
   useEffect(() => {
     if (scrollable.current) {
@@ -165,10 +175,6 @@ export const Frames: FC<TimelineView> = ({
   }, [viewWidth, step]);
 
   useEffect(() => {
-    setSeekerPosition(clamp(position-1, 0, length - 1) * step);
-  }, [position, step]);
-
-  useEffect(() => {
     setOffsetX(offset * step);
   }, [offset, step]);
 
@@ -185,7 +191,7 @@ export const Frames: FC<TimelineView> = ({
         style={{ left: seekerOffset }}
       />
 
-      {isDefined(hoverOffset) && (
+      {isDefined(hoverOffset) && hoverEnabled && (
         <Elem
           name="hover"
           style={{ left: hoverOffset! }}
@@ -194,7 +200,7 @@ export const Frames: FC<TimelineView> = ({
 
       <Elem
         name="scroll"
-        ref={scrollable}
+        ref={scrollable as any}
         onWheel={scrollHandler}
         onMouseMove={hoverHandler}
         onMouseLeave={() => setHoverOffset(null)}

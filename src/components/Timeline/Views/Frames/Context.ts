@@ -1,6 +1,7 @@
 import { createContext } from "react";
+import { TimelineContext } from "../../Types";
 
-export const FramesContext = createContext({
+export const FramesContext = createContext<TimelineContext>({
   // Enables keyframes controls
   enableKeyframes: true,
 });

@@ -1,2 +1,5 @@
 export { Frames as View } from "./Frames";
-export { FramesProvider as Provider } from "./Context";
+export {
+  FramesProvider as Provider,
+  FramesContext as Context
+} from "./Context";
