@@ -97,10 +97,11 @@ const Model = types
       return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
     },
   }))
-  .volatile(() => ({
+  .volatile((self) => ({
     rootNodeRef: React.createRef(),
     originalContentRef: React.createRef(),
     regsObserverDisposer: null,
+    isReady: self.inline,
   }))
   .actions(self => ({
     setRef(rootNodeRef, originalContentRef) {
@@ -248,4 +249,4 @@ const Model = types
     },
   }));
 
-export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, Model, AnnotationMixin, ObjectBase);
+export const RichTextModel = types.compose("RichTextModel", ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);

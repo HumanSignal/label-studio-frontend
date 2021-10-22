@@ -181,11 +181,29 @@ class RichTextPieceView extends Component {
   }
 
   componentDidMount() {
-    this._handleUpdate(true);
+    const { item } = this.props;
+
+    if (item.inline) {
+      this._handleUpdate(true);
+    }
   }
 
   componentDidUpdate() {
     this._handleUpdate();
+  }
+
+  componentWillUnmount() {
+    const { item } = this.props;
+
+    if (!item.inline) {
+      this.setReady(false);
+    }
+  }
+
+  setReady(value) {
+    const { item } = this.props;
+
+    item.setReady(value);
   }
 
   _passHotkeys = e => {
@@ -235,6 +253,8 @@ class RichTextPieceView extends Component {
       iframe.style.height = doc.children[0].offsetHeight + "px";
     }
 
+    this.setReady(true);
+
     // @todo for better updates, but may be redundant
     setTimeout(() => this._handleUpdate(true));
   }
@@ -265,7 +285,10 @@ class RichTextPieceView extends Component {
       return (
         <ObjectTag item={item}>
           <div
-            ref={this.rootNodeRef}
+            ref={el => {
+              this.setReady(false);
+              this.rootNodeRef.current = el;
+            }}
             style={style}
             className="htx-richtext"
             dangerouslySetInnerHTML={{ __html: val }}
@@ -288,6 +311,7 @@ class RichTextPieceView extends Component {
       return (
         <ObjectTag item={item}>
           <iframe
+            key={`${item.annotation.id}${item.annotation.draftSelected ? "_D" : "_A"}`}
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={this.rootNodeRef}

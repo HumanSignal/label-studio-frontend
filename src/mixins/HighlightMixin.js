@@ -18,6 +18,7 @@ export const HighlightMixin = types
      * Create highlights from the stored `Range`
      */
     applyHighlight() {
+      if (!self.parent.isReady) return;
       // Avoid calling this method twice
       // spans in iframe disappear on every annotation switch, so check for it
       // in iframe spans still isConnected, but window is missing
