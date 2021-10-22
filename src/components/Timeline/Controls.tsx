@@ -5,7 +5,9 @@ import { Space } from "../../common/Space/Space";
 import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInterpolationDisabled, IconKeyframeAdd, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
-import { DOMAttributes, FC, MouseEventHandler, useMemo, useState } from "react";
+import { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useMemo, useRef, useState } from "react";
+import { clamp } from "../../utils/utilities";
+import { number } from "mobx-state-tree/dist/internal";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -63,19 +65,15 @@ export const Controls: FC<ControlsProps> = ({
       <Elem name="group"  tag={Space} size="small">
         <Elem name="counter" onClick={() => setInputMode(true)}>
           {inputMode ? (
-            <input
-              type="text"
-              defaultValue={position}
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  onPositionChange?.(parseInt(e.target.value));
-                  setInputMode(false);
-                } else if (e.key === 'Escape') {
-                  setInputMode(false);
-                }
+            <FrameInput
+              length={length}
+              position={position}
+              onChange={(value) => {
+                onPositionChange?.(value);
               }}
-              onBlur={(e) => setInputMode(false)}
+              onFinishEditing={() => {
+                setInputMode(false);
+              }}
             />
           ) : (
             <>{position} <span>of {length}</span></>
@@ -133,5 +131,59 @@ const Time: FC<{time: number, position: string}> = ({ time, position }) => {
     <Block name="timeline-time">
       {formatted}{position ? <span>:{position}</span> : null}
     </Block>
+  );
+};
+
+const allowedKeys = [
+  'ArrowUp',
+  'ArrowDown',
+  'Backspace',
+  'Delete',
+  'Enter',
+  /[0-9]/,
+];
+
+const FrameInput: FC<{
+  position: number,
+  length: number,
+  onChange: (value: number) => void,
+  onFinishEditing: () => void,
+}> = ({ length, position, onChange, onFinishEditing }) => {
+  const input = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
+
+  const notifyChange = (value: number) => {
+    onChange?.(clamp(value, 1, length));
+  };
+
+  return (
+    <input
+      type="text"
+      ref={input}
+      defaultValue={position}
+      autoFocus
+      onFocus={() => input.current?.select()}
+      onKeyDown={(e) => {
+        const allowedKey = allowedKeys.find(k => (k instanceof RegExp) ? k.test(e.key) : k === e.key );
+
+        if (!allowedKey && !e.metaKey) e.preventDefault();
+
+        const value = parseInt(input.current!.value);
+        const step = e.shiftKey ? 10 : 1;
+
+        if (e.key === 'Enter') {
+          notifyChange?.(value);
+          onFinishEditing?.();
+        } else if (e.key === 'Escape') {
+          onFinishEditing?.();
+        } else if (allowedKey === 'ArrowUp') {
+          input.current!.value = (clamp(value + step, 1, length)).toString();
+          e.preventDefault();
+        } else if (allowedKey === 'ArrowDown') {
+          input.current!.value = (clamp(value - step, 1, length)).toString();
+          e.preventDefault();
+        }
+      }}
+      onBlur={() => onFinishEditing?.()}
+    />
   );
 };
