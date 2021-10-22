@@ -154,6 +154,14 @@ const HtxVideoView = ({ item }) => {
     }
   }, [item.ref.current]);
 
+  useEffect(() => {
+    const video = item.ref.current;
+
+    if (video) {
+      playing ? video.play() : video.pause();
+    }
+  }, [playing]);
+
   const regions = item.regs.map(reg => ({
     id: reg.id,
     label: "Possum",
@@ -187,7 +195,7 @@ const HtxVideoView = ({ item }) => {
       <Timeline
         playing={playing}
         length={videoLength}
-        position={clamp(Math.ceil(item.frame), 0, videoLength)}
+        position={clamp(Math.ceil(item.frame) + 1, 0, videoLength)}
         regions={regions}
         framerate={item.frameRate}
         onPositionChange={item.setFrame}
