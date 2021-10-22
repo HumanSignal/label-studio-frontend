@@ -154,6 +154,9 @@ class RichTextPieceView extends Component {
     }
 
     // Apply highlight to ranges of a current tag
+    const annotation = item.annotation;
+
+    annotation.pauseAutosave();
     item.regs.forEach(richTextRegion => {
       try {
         richTextRegion.applyHighlight();
@@ -161,6 +164,7 @@ class RichTextPieceView extends Component {
         console.log(err, { region: richTextRegion });
       }
     });
+    annotation.startAutosave();
   }
 
   /**
