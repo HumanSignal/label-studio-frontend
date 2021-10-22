@@ -1,41 +1,41 @@
 import React, { ComponentClass, CSSProperties, DOMAttributes, FC, FunctionComponent, ReactHTML, ReactSVG } from 'react';
 
 interface CNMod {
-  [key: string]: unknown
+  [key: string]: unknown;
 }
 
 interface CN {
-  block: (name: string) => CN
-  elem: (name: string) => CN
-  mod: (mods?: CNMod) => CN
-  mix: (...mix: CNMix[] | undefined[]) => CN
-  select: (root: Document | Element) => Element | null
-  selectAll: (root: Document | Element) => NodeList | null
-  closest: (target: Element) => Element | null
-  toString: () => string
-  toClassName: () => string
-  toCSSSelector: () => string
+  block: (name: string) => CN;
+  elem: (name: string) => CN;
+  mod: (mods?: CNMod) => CN;
+  mix: (...mix: CNMix[] | undefined[]) => CN;
+  select: (root: Document | Element) => Element | null;
+  selectAll: (root: Document | Element) => NodeList | null;
+  closest: (target: Element) => Element | null;
+  toString: () => string;
+  toClassName: () => string;
+  toCSSSelector: () => string;
 }
 
 type CNMix = string | CN | undefined
 
 interface CNOptions {
-  elem?: string,
-  mod?: Record<string, unknown>,
-  mix?: CNMix | CNMix[] | undefined | undefined
+  elem?: string;
+  mod?: Record<string, unknown>;
+  mix?: CNMix | CNMix[] | undefined | undefined;
 }
 
 type CNTagName = keyof ReactHTML | keyof ReactSVG | ComponentClass<unknown, unknown> | FunctionComponent<unknown> | string
 
 type CNComponentProps = {
-  name: string
-  tag?: FC<any> | CNTagName
-  block?: string
-  mod?: CNMod
-  mix?: CNMix | CNMix[]
-  className?: string
-  style?: CSSProperties
-  component?: FC | CNTagName
+  name: string,
+  tag?: FC<any> | CNTagName,
+  block?: string,
+  mod?: CNMod,
+  mix?: CNMix | CNMix[],
+  className?: string,
+  style?: CSSProperties,
+  component?: FC | CNTagName,
 } & DOMAttributes<HTMLElement>
 
 type BemComponent = FC<CNComponentProps>

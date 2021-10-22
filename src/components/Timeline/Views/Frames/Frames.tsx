@@ -21,6 +21,7 @@ export const Frames: FC<TimelineView> = ({
   offset=0,
   position = 1,
   length = 1024,
+  playing,
   regions,
   onScroll,
   onChange,
@@ -101,6 +102,16 @@ export const Frames: FC<TimelineView> = ({
     return offsetY;
   }, [offsetY]);
 
+  const firstVisibleFrame = useMemo(() => {
+    return Math.ceil(currentOffsetX / step);
+  }, [currentOffsetX, step]);
+
+  const lastVisibleFrame = useMemo(() => {
+    const framesInView = toSteps(scrollable.current?.clientWidth ?? 0, step) - 1;
+
+    return firstVisibleFrame + framesInView;
+  }, [scrollable.current, firstVisibleFrame, step]);
+
   const handleMovement = useCallback((e) => {
     setHoverEnabled(false);
 
@@ -177,6 +188,12 @@ export const Frames: FC<TimelineView> = ({
   useEffect(() => {
     setOffsetX(offset * step);
   }, [offset, step]);
+
+  useEffect(() => {
+    if (playing && position > lastVisibleFrame) {
+      setScroll({ left: lastVisibleFrame * step });
+    }
+  }, [playing, position]);
 
   const styles = {
     "--frame-size": `${step}px`,

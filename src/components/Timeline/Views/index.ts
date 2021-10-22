@@ -1,1 +1,1 @@
-export * as FramesView from "./Frames";
+export * as frames from "./Frames";

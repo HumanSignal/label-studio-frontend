@@ -138,6 +138,7 @@ const HtxVideoView = ({ item }) => {
   const [mounted, setMounted] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const videoEl = item.ref.current;
@@ -184,11 +185,13 @@ const HtxVideoView = ({ item }) => {
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
       <Timeline
+        playing={playing}
         length={videoLength}
         position={clamp(Math.ceil(item.frame), 0, videoLength)}
         regions={regions}
         framerate={item.frameRate}
         onPositionChange={item.setFrame}
+        onPlayToggle={setPlaying}
         onToggleVisibility={(id) => {
           // setRegions(regions.map(reg => {
           //   if (reg.id === id) {

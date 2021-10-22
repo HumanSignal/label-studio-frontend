@@ -2,7 +2,7 @@ import { Block, Elem } from "../../utils/bem";
 import { Button } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 
-import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInterpolationDisabled, IconKeyframeAdd, IconPlay, IconRewind } from "../../assets/icons/timeline";
+import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInterpolationDisabled, IconKeyframeAdd, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, useMemo } from "react";
@@ -15,24 +15,26 @@ const relativePosition = (pos: number, fps: number) => {
 };
 
 export interface ControlsProps {
-  length: number,
-  position: number,
-  frameRate: number,
-  onRewind: () => void,
-  onForward: () => void,
-  onPlayToggle: (playing: boolean) => void
-  onFullScreenToggle: (fullscreen: boolean) => void
-  onFrameBackward: MouseEventHandler<HTMLButtonElement>
-  onFrameForward: MouseEventHandler<HTMLButtonElement>
-  onKeyframeAdd: () => void
-  onKeyframeRemove: () => void
-  onInterpolationDelete: () => void
+  length: number;
+  position: number;
+  frameRate: number;
+  playing: boolean;
+  onRewind: () => void;
+  onForward: () => void;
+  onPlayToggle: (playing: boolean) => void;
+  onFullScreenToggle: (fullscreen: boolean) => void;
+  onFrameBackward: MouseEventHandler<HTMLButtonElement>;
+  onFrameForward: MouseEventHandler<HTMLButtonElement>;
+  onKeyframeAdd: () => void;
+  onKeyframeRemove: () => void;
+  onInterpolationDelete: () => void;
 }
 
 export const Controls: FC<ControlsProps> = ({
   length,
   position,
   frameRate,
+  playing,
   onRewind,
   onForward,
   onPlayToggle,
@@ -67,7 +69,7 @@ export const Controls: FC<ControlsProps> = ({
 
       <Elem name="group" tag={Space} collapsed>
         <ControlButton onClick={() => onRewind?.()}><IconRewind/></ControlButton>
-        <ControlButton onClick={() => onPlayToggle?.(false)}><IconPlay/></ControlButton>
+        <ControlButton onClick={() => onPlayToggle?.(!playing)}>{playing ? <IconPause/> : <IconPlay/>}</ControlButton>
         <ControlButton onClick={() => onForward?.()}><IconForward/></ControlButton>
       </Elem>
 

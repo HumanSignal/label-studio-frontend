@@ -5,14 +5,14 @@ import "./Space.styl";
 const { Block } = BemWithSpecifiContext();
 
 export interface SpaceProps {
-  direction?: 'horizontal' | 'vertical',
-  size?: 'small' | 'medium' | 'large' | 'none',
-  style: CSSProperties,
-  spread?: boolean,
-  stretch?: boolean,
-  align?: 'start' | 'end',
-  collapsed?: boolean,
-  className?: string,
+  direction?: 'horizontal' | 'vertical';
+  size?: 'small' | 'medium' | 'large' | 'none';
+  style: CSSProperties;
+  spread?: boolean;
+  stretch?: boolean;
+  align?: 'start' | 'end';
+  collapsed?: boolean;
+  className?: string;
 }
 
 export const Space: FC<SpaceProps> = ({

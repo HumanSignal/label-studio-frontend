@@ -8,11 +8,11 @@ import { TimelineRegion } from "../../Types";
 import "./KeyFrames.styl";
 import { visualizeKeyframes } from "./Utils";
 export interface KeyFramesProps {
-  region: TimelineRegion,
-  step: number
-  onToggleVisibility: (id: string, visible: boolean) => void,
-  onDeleteRegion: (id: string) => void,
-  onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void,
+  region: TimelineRegion;
+  step: number;
+  onToggleVisibility: (id: string, visible: boolean) => void;
+  onDeleteRegion: (id: string) => void;
+  onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void;
 }
 
 export const KeyFrames: FC<KeyFramesProps> = ({
@@ -109,10 +109,10 @@ export const KeyFrames: FC<KeyFramesProps> = ({
 };
 
 const RegionAction: FC<{
-  label: string | JSX.Element
-  visible?: boolean
-  danger?: boolean
-  onClick?: (e: MouseEvent<HTMLDivElement>) => void
+  label: string | JSX.Element,
+  visible?: boolean,
+  danger?: boolean,
+  onClick?: (e: MouseEvent<HTMLDivElement>) => void,
 }> = ({ label, onClick, danger, visible }) => {
   return visible ?(
     <Block

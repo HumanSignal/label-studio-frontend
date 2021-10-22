@@ -6,6 +6,7 @@ export { ReactComponent as IconInterpolationDisabled } from "./interpolation_dis
 export { ReactComponent as IconKeyframeAdd } from "./keyframe_add.svg";
 export { ReactComponent as IconKeyframeDelete } from "./keypoint_delete.svg";
 export { ReactComponent as IconPlay } from "./play.svg";
+export { ReactComponent as IconPause } from "./pause.svg";
 export { ReactComponent as IconRewind } from "./rewind.svg";
 export { ReactComponent as IconFullscreen } from "./fullscreen.svg";
 export { ReactComponent as IconEyeOpened } from "./eye_opened.svg";

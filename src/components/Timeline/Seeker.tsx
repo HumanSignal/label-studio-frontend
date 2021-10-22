@@ -5,12 +5,12 @@ import { Block, Elem } from "../../utils/bem";
 import "./Seeker.styl";
 
 export interface SeekerProps {
-  position: number
-  length: number,
-  seekOffset: number,
-  seekVisible: number
-  onIndicatorMove: (position: number) => void
-  onSeek: (position: number) => void
+  position: number;
+  length: number;
+  seekOffset: number;
+  seekVisible: number;
+  onIndicatorMove: (position: number) => void;
+  onSeek: (position: number) => void;
 }
 
 export const Seeker: FC<SeekerProps> = ({

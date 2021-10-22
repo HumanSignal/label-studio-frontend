@@ -8,25 +8,29 @@ import "./Timeline.styl";
 import { TimelineContext } from "./Types";
 
 export interface TimelineProps {
-  regions: any[],
-  length: number,
-  position: number,
-  mode: keyof typeof Views,
-  framerate: number,
-  zoom?: number,
-  onPositionChange: (value: number) => void,
-  onToggleVisibility: (id: string, visibility: boolean) => void
-  onDeleteRegion: (id: string) => void,
-  onSelectRegion: (event: MouseEvent<HTMLDivElement>, id: string) => void
+  regions: any[];
+  length: number;
+  position: number;
+  mode: keyof typeof Views;
+  framerate: number;
+  zoom?: number;
+  playing: boolean;
+  onPlayToggle: (playing: boolean) => void;
+  onPositionChange: (value: number) => void;
+  onToggleVisibility: (id: string, visibility: boolean) => void;
+  onDeleteRegion: (id: string) => void;
+  onSelectRegion: (event: MouseEvent<HTMLDivElement>, id: string) => void;
 }
 
 export const Timeline: FC<TimelineProps> = ({
   regions,
   zoom = 1,
-  mode = "FramesView",
+  mode = "frames",
   length = 1024,
   position = 1,
   framerate = 24,
+  playing = false,
+  onPlayToggle,
   onPositionChange,
   onToggleVisibility,
   onDeleteRegion,
@@ -39,7 +43,6 @@ export const Timeline: FC<TimelineProps> = ({
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
 
   const onInternalPositionChange = useCallback((value: number) => {
-    console.log('target frame', value);
     setCurrentPosition(value);
     onPositionChange?.(value);
   }, [setCurrentPosition]);
@@ -64,7 +67,8 @@ export const Timeline: FC<TimelineProps> = ({
           length={length}
           position={currentPosition}
           frameRate={framerate}
-          onPlayToggle={() => {}}
+          playing={playing}
+          onPlayToggle={onPlayToggle}
           onFullScreenToggle={() => {}}
           onInterpolationDelete={() => {}}
           onKeyframeAdd={() => {}}
@@ -82,6 +86,7 @@ export const Timeline: FC<TimelineProps> = ({
           length={length}
           regions={regions}
           offset={seekOffset}
+          playing={playing}
           position={currentPosition}
           onScroll={setSeekOffset}
           onResize={setSeekVisibleWidth}
