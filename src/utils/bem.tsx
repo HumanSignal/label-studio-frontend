@@ -1,4 +1,4 @@
-import React, { ComponentClass, FunctionComponent, ReactHTML, ReactSVG } from 'react';
+import React, { ComponentClass, CSSProperties, DOMAttributes, FC, FunctionComponent, ReactHTML, ReactSVG } from 'react';
 
 interface CNMod {
   [key: string]: unknown
@@ -29,15 +29,16 @@ type CNTagName = keyof ReactHTML | keyof ReactSVG | ComponentClass<unknown, unkn
 
 type CNComponentProps = {
   name: string
-  tag?: CNTagName
+  tag?: FC<any> | CNTagName
   block?: string
   mod?: CNMod
   mix?: CNMix | CNMix[]
   className?: string
-  component?: CNTagName
-}
+  style?: CSSProperties
+  component?: FC | CNTagName
+} & DOMAttributes<HTMLElement>
 
-type BemComponent = FunctionComponent<CNComponentProps>
+type BemComponent = FC<CNComponentProps>
 
 const CSS_PREFIX = process.env.CSS_PREFIX ?? 'dm-';
 
@@ -164,10 +165,10 @@ export const cn = (block: string, options: CNOptions = {}): CN => {
   return classNameBuilder;
 };
 
-export const BemWithSpecifiContext = (context: React.Context<CN | null>) => {
+export const BemWithSpecifiContext = (context?: React.Context<CN | null>) => {
   const Context = context ?? React.createContext<CN|null>(null);
 
-  const Block: BemComponent = React.forwardRef(({ tag = 'div', name, mod, mix, ...rest }, ref) => {
+  const Block = React.forwardRef(({ tag = 'div', name, mod, mix, ...rest }: CNComponentProps, ref) => {
     const rootClass = cn(name);
     const finalMix = ([] as [ CNMix? ]).concat(mix).filter(cn => !!cn);
     const className = rootClass.mod(mod).mix(...(finalMix as CNMix[]), rest.className).toClassName();
@@ -182,7 +183,7 @@ export const BemWithSpecifiContext = (context: React.Context<CN | null>) => {
 
   Block.displayName = 'Block';
 
-  const Elem: BemComponent = React.forwardRef(({ tag = 'div', component, block, name, mod, mix, ...rest }, ref) => {
+  const Elem = React.forwardRef(({ tag = 'div', component, block, name, mod, mix, ...rest }: CNComponentProps, ref) => {
     const blockCtx = React.useContext(Context);
 
     const finalMix = ([] as [ CNMix? ]).concat(mix).filter(cn => !!cn);

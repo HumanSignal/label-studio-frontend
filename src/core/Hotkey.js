@@ -25,9 +25,9 @@ validateKeymap(defaultKeymap);
 const DEFAULT_SCOPE = "__main__";
 const INPUT_SCOPE = "__input__";
 
-let _hotkeys_desc = {};
-let _namespaces = {};
-let _destructors = [];
+const _hotkeys_desc = {};
+const _namespaces = {};
+const _destructors = [];
 
 keymaster.filter = function(event) {
   if (keymaster.getScope() === "__none__") return;
@@ -62,8 +62,8 @@ export const Hotkey = (
   };
 
   const unbind = () => {
-    for (let scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
-      for (let key of Object.keys(_hotkeys_map)) {
+    for (const scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
+      for (const key of Object.keys(_hotkeys_map)) {
         keymaster.unbind(key, scope);
         delete _hotkeys_desc[key];
       }
@@ -239,11 +239,11 @@ export const Hotkey = (
      * Create combination
      */
     makeComb() {
-      let prefix = null;
-      let st = "1234567890qwetasdfgzxcvbyiopjklnm";
-      let combs = st.split("");
+      const prefix = null;
+      const st = "1234567890qwetasdfgzxcvbyiopjklnm";
+      const combs = st.split("");
 
-      for (var i = 0; i <= combs.length; i++) {
+      for (let i = 0; i <= combs.length; i++) {
         let comb;
 
         if (prefix) comb = prefix + "+" + combs[i];

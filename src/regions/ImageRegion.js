@@ -159,7 +159,7 @@ const RegionMixin = types
     },
 
     updateOrAddState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
+      const foundIndex = self.states.findIndex(s => s.name === state.name);
 
       if (foundIndex !== -1) {
         self.states[foundIndex] = cloneNode(state);
@@ -173,7 +173,7 @@ const RegionMixin = types
     // that inside the region states objects and updates that, this
     // function is used to capture the state
     updateSingleState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
+      const foundIndex = self.states.findIndex(s => s.name === state.name);
 
       if (foundIndex !== -1) {
         self.states[foundIndex] = cloneNode(state);

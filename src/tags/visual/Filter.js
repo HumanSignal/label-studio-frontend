@@ -75,7 +75,7 @@ const Model = types
     },
 
     applyFilterEv(e) {
-      let { value } = e.target;
+      const { value } = e.target;
 
       self._value = value;
 

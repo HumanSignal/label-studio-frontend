@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
+import { Timeline } from "../../../components/Timeline/Timeline";
 import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 
@@ -136,6 +137,73 @@ const HtxVideoView = ({ item }) => {
   const [mounted, setMounted] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  // TODO: FOR TESTING ONLY. REMOVE BEFORE MEGE
+  const [position, setPosition] = useState(1);
+  const [regions, setRegions] = useState([{
+    id: "1",
+    label: "Airplane",
+    color: "#FA8C16",
+    visible: true,
+    selected: false,
+    keyframes: [{
+      frame: 10,
+      stop: false,
+    }, {
+      frame: 24,
+      stop: true,
+    }, {
+      frame: 31,
+      stop: false,
+    }, {
+      frame: 84,
+      stop: true,
+    }],
+  }, {
+    id: 2,
+    label: "Car",
+    color: "#7F64FF",
+    visible: true,
+    selected: false,
+    keyframes: [{
+      frame: 27,
+      stop: false,
+    }, {
+      frame: 35,
+      stop: true,
+    }, {
+      frame: 38,
+      stop: false,
+    }, {
+      frame: 55,
+      stop: false,
+    }, {
+      frame: 102,
+      stop: true,
+    }],
+  }, {
+    id: 3,
+    label: "Car",
+    color: "#7F64FF",
+    visible: true,
+    selected: false,
+    keyframes: [{
+      frame: 27,
+      stop: false,
+    }, {
+      frame: 35,
+      stop: true,
+    }, {
+      frame: 38,
+      stop: false,
+    }, {
+      frame: 55,
+      stop: false,
+    }, {
+      frame: 102,
+      stop: true,
+    }],
+  }]);
+
   useEffect(() => {
     const videoEl = item.ref.current;
 
@@ -162,6 +230,29 @@ const HtxVideoView = ({ item }) => {
         <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} />
         <Controls item={item} video={mounted && item.ref.current} />
       </Block>
+      <Timeline
+        length={1024}
+        position={position}
+        regions={regions}
+        onPositionChange={setPosition}
+        onToggleVisibility={(id) => {
+          setRegions(regions.map(reg => {
+            if (reg.id === id) {
+              return { ...reg, visible: !reg.visible };
+            }
+            return reg;
+          }));
+        }}
+        onDeleteRegion={(id) => {
+          setRegions(regions.filter(reg => reg.id !== id));
+        }}
+        onSelectRegion={(_, id) => {
+          setRegions(regions.map(reg => {
+            reg.selected = reg.id === id;
+            return reg;
+          }));
+        }}
+      />
     </ObjectTag>
   );
 };

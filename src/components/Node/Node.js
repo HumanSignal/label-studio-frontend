@@ -90,7 +90,7 @@ const Node = observer(({ className, node }) => {
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  let { getContent } = NodeViews[name];
+  const { getContent } = NodeViews[name];
   const labelName = node.labelName;
 
   return (

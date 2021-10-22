@@ -353,7 +353,7 @@ const Model = types
        */
       serialize(options) {
         const object = self.object;
-        let value = { format: "rle" };
+        const value = { format: "rle" };
 
         if (options?.fast) {
           value.rle = self.rle;
@@ -499,7 +499,6 @@ const HtxBrushView = ({ item }) => {
       const isDrawing = item.parent?.drawingRegion === item;
 
       if (isDrawing || !layer || done) return;
-      let dataUrl;
       let highlightEl;
 
       if (highlighted) {
@@ -507,7 +506,9 @@ const HtxBrushView = ({ item }) => {
         highlightEl.hide();
       }
       layer.draw();
-      dataUrl = layer.canvas.toDataURL();
+
+      const dataUrl = layer.canvas.toDataURL();
+
       item.cacheImageData();
 
       if (highlighted) {

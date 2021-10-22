@@ -67,7 +67,7 @@ function allModelsTypes() {
 function isType(node, types) {
   const nt = getType(node);
 
-  for (let t of types) if (nt === t) return true;
+  for (const t of types) if (nt === t) return true;
 
   return false;
 }
@@ -96,7 +96,7 @@ function getParentTagOfTypeString(node, str) {
   if (!Array.isArray(str)) str = [str];
 
   while (parent) {
-    let parentType = parent.type;
+    const parentType = parent.type;
 
     if (str.find(c => c === parentType)) return parent;
 

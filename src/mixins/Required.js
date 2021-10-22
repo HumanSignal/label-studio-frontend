@@ -13,7 +13,7 @@ const RequiredMixin = types
         // every bbox
         const objectTag = self.annotation.names.get(self.toname);
 
-        for (let reg of objectTag.regs) {
+        for (const reg of objectTag.regs) {
           const s = reg.results.find(s => s.type === self.resultType);
 
           if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
