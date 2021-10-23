@@ -65,7 +65,8 @@ export const FilterImage = ({ url, crossOrigin, onLoad, onError, filters, ...pro
   }, [image]);
 
   React.useEffect(() => {
-    console.log(status);
+    // Status callback
+    //console.log(status);
   }, [status]);
 
   return (
