@@ -18,6 +18,7 @@ import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
+import { FilterImage } from "./FilterImage";
 
 Konva.showWarnings = false;
 
@@ -283,7 +284,9 @@ export default observer(
       pointer: [0, 0],
     };
 
+    containerRef = createRef();
     imageRef = createRef();
+    imageCanvasRef = createRef();
     crosshairRef = createRef();
 
     handleOnClick = e => {
@@ -316,7 +319,7 @@ export default observer(
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
-        const { left, top } = this.container.getBoundingClientRect();
+        const { left, top } = this.containerRef.current.getBoundingClientRect();
 
         this.canvasX = left;
         this.canvasY = top;
@@ -473,12 +476,12 @@ export default observer(
     }
 
     onResize = () => {
-      if (!this.container) return;
-      if (this.container.offsetWidth <= 1) return;
-      if (this.lastOffsetWidth === this.container.offsetWidth) return;
+      if (!this.containerRef.current) return;
+      if (this.containerRef.current.offsetWidth <= 1) return;
+      if (this.lastOffsetWidth === this.containerRef.current.offsetWidth) return;
 
-      this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
-      this.lastOffsetWidth = this.container.offsetWidth;
+      this.props.item.onResize(this.containerRef.current.offsetWidth, this.containerRef.current.offsetHeight, true);
+      this.lastOffsetWidth = this.containerRef.current.offsetWidth;
     };
 
     componentDidMount() {
@@ -531,6 +534,9 @@ export default observer(
         "naturalHeight",
         "zoomingPositionY",
         "zoomingPositionX",
+        "filters",
+        "filtersEnabled",
+        "filterProperties",
       ].map(prop => {
         return observe(this.props.item, prop, this.updateImageTransform, true);
       });
@@ -600,6 +606,12 @@ export default observer(
       return <Toolbar tools={tools} />;
     }
 
+    onImageLoad = e => {
+      const { item } = this.props;
+
+      item.updateImageSize(e);
+    };
+
     render() {
       const { item, store } = this.props;
 
@@ -639,6 +651,7 @@ export default observer(
 
       return (
         <ObjectTag
+          id="wrapper-container"
           item={item}
           className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
           style={{
@@ -649,8 +662,9 @@ export default observer(
           }}
         >
           <div
+            id="image-container"
             ref={node => {
-              this.container = node;
+              this.containerRef.current = node;
             }}
             className={containerClassName}
             style={containerStyle}
@@ -667,7 +681,7 @@ export default observer(
                 this.imageRef.current = ref;
               }}
               src={item._value}
-              onLoad={item.updateImageSize}
+              onLoad={this.onImageLoad}
               onError={this.handleError}
               alt="LS"
             />
@@ -712,9 +726,27 @@ export default observer(
               onMouseUp={this.handleMouseUp}
               onWheel={item.zoom ? this.handleZoom : () => {}}
             >
+              {item._value !== undefined &&
+                this.imageRef.current !== undefined &&
+                item.filtercontrol &&
+                item.filtersEnabled && (
+                <Layer name="image-layer">
+                  <FilterImage
+                    alt="LS"
+                    url={item._value}
+                    // onLoad={(e) => { console.log(`onLoad FilterImage: ${e}`); }}
+                    onError={this.handleError}
+                    filters={item.filters.map(f => Konva.Filters[f])}
+                    width={item.stageComponentSize.width}
+                    height={item.stageComponentSize.height}
+                    {...item.filterProperties.toJSON()}
+                  />
+                </Layer>
+              )}
+
               {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
-                <Layer>
+                <Layer listening={false}>
                   <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
                 </Layer>
               )}
