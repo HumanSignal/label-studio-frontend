@@ -28,7 +28,7 @@ const destructSelection = selection => {
   };
 };
 
-const trimSelectionLeft = (selection) => {
+const trimSelectionLeft = selection => {
   const resultRange = selection.getRangeAt(0);
 
   selection.removeAllRanges();
@@ -39,12 +39,15 @@ const trimSelectionLeft = (selection) => {
     selection.collapse(currentRange.endContainer, currentRange.endOffset);
     selection.modify("extend", "forward", "character");
     currentRange = selection.getRangeAt(0);
-  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  } while (
+    !isTextNode(currentRange.startContainer) ||
+    isSpace(currentRange.startContainer.textContent[currentRange.startOffset])
+  );
   resultRange.setStart(currentRange.startContainer, currentRange.startOffset);
   selection.removeAllRanges();
   selection.addRange(resultRange);
 };
-const trimSelectionRight = (selection) => {
+const trimSelectionRight = selection => {
   const resultRange = selection.getRangeAt(0);
 
   selection.removeAllRanges();
@@ -55,12 +58,15 @@ const trimSelectionRight = (selection) => {
     selection.collapse(currentRange.startContainer, currentRange.startOffset);
     selection.modify("extend", "backward", "character");
     currentRange = selection.getRangeAt(0);
-  } while (!isTextNode(currentRange.startContainer) || isSpace(currentRange.startContainer.textContent[currentRange.startOffset]));
+  } while (
+    !isTextNode(currentRange.startContainer) ||
+    isSpace(currentRange.startContainer.textContent[currentRange.startOffset])
+  );
   resultRange.setEnd(currentRange.endContainer, currentRange.endOffset);
   selection.removeAllRanges();
   selection.addRange(resultRange);
 };
-const trimSelection = (selection) => {
+const trimSelection = selection => {
   trimSelectionLeft(selection);
   trimSelectionRight(selection);
 };
@@ -70,13 +76,7 @@ const trimSelection = (selection) => {
  * @param {Selection} selection
  */
 const findBoundarySelection = (selection, boundary) => {
-  const {
-    range: originalRange,
-    startOffset,
-    startContainer,
-    endOffset,
-    endContainer,
-  } = destructSelection(selection);
+  const { range: originalRange, startOffset, startContainer, endOffset, endContainer } = destructSelection(selection);
 
   const resultRange = {};
   let currentRange;
@@ -84,11 +84,11 @@ const findBoundarySelection = (selection, boundary) => {
   // It's easier to operate the selection when it's collapsed
   selection.collapse(endContainer, endOffset);
   // Looking for maximum displacement
-  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===1) {
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange) === 1) {
     selection.modify("move", "backward", boundary);
   }
   // Going back to find minimum displacement
-  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)<1) {
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange) < 1) {
     currentRange = selection.getRangeAt(0);
     Object.assign(resultRange, {
       startContainer: currentRange.startContainer,
@@ -98,10 +98,10 @@ const findBoundarySelection = (selection, boundary) => {
   }
 
   selection.collapse(startContainer, startOffset);
-  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)===-1) {
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange) === -1) {
     selection.modify("move", "forward", boundary);
   }
-  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange)>-1) {
+  while (selection.getRangeAt(0).compareBoundaryPoints(Range.END_TO_END, originalRange) > -1) {
     currentRange = selection.getRangeAt(0);
     Object.assign(resultRange, {
       endContainer: currentRange.endContainer,
@@ -121,13 +121,7 @@ const findBoundarySelection = (selection, boundary) => {
 };
 
 const closestBoundarySelection = (selection, boundary) => {
-  const {
-    range: originalRange,
-    startOffset,
-    startContainer,
-    endOffset,
-    endContainer,
-  } = destructSelection(selection);
+  const { range: originalRange, startOffset, startContainer, endOffset, endContainer } = destructSelection(selection);
 
   const resultRange = {};
   let currentRange;
@@ -136,7 +130,7 @@ const closestBoundarySelection = (selection, boundary) => {
   selection.collapse(startContainer, startOffset);
   selection.modify("move", "forward", "character");
   selection.modify("move", "backward", boundary);
-  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===1) {
+  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange) === 1) {
     selection.collapse(startContainer, startOffset);
     selection.modify("move", "backward", boundary);
   }
@@ -149,7 +143,7 @@ const closestBoundarySelection = (selection, boundary) => {
   selection.collapse(endContainer, endOffset);
   selection.modify("move", "backward", "character");
   selection.modify("move", "forward", boundary);
-  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange)===-1) {
+  if (selection.getRangeAt(0).compareBoundaryPoints(Range.START_TO_START, originalRange) === -1) {
     selection.collapse(endContainer, endOffset);
     selection.modify("move", "forward", boundary);
   }
@@ -302,7 +296,8 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
  * @param {Range} range
  */
 const fixRange = range => {
-  let { startContainer, endContainer, startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startContainer, endContainer } = range;
+  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
@@ -582,7 +577,7 @@ export const charsToCodePoints = ({ node, position }) => {
  * @param {Range} range
  * @return {Range} the same range
  */
-export const fixCodePointsInRange = (range) => {
+export const fixCodePointsInRange = range => {
   const start = charsToCodePoints({ node: range.startContainer, position: range.startOffset });
   const end = charsToCodePoints({ node: range.endContainer, position: range.endOffset });
 
@@ -654,9 +649,9 @@ const findGlobalOffset = (node, position, root) => {
   let nodeReached = false;
   let currentNode = walker.nextNode();
 
-  while(currentNode) {
+  while (currentNode) {
     // Indicates that we at or below desired node
-    nodeReached = nodeReached || (node === currentNode);
+    nodeReached = nodeReached || node === currentNode;
     const atTargetNode = node === currentNode || currentNode.contains(node);
     const isText = currentNode.nodeType === Node.TEXT_NODE;
     const isBR = currentNode.nodeName === "BR";
@@ -684,17 +679,21 @@ const findGlobalOffset = (node, position, root) => {
   return globalPosition;
 };
 
-export const isSelectionContainsSpan = (spanNode) => {
+export const isSelectionContainsSpan = spanNode => {
   const selection = window.getSelection();
   const spanRange = document.createRange();
   const textNode = spanNode.childNodes[0];
 
   spanRange.setStart(textNode, 0);
   spanRange.setEnd(textNode, textNode.length);
-  for (let i = selection.rangeCount; i--;) {
+  for (let i = selection.rangeCount; i--; ) {
     const selRange = selection.getRangeAt(i);
 
-    if (selRange.compareBoundaryPoints(Range.START_TO_START, spanRange) < 1 && selRange.compareBoundaryPoints(Range.END_TO_END, spanRange) > -1) return true;
+    if (
+      selRange.compareBoundaryPoints(Range.START_TO_START, spanRange) < 1 &&
+      selRange.compareBoundaryPoints(Range.END_TO_END, spanRange) > -1
+    )
+      return true;
   }
   return false;
 };

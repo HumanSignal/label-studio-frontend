@@ -1,4 +1,3 @@
-import { Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
@@ -22,7 +21,7 @@ const PlayPause = ({ item, video }) => {
     video.onplay = () => setPaused(false);
     video.onpause = () => setPaused(true);
   }, [video]);
-  const onPlayPause = () => video.paused ? video.play() : video.pause();
+  const onPlayPause = () => (video.paused ? video.play() : video.pause());
 
   useEffect(() => {
     hotkeys.addNamed("video:playpause", e => {
@@ -43,8 +42,14 @@ const PlayPause = ({ item, video }) => {
 
 const FrameStep = ({ item, video }) => {
   const frameRate = +(item.framerate ?? 1 / 25);
-  const onForward = () => { video.pause(); video.currentTime += frameRate; };
-  const onBackward = () => { video.pause(); video.currentTime -= frameRate; };
+  const onForward = () => {
+    video.pause();
+    video.currentTime += frameRate;
+  };
+  const onBackward = () => {
+    video.pause();
+    video.currentTime -= frameRate;
+  };
 
   useEffect(() => {
     hotkeys.addNamed("video:frame-forward", e => {
@@ -85,7 +90,7 @@ const Progress = ({ item, video }) => {
     video.ontimeupdate = () => {
       const percent = video.currentTime / video.duration;
 
-      timeRef.current.style.left = (percent * 100) + "%";
+      timeRef.current.style.left = percent * 100 + "%";
     };
 
     video.onseeked = () => item.triggerSyncSeek(video.currentTime);
