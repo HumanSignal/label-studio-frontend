@@ -1,5 +1,5 @@
 <View>
-  <Image name="img" value="$image"></Image>
+  <Image name="img" value="$image" zoom="true" filterControl="true" zoomControl="true" rotateControl="true" contrastControl="true" brightnessControl="true"></Image>
   <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
     <Label value="Planet"></Label>
     <Label value="Moonwalker" background="blue"></Label>
