@@ -63,6 +63,13 @@ export const Timeline: FC<TimelineProps> = ({
           seekVisible={seekVisibleWidth}
           onIndicatorMove={setSeekOffset}
           onSeek={onInternalPositionChange}
+          minimap={View.Minimap ? (
+            <View.Minimap
+              step={step}
+              length={length}
+              regions={regions}
+            />
+          ): null}
         />
 
         <Controls

@@ -116,7 +116,6 @@ const ControlButton: FC<DOMAttributes<HTMLButtonElement> & {disabled?: boolean}>
     <Button
       {...props}
       type="text"
-      look="link"
       style={{ width: 36, height: 36, padding: 0 }}
     >
       {children}

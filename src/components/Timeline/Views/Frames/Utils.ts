@@ -11,9 +11,19 @@ export const visualizeKeyframes = (keyframes: TimelineRegionKeyframe[], step: nu
     const offset = (point.frame - start - 1) * step;
 
     if (!lastLine || prevPoint?.stop) {
-      lines.push({ offset, start: point.frame, width: 0, points: [point] });
+      if (lastLine) lastLine.stop = true;
+
+      lines.push({
+        offset,
+        width: 0,
+        length: 0,
+        stop: false,
+        start: point.frame,
+        points: [point],
+      });
     } else if (!prevPoint?.stop) {
       lastLine.width = (point.frame - lastLine.points[0].frame) * step;
+      lastLine.length += point.frame;
       lastLine.points.push(point);
     }
   }

@@ -1,6 +1,7 @@
 import { clamp } from "lodash";
-import { FC, useCallback } from "react";
+import { FC, ReactElement, useCallback } from "react";
 import { Block, Elem } from "../../utils/bem";
+import { TimelineMinimapProps } from "./Types";
 
 import "./Seeker.styl";
 
@@ -9,6 +10,7 @@ export interface SeekerProps {
   length: number;
   seekOffset: number;
   seekVisible: number;
+  minimap?: ReactElement<TimelineMinimapProps> | null;
   onIndicatorMove: (position: number) => void;
   onSeek: (position: number) => void;
 }
@@ -20,6 +22,7 @@ export const Seeker: FC<SeekerProps> = ({
   seekVisible,
   onIndicatorMove,
   onSeek,
+  minimap,
 }) => {
   const width = `${seekVisible / length * 100}%`;
   const offsetLimit = length - seekVisible;
@@ -77,6 +80,7 @@ export const Seeker: FC<SeekerProps> = ({
       <Elem name="track"/>
       <Elem name="indicator" style={{ left: windowOffset, width }} onMouseDown={onIndicatorDrag}/>
       <Elem name="position" style={{ left: `${seekerOffset}%` }} onMouseDown={onSeekerDrag}/>
+      <Elem name="minimap">{minimap}</Elem>
     </Block>
   );
 };

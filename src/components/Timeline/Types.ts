@@ -34,3 +34,9 @@ export interface TimelineContext {
   viewOffset: number;
   enableKeyframes?: boolean;
 }
+
+export interface TimelineMinimapProps {
+  regions: TimelineRegion[];
+  step: number;
+  length: number;
+}

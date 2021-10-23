@@ -25,11 +25,11 @@ interface CNOptions {
   mix?: CNMix | CNMix[] | undefined | undefined;
 }
 
-type CNTagName = keyof ReactHTML | keyof ReactSVG | ComponentClass<unknown, unknown> | FunctionComponent<unknown> | string
+export type CNTagName = FC<any> | keyof ReactHTML | keyof ReactSVG | ComponentClass<unknown, unknown> | FunctionComponent<unknown> | string
 
 type CNComponentProps = {
   name: string,
-  tag?: FC<any> | CNTagName,
+  tag?: CNTagName,
   block?: string,
   mod?: CNMod,
   mix?: CNMix | CNMix[],

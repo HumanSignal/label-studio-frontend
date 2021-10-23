@@ -1,6 +1,6 @@
 import { JSX } from "@babel/types";
 import chroma from "chroma-js";
-import { FC, MouseEvent, useMemo, useState } from "react";
+import { CSSProperties, FC, MouseEvent, useMemo, useState } from "react";
 import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
 import { TimelineRegion } from "../../Types";
@@ -26,7 +26,7 @@ export const KeyFrames: FC<KeyFramesProps> = ({
   const [hovered, setHovered] = useState(false);
 
   const background = chroma(color).alpha(0.3).css();
-  const borderColor = chroma(color).alpha(0.2);
+  const borderColor = chroma(color).alpha(0.2).css();
 
   const firtsPoint = keyframes[0];
   const lastPoint = keyframes[keyframes.length - 1];
@@ -90,7 +90,7 @@ export const KeyFrames: FC<KeyFramesProps> = ({
               mod={{ hidden: !visible }}
               style={{
                 left: conn.offset + (step / 2),
-                width: conn.width ? conn.width : '100%',
+                width: conn.stop ? conn.width : '100%',
               }}
             >
               {conn.points.map((point, j) => {
