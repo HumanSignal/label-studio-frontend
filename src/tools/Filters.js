@@ -11,6 +11,7 @@ import { Tool } from "../components/Toolbar/Tool";
 import { FilterOutlined } from "@ant-design/icons";
 import {
   AutoComplete,
+  Button,
   Col,
   Collapse,
   Empty,
@@ -312,6 +313,7 @@ const genExtra = () => (
 
 const FilterView = observer(({ item }) => {
   const [modalVisible, setModelVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [selectedFilters, setSelectedItems] = useState([]);
   const OPTIONS = Object.keys(Konva.Filters);
   let filterProperties = {};
@@ -339,9 +341,28 @@ const FilterView = observer(({ item }) => {
   const filteredOptions = OPTIONS.filter(o => !selectedFilters.includes(o));
 
   const updatePropFunc = (key, val) => {
-    filterProperties[key] = val;
-    item.setFilterProperties(filterProperties);
+    if(val)
+    {
+      filterProperties[key] = val;
+      item.setFilterProperties(filterProperties);
+    }
   };
+
+  const handleUpdate = () => {
+    setLoading(true);
+    // Sometimes the canvas takes a while to apply the filter
+    setTimeout(() => setLoading(false), 1000);
+    item.setFilters(selectedFilters);
+    item.setFiltersEnabled(selectedFilters.length > 0);
+  };
+
+  const handleOk = () => {
+    item.setFilters(selectedFilters);
+    item.setFiltersEnabled(selectedFilters.length > 0);
+    setModelVisible(false);
+  };
+
+  const handleCancel = () => setModelVisible(false);
 
   return (
     <>
@@ -359,12 +380,19 @@ const FilterView = observer(({ item }) => {
         title="Filter Settings"
         centered
         visible={modalVisible}
-        onOk={() => {
-          item.setFilters(selectedFilters);
-          item.setFiltersEnabled(selectedFilters.length > 0);
-          setModelVisible(false);
-        }}
-        onCancel={() => setModelVisible(false)}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="update" type="dashed" loading={loading} onClick={handleUpdate}>
+            Update
+          </Button>,
+          <Button key="back" onClick={handleCancel}>
+            Cancle
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleOk}>
+            Submit
+          </Button>,
+        ]}
       >
         <Row>
           <Col span={24}>
