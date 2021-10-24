@@ -183,7 +183,7 @@ Scenario("Creating regions by various gestures", async function({ I, AtImageView
     h: Math.floor(canvasSize.width / cellSize.width),
     v: Math.floor(canvasSize.height / cellSize.height),
   };
-  let regions = [];
+  const regions = [];
 
   Object.keys(createShape).forEach((shapeName, shapeIdx) => {
     const hotKey = `${shapeIdx + 1}`;
@@ -202,10 +202,10 @@ Scenario("Creating regions by various gestures", async function({ I, AtImageView
       regions.push(region);
     });
   });
-  for (let [idx, region] of Object.entries(regions)) {
+  for (const [idx, region] of Object.entries(regions)) {
     I.pressKey(region.hotKey);
     AtImageView[region.action](...region.params);
-    AtSidebar.seeRegions(++idx);
+    AtSidebar.seeRegions(idx+1);
   }
   const result = await I.executeScript(serialize);
 

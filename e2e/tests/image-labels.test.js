@@ -188,7 +188,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         assert.strictEqual(expectedCount, labelsCounter(results, currentLabelName));
       }
 
-      let expectedCount = 3;
+      const expectedCount = 3;
 
       regions.forEach((region, idx) => {
         AtSidebar.clickRegion(+idx + 1);
