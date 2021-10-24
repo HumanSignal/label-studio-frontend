@@ -1,4 +1,4 @@
-import React, { DOMAttributes, FC, forwardRef, ForwardRefExoticComponent } from "react";
+import React, { CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent } from "react";
 import { Block, CNTagName, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
 import "./Button.styl";
@@ -14,6 +14,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   tag?: CNTagName;
   look?: "primary" | "danger" | "destructive";
   primary?: boolean;
+  style?: CSSProperties;
 }
 
 export interface ButtonGroupProps {

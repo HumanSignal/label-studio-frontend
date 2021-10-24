@@ -26,7 +26,7 @@ export interface TimelineRegion {
 
 export interface TimelineRegionKeyframe {
   frame: number;
-  stop: boolean;
+  enabled: boolean;
 }
 
 export interface TimelineContext {
@@ -39,4 +39,11 @@ export interface TimelineMinimapProps {
   regions: TimelineRegion[];
   step: number;
   length: number;
+}
+
+export interface TimelineExtraControls {
+  position: number;
+  regions: TimelineRegion[];
+  length: number;
+  onAction?: <T extends Element>(e: MouseEvent<T>, action: string) => void;
 }

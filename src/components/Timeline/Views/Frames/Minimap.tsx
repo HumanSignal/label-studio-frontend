@@ -21,28 +21,22 @@ export const Minimap: FC<TimelineMinimapProps> = ({ regions, length }) => {
 
   useEffect(() => {
     if (isDefined(root.current) && length > 0) {
-      const step = root.current.clientWidth / length;
-
-      console.log(step, root.current.clientWidth, length);
-
-      setStep(step);
+      setStep(root.current.clientWidth / length);
     }
   }, [length]);
 
   return (
     <Block ref={root} name="minimap">
-      {visualization.slice(0, 5).map(region => {
+      {visualization.slice(0, 5).map(({ id, color, connections }) => {
         return (
-          <Elem key={region.id} name="region" style={{ '--color': region.color }}>
-            {region.connections.map((connection, i) => {
+          <Elem key={id} name="region" style={{ '--color': color }}>
+            {connections.map((connection, i) => {
+              const isLast = i + 1 === connections.length;
+              const left = connection.start * step;
+              const width = (isLast && connection.enabled) ? '100%' : connection.width;
+
               return (
-                <Elem
-                  key={`${region.id}${i}`} name="connection"
-                  style={{
-                    left: connection.start * step,
-                    width: connection.stop ? connection.width : '100%',
-                  }}
-                />
+                <Elem key={`${id}${i}`} name="connection" style={{ left, width }}/>
               );
             })}
           </Elem>

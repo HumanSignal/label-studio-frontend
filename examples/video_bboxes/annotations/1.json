@@ -3,35 +3,83 @@
         {
             "id": "1001",
             "result": [
-                {
-                    "id": "tJhYZLMC9G",
-                    "type": "videobbox",
-                    "from_name": "box",
-                    "to_name": "video",
-                    "value": {
+              {
+                  "value": {
                       "sequence": [
-                        {
-                          "frame": 1,
-                          "enabled": true,
-                          "x": 38.266666666666666,
-                          "y": 38.898756660746,
-                          "width": 41.333333333333336,
-                          "height": 22.202486678507995,
-                          "rotation": 0
-                        },
-                        {
-                          "frame": 5,
-                          "enabled": false,
-                          "x": 40.266666666666666,
-                          "y": 49.898756660746,
-                          "width": 41.333333333333336,
-                          "height": 22.202486678507995,
-                          "rotation": 0
-                        }
+                          {
+                              "frame": 1,
+                              "enabled": true,
+                              "x": 38.266666666666666,
+                              "y": 38.898756660746,
+                              "width": 41.333333333333336,
+                              "height": 22.202486678507995,
+                              "rotation": 0
+                          },
+                          {
+                              "frame": 5,
+                              "enabled": false,
+                              "x": 40.266666666666666,
+                              "y": 49.898756660746,
+                              "width": 41.333333333333336,
+                              "height": 22.202486678507995,
+                              "rotation": 0
+                          }
                       ]
-                    }
-                }
-            ]
+                  },
+                  "id": "tJhYZLMC9G",
+                  "from_name": "box",
+                  "to_name": "video",
+                  "type": "videobbox",
+                  "origin": "manual"
+              },
+              {
+                  "value": {
+                      "sequence": [
+                          {
+                              "frame": 33,
+                              "enabled": true,
+                              "rotation": 0,
+                              "x": 21.640625,
+                              "y": 92.08333333333333,
+                              "width": 12.890625,
+                              "height": -15.972222222222221
+                          },
+                          {
+                              "frame": 57,
+                              "enabled": false,
+                              "rotation": 0,
+                              "x": 41.133720930232556,
+                              "y": 98.92764857881136,
+                              "width": 12.890625,
+                              "height": -15.972222222222221
+                          },
+                          {
+                              "frame": 76,
+                              "enabled": true,
+                              "rotation": 0,
+                              "x": 47.1875,
+                              "y": 95.13888888888889,
+                              "width": 12.890625,
+                              "height": -15.972222222222221
+                          },
+                          {
+                              "frame": 104,
+                              "enabled": true,
+                              "rotation": 0,
+                              "x": 85,
+                              "y": 97.91666666666666,
+                              "width": 12.890625,
+                              "height": -15.972222222222221
+                          }
+                      ]
+                  },
+                  "id": "FstfiS1SLJ",
+                  "from_name": "box",
+                  "to_name": "video",
+                  "type": "videobbox",
+                  "origin": "manual"
+              }
+          ]
         }
     ]
 }

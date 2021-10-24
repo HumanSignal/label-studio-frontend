@@ -1,7 +1,7 @@
 import { Block, Elem } from "../../utils/bem";
 import { Controls } from "./Controls";
 import { Seeker } from "./Seeker";
-import { FC, MouseEvent, useCallback, useContext, useEffect, useState } from "react";
+import { FC, MouseEvent, useCallback, useEffect, useState } from "react";
 import * as Views from "./Views";
 
 import "./Timeline.styl";
@@ -43,13 +43,11 @@ export const Timeline: FC<TimelineProps> = ({
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
 
   const onInternalPositionChange = useCallback((value: number) => {
-    console.log('out', value);
     setCurrentPosition(value);
     onPositionChange?.(value);
   }, [setCurrentPosition]);
 
   useEffect(() => {
-    console.log('in', position);
     setCurrentPosition(position);
   }, [position]);
 
@@ -79,14 +77,21 @@ export const Timeline: FC<TimelineProps> = ({
           playing={playing}
           onPlayToggle={onPlayToggle}
           onFullScreenToggle={() => {}}
-          onInterpolationDelete={() => {}}
-          onKeyframeAdd={() => {}}
-          onKeyframeRemove={() => {}}
-          onFrameBackward={() => onInternalPositionChange(currentPosition - 1)}
-          onFrameForward={() => onInternalPositionChange(currentPosition + 1)}
+          onStepBackward={() => onInternalPositionChange(currentPosition - 1)}
+          onStepForward={() => onInternalPositionChange(currentPosition + 1)}
           onRewind={() => onInternalPositionChange(0)}
           onForward={() => onInternalPositionChange(length)}
           onPositionChange={(value) => onInternalPositionChange(value)}
+          extraControls={View.Controls ? (
+            <View.Controls
+              position={position}
+              regions={regions}
+              length={length}
+              onAction={(e, action) => {
+                console.log(e, action);
+              }}
+            />
+          ) : null}
         />
       </Elem>
 

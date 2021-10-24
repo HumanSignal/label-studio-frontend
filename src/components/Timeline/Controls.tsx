@@ -7,7 +7,6 @@ import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInt
 import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useMemo, useRef, useState } from "react";
 import { clamp } from "../../utils/utilities";
-import { number } from "mobx-state-tree/dist/internal";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -22,16 +21,14 @@ export interface ControlsProps {
   position: number;
   frameRate: number;
   playing: boolean;
+  extraControls?: JSX.Element | null;
   onRewind: () => void;
   onForward: () => void;
   onPlayToggle: (playing: boolean) => void;
   onFullScreenToggle: (fullscreen: boolean) => void;
-  onFrameBackward: MouseEventHandler<HTMLButtonElement>;
-  onFrameForward: MouseEventHandler<HTMLButtonElement>;
+  onStepBackward: MouseEventHandler<HTMLButtonElement>;
+  onStepForward: MouseEventHandler<HTMLButtonElement>;
   onPositionChange: (position: number) => void;
-  onKeyframeAdd: () => void;
-  onKeyframeRemove: () => void;
-  onInterpolationDelete: () => void;
 }
 
 export const Controls: FC<ControlsProps> = ({
@@ -41,14 +38,12 @@ export const Controls: FC<ControlsProps> = ({
   playing,
   onRewind,
   onForward,
+  extraControls,
   onPlayToggle,
   onFullScreenToggle,
-  onFrameBackward,
+  onStepBackward,
   onPositionChange,
-  onFrameForward,
-  onKeyframeAdd,
-  onKeyframeRemove,
-  onInterpolationDelete,
+  onStepForward,
 }) => {
   const [inputMode, setInputMode] = useState(false);
 
@@ -62,7 +57,7 @@ export const Controls: FC<ControlsProps> = ({
 
   return (
     <Block name="timeline-controls" tag={Space} spread>
-      <Elem name="group"  tag={Space} size="small">
+      <Elem name="group" tag={Space} size="small">
         <Elem name="counter" onClick={() => setInputMode(true)}>
           {inputMode ? (
             <FrameInput
@@ -79,11 +74,11 @@ export const Controls: FC<ControlsProps> = ({
             <>{position} <span>of {length}</span></>
           )}
         </Elem>
+        <Elem name="hll"></Elem>
         <Elem name="actions" tag={Space} collapsed>
-          <ControlButton onClick={onFrameBackward}><IconChevronLeft/></ControlButton>
-          <ControlButton onClick={onFrameForward}><IconChevronRight/></ControlButton>
-          <ControlButton onClick={onKeyframeAdd}><IconKeyframeAdd/></ControlButton>
-          <ControlButton onClick={onInterpolationDelete} disabled><IconInterpolationDisabled/></ControlButton>
+          <ControlButton onClick={onStepBackward}><IconChevronLeft/></ControlButton>
+          <ControlButton onClick={onStepForward}><IconChevronRight/></ControlButton>
+          {extraControls}
         </Elem>
       </Elem>
 
@@ -111,7 +106,7 @@ export const Controls: FC<ControlsProps> = ({
   );
 };
 
-const ControlButton: FC<DOMAttributes<HTMLButtonElement> & {disabled?: boolean}> = ({ children, ...props }) => {
+export const ControlButton: FC<DOMAttributes<HTMLButtonElement> & {disabled?: boolean}> = ({ children, ...props }) => {
   return (
     <Button
       {...props}

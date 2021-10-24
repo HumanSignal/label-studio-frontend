@@ -147,7 +147,6 @@ const HtxVideoView = ({ item }) => {
       setMounted(true);
       if (videoEl.readyState === 4) setLoaded(true);
       else videoEl.addEventListener("loadedmetadata", () => {
-        console.log("LOADED", videoEl.duration, item.framerate);
         setLoaded(true);
         setVideoLength(Math.ceil(videoEl.duration * item.frameRate));
       });
@@ -170,11 +169,9 @@ const HtxVideoView = ({ item }) => {
     selected: false,
     keyframes: reg.sequence.map(s => ({
       frame: s.frame,
-      stop: false,
+      enabled: s.enabled,
     })),
   }));
-
-  console.log({ 'item.frame': item.frame, videoLength, fps: item.frameRate, item });
 
   return (
     <ObjectTag item={item}>

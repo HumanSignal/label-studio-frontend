@@ -4,3 +4,4 @@ export {
   FramesContext as Context
 } from "./Context";
 export { Minimap } from "./Minimap";
+export { Controls } from "./Controls";

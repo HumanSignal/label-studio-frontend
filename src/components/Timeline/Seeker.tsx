@@ -1,5 +1,5 @@
 import { clamp } from "lodash";
-import { FC, ReactElement, useCallback } from "react";
+import { FC, ReactElement, useCallback, useRef } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { TimelineMinimapProps } from "./Types";
 
@@ -24,6 +24,9 @@ export const Seeker: FC<SeekerProps> = ({
   onSeek,
   minimap,
 }) => {
+  const root = useRef<HTMLDivElement>();
+  const indicator = useRef<HTMLDivElement>();
+
   const width = `${seekVisible / length * 100}%`;
   const offsetLimit = length - seekVisible;
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
@@ -53,13 +56,16 @@ export const Seeker: FC<SeekerProps> = ({
   }, [length]);
 
   const onSeekerDrag = useCallback((e) => {
-    const indicator = e.target;
-    const startOffset = indicator.offsetLeft;
     const startDrag = e.pageX;
-    const parentWidth = indicator.parentNode.clientWidth;
+    const dimensions = root.current!.getBoundingClientRect();
+    const indicatorWidth = indicator.current!.clientWidth;
+    const startOffset = e.pageX - dimensions.left;
+    const parentWidth = dimensions.width;
+
+    onSeek?.(Math.ceil(length * (startOffset / parentWidth)));
 
     const onMouseMove = (e: globalThis.MouseEvent) => {
-      const limit = parentWidth - indicator.clientWidth;
+      const limit = parentWidth - indicatorWidth;
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;
 
@@ -76,10 +82,10 @@ export const Seeker: FC<SeekerProps> = ({
   }, [length]);
 
   return (
-    <Block name="seeker">
+    <Block name="seeker" ref={root} onMouseDown={onSeekerDrag}>
       <Elem name="track"/>
       <Elem name="indicator" style={{ left: windowOffset, width }} onMouseDown={onIndicatorDrag}/>
-      <Elem name="position" style={{ left: `${seekerOffset}%` }} onMouseDown={onSeekerDrag}/>
+      <Elem name="position" ref={indicator} style={{ left: `${seekerOffset}%` }}/>
       <Elem name="minimap">{minimap}</Elem>
     </Block>
   );

@@ -33,7 +33,7 @@ export const KeyFrames: FC<KeyFramesProps> = ({
 
   const start = firtsPoint.frame - 1;
   const end = lastPoint.frame;
-  const infinite = lastPoint.stop === false;
+  const infinite = lastPoint.enabled === true;
   const offset = start * step;
 
   const styles = {
@@ -49,6 +49,8 @@ export const KeyFrames: FC<KeyFramesProps> = ({
   const connections = useMemo(() => {
     return visualizeKeyframes(keyframes, step);
   }, [keyframes, start, step]);
+
+  console.log({ connections });
 
   return (
     <Block
@@ -82,23 +84,17 @@ export const KeyFrames: FC<KeyFramesProps> = ({
         </Elem>
       </Elem>
       <Elem name="keypoints">
-        {connections.map((conn, i) => {
-          return (
-            <Elem
-              key={i}
-              name="connection"
-              mod={{ hidden: !visible }}
-              style={{
-                left: conn.offset + (step / 2),
-                width: conn.stop ? conn.width : '100%',
-              }}
-            >
-              {conn.points.map((point, j) => {
-                const frame = point.frame - conn.start;
+        {connections.map((connection, i) => {
+          const isLast = i + 1 === connections.length;
+          const left = connection.offset + (step / 2);
+          const width = (isLast && connection.enabled) ? '100%' : connection.width;
 
-                return (
-                  <Elem key={i+j} name="point" style={{ left: frame * step }} />
-                );
+          return (
+            <Elem key={i} name="connection" mod={{ hidden: !visible }} style={{ left, width }}>
+              {connection.points.map((point, j) => {
+                const left = (point.frame - connection.start) * step;
+
+                return <Elem key={i+j} name="point" style={{ left }} />;
               })}
             </Elem>
           );
