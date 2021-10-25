@@ -217,6 +217,7 @@ export const captureSelection = (
 ) => {
   const selection = window.getSelection();
 
+  if (selection.isCollapsed) return;
   if (granularity !== "symbol") {
     trimSelection(selection);
   }
@@ -302,7 +303,8 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
  * @param {Range} range
  */
 const fixRange = range => {
-  let { startContainer, endContainer, startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
+  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startContainer, endContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
