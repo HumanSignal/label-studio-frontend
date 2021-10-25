@@ -1,15 +1,15 @@
 import { JSX } from "@babel/types";
 import chroma from "chroma-js";
-import { CSSProperties, FC, MouseEvent, useMemo, useState } from "react";
+import { CSSProperties, FC, MouseEvent, useContext, useMemo, useState } from "react";
 import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
+import { TimelineContext } from "../../Context";
 import { TimelineRegion } from "../../Types";
 
 import "./KeyFrames.styl";
-import { visualizeKeyframes } from "./Utils";
+import { visualizeLifespans } from "./Utils";
 export interface KeyFramesProps {
   region: TimelineRegion;
-  step: number;
   onToggleVisibility: (id: string, visible: boolean) => void;
   onDeleteRegion: (id: string) => void;
   onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void;
@@ -17,11 +17,11 @@ export interface KeyFramesProps {
 
 export const KeyFrames: FC<KeyFramesProps> = ({
   region,
-  step,
   onSelectRegion,
   onToggleVisibility,
   onDeleteRegion,
 }) => {
+  const { step } = useContext(TimelineContext);
   const { label, color, visible, selected, keyframes } = region;
   const [hovered, setHovered] = useState(false);
 
@@ -46,11 +46,9 @@ export const KeyFrames: FC<KeyFramesProps> = ({
     '--point-color': color,
   };
 
-  const connections = useMemo(() => {
-    return visualizeKeyframes(keyframes, step);
+  const lifespans = useMemo(() => {
+    return visualizeLifespans(keyframes, step);
   }, [keyframes, start, step]);
-
-  console.log({ connections });
 
   return (
     <Block
@@ -84,15 +82,16 @@ export const KeyFrames: FC<KeyFramesProps> = ({
         </Elem>
       </Elem>
       <Elem name="keypoints">
-        {connections.map((connection, i) => {
-          const isLast = i + 1 === connections.length;
-          const left = connection.offset + (step / 2);
-          const width = (isLast && connection.enabled) ? '100%' : connection.width;
+        {lifespans.map((lifespan, i) => {
+          const isLast = i + 1 === lifespans.length;
+          const left = lifespan.offset + (step / 2);
+          const right = (isLast && lifespan.enabled) ? 0 : 'auto';
+          const width = (isLast && lifespan.enabled) ? 'auto' : lifespan.width;
 
           return (
-            <Elem key={i} name="connection" mod={{ hidden: !visible }} style={{ left, width }}>
-              {connection.points.map((point, j) => {
-                const left = (point.frame - connection.start) * step;
+            <Elem key={i} name="connection" mod={{ hidden: !visible }} style={{ left, width, right }}>
+              {lifespan.points.map((point, j) => {
+                const left = (point.frame - lifespan.start) * step;
 
                 return <Elem key={i+j} name="point" style={{ left }} />;
               })}

@@ -2,7 +2,7 @@ import { Block, Elem } from "../../utils/bem";
 import { Button } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 
-import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconInterpolationDisabled, IconKeyframeAdd, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
+import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useMemo, useRef, useState } from "react";

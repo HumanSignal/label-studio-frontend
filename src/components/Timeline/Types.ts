@@ -1,6 +1,6 @@
-import { MouseEvent } from "react";
+import { FC, MouseEvent } from "react";
 
-export interface TimelineView {
+export interface TimelineViewProps {
   step: number;
   offset: number;
   position: number;
@@ -29,10 +29,12 @@ export interface TimelineRegionKeyframe {
   enabled: boolean;
 }
 
-export interface TimelineContext {
+export interface TimelineContextValue {
   position: number;
-  viewOffset: number;
-  enableKeyframes?: boolean;
+  length: number;
+  regions: TimelineRegion[];
+  step: number;
+  playing: boolean;
 }
 
 export interface TimelineMinimapProps {
@@ -41,9 +43,12 @@ export interface TimelineMinimapProps {
   length: number;
 }
 
-export interface TimelineExtraControls {
-  position: number;
-  regions: TimelineRegion[];
-  length: number;
-  onAction?: <T extends Element>(e: MouseEvent<T>, action: string) => void;
+export interface TimelineExtraControls<A extends string, D extends any> {
+  onAction?: <T extends Element>(e: MouseEvent<T>, action: A, data?: D) => void;
+}
+
+export type TimelineView<D extends FC<TimelineExtraControls<any, any>> = any> = {
+  View: FC<TimelineViewProps>,
+  Minimap?: FC<any>,
+  Controls?: D,
 }

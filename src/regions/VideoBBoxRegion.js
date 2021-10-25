@@ -84,9 +84,11 @@ const Model = types
       if (index < 0) {
         self.sequence = [...self.sequence, newItem];
       } else {
+        const keyframe = self.sequence[index];
+
         self.sequence = [
           ...self.sequence.slice(0, index),
-          newItem,
+          ({ ...keyframe, ...newItem, enabled: keyframe.enabled }),
           ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }
@@ -98,6 +100,19 @@ const Model = types
           sequence: self.sequence,
         },
       };
+    },
+
+    isInLifespan(targetFrame) {
+      const keyframes = self.sequence.filter(k => k.frame <= targetFrame);
+      const closestKeyframe = keyframes[keyframes.length - 1];
+
+      if (closestKeyframe) {
+        const { enabled, frame } = closestKeyframe;
+
+        if (frame === targetFrame && !enabled) return true;
+        return enabled;
+      }
+      return false;
     },
   }));
 

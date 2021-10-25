@@ -1,15 +1,19 @@
-import { FC, MouseEvent, useMemo } from "react";
+import { FC, MouseEvent, useContext, useMemo } from "react";
 import { IconInterpolationAdd, IconInterpolationDisabled, IconInterpolationRemove, IconKeyframeAdd, IconKeyframeDelete } from "../../../../assets/icons/timeline";
 import { isDefined } from "../../../../utils/utilities";
+import { TimelineContext } from "../../Context";
 import { ControlButton } from "../../Controls";
 import { TimelineExtraControls } from "../../Types";
 
+type Actions = "keyframe_add" | "keyframe_remove" | "lifespan_add" | "lifespan_remove"
+type DataType = {
+  frame: number,
+}
 
-export const Controls: FC<TimelineExtraControls> = ({
-  position,
-  regions,
+export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
   onAction,
 }) => {
+  const { position, regions } = useContext(TimelineContext);
   const closestKeyframe = useMemo(() => {
     const region = regions[0];//.find(r => r.selected);
 
@@ -17,11 +21,27 @@ export const Controls: FC<TimelineExtraControls> = ({
   }, [regions, position]);
 
   const onKeyframeAdd = (e: MouseEvent) => {
-    onAction?.(e, 'keyframe_add');
+    onAction?.(e, 'keyframe_add', {
+      frame: position,
+    });
   };
 
-  const onInterpolationDelete = (e: MouseEvent) => {
-    onAction?.(e, 'interpolation_delete');
+  const onKeyframeRemove = (e: MouseEvent) => {
+    onAction?.(e, 'keyframe_remove', {
+      frame: closestKeyframe!.frame,
+    });
+  };
+
+  const onLifespanAdd = (e: MouseEvent) => {
+    onAction?.(e, 'lifespan_add', {
+      frame: closestKeyframe!.frame,
+    });
+  };
+
+  const onLifespanRemove = (e: MouseEvent) => {
+    onAction?.(e, 'lifespan_remove', {
+      frame: closestKeyframe!.frame,
+    });
   };
 
   const canAddKeyframe = closestKeyframe?.frame !== position;
@@ -48,11 +68,11 @@ export const Controls: FC<TimelineExtraControls> = ({
   return (
     <>
       <ControlButton
-        onClick={onKeyframeAdd}
+        onClick={canAddKeyframe ? onKeyframeAdd : onKeyframeRemove}
         disabled={!closestKeyframe}
       >{keypointIcon}</ControlButton>
       <ControlButton
-        onClick={onInterpolationDelete}
+        onClick={canAddInterpolation ? onLifespanAdd : onLifespanRemove}
         disabled={!closestKeyframe}
       >{interpolationIcon}</ControlButton>
     </>

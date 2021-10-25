@@ -2,7 +2,7 @@ import { clamp } from "lodash";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
-import { TimelineView } from "../../Types";
+import { TimelineViewProps } from "../../Types";
 import "./Frames.styl";
 import { KeyFrames } from "./KeyFrames";
 
@@ -16,7 +16,7 @@ const roundToStep = (num: number, step: number) => {
   return (steps * step);
 };
 
-export const Frames: FC<TimelineView> = ({
+export const Frames: FC<TimelineViewProps> = ({
   step = 10,
   offset=0,
   position = 1,
@@ -224,19 +224,18 @@ export const Frames: FC<TimelineView> = ({
         onClick={scrollClickHandler}
         style={{ backgroundImage: background }}
       >
-        <Elem name="filler"/>
-
-        <Elem name="keyframes">
-          {regions.map(region => (
-            <KeyFrames
-              key={region.id}
-              step={step}
-              region={region}
-              onSelectRegion={onSelectRegion}
-              onToggleVisibility={onToggleVisibility}
-              onDeleteRegion={onDeleteRegion}
-            />
-          ))}
+        <Elem name="filler">
+          <Elem name="keyframes">
+            {regions.map(region => (
+              <KeyFrames
+                key={region.id}
+                region={region}
+                onSelectRegion={onSelectRegion}
+                onToggleVisibility={onToggleVisibility}
+                onDeleteRegion={onDeleteRegion}
+              />
+            ))}
+          </Elem>
         </Elem>
       </Elem>
     </Block>

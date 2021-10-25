@@ -1,11 +1,12 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
-import { TimelineMinimapProps } from "../../Types";
-import { visualizeKeyframes } from "./Utils";
+import { visualizeLifespans } from "./Utils";
 import "./Minimap.styl";
+import { TimelineContext } from "../../Context";
 
-export const Minimap: FC<TimelineMinimapProps> = ({ regions, length }) => {
+export const Minimap: FC<any> = () => {
+  const { regions, length } = useContext(TimelineContext);
   const root = useRef<HTMLDivElement>();
   const [step, setStep] = useState(0);
 
@@ -14,7 +15,7 @@ export const Minimap: FC<TimelineMinimapProps> = ({ regions, length }) => {
       return {
         id: region.id,
         color: region.color,
-        connections: visualizeKeyframes(region.keyframes, step),
+        lifespans: visualizeLifespans(region.keyframes, step),
       };
     });
   }, [step, regions]);
@@ -27,11 +28,11 @@ export const Minimap: FC<TimelineMinimapProps> = ({ regions, length }) => {
 
   return (
     <Block ref={root} name="minimap">
-      {visualization.slice(0, 5).map(({ id, color, connections }) => {
+      {visualization.slice(0, 5).map(({ id, color, lifespans }) => {
         return (
           <Elem key={id} name="region" style={{ '--color': color }}>
-            {connections.map((connection, i) => {
-              const isLast = i + 1 === connections.length;
+            {lifespans.map((connection, i) => {
+              const isLast = i + 1 === lifespans.length;
               const left = connection.start * step;
               const width = (isLast && connection.enabled) ? '100%' : connection.width;
 

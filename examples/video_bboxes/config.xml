@@ -2,4 +2,10 @@
   <Header>Label the video:</Header>
   <Video name="video" value="$video" />
   <VideoBBox name="box" toName="video" />
+
+  <Labels name="videoLabels" toName="box">
+    <Label value="Car"/>
+    <Label value="Airplane"/>
+    <Label value="Possum"/>
+  </Labels>
 </View>

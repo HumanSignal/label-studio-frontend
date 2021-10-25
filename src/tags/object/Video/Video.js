@@ -73,6 +73,10 @@ const Model = types
 
       return +(given < 1 ? 1 / given : given);
     },
+
+    get currentFrame() {
+      return self.ref.current?.position ?? 1;
+    },
   }))
   .actions(self => ({
     handleSyncSeek(time) {

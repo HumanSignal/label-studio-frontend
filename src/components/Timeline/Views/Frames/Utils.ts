@@ -1,6 +1,6 @@
 import { TimelineRegionKeyframe } from "../../Types";
 
-export const visualizeKeyframes = (keyframes: TimelineRegionKeyframe[], step: number) => {
+export const visualizeLifespans = (keyframes: TimelineRegionKeyframe[], step: number) => {
   const lines = [];
   const start = keyframes[0].frame - 1;
 

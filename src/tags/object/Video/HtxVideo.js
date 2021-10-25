@@ -1,12 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
+import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp } from "../../../utils/utilities";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
@@ -135,23 +137,37 @@ function onPlayPause(e) {
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
-  const [mounted, setMounted] = useState(false);
+  const root = useRef();
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(1);
+
+  const [videoSize, setVideoSize] = useState([0, 0]);
 
   useEffect(() => {
-    const videoEl = item.ref.current;
+    const block = root.current;
 
-    if (videoEl) {
-      setMounted(true);
-      if (videoEl.readyState === 4) setLoaded(true);
-      else videoEl.addEventListener("loadedmetadata", () => {
-        setLoaded(true);
-        setVideoLength(Math.ceil(videoEl.duration * item.frameRate));
-      });
+    if (block) {
+      setVideoSize([
+        block.clientWidth,
+        block.clientHeight,
+      ]);
     }
-  }, [item.ref.current]);
+  }, []);
+
+  // useEffect(() => {
+  //   const videoEl = item.ref.current;
+
+  //   if (videoEl) {
+  //     setMounted(true);
+  //     if (videoEl.readyState === 4) setLoaded(true);
+  //     else videoEl.addEventListener("loadedmetadata", () => {
+  //       setLoaded(true);
+  //       setVideoLength(Math.ceil(videoEl.duration * item.frameRate));
+  //     });
+  //   }
+  // }, [item.ref.current]);
 
   useEffect(() => {
     const video = item.ref.current;
@@ -166,7 +182,7 @@ const HtxVideoView = ({ item }) => {
     label: "Possum",
     color: "#7F64FF",
     visible: true,
-    selected: false,
+    selected: item.inSelection,
     keyframes: reg.sequence.map(s => ({
       frame: s.frame,
       enabled: s.enabled,
@@ -178,43 +194,73 @@ const HtxVideoView = ({ item }) => {
       {item.errors?.map((error, i) => (
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
-      <Block name="video">
+
+      <Block ref={root} name="video" style={{ minHeight: 600 }}>
         {loaded && (
           <VideoRegions
             item={item}
-            width={item.ref.current.offsetWidth}
-            height={item.ref.current.offsetHeight}
+            width={videoSize[0]}
+            height={videoSize[1]}
           />
         )}
-        <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} />
-        <Controls item={item} video={mounted && item.ref.current} />
+        <VideoCanvas
+          ref={item.ref}
+          src={item._value}
+          width={videoSize[0]}
+          height={videoSize[1]}
+          muted={item.muted}
+          framerate={item.frameRate}
+          onFrameChange={(position, length) => {
+            setPosition(position);
+            setVideoLength(length);
+            item.setOnlyFrame(position);
+          }}
+          onLoad={({ length }) => {
+            setLoaded(true);
+            setVideoLength(length);
+            item.setOnlyFrame(1);
+          }}
+        />
+        {/* <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} /> */}
+        {/* <Controls item={item} video={mounted && item.ref.current} /> */}
       </Block>
-      <Timeline
-        playing={playing}
-        length={videoLength}
-        position={clamp(Math.ceil(item.frame), 0, videoLength)}
-        regions={regions}
-        framerate={item.frameRate}
-        onPositionChange={item.setFrame}
-        onPlayToggle={setPlaying}
-        onToggleVisibility={(id) => {
-          // setRegions(regions.map(reg => {
-          //   if (reg.id === id) {
-          //     return { ...reg, visible: !reg.visible };
-          //   }
-          //   return reg;
-          // }));
-        }}
-        onDeleteRegion={(id) => {
-          // setRegions(regions.filter(reg => reg.id !== id));
-        }}
-        onSelectRegion={(_, id) => {
-          // setRegions(regions.map(reg => {
-          //   reg.selected = reg.id === id;
-          //   return reg;
-          // }));
-        }}
-      />
+      {loaded && (
+        <Timeline
+          playing={playing}
+          length={videoLength}
+          position={position}
+          regions={regions}
+          framerate={item.frameRate}
+          onPositionChange={item.setFrame}
+          onPlayToggle={setPlaying}
+          onToggleVisibility={(id) => {
+            // setRegions(regions.map(reg => {
+            //   if (reg.id === id) {
+            //     return { ...reg, visible: !reg.visible };
+            //   }
+            //   return reg;
+            // }));
+          }}
+          onDeleteRegion={(id) => {
+            // setRegions(regions.filter(reg => reg.id !== id));
+          }}
+          onSelectRegion={(_, id) => {
+            // setRegions(regions.map(reg => {
+            //   reg.selected = reg.id === id;
+            //   return reg;
+            // }));
+          }}
+          onAction={(_, action, data) => {
+            switch(action) {
+              case "lifespan_add": console.log(data.frane); break;
+              case "lifespan_remove": console.log(data.frane); break;
+              case "keyframe_add": console.log(data.frane); break;
+              case "keyframe_remove": console.log(data.frane); break;
+              default: console.log('unknown action');
+            }
+          }}
+        />
+      )}
     </ObjectTag>
   );
 };

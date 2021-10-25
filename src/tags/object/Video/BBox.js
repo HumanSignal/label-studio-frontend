@@ -15,8 +15,9 @@ const BBoxPure = ({ reg, frame, stageWidth, stageHeight, ...rest }) => {
   };
 
   // console.log("DRAW BOX", box, newBox, stageWidth, stageHeight);
+  console.log({ frame });
 
-  return (
+  return reg.isInLifespan(frame) ? (
     <Rect
       {...newBox}
       draggable
@@ -55,7 +56,7 @@ const BBoxPure = ({ reg, frame, stageWidth, stageHeight, ...rest }) => {
       }}
       {...rest}
     />
-  );
+  ) : null;
 };
 
 export const BBox = observer(BBoxPure);
