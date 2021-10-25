@@ -387,7 +387,7 @@ const FilterView = observer(({ item }) => {
             Update
           </Button>,
           <Button key="back" onClick={handleCancel}>
-            Cancle
+            Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={handleOk}>
             Submit
