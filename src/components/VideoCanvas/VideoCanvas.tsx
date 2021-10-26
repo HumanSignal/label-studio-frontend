@@ -84,18 +84,17 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
   const drawVideo = () => {
     try {
-      if (canvasRef.current && contextRef.current && videoRef.current) {
-        const [canvas, context] = [canvasRef.current, contextRef.current];
-        const { width, height } = canvas;
-        const ratio = Math.min(1, Math.min((width / size[0]), (height / size[1])));
+      if (contextRef.current && videoRef.current) {
+        const context = contextRef.current;
+        const ratio = Math.min(1, Math.min((canvasWidth / size[0]), (canvasHeight / size[1])));
 
         const resultWidth = (size[0] * ratio) * zoom;
         const resultHeight = (size[1] * ratio) * zoom;
 
-        const offsetLeft = ((width - resultWidth) / 2) + pan.x;
-        const offsetTop = ((height - resultHeight) / 2) + pan.y;
+        const offsetLeft = ((canvasWidth - resultWidth) / 2) + pan.x;
+        const offsetTop = ((canvasHeight - resultHeight) / 2) + pan.y;
 
-        context.clearRect(0, 0, width, height);
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
 
         context.save();
         context.filter = `contrast(${contrast}) brightness(${brightness}) saturate(${saturation})`;

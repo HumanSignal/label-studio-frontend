@@ -14,8 +14,8 @@ interface ConfigNodeBaseProps {
 
 interface ConfigNode extends ConfigNodeBaseProps {
   // [key: string]: string,
-  children?: ConfigNode[],
-  value?: string,
+  children?: ConfigNode[];
+  value?: string;
 }
 
 export const TRAVERSE_SKIP = "skip";
