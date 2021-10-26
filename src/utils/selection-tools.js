@@ -605,23 +605,33 @@ export const findOnPosition = (root, position, borderSide = "left") => {
   let lastPosition = 0;
   let currentNode = walker.nextNode();
   let nextNode = walker.nextNode();
+  // set to finish on the next text
+  let finishHere = false;
 
   while (currentNode) {
     const isText = currentNode.nodeType === Node.TEXT_NODE;
     const isBR = currentNode.nodeName === "BR";
 
-    if (isText || isBR) {
+    if (isBR) {
+      lastPosition++;
+    }
+
+    if (isText && finishHere) {
+      return { node: currentNode, position: 0 };
+    }
+
+    if (isText) {
       // convert chars count to code points count, see `charsToCodePoints`
-      const length = isText ? [...currentNode.textContent].length : 1;
+      const length = [...currentNode.textContent].length;
 
       if (length + lastPosition >= position || !nextNode) {
         if (borderSide === "right" && length + lastPosition === position && nextNode) {
-          return { node: nextNode, position: 0 };
+          finishHere = true;
+        } else {
+          return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
         }
-        return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
-      } else {
-        lastPosition += length;
       }
+      lastPosition += length;
     }
 
     currentNode = nextNode;
