@@ -88,8 +88,8 @@ const Model = types
 
         self.sequence = [
           ...self.sequence.slice(0, index),
-          ({ ...keyframe, ...newItem, enabled: keyframe.enabled }),
-          ...self.sequence.slice(index + 1),
+          ({ ...keyframe, ...newItem }),
+          ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }
     },
