@@ -28,12 +28,12 @@ import { Hotkey } from "../../core/Hotkey";
  */
 function formatTimeCallback(seconds, pxPerSec) {
   seconds = Number(seconds);
-  var minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor(seconds / 60);
 
   seconds = seconds % 60;
 
   // fill up seconds with zeroes
-  var secondsStr = Math.round(seconds).toString();
+  let secondsStr = Math.round(seconds).toString();
 
   if (pxPerSec >= 25 * 10) {
     secondsStr = seconds.toFixed(2);
@@ -61,7 +61,7 @@ function formatTimeCallback(seconds, pxPerSec) {
  * @param: pxPerSec
  */
 function timeInterval(pxPerSec) {
-  var retval = 1;
+  let retval = 1;
 
   if (pxPerSec >= 25 * 100) {
     retval = 0.01;
@@ -95,7 +95,7 @@ function timeInterval(pxPerSec) {
  * @param pxPerSec
  */
 function primaryLabelInterval(pxPerSec) {
-  var retval = 1;
+  let retval = 1;
 
   if (pxPerSec >= 25 * 100) {
     retval = 10;

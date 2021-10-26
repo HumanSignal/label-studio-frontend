@@ -83,7 +83,7 @@ class Predictions extends Component {
     const { store } = this.props;
     const { predictions } = store.annotationStore;
 
-    let title = (
+    const title = (
       <div className={styles.title + " " + styles.titlespace}>
         <h3>Predictions</h3>
         {/* @todo fix View All mode */}

@@ -269,7 +269,7 @@ const Annotation = types
     },
 
     extendSelectionWith(areas) {
-      for (let area of (Array.isArray(areas) ? areas : [areas])) {
+      for (const area of (Array.isArray(areas) ? areas : [areas])) {
         self.regionStore.toggleSelection(area, true);
       }
     },
@@ -408,7 +408,7 @@ const Annotation = types
      * @param {*} region
      */
     deleteRegion(region) {
-      let { regions } = self.regionStore;
+      const { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
 
@@ -460,7 +460,7 @@ const Annotation = types
       if (!isDraft && !self.versions.draft) return;
       self.autosave.flush();
       self.pauseAutosave();
-      if (isDraft) self.versions.draft = self.serializeAnnotation();
+      if (isDraft) self.versions.draft = self.serializeAnnotation({ fast: true });
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
         self.deserializeResults(self.versions.result);
@@ -492,7 +492,7 @@ const Annotation = types
         () => {
           if (self.autosave.paused) return;
 
-          const result = self.serializeAnnotation();
+          const result = self.serializeAnnotation({ fast: true });
           // if this is new annotation and no regions added yet
 
           if (!self.pk && !result.length) return;
@@ -584,7 +584,7 @@ const Annotation = types
 
       let audiosNum = 0;
       let audioNode = null;
-      let mod = "shift+space";
+      const mod = "shift+space";
       let comb = mod;
 
       // [TODO] we need to traverse this two times, fix
@@ -699,8 +699,19 @@ const Annotation = types
       return self.regionStore.regions.slice(prevSize);
     },
 
-    serializeAnnotation() {
-      return self.serialized;
+    serializeAnnotation(options) {
+      // return self.serialized;
+
+      document.body.style.cursor = "wait";
+
+      const result = self.results
+        .map(r => r.serialize(options))
+        .filter(Boolean)
+        .concat(self.relationStore.serializeAnnotation(options));
+
+      document.body.style.cursor = "default";
+
+      return result;
     },
 
     // Some annotations may be created with wrong assumptions
@@ -1161,7 +1172,7 @@ export default types
       const pk = options.pk || options.id;
 
       //
-      let node = {
+      const node = {
         userGenerate: false,
 
         ...options,

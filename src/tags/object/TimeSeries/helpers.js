@@ -15,7 +15,7 @@ export const getOptimalWidth = () => ((window.screen && window.screen.width) || 
 export const sparseValues = (values, max = 1e6) => {
   if (values.length <= max) return values;
   let next = 0;
-  let step = (values.length - 1) / (max - 1);
+  const step = (values.length - 1) / (max - 1);
   // return values.filter((_, i) => i > next && (next += step))
 
   return values.filter((_, i) => {

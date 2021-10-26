@@ -39,7 +39,7 @@ export const DraftPanel = observer(({ item }) => {
 });
 
 const Annotation = observer(({ item, store }) => {
-  let removeHoney = () => (
+  const removeHoney = () => (
     <Tooltip placement="topLeft" title="Unset this result as a ground truth">
       <Button
         size="small"
@@ -54,7 +54,7 @@ const Annotation = observer(({ item, store }) => {
     </Tooltip>
   );
 
-  let setHoney = () => {
+  const setHoney = () => {
     const title = item.ground_truth
       ? "Unset this result as a ground truth"
       : "Set this result as a ground truth";
@@ -210,7 +210,7 @@ class Annotations extends Component {
   render() {
     const { store } = this.props;
 
-    let title = (
+    const title = (
       <div className={styles.title + " " + styles.titlespace}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <h3>Annotations</h3>

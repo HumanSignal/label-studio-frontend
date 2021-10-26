@@ -1,6 +1,6 @@
 import { getRoot, onSnapshot, types } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";

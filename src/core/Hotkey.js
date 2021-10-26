@@ -1,6 +1,9 @@
 import keymaster from "keymaster";
+import { inject } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { createElement } from "react";
 import { Tooltip } from "../common/Tooltip/Tooltip";
+import Hint from "../components/Hint/Hint";
 import { isDefined, isMacOS } from "../utils/utilities";
 import defaultKeymap from "./settings/keymap.json";
 
@@ -22,9 +25,9 @@ validateKeymap(defaultKeymap);
 const DEFAULT_SCOPE = "__main__";
 const INPUT_SCOPE = "__input__";
 
-let _hotkeys_desc = {};
-let _namespaces = {};
-let _destructors = [];
+const _hotkeys_desc = {};
+const _namespaces = {};
+const _destructors = [];
 
 keymaster.filter = function(event) {
   if (keymaster.getScope() === "__none__") return;
@@ -59,8 +62,8 @@ export const Hotkey = (
   };
 
   const unbind = () => {
-    for (let scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
-      for (let key of Object.keys(_hotkeys_map)) {
+    for (const scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
+      for (const key of Object.keys(_hotkeys_map)) {
         keymaster.unbind(key, scope);
         delete _hotkeys_desc[key];
       }
@@ -236,11 +239,11 @@ export const Hotkey = (
      * Create combination
      */
     makeComb() {
-      let prefix = null;
-      let st = "1234567890qwetasdfgzxcvbyiopjklnm";
-      let combs = st.split("");
+      const prefix = null;
+      const st = "1234567890qwetasdfgzxcvbyiopjklnm";
+      const combs = st.split("");
 
-      for (var i = 0; i <= combs.length; i++) {
+      for (let i = 0; i <= combs.length; i++) {
         let comb;
 
         if (prefix) comb = prefix + "+" + combs[i];
@@ -286,13 +289,19 @@ Hotkey.setScope = function(scope) {
   keymaster.setScope(scope);
 };
 
-Hotkey.Tooltip = ({ name, children, ...props }) => {
+/**
+ * @param {{name: keyof defaultKeymap}} param0
+ */
+Hotkey.Tooltip = inject("store")(observer(({ store, name, children, ...props }) => {
   const hotkey = defaultKeymap[name];
+  const enabled = store.settings.enableTooltips && store.settings.enableHotkeys;
 
   if (isDefined(hotkey)) {
     const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
 
-    const title = `${hotkey.description} [${shortcut}]`;
+    const title = enabled
+      ? `${props.title ?? hotkey.description}: [${shortcut}]`
+      : hotkey.description;
 
     return createElement(Tooltip, {
       ...props,
@@ -301,7 +310,23 @@ Hotkey.Tooltip = ({ name, children, ...props }) => {
   }
 
   return children;
-};
+}));
+
+/**
+ * @param {{name: keyof defaultKeymap}} param0
+ */
+Hotkey.Hint = inject("store")(observer(({ store, name }) => {
+  const hotkey = defaultKeymap[name];
+  const enabled = store.settings.enableTooltips && store.settings.enableHotkeys;
+
+  if (isDefined(hotkey) && enabled) {
+    const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
+
+    return createElement(Hint, {}, [shortcut]);
+  }
+
+  return null;
+}));
 
 window.HtxHotkeys = Hotkey;
 

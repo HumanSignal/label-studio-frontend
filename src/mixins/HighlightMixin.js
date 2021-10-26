@@ -62,9 +62,9 @@ export const HighlightMixin = types
 
     updateSpans() {
       if (self._hasSpans) {
-        self._spans.forEach(span => {
-          span.setAttribute("data-label", self.getLabels());
-        });
+        const lastSpan = self._spans[self._spans.length - 1];
+
+        lastSpan.setAttribute("data-label", self.getLabels());
       }
     },
 
@@ -283,7 +283,7 @@ const createSpanStylesheet = (document, identifier, color) => {
   const supportInserion = !!stylesheet.insertRule;
   let lastRuleIndex = 0;
 
-  for (let ruleName in rules) {
+  for (const ruleName in rules) {
     if (!Object.prototype.hasOwnProperty.call(rules, ruleName)) continue;
     if (supportInserion) stylesheet.insertRule(`${ruleName} { ${rules[ruleName]} } `, lastRuleIndex++);
     else stylesheet.addRule(ruleName, rules);

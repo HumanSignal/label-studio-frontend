@@ -90,13 +90,13 @@ async function getConfig(pathToConfig) {
  * Get custom config
  */
 async function getExample() {
-  let datatype = data;
+  const datatype = data;
 
-  let config = await getConfig(datatype.config);
-  let annotations = datatype.annotation.annotations;
-  let predictions = datatype.tasks[0].predictions;
+  const config = await getConfig(datatype.config);
+  const annotations = datatype.annotation.annotations;
+  const predictions = datatype.tasks[0].predictions;
 
-  let task = {
+  const task = {
     annotations,
     predictions,
     data: JSON.stringify(datatype.tasks[0].data),

@@ -341,7 +341,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-      let evt = e.evt || e;
+      const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };

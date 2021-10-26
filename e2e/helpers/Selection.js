@@ -2,11 +2,11 @@
 const Helper = require('@codeceptjs/helper');
 
 class Selection extends Helper {
-  async dblClickOnWord (text, parent = "*") {
+  async dblClickOnWord(text, parent = "*") {
     const { Puppeteer } = this.helpers;
     const { page } = Puppeteer;
     const { mouse } = page;
-    let xpath = [locate(parent).toXPath(),`/text()[contains(., '${text}')]`,"[last()]"].join("");
+    const xpath = [locate(parent).toXPath(),`/text()[contains(., '${text}')]`,"[last()]"].join("");
     const textEls = await page.$x(xpath);
     const point = await page.evaluate((textEl, text)=>{
       const pos = textEl.wholeText.search(text);
@@ -24,7 +24,23 @@ class Selection extends Helper {
 
     return mouse.click(point.x, point.y, { button: "left", clickCount: 2, delay: 50 });
   }
-  async setSelection (startLocator, startOffset, endLocator, endOffset) {
+  async dblClickOnElement(elementLocator) {
+    const { Puppeteer } = this.helpers;
+    const { page } = Puppeteer;
+    const { mouse } = page;
+    const els = await page.$x(locate(elementLocator).toXPath());
+    const point = await page.evaluate((el)=>{
+      const bbox = el.getBoundingClientRect();
+
+      return {
+        x: (bbox.left + bbox.right) / 2,
+        y: (bbox.top + bbox.bottom) / 2,
+      };
+    },els[0]);
+
+    return mouse.click(point.x, point.y, { button: "left", clickCount: 2, delay: 50 });
+  }
+  async setSelection(startLocator, startOffset, endLocator, endOffset) {
     const { Puppeteer } = this.helpers;
     const { page } = Puppeteer;
     const startContainers = await page.$x(locate(startLocator).toXPath());

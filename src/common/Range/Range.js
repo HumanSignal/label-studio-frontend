@@ -86,7 +86,7 @@ export const Range = ({
           valueConvert={valueToPercentage}
         />
         {multi ? arrayReverse(currentValue, reverse).map((value, i, list) => {
-          let index = reverse ? i === 0 ? 1 : 0 : i;
+          const index = reverse ? i === 0 ? 1 : 0 : i;
           const preservedValueIndex = index === 0 ? 1 : 0;
 
           const getValue = (val) => {

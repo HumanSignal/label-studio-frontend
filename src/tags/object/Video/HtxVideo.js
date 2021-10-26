@@ -1,4 +1,3 @@
-import { Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
@@ -25,19 +24,19 @@ const PlayPause = ({ item, video }) => {
   const onPlayPause = () => video.paused ? video.play() : video.pause();
 
   useEffect(() => {
-    hotkeys.addNamed("video:play", e => {
+    hotkeys.addNamed("video:playpause", e => {
       e.preventDefault();
       onPlayPause();
     });
-    return () => hotkeys.removeNamed("video:play");
+    return () => hotkeys.removeNamed("video:playpause");
   }, [video]);
 
   return (
-    <Tooltip title="Play/Pause [alt+space]" placement="bottomLeft">
+    <Hotkey.Tooltip name="video:playpause" placement="bottomLeft">
       <Elem name="play" onClick={onPlayPause}>
         {paused ? <IconPlayerPlay /> : <IconPlayerPause />}
       </Elem>
-    </Tooltip>
+    </Hotkey.Tooltip>
   );
 };
 
