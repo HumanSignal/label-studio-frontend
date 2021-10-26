@@ -1,139 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
+import Constants, { defaultStyle } from "../../../core/Constants";
 import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp } from "../../../utils/utilities";
-import AutoSizer from "react-virtualized-auto-sizer";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 
 const hotkeys = Hotkey("Video", "Video Annotation");
-
-const PlayPause = ({ item, video }) => {
-  const [paused, setPausedState] = useState(true);
-  const setPaused = paused => {
-    setPausedState(paused);
-    paused ? item.triggerSyncPause() : item.triggerSyncPlay();
-  };
-
-  useEffect(() => {
-    video.onplay = () => setPaused(false);
-    video.onpause = () => setPaused(true);
-  }, [video]);
-  const onPlayPause = () => video.paused ? video.play() : video.pause();
-
-  useEffect(() => {
-    hotkeys.addNamed("video:playpause", e => {
-      e.preventDefault();
-      onPlayPause();
-    });
-    return () => hotkeys.removeNamed("video:playpause");
-  }, [video]);
-
-  return (
-    <Hotkey.Tooltip name="video:playpause" placement="bottomLeft">
-      <Elem name="play" onClick={onPlayPause}>
-        {paused ? <IconPlayerPlay /> : <IconPlayerPause />}
-      </Elem>
-    </Hotkey.Tooltip>
-  );
-};
-
-const FrameStep = ({ item, video }) => {
-  const onForward = () => { video.pause(); item.setFrame(item.frame + 1); };
-  const onBackward = () => { video.pause(); item.setFrame(item.frame - 1); };
-
-  useEffect(() => {
-    hotkeys.addNamed("video:frame-forward", e => {
-      e.preventDefault();
-      onForward();
-    });
-    hotkeys.addNamed("video:frame-backward", e => {
-      e.preventDefault();
-      onBackward();
-    });
-    return () => {
-      hotkeys.removeNamed("video:frame-forward");
-      hotkeys.removeNamed("video:frame-backward");
-    };
-  }, [video]);
-
-  return (
-    <>
-      <Hotkey.Tooltip name="video:frame-backward" placement="bottomLeft">
-        <Elem name="frame" onClick={onBackward}>
-          <IconPlayerStep style={{ transform: "rotate(180deg)" }} />
-        </Elem>
-      </Hotkey.Tooltip>
-      <Hotkey.Tooltip name="video:frame-forward" placement="bottomLeft">
-        <Elem name="frame" onClick={onForward}>
-          <IconPlayerStep />
-        </Elem>
-      </Hotkey.Tooltip>
-    </>
-  );
-};
-
-const Progress = ({ item, video }) => {
-  const progressRef = useRef();
-  const timeRef = useRef();
-
-  useEffect(() => {
-    video.ontimeupdate = () => {
-      const percent = video.currentTime / video.duration;
-
-      item.setOnlyFrame(video.currentTime / item.framerate);
-      timeRef.current.style.left = (percent * 100) + "%";
-    };
-
-    video.onseeked = () => item.triggerSyncSeek(video.currentTime);
-  }, [video]);
-
-  const progress = video.currentTime / video.duration;
-  const onSeek = e => {
-    if (e.buttons & 1) {
-      const bar = progressRef.current;
-      const box = bar.getBoundingClientRect();
-      const percent = (e.clientX - box.left) / bar.offsetWidth;
-
-      video.currentTime = video.duration * percent;
-    }
-  };
-
-  return (
-    <Elem name="progress" onMouseMove={onSeek} onMouseDown={onSeek} ref={progressRef}>
-      <Elem name="current-time" style={{ left: progress * 100 + "%" }} ref={timeRef} />
-    </Elem>
-  );
-};
-
-const Sound = () => null;
-
-const Controls = ({ item, video }) => {
-  if (!video) return null;
-
-  return (
-    <Elem name="controls">
-      <PlayPause item={item} video={video} />
-      <FrameStep item={item} video={video} />
-      <Progress item={item} video={video} />
-      <Sound />
-    </Elem>
-  );
-};
-
-function onPlayPause(e) {
-  e.preventDefault();
-  const video = e.target;
-
-  video.paused ? video.play() : video.pause();
-}
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
@@ -144,6 +23,8 @@ const HtxVideoView = ({ item }) => {
   const [position, setPosition] = useState(1);
 
   const [videoSize, setVideoSize] = useState([0, 0]);
+  const [zoom, setZoom] = useState();
+  const [pan, setPan] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const block = root.current;
@@ -156,19 +37,6 @@ const HtxVideoView = ({ item }) => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   const videoEl = item.ref.current;
-
-  //   if (videoEl) {
-  //     setMounted(true);
-  //     if (videoEl.readyState === 4) setLoaded(true);
-  //     else videoEl.addEventListener("loadedmetadata", () => {
-  //       setLoaded(true);
-  //       setVideoLength(Math.ceil(videoEl.duration * item.frameRate));
-  //     });
-  //   }
-  // }, [item.ref.current]);
-
   useEffect(() => {
     const video = item.ref.current;
 
@@ -177,17 +45,43 @@ const HtxVideoView = ({ item }) => {
     }
   }, [playing]);
 
-  const regions = item.regs.map(reg => ({
-    id: reg.id,
-    label: "Possum",
-    color: "#7F64FF",
-    visible: true,
-    selected: item.inSelection,
-    keyframes: reg.sequence.map(s => ({
+  useEffect(() => {
+    const cancelWheel = (e) => {
+      if (!e.shiftKey) return;
+      e.preventDefault();
+    };
+
+    root.current.addEventListener('wheel', cancelWheel);
+
+    return () => root.current.removeEventListener('wheel', cancelWheel);
+  }, []);
+
+  const handleZoom = useCallback((e) => {
+    if (!e.shiftKey) return;
+
+    const delta = e.deltaY * 0.01;
+    const video = item.ref.current;
+    const newZoom = clamp(video.zoom + delta, 0.25, 16);
+
+    setZoom(newZoom);
+  }, []);
+
+  const regions = item.regs.map(reg => {
+    const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
+    const sequence = reg.sequence.map(s => ({
       frame: s.frame,
       enabled: s.enabled,
-    })),
-  }));
+    }));
+
+    return {
+      id: reg.id,
+      label: "Possum",
+      color,
+      visible: !reg.hidden,
+      selected: reg.selected,
+      keyframes: sequence,
+    };
+  });
 
   return (
     <ObjectTag item={item}>
@@ -195,10 +89,13 @@ const HtxVideoView = ({ item }) => {
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
 
-      <Block ref={root} name="video" style={{ minHeight: 600 }}>
+      <Block ref={root} name="video" style={{ minHeight: 600 }} onWheel={handleZoom}>
         {loaded && (
           <VideoRegions
             item={item}
+            zoom={zoom}
+            pan={pan}
+            regions={item.regs}
             width={videoSize[0]}
             height={videoSize[1]}
           />
@@ -209,6 +106,8 @@ const HtxVideoView = ({ item }) => {
           width={videoSize[0]}
           height={videoSize[1]}
           muted={item.muted}
+          zoom={zoom}
+          pan={pan}
           framerate={item.frameRate}
           onFrameChange={(position, length) => {
             setPosition(position);
@@ -245,6 +144,9 @@ const HtxVideoView = ({ item }) => {
             // setRegions(regions.filter(reg => reg.id !== id));
           }}
           onSelectRegion={(_, id) => {
+            const reg = item.regs.find(reg => reg.pid === id || reg.id === id);
+
+            reg?.onClickRegion();
             // setRegions(regions.map(reg => {
             //   reg.selected = reg.id === id;
             //   return reg;

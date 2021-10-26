@@ -1,7 +1,7 @@
 import { tSMethodSignature } from "@babel/types";
 import { forwardRef, LegacyRef, MouseEvent, useCallback, useEffect, useRef, useState, WheelEvent } from "react";
 import { Block, Elem } from "../../utils/bem";
-import { isDefined } from "../../utils/utilities";
+import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
 
 type VideoProps = {
@@ -13,6 +13,7 @@ type VideoProps = {
   playing?: boolean,
   framerate?: number,
   muted?: boolean,
+  zoom?: number,
 
   contrast?: number,
   brightness?: number,
@@ -29,12 +30,16 @@ type PanOptions = {
 
 const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 5, 10, 16];
 
+const clampZoom = (value: number) => clamp(value, zoomSteps[0], zoomSteps[zoomSteps.length - 1]);
+
 export interface VideoRef {
   currentFrame: number;
   length: number;
   playing: boolean;
   width: number;
   height: number;
+  zoom: number;
+  pan: PanOptions;
   play: () => void;
   pause: () => void;
   goToFrame: (frame: number) => void;
@@ -97,6 +102,13 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
         0, 0, size[0], size[1],
         offsetLeft, offsetTop, resultWidth, resultHeight,
       );
+      console.log({
+        size,
+        offsetLeft,
+        offsetTop,
+        resultWidth,
+        resultHeight,
+      });
       context.restore();
     } else {
       console.log('nothing to render', [canvasRef.current, contextRef.current, videoRef.current]);
@@ -118,7 +130,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
   const handleZoom = useCallback((e: WheelEvent<HTMLDivElement>) => {
     const delta = e.deltaY * 0.01;
-    const newZoom = Math.max(minZoom, Math.min(zoom + delta, maxZoom));
+    const newZoom = clampZoom(zoom + delta);
 
     setZoom(newZoom);
   }, [maxZoom, minZoom, zoom]);
@@ -202,6 +214,12 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   }, []);
 
   useEffect(() => {
+    if (isDefined(props.zoom)) {
+      setZoom(clampZoom(props.zoom));
+    }
+  }, [props.zoom]);
+
+  useEffect(() => {
     if (isDefined(props.brightness)){
       setBrightness(props.brightness);
     }
@@ -223,6 +241,8 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     currentFrame,
     length,
     playing,
+    zoom,
+    pan,
     width: canvasWidth,
     height: canvasHeight,
     set currentTime(time: number) {
@@ -249,7 +269,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       }
     },
     setZoom(value) {
-      setZoom(Math.max(zoomSteps[0], Math.min(value, zoomSteps[zoomSteps.length - 1])));
+      setZoom(clampZoom(value));
     },
     setPan(x, y) {
       setPan({ x, y });
@@ -272,11 +292,11 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     seek(time) {
       const video = videoRef.current!;
 
-      video.currentTime = Math.max(0, Math.min(time, video.duration));
+      video.currentTime = clamp(time, 0, video.duration);
     },
     goToFrame(frame: number) {
       const video = videoRef.current!;
-      const frameClamped = Math.max(1, Math.min(frame, length));
+      const frameClamped = clamp(frame, 1, length);
 
       video.currentTime = frameClamped / framerate;
       setTimeout(() => updateFrame(true), 100);
@@ -288,6 +308,41 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   } else if (ref) {
     ref.current = refSource;
   }
+
+  useEffect(() => {
+    console.log('render');
+
+    let isLoaded = false;
+
+    const checkVideoLoaded = () => {
+      if (isLoaded) return;
+
+      if (videoRef.current?.readyState === 4) {
+        isLoaded = true;
+        const video = videoRef.current;
+
+        setTimeout(() => {
+          const length = Math.ceil(video.duration * framerate);
+          const size = [video.videoWidth, video.videoHeight];
+
+          setLength(length);
+          setSize(size);
+          setLoading(false);
+          updateFrame(true);
+
+          props.onLoad?.({
+            ...refSource,
+            length,
+          });
+        }, 200);
+        return;
+      }
+
+      setTimeout(checkVideoLoaded, 10);
+    };
+
+    checkVideoLoaded();
+  }, []);
 
   return (
     <Block ref={rootRef} name="video-canvas">
@@ -325,23 +380,6 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
         style={{ width: 0, position: 'absolute' }}
         ref={videoRef as LegacyRef<HTMLVideoElement>}
         muted={props.muted ?? false}
-        onLoadedData={() => {
-          setTimeout(updateFrame, 100);
-          setLoading(false);
-          drawVideo(zoom, pan);
-        }}
-        onLoadedMetadata={(e) => {
-          const video = e.target as HTMLVideoElement;
-          const length = Math.ceil(video.duration * framerate);
-          const size = [video.videoWidth, video.videoHeight];
-
-          setLength(length);
-          setSize(size);
-          props.onLoad?.({
-            ...refSource,
-            length,
-          });
-        }}
         onPlay={() => {
           setPlaying(true);
           setBuffering(false);
@@ -360,3 +398,5 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     </Block>
   );
 });
+
+VideoCanvas.displayName = "VideoCanvas";

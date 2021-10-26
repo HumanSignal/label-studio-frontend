@@ -1,15 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Layer, Rect, Stage, Transformer } from "react-konva";
 import { inject, observer } from "mobx-react";
 import { BBox } from "./BBox";
+import Constants from "../../../core/Constants";
 
 const MIN_SIZE = 5;
 
-const VideoRegionsPure = ({ item, width, height }) => {
+const VideoRegionsPure = ({ item, regions, width, height, zoom }) => {
+  console.log({ item });
+
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
-  const [selected, setSelected] = useState();
+  // const [selected, setSelected] = useState();
   const stageRef = useRef();
+
+  const selected = regions.filter((reg) => reg.selected);
 
   useEffect(() => {
     if (!isDrawing && newRegion) {
@@ -49,7 +54,7 @@ const VideoRegionsPure = ({ item, width, height }) => {
 
     if (Math.abs(newRegion.x - x) < MIN_SIZE && Math.abs(newRegion.y - y) < MIN_SIZE) {
       setNewRegion(null);
-      setSelected(null);
+      // setSelected(null);
     } else {
       setNewRegion(region => ({ ...region, width: x - region.x, height: y - region.y }));
     }
@@ -66,6 +71,13 @@ const VideoRegionsPure = ({ item, width, height }) => {
     tr.getLayer().batchDraw();
   };
 
+  useEffect(() => {
+    stageRef.current.scale({
+      x: zoom,
+      y: zoom,
+    });
+  }, [zoom]);
+
   return (
     <Stage
       ref={stageRef}
@@ -77,7 +89,7 @@ const VideoRegionsPure = ({ item, width, height }) => {
       onMouseUp={handleMouseUp}
     >
       <Layer>
-        {item.regs.map(reg => (
+        {regions.map(reg => (
           <BBox
             id={reg.id}
             key={reg.id}
@@ -86,7 +98,16 @@ const VideoRegionsPure = ({ item, width, height }) => {
             stageWidth={width}
             stageHeight={height}
             draggable={!isDrawing}
-            onClick={() => setSelected(selected?.[0] === reg ? null : [reg])}
+            selected={reg.selected}
+            onClick={(e) => {
+              // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
+              // if (store.annotationStore.selected.relationMode) {
+              //   stageRef.current.container().style.cursor = Constants.DEFAULT_CURSOR;
+              // }
+
+              reg.setHighlight(false);
+              reg.onClickRegion(e);
+            }}
           />
         ))}
       </Layer>

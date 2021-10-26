@@ -89,7 +89,7 @@ const Model = types
         self.sequence = [
           ...self.sequence.slice(0, index),
           ({ ...keyframe, ...newItem, enabled: keyframe.enabled }),
-          ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
+          ...self.sequence.slice(index + 1),
         ];
       }
     },
@@ -102,9 +102,22 @@ const Model = types
       };
     },
 
+    toggleLifespan(frame) {
+      const keyframe = self.closestKeyframe(frame);
+
+      if (keyframe) {
+        const index = self.sequence.indexOf(keyframe);
+
+        self.sequence = [
+          ...self.sequence.slice(0, index),
+          { ...keyframe, enabled: !keyframe.enabled },
+          ...self.sequence.slice(index + 1),
+        ];
+      }
+    },
+
     isInLifespan(targetFrame) {
-      const keyframes = self.sequence.filter(k => k.frame <= targetFrame);
-      const closestKeyframe = keyframes[keyframes.length - 1];
+      const closestKeyframe = self.closestKeyframe(targetFrame);
 
       if (closestKeyframe) {
         const { enabled, frame } = closestKeyframe;
@@ -113,6 +126,12 @@ const Model = types
         return enabled;
       }
       return false;
+    },
+
+    closestKeyframe(targetFrame) {
+      const keyframes = self.sequence.filter(k => k.frame <= targetFrame);
+
+      return keyframes[keyframes.length - 1];
     },
   }));
 

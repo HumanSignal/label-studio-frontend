@@ -1,9 +1,11 @@
 import React from "react";
 import { Rect } from "react-konva";
 import { observer } from "mobx-react";
+import { useRegionStyles } from "../../../hooks/useRegionColor";
 
-const BBoxPure = ({ reg, frame, stageWidth, stageHeight, ...rest }) => {
+const BBoxPure = ({ reg, frame, stageWidth, stageHeight, selected, ...rest }) => {
   const box = reg.getBBox(frame);
+  const style = useRegionStyles(reg, { includeFill: true });
 
   if (!box) return null;
 
@@ -14,16 +16,14 @@ const BBoxPure = ({ reg, frame, stageWidth, stageHeight, ...rest }) => {
     height: box.height * stageHeight / 100,
   };
 
-  // console.log("DRAW BOX", box, newBox, stageWidth, stageHeight);
-  console.log({ frame });
-
   return reg.isInLifespan(frame) ? (
     <Rect
       {...newBox}
       draggable
-      fill="rgba(64,0,255,0.3)"
-      stroke="blue"
+      fill={style.fillColor}
+      stroke={style.strokeColor}
       strokeScaleEnabled={false}
+
       onTransformEnd={e => {
         const node = e.target;
         const scaleX = node.scaleX();
