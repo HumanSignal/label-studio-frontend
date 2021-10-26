@@ -1,11 +1,14 @@
 import { observer } from "mobx-react-lite";
-import { Elem } from "../../utils/bem";
+import { Block, Elem } from "../../utils/bem";
 import { guidGenerator } from "../../utils/unique";
+import "./CurrentTask.styl";
 
 export const CurrentTask = observer(({ store }) => {
   return (
     <Elem name="section">
-      #{store.task.id ?? guidGenerator()}
+      <Block name="current-task">
+        #{store.task.id ?? guidGenerator()}
+      </Block>
     </Elem>
   );
 });
