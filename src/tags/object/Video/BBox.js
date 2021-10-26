@@ -23,7 +23,7 @@ const BBoxPure = ({ reg, frame, stageWidth, stageHeight, selected, ...rest }) =>
       fill={style.fillColor}
       stroke={style.strokeColor}
       strokeScaleEnabled={false}
-
+      opacity={reg.hidden ? 0 : 1}
       onTransformEnd={e => {
         const node = e.target;
         const scaleX = node.scaleX();

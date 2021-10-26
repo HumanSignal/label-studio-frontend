@@ -15,7 +15,7 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
 }) => {
   const { position, regions } = useContext(TimelineContext);
   const closestKeyframe = useMemo(() => {
-    const region = regions[0];//.find(r => r.selected);
+    const region = regions.find(r => r.selected);
 
     return region?.keyframes.filter(({ frame }) => frame <= position).slice(-1)[0];
   }, [regions, position]);

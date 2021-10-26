@@ -133,12 +133,9 @@ const HtxVideoView = ({ item }) => {
           onPositionChange={item.setFrame}
           onPlayToggle={setPlaying}
           onToggleVisibility={(id) => {
-            // setRegions(regions.map(reg => {
-            //   if (reg.id === id) {
-            //     return { ...reg, visible: !reg.visible };
-            //   }
-            //   return reg;
-            // }));
+            const reg = item.regs.find(reg => reg.pid === id || reg.id === id);
+
+            reg?.toggleHidden();
           }}
           onDeleteRegion={(id) => {
             // setRegions(regions.filter(reg => reg.id !== id));
@@ -147,17 +144,13 @@ const HtxVideoView = ({ item }) => {
             const reg = item.regs.find(reg => reg.pid === id || reg.id === id);
 
             reg?.onClickRegion();
-            // setRegions(regions.map(reg => {
-            //   reg.selected = reg.id === id;
-            //   return reg;
-            // }));
           }}
           onAction={(_, action, data) => {
             switch(action) {
-              case "lifespan_add": console.log(data.frane); break;
-              case "lifespan_remove": console.log(data.frane); break;
-              case "keyframe_add": console.log(data.frane); break;
-              case "keyframe_remove": console.log(data.frane); break;
+              case "lifespan_add": console.log(data.frame); break;
+              case "lifespan_remove": console.log(data.frame); break;
+              case "keyframe_add": console.log(data.frame); break;
+              case "keyframe_remove": console.log(data.frame); break;
               default: console.log('unknown action');
             }
           }}

@@ -14,7 +14,7 @@ const VideoRegionsPure = ({ item, regions, width, height, zoom }) => {
   // const [selected, setSelected] = useState();
   const stageRef = useRef();
 
-  const selected = regions.filter((reg) => reg.selected);
+  const selected = regions.filter((reg) => reg.selected && !reg.hidden);
 
   useEffect(() => {
     if (!isDrawing && newRegion) {

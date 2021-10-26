@@ -1,4 +1,3 @@
-import { tSMethodSignature } from "@babel/types";
 import { forwardRef, LegacyRef, MouseEvent, useCallback, useEffect, useRef, useState, WheelEvent } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
@@ -14,6 +13,7 @@ type VideoProps = {
   framerate?: number,
   muted?: boolean,
   zoom?: number,
+  pan?: PanOptions,
 
   contrast?: number,
   brightness?: number,
@@ -82,7 +82,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const [brightness, setBrightness] = useState(1.5);
   const [saturation, setSaturation] = useState(1.5);
 
-  const drawVideo = useCallback((zoom: number, pan: PanOptions) => {
+  const drawVideo = () => {
     if (canvasRef.current && contextRef.current && videoRef.current) {
       const [canvas, context] = [canvasRef.current, contextRef.current];
       const { width, height } = canvas;
@@ -113,20 +113,20 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     } else {
       console.log('nothing to render', [canvasRef.current, contextRef.current, videoRef.current]);
     }
-  }, [size, brightness, contrast, saturation]);
+  };
 
   const updateFrame = useCallback((force = false) => {
-    if (buffering && force === false) return;
+    if (buffering && force !== true) return;
 
     const frame = Math.ceil((videoRef.current?.currentTime ?? 0) * framerate);
     const onChange = props.onFrameChange ?? (() => {});
 
-    if (frame !== currentFrame) {
-      drawVideo(zoom, pan);
+    if (frame !== currentFrame || force === true) {
       setCurrentFrame(frame);
+      drawVideo();
       onChange(frame, length);
     }
-  }, [buffering, framerate, currentFrame, zoom, pan, drawVideo, props.onFrameChange, length]);
+  }, [buffering, framerate, currentFrame, drawVideo, props.onFrameChange, length]);
 
   const handleZoom = useCallback((e: WheelEvent<HTMLDivElement>) => {
     const delta = e.deltaY * 0.01;
@@ -159,9 +159,9 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
   useEffect(() => {
     if (!playing) {
-      drawVideo(zoom, pan);
+      drawVideo();
     }
-  }, [zoom, pan, drawVideo, playing]);
+  }, [drawVideo, playing]);
 
   useEffect(() => {
 
@@ -218,6 +218,12 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       setZoom(clampZoom(props.zoom));
     }
   }, [props.zoom]);
+
+  useEffect(() => {
+    if (isDefined(props.pan)) {
+      setPan(props.pan);
+    }
+  }, [props.pan]);
 
   useEffect(() => {
     if (isDefined(props.brightness)){
@@ -293,13 +299,14 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       const video = videoRef.current!;
 
       video.currentTime = clamp(time, 0, video.duration);
+      setTimeout(() => drawVideo(), 100);
     },
     goToFrame(frame: number) {
       const video = videoRef.current!;
       const frameClamped = clamp(frame, 1, length);
 
       video.currentTime = frameClamped / framerate;
-      setTimeout(() => updateFrame(true), 100);
+      setTimeout(() => drawVideo(), 100);
     },
   };
 
@@ -343,6 +350,11 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
     checkVideoLoaded();
   }, []);
+
+  const delayedUpdate = (e: any) => {
+    console.log(e.type);
+    updateFrame(true);
+  };
 
   return (
     <Block ref={rootRef} name="video-canvas">
@@ -388,10 +400,11 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
           setPlaying(false);
           setBuffering(false);
         }}
-        onCanPlay={() => updateFrame(true)}
-        onSeeked={() => updateFrame(true)}
-        onSeeking={() => updateFrame(true)}
-        onTimeUpdate={() => updateFrame(true)}
+        onLoadedData={delayedUpdate}
+        onCanPlay={delayedUpdate}
+        onSeeked={delayedUpdate}
+        onSeeking={delayedUpdate}
+        onTimeUpdate={delayedUpdate}
         onPlaying={() => setBuffering(false)}
         onWaiting={() => setBuffering(true)}
       />
