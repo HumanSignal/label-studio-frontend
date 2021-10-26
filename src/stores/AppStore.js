@@ -31,6 +31,11 @@ export default types
 
     project: types.maybeNull(Project),
 
+    /** 
+     * History of task ids: 
+    */
+    taskHistory: types.array(types.number, []),
+
     /**
      * Configure the visual UI shown to the user
      */
@@ -344,6 +349,7 @@ export default types
         };
       }
       self.task = Task.create(taskObject);
+      self.taskHistory.push(self.task.id);
     }
 
     function assignConfig(config) {
