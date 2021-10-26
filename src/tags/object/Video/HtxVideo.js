@@ -6,7 +6,7 @@ import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
 import { Hotkey } from "../../../core/Hotkey";
 import { Block } from "../../../utils/bem";
-import { clamp } from "../../../utils/utilities";
+import { clamp, isDefined } from "../../../utils/utilities";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
@@ -162,12 +162,16 @@ const HtxVideoView = ({ item }) => {
             reg?.onClickRegion();
           }}
           onAction={(_, action, data) => {
-            switch(action) {
-              case "lifespan_add": console.log(data.frame); break;
-              case "lifespan_remove": console.log(data.frame); break;
-              case "keyframe_add": console.log(data.frame); break;
-              case "keyframe_remove": console.log(data.frame); break;
-              default: console.log('unknown action');
+            const region = item.regs.find(reg => reg.selected);
+
+            if (isDefined(region)) {
+              switch(action) {
+                case "lifespan_add": region.toggleLifespan(data.frame); break;
+                case "lifespan_remove": region.toggleLifespan(data.frame); break;
+                case "keyframe_add": region.addKeyframe(data.frame); break;
+                case "keyframe_remove": region.removeKeyframe(data.frame); break;
+                default: console.log('unknown action');
+              }
             }
           }}
         />

@@ -116,6 +116,32 @@ const Model = types
       }
     },
 
+    addKeyframe(frame) {
+      const sequence = Array.from(self.sequence);
+      const closestKeyframe = self.closestKeyframe(frame);
+
+      sequence.push({
+        frame,
+        enabled: closestKeyframe.enabled,
+        rotation: 0,
+      });
+
+      sequence.sort((a, b) => a.frame - b.frame);
+
+      self.sequence = sequence;
+
+      if (closestKeyframe) {
+        self.updateBBox({
+          ...closestKeyframe,
+          enabled: true,
+        }, closestKeyframe.frame);
+      }
+    },
+
+    removeKeyframe(frame) {
+      self.sequence = self.sequence.filter(keyframe => keyframe.frame !== frame);
+    },
+
     isInLifespan(targetFrame) {
       const closestKeyframe = self.closestKeyframe(targetFrame);
 

@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Layer, Rect, Stage, Transformer } from "react-konva";
 import { inject, observer } from "mobx-react";
 import { BBox } from "./BBox";
-import Constants from "../../../core/Constants";
 
 const MIN_SIZE = 5;
 
