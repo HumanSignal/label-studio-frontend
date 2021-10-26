@@ -222,7 +222,6 @@ export const Frames: FC<TimelineViewProps> = ({
         onMouseMove={hoverHandler}
         onMouseLeave={() => setHoverOffset(null)}
         onClick={scrollClickHandler}
-        style={{ backgroundImage: background }}
       >
         <Elem name="filler">
           <Elem name="keyframes">
@@ -238,6 +237,8 @@ export const Frames: FC<TimelineViewProps> = ({
           </Elem>
         </Elem>
       </Elem>
+
+      <Elem name="background" style={{ backgroundImage: background }}/>
     </Block>
   );
 };
