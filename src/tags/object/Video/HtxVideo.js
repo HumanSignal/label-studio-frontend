@@ -95,7 +95,7 @@ const HtxVideoView = ({ item }) => {
       color,
       visible: !reg.hidden,
       selected: reg.selected,
-      keyframes: sequence,
+      sequence,
     };
   });
 
@@ -166,11 +166,18 @@ const HtxVideoView = ({ item }) => {
 
             if (isDefined(region)) {
               switch(action) {
-                case "lifespan_add": region.toggleLifespan(data.frame); break;
-                case "lifespan_remove": region.toggleLifespan(data.frame); break;
-                case "keyframe_add": region.addKeyframe(data.frame); break;
-                case "keyframe_remove": region.removeKeyframe(data.frame); break;
-                default: console.log('unknown action');
+                case "lifespan_add":
+                case "lifespan_remove":
+                  region.toggleLifespan(data.frame);
+                  break;
+                case "keypoint_add":
+                  region.addKeypoint(data.frame);
+                  break;
+                case "keypoint_remove":
+                  region.removeKeypoint(data.frame);
+                  break;
+                default:
+                  console.log('unknown action');
               }
             }
           }}

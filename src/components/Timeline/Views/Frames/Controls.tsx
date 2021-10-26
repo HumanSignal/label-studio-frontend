@@ -1,11 +1,11 @@
 import { FC, MouseEvent, useContext, useMemo } from "react";
-import { IconInterpolationAdd, IconInterpolationDisabled, IconInterpolationRemove, IconKeyframeAdd, IconKeyframeDelete } from "../../../../assets/icons/timeline";
+import { IconInterpolationAdd, IconInterpolationDisabled, IconInterpolationRemove, IconKeypointAdd, IconKeypointDelete, IconKeypointDisabled } from "../../../../assets/icons/timeline";
 import { isDefined } from "../../../../utils/utilities";
 import { TimelineContext } from "../../Context";
 import { ControlButton } from "../../Controls";
 import { TimelineExtraControls } from "../../Types";
 
-type Actions = "keyframe_add" | "keyframe_remove" | "lifespan_add" | "lifespan_remove"
+type Actions = "keypoint_add" | "keypoint_remove" | "lifespan_add" | "lifespan_remove"
 type DataType = {
   frame: number,
 }
@@ -14,66 +14,68 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
   onAction,
 }) => {
   const { position, regions } = useContext(TimelineContext);
-  const closestKeyframe = useMemo(() => {
+  const closestKeypoint = useMemo(() => {
     const region = regions.find(r => r.selected);
 
-    return region?.keyframes.filter(({ frame }) => frame <= position).slice(-1)[0];
+    return region?.sequence.filter(({ frame }) => frame <= position).slice(-1)[0];
   }, [regions, position]);
 
-  const onKeyframeAdd = (e: MouseEvent) => {
-    onAction?.(e, 'keyframe_add', {
+  const onKeypointAdd = (e: MouseEvent) => {
+    onAction?.(e, 'keypoint_add', {
       frame: position,
     });
   };
 
-  const onKeyframeRemove = (e: MouseEvent) => {
-    onAction?.(e, 'keyframe_remove', {
-      frame: closestKeyframe!.frame,
+  const onKeypointRemove = (e: MouseEvent) => {
+    onAction?.(e, 'keypoint_remove', {
+      frame: closestKeypoint!.frame,
     });
   };
 
   const onLifespanAdd = (e: MouseEvent) => {
     onAction?.(e, 'lifespan_add', {
-      frame: closestKeyframe!.frame,
+      frame: closestKeypoint!.frame,
     });
   };
 
   const onLifespanRemove = (e: MouseEvent) => {
     onAction?.(e, 'lifespan_remove', {
-      frame: closestKeyframe!.frame,
+      frame: closestKeypoint!.frame,
     });
   };
 
-  const canAddKeyframe = closestKeyframe?.frame !== position;
-  const canAddInterpolation = closestKeyframe?.enabled === true;
+  const canAddKeypoint = closestKeypoint?.frame !== position;
+  const canAddInterpolation = closestKeypoint?.enabled === false;
 
   const keypointIcon = useMemo(() => {
-    if (canAddKeyframe) {
-      return <IconKeyframeAdd/>;
+    if (!isDefined(closestKeypoint)) {
+      return <IconKeypointDisabled/>;
+    } else if (canAddKeypoint) {
+      return <IconKeypointAdd/>;
     }
 
-    return <IconKeyframeDelete/>;
-  }, [canAddKeyframe, closestKeyframe]);
+    return <IconKeypointDelete/>;
+  }, [canAddKeypoint, closestKeypoint]);
 
   const interpolationIcon = useMemo(() => {
-    if (!isDefined(closestKeyframe)) {
+    if (!isDefined(closestKeypoint)) {
       return <IconInterpolationDisabled/>;
     } else if (canAddInterpolation) {
       return <IconInterpolationAdd/>;
     }
 
     return <IconInterpolationRemove/>;
-  }, [closestKeyframe, canAddInterpolation]);
+  }, [closestKeypoint, canAddInterpolation]);
 
   return (
     <>
       <ControlButton
-        onClick={canAddKeyframe ? onKeyframeAdd : onKeyframeRemove}
-        disabled={!closestKeyframe}
+        onClick={canAddKeypoint ? onKeypointAdd : onKeypointRemove}
+        disabled={!closestKeypoint}
       >{keypointIcon}</ControlButton>
       <ControlButton
         onClick={canAddInterpolation ? onLifespanAdd : onLifespanRemove}
-        disabled={!closestKeyframe}
+        disabled={!closestKeypoint}
       >{interpolationIcon}</ControlButton>
     </>
   );

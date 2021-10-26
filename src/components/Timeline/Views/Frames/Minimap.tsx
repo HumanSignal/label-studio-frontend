@@ -11,11 +11,11 @@ export const Minimap: FC<any> = () => {
   const [step, setStep] = useState(0);
 
   const visualization = useMemo(() => {
-    return regions.map((region) => {
+    return regions.map(({ id, color, sequence }) => {
       return {
-        id: region.id,
-        color: region.color,
-        lifespans: visualizeLifespans(region.keyframes, step),
+        id,
+        color,
+        lifespans: visualizeLifespans(sequence, step),
       };
     });
   }, [step, regions]);

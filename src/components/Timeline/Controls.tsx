@@ -80,8 +80,12 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="hll"></Elem>
         <Elem name="actions" tag={Space} collapsed>
-          <ControlButton onClick={onStepBackward}><IconChevronLeft/></ControlButton>
-          <ControlButton onClick={onStepForward}><IconChevronRight/></ControlButton>
+          <ControlButton onClick={onStepBackward}>
+            <IconChevronLeft/>
+          </ControlButton>
+          <ControlButton onClick={onStepForward}>
+            <IconChevronRight/>
+          </ControlButton>
           {extraControls}
         </Elem>
       </Elem>

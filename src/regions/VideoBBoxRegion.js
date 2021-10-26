@@ -84,11 +84,11 @@ const Model = types
       if (index < 0) {
         self.sequence = [...self.sequence, newItem];
       } else {
-        const keyframe = self.sequence[index];
+        const keypoint = self.sequence[index];
 
         self.sequence = [
           ...self.sequence.slice(0, index),
-          ({ ...keyframe, ...newItem }),
+          ({ ...keypoint, ...newItem }),
           ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }
@@ -103,26 +103,26 @@ const Model = types
     },
 
     toggleLifespan(frame) {
-      const keyframe = self.closestKeyframe(frame);
+      const keypoint = self.closestKeypoint(frame);
 
-      if (keyframe) {
-        const index = self.sequence.indexOf(keyframe);
+      if (keypoint) {
+        const index = self.sequence.indexOf(keypoint);
 
         self.sequence = [
           ...self.sequence.slice(0, index),
-          { ...keyframe, enabled: !keyframe.enabled },
+          { ...keypoint, enabled: !keypoint.enabled },
           ...self.sequence.slice(index + 1),
         ];
       }
     },
 
-    addKeyframe(frame) {
+    addKeypoint(frame) {
       const sequence = Array.from(self.sequence);
-      const closestKeyframe = self.closestKeyframe(frame);
+      const closestKeypoint = self.closestKeypoint(frame);
 
       sequence.push({
         frame,
-        enabled: closestKeyframe.enabled,
+        enabled: closestKeypoint.enabled,
         rotation: 0,
       });
 
@@ -130,23 +130,23 @@ const Model = types
 
       self.sequence = sequence;
 
-      if (closestKeyframe) {
+      if (closestKeypoint) {
         self.updateBBox({
-          ...closestKeyframe,
+          ...closestKeypoint,
           enabled: true,
-        }, closestKeyframe.frame);
+        }, closestKeypoint.frame);
       }
     },
 
-    removeKeyframe(frame) {
-      self.sequence = self.sequence.filter(keyframe => keyframe.frame !== frame);
+    removeKeypoint(frame) {
+      self.sequence = self.sequence.filter(closestKeypoint => closestKeypoint.frame !== frame);
     },
 
     isInLifespan(targetFrame) {
-      const closestKeyframe = self.closestKeyframe(targetFrame);
+      const closestKeypoint = self.closestKeypoint(targetFrame);
 
-      if (closestKeyframe) {
-        const { enabled, frame } = closestKeyframe;
+      if (closestKeypoint) {
+        const { enabled, frame } = closestKeypoint;
 
         if (frame === targetFrame && !enabled) return true;
         return enabled;
@@ -154,10 +154,10 @@ const Model = types
       return false;
     },
 
-    closestKeyframe(targetFrame) {
-      const keyframes = self.sequence.filter(k => k.frame <= targetFrame);
+    closestKeypoint(targetFrame) {
+      const keypoints = self.sequence.filter(k => k.frame <= targetFrame);
 
-      return keyframes[keyframes.length - 1];
+      return keypoints[keypoints.length - 1];
     },
   }));
 

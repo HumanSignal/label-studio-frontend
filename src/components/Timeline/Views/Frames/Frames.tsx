@@ -4,7 +4,7 @@ import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
 import { TimelineViewProps } from "../../Types";
 import "./Frames.styl";
-import { KeyFrames } from "./KeyFrames";
+import { Keypoints } from "./Keypoints";
 
 const toSteps = (num: number, step: number) => {
   return Math.floor(num / step);
@@ -224,9 +224,9 @@ export const Frames: FC<TimelineViewProps> = ({
         onClick={scrollClickHandler}
       >
         <Elem name="filler">
-          <Elem name="keyframes">
+          <Elem name="keypoints">
             {regions.map(region => (
-              <KeyFrames
+              <Keypoints
                 key={region.id}
                 region={region}
                 onSelectRegion={onSelectRegion}

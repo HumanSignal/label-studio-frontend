@@ -6,30 +6,30 @@ import { Block, Elem } from "../../../../utils/bem";
 import { TimelineContext } from "../../Context";
 import { TimelineRegion } from "../../Types";
 
-import "./KeyFrames.styl";
+import "./Keypoints.styl";
 import { visualizeLifespans } from "./Utils";
-export interface KeyFramesProps {
+export interface KeypointsProps {
   region: TimelineRegion;
   onToggleVisibility: (id: string, visible: boolean) => void;
   onDeleteRegion: (id: string) => void;
   onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void;
 }
 
-export const KeyFrames: FC<KeyFramesProps> = ({
+export const Keypoints: FC<KeypointsProps> = ({
   region,
   onSelectRegion,
   onToggleVisibility,
   onDeleteRegion,
 }) => {
   const { step } = useContext(TimelineContext);
-  const { label, color, visible, selected, keyframes } = region;
+  const { label, color, visible, selected, sequence } = region;
   const [hovered, setHovered] = useState(false);
 
   const background = chroma(color).alpha(0.3).css();
   const borderColor = chroma(color).alpha(0.2).css();
 
-  const firtsPoint = keyframes[0];
-  const lastPoint = keyframes[keyframes.length - 1];
+  const firtsPoint = sequence[0];
+  const lastPoint = sequence[sequence.length - 1];
 
   const start = firtsPoint.frame - 1;
   const end = lastPoint.frame;
@@ -47,12 +47,12 @@ export const KeyFrames: FC<KeyFramesProps> = ({
   };
 
   const lifespans = useMemo(() => {
-    return visualizeLifespans(keyframes, step);
-  }, [keyframes, start, step]);
+    return visualizeLifespans(sequence, step);
+  }, [sequence, start, step]);
 
   return (
     <Block
-      name="keyframes"
+      name="keypoints"
       style={styles}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

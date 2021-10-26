@@ -21,7 +21,7 @@ export interface TimelineRegion {
   color: string;
   visible: boolean;
   selected: boolean;
-  keyframes: TimelineRegionKeyframe[];
+  sequence: TimelineRegionKeyframe[];
 }
 
 export interface TimelineRegionKeyframe {
