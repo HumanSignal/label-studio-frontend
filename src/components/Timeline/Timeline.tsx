@@ -44,6 +44,7 @@ export const Timeline: FC<TimelineProps> = ({
   const [currentPosition, setCurrentPosition] = useState(position);
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
+  const [viewCollapsed, setViewCollapsed] = useState(false);
   const step = useMemo(() => 10 * zoom, [zoom]);
 
   const onInternalPositionChange = useCallback((value: number) => {
@@ -78,6 +79,7 @@ export const Timeline: FC<TimelineProps> = ({
             position={currentPosition}
             frameRate={framerate}
             playing={playing}
+            collapsed={viewCollapsed}
             onPlayToggle={onPlayToggle}
             onFullScreenToggle={() => {}}
             onStepBackward={() => onInternalPositionChange(currentPosition - 1)}
@@ -85,6 +87,7 @@ export const Timeline: FC<TimelineProps> = ({
             onRewind={() => onInternalPositionChange(0)}
             onForward={() => onInternalPositionChange(length)}
             onPositionChange={(value) => onInternalPositionChange(value)}
+            onToggleCollapsed={(collapsed) => setViewCollapsed(collapsed)}
             extraControls={View.Controls ? (
               <View.Controls
                 onAction={(e, action, data) => {
@@ -95,22 +98,24 @@ export const Timeline: FC<TimelineProps> = ({
           />
         </Elem>
 
-        <Elem name="view">
-          <View.View
-            step={step}
-            length={length}
-            regions={regions}
-            playing={playing}
-            position={currentPosition}
-            offset={seekOffset}
-            onScroll={setSeekOffset}
-            onResize={setSeekVisibleWidth}
-            onChange={onInternalPositionChange}
-            onToggleVisibility={onToggleVisibility}
-            onDeleteRegion={onDeleteRegion}
-            onSelectRegion={onSelectRegion}
-          />
-        </Elem>
+        {!viewCollapsed && (
+          <Elem name="view">
+            <View.View
+              step={step}
+              length={length}
+              regions={regions}
+              playing={playing}
+              position={currentPosition}
+              offset={seekOffset}
+              onScroll={setSeekOffset}
+              onResize={setSeekVisibleWidth}
+              onChange={onInternalPositionChange}
+              onToggleVisibility={onToggleVisibility}
+              onDeleteRegion={onDeleteRegion}
+              onSelectRegion={onSelectRegion}
+            />
+          </Elem>
+        )}
       </Block>
     </TimelineContextProvider>
   );

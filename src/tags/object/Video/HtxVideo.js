@@ -4,15 +4,15 @@ import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
-import Constants, { defaultStyle } from "../../../core/Constants";
+import { defaultStyle } from "../../../core/Constants";
 import { Hotkey } from "../../../core/Hotkey";
-import { Block, Elem } from "../../../utils/bem";
+import { Block } from "../../../utils/bem";
 import { clamp } from "../../../utils/utilities";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 
-const hotkeys = Hotkey("Video", "Video Annotation");
+// const hotkeys = Hotkey("Video", "Video Annotation");
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
@@ -56,6 +56,22 @@ const HtxVideoView = ({ item }) => {
     return () => root.current.removeEventListener('wheel', cancelWheel);
   }, []);
 
+  useEffect(() => {
+    const onResize = () => {
+      const block = root.current;
+
+      if (block) {
+        setVideoSize([
+          block.clientWidth,
+          block.clientHeight,
+        ]);
+      }
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const handleZoom = useCallback((e) => {
     if (!e.shiftKey) return;
 
@@ -68,6 +84,7 @@ const HtxVideoView = ({ item }) => {
 
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
+    const label = reg.labels.join(", ") || "Empty";
     const sequence = reg.sequence.map(s => ({
       frame: s.frame,
       enabled: s.enabled,
@@ -75,7 +92,7 @@ const HtxVideoView = ({ item }) => {
 
     return {
       id: reg.id,
-      label: "Possum",
+      label,
       color,
       visible: !reg.hidden,
       selected: reg.selected,
@@ -137,9 +154,9 @@ const HtxVideoView = ({ item }) => {
 
             reg?.toggleHidden();
           }}
-          onDeleteRegion={(id) => {
-            // setRegions(regions.filter(reg => reg.id !== id));
-          }}
+          // onDeleteRegion={(id) => {
+          //   // setRegions(regions.filter(reg => reg.id !== id));
+          // }}
           onSelectRegion={(_, id) => {
             const reg = item.regs.find(reg => reg.pid === id || reg.id === id);
 

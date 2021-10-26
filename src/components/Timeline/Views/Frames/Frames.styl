@@ -1,10 +1,11 @@
 .timeline-frames
   --frame-size 10px
   --view-size 0
+  --view-height 140px
 
   width 100%
   padding-top 12px
-  min-height 120px
+  min-height var(--view-height)
   position relative
   overflow hidden
   box-sizing content-box
@@ -16,14 +17,14 @@
 
   &__filler
     min-width 100%
-    min-height 100%
+    height min-content
     white-space nowrap
     width var(--view-size)
 
   &__scroll
     z-index 1
     width 100%
-    height 120px
+    height var(--view-height)
     overflow hidden
     position relative
     border-top 1px solid rgba(#000, 0.1)
@@ -60,7 +61,7 @@
       left 0
       content ""
       width 100%
-      height 120px
+      height var(--view-height)
       display block
       position absolute
       pointer-events none
@@ -71,7 +72,7 @@
     left 0
     z-index 2
     width var(--frame-size)
-    height 120px
+    height var(--view-height)
     position absolute
     pointer-events none
     background-color rgba(#000, 0.1)

@@ -2,7 +2,7 @@ import { Block, Elem } from "../../utils/bem";
 import { Button } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 
-import { IconChevronLeft, IconChevronRight, IconForward, IconFullscreen, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
+import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useMemo, useRef, useState } from "react";
@@ -21,6 +21,7 @@ export interface ControlsProps {
   position: number;
   frameRate: number;
   playing: boolean;
+  collapsed: boolean;
   extraControls?: JSX.Element | null;
   onRewind: () => void;
   onForward: () => void;
@@ -29,6 +30,7 @@ export interface ControlsProps {
   onStepBackward: MouseEventHandler<HTMLButtonElement>;
   onStepForward: MouseEventHandler<HTMLButtonElement>;
   onPositionChange: (position: number) => void;
+  onToggleCollapsed: (collapsed: boolean) => void;
 }
 
 export const Controls: FC<ControlsProps> = ({
@@ -36,6 +38,7 @@ export const Controls: FC<ControlsProps> = ({
   position,
   frameRate,
   playing,
+  collapsed,
   onRewind,
   onForward,
   extraControls,
@@ -44,6 +47,7 @@ export const Controls: FC<ControlsProps> = ({
   onStepBackward,
   onPositionChange,
   onStepForward,
+  onToggleCollapsed,
 }) => {
   const [inputMode, setInputMode] = useState(false);
 
@@ -89,6 +93,8 @@ export const Controls: FC<ControlsProps> = ({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
+        <ControlButton onClick={() => onToggleCollapsed?.(!collapsed)}>{collapsed ? <IconExpand/> : <IconCollapse/>}</ControlButton>
+
         <Elem name="time">
           <Time
             time={currentTime}

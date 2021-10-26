@@ -83,35 +83,30 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const [saturation, setSaturation] = useState(1.5);
 
   const drawVideo = () => {
-    if (canvasRef.current && contextRef.current && videoRef.current) {
-      const [canvas, context] = [canvasRef.current, contextRef.current];
-      const { width, height } = canvas;
-      const ratio = Math.min(1, Math.min((width / size[0]), (height / size[1])));
+    try {
+      if (canvasRef.current && contextRef.current && videoRef.current) {
+        const [canvas, context] = [canvasRef.current, contextRef.current];
+        const { width, height } = canvas;
+        const ratio = Math.min(1, Math.min((width / size[0]), (height / size[1])));
 
-      const resultWidth = (size[0] * ratio) * zoom;
-      const resultHeight = (size[1] * ratio) * zoom;
+        const resultWidth = (size[0] * ratio) * zoom;
+        const resultHeight = (size[1] * ratio) * zoom;
 
-      const offsetLeft = ((width - resultWidth) / 2) + pan.x;
-      const offsetTop = ((height - resultHeight) / 2) + pan.y;
+        const offsetLeft = ((width - resultWidth) / 2) + pan.x;
+        const offsetTop = ((height - resultHeight) / 2) + pan.y;
 
-      context.clearRect(0, 0, width, height);
+        context.clearRect(0, 0, width, height);
 
-      context.save();
-      context.filter = `contrast(${contrast}) brightness(${brightness}) saturate(${saturation})`;
-      context.drawImage(videoRef.current,
-        0, 0, size[0], size[1],
-        offsetLeft, offsetTop, resultWidth, resultHeight,
-      );
-      console.log({
-        size,
-        offsetLeft,
-        offsetTop,
-        resultWidth,
-        resultHeight,
-      });
-      context.restore();
-    } else {
-      console.log('nothing to render', [canvasRef.current, contextRef.current, videoRef.current]);
+        context.save();
+        context.filter = `contrast(${contrast}) brightness(${brightness}) saturate(${saturation})`;
+        context.drawImage(videoRef.current,
+          0, 0, size[0], size[1],
+          offsetLeft, offsetTop, resultWidth, resultHeight,
+        );
+        context.restore();
+      }
+    } catch(e) {
+      console.log('Error rendering video', e);
     }
   };
 
@@ -317,8 +312,6 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   }
 
   useEffect(() => {
-    console.log('render');
-
     let isLoaded = false;
 
     const checkVideoLoaded = () => {
@@ -351,9 +344,15 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     checkVideoLoaded();
   }, []);
 
-  const delayedUpdate = (e: any) => {
-    console.log(e.type);
-    updateFrame(true);
+  const delayedUpdate = () => {
+    const video = videoRef.current;
+
+    if (video && video.networkState === video.NETWORK_IDLE) {
+      if (!playing) updateFrame(true);
+      setBuffering(false);
+    } else {
+      setBuffering(true);
+    }
   };
 
   return (
@@ -383,12 +382,15 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
           height={canvasHeight}
           style={{ background: "#efefef" }}
         />
+        {!loading && buffering && (
+          <Elem name="buffering"/>
+        )}
       </Elem>
 
       <video
         controls={false}
         src={props.src}
-        preload="metadata"
+        preload="auto"
         style={{ width: 0, position: 'absolute' }}
         ref={videoRef as LegacyRef<HTMLVideoElement>}
         muted={props.muted ?? false}
@@ -405,8 +407,14 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
         onSeeked={delayedUpdate}
         onSeeking={delayedUpdate}
         onTimeUpdate={delayedUpdate}
-        onPlaying={() => setBuffering(false)}
-        onWaiting={() => setBuffering(true)}
+        onProgress={delayedUpdate}
+        onPlaying={() => {
+          setBuffering(false);
+          delayedUpdate();
+        }}
+        onWaiting={() => {
+          setBuffering(true);
+        }}
       />
     </Block>
   );

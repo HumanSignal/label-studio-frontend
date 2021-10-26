@@ -13,3 +13,5 @@ export { ReactComponent as IconFullscreen } from "./fullscreen.svg";
 export { ReactComponent as IconEyeOpened } from "./eye_opened.svg";
 export { ReactComponent as IconEyeClosed } from "./eye_closed.svg";
 export { ReactComponent as IconCross } from "./cross.svg";
+export { ReactComponent as IconCollapse } from "./collapse.svg";
+export { ReactComponent as IconExpand } from "./expand.svg";

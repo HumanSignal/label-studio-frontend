@@ -302,7 +302,8 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
  * @param {Range} range
  */
 const fixRange = range => {
-  let { startContainer, endContainer, startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startContainer, endContainer } = range;
+  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
