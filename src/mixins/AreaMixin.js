@@ -33,7 +33,15 @@ export const AreaMixin = types
     },
 
     hasLabel(value) {
-      return self.labeling?.mainValue?.includes(value);
+      const labels = self.labeling?.mainValue;
+
+      if (!labels) return false;
+      // label can contain comma, so check for full match first
+      if (labels.includes(value)) return true;
+      if (value.includes(",")) {
+        return value.split(",").some(v => labels.includes(v));
+      }
+      return false;
     },
 
     get perRegionTags() {
