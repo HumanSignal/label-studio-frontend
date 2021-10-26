@@ -121,8 +121,12 @@ const Model = types
       const closestKeypoint = self.closestKeypoint(frame);
 
       sequence.push({
+        ...(closestKeypoint ?? {
+          x: 0,
+          y: 0,
+          enabled: true,
+        }),
         frame,
-        enabled: closestKeypoint.enabled,
         rotation: 0,
       });
 
