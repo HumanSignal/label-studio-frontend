@@ -43,7 +43,7 @@ const results = [
     },
   },
   {
-    start: "/div[1]/p[1]/b[2]",
+    start: "/div[1]/p[1]/b[2]/text()[1]",
     startOffset: 0,
     end: "/div[1]/p[1]/b[2]/text()[1]",
     endOffset: 3,
