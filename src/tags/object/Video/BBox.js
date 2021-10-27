@@ -3,7 +3,7 @@ import { Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { useRegionStyles } from "../../../hooks/useRegionColor";
 
-const BBoxPure = ({ reg, frame, stageWidth, stageHeight, selected, ...rest }) => {
+const BBoxPure = ({ reg, frame, stageWidth, stageHeight, ...rest }) => {
   const box = reg.getBBox(frame);
   const style = useRegionStyles(reg, { includeFill: true });
 

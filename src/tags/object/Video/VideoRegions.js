@@ -53,7 +53,6 @@ const VideoRegionsPure = ({ item, regions, width, height, zoom }) => {
 
     if (Math.abs(newRegion.x - x) < MIN_SIZE && Math.abs(newRegion.y - y) < MIN_SIZE) {
       setNewRegion(null);
-      // setSelected(null);
     } else {
       setNewRegion(region => ({ ...region, width: x - region.x, height: y - region.y }));
     }
