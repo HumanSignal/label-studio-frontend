@@ -53,6 +53,9 @@ const Model = types
   .model({
     type: "video",
     _value: types.optional(types.string, ""),
+    // special flag to store labels inside result, but under original type
+    // @todo make it able to be disabled
+    mergeLabelsAndResults: true,
   })
   .volatile(() => ({
     errors: [],
@@ -76,6 +79,26 @@ const Model = types
 
     get currentFrame() {
       return self.ref.current?.position ?? 1;
+    },
+
+    control() {
+      return self.annotation.toNames.get(self.name)?.find(s => !s.type.endsWith("labels"));
+    },
+
+    states() {
+      return self.annotation.toNames.get(self.name)?.filter(s => s.type.endsWith("labels"));
+    },
+
+    activeStates() {
+      const states = self.states();
+
+      return states ? states.filter(c => c.isSelected === true) : null;
+    },
+
+    get hasStates() {
+      const states = self.states();
+
+      return states && states.length > 0;
     },
   }))
   .actions(self => ({
@@ -120,14 +143,18 @@ const Model = types
           ...data,
         },
       ];
-      const control = self.annotation?.toNames.get(self.name)?.[0];
 
-      if (!control) {
+      if (!self.control) {
         console.error("NO CONTROL");
         return;
       }
 
-      const area = self.annotation.createResult({ sequence }, {}, control, self);
+      const area = self.annotation.createResult({ sequence }, {}, self.control, self);
+
+      // add labels
+      self.activeStates().forEach(state => {
+        area.setValue(state);
+      });
 
       return area;
     },

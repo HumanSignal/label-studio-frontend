@@ -14,24 +14,7 @@ const ModelAttrs = types
   .model("VideoBBoxModel", {
     pid: types.optional(types.string, guidGenerator),
     type: "videobbox",
-  })
-  .views(self => ({
-    get hasStates() {
-      const states = self.states();
-
-      return states && states.length > 0;
-    },
-
-    states() {
-      return self.annotation.toNames.get(self.name);
-    },
-
-    activeStates() {
-      const states = self.states();
-
-      return states ? states.filter(c => c.isSelected === true) : null;
-    },
-  }));
+  });
 
 const VideoBBoxModel = types.compose(
   "VideoBBoxModel",
