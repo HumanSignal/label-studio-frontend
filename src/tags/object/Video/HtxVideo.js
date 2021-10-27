@@ -1,4 +1,3 @@
-import { Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IconPlayerPause, IconPlayerPlay, IconPlayerStep } from "../../../assets/icons";

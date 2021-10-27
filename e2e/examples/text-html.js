@@ -22,7 +22,7 @@ const result = [
     type: "hypertextlabels",
     origin: "manual",
     value: {
-      start: "/div[1]/div[2]",
+      start: "/div[1]/div[2]/div[1]/p[1]/b[1]/text()[1]",
       end: "/div[1]/div[2]/div[1]/p[1]/text()[1]",
       startOffset: 0,
       endOffset: 17,
@@ -60,7 +60,7 @@ const result = [
     type: "hypertextlabels",
     origin: "manual",
     value: {
-      start: "/div[1]/div[3]",
+      start: "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
       end: "/div[1]/div[3]/div[1]/p[1]/b[1]/text()[1]",
       startOffset: 0,
       endOffset: 8,

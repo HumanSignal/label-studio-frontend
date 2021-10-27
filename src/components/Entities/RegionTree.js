@@ -16,7 +16,7 @@ export const RegionTree = observer(({ regionStore }) => {
   useEffect(() => {
     setTimeout(renderNow);
   }, [renderNow]);
-  
+
   const canDrag = useRef(true);
   const setDraggable = useCallback((isDraggable)=>{
     canDrag.current = isDraggable;
