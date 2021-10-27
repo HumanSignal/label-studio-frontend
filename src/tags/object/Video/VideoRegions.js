@@ -34,6 +34,7 @@ const VideoRegionsPure = ({ item, regions, width, height, zoom }) => {
 
     const { offsetX: x, offsetY: y } = e.evt;
 
+    item.annotation.unselectAreas();
     setNewRegion({ x, y, width: 0, height: 0 });
     setDrawingMode(true);
   };
