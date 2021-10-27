@@ -1,4 +1,4 @@
-import { flatten, wrapArray } from "../../utils/utilities";
+import { wrapArray } from "../../utils/utilities";
 import { Geometry } from "./Geometry";
 
 /**
@@ -14,6 +14,7 @@ export class BoundingBox {
 
   static bbox(region) {
     const bbox = _detect(region);
+
     return wrapArray(bbox).map(bbox => Object.assign({ ...DEFAULT_BBOX }, bbox));
   }
 
@@ -56,53 +57,91 @@ export class BoundingBox {
 }
 
 const imageRelatedBBox = (region, bbox) => {
-  const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
-  const scaledBBox = Geometry.scaleBBox(bbox, region.parent.zoomScale);
+  const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
+  const clampedBbox = Geometry.clampBBox(bbox,
+    { x:0, y:0 },
+    { x:region.parent.stageWidth, y:region.parent.stageHeight },
+  );
+
   return {
-    ...scaledBBox,
-    x: imageBbox.x + scaledBBox.x,
-    y: imageBbox.y + scaledBBox.y,
+    ...clampedBbox,
+    x: imageBbox.x + clampedBbox.x,
+    y: imageBbox.y + clampedBbox.y,
+  };
+};
+
+const stageRelatedBBox = (region, bbox) => {
+  // If there is no stageRef we just wait for it in the next renders
+  if (!region.parent?.stageRef) return null;
+  const imageBbox = Geometry.getDOMBBox(region.parent.stageRef.content, true);
+  const transformedBBox = Geometry.clampBBox(
+    Geometry.modifyBBoxCoords(bbox, region.parent.zoomOriginalCoords),
+    { x:0, y:0 },
+    { x:region.parent.stageWidth, y:region.parent.stageHeight },
+  );
+
+  return {
+    ...transformedBBox,
+    x: imageBbox.x + transformedBBox.x,
+    y: imageBbox.y + transformedBBox.y,
   };
 };
 
 const _detect = region => {
   switch (region.type) {
     case "textrange":
-    case "hypertextregion":
+    case "richtextregion":
     case "textarearegion":
     case "audioregion":
     case "paragraphs":
     case "timeseriesregion": {
-      return Geometry.getDOMBBox(region.regionElement);
+      const regionBbox = Geometry.getDOMBBox(region.getRegionElement());
+      const container = region.parent?.rootNodeRef?.current;
+
+      if (container?.tagName === "IFRAME") {
+        const iframeBbox = Geometry.getDOMBBox(container, true);
+
+        return regionBbox.map(bbox => ({
+          ...bbox,
+          x: bbox.x + iframeBbox.x,
+          y: bbox.y + iframeBbox.y,
+        }));
+      }
+
+      return regionBbox;
     }
     case "rectangleregion": {
-      return imageRelatedBBox(
+      return stageRelatedBBox(
         region,
         Geometry.getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
       );
     }
     case "ellipseregion": {
-      return imageRelatedBBox(
+      return stageRelatedBBox(
         region,
         Geometry.getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
       );
     }
     case "polygonregion": {
-      return imageRelatedBBox(region, Geometry.getPolygonBBox(region.points));
+      return stageRelatedBBox(region, Geometry.getPolygonBBox(region.points));
     }
     case "keypointregion": {
       const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
       const scale = region.parent.zoomScale;
+
       return {
         x: region.x * scale + imageBbox.x - 2,
         y: region.y * scale + imageBbox.y - 2,
-        width: 4,
-        height: 4,
+        width: region.width,
+        height: region.width,
       };
     }
     case "brushregion": {
-      const points = flatten(wrapArray(region.touches.filter(t => t.type === "add").map(t => Array.from(t.points))));
-      return imageRelatedBBox(region, Geometry.getBrushBBox(points));
+      // If there is no imageData we just wait for the next render
+      return region.imageData && imageRelatedBBox(
+        region,
+        Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
+      );
     }
     default: {
       console.warn(`Unknown region type: ${region.type}`);

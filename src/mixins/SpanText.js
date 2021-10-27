@@ -1,12 +1,12 @@
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import Utils from "../utils";
-import Constants from "../core/Constants";
+import Constants, { defaultStyle } from "../core/Constants";
 import { highlightRange } from "../utils/html";
 
 export default types
   .model()
-  .views(self => ({}))
+  .views(() => ({}))
   .actions(self => ({
     updateSpansColor(bgcolor, opacity) {
       if (self._spans) {
@@ -34,6 +34,7 @@ export default types
       const spans = highlightRange(self, "htx-highlight", { backgroundColor: labelColor });
 
       const lastSpan = spans[spans.length - 1];
+
       if (!lastSpan) return;
 
       self.applyCSSClass(lastSpan);
@@ -45,7 +46,7 @@ export default types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || self.style?.fillcolor;
+      let labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
 
       if (labelColor) {
         labelColor = Utils.Colors.convertToRGBA(labelColor, 0.3);
@@ -58,6 +59,7 @@ export default types
       if (!lastSpan) return;
       const classes = ["htx-highlight", "htx-highlight-last"];
       const settings = getRoot(self).settings;
+
       if (!self.parent.showlabels && !settings.showLabels) {
         classes.push("htx-no-label");
       } else {
@@ -67,6 +69,7 @@ export default types
           labels: names,
           score: self.score,
         });
+
         classes.push(cssCls);
       }
       lastSpan.className = classes.filter(Boolean).join(" ");
@@ -75,6 +78,7 @@ export default types
     addEventsToSpans(spans) {
       const addEvent = s => {
         s.onmouseover = function(ev) {
+          if (self.hidden) return;
           if (self.annotation.relationMode) {
             self.toggleHighlight();
             s.style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -86,10 +90,12 @@ export default types
         };
 
         s.onmouseout = function() {
+          if (self.hidden) return;
           self.setHighlight(false);
         };
 
         s.onmousedown = function(ev) {
+          if (self.hidden) return;
           // if we click to already selected span (=== this)
           // skip it to allow another span to be selected
           if (self.parent._currentSpan !== this) {
@@ -98,7 +104,8 @@ export default types
           }
         };
 
-        s.onclick = function(ev) {
+        s.onclick = function() {
+          if (self.hidden) return;
           // set above in `onmousedown`, can be nulled when new region created
           if (self.parent._currentSpan !== this) return;
           // reset for the case we just created new relation
@@ -116,6 +123,7 @@ export default types
       self.updateSpansColor(null, 0.8);
 
       const first = self._spans[0];
+
       if (first) {
         if (first.scrollIntoViewIfNeeded) {
           first.scrollIntoViewIfNeeded();
@@ -133,7 +141,7 @@ export default types
     },
 
     setHighlight(val) {
-      self.highlighted = val;
+      self._highlighted = val;
 
       if (self._spans) {
         const len = self._spans.length;
@@ -148,14 +156,16 @@ export default types
           if (bottom) span.style.borderBottom = s;
         };
 
-        if (self.highlighted) {
+        if (self.highlighted && !self.hidden) {
           const h = Constants.HIGHLIGHTED_CSS_BORDER;
+
           set(fspan, h, { right: false });
           set(lspan, h, { left: false });
 
           if (mspans.length) mspans.forEach(s => set(s, h, { left: false, right: false }));
         } else {
           const zpx = "0px";
+
           set(fspan, zpx);
           set(lspan, zpx);
 
@@ -163,4 +173,25 @@ export default types
         }
       }
     },
+
+    toggleHidden(e) {
+      self.hidden = !self.hidden;
+      self.setHighlight(self.highlighted);
+      if (self.hidden) {
+        self.updateSpansColor("transparent", 0);
+        if (self._spans) {
+          self._spans.forEach(span => {
+            span.style.cursor = Constants.DEFAULT_CURSOR;
+          });
+        }
+      } else {
+        self.updateAppearenceFromState();
+      }
+      e?.stopPropagation();
+    },
+
+    find(span) {
+      return self._spans && self._spans.indexOf(span) >= 0 ? self : undefined;
+    },
+
   }));

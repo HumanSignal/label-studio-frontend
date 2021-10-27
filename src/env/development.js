@@ -1,54 +1,79 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-vars */
 import External from "../core/External";
 import Messages from "../utils/messages";
 
 /**
  * Text
  */
-import { DialogueAnalysis } from "../examples/dialogue_analysis"; // eslint-disable-line no-unused-vars
-import { NamedEntity } from "../examples/named_entity"; // eslint-disable-line no-unused-vars
-import { References } from "../examples/references"; // eslint-disable-line no-unused-vars
-import { Required } from "../examples/required"; // eslint-disable-line no-unused-vars
-import { Sentiment } from "../examples/sentiment_analysis"; // eslint-disable-line no-unused-vars
-import { Nested as NestedSimple } from "../examples/nested_choices"; // eslint-disable-line no-unused-vars
-import { Nested } from "../examples/nested_choices/complicated"; // eslint-disable-line no-unused-vars
-import { Dialogue } from "../examples/phrases"; // eslint-disable-line no-unused-vars
+import { DialogueAnalysis } from "../examples/dialogue_analysis";
+import { NamedEntity } from "../examples/named_entity";
+import { References } from "../examples/references";
+import { Required } from "../examples/required";
+import { Sentiment } from "../examples/sentiment_analysis";
+import { Nested as NestedSimple } from "../examples/nested_choices";
+import { Nested } from "../examples/nested_choices/complicated";
+import { Dialogue } from "../examples/phrases";
 
 /**
  * Audio
  */
-import { AudioClassification } from "../examples/audio_classification"; // eslint-disable-line no-unused-vars
-import { AudioRegions } from "../examples/audio_regions"; // eslint-disable-line no-unused-vars
-import { TranscribeAudio } from "../examples/transcribe_audio"; // eslint-disable-line no-unused-vars
+import { AudioClassification } from "../examples/audio_classification";
+import { AudioRegions } from "../examples/audio_regions";
+import { TranscribeAudio } from "../examples/transcribe_audio";
+import { VideoRegions } from "../examples/video";
 
 /**
  * Image
  */
-import { ImageBbox } from "../examples/image_bbox"; // eslint-disable-line no-unused-vars
-import { ImageKeyPoint } from "../examples/image_keypoints"; // eslint-disable-line no-unused-vars
-import { ImageMultilabel } from "../examples/image_multilabel"; // eslint-disable-line no-unused-vars
-import { ImageEllipselabels } from "../examples/image_ellipses"; // eslint-disable-line no-unused-vars
-import { ImagePolygons } from "../examples/image_polygons"; // eslint-disable-line no-unused-vars
-import { ImageSegmentation } from "../examples/image_segmentation"; // eslint-disable-line no-unused-vars
+import { ImageBbox } from "../examples/image_bbox";
+import { ImageBboxLarge } from "../examples/image_bbox_large";
+import { ImageKeyPoint } from "../examples/image_keypoints";
+import { ImageMultilabel } from "../examples/image_multilabel";
+import { ImageEllipselabels } from "../examples/image_ellipses";
+import { ImagePolygons } from "../examples/image_polygons";
+import { ImageSegmentation } from "../examples/image_segmentation";
+import { ImageTools } from "../examples/image_tools";
 
 /**
  * HTML
  */
-import { HTMLDocument } from "../examples/html_document"; // eslint-disable-line no-unused-vars
-import { Taxonomy } from "../examples/taxonomy"; // eslint-disable-line no-unused-vars
+import { HTMLDocument } from "../examples/html_document";
+import { Taxonomy } from "../examples/taxonomy";
+
+/**
+ * RichText (HTML or plain text)
+ */
+import { RichTextHtml } from "../examples/rich_text_html";
+import { RichTextPlain } from "../examples/rich_text_plain";
+import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 
 /**
  * Different
  */
-import { Pairwise } from "../examples/pairwise"; // eslint-disable-line no-unused-vars
+import { Pairwise } from "../examples/pairwise";
+import { Repeater } from "../examples/repeater";
 
-import { TimeSeries } from "../examples/timeseries"; // eslint-disable-line no-unused-vars
+import { TimeSeries } from "../examples/timeseries";
+import { TimeSeriesSingle } from "../examples/timeseries_single";
 
 /**
  * Custom Data
  */
-// import { AllTypes } from "../examples/all_types"; // eslint-disable-line no-unused-vars
+// import { AllTypes } from "../examples/all_types";
 
-const data = TranscribeAudio;
+const data = RichTextHtml;
+
+function getData(task) {
+  if (task && task.data) {
+    return {
+      ...task,
+      data: JSON.stringify(task.data),
+    };
+  }
+
+  return task;
+}
 
 /**
  * Get current config
@@ -57,6 +82,7 @@ const data = TranscribeAudio;
 async function getConfig(pathToConfig) {
   const response = await fetch(pathToConfig);
   const config = await response.text();
+
   return config;
 }
 
@@ -64,14 +90,17 @@ async function getConfig(pathToConfig) {
  * Get custom config
  */
 async function getExample() {
-  let datatype = data;
+  const datatype = data;
 
-  let config = await getConfig(datatype.config);
-  let task = {
+  const config = await getConfig(datatype.config);
+  const annotations = datatype.annotation.annotations;
+  const predictions = datatype.tasks[0].predictions;
+
+  const task = {
+    annotations,
+    predictions,
     data: JSON.stringify(datatype.tasks[0].data),
   };
-  let annotations = datatype.annotation.annotations;
-  let predictions = datatype.tasks[0].predictions;
 
   return { config, task, annotations, predictions };
 }
@@ -80,8 +109,6 @@ async function getExample() {
  * Function to return App element
  */
 function rootElement(element) {
-  const el = document.createElement("div");
-
   let root;
 
   if (typeof element === "string") {
@@ -91,11 +118,10 @@ function rootElement(element) {
   }
 
   root.innerHTML = "";
-  root.appendChild(el);
 
   root.style.width = "auto";
 
-  return el;
+  return root;
 }
 
 /**
@@ -110,16 +136,19 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
-    onSubmitDraft: params.onSubmitDraft || External.onSubmitDraft,
+    onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
     onEntityDelete: params.onEntityDelete || External.onEntityDelete,
     onGroundTruth: params.onGroundTruth || External.onGroundTruth,
     onSelectAnnotation: params.onSelectAnnotation || External.onSelectAnnotation,
+    onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
+    onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
+    onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
   };
 
   return options;
 }
 
-export default { rootElement, getExample, configureApplication };
+export default { rootElement, getExample, getData, configureApplication };

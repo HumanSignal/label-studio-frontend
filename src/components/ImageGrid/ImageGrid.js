@@ -28,9 +28,9 @@ export default observer(
       const { item } = this.props;
 
       const grid = createGrid(
-        Math.ceil(item.stageWidth / item.gridSize),
-        Math.ceil(item.stageHeight / item.gridSize),
-        item.gridSize,
+        Math.ceil(item.stageWidth / item.gridsize),
+        Math.ceil(item.stageHeight / item.gridsize),
+        item.gridsize,
       );
 
       return (
@@ -40,9 +40,9 @@ export default observer(
               key={i}
               x={n.x}
               y={n.y}
-              width={item.gridSize}
-              height={item.gridSize}
-              stroke={item.gridColor}
+              width={item.gridsize}
+              height={item.gridsize}
+              stroke={item.gridcolor}
               strokeWidth={1}
             />
           ))}

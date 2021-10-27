@@ -6,12 +6,15 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * Relations tag, create relations labels
+ * Use the Relations tag to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
+ * <!--Basic labeling configuration to apply the label "similar" or "dissimilar" to a relation identified between two labeled regions of text -->
  * <View>
  *   <Relations>
- *     <Relation value="hello" />
- *     <Relation value="world" />
+ *     <Relation value="similar" />
+ *     <Relation value="dissimilar" />
  *   </Relations>
  *
  *   <Text name="txt-1" value="$text" />
@@ -21,6 +24,8 @@ import ControlBase from "./Base";
  *   </Labels>
  * </View>
  * @name Relations
+ * @meta_title Relations Tag for Multiple Relations
+ * @meta_description Customize Label Studio by adding labels to relationships between labeled regions for machine learning and data science projects.
  * @param {single|multiple=} [choice=single] Configure whether you can select one or multiple labels
  */
 const TagAttrs = types.model({

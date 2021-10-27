@@ -1,4 +1,4 @@
-import { types, resolvePath, getEnv, onSnapshot, getSnapshot, applySnapshot } from "mobx-state-tree";
+import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from "mobx-state-tree";
 
 /**
  * Time Traveller
@@ -11,7 +11,7 @@ const TimeTraveller = types
 
     createdIdx: 0,
   })
-  .volatile(self => ({
+  .volatile(() => ({
     history: [],
     isFrozen: false,
   }))
@@ -26,20 +26,25 @@ const TimeTraveller = types
   .actions(self => {
     let targetStore;
     let snapshotDisposer;
-    let updateHandlers = new Set();
+    const updateHandlers = new Set();
+    const freezingLockSet = new Set();
 
     function triggerHandlers() {
       updateHandlers.forEach(handler => handler());
     }
 
     return {
-      freeze() {
-        self.isFrozen = true;
+      freeze(key) {
+        freezingLockSet.add(key);
+        self.isFrozen = freezingLockSet.size > 0;
       },
 
-      unfreeze() {
-        self.isFrozen = false;
-        self.recordNow();
+      unfreeze(key) {
+        freezingLockSet.delete(key);
+        self.isFrozen = freezingLockSet.size > 0;
+        if (!self.isFrozen) {
+          self.recordNow();
+        }
       },
 
       recordNow() {
@@ -115,6 +120,7 @@ const TimeTraveller = types
       reset() {
         // just apply zero state; it would be added as a new hisory item
         applySnapshot(targetStore, self.history[self.createdIdx]);
+        triggerHandlers();
       },
     };
   });

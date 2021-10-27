@@ -14,6 +14,8 @@ class _Registry {
     this.views_models = {};
 
     this.tools = {};
+
+    this.perRegionViews = {};
   }
 
   addTag(tag, model, view) {
@@ -27,6 +29,7 @@ class _Registry {
     this.regions.push(type);
     if (detector) type.detectByValue = detector;
     const areas = this.areas.get(object);
+
     if (areas) areas.push(type);
     else this.areas.set(object, [type]);
   }
@@ -61,9 +64,10 @@ class _Registry {
 
   getAvailableAreas(object, value) {
     const available = this.areas.get(object);
+
     if (!available) return [];
     if (value) {
-      for (let model of available) {
+      for (const model of available) {
         if (model.detectByValue && model.detectByValue(value)) return [model];
       }
     }
@@ -72,16 +76,14 @@ class _Registry {
 
   getTool(name) {
     const model = this.tools[name];
+
     if (!model) {
       const models = Object.keys(this.tools);
+
       throw new Error("No model registered for tool: " + name + "\nAvailable models:\n\t" + models.join("\n\t"));
     }
 
     return model;
-  }
-
-  addTool(name, model) {
-    this.tools[name] = model;
   }
 
   /**
@@ -94,10 +96,22 @@ class _Registry {
 
     if (!model) {
       const models = Object.keys(this.models);
+
       throw new Error("No model registered for tag: " + tag + "\nAvailable models:\n\t" + models.join("\n\t"));
     }
 
     return model;
+  }
+
+  addPerRegionView(tag, mode, view) {
+    const tagViews = this.perRegionViews[tag] || {};
+
+    tagViews[mode] = view;
+    this.perRegionViews[tag] = tagViews;
+  }
+
+  getPerRegionView(tag, mode) {
+    return this.perRegionViews[tag]?.[mode];
   }
 }
 

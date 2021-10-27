@@ -1,7 +1,7 @@
 import React from "react";
 import { Tag } from "antd";
-import { observer, inject } from "mobx-react";
-import { types, getParent } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getParent, types } from "mobx-state-tree";
 
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
@@ -10,15 +10,20 @@ import { guidGenerator } from "../../core/Helpers";
 import { Hotkey } from "../../core/Hotkey";
 
 /**
- * Shortcut tag can be used to define a shortcut, which adds a predefined object
+ * Use the Shortcut tag to define a shortcut that annotators can use to add a predefined object, such as a specific label value, with a hotkey or keyboard shortcut.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
+ * <!--Basic labeling configuration to add a shortcut that places the text SILENCE in a given Text Area while doing transcription -->
  * <View>
  *   <TextArea name="txt-1">
  *     <Shortcut alias="Silence" value="SILENCE" hotkey="ctrl+1" />
  *   </TextArea>
  * </View>
  * @name Shortcut
- * @param {string} value    - A value of the shortcut
+ * @meta_title Shortcut Tag to Define Shortcuts
+ * @meta_description Customize Label Studio to define keyboard shortcuts and hotkeys to accelerate labeling for machine learning and data science projects.
+ * @param {string} value    - The value of the shortcut
  * @param {string} [alias]  - Shortcut alias
  * @param {string} [hotkey] - Hotkey
  */
@@ -48,6 +53,7 @@ const Model = types
       const textarea = getParent(self, 2);
       const name = (event.target || event.srcElement).name;
       // fired on a wrong element
+
       if (textarea.name !== name) return;
       return self.onClick();
     },
@@ -66,7 +72,7 @@ const HtxShortcutView = inject("store")(
 
     return (
       <Tag
-        onClick={ev => {
+        onClick={() => {
           item.onClick();
           return false;
         }}

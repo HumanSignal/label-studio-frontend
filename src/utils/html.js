@@ -4,8 +4,10 @@ import Canvas from "./canvas";
 
 function toggleLabelsAndScores(show) {
   const els = document.getElementsByClassName("htx-highlight");
+
   Array.from(els).forEach(el => {
     let foundCls = null;
+
     Array.from(el.classList).forEach(cls => {
       if (cls.indexOf("htx-label-") !== -1) foundCls = cls;
     });
@@ -25,13 +27,14 @@ const labelWithCSS = (function() {
     const clsName = Checkers.hashCode(labelsStr + score);
 
     let cssCls = "htx-label-" + clsName;
+
     cssCls = cssCls.toLowerCase();
 
     if (cssCls in cache) return cache[cssCls];
 
     node.setAttribute("data-labels", labelsStr);
 
-    const resSVG = Canvas.labelToSVG({ label: labelsStr, score: score });
+    const resSVG = Canvas.labelToSVG({ label: labelsStr, score });
     const svgURL = `url(${resSVG})`;
 
     createClass(`.${cssCls}:after`, `content:${svgURL}`);
@@ -44,7 +47,8 @@ const labelWithCSS = (function() {
 
 // work directly with the html tree
 function createClass(name, rules) {
-  var style = document.createElement("style");
+  const style = document.createElement("style");
+
   style.type = "text/css";
   document.getElementsByTagName("head")[0].appendChild(style);
   if (!(style.sheet || {}).insertRule) (style.styleSheet || style.sheet).addRule(name, rules);
@@ -63,8 +67,7 @@ function documentForward(node) {
 }
 
 function isTextNode(node) {
-  const TEXT_NODE = 3;
-  return node.nodeType === TEXT_NODE;
+  return node.nodeType === Node.TEXT_NODE;
 }
 
 function firstLeaf(node) {
@@ -88,11 +91,11 @@ function getNextNode(node) {
 }
 
 function getNodesInRange(range) {
-  var start = range.startContainer;
-  var end = range.endContainer;
-  var commonAncestor = range.commonAncestorContainer;
-  var nodes = [];
-  var node;
+  const start = range.startContainer;
+  const end = range.endContainer;
+  const commonAncestor = range.commonAncestorContainer;
+  const nodes = [];
+  let node;
 
   // walk parent nodes from start to common ancestor
   for (node = start.parentNode; node; node = node.parentNode) {
@@ -121,8 +124,14 @@ function documentReverse(node) {
   return node.previousSibling;
 }
 
+/**
+ * Split text node into two nodes following each other
+ * @param {Text} node
+ * @param {number} offset
+ */
 function splitText(node, offset) {
-  let tail = node.cloneNode(false);
+  const tail = node.cloneNode(false);
+
   tail.deleteData(0, offset);
   node.deleteData(offset, node.length - offset);
   return insertAfter(tail, node);
@@ -130,7 +139,7 @@ function splitText(node, offset) {
 
 function normalizeBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
-  let node, next, last, start, end;
+  let node, next, last;
 
   // Move the start container to the last leaf before any sibling boundary,
   // guaranteeing that any children of the container are within the range.
@@ -161,7 +170,7 @@ function normalizeBoundaries(range) {
   next = node => (node === last ? null : documentForward(node));
   last = lastLeaf(endContainer);
   while (node && !isTextNodeInRange(node)) node = next(node);
-  start = node;
+  const start = node;
 
   // Find the end TextNode.
   // Similarly, a reverse document order traversal visits every Node in the
@@ -170,7 +179,7 @@ function normalizeBoundaries(range) {
   next = node => (node === last ? null : documentReverse(node));
   last = firstLeaf(startContainer);
   while (node && !isTextNodeInRange(node)) node = next(node);
-  end = node;
+  const end = node;
 
   range.setStart(start, 0);
   range.setEnd(end, end.length);
@@ -184,21 +193,26 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   const allNodes = getNodesInRange(normedRange._range);
   const textNodes = allNodes.filter(n => isTextNode(n));
 
-  var white = /^\s*$/;
+  const white = /^\s*$/;
 
-  var nodes = textNodes; // normedRange.textNodes(),
+  const nodes = textNodes; // normedRange.textNodes(),
 
   let start = 0;
+
   if (normedRange._range.startOffset === nodes[start].length) start++;
 
   let nlen = nodes.length;
+
   if (nlen > 1 && nodes[nodes.length - 1].length !== normedRange._range.endOffset) nlen = nlen - 1;
 
   const results = [];
-  for (var i = start, len = nlen; i < len; i++) {
-    var node = nodes[i];
+
+  for (let i = start, len = nlen; i < len; i++) {
+    const node = nodes[i];
+
     if (!white.test(node.nodeValue)) {
-      var hl = window.document.createElement("span");
+      const hl = window.document.createElement("span");
+
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
       hl.className = cssClass;
@@ -212,8 +226,13 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   return results;
 }
 
+/**
+ *
+ * @param {Range} range
+ */
 function splitBoundaries(range) {
-  let { startContainer, startOffset, endContainer, endOffset } = range;
+  let { startContainer, endContainer  } = range;
+  const { startOffset, endOffset } = range;
 
   if (isTextNode(endContainer)) {
     if (endOffset > 0 && endOffset < endContainer.length) {
@@ -244,10 +263,12 @@ const toGlobalOffset = (container, element, len) => {
     if (node.nodeName === "#text") pos = pos + node.length;
     if (node.nodeName === "BR") pos = pos + 1;
 
-    for (var i = 0; i <= node.childNodes.length; i++) {
+    for (let i = 0; i <= node.childNodes.length; i++) {
       const n = node.childNodes[i];
+
       if (n) {
         const res = count(n);
+
         if (res !== undefined) return res;
       }
     }
@@ -257,7 +278,7 @@ const toGlobalOffset = (container, element, len) => {
 };
 
 const mainOffsets = element => {
-  var range = window
+  const range = window
     .getSelection()
     .getRangeAt(0)
     .cloneRange();
@@ -283,11 +304,12 @@ const mainOffsets = element => {
     }
 
     if (node.childNodes.length > 0) {
-      for (var i = 0; i <= node.childNodes.length; i++) {
+      for (let i = 0; i <= node.childNodes.length; i++) {
         const n = node.childNodes[i];
 
         if (n) {
           const res = traverse(n);
+
           if (res) return res;
         }
       }
@@ -296,7 +318,7 @@ const mainOffsets = element => {
 
   traverse(element);
 
-  return { start: start, end: end };
+  return { start, end };
 };
 
 const findIdxContainer = (el, globidx) => {
@@ -311,11 +333,12 @@ const findIdxContainer = (el, globidx) => {
     } else if (node.nodeName === "BR") {
       len = len - 1;
     } else if (node.childNodes.length > 0) {
-      for (var i = 0; i <= node.childNodes.length; i++) {
+      for (let i = 0; i <= node.childNodes.length; i++) {
         const n = node.childNodes[i];
 
         if (n) {
           const res = traverse(n);
+
           if (res) return res;
         }
       }
@@ -328,7 +351,7 @@ const findIdxContainer = (el, globidx) => {
 };
 
 function removeSpans(spans) {
-  var norm = [];
+  const norm = [];
 
   if (spans) {
     spans.forEach(span => {
@@ -341,6 +364,74 @@ function removeSpans(spans) {
 
   norm.forEach(n => n.normalize());
 }
+
+/**
+ * Checks if element of one of it's descendants match given selector
+ * @param {HTMLElement} element Element to match
+ * @param {string} selector CSS selector
+ */
+export const matchesSelector = (element, selector) => {
+  return element.matches(selector) || element.closest(selector) !== null;
+};
+
+/**
+ * Find a node by xpath
+ * @param {string} xpath
+ * @param {Node} root
+ */
+export const findByXpath = (xpath, root = document) => {
+  if (root !== document && xpath[0] !== ".") {
+    xpath = `.${xpath}`;
+  }
+
+  return document.evaluate(xpath, root, null, XPathResult.ANY_TYPE, null).iterateNext();
+};
+
+export const htmlEscape = string => {
+  const matchHtmlRegExp = /["'&<>]/;
+  const str = "" + string;
+  const match = matchHtmlRegExp.exec(str);
+
+  if (!match) {
+    return str;
+  }
+
+  let escape;
+  let html = "";
+  let index = 0;
+  let lastIndex = 0;
+
+  for (index = match.index; index < str.length; index++) {
+    switch (str.charCodeAt(index)) {
+      case 34: // "
+        escape = "&quot;";
+        break;
+      case 38: // &
+        escape = "&amp;";
+        break;
+      case 39: // '
+        escape = "&#39;";
+        break;
+      case 60: // <
+        escape = "&lt;";
+        break;
+      case 62: // >
+        escape = "&gt;";
+        break;
+      default:
+        continue;
+    }
+
+    if (lastIndex !== index) {
+      html += str.substring(lastIndex, index);
+    }
+
+    lastIndex = index + 1;
+    html += escape;
+  }
+
+  return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
+};
 
 function findNodeAt(context, at) {
   for (let node = context.firstChild, l = 0; node; ) {
@@ -365,5 +456,5 @@ export {
   highlightRange,
   splitBoundaries,
   normalizeBoundaries,
-  createClass,
+  createClass
 };

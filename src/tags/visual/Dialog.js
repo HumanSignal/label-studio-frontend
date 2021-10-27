@@ -1,16 +1,18 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { types } from "mobx-state-tree";
 import { Divider, Empty } from "antd";
 
 import { guidGenerator } from "../../utils/unique";
 import Registry from "../../core/Registry";
 import DialogView from "../../components/Dialog/Dialog";
-import { stringToColor, convertToRGBA } from "../../utils/colors";
+import { convertToRGBA, stringToColor } from "../../utils/colors";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Dialog tag renders a dialog.
+ * The Dialog tag renders a dialog box on a task with instructions or other content that you define.
  * @example
+ * <!--Basic labeling configuration to display a dialog box -->
  * <View>
  *  <Dialog name="dialog" value="$dialog"></Dialog>
  * <View>
@@ -50,14 +52,9 @@ const Model = types
     type: "Dialog",
     data: types.map(Replica),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
   .actions(self => DialogActions(self));
 
-const DialogModel = types.compose("DialogModel", TagAttrs, Model);
+const DialogModel = types.compose("DialogModel", TagAttrs, Model, AnnotationMixin);
 
 const HtxDialogView = inject("store")(
   observer(({ store, item }) => {
@@ -65,7 +62,7 @@ const HtxDialogView = inject("store")(
       return <Empty />;
     }
 
-    let result = [];
+    const result = [];
     let name = item.value;
 
     if (name.charAt(0) === "$") {

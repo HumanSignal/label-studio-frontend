@@ -1,14 +1,10 @@
 .node {
   flex-basis: 100%;
-  color: #262626;
+  color: var(--labelColor, rgba(0, 0, 0, 0.6));
 
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-
-  &:hover {
-    color: #1890ff;
-  }
 }
 
 .minimal {

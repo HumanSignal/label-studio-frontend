@@ -1,8 +1,8 @@
 export const defaultStyle = {
-  fillcolor: "orange",
-  fillopacity: 0.6,
-  strokecolor: "orange",
-  strokewidth: 5,
+  fillcolor: "#666",
+  fillopacity: 0.2,
+  strokecolor: "#666",
+  strokewidth: 1,
   opacity: 0.6,
 };
 
@@ -13,6 +13,7 @@ export default {
 
   // labels
   LABEL_BACKGROUND: "#36B37E",
+  EMPTY_LABEL: "blank",
 
   RELATION_BACKGROUND: "#fff",
 
@@ -25,11 +26,14 @@ export default {
   HIGHLIGHTED_STROKE_WIDTH: 2,
   HIGHLIGHTED_CSS_BORDER: "1px dashed #00aeff",
 
+  // when using dynamic suggestions
+  SUGGESTION_STROKE_WIDTH: 4,
+
   // cursors
   DEFAULT_CURSOR: "default",
   CHOOSE_CURSOR: "pointer",
   POINTER_CURSOR: "pointer",
-  MOVE_CURSOR: "move",
+  MOVE_CURSOR: "hand",
   RELATION_MODE_CURSOR: "crosshair",
 
   // images

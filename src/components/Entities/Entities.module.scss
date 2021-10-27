@@ -1,7 +1,30 @@
+.section {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 4px;
+    padding-right: 4px;
+    align-items: center;
+  }
+  .title {
+    flex: 1;
+  }
+}
+
 .treelabels {
-  border: 1px solid #d9d9d9;
-  max-height: 350px;
-  overflow-y: auto;
+  max-height: auto;
+}
+
+.treelabel :global(.ant-tree-node-content-wrapper) {
+  cursor: default;
+}
+
+.treetag {
+  margin: "5px";
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .item {
@@ -15,33 +38,24 @@
 }
 
 .lstitem {
+  user-select: none;
   cursor: pointer;
   align-items: center;
   justify-content: flex-start;
   display: flex;
   flex-wrap: nowrap;
   position: relative;
-  padding: 6px 0 6px 6px;
+  padding: 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
 
   & > *:not(:last-child),
   & [role="img"] {
     margin-right: 6px;
   }
 
-  &:hover {
-    background: #f5f5f5;
-
-    .node {
-      color: #1890ff;
-    }
-  }
-
   &.flat {
-    margin-left: -16px;
-  }
 
-  &.hidden {
-    opacity: 0.3;
   }
 
   & button.hidden,
@@ -55,13 +69,44 @@
     }
   }
 
+  &:hover {
+    background-color: var(--labelBgColor);
+  }
+
   &.selected {
-    background: #bae7ff;
+    //noinspection CssInvalidFunction
+    box-shadow: 0 0 0 4px var(--labelBgColor, rgba(0,0,0,0.2));
+  }
+
+  &_label {
+    justify-content: space-between;
+  }
+
+  &__actions {
+    flex: 0 0 auto;
+
+    & [role="img"] {
+      margin: 0;
+    }
+  }
+
+  &__actionIcon {
+    flex: 0 0 auto;
+    text-align: center;
+    justify-content: center;
   }
 }
 
 .list .lstitem {
   border-bottom: none;
+}
+
+.uihidden {
+  opacity: 0.5;
+}
+
+.uivisible {
+  opacity: 1;
 }
 
 .ant-tree-switcher {

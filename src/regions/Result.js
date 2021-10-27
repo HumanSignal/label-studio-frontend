@@ -1,6 +1,8 @@
-import { types, getParent, getRoot, getSnapshot } from "mobx-state-tree";
+import { getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
+import { isDefined } from "../utils/utilities";
 
 const Result = types
   .model("Result", {
@@ -44,6 +46,7 @@ const Result = types
       "ellipselabels",
       "timeserieslabels",
       "choices",
+      "number",
       "taxonomy",
       "textarea",
       "rating",
@@ -51,6 +54,7 @@ const Result = types
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      number: types.maybe(types.number),
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.string)),
@@ -59,6 +63,7 @@ const Result = types
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
       htmllabels: types.maybe(types.array(types.string)),
+      hypertextlabels: types.maybe(types.array(types.string)),
       paragraphlabels: types.maybe(types.array(types.string)),
       rectanglelabels: types.maybe(types.array(types.string)),
       keypointlabels: types.maybe(types.array(types.string)),
@@ -74,6 +79,7 @@ const Result = types
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
+
       return states && states.filter(s => s.perregion === true);
     },
 
@@ -85,16 +91,24 @@ const Result = types
       return getParent(self, 2);
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get mainValue() {
       return self.value[self.from_name.valueType];
     },
 
+    mergeMainValue(value) {
+      value =  value?.toJSON ? value.toJSON() : value;
+      const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
+
+      if (typeof value !== typeof mainValue) return null;
+      if (self.type.endsWith("labels")) {
+        return value.filter(x => mainValue.includes(x));
+      }
+      return value === mainValue ? value : null;
+    },
+
     get hasValue() {
       const value = self.mainValue;
+
       if (!value) return false;
       if (Array.isArray(value)) return value.length > 0;
       return true;
@@ -109,6 +123,9 @@ const Result = types
     },
 
     get selectedLabels() {
+      if (self.mainValue?.length === 0 && self.from_name.allowempty) {
+        return self.from_name.findLabel(null);
+      }
       return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
     },
 
@@ -120,6 +137,7 @@ const Result = types
 
       if (control.perregion) {
         const label = control.whenlabelvalue;
+
         if (label && !self.area.hasLabel(label)) return false;
       }
 
@@ -127,8 +145,14 @@ const Result = types
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
         const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
+
         if (tagName) {
-          const result = results.find(r => r.from_name.name === tagName);
+          const result = results.find(r => {
+            if (r.from_name.name !== tagName) return false;
+            // for perRegion choices we should check that they are in the same area
+            return !r.from_name.perregion || r.area === self.area;
+          });
+
           if (!result) return false;
           if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
         } else {
@@ -143,7 +167,8 @@ const Result = types
 
     get tag() {
       const value = self.mainValue;
-      if (!value) return null;
+
+      if (!value || !value.length) return null;
       if (!self.from_name.findLabel) return null;
       return self.from_name.findLabel(value[0]);
     },
@@ -151,13 +176,28 @@ const Result = types
     get style() {
       if (!self.tag) return null;
       const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
       const { strokewidth, fillopacity, opacity } = self.tag.parent;
+
+      return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
+
+    get emptyStyle() {
+      const emptyLabel = self.from_name.emptyLabel;
+
+      if (!emptyLabel) return null;
+      const fillcolor = emptyLabel.background || emptyLabel.parent.fillcolor;
+
+      if (!fillcolor) return null;
+      const strokecolor = emptyLabel.background || emptyLabel.parent.strokecolor;
+      const { strokewidth, fillopacity, opacity } = emptyLabel.parent;
+
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     pid: "",
     selected: false,
     // highlighted: types.optional(types.boolean, false),
@@ -186,21 +226,25 @@ const Result = types
     // label, becuase it takes color from the label
     updateAppearenceFromState() {},
 
-    serialize() {
+    serialize(options) {
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
-      const data = self.area ? self.area.serialize() : {};
+      const data = self.area ? self.area.serialize(options) : {};
+
       if (!data) return null;
       if (!self.isSubmitable) return null;
       // cut off annotation id
       const id = self.area.cleanId;
-      if (!data.value) data.value = {};
+
+      if (!isDefined(data.value)) data.value = {};
 
       const contolMeta = self.from_name.metaValue;
+
       if (contolMeta) {
         data.meta = { ...data.meta, ...contolMeta };
       }
       const areaMeta = self.area.meta;
+
       if (areaMeta && Object.keys(areaMeta).length) {
         data.meta = { ...data.meta, ...areaMeta };
       }
@@ -209,8 +253,12 @@ const Result = types
         data.parentID = self.area.parentID.replace(/#.*/, "");
       }
 
-      Object.assign(data, { id, from_name, to_name, type });
-      value[valueType] && Object.assign(data.value, { [valueType]: value[valueType] });
+      Object.assign(data, { id, from_name, to_name, type, origin: self.area.origin });
+
+      if (isDefined(value[valueType])) {
+        Object.assign(data.value, { [valueType]: value[valueType] });
+      }
+
       if (typeof score === "number") data.score = score;
 
       return data;
@@ -237,6 +285,7 @@ const Result = types
         return self.states
           .map(s => {
             const ser = self.serialize(s, parent);
+
             if (!ser) return null;
 
             const tree = {
@@ -282,11 +331,11 @@ const Result = types
     },
 
     setHighlight(val) {
-      self.highlighted = val;
+      self._highlighted = val;
     },
 
     toggleHighlight() {
-      self.setHighlight(!self.highlighted);
+      self.setHighlight(!self._highlighted);
     },
 
     toggleHidden() {
@@ -294,4 +343,4 @@ const Result = types
     },
   }));
 
-export default Result;
+export default types.compose(Result, AnnotationMixin);

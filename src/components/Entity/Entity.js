@@ -1,30 +1,38 @@
 import React, { Fragment } from "react";
 import { observer } from "mobx-react";
-import { Form, Input, Button, Tag, Tooltip, Badge } from "antd";
-import { DeleteOutlined, LinkOutlined, PlusOutlined, CompressOutlined } from "@ant-design/icons";
+import { Badge, Form, Input } from "antd";
+import { CompressOutlined, DeleteOutlined, LinkOutlined, PlusOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 
 import { NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
+import { Button } from "../../common/Button/Button";
+import { Tag } from "../../common/Tag/Tag";
+import { Space } from "../../common/Space/Space";
+import { Block, Elem } from "../../utils/bem";
+import "./Entity.styl";
+import { PER_REGION_MODES } from "../../mixins/PerRegion";
+import { Hotkey } from "../../core/Hotkey";
 
 const { Paragraph, Text } = Typography;
 
 const renderLabels = element => {
-  return (
+  return element.selectedLabels?.length ? (
     <Text key={element.pid} className={styles.labels}>
       Labels:&nbsp;
       {element.selectedLabels.map(label => {
         const bgColor = label.background || "#000000";
 
         return (
-          <Tag key={label.id} color={bgColor} className={styles.tag}>
+          <Tag key={label.id} color={bgColor} solid>
             {label.value}
           </Tag>
         );
       })}
     </Text>
-  );
+  ) : null;
 };
 
 const renderResult = result => {
@@ -32,7 +40,7 @@ const renderResult = result => {
     return renderLabels(result);
   } else if (result.type === "rating") {
     return <Paragraph>Rating: {result.mainValue}</Paragraph>;
-  } else if (result.type === "textarea") {
+  } else if (result.type === "textarea" && !(result.from_name.perregion && result.from_name.displaymode === PER_REGION_MODES.REGION_LIST)) {
     return (
       <Paragraph className={styles.row}>
         <Text>Text: </Text>
@@ -49,17 +57,77 @@ const renderResult = result => {
 };
 
 export default observer(({ store, annotation }) => {
-  const node = annotation.highlightedNode;
+  const { highlightedNode: node, selectedRegions: nodes, selectionSize } = annotation;
   const [editMode, setEditMode] = React.useState(false);
 
+  const entityButtons = [];
+  const hasEditableNodes = !!nodes.find(node => node.editable);
+  const hasEditableRegions = !!nodes.find(node => node.editable && !node.classification);
+
+  if (hasEditableRegions) {
+    entityButtons.push(
+      <Hotkey.Tooltip key="relations" placement="topLeft" name="region:relation">
+        <Button
+          aria-label="Create Relation"
+          className={styles.button}
+          onClick={() => {
+            annotation.startRelationMode(node);
+          }}
+          disabled={!node}
+        >
+          <LinkOutlined />
+
+          {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ alt + r ]</Hint>}
+        </Button>
+      </Hotkey.Tooltip>,
+    );
+
+    entityButtons.push(
+      <Tooltip key="meta" placement="topLeft" title="Add Meta Information">
+        <Button
+          className={styles.button}
+          onClick={() => {
+            setEditMode(true);
+          }}
+          disabled={!node}
+        >
+          <PlusOutlined />
+        </Button>
+      </Tooltip>,
+    );
+  }
+
+  entityButtons.push(
+    <Hotkey.Tooltip key="unselect" placement="topLeft" name="region:unselect">
+      <Button
+        className={styles.button}
+        type="dashed"
+        onClick={() => {
+          annotation.unselectAll();
+        }}
+      >
+        <CompressOutlined />
+        <Hotkey.Hint name="region:unselect"/>
+      </Button>
+    </Hotkey.Tooltip>,
+  );
+
   return (
-    <Fragment>
-      <p className={styles.row}>
-        <NodeMinimal node={node} /> (id: {node.id}){" "}
-        {!node.editable && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
-      </p>
+    <Block name="entity">
+      <Elem name="info" tag={Space} spread>
+        <Elem name="node">
+          {node ? (
+            <>
+              <NodeMinimal node={node} />
+              {" "}
+              (ID: {node.id})
+            </>
+          ) : `${selectionSize} Region${(selectionSize > 1) ? "s are" : " is"} selected` }
+        </Elem>
+        {!hasEditableNodes && <Badge count={"readonly"} style={{ backgroundColor: "#ccc" }} />}
+      </Elem>
       <div className={styles.statesblk + " ls-entity-states"}>
-        {node.score && (
+        {node?.score && (
           <Fragment>
             <Text>
               Score: <Text underline>{node.score}</Text>
@@ -67,7 +135,7 @@ export default observer(({ store, annotation }) => {
           </Fragment>
         )}
 
-        {node.meta?.text && (
+        {node?.meta?.text && (
           <Text>
             Meta: <Text code>{node.meta.text}</Text>
             &nbsp;
@@ -81,10 +149,31 @@ export default observer(({ store, annotation }) => {
           </Text>
         )}
 
-        <Fragment>{node.results.map(renderResult)}</Fragment>
+        <Fragment>{node?.results.map(renderResult)}</Fragment>
       </div>
 
       <div className={styles.block + " ls-entity-buttons"}>
+        <Space spread>
+          <Space>
+            {entityButtons}
+          </Space>
+
+          {hasEditableNodes && (
+            <Hotkey.Tooltip placement="topLeft" name="region:delete">
+              <Button
+                look="danger"
+                className={styles.button}
+                onClick={() => {
+                  annotation.deleteSelectedRegions();
+                }}
+              >
+                <DeleteOutlined />
+
+                <Hotkey.Hint name="region:delete"/>
+              </Button>
+            </Hotkey.Tooltip>
+          )}
+        </Space>
         {/* <Tooltip placement="topLeft" title="Hide: [h]"> */}
         {/*   <Button */}
         {/*     className={styles.button} */}
@@ -99,81 +188,21 @@ export default observer(({ store, annotation }) => {
         {/*     {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ h ]</Hint>} */}
         {/*   </Button> */}
         {/* </Tooltip> */}
-
-        {node.editable && !node.classification && (
-          <Fragment>
-            <Tooltip placement="topLeft" title="Create Relation: [r]">
-              <Button
-                aria-label="Create Relation"
-                className={styles.button}
-                onClick={() => {
-                  annotation.startRelationMode(node);
-                }}
-              >
-                <LinkOutlined />
-
-                {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ r ]</Hint>}
-              </Button>
-            </Tooltip>
-
-            <Tooltip placement="topLeft" title="Add Meta Information">
-              <Button
-                className={styles.button}
-                onClick={() => {
-                  setEditMode(true);
-                }}
-              >
-                <PlusOutlined />
-              </Button>
-            </Tooltip>
-          </Fragment>
-        )}
-
-        <Tooltip placement="topLeft" title="Unselect: [u]">
-          <Button
-            className={styles.button}
-            type="dashed"
-            onClick={() => {
-              annotation.unselectAll();
-            }}
-          >
-            <CompressOutlined />
-            {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ u ]</Hint>}
-          </Button>
-        </Tooltip>
-
-        {node.editable && (
-          <Tooltip placement="topLeft" title="Delete Entity: [Backspace]">
-            <Button
-              type="danger"
-              className={styles.button}
-              onClick={() => {
-                annotation.highlightedNode.deleteRegion();
-              }}
-            >
-              <DeleteOutlined />
-
-              {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Bksp ]</Hint>}
-            </Button>
-          </Tooltip>
-        )}
       </div>
 
       {editMode && (
         <Form
           style={{ marginTop: "0.5em", marginBottom: "0.5em" }}
-          onFinish={value => {
+          onFinish={() => {
             node.setMetaInfo(node.normInput);
             setEditMode(false);
-
-            // ev.preventDefault();
-            // return false;
           }}
         >
           <Input
             autoFocus
             onChange={ev => {
               const { value } = ev.target;
+
               node.setNormInput(value);
             }}
             style={{ marginBottom: "0.5em" }}
@@ -198,6 +227,6 @@ export default observer(({ store, annotation }) => {
           </Button>
         </Form>
       )}
-    </Fragment>
+    </Block>
   );
 });

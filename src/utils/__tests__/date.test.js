@@ -1,4 +1,5 @@
-import { prettyDate, msToHMS } from "../date";
+/* global describe, test, expect */
+import { msToHMS, prettyDate } from "../date";
 
 describe("Helper function prettyDate", () => {
   test("Undefined", () => {
@@ -8,26 +9,30 @@ describe("Helper function prettyDate", () => {
   });
 
   test("Yesterday", () => {
-    let testing = new Date();
-    let resultDate = new Date(testing.setDate(testing.getDate() - 1));
+    const testing = new Date();
+    const resultDate = new Date(testing.setDate(testing.getDate() - 1));
+
     expect(prettyDate(resultDate.toISOString())).toBe("Yesterday");
   });
 
   test("2 days ago", () => {
-    let testing = new Date();
-    let resultDate = new Date(testing.setDate(testing.getDate() - 2));
+    const testing = new Date();
+    const resultDate = new Date(testing.setDate(testing.getDate() - 2));
+
     expect(prettyDate(resultDate.toISOString())).toBe("2 days ago");
   });
 
   test("2 weeks ago", () => {
-    let testing = new Date();
-    let resultDate = new Date(testing.setDate(testing.getDate() - 14));
+    const testing = new Date();
+    const resultDate = new Date(testing.setDate(testing.getDate() - 14));
+
     expect(prettyDate(resultDate.toISOString())).toBe("2 weeks ago");
   });
 
   test("100 days ago", () => {
-    let testing = new Date();
-    let resultDate = new Date(testing.setDate(testing.getDate() - 100));
+    const testing = new Date();
+    const resultDate = new Date(testing.setDate(testing.getDate() - 100));
+
     expect(prettyDate(resultDate.toISOString())).toBe("100 days ago");
   });
 });

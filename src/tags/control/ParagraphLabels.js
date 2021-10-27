@@ -6,14 +6,16 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * ParagraphLabels tag
- * ParagraphLabels tag creates labeled paragraph
+ * The ParagraphLabels tag creates labeled paragraphs. Use with the Paragraphs tag to label a paragraph of text.
+ *
+ * Use with the following data types: paragraphs
  * @example
+ * <!--Basic labeling configuration to label paragraphs -->
  * <View>
  *   <ParagraphLabels name="labels" toName="prg">
  *     <Label value="Statement" />
@@ -22,11 +24,13 @@ import ControlBase from "./Base";
  *   <Paragraphs name="prg" value="$dialogue" layout="dialogue" />
  * </View>
  * @name ParagraphLabels
+ * @meta_title Paragraph Label Tag for Paragraph Labels
+ * @meta_description Customize Label Studio with paragraph labels for machine learning and data science projects.
  * @param {string} name                      - Name of the element
- * @param {string} toName                    - Name of the HTML element to label
+ * @param {string} toName                    - Name of the paragraph element to label
  * @param {single|multiple=} [choice=single] - Configure whether you can select one or multiple labels
- * @param {number} [maxUsages]               - Maximum available uses of a label
- * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -34,7 +38,7 @@ const TagAttrs = types.model({
 });
 
 const ModelAttrs = types
-  .model("ParagraphLabelesModel", {
+  .model("ParagraphLabelsModel", {
     pid: types.optional(types.string, guidGenerator),
     type: "paragraphlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
@@ -42,11 +46,13 @@ const ModelAttrs = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
     get serializableValue() {
       const obj = {};
+
       obj["paragraphlabels"] = self.selectedValues();
 
       return obj;

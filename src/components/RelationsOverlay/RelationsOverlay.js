@@ -1,9 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import { observer } from "mobx-react";
-import React, { PureComponent, useEffect } from "react";
+import { createRef, forwardRef, PureComponent, useEffect, useRef } from "react";
 import { useState } from "react";
+import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -56,7 +56,7 @@ const RelationConnector = ({ id, command, color, direction, highlight }) => {
 
 const RelationLabel = ({ label, position }) => {
   const [x, y] = position;
-  const textRef = React.createRef();
+  const textRef = useRef();
   const [background, setBackground] = useState({ width: 0, height: 0, x: 0, y: 0 });
 
   const groupAttributes = {
@@ -73,6 +73,7 @@ const RelationLabel = ({ label, position }) => {
   useEffect(() => {
     const textElement = textRef.current;
     const bbox = textElement.getBBox();
+
     setBackground({
       x: bbox.x - 5,
       y: bbox.y - 3,
@@ -105,7 +106,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
     relation.onChange(() => forceUpdate({}));
     return () => relation.destroy();
   }, []);
-
+  if (start.width < 1 || start.height < 1 || end.width < 1 || end.height < 1) return null;
   return (
     <g opacity={dimm && !highlight ? 0.5 : 1} visibility={hideConnection ? "hidden" : "visible"}>
       <RelationItemRect {...start} />
@@ -128,29 +129,54 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * rootRef: React.RefObject<HTMLElement>
  * }}
  */
-const RelationItemObserver = observer(({ relation, ...rest }) => {
-  const { node1: startNode, node2: endNode } = relation;
+const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }) => {
+  const nodes = [
+    startNode.getRegionElement
+      ? startNode.getRegionElement()
+      : startNode,
+    endNode.getRegionElement
+      ? endNode.getRegionElement()
+      : endNode,
+  ];
 
-  return (
+  const [render, setRender] = useState(nodes[0] && nodes[1]);
+
+  useEffect(() => {
+    let timer;
+
+    const watchRegionAppear = () => {
+      const nodesExist = isDefined(nodes[0]) && isDefined(nodes[1]);
+
+      if (render !== nodesExist) {
+        setRender(nodesExist);
+      } else if(render === false) {
+        timer = setTimeout(watchRegionAppear, 30);
+      }
+    };
+
+    timer = setTimeout(watchRegionAppear, 30);
+
+    return () => clearTimeout(timer);
+  }, [nodes, render]);
+
+  return render ? (
     <RelationItem id={relation.id} startNode={startNode} endNode={endNode} direction={relation.direction} {...rest} />
-  );
+  ) : null;
 });
 
 class RelationsOverlay extends PureComponent {
   /** @type {React.RefObject<HTMLElement>} */
-  rootNode = React.createRef();
-  state = { shouldRender: false, souldRenderConnections: Math.random() };
+  rootNode = createRef();
+  timer = null;
+  state = {
+    shouldRender: false,
+    shouldRenderConnections: Math.random(),
+  };
 
-  componentDidMount() {
-    if (this.rootNode.current) {
+  componentDidUpdate() {
+    if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
     }
-
-    window.addEventListener("resize", this.onResize);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.onResize);
   }
 
   render() {
@@ -168,38 +194,94 @@ class RelationsOverlay extends PureComponent {
     };
 
     return (
-      <svg ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-        {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
-      </svg>
+      <AutoSizer onResize={this.onResize}>
+        {() => (
+          <svg className="relations-overlay" ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
+            {(this.state.shouldRender) && (
+              this.renderRelations(relations, visible, hasHighlight, highlighted)
+            )}
+          </svg>
+        )}
+      </AutoSizer>
     );
   }
 
   renderRelations(relations, visible, hasHighlight, highlightedRelation) {
     return relations.map(relation => {
       const highlighted = highlightedRelation === relation;
+
       return (
         <RelationItemObserver
           key={relation.id}
           relation={relation}
           rootRef={this.rootNode}
+          startNode={relation.node1}
+          endNode={relation.node2}
           labels={relation.relations?.selectedValues()}
           dimm={hasHighlight && !highlighted}
           highlight={highlighted}
           visible={highlighted || visible}
-          shouldUpdate={this.state.souldRenderConnections}
+          shouldUpdate={this.state.shouldRenderConnections}
         />
       );
     });
   }
 
   onResize = () => {
-    this.setState({ souldRenderConnections: Math.random() });
+    this.setState({ shouldRenderConnections: Math.random() });
   };
 }
 
-const RelationsOverlayObserver = observer(({ store }) => {
-  const { relations, showConnections, highlighted } = store;
-  return <RelationsOverlay relations={Array.from(relations)} visible={showConnections} highlighted={highlighted} />;
-});
+const RelationObserverView = observer(RelationsOverlay);
 
-export { RelationsOverlayObserver as RelationsOverlay };
+const RelationsOverlayObserver = observer(
+  forwardRef(({ store, tags }, ref) => {
+    const { relations, showConnections, highlighted } = store;
+
+    return (
+      <RelationObserverView
+        ref={ref}
+        relations={Array.from(relations)}
+        visible={showConnections}
+        highlighted={highlighted}
+        tags={Array.from(tags?.values?.() ?? [])}
+      />
+    );
+  }),
+);
+
+let readinessTimer = null;
+
+const checkTagsAreReady = (tags, callback) => {
+  clearTimeout(readinessTimer);
+
+  const ready = Array.from(tags.values()).reduce((res, tag) => {
+    return res && (tag?.isReady ?? true);
+  }, true);
+
+  callback(ready);
+
+  if (!ready) {
+    readinessTimer = setTimeout(() => {
+      checkTagsAreReady(tags, callback);
+    }, 100);
+  }
+};
+
+const EnsureTagsReady = observer(
+  forwardRef(({ tags, taskData, ...props }, ref) => {
+    const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+      checkTagsAreReady(tags, (readyState) => {
+        setReady(readyState);
+      });
+    }, [taskData, tags]);
+
+    return ready && (
+      <RelationsOverlayObserver ref={ref} {...props} />
+    );
+  }),
+);
+
+export { EnsureTagsReady as RelationsOverlay };

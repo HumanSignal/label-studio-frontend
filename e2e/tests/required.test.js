@@ -79,11 +79,12 @@ const result = {
   from_name: "toggle",
   to_name: "text",
   type: "labels",
+  origin: "manual",
   value: { start: 3, end: 7, labels: ["Hidden"] },
 };
 const annotations = [{ id: "1", result: [result] }];
 
-Scenario("Check required param", async function(I) {
+Scenario("Check required param", async function({ I }) {
   const params = { config, data: { text } };
 
   const waitForError = name => {
@@ -99,7 +100,7 @@ Scenario("Check required param", async function(I) {
   I.executeAsyncScript(initLabelStudio, params);
 
   // Add new Annotation to be able to submit it
-  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  I.click(".lsf-annotation-tabs__add");
   I.click("Submit");
   waitForError("validation-label");
 
@@ -121,14 +122,14 @@ Scenario("Check required param", async function(I) {
   I.executeAsyncScript(initLabelStudio, params);
   // Page is reloaded, there are no new annotation from prev steps
   I.dontSee("New annotation");
-  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  I.click(".lsf-annotation-tabs__add");
   I.click("Valid");
   I.click("Submit");
   I.see("Warning");
   I.see('Checkbox "second" is required');
 });
 
-Scenario("Check required param in complex config", async function(I) {
+Scenario("Check required param in complex config", async function({ I }) {
   const params = { annotations, config: complex, data: { text } };
 
   const waitForError = name => {
@@ -192,7 +193,7 @@ Scenario("Check required param in complex config", async function(I) {
   I.click("Update");
   I.dontSee("Valid");
 
-  I.click(locate(".ant-btn").withChild("[aria-label=plus]"));
+  I.click(".lsf-annotation-tabs__add");
   I.click("Submit");
   waitForError("common-description");
   I.fillField("common-description", "some text");

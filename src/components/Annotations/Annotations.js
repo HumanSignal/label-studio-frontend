@@ -1,14 +1,15 @@
 import React, { Component } from "react";
-import { Card, Button, Tooltip, Badge, List, Popconfirm } from "antd";
+import { Badge, Button, Card, List, Popconfirm, Tooltip } from "antd";
 import { observer } from "mobx-react";
 import {
-  StarOutlined,
   DeleteOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  StopOutlined,
   PlusOutlined,
-  WindowsOutlined,
+  StarFilled,
+  StarOutlined,
+  StopOutlined,
+  WindowsOutlined
 } from "@ant-design/icons";
 
 import Utils from "../../utils";
@@ -17,6 +18,7 @@ import styles from "./Annotations.module.scss";
 export const DraftPanel = observer(({ item }) => {
   if (!item.draftSaved && !item.versions.draft) return null;
   const saved = item.draft && item.draftSaved ? ` saved ${Utils.UDate.prettyDate(item.draftSaved)}` : "";
+
   if (!item.selected) {
     if (!item.draft) return null;
     return <div>draft{saved}</div>;
@@ -26,9 +28,9 @@ export const DraftPanel = observer(({ item }) => {
   }
   return (
     <div>
-      <Tooltip placement="topLeft" title={item.draft ? "switch to submitted result" : "switch to current draft"}>
+      <Tooltip placement="topLeft" title={item.draftSelected ? "switch to submitted result" : "switch to current draft"}>
         <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
-          {item.draft ? "draft" : "submitted"}
+          {item.draftSelected ? "draft" : "submitted"}
         </Button>
       </Tooltip>
       {saved}
@@ -37,7 +39,7 @@ export const DraftPanel = observer(({ item }) => {
 });
 
 const Annotation = observer(({ item, store }) => {
-  let removeHoney = () => (
+  const removeHoney = () => (
     <Tooltip placement="topLeft" title="Unset this result as a ground truth">
       <Button
         size="small"
@@ -52,37 +54,49 @@ const Annotation = observer(({ item, store }) => {
     </Tooltip>
   );
 
-  let setHoney = () => (
-    <Tooltip placement="topLeft" title="Set this result as a ground truth">
-      <Button
-        size="small"
-        type="primary"
-        ghost={true}
-        onClick={ev => {
-          ev.preventDefault();
-          item.setGroundTruth(true);
-        }}
-      >
-        <StarOutlined />
-      </Button>
-    </Tooltip>
-  );
+  const setHoney = () => {
+    const title = item.ground_truth
+      ? "Unset this result as a ground truth"
+      : "Set this result as a ground truth";
+
+    return (
+      <Tooltip placement="topLeft" title={title}>
+        <Button
+          size="small"
+          look="link"
+          onClick={ev => {
+            ev.preventDefault();
+            item.setGroundTruth(!item.ground_truth);
+          }}
+        >
+          {item.ground_truth ? (
+            <StarFilled />
+          ) : (
+            <StarOutlined />
+          )}
+        </Button>
+      </Tooltip>
+    );
+  };
 
   const toggleVisibility = e => {
     e.preventDefault();
     e.stopPropagation();
     item.toggleVisibility();
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.style.display = item.hidden ? "none" : "unset";
   };
 
-  const highlight = e => {
+  const highlight = () => {
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.classList.add("hover");
   };
 
-  const unhighlight = e => {
+  const unhighlight = () => {
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.classList.remove("hover");
   };
 
@@ -132,7 +146,7 @@ const Annotation = observer(({ item, store }) => {
 
     return (
       <div className={styles.buttons}>
-        {store.hasInterface("ground-truth") && (item.honeypot ? removeHoney() : setHoney())}
+        {store.hasInterface("ground-truth") && (item.ground_truth ? removeHoney() : setHoney())}
         &nbsp;
         {store.hasInterface("annotations:delete") && (
           <Tooltip placement="topLeft" title="Delete selected annotation">
@@ -158,7 +172,7 @@ const Annotation = observer(({ item, store }) => {
     <List.Item
       key={item.id}
       className={item.selected ? `${styles.annotation} ${styles.annotation_selected}` : styles.annotation}
-      onClick={ev => {
+      onClick={() => {
         !item.selected && store.annotationStore.selectAnnotation(item.id);
       }}
       onMouseEnter={highlight}
@@ -196,7 +210,7 @@ class Annotations extends Component {
   render() {
     const { store } = this.props;
 
-    let title = (
+    const title = (
       <div className={styles.title + " " + styles.titlespace}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <h3>Annotations</h3>
@@ -210,6 +224,7 @@ class Annotations extends Component {
                 onClick={ev => {
                   ev.preventDefault();
                   const c = store.annotationStore.addAnnotation({ userGenerate: true });
+
                   store.annotationStore.selectAnnotation(c.id);
                   // c.list.selectAnnotation(c);
                 }}

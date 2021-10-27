@@ -147,7 +147,7 @@ class TextHighlight extends Component {
       /**
        * Create clone range
        */
-      let cloneCont = window
+      const cloneCont = window
         .getSelection()
         .getRangeAt(0)
         .cloneRange();
@@ -155,15 +155,15 @@ class TextHighlight extends Component {
       /**
        * The Range.cloneContents() returns a DocumentFragment copying the objects of type Node included in the Range.
        */
-      let selectionContents = cloneCont.cloneContents();
+      const selectionContents = cloneCont.cloneContents();
       /**
        * Create virtual div with text
        */
-      let virtualDiv = document.createElement("div");
+      const virtualDiv = document.createElement("div");
 
       virtualDiv.appendChild(selectionContents);
 
-      let elementsWithSup = virtualDiv.getElementsByTagName("sup");
+      const elementsWithSup = virtualDiv.getElementsByTagName("sup");
 
       if (elementsWithSup.length > 0) {
         for (let i = 0; i < elementsWithSup.length; i++) {
@@ -207,8 +207,8 @@ class TextHighlight extends Component {
       endContainerPosition = parseInt(range.endContainer.dataset.position);
     }
 
-    let startHL = startContainerPosition < endContainerPosition ? startContainerPosition : endContainerPosition;
-    let endHL = startContainerPosition < endContainerPosition ? endContainerPosition : startContainerPosition;
+    const startHL = startContainerPosition < endContainerPosition ? startContainerPosition : endContainerPosition;
+    const endHL = startContainerPosition < endContainerPosition ? endContainerPosition : startContainerPosition;
 
     const rangeObj = new Range(startHL, endHL, text, {
       ...this.props,
@@ -222,15 +222,15 @@ class TextHighlight extends Component {
    *
    * @param {*} event
    */
-  onMouseUp(event) {
+  onMouseUp() {
     this.mouseEvent.bind(this)();
   }
 
-  onMouseDown(event) {
+  onMouseDown() {
     // console.log(event)
   }
 
-  onMouseEnter(event) {
+  onMouseEnter() {
     // console.log(event)
   }
 
@@ -238,7 +238,7 @@ class TextHighlight extends Component {
    * Double click on text
    * @param {*} event
    */
-  onDoubleClick(event) {
+  onDoubleClick() {
     // WARN
     // event.stopPropagation();
     // this.doucleckicked = true;

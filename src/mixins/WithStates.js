@@ -15,7 +15,7 @@ export default types
         return s ? s.getSelectedColor() : null;
       }
 
-      if ((pick = "combine")) {
+      if (pick === "combine") {
         // [TODO] combine colors
       }
     },
@@ -23,5 +23,4 @@ export default types
     getClonedStates() {
       return self.states.map(s => cloneNode(s));
     },
-  }))
-  .actions(self => ({}));
+  }));

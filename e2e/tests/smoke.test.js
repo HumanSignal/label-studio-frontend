@@ -1,6 +1,7 @@
-/* global Feature, Scenario */
+/* global Feature, Scenario, locate */
 
 const { initLabelStudio, serialize } = require("./helpers");
+const Utils = require("../examples/utils");
 const examples = [
   require("../examples/audio-regions"),
   require("../examples/image-bboxes"),
@@ -15,6 +16,7 @@ const examples = [
 ];
 
 const assert = require("assert");
+
 function roundFloats(struct) {
   return JSON.parse(
     JSON.stringify(struct, (key, value) => {
@@ -32,49 +34,52 @@ function assertWithTolerance(actual, expected) {
 Feature("Smoke test through all the examples");
 
 examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function(I) {
+  Scenario(example.title || "Noname smoke test", async function({ I, AtImageView, AtAudioView, AtSidebar }) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
-
+    const configTree = Utils.parseXml(config);
     const ids = [];
     // add all unique ids from non-classification results
     // @todo some classifications will be reflected in Results list soon
+
     result.forEach(r => !ids.includes(r.id) && Object.keys(r.value).length > 1 && ids.push(r.id));
     const count = ids.length;
 
     await I.amOnPage("/");
     await I.executeAsyncScript(initLabelStudio, params);
 
-    I.see("Regions (" + count + ")");
+    AtSidebar.seeRegions(count);
 
     let restored;
 
-    // repeatedly check if results are the same
-    // they should be in a correct case, so if they not — data still haven't been loaded
-    // so try again
-    for (let i = 10; i--; ) {
-      try {
-        I.wait(2);
-        // restore saved result and check it back that it didn't change
-        restored = await I.executeScript(serialize);
-        assertWithTolerance(restored, result);
-        break;
-      } catch (e) {}
+    if (Utils.xmlTreeHasTag(configTree, "Image")) {
+      AtImageView.waitForImage();
     }
 
+    if (Utils.xmlFindBy(configTree, node => node["#name"] === "AudioPlus" || node["#name"] === "Audio")) {
+      AtAudioView.waitForAudio();
+    }
+
+    if (Utils.xmlFindBy(configTree, node => ["text", "hypertext"].includes(node["#name"].toLowerCase()))) {
+      I.waitForVisible(".htx-richtext", 5);
+    }
+
+    I.dontSeeElement(locate(".ls-errors"));
+
+    restored = await I.executeScript(serialize);
     assertWithTolerance(restored, result);
 
     if (count) {
-      I.click(".ant-tree-treenode");
+      I.click(".ant-list-item");
       // I.click('Delete Entity') - it founds something by tooltip, but not a button
       // so click the bin button in entity's info block
       I.click(".ls-entity-buttons span[aria-label=delete]");
-      I.see("Regions (" + (count - 1) + ")");
-      I.click("Reset");
-      I.see("Regions (" + count + ")");
+      AtSidebar.seeRegions(count-1);
+      I.click(".lsf-history__action[aria-label=Reset]");
+      AtSidebar.seeRegions(count);
       // Reset is undoable
-      I.click("Undo");
+      I.click(".lsf-history__action[aria-label=Undo]");
 
       // so after all these manipulations first region should be deleted
       restored = await I.executeScript(serialize);
@@ -83,5 +88,8 @@ examples.forEach(example =>
         result.filter(r => r.id !== ids[0]),
       );
     }
+    I.click("Create Copy");
+    I.seeElement(locate(".lsf-entity-tab").at(2));
+    AtSidebar.seeRegions(count);
   }),
 );

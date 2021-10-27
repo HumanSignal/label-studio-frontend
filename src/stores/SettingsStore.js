@@ -1,6 +1,6 @@
-import { types, onSnapshot, getRoot } from "mobx-state-tree";
+import { getRoot, onSnapshot, types } from "mobx-state-tree";
 
-import Hotkey from "../core/Hotkey";
+import { Hotkey } from "../core/Hotkey";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
@@ -69,6 +69,7 @@ const SettingsModel = types
       // sandboxed environment may break even on check of this property
       try {
         const { localStorage } = window;
+
         if (!localStorage) return;
       } catch (e) {
         return;
@@ -78,8 +79,10 @@ const SettingsModel = types
 
       // load settings from the browser store
       const lss = localStorage.getItem(lsKey);
+
       if (lss) {
         const lsp = JSON.parse(lss);
+
         typeof lsp === "object" &&
           lsp !== null &&
           Object.keys(lsp).forEach(k => {

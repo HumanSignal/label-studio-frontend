@@ -1,6 +1,6 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { types } from "mobx-state-tree";
 
 import AudioControls from "./Audio/Controls";
 import ObjectBase from "./Base";
@@ -9,10 +9,14 @@ import ObjectTag from "../../components/Tags/Object";
 import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Audio tag plays a simple audio file. 
+ * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
+ *
+ * Use with the following data types: audio
  * @example
+ * <!--Play audio on the labeling interface-->
  * <View>
  *   <Audio name="audio" value="$audio" />
  * </View>
@@ -31,9 +35,12 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
  *   <Audio name="audio" value="$audio" />
  *   <TextArea name="ta" toName="audio" />
  * </View>
+ * @regions AudioRegion
+ * @meta_title Audio Tag for Labeling Audio
+ * @meta_description Customize Label Studio to label audio data for machine learning and data science projects.
  * @name Audio
  * @param {string} name Name of the element
- * @param {string} value Value of the element
+ * @param {string} value Data field containing path or a URL to the audio
  * @param {string} hotkey Hotkey used to play or pause audio
  */
 
@@ -53,16 +60,11 @@ const Model = types
     playing: types.optional(types.boolean, false),
     height: types.optional(types.string, "20"),
   })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-  }))
-  .volatile(self => ({
+  .volatile(() => ({
     errors: [],
   }))
   .actions(self => ({
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       if (obj.value.choices) {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
@@ -94,15 +96,15 @@ const Model = types
     },
   }));
 
-const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase);
+const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
 
   return (
     <ObjectTag item={item}>
-      {item.errors?.map(error => (
-        <ErrorMessage error={error} />
+      {item.errors?.map((error, i) => (
+        <ErrorMessage key={`err-${i}`} error={error} />
       ))}
       <Waveform
         dataField={item.value}

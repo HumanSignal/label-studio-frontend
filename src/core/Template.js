@@ -19,6 +19,7 @@ function _index(obj, is, value) {
 function variableNotation(variable, obj) {
   if (variable.charAt(0) === "$") {
     const n = variable.substring(1);
+
     return _index(obj, n);
   } else {
     return variable;

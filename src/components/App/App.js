@@ -3,7 +3,7 @@
  */
 import React, { Component } from "react";
 import { Result, Spin } from "antd";
-import { getEnv } from "mobx-state-tree";
+import { getEnv, getRoot } from "mobx-state-tree";
 import { observer, Provider } from "mobx-react";
 
 /**
@@ -14,22 +14,17 @@ import Tree from "../../core/Tree";
 /**
  * Components
  */
-import Annotations from "../Annotations/Annotations";
-import Controls from "../Controls/Controls";
 import Debug from "../Debug";
-import Panel from "../Panel/Panel";
-import Predictions from "../Predictions/Predictions";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
-import SideColumn from "../SideColumn/SideColumn";
 import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
 
 /**
  * Tags
  */
-import * as ObjectTags from "../../tags/object"; // eslint-disable-line no-unused-vars
-import * as ControlTags from "../../tags/control"; // eslint-disable-line no-unused-vars
-import * as VisualTags from "../../tags/visual"; // eslint-disable-line no-unused-vars
+import "../../tags/object";
+import "../../tags/control";
+import "../../tags/visual";
 
 /**
  * Styles
@@ -38,11 +33,20 @@ import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
+import { AnnotationTabs } from "../AnnotationTabs/AnnotationTabs";
+import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
+import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
+import { Block, Elem } from "../../utils/bem";
+import './App.styl';
+import { Space } from "../../common/Space/Space";
+import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 
 /**
  * App
  */
 class App extends Component {
+  relationsRef = React.createRef();
+
   renderSuccess() {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }
@@ -59,11 +63,18 @@ class App extends Component {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
   }
 
-  renderConfigValidationException() {
+  renderConfigValidationException(store) {
     return (
-      <Segment>
-        <TreeValidation errors={this.props.store.annotationStore.validation} />
-      </Segment>
+      <Block name="main-view">
+        <Elem name="annotation">
+          <TreeValidation errors={this.props.store.annotationStore.validation} />
+        </Elem>
+        {store.hasInterface('infobar') && (
+          <Elem name="infobar">
+            Task #{store.task.id}
+          </Elem>
+        )}
+      </Block>
     );
   }
 
@@ -76,8 +87,8 @@ class App extends Component {
 
     return (
       <div className="ls-renderall">
-        {obj.map(c => (
-          <div className="ls-fade">
+        {obj.map((c, i) => (
+          <div key={`all-${i}`} className="ls-fade">
             <Segment annotation={c}>{[Tree.renderItem(c.root)]}</Segment>
           </div>
         ))}
@@ -85,26 +96,46 @@ class App extends Component {
     );
   }
 
-  _renderUI(root, store, cs, settings) {
+  _renderUI(root, as) {
     return (
       <>
-        {!cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
-          <Segment annotation={cs.selected} className={settings.bottomSidePanel ? "" : styles.segment + " ls-segment"}>
-            <div style={{ position: "relative" }}>
+        {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
+          <Block
+            key={(as.selectedHistory ?? as.selected)?.id}
+            name="main-view"
+            onScrollCapture={this._notifyScroll}
+          >
+            <Elem name="annotation">
               {Tree.renderItem(root)}
-              {this.renderRelations(cs.selected)}
-            </div>
-            {store.hasInterface("controls") && <Controls item={cs.selected} />}
-          </Segment>
+              {this.renderRelations(as.selected)}
+            </Elem>
+            {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
+            {as.selected.onlyTextObjects === false && (
+              <DynamicPreannotationsControl />
+            )}
+          </Block>
         )}
-        {cs.viewingAllAnnotations && this.renderAllAnnotations()}
-        {cs.viewingAllPredictions && this.renderAllPredictions()}
+        {as.viewingAllAnnotations && this.renderAllAnnotations()}
+        {as.viewingAllPredictions && this.renderAllPredictions()}
       </>
+    );
+  }
+
+  _renderInfobar(as) {
+    const { id, queue } = getRoot(as).task;
+
+    return (
+      <Elem name="infobar" tag={Space} size="small">
+        <span>Task #{id}</span>
+
+        {queue && <span>{queue}</span>}
+      </Elem>
     );
   }
 
   renderAllAnnotations() {
     const cs = this.props.store.annotationStore;
+
     return <Grid store={cs} annotations={[...cs.annotations, ...cs.predictions]} root={cs.root} />;
   }
 
@@ -114,70 +145,99 @@ class App extends Component {
 
   renderRelations(selectedStore) {
     const store = selectedStore.relationStore;
-    return <RelationsOverlay key={guidGenerator()} store={store} />;
+    const taskData = this.props.store.task?.data;
+
+    return (
+      <RelationsOverlay
+        key={guidGenerator()}
+        store={store}
+        ref={this.relationsRef}
+        tags={selectedStore.names}
+        taskData={taskData}
+      />
+    );
   }
 
   render() {
-    const self = this;
-    const { store } = self.props;
-    const cs = store.annotationStore;
-    const root = cs.selected && cs.selected.root;
+    const { store } = this.props;
+    const as = store.annotationStore;
+    const root = as.selected && as.selected.root;
     const { settings } = store;
 
-    if (store.isLoading) return self.renderLoader();
+    if (store.isLoading) return this.renderLoader();
 
-    if (store.noTask) return self.renderNothingToLabel();
+    if (store.noTask) return this.renderNothingToLabel();
 
-    if (store.noAccess) return self.renderNoAccess();
+    if (store.noAccess) return this.renderNoAccess();
 
-    if (store.labeledSuccess) return self.renderSuccess();
+    if (store.labeledSuccess) return this.renderSuccess();
 
-    if (!root) return self.renderNoAnnotation();
+    if (!root) return this.renderNoAnnotation();
 
+    const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
     const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
-    const stCommon = settings.bottomSidePanel ? styles.commonbsp : styles.common;
+    const stCommon = [
+      settings.bottomSidePanel ? styles.commonbsp : styles.common,
+      viewingAll ? styles["view-all"] : "",
+      "ls-common",
+    ].join(" ");
     const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
+
+    const mainContainerClass = [styles["main-content-wrapper"]];
+
+    if (store.hasInterface("side-column")) mainContainerClass.push(styles["with-side-column"]);
 
     return (
       <div className={stEditor + " ls-editor"}>
         <Settings store={store} />
         <Provider store={store}>
-          <div>
-            {store.hasInterface("panel") && <Panel store={store} />}
+          {store.showingDescription && (
+            <Segment>
+              <div dangerouslySetInnerHTML={{ __html: store.description }} />
+            </Segment>
+          )}
 
-            {store.showingDescription && (
-              <Segment>
-                <div dangerouslySetInnerHTML={{ __html: store.description }} />
-              </Segment>
-            )}
-
-            {/* <div className={styles.pins}> */}
-            {/*   <div style={{ width: "100%", marginRight: "20px" }}><PushpinOutlined /></div> */}
-            {/*   <div className={styles.pinsright}><PushpinOutlined /></div> */}
-            {/* </div> */}
-
-            <div className={stCommon + " ls-common"}>
-              {cs.validation === null
-                ? this._renderUI(root, store, cs, settings)
-                : this.renderConfigValidationException()}
+          <div className={stCommon}>
+            <div className={mainContainerClass.join(" ")}>
+              <AnnotationTabs
+                store={store}
+                showAnnotations={store.hasInterface("annotations:tabs")}
+                showPredictions={store.hasInterface("predictions:tabs")}
+                allowCreateNew={store.hasInterface("annotations:add-new")}
+                allowViewAll={store.hasInterface('annotations:view-all')}
+              />
+              {as.validation === null
+                ? this._renderUI(as.selectedHistory?.root ?? root, as)
+                : this.renderConfigValidationException(store)}
+            </div>
+            {(viewingAll === false) && (
               <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("annotations:menu") && store.settings.showAnnotationsPanel && (
-                  <Annotations store={store} />
-                )}
-                {store.hasInterface("predictions:menu") && store.settings.showPredictionsPanel && (
-                  <Predictions store={store} />
-                )}
-                {store.hasInterface("side-column") && !cs.viewingAllAnnotations && !cs.viewingAllPredictions && (
-                  <SideColumn store={store} />
+                {store.hasInterface("side-column") && (
+                  <SidebarTabs active="annotation">
+                    <SidebarPage name="annotation" title="Annotation">
+                      <AnnotationTab store={store} />
+                    </SidebarPage>
+                    {this.props.panels.map(({ name, title, Component }) => (
+                      <SidebarPage key={name} name={name} title={title}>
+                        <Component/>
+                      </SidebarPage>
+                    ))}
+                  </SidebarTabs>
                 )}
               </div>
-            </div>
+            )}
           </div>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
       </div>
     );
   }
+
+  _notifyScroll = () => {
+    if (this.relationsRef.current) {
+      this.relationsRef.current.onResize();
+    }
+  };
 }
 
 export default observer(App);

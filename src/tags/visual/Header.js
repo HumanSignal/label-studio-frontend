@@ -8,19 +8,23 @@ import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 
 /**
- * Use the Header tag to show a header.
+ * Use the Header tag to show a header on the labeling interface.
  * @example
+ * <!-- Display a header on the labeling interface based on a field in the data -->
  * <View>
- *   <Header name="text-1" value="$text" />
+ *   <Header value="$text" />
  * </View>
  * @example
+ * <!-- Display a static header on the labeling interface -->
  * <View>
- *   <Header name="text-1" value="Please select the class" />
+ *   <Header value="Please select the class" />
  * </View>
  * @name Header
- * @param {string} value              - Text of header
- * @param {number} [size=4]           - Size of header
- * @param {string} [style]            - CSS style string
+ * @meta_title Header Tag to Show Headers
+ * @meta_description Customize Label Studio with the Header tag to display a header for a labeling task for machine learning and data science projects.
+ * @param {string} value              - Text of header, either static text or the field name in data to use for the header
+ * @param {number} [size=4]           - Level of header on a page, used to control size of the text
+ * @param {string} [style]            - CSS style for the header
  * @param {boolean} [underline=false] - Whether to underline the header
  */
 const Model = types.model({

@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature */
 
 const {
   initLabelStudio,
@@ -126,7 +126,8 @@ const shapes = [
   },
 ];
 
-xScenario("Simple shapes on Image", async function(I) {
+// eslint-disable-next-line no-undef,codeceptjs/no-skipped-tests
+xScenario("Simple shapes on Image", async function({ I, AtImageView, AtSidebar }) {
   for (let shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),
@@ -138,16 +139,18 @@ xScenario("Simple shapes on Image", async function(I) {
     await I.executeAsyncScript(initLabelStudio, params);
     // canvas won't be initialized fully before the image loads
     await I.executeAsyncScript(waitForImage);
-    I.waitForVisible("canvas");
-    I.see("Regions (0)");
+    AtImageView.waitForImage();
+    AtSidebar.seeRegions(0);
 
     for (let region of shape.regions) {
       // draw the shape using corresponding helper and params
       const err = await I.executeAsyncScript(shape.action, ...region.params);
+
       if (err) throw new Error(err);
     }
 
     const result = await I.executeScript(serialize);
+
     for (let i = 0; i < shape.regions.length; i++) {
       assert.equal(result[i].type, shape.shape.toLowerCase());
       assert.deepEqual(convertToFixed(result[i].value), convertToImageSize(shape.regions[i].result));

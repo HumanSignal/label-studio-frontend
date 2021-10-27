@@ -13,16 +13,19 @@ const Prediction = observer(({ item, store }) => {
     e.stopPropagation();
     item.toggleVisibility();
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.style.display = item.hidden ? "none" : "unset";
   };
 
-  const highlight = e => {
+  const highlight = () => {
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.classList.add("hover");
   };
 
-  const unhighlight = e => {
+  const unhighlight = () => {
     const c = document.getElementById(`c-${item.id}`);
+
     if (c) c.classList.remove("hover");
   };
 
@@ -30,7 +33,7 @@ const Prediction = observer(({ item, store }) => {
     <List.Item
       key={item.id}
       className={item.selected ? `${styles.annotation} ${styles.annotation_selected}` : styles.annotation}
-      onClick={ev => {
+      onClick={() => {
         !item.selected && store.annotationStore.selectPrediction(item.id);
       }}
       onMouseEnter={highlight}
@@ -80,7 +83,7 @@ class Predictions extends Component {
     const { store } = this.props;
     const { predictions } = store.annotationStore;
 
-    let title = (
+    const title = (
       <div className={styles.title + " " + styles.titlespace}>
         <h3>Predictions</h3>
         {/* @todo fix View All mode */}

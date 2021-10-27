@@ -1,6 +1,7 @@
-import { types, getParent, getRoot } from "mobx-state-tree";
+import { getParent, getRoot, types } from "mobx-state-tree";
 import { cloneNode } from "../core/Helpers";
 import { guidGenerator } from "../core/Helpers";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
 // @todo remove file
 const RegionMixin = types
@@ -21,6 +22,7 @@ const RegionMixin = types
   .views(self => ({
     get perRegionStates() {
       const states = self.states;
+
       return states && states.filter(s => s.perregion === true);
     },
 
@@ -30,10 +32,6 @@ const RegionMixin = types
 
     get parent() {
       return getParent(self);
-    },
-
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
     },
 
     get editable() {
@@ -48,10 +46,12 @@ const RegionMixin = types
       // first of all check if this region implements labels
       // interface
       const s = self.labelsState;
+
       if (!s) return false;
 
       // find that label and check if its selected
       const l = s.findLabel(labelValue);
+
       if (!l || !l.selected) return false;
 
       return true;
@@ -62,20 +62,22 @@ const RegionMixin = types
       self.parentID = id;
     },
 
-    moveTop(size) {},
-    moveBottom(size) {},
-    moveLeft(size) {},
-    moveRight(size) {},
+    // All of the below accept size as an arument
+    moveTop() {},
+    moveBottom() {},
+    moveLeft() {},
+    moveRight() {},
 
-    sizeRight(size) {},
-    sizeLeft(size) {},
-    sizeTop(size) {},
-    sizeBottom(size) {},
+    sizeRight() {},
+    sizeLeft() {},
+    sizeTop() {},
+    sizeBottom() {},
 
     // "web" degree is opposite to mathematical, -90 is 90 actually
     // swapSizes = true when canvas is already rotated at this moment
     rotatePoint(point, degree, swapSizes = true) {
       const { x, y } = point;
+
       if (!degree) return { x, y };
 
       degree = (360 + degree) % 360;
@@ -88,6 +90,7 @@ const RegionMixin = types
       //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
       //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
       // for ortogonal degrees it's simple:
+
       if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
       if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
       if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
@@ -129,6 +132,7 @@ const RegionMixin = types
         return self.states
           .map(s => {
             const ser = self.serialize(s, parent);
+
             if (!ser) return null;
 
             const tree = {
@@ -155,7 +159,8 @@ const RegionMixin = types
     },
 
     updateOrAddState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
+      const foundIndex = self.states.findIndex(s => s.name === state.name);
+
       if (foundIndex !== -1) {
         self.states[foundIndex] = cloneNode(state);
         self.updateAppearenceFromState();
@@ -168,7 +173,8 @@ const RegionMixin = types
     // that inside the region states objects and updates that, this
     // function is used to capture the state
     updateSingleState(state) {
-      var foundIndex = self.states.findIndex(s => s.name === state.name);
+      const foundIndex = self.states.findIndex(s => s.name === state.name);
+
       if (foundIndex !== -1) {
         self.states[foundIndex] = cloneNode(state);
 
@@ -177,6 +183,7 @@ const RegionMixin = types
         // therefore we need to recheck here
         if (state.type.indexOf("labels") !== -1) {
           const states = self.states.filter(s => s.whenlabelvalue !== null && s.whenlabelvalue !== undefined);
+
           states && states.forEach(s => self.states.remove(s));
         }
 
@@ -221,6 +228,7 @@ const RegionMixin = types
 
     onClickRegion() {
       const annotation = self.annotation;
+
       if (!annotation.editable) return;
 
       if (annotation.relationMode) {
@@ -257,7 +265,7 @@ const RegionMixin = types
     },
 
     setHighlight(val) {
-      self.highlighted = val;
+      self._highlighted = val;
     },
 
     toggleHighlight() {
@@ -269,4 +277,4 @@ const RegionMixin = types
     },
   }));
 
-export default RegionMixin;
+export default types.compose(RegionMixin, AnnotationMixin);

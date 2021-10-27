@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+
 // import { MagicWand } from "magic-wand-js";
 // Magic Wand (Fuzzy Selection Tool) for Javascript
 //
@@ -24,7 +26,7 @@
 // THE SOFTWARE.
 
 const MagicWand = (function() {
-  var lib = {};
+  const lib = {};
 
   /** Create a binary mask on the image by color threshold
    * Algorithm: Scanline flood fill (http://en.wikipedia.org/wiki/Flood_fill)
@@ -36,7 +38,7 @@ const MagicWand = (function() {
    * @return {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    */
   lib.floodFill = function(image, px, py, colorThreshold, mask) {
-    var c,
+    let c,
       x,
       newY,
       el,
@@ -61,9 +63,10 @@ const MagicWand = (function() {
     if (visited[i] === 1) return null;
 
     i = i * bytes; // start point index in the image data
-    var sampleColor = [data[i], data[i + 1], data[i + 2], data[i + 3]]; // start point color (sample)
+    const sampleColor = [data[i], data[i + 1], data[i + 2], data[i + 3]]; // start point color (sample)
 
-    var stack = [{ y: py, left: px - 1, right: px + 1, dir: 1 }]; // first scanning line
+    const stack = [{ y: py, left: px - 1, right: px + 1, dir: 1 }]; // first scanning line
+
     do {
       el = stack.shift(); // get line for scanning
 
@@ -153,10 +156,10 @@ const MagicWand = (function() {
       width: image.width,
       height: image.height,
       bounds: {
-        minX: minX,
-        minY: minY,
-        maxX: maxX,
-        maxY: maxY,
+        minX,
+        minY,
+        maxX,
+        maxY,
       },
     };
   };
@@ -170,7 +173,7 @@ const MagicWand = (function() {
    * @return {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    */
   lib.gaussBlur = function(mask, radius) {
-    var i,
+    let i,
       k,
       k1,
       x,
@@ -192,8 +195,9 @@ const MagicWand = (function() {
 
     // calc gauss weights
     for (i = 0; i < radius; i++) {
-      var dsq = (radius - i) * (radius - i);
-      var ww = Math.exp(-dsq / (2.0 * s2)) / (2 * Math.PI * s2);
+      const dsq = (radius - i) * (radius - i);
+      const ww = Math.exp(-dsq / (2.0 * s2)) / (2 * Math.PI * s2);
+
       wg[radius + i] = wg[radius - i] = ww;
       total += 2 * ww;
     }
@@ -202,7 +206,7 @@ const MagicWand = (function() {
       wg[i] /= total;
     }
 
-    var result = new Uint8Array(w * h), // result mask
+    const result = new Uint8Array(w * h), // result mask
       endX = radius + w,
       endY = radius + h;
 
@@ -233,10 +237,10 @@ const MagicWand = (function() {
       width: w,
       height: h,
       bounds: {
-        minX: minX,
-        minY: minY,
-        maxX: maxX,
-        maxY: maxY,
+        minX,
+        minY,
+        maxX,
+        maxY,
       },
     };
   };
@@ -248,7 +252,7 @@ const MagicWand = (function() {
    * @return {Array} border index array of boundary points with radius-neighbors (only points need for blur)
    */
   function createBorderForBlur(mask, radius, visited) {
-    var x,
+    let x,
       i,
       j,
       y,
@@ -313,7 +317,7 @@ const MagicWand = (function() {
 
     if (maxY === h - 1) for (x = minX; x < maxX + 1; x++) if (data[maxY * w + x] === 1) border.push(maxY * w + x);
 
-    var result = [], // border points with radius-neighbors
+    let result = [], // border points with radius-neighbors
       start,
       end,
       endX = radius + w,
@@ -367,7 +371,7 @@ const MagicWand = (function() {
    * @return {Object} mask: {Uint8Array} data, {int} width, {int} height, {Object} bounds
    */
   lib.gaussBlurOnlyBorder = function(mask, radius, visited) {
-    var border = createBorderForBlur(mask, radius, visited), // get border points with radius-neighbors
+    let border = createBorderForBlur(mask, radius, visited), // get border points with radius-neighbors
       ww,
       dsq,
       i,
@@ -404,7 +408,7 @@ const MagicWand = (function() {
       wg[i] /= total;
     }
 
-    var result = new Uint8Array(data), // copy the source mask
+    const result = new Uint8Array(data), // copy the source mask
       endX = radius + w,
       endY = radius + h;
 
@@ -454,10 +458,10 @@ const MagicWand = (function() {
       width: w,
       height: h,
       bounds: {
-        minX: minX,
-        minY: minY,
-        maxX: maxX,
-        maxY: maxY,
+        minX,
+        minY,
+        maxX,
+        maxY,
       },
     };
   };
@@ -467,7 +471,7 @@ const MagicWand = (function() {
    * @return {Object} border mask: {Uint8Array} data, {int} width, {int} height, {Object} offset
    */
   lib.createBorderMask = function(mask) {
-    var x,
+    let x,
       y,
       k,
       k1,
@@ -537,7 +541,7 @@ const MagicWand = (function() {
    * @return {Array} border index array boundary points of the mask
    */
   lib.getBorderIndices = function(mask) {
-    var x,
+    let x,
       y,
       k,
       k1,
@@ -594,7 +598,7 @@ const MagicWand = (function() {
    * @return {Object} border mask: {Uint8Array} data, {int} width, {int} height, {Object} offset
    */
   function prepareMask(mask) {
-    var x,
+    let x,
       y,
       w = mask.width,
       data = mask.data,
@@ -626,7 +630,7 @@ const MagicWand = (function() {
    * @return {Array} contours: {Array} points, {bool} inner, {int} label
    */
   lib.traceContours = function(mask) {
-    var m = prepareMask(mask),
+    let m = prepareMask(mask),
       contours = [],
       label = 0,
       w = m.width,
@@ -656,7 +660,7 @@ const MagicWand = (function() {
     // 5 6 7
     // 4 X 0
     // 3 2 1
-    var directions = [
+    const directions = [
       [1, 0],
       [1, 1],
       [0, 1],
@@ -680,8 +684,9 @@ const MagicWand = (function() {
 
               c = [];
               dir = inner ? 2 : 6; // start direction
-              current = previous = first = { x: x, y: y };
+              current = previous = first = { x, y };
               second = null;
+              // eslint-disable-next-line no-constant-condition
               while (true) {
                 dest[current.y * w + current.x] = label; // mark label for the current point
                 // bypass all the neighbors around the current point in a clockwise
@@ -720,9 +725,9 @@ const MagicWand = (function() {
                 dir = (dir + 4) % 8; // next dir (symmetrically to the current direction)
               }
 
-              if (next != null) {
+              if (next !== null) {
                 c.push({ x: first.x + dx, y: first.y + dy }); // close the contour
-                contours.push({ inner: inner, label: label, points: c }); // add contour to the list
+                contours.push({ inner, label, points: c }); // add contour to the list
               }
             }
           }
@@ -741,7 +746,7 @@ const MagicWand = (function() {
    * @return {Array} contours: {Array} points, {bool} inner, {int} label, {int} initialCount
    */
   lib.simplifyContours = function(contours, simplifyTolerant, simplifyCount) {
-    var lenContours = contours.length,
+    let lenContours = contours.length,
       result = [],
       i,
       j,
@@ -848,10 +853,12 @@ const MagicWand = (function() {
 })();
 
 export function getImageData(img) {
-  var canvas = document.createElement("canvas");
+  const canvas = document.createElement("canvas");
+
   canvas.width = img.width;
   canvas.height = img.height;
-  var ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
+
   ctx.drawImage(img, 0, 0);
   return ctx.getImageData(0, 0, img.width, img.height);
 }
@@ -861,18 +868,19 @@ export function calcBorder(imageData, width, height, x, y, threshold, simple) {
   const simplifyTolerant = 5;
   const simplifyCount = 50;
 
-  let parentPoints = [];
-  let image = {
+  const parentPoints = [];
+  const image = {
     data: imageData,
-    width: width,
-    height: height,
+    width,
+    height,
     bytes: 4,
   };
 
   let mask = MagicWand.floodFill(image, x, y, threshold, null, true);
+
   mask = MagicWand.gaussBlurOnlyBorder(mask, blurRadius);
 
-  var cs = MagicWand.traceContours(mask);
+  let cs = MagicWand.traceContours(mask);
 
   cs = MagicWand.simplifyContours(cs, simplifyTolerant, simplifyCount);
 
@@ -880,7 +888,7 @@ export function calcBorder(imageData, width, height, x, y, threshold, simple) {
     if (simple) {
       return cs[0].points;
     }
-    for (var j = 0, icsl = cs[0].points.length; j < icsl; j++) {
+    for (let j = 0, icsl = cs[0].points.length; j < icsl; j++) {
       parentPoints.push([cs[0].points[j].x, cs[0].points[j].y]);
     }
     return parentPoints;

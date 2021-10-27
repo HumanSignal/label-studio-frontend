@@ -1,23 +1,28 @@
+import { inject, observer } from "mobx-react";
+import { getType, types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import React from "react";
-import { Tag } from "antd";
-import { getRoot, types } from "mobx-state-tree";
-import { observer, inject } from "mobx-react";
 
-import Hint from "../../components/Hint/Hint";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import Registry from "../../core/Registry";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
+import InfoModal from "../../components/Infomodal/Infomodal";
+import { Label } from "../../components/Label/Label";
 import Constants from "../../core/Constants";
+import { customTypes } from "../../core/CustomTypes";
+import { guidGenerator } from "../../core/Helpers";
+import Registry from "../../core/Registry";
 import Types from "../../core/Types";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
+import { TagParentMixin } from "../../mixins/TagParentMixin";
+import ToolsManager from "../../tools/Manager";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
-import { guidGenerator } from "../../core/Helpers";
-import InfoModal from "../../components/Infomodal/Infomodal";
-import { customTypes } from "../../core/CustomTypes";
 
 /**
- * Label tag represents a single label.
+ * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
+ *
  * @example
+ * <!--Basic named entity recognition labeling configuration for text-->
  * <View>
  *   <Labels name="type" toName="txt-1">
  *     <Label alias="B" value="Brand" />
@@ -26,16 +31,19 @@ import { customTypes } from "../../core/CustomTypes";
  *   <Text name="txt-1" value="$text" />
  * </View>
  * @name Label
+ * @meta_title Label Tag for Single Label Tags
+ * @meta_description Customize Label Studio with the Label tag to assign a single label to regions in a task for machine learning and data science projects.
  * @param {string} value                    - Value of the label
  * @param {boolean} [selected=false]        - Whether to preselect this label
- * @param {number} [maxUsages]              - Maximum available uses of the label
+ * @param {number} [maxUsages]              - Maximum number of times this label can be used per task
+ * @param {string} [hint]                   - Hint for label on hover
  * @param {string} [hotkey]                 - Hotkey to use for the label. Automatically generated if not specified
  * @param {string} [alias]                  - Label alias
  * @param {boolean} [showAlias=false]       - Whether to show alias inside label text
- * @param {string} [aliasStyle=opacity:0.6] - Alias CSS style
+ * @param {string} [aliasStyle=opacity:0.6] - CSS style for the alias
  * @param {string} [size=medium]            - Size of text in the label
- * @param {string} [background=#36B37E]     - Background color of an active label
- * @param {string} [selectedColor=#ffffff]  - Color of text in an active label
+ * @param {string} [background=#36B37E]     - Background color of an active label in hexadecimal
+ * @param {string} [selectedColor=#ffffff]  - Color of text in an active label in hexadecimal
  * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
  */
 const TagAttrs = types.model({
@@ -43,6 +51,7 @@ const TagAttrs = types.model({
   selected: types.optional(types.boolean, false),
   maxusages: types.maybeNull(types.string),
   alias: types.maybeNull(types.string),
+  hint: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
   aliasstyle: types.optional(types.string, "opacity: 0.6"),
@@ -54,94 +63,119 @@ const TagAttrs = types.model({
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
 });
 
-const Model = types
-  .model({
-    id: types.optional(types.identifier, guidGenerator),
-    type: "label",
-    visible: types.optional(types.boolean, true),
-    _value: types.optional(types.string, ""),
-  })
-  .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
+const Model = types.model({
+  id: types.optional(types.identifier, guidGenerator),
+  type: "label",
+  visible: types.optional(types.boolean, true),
+  _value: types.optional(types.string, ""),
+  parentTypes: Types.tagsTypes([
+    "Labels",
+    "EllipseLabels",
+    "RectangleLabels",
+    "PolygonLabels",
+    "KeyPointLabels",
+    "BrushLabels",
+    "HyperTextLabels",
+    "TimeSeriesLabels",
+    "ParagraphLabels",
+  ]),
+}).volatile(self => {
+  return {
+    initiallySelected: self.selected,
+    isEmpty: false,
+  };
+}).views(self => ({
+  get maxUsages() {
+    return Number(self.maxusages || self.parent?.maxusages);
+  },
 
-    get maxUsages() {
-      return Number(self.maxusages || self.parent.maxusages);
-    },
+  usedAlready() {
+    const regions = self.annotation.regionStore.regions;
+    // count all the usages among all the regions
+    const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
 
-    usedAlready() {
-      const regions = self.annotation.regionStore.regions;
-      // count all the usages among all the regions
-      const used = regions.reduce((s, r) => s + r.hasLabel(self.value), 0);
-      return used;
-    },
+    return used;
+  },
 
-    canBeUsed() {
-      if (!self.maxUsages) return true;
-      return self.usedAlready() < self.maxUsages;
-    },
+  canBeUsed(count = 1) {
+    if (!self.maxUsages) return true;
+    return self.usedAlready() + count <= self.maxUsages;
+  },
+})).actions(self => ({
+  setEmpty() {
+    self.isEmpty = true;
+  },
+  /**
+   * Select label
+   */
+  toggleSelected() {
+    // here we check if you click on label from labels group
+    // connected to the region on the same object tag that is
+    // right now highlighted, and if that region is readonly
+    const sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
+      return region.parent?.name === self.parent?.toname;
+    });
+    const affectedRegions = sameObjectSelectedRegions.filter(region => {
+      return region.editable;
+    });
 
-    get parent() {
-      return Types.getParentOfTypeString(self, [
-        "LabelsModel",
-        "EllipseLabelsModel",
-        "RectangleLabelsModel",
-        "PolygonLabelsModel",
-        "KeyPointLabelsModel",
-        "BrushLabelsModel",
-        "HyperTextLabelsModel",
-        "TimeSeriesLabelsModel",
-        "ParagraphLabelsModel",
-      ]);
-    },
-  }))
-  .actions(self => ({
-    /**
-     * Select label
-     */
-    toggleSelected() {
-      // here we check if you click on label from labels group
-      // connected to the region on the same object tag that is
-      // right now highlighted, and if that region is readonly
-      const region = self.annotation.highlightedNode;
-      const sameObject = region && region.parent.name === self.parent.toname;
-      if (region && region.readonly === true && sameObject) return;
 
-      // one more check if that label can be selected
-      if (!self.annotation.editable) return;
+    // one more check if that label can be selected
+    if (!self.annotation.editable) return;
 
-      // don't select if it can not be used
-      if (!self.selected && !self.canBeUsed()) {
-        InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
-        return;
+    if (sameObjectSelectedRegions.length > 0 && affectedRegions.length === 0) return;
+
+    // don't select if it can not be used
+    if (!!affectedRegions.length && !self.selected && !self.canBeUsed(affectedRegions.filter(region => region.results).length)) {
+      InfoModal.warning(`You can't use ${self.value} more than ${self.maxUsages} time(s)`);
+      return;
+    }
+
+    const labels = self.parent;
+
+    // check if there is a region selected and if it is and user
+    // is changing the label we need to make sure that region is
+    // not going to endup without results at all
+    const applicableRegions =  affectedRegions.filter(region => {
+      if (
+        labels.selectedLabels.length === 1 &&
+        self.selected &&
+        region.results.length === 1 &&
+        (!self.parent?.allowempty || self.isEmpty)
+      )
+        return false;
+      if (self.parent?.type !== "labels" && !self.parent?.type.includes(region.results[0].type)) return false;
+      return true;
+    });
+
+    if (sameObjectSelectedRegions.length > 0 && applicableRegions.length === 0) return;
+
+    // if we are going to select label and it would be the first in this labels group
+    if (!labels.selectedLabels.length && !self.selected) {
+      // unselect labels from other groups of labels connected to this obj
+      self.annotation.toNames.get(labels.toname).
+        filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name).
+        forEach(tag => tag.unselectAll && tag.unselectAll());
+
+      // unselect other tools if they exist and selected
+      const manager = ToolsManager.getInstance({ name: self.parent.toname });
+      const tool = Object.values(self.parent?.tools || {})[0];
+
+      const selectedTool = manager.findSelectedTool();
+      const sameType = (tool && selectedTool) ? getType(selectedTool).name === getType(tool).name : false;
+      const sameLabel = selectedTool ? tool?.control?.name === selectedTool?.control?.name : false;
+
+      if (tool && (!selectedTool || (selectedTool && (!sameType || !sameLabel)))) {
+        manager.selectTool(tool, true);
       }
+    }
 
-      const labels = self.parent;
+    if (self.isEmpty) {
+      const selected = self.selected;
 
-      // check if there is a region selected and if it is and user
-      // is changing the label we need to make sure that region is
-      // not going to endup without the label(s) at all
-      if (region && sameObject) {
-        if (labels.selectedLabels.length === 1 && self.selected) return;
-      }
-
-      // if we are going to select label and it would be the first in this labels group
-      if (!labels.selectedLabels.length && !self.selected) {
-        // unselect labels from other groups of labels connected to this obj
-        self.annotation.toNames
-          .get(labels.toname)
-          .filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name)
-          .forEach(tag => tag.unselectAll && tag.unselectAll());
-
-        // unselect other tools if they exist and selected
-        const tool = Object.values(self.parent.tools || {})[0];
-        if (tool && tool.manager.findSelectedTool() !== tool) {
-          tool.manager.unselectAll();
-          tool.setSelected(true);
-        }
-      }
-
+      labels.unselectAll();
+      self.setSelected(!selected);
+    } else {
       /**
        * Multiple
        */
@@ -163,82 +197,78 @@ const Model = types
           labels.unselectAll();
         }
       }
+    }
 
-      region && sameObject && region.setValue(self.parent);
-    },
+    if (labels.allowempty && !self.isEmpty) {
+      if (applicableRegions.length) {
+        labels.findLabel().setSelected(!labels.selectedValues()?.length);
+      } else {
+        if (self.selected) {
+          labels.findLabel().setSelected(false);
+        }
+      }
+    }
 
-    setVisible(val) {
-      self.visible = val;
-    },
+    applicableRegions.forEach(region => {
+      if (region) {
+        region.setValue(self.parent);
+        region.notifyDrawingFinished();
+        // hack to trigger RichText re-render the region
+        region.updateSpans?.();
+      }
+    });
+  },
 
-    /**
-     *
-     * @param {boolean} value
-     */
-    setSelected(value) {
-      self.selected = value;
-    },
+  setVisible(val) {
+    self.visible = val;
+  },
 
-    onHotKey() {
-      return self.toggleSelected();
-    },
+  /**
+   *
+   * @param {boolean} value
+   */
+  setSelected(value) {
+    self.selected = value;
+  },
 
-    _updateBackgroundColor(val) {
-      if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
-    },
+  onHotKey() {
+    return self.toggleSelected();
+  },
 
-    afterCreate() {
-      self._updateBackgroundColor(self._value || self.value);
-    },
+  _updateBackgroundColor(val) {
+    if (self.background === Constants.LABEL_BACKGROUND) self.background = ColorScheme.make_color({ seed: val })[0];
+  },
 
-    updateValue(store) {
-      self._value = parseValue(self.value, store.task.dataObj);
-      self._updateBackgroundColor(self._value);
-    },
-  }));
+  afterCreate() {
+    self._updateBackgroundColor(self._value || self.value);
+  },
 
-const LabelModel = types.compose("LabelModel", TagAttrs, Model, ProcessAttrsMixin);
+  updateValue(store) {
+    self._value = parseValue(self.value, store.task.dataObj) || Constants.EMPTY_LABEL;
+  },
+}));
+
+const LabelModel = types.compose("LabelModel", TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
 const HtxLabelView = inject("store")(
   observer(({ item, store }) => {
-    const bg = item.background;
-    const labelStyle = {
-      borderLeftWidth: 3,
-      borderLeftColor: bg,
-      backgroundColor: item.selected ? bg : "#e8e8e8",
-      color: item.selected ? item.selectedcolor : "#333333",
-      cursor: "pointer",
-      margin: "5px",
-    };
+    const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
-    if (!item.visible) {
-      labelStyle["display"] = "none";
-    }
-
-    if (item.selected) {
-      labelStyle.borderTopColor = bg;
-      labelStyle.borderBottomColor = bg;
-      labelStyle.borderRightColor = bg;
-    }
-
-    return (
-      <Tag
-        onClick={ev => {
-          item.toggleSelected();
-          return false;
-        }}
-        style={labelStyle}
-        size={item.size}
-      >
+    const label = (
+      <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
+        item.toggleSelected();
+        return false;
+      }}>
         {item._value}
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}
-        {(store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
-          store.settings.enableHotkeys &&
-          item.hotkey && <Hint>[{item.hotkey}]</Hint>}
-      </Tag>
+      </Label>
     );
+
+    return item.hint
+      ? <Tooltip title={item.hint}>{label}</Tooltip>
+      : label;
   }),
 );
 

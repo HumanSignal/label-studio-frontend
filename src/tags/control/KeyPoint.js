@@ -1,25 +1,32 @@
 import { types } from "mobx-state-tree";
 
-import * as Tools from "../../tools";
 import Registry from "../../core/Registry";
-import Types from "../../core/Types";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
+import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
- * KeyPoint is used to add a keypoint to an image without label selection. It's useful when you have only one label.
+ * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
+ *
+ * Use with the following data types: image
  * @example
+ * <!--Basic keypoint image labeling configuration-->
  * <View>
  *   <KeyPoint name="kp-1" toName="img-1" />
  *   <Image name="img-1" value="$img" />
  * </View>
  * @name KeyPoint
+ * @meta_title Keypoint Tag for Adding Keypoints to Images
+ * @meta_description Customize Label Studio with the KeyPoint tag to add key points to images for computer vision machine learning and data science projects.
  * @param {string} name                  - Name of the element
  * @param {string} toName                - Name of the image to label
  * @param {float=} [opacity=0.9]         - Opacity of keypoint
- * @param {string=} [fillColor=#8bad00]  - Keypoint fill color
+ * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
- * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color
+ * @param {string=} [strokeColor=#8bad00] - Keypoint stroke color in hexadecimal
+ * @param {boolean} [smart]              - Show smart tool for interactive pre-annotations
+ * @param {boolean} [smartOnly]          - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -29,7 +36,7 @@ const TagAttrs = types.model({
   fillcolor: types.optional(customTypes.color, "#8bad00"),
 
   strokecolor: types.optional(customTypes.color, "#8bad00"),
-  strokewidth: types.optional(types.string, "1"),
+  strokewidth: types.optional(types.string, "2"),
 });
 
 const Model = types
@@ -41,25 +48,21 @@ const Model = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
-
-    get annotation() {
-      return Types.getParentOfTypeString(self, "Annotation");
-    },
   }))
-  .actions(self => ({
-    fromStateJSON(obj) {},
-
-    afterCreate() {
-      const kp = Tools.KeyPoint.create();
-      kp._control = self;
-
-      self.tools = { keypoint: kp };
-    },
+  .volatile(() => ({
+    toolNames: ['KeyPoint'],
   }));
 
-const KeyPointModel = types.compose("KeyPointModel", TagAttrs, Model, ControlBase);
+const KeyPointModel = types.compose("KeyPointModel",
+  ControlBase,
+  SeparatedControlMixin,
+  TagAttrs,
+  Model,
+  ToolManagerMixin,
+);
 
 const HtxView = () => {
   return null;

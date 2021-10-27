@@ -14,6 +14,7 @@
  * y3: number,
  * y4: number}} RectCoordinates Represents 4 corners coordinates of rectangle
  */
+import { clamp } from "../../utils/utilities";
 
 export class Geometry {
   /**
@@ -31,6 +32,7 @@ export class Geometry {
    */
   static getPointsBBox(points) {
     const minmax = [null, null, null, null];
+
     points.forEach((num, i) => {
       const pos = Math.round(i / 2) * 2 - i;
 
@@ -56,6 +58,7 @@ export class Geometry {
   static distance(point1, point2) {
     const [x1, y1] = point1;
     const [x2, y2] = point2;
+
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   }
 
@@ -69,6 +72,7 @@ export class Geometry {
     const [x2, y2] = [x1 + width, y1];
     const [x3, y3] = [x1 + width, y1 + height];
     const [x4, y4] = [x1, y1 + height];
+
     return { x1, x2, x3, x4, y1, y2, y3, y4 };
   }
 
@@ -136,18 +140,34 @@ export class Geometry {
     };
   }
 
+  static modifyBBoxCoords(bbox, modifier = x=>x) {
+    const p1 = modifier([bbox.x, bbox.y]);
+    const p2 = modifier([bbox.width + bbox.x, bbox.height + bbox.y]);
+
+    return {
+      ...bbox,
+      x: Math.min(p1[0], p2[0]),
+      y: Math.min(p1[1], p2[1]),
+      width: Math.abs(p2[0] - p1[0]),
+      height: Math.abs(p2[1] - p1[1]),
+    };
+  }
+
   /**
    * Add padding to BBox
    * @param {BBox} bbox BBox to pad
    * @param {number} padding Padding size
    */
   static padding(bbox, padding = 0) {
+    const paddingX = bbox.width < 1 ? 0 : padding;
+    const paddingY = bbox.height < 1 ? 0 : padding;
+
     return {
       ...bbox,
-      x: bbox.x - padding,
-      y: bbox.y - padding,
-      width: bbox.width + padding * 2,
-      height: bbox.height + padding * 2,
+      x: bbox.x - paddingX,
+      y: bbox.y - paddingY,
+      width: bbox.width + paddingX * 2,
+      height: bbox.height + paddingY * 2,
     };
   }
 
@@ -177,6 +197,7 @@ export class Geometry {
 
     const getYLimits = () => {
       const t = Math.atan(((minor / 2) * 1.0) / Math.tan(angleRad) / (major / 2));
+
       return [t, t + Math.PI]
         .map(t => {
           return y + (minor / 2) * Math.sin(t) * Math.cos(angleRad) + (major / 2) * Math.cos(t) * Math.sin(angleRad);
@@ -228,6 +249,7 @@ export class Geometry {
   static getPolygonBBox(points) {
     const coords = points.reduce((res, point) => [...res, point.x, point.y], []);
     const [x1, y1, x2, y2] = this.getPointsBBox(coords);
+
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
   }
 
@@ -238,7 +260,67 @@ export class Geometry {
    */
   static getBrushBBox(points) {
     const [x1, y1, x2, y2] = this.getPointsBBox(points);
+
     return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+  }
+
+  /**
+   * Calculate BBox of Brush region from image data
+   * @param {Uint8ClampedArray} imageData Array containing the data in the RGBA order
+   * @param {Number} width
+   * @param {Number} height
+   * @return {BBox}
+   */
+  static getImageDataBBox(imageData, w, h) {
+    if (imageData.length !== w * h * 4) return null;
+    const min = { x: w, y: h },
+      max = { x: 0, y: 0 };
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const alphaIndex = 4 * (y * w + x) + 3;
+
+        if (imageData[alphaIndex]) {
+          if (min.x > x) min.x = x;
+          if (min.y > y) min.y = y;
+          if (max.x < x) max.x = x;
+          if (max.y < y) max.y = y;
+        }
+      }
+    }
+    return min.x <= max.x && min.y <= max.y ? { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y } : null;
+  }
+  /**
+   * Combine two or more BBoxes into one
+   * @param {...BBox} bboxes Bboxes to merge
+   * @return {BBox}
+   */
+  static combineBBoxes(...bboxes) {
+    const [x1, y1, x2, y2] = this.getPointsBBox(
+      bboxes.reduce((points, bbox) => {
+        if (bbox && bbox.x && bbox.y) {
+          points.push(bbox.x);
+          points.push(bbox.y);
+          points.push(bbox.x + bbox.width);
+          points.push(bbox.y + bbox.height);
+        }
+        return points;
+      }, []),
+    );
+
+    return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+  }
+
+  static clampBBox(bbox, min, max) {
+    const p1 = [clamp(bbox.x, min.x, max.x), clamp(bbox.y, min.y, max.y)];
+    const p2 = [clamp(bbox.width + bbox.x, min.x, max.x), clamp(bbox.height + bbox.y, min.y, max.y)];
+
+    return {
+      x: p1[0],
+      y: p1[1],
+      width: p2[0] - p1[0],
+      height: p2[1] - p1[1],
+    };
   }
 
   /**

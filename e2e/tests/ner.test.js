@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario */
 
 const { initLabelStudio, serialize } = require("./helpers");
 
@@ -35,20 +35,28 @@ const results = [
     startOffset: 1,
     end: "/div[1]/h2[1]/span[3]/text()[1]",
     endOffset: 1,
-    htmllabels: ["Term"],
+    hypertextlabels: ["Term"],
     text: "Named-entity recognition",
+    globalOffsets: {
+      end: 28,
+      start: 4,
+    },
   },
   {
     start: "/div[1]/p[1]/b[2]/text()[1]",
     startOffset: 0,
     end: "/div[1]/p[1]/b[2]/text()[1]",
     endOffset: 3,
-    htmllabels: ["Abbr"],
+    hypertextlabels: ["Abbr"],
     text: "NER",
+    globalOffsets: {
+      end: 61,
+      start: 58,
+    },
   },
 ];
 
-Scenario("NER labeling for HyperText", async function(I) {
+Scenario("NER labeling for HyperText", async function({ I }) {
   const params = {
     config: configSimple,
     data: { text },
@@ -57,6 +65,8 @@ Scenario("NER labeling for HyperText", async function(I) {
   I.amOnPage("/");
   I.executeAsyncScript(initLabelStudio, params);
 
+  // create regions inside iframe
+  I.switchTo("iframe");
   I.pressKey("1");
   I.click("[data-testid=r1-start]");
   I.pressKeyDown("Shift");
@@ -64,17 +74,17 @@ Scenario("NER labeling for HyperText", async function(I) {
   I.pressKeyUp("Shift");
 
   I.pressKey("2");
-  I.doubleClick(".ls-segment b:nth-child(2)");
+  I.doubleClick("b:nth-child(2)");
 
   I.click("[data-testid=r1-mid]");
-  // @todo this hotkey doesn't work. why?
-  // I.pressKey('r')
-  I.click("Create Relation");
-  I.click(".ls-segment b:nth-child(2)");
+  I.pressKey(['alt', 'r']);
+  I.click("b:nth-child(2)");
+  I.switchTo();
 
   I.see("Relations (1)");
 
   const result = await I.executeScript(serialize);
+
   assert.equal(result.length, 3);
   assert.deepEqual(result[0].value, results[0]);
   assert.deepEqual(result[1].value, results[1]);

@@ -2,17 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600|Roboto Mono' rel='stylesheet' type='text/css' />
-    <link href='//fonts.googleapis.com/css?family=Dosis:500&text=LabelStudio' rel='stylesheet' type='text/css' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="//fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link href="//fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#000000">
-    <!--
-      manifest.json provides metadata used when your web app is added to the
-      homescreen on Android. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-    <link rel="stylesheet" href="%PUBLIC_URL%/styles/main.css">
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -22,6 +17,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
       -->
+    <link rel="stylesheet" href="/styles/main.css">
     <title>Label Studio</title>
   </head>
   <body>
@@ -31,11 +27,10 @@
 
     <div id="header">
       <a id="logo" href="/">
-        <img src="./images/ls_logo.png" alt="label studio logo">
-        <span style="font-size: 1.2em;">Label Studio</span>
+        <img src="/images/ls_logo.svg" alt="label studio logo">
       </a>
       <ul id="nav">
-        <li><a style="margin-right: 1em; text-decoration: underline;" href="https://labelstud.io/guide">Guide</a></li>
+        <li><a href="https://labelstud.io/guide">Docs</a></li>
         <li><a class="github-button" href="https://github.com/heartexlabs/label-studio"
            data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star heartexlabs/label-studio on GitHub"><img src="./images/GitHub-Mark-64px.png" height="25" /></a></li>
       </ul>
@@ -44,9 +39,10 @@
     <div id="ls-container">
       <div id="label-studio"></div>
     </div>
-    <footer class="footer">Made by <a target="_blank" href="https://heartex.net">Heartex</a> in San Francisco
-      <br/><br/>
-      <img src="./images/3nowhite.svg" height="80" />
+    <footer class="footer">
+      <span>
+        Made with <img src="/images/3nowhite.svg" height="16" /> by <a target="_blank" href="https://heartex.net">Heartex</a> in San Francisco
+      </span>
     </footer>
 
     <script>
@@ -63,21 +59,48 @@
     <script>
       domReady(function () {
         var ls = new LabelStudio("label-studio", {
-
           description: "Description",
-
-            interfaces: [
-                "panel",
-                "update",
-                "submit",
-                "controls",
-                "side-column",
-                "annotations:menu",
-                "annotations:add-new",
-                "annotations:delete",
-                "predictions:menu",
-            ],
-
+          interfaces: [
+              "panel",
+              "update",
+              "submit",
+              "skip",
+              "controls",
+              //"review",
+              "infobar",
+              "instruction",
+              "side-column",
+              "ground-truth",
+              "annotations:history",
+              "annotations:tabs",
+              "annotations:menu",
+              "annotations:current",
+              "annotations:add-new",
+              "annotations:delete",
+              'annotations:view-all',
+              "predictions:tabs",
+              "predictions:menu",
+          ],
+          user: {
+            "id": 1,
+            "first_name": "Nick",
+            "last_name": "Skriabin",
+            "username": "nick",
+            "email": "nick@heartex.ai",
+            "avatar": null,
+            "initials": "ni",
+          },
+          users: [
+            //{
+            //  "id": 1,
+            //  "first_name": "Nick",
+            //  "last_name": "Skriabin",
+            //  "username": "nick",
+            //  "email": "nick@heartex.ai",
+            //  "avatar": null,
+            //  "initials": "ni",
+            //}
+          ],
           task: {
             annotations: [],
             predictions: [],
@@ -85,9 +108,13 @@
             data: {
               image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
             }
-          }
+          },
+          //history: [{"id":16,"created_by":1,"created_at":"2021-05-26T13:03:36.267438Z","accepted":true,"result":null,"annotation":24,"fixed_annotation_history":null,"previous_annotation_history":33,"previous_annotation_history_result":[{"id":"XsW_x1hflv","type":"labels","value":{"end":838,"text":"Media, a Happy and Healthy New Year. 2018 will be a great year for America!  Donald J. Trump (@realDonaldTrump) December 31, 2017Trump s tweet went down about as we","start":674,"labels":["LOC"]},"to_name":"text","from_name":"label"},{"id":"FCuvjfSXNs","type":"labels","value":{"end":1662,"text":" Sandoval (@AlanSandoval13) December 31, 2017Who uses the word Haters in a New Years wish??  Marlene (@marlene399) December 31, 2017You can t just say happy ","start":1505,"labels":["MISC"]},"to_name":"text","from_name":"label"}]},{"id":17,"created_by":1,"created_at":"2021-05-26T13:03:43.335198Z","accepted":true,"result":null,"annotation":24,"fixed_annotation_history":34,"previous_annotation_history":33,"previous_annotation_history_result":[{"id":"XsW_x1hflv","type":"labels","value":{"end":838,"text":"Media, a Happy and Healthy New Year. 2018 will be a great year for America!  Donald J. Trump (@realDonaldTrump) December 31, 2017Trump s tweet went down about as we","start":674,"labels":["LOC"]},"to_name":"text","from_name":"label"},{"id":"FCuvjfSXNs","type":"labels","value":{"end":1662,"text":" Sandoval (@AlanSandoval13) December 31, 2017Who uses the word Haters in a New Years wish??  Marlene (@marlene399) December 31, 2017You can t just say happy ","start":1505,"labels":["MISC"]},"to_name":"text","from_name":"label"}],"fixed_annotation_history_result":[{"id":"XsW_x1hflv","type":"labels","value":{"end":838,"text":"Media, a Happy and Healthy New Year. 2018 will be a great year for America!  Donald J. Trump (@realDonaldTrump) December 31, 2017Trump s tweet went down about as we","start":674,"labels":["LOC"]},"to_name":"text","from_name":"label"},{"id":"FCuvjfSXNs","type":"labels","value":{"end":1662,"text":" Sandoval (@AlanSandoval13) December 31, 2017Who uses the word Haters in a New Years wish??  Marlene (@marlene399) December 31, 2017You can t just say happy ","start":1505,"labels":["MISC"]},"to_name":"text","from_name":"label"},{"id":"36kM4Zy2Y5","type":"labels","value":{"end":256,"text":"o do and he couldn t do","start":233,"labels":["PER"]},"to_name":"text","from_name":"label"}]},{"id":18,"created_by":1,"created_at":"2021-05-26T13:03:49.330745Z","accepted":true,"result":null,"annotation":24,"fixed_annotation_history":35,"previous_annotation_history":34,"previous_annotation_history_result":[{"id":"XsW_x1hflv","type":"labels","value":{"end":838,"text":"Media, a Happy and Healthy New Year. 2018 will be a great year for America!  Donald J. Trump (@realDonaldTrump) December 31, 2017Trump s tweet went down about as we","start":674,"labels":["LOC"]},"to_name":"text","from_name":"label"},{"id":"FCuvjfSXNs","type":"labels","value":{"end":1662,"text":" Sandoval (@AlanSandoval13) December 31, 2017Who uses the word Haters in a New Years wish??  Marlene (@marlene399) December 31, 2017You can t just say happy ","start":1505,"labels":["MISC"]},"to_name":"text","from_name":"label"},{"id":"36kM4Zy2Y5","type":"labels","value":{"end":256,"text":"o do and he couldn t do","start":233,"labels":["PER"]},"to_name":"text","from_name":"label"}],"fixed_annotation_history_result":[{"id":"XsW_x1hflv","type":"labels","value":{"end":838,"text":"Media, a Happy and Healthy New Year. 2018 will be a great year for America!  Donald J. Trump (@realDonaldTrump) December 31, 2017Trump s tweet went down about as we","start":674,"labels":["LOC"]},"to_name":"text","from_name":"label"},{"id":"FCuvjfSXNs","type":"labels","value":{"end":1662,"text":" Sandoval (@AlanSandoval13) December 31, 2017Who uses the word Haters in a New Years wish??  Marlene (@marlene399) December 31, 2017You can t just say happy ","start":1505,"labels":["MISC"]},"to_name":"text","from_name":"label"},{"id":"36kM4Zy2Y5","type":"labels","value":{"end":256,"text":"o do and he couldn t do","start":233,"labels":["PER"]},"to_name":"text","from_name":"label"},{"id":"ALbgPwBdmj","type":"labels","value":{"end":2215,"text":"ale8) December 31, 2017Tr","start":2190,"labels":["MISC"]},"to_name":"text","from_name":"label"}]}],
         });
 
+        ls.on("regionFinishedDrawing", (region, list) => {
+          console.log("finish drawing", {region, list})
+        })
       });
     </script>
   </body>

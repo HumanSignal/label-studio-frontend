@@ -1,4 +1,4 @@
-import { types, destroy, getParentOfType, getRoot, isValidReference } from "mobx-state-tree";
+import { destroy, getParentOfType, getRoot, isValidReference, types } from "mobx-state-tree";
 
 import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";
@@ -29,6 +29,7 @@ const Relation = types
 
     get hasRelations() {
       const r = self.relations;
+
       return r && r.children && r.children.length > 0;
     },
   }))
@@ -39,6 +40,7 @@ const Relation = types
 
       // find <Relations> tag in the tree
       let relations = null;
+
       c.traverseTree(function(node) {
         if (node.type === "relations") {
           relations = node;
@@ -135,6 +137,7 @@ const RelationStore = types
     deleteNodeRelation(node) {
       // lookup $node and delete it's relation
       const rl = self.findRelations(node);
+
       rl.length && rl.forEach(self.deleteRelation);
     },
 
@@ -155,11 +158,15 @@ const RelationStore = types
 
     deserializeRelation(node1, node2, direction, labels) {
       const rl = self.addRelation(node1, node2);
+
+      if (!rl) return; // duplicated relation
+
       rl.direction = direction;
 
       if (rl.relations && labels)
         labels.forEach(l => {
           const r = rl.relations.findRelation(l);
+
           if (r) r.setSelected(true);
         });
     },

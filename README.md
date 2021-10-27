@@ -25,7 +25,7 @@ import LabelStudio from 'label-studio';
 import 'label-studio/build/static/css/main.css';
 ```
 
-**Width UNPKG.com**
+**With UNPKG.com**
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->

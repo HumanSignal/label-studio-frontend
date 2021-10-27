@@ -10,6 +10,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+report.*.json
 
 # Dependency directory
 node_modules/
@@ -49,5 +50,3 @@ build/static/media/config.*.xml
 
 # codecept screenshots
 e2e/output
-
-yarn.lock

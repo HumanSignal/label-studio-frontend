@@ -2,7 +2,7 @@ import React from "react";
 import arrayMove from "array-move";
 import { List } from "antd";
 import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
@@ -17,7 +17,7 @@ const ListItemModel = types
     selected: types.optional(types.boolean, false),
     idx: types.number,
   })
-  .views(self => ({}))
+  .views(() => ({}))
   .actions(self => ({
     setBG(val) {
       self.backgroundColor = val;
@@ -33,20 +33,25 @@ const ListItemModel = types
   }));
 
 /**
- * List element, used for ranking results. Great choice for recomendation systems.
+ * Use the List tag to rank results, for example for recommendation systems.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text
  * @example
+ * <!--Labeling configuration for a list of possible reply options that can be ranked-->
  * <View>
  *  <HyperText name="page" value="$markup"></HyperText>
  *  <List name="ranker" value="$replies" elementValue="$text" elementTag="Text" ranked="true" sortedHighlightColor="#fcfff5"></List>
  * </View>
  * @name List
+ * @meta_title List Tag for Lists
+ * @meta_description Customize Label Studio with lists for machine learning and data science projects.
  * @param {string} elementValue                - Lookup key for a child object
- * @param {Text|Image|Audio} [elementTag=Text] - Element used to render children
+ * @param {Text|Image|Audio} [elementTag=Text] - Object tag used to render children
  * @param {string} value                       - List values
  * @param {string} name                        - Name of group
- * @param {string=} sortedHighlightColor       - Color
+ * @param {string=} sortedHighlightColor       - Sorted color in HTML color name
  * @param {x|y} [axis=y]                       - Axis used for drag and drop
- * @param {x|y} lockAxis                       - Lock axis
+ * @param {x|y} lockAxis                       - Whether to lock the axis
  */
 const TagAttrs = types.model({
   axis: types.optional(types.enumeration(["x", "y"]), "y"),
@@ -72,7 +77,7 @@ const Model = types
     regions: types.array(ListItemModel),
     // update: types.optional(types.boolean, false)
   })
-  .views(self => ({}))
+  .views(() => ({}))
   .actions(self => ({
     setUpdate() {
       self.update = self.update + 1;
@@ -81,7 +86,7 @@ const Model = types
     addRegion(vals, idx) {
       const reg = ListItemModel.create({
         value: self.elementvalue,
-        idx: idx,
+        idx,
         _value: variableNotation(self.elementvalue, vals[idx]),
       });
 
@@ -134,6 +139,7 @@ const Model = types
         });
 
       const selected = [];
+
       for (let i = 0; i < Object.keys(map).length; i++) {
         selected[self.regions[i].idx] = self.regions[i].selected ? 1 : 0;
       }
@@ -143,12 +149,12 @@ const Model = types
         to_name: self.name,
         value: {
           weights: ranked,
-          selected: selected,
+          selected,
         },
       };
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       const ranked = [];
       const regions = [];
       const item_weight = {};
@@ -165,6 +171,7 @@ const Model = types
         .sort((a, b) => b - a)
         .forEach(v => {
           const idxes = item_weight[v];
+
           idxes.forEach(idx => {
             regions.push(self.regions[idx]);
             ranked.push(self._value[idx]);
@@ -195,6 +202,7 @@ function isMobileDevice() {
 
 const SortableText = SortableElement(({ item, value }) => {
   let classNames;
+
   if (isMobileDevice) {
     classNames = "noselect";
   }
@@ -243,15 +251,16 @@ const SortableList = SortableContainer(({ item, items }) => {
           value={value}
           color={value.backgroundColor}
           item={item}
-          onClick={ev => {}}
+          onClick={() => {}}
         />
       ))}
     </List>
   );
 });
 
-const HtxListView = ({ store, item }) => {
+const HtxListView = ({ item }) => {
   const props = {};
+
   if (isMobileDevice()) {
     props["pressDelay"] = 100;
   } else {

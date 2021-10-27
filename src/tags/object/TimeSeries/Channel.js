@@ -1,18 +1,20 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import * as d3 from "d3";
 import ObjectBase from "../Base";
 import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
-import { getOptimalWidth, getRegionColor, fixMobxObserve, sparseValues, checkD3EventLoop } from "./helpers";
+import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from "./helpers";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
+import { TagParentMixin } from "../../../mixins/TagParentMixin";
 
 /**
  * Channel tag can be used to label time series data
  * @name Channel
+ * @subtag
  * @param {string} column column name or index
  * @param {string} [legend] display name of the channel
  * @param {string} [units] display units name
@@ -70,23 +72,21 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     type: "channel",
     children: Types.unionArray(["channel", "view"]),
+    parentTypes: Types.tagsTypes(["TimeSeries"]),
   })
   .views(self => ({
-    get parent() {
-      return Types.getParentOfTypeString(self, "TimeSeriesModel");
-    },
-
     get columnName() {
       let column = self.column;
+
       if (/^\d+$/.test(column)) {
-        column = self.parent.headers[column] || column;
+        column = self.parent?.headers[column] || column;
       }
       column = column.toLowerCase();
       return column;
     },
   }));
 
-const ChannelModel = types.compose("ChannelModel", Model, TagAttrs, ObjectBase);
+const ChannelModel = types.compose("ChannelModel", TagParentMixin, Model, TagAttrs, ObjectBase);
 
 class ChannelD3 extends React.Component {
   ref = React.createRef();
@@ -95,6 +95,7 @@ class ChannelD3 extends React.Component {
   gBrushes;
 
   tracker;
+  trackerX = 0;
   trackerPoint;
   trackerTime;
   trackerValue;
@@ -122,16 +123,18 @@ class ChannelD3 extends React.Component {
 
   changeWidth = () => {
     const offsetWidth = this.ref.current.offsetWidth;
-    console.log("WIDTH", offsetWidth);
     const { margin } = this.props.item.parent;
+
     if (offsetWidth) {
       const width = offsetWidth - margin.left - margin.right;
+
       this.setState({ width });
     }
   };
 
   getRegion = (selection, isInstant) => {
     const [start, end] = selection.map(n => +this.stick(n)[0]);
+
     return { start, end: isInstant ? start : end };
   };
 
@@ -140,6 +143,7 @@ class ChannelD3 extends React.Component {
     const { ranges } = this.props;
     const { parent } = this.props.item;
     const i = ranges.findIndex(range => range.id === id);
+
     if (i < 0) {
       console.error(`REGION ${id} was not found`);
       return;
@@ -148,11 +152,12 @@ class ChannelD3 extends React.Component {
     const moved = this.getRegion(d3.event.selection, r.instant);
     // click simulation - if selection didn't move
     const isJustClick = moved.start === r.start && moved.end === r.end;
+
     if (isJustClick) {
-      parent.annotation.unselectAreas();
-      r.onClickRegion();
+      parent?.annotation.unselectAreas();
+      r.onClickRegion(d3.event.sourceEvent);
     } else {
-      parent.regionChanged(moved, i);
+      parent?.regionChanged(moved, i);
     }
   };
 
@@ -164,9 +169,10 @@ class ChannelD3 extends React.Component {
       ranges,
       item: { parent },
     } = this.props;
-    const activeStates = parent.activeStates();
+    const activeStates = parent?.activeStates();
     const statesSelected = activeStates && activeStates.length;
     // skip if event fired by .move() - prevent recursion and bugs
+
     if (checkD3EventLoop("end")) return;
     // just a click - create insant region or select region
     if (!d3.event.selection) {
@@ -176,7 +182,7 @@ class ChannelD3 extends React.Component {
       // when 2nd click happens during 300ms after 1st click and in the same place
       if (newRegion && Math.abs(newRegion.x - x) < 4) {
         clearTimeout(this.newRegionTimer);
-        parent.regionChanged(newRegion.range, ranges.length, newRegion.states);
+        parent?.regionChanged(newRegion.range, ranges.length, newRegion.states);
         this.newRegion = null;
         this.newRegionTimer = null;
       } else if (statesSelected) {
@@ -199,15 +205,30 @@ class ChannelD3 extends React.Component {
       const regions = ranges.filter(r => r.start <= value && r.end >= value);
       const nextIndex = regions.findIndex(r => r.selected) + 1;
       const region = regions[nextIndex];
-      parent.annotation.unselectAreas();
-      region && region.onClickRegion();
 
+      if (region) {
+        region.onClickRegion(d3.event.sourceEvent);
+      } else {
+        parent?.annotation.unselectAreas();
+      }
       return;
     }
     const region = this.getRegion(d3.event.selection);
+
     this.brushCreator.move(this.gCreator, null);
-    if (!statesSelected) return;
-    parent.addRegion(region.start, region.end);
+    const additionalSelection = d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.metaKey;
+
+    if (additionalSelection || !statesSelected) {
+      const regions = ranges.filter(r => r.start >= region.start && r.end <= region.end);
+
+      if (additionalSelection) {
+        parent?.annotation.extendSelectionWith(regions);
+      } else {
+        parent?.annotation.selectAreas(regions);
+      }
+      return;
+    }
+    parent?.addRegion(region.start, region.end);
   };
 
   renderBrushes(ranges, flush = false) {
@@ -239,9 +260,11 @@ class ChannelD3 extends React.Component {
       .each(function(r) {
         const group = d3.select(this);
         const brush = d3.brushX().extent(extent);
+
         brush.on("brush", function() {
           if (checkD3EventLoop("brush")) return;
           const sticked = getRegion(d3.event.selection, r.instant);
+
           managerBrush.move(group, [x(sticked.start), x(sticked.end) + r.instant * 0.5]);
           updateTracker(d3.mouse(this)[0]);
         });
@@ -264,23 +287,28 @@ class ChannelD3 extends React.Component {
         }
       })
       .merge(brushSelection)
-      .each(function(r, i) {
+      .each(function(r) {
         const group = d3.select(this);
         const selection = group.selectAll(".selection");
+
+        group.style("display", r.hidden ?  "none" : "block");
+
         const color = getRegionColor(r);
+
         if (r.instant) {
           selection
-            .attr("stroke-opacity", r.selected || r.highlighted ? 0.6 : 0.2)
-            .attr("fill-opacity", r.selected || r.highlighted ? 1 : 0.6)
+            .attr("stroke-opacity", r.inSelection || r.highlighted ? 0.6 : 0.2)
+            .attr("fill-opacity", r.inSelection || r.highlighted ? 1 : 0.6)
             .attr("stroke-width", 3)
             .attr("stroke", color)
             .attr("fill", color);
           const at = x(r.start);
+
           managerBrush.move(group, [at, at + 1]);
         } else {
           selection
-            .attr("stroke-opacity", r.selected || r.highlighted ? 0.8 : 0.5)
-            .attr("fill-opacity", r.selected || r.highlighted ? 0.6 : 0.3)
+            .attr("stroke-opacity", r.inSelection || r.highlighted ? 0.8 : 0.5)
+            .attr("fill-opacity", r.inSelection || r.highlighted ? 0.6 : 0.3)
             .attr("stroke", color)
             .attr("fill", color);
           managerBrush.move(group, [r.start, r.end].map(x));
@@ -309,18 +337,27 @@ class ChannelD3 extends React.Component {
       .on("brush", function() {
         if (checkD3EventLoop("brush") || !d3.event.selection) return;
         const sticked = getRegion(d3.event.selection);
+
         brush.move(block, [x(sticked.start), x(sticked.end)]);
         updateTracker(d3.mouse(this)[0]);
       })
-      .on("end", this.newBrushHandler));
+      .on("end", this.newBrushHandler)
+      // replacing default filter to allow ctrl-click action
+      .filter(()=>{
+        return !d3.event.button;
+      })
+    );
 
     this.gCreator.call(this.brushCreator);
   }
 
   updateTracker = screenX => {
     const { width } = this.state;
+
     if (screenX < 0 || screenX > width) return;
     const [dataX, dataY] = this.stick(screenX);
+
+    this.trackerX = dataX;
     this.tracker.attr("transform", `translate(${this.x(dataX) + 0.5},0)`);
     this.trackerTime.text(this.formatTime(dataX));
     this.trackerValue.text(this.formatValue(dataY) + " " + this.props.item.units);
@@ -366,12 +403,12 @@ class ChannelD3 extends React.Component {
     const { margin } = item.parent;
     const tickSize = this.height + margin.top;
     const shift = -margin.top;
-    const g = this.main
-      .selectAll(".xaxis")
-      .data([0])
-      .enter()
-      .append("g")
-      .attr("class", "xaxis");
+    let g = this.main.select(".xaxis");
+
+    if (!g.size()) {
+      g = this.main.append("g").attr("class", "xaxis");
+    }
+
     g.attr("transform", `translate(0,${shift})`)
       .call(
         d3
@@ -400,6 +437,7 @@ class ChannelD3 extends React.Component {
   renderYAxis = () => {
     // @todo usual .data([0]) trick doesn't work for some reason :(
     let g = this.main.select(".yaxis");
+
     if (!g.size()) {
       g = this.main.append("g").attr("class", "yaxis");
     }
@@ -426,9 +464,10 @@ class ChannelD3 extends React.Component {
   initZoom() {
     const { data, item, time } = this.props;
     const times = data[time];
-    const upd = item.parent.throttledRangeUpdate();
+    const upd = item.parent?.throttledRangeUpdate();
     const onZoom = () => {
       const e = d3.event;
+
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       const { range } = this.props;
@@ -439,6 +478,7 @@ class ChannelD3 extends React.Component {
       // slow down zooming in
       const scale = Math.min(0.3, -e.deltaY / this.height);
       // if there are too few points displayed, don't zoom in
+
       if (indices[1] - indices[0] < MAX_POINTS_ON_SCREEN && scale > 0) return;
 
       const shift = range[1] - range[0];
@@ -446,6 +486,7 @@ class ChannelD3 extends React.Component {
         Math.max(+this.extent[0], +range[0] + (shift * scale * x) / width),
         Math.min(+this.extent[1], range[1] - shift * scale * (1 - x / width)),
       ];
+
       upd(zoomed, scale);
     };
 
@@ -458,6 +499,7 @@ class ChannelD3 extends React.Component {
     const { data, item, range, time, column } = this.props;
     const { isDate, formatTime, margin, slicesCount } = item.parent;
     const height = this.height;
+
     this.zoomStep = slicesCount;
     const clipPathId = `clip_${item.id}`;
 
@@ -470,6 +512,7 @@ class ChannelD3 extends React.Component {
       const message = `\`${column}\` not found in data. Available columns: ${names.join(
         ", ",
       )}. For headless csv you can use column index`;
+
       getRoot(item).annotationStore.addErrors([errorBuilder.generalError(message)]);
       return;
     }
@@ -480,15 +523,18 @@ class ChannelD3 extends React.Component {
     if (this.useOptimizedData) {
       this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
     }
-    this.slices = item.parent.dataSlices;
+    this.slices = item.parent?.dataSlices;
 
     const formatValue = d3.format(item.displayformat);
+
     this.formatValue = formatValue;
     this.formatTime = formatTime;
 
     const offsetWidth = this.ref.current.offsetWidth;
     const width = offsetWidth ? offsetWidth - margin.left - margin.right : this.state.width;
     // intention direct assignment to avoid rerender and correct initialization
+    // eslint-disable-next-line react/no-direct-mutation-state
+
     // eslint-disable-next-line react/no-direct-mutation-state
     this.state.width = width;
 
@@ -508,6 +554,7 @@ class ChannelD3 extends React.Component {
     const stick = screenX => {
       const dataX = x.invert(screenX);
       let i = d3.bisectRight(times, dataX);
+
       if (times[i] - dataX > dataX - times[i - 1]) i--;
       return [times[i], values[i]];
     };
@@ -560,6 +607,7 @@ class ChannelD3 extends React.Component {
     this.main = main;
 
     const pathContainer = main.append("g").attr("clip-path", `url("#${clipPathId}")`);
+
     this.path = pathContainer
       .append("path")
       .datum(this.useOptimizedData ? this.optimizedSeries : series)
@@ -575,6 +623,7 @@ class ChannelD3 extends React.Component {
       .attr("stroke", item.strokecolor || "steelblue");
 
     this.renderTracker();
+    this.updateTracker(0); // initial value, will be updated in setRangeWithScaling
     this.renderYAxis();
     this.setRangeWithScaling(range);
     this.renderBrushCreator();
@@ -603,24 +652,13 @@ class ChannelD3 extends React.Component {
     const left = Math.max(0, Math.floor((this.zoomStep * (current[0] - all[0])) / (all[1] - all[0])));
     const right = Math.max(0, Math.floor((this.zoomStep * (current[1] - all[0])) / (all[1] - all[0])));
     const translate = all[0] - current[0];
-    console.log("SOME MATH", {
-      left,
-      right,
-      xDomain: [...range],
-      pDomain: this.plotX.domain(),
-      xRange: current,
-      all,
-      scale,
-      translate,
-      use: this.useOptimizedData,
-    });
 
     let translateY = 0;
     let scaleY = 1;
     const originY = this.y.range()[0];
     const { item } = this.props;
     // overwrite parent's
-    const fixedscale = item.fixedscale === undefined ? item.parent.fixedscale : item.fixedscale;
+    const fixedscale = item.fixedscale === undefined ? item.parent?.fixedscale : item.fixedscale;
 
     if (!fixedscale) {
       // array slice may slow it down, so just find a min-max by ourselves
@@ -628,10 +666,11 @@ class ChannelD3 extends React.Component {
       const values = data[column];
       // indices of the first and last displayed values
       let i = d3.bisectRight(data[time], range[0]);
-      let j = d3.bisectRight(data[time], range[1]);
+      const j = d3.bisectRight(data[time], range[1]);
       // find min-max
       let min = values[i];
       let max = values[i];
+
       for (; i < j; i++) {
         if (min > values[i]) min = values[i];
         if (max < values[i]) max = values[i];
@@ -649,6 +688,7 @@ class ChannelD3 extends React.Component {
     // zoomStep - zoom level when we need to switch between optimized and original data
     const strongZoom = scale > this.zoomStep;
     const haveToSwitchData = strongZoom === this.useOptimizedData;
+
     if (this.optimizedSeries && haveToSwitchData) {
       this.useOptimizedData = !this.useOptimizedData;
       if (this.useOptimizedData) {
@@ -681,6 +721,7 @@ class ChannelD3 extends React.Component {
 
     this.renderXAxis();
     this.renderYAxis();
+    this.updateTracker(this.x(this.trackerX));
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -704,6 +745,7 @@ class ChannelD3 extends React.Component {
       flushBrushes = true;
     } else {
       const domain = this.x.domain();
+
       if (+domain[0] !== +range[0] || +domain[1] !== +range[1]) {
         this.setRangeWithScaling(range);
       }
@@ -713,7 +755,7 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.highlighted, r.style?.fillcolor));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end,  r.selected, r.inSelection, r.highlighted, r.hidden, r.style?.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div className="htx-timeseries-channel" ref={this.ref} />;
@@ -723,21 +765,21 @@ class ChannelD3 extends React.Component {
 const ChannelD3Observed = observer(ChannelD3);
 
 const HtxChannelViewD3 = ({ item }) => {
-  if (!item.parent.dataObj) return null;
+  if (!item.parent?.dataObj) return null;
   // @todo maybe later for some other option
-  // let channels = item.parent.overviewchannels;
+  // let channels = item.parent?.overviewchannels;
   // if (channels) channels = channels.split(",");
   // if (channels && !channels.includes(item.value.substr(1))) return null;
 
   return (
     <ChannelD3Observed
-      time={item.parent.keyColumn}
+      time={item.parent?.keyColumn}
       column={item.columnName}
       item={item}
-      data={item.parent.dataObj}
-      series={item.parent.dataHash}
-      range={item.parent.brushRange}
-      ranges={item.parent.regs}
+      data={item.parent?.dataObj}
+      series={item.parent?.dataHash}
+      range={item.parent?.brushRange}
+      ranges={item.parent?.regs}
     />
   );
 };

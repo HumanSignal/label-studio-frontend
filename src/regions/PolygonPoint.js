@@ -1,10 +1,10 @@
-import React from "react";
-import { Rect, Circle } from "react-konva";
+import React, { useState } from "react";
+import { Circle, Rect } from "react-konva";
 import { observer } from "mobx-react";
-import { types, getParent, hasParent } from "mobx-state-tree";
+import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
 
 import { guidGenerator } from "../core/Helpers";
-import Types from "../core/Types";
+import { useRegionStyles } from "../hooks/useRegionColor";
 
 const PolygonPoint = types
   .model("PolygonPoint", {
@@ -24,7 +24,7 @@ const PolygonPoint = types
     style: "circle",
     size: "small",
   })
-  .volatile(self => ({
+  .volatile(() => ({
     selected: false,
   }))
   .views(self => ({
@@ -38,7 +38,7 @@ const PolygonPoint = types
     },
 
     get annotation() {
-      return Types.getParentOfTypeString(self, "Annotation");
+      return getRoot(self).annotationStore.selected;
     },
   }))
   .actions(self => ({
@@ -102,6 +102,7 @@ const PolygonPoint = types
       ev.cancelBubble = true;
 
       const stage = self.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "crosshair";
 
@@ -137,6 +138,7 @@ const PolygonPoint = types
       const t = ev.target;
 
       const stage = self.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "default";
 
@@ -152,12 +154,17 @@ const PolygonPoint = types
 
       self.parent.setMouseOverStartPoint(false);
     },
+
+    getSkipInteractions() {
+      return self.parent.control.obj.getSkipInteractions();
+    },
   }));
 
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
-  const style = item.parent.style;
 
+  const [draggable, setDraggable] = useState(true);
+  const regionStyles = useRegionStyles(item.parent);
   const sizes = {
     small: 4,
     medium: 8,
@@ -175,15 +182,17 @@ const PolygonPointView = observer(({ item, name }) => {
   const startPointAttr =
     item.index === 0
       ? {
-          hitStrokeWidth: 12,
-          fill: style.strokecolor || item.primary,
-          onMouseOver: item.handleMouseOverStartPoint,
-          onMouseOut: item.handleMouseOutStartPoint,
-        }
+        hitStrokeWidth: 12,
+        fill: regionStyles.strokeColor || item.primary,
+        onMouseOver: item.handleMouseOverStartPoint,
+        onMouseOut: item.handleMouseOutStartPoint,
+      }
       : null;
 
   const dragOpts = {
     onDragMove: e => {
+      if (item.getSkipInteractions()) return false;
+      if (e.target !== e.currentTarget) return;
       let { x, y } = e.target.attrs;
 
       if (x < 0) x = 0;
@@ -194,11 +203,16 @@ const PolygonPointView = observer(({ item, name }) => {
       item._movePoint(x, y);
     },
 
-    onDragStart: e => {
+    onDragStart: () => {
+      if (item.getSkipInteractions()) {
+        setDraggable(false);
+        return false;
+      }
       item.annotation.history.freeze();
     },
 
     onDragEnd: e => {
+      setDraggable(true);
       item.annotation.history.unfreeze();
       e.cancelBubble = true;
     },
@@ -206,14 +220,26 @@ const PolygonPointView = observer(({ item, name }) => {
     onMouseOver: e => {
       e.cancelBubble = true;
       const stage = item.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "crosshair";
     },
 
-    onMouseOut: e => {
+    onMouseOut: () => {
       const stage = item.stage?.stageRef;
+
       if (!stage) return;
       stage.container().style.cursor = "default";
+    },
+
+    onTransformEnd(e) {
+      if (e.target !== e.currentTarget) return;
+      const t = e.target;
+
+      t.setAttr("x", 0);
+      t.setAttr("y", 0);
+      t.setAttr("scaleX", 1);
+      t.setAttr("scaleY", 1);
     },
   };
 
@@ -238,18 +264,20 @@ const PolygonPointView = observer(({ item, name }) => {
           item.parent.deletePoint(item);
         }}
         onClick={ev => {
+          if (item.parent.isDrawing && item.parent.points.length === 1) return;
           // don't unselect polygon on point click
           ev.evt.preventDefault();
           ev.cancelBubble = true;
           if (item.parent.mouseOverStartPoint) {
             item.closeStartPoint();
+            item.parent.notifyDrawingFinished();
           } else {
             item.parent.setSelectedPoint(item);
           }
         }}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.parent.editable}
+        draggable={item.parent.editable && draggable}
       />
     );
   } else {

@@ -1,6 +1,5 @@
 import CursorPlugin from "wavesurfer.js/dist/plugin/wavesurfer.cursor";
 import React from "react";
-import ReactDOM from "react-dom";
 import throttle from "lodash.throttle";
 import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
@@ -8,9 +7,8 @@ import TimelinePlugin from "wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js
 import WaveSurfer from "wavesurfer.js";
 import styles from "./Waveform.module.scss";
 import globalStyles from "../../styles/global.module.scss";
-import { Slider, Row, Col, Select } from "antd";
+import { Col, Row, Select, Slider } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
-import InfoModal from "../Infomodal/Infomodal";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
 
@@ -30,11 +28,13 @@ import { Hotkey } from "../../core/Hotkey";
  */
 function formatTimeCallback(seconds, pxPerSec) {
   seconds = Number(seconds);
-  var minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor(seconds / 60);
+
   seconds = seconds % 60;
 
   // fill up seconds with zeroes
-  var secondsStr = Math.round(seconds).toString();
+  let secondsStr = Math.round(seconds).toString();
+
   if (pxPerSec >= 25 * 10) {
     secondsStr = seconds.toFixed(2);
   } else if (pxPerSec >= 25 * 1) {
@@ -61,7 +61,8 @@ function formatTimeCallback(seconds, pxPerSec) {
  * @param: pxPerSec
  */
 function timeInterval(pxPerSec) {
-  var retval = 1;
+  let retval = 1;
+
   if (pxPerSec >= 25 * 100) {
     retval = 0.01;
   } else if (pxPerSec >= 25 * 40) {
@@ -94,7 +95,8 @@ function timeInterval(pxPerSec) {
  * @param pxPerSec
  */
 function primaryLabelInterval(pxPerSec) {
-  var retval = 1;
+  let retval = 1;
+
   if (pxPerSec >= 25 * 100) {
     retval = 10;
   } else if (pxPerSec >= 25 * 40) {
@@ -139,7 +141,7 @@ export default class Waveform extends React.Component {
   constructor(props) {
     super(props);
 
-    this.hotkeys = Hotkey();
+    this.hotkeys = Hotkey("Audio", "Audio Segmentation");
 
     this.state = {
       src: this.props.src,
@@ -189,6 +191,7 @@ export default class Waveform extends React.Component {
 
   onZoomPlus = (ev, step = 10) => {
     let val = this.state.zoom;
+
     val = val + step;
     if (val > 700) val = 700;
 
@@ -199,6 +202,7 @@ export default class Waveform extends React.Component {
 
   onZoomMinus = (ev, step = 10) => {
     let val = this.state.zoom;
+
     val = val - step;
     if (val < 0) val = 0;
 
@@ -219,11 +223,13 @@ export default class Waveform extends React.Component {
 
     const step = e.deltaY > 0 ? 5 : -5;
     // console.log(e.evt.deltaY);
+
     this.onZoomPlus(e, step);
   };
 
   onBack = () => {
     let time = this.wavesurfer.getCurrentTime();
+
     if (!time) return false;
     time--;
     this.wavesurfer.setCurrentTime(time > 0 ? time : 0);
@@ -231,10 +237,6 @@ export default class Waveform extends React.Component {
   };
 
   componentDidMount() {
-    this.$el = ReactDOM.findDOMNode(this);
-
-    this.$waveform = this.$el.querySelector("#wave");
-
     let wavesurferConfigure = {
       container: this.$waveform,
       waveColor: this.state.colors.waveColor,
@@ -256,10 +258,10 @@ export default class Waveform extends React.Component {
           }),
           TimelinePlugin.create({
             container: "#timeline", // the element in which to place the timeline, or a CSS selector to find it
-            formatTimeCallback: formatTimeCallback, // custom time format callback. (Function which receives number of seconds and returns formatted string)
-            timeInterval: timeInterval, // number of intervals that records consists of. Usually it is equal to the duration in minutes. (Integer or function which receives pxPerSec value and returns value)
-            primaryLabelInterval: primaryLabelInterval, // number of primary time labels. (Integer or function which receives pxPerSec value and reurns value)
-            secondaryLabelInterval: secondaryLabelInterval, // number of secondary time labels (Time labels between primary labels, integer or function which receives pxPerSec value and reurns value).
+            formatTimeCallback, // custom time format callback. (Function which receives number of seconds and returns formatted string)
+            timeInterval, // number of intervals that records consists of. Usually it is equal to the duration in minutes. (Integer or function which receives pxPerSec value and returns value)
+            primaryLabelInterval, // number of primary time labels. (Integer or function which receives pxPerSec value and reurns value)
+            secondaryLabelInterval, // number of secondary time labels (Time labels between primary labels, integer or function which receives pxPerSec value and reurns value).
             primaryColor: "blue", // the color of the modulo-ten notch lines (e.g. 10sec, 20sec). The default is '#000'.
             secondaryColor: "blue", // the color of the non-modulo-ten notch lines. The default is '#c0c0c0'.
             primaryFontColor: "#000", // the color of the non-modulo-ten time labels (e.g. 10sec, 20sec). The default is '#000'.
@@ -316,30 +318,31 @@ export default class Waveform extends React.Component {
        * Mouse enter on region
        */
       this.wavesurfer.on("region-mouseenter", reg => {
-        reg._region.onMouseOver();
+        reg._region?.onMouseOver();
       });
 
       /**
        * Mouse leave on region
        */
       this.wavesurfer.on("region-mouseleave", reg => {
-        reg._region.onMouseLeave();
+        reg._region?.onMouseLeave();
       });
 
       /**
        * Add region to wave
        */
-      this.wavesurfer.on("region-created", reg => {
+      this.wavesurfer.on("region-created", (reg) => {
         const region = self.props.addRegion(reg);
+
         if (!region) return;
 
         reg._region = region;
         reg.color = region.selectedregionbg;
 
-        reg.on("click", () => region.onClick(self.wavesurfer));
+        reg.on("click", (ev) => region.onClick(self.wavesurfer, ev));
         reg.on("update-end", () => region.onUpdateEnd(self.wavesurfer));
 
-        reg.on("dblclick", e => {
+        reg.on("dblclick", () => {
           window.setTimeout(function() {
             reg.play();
           }, 0);
@@ -376,16 +379,22 @@ export default class Waveform extends React.Component {
      */
     this.wavesurfer.on("play", self.props.handlePlay);
 
+    this.wavesurfer.on("seek", self.props.handleSeek);
+
     if (this.props.regions) {
       this.props.onLoad(this.wavesurfer);
     }
 
-    this.hotkeys.addKey("ctrl+b", this.onBack, "Back for one second", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+    this.hotkeys.addNamed("audio:back", this.onBack, Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
   }
 
   componentWillUnmount() {
     this.hotkeys.unbindAll();
   }
+
+  setWaveformRef = node => {
+    this.$waveform = node;
+  };
 
   render() {
     const self = this;
@@ -394,7 +403,7 @@ export default class Waveform extends React.Component {
 
     return (
       <div>
-        <div id="wave" className={styles.wave} />
+        <div id="wave" ref={this.setWaveformRef} className={styles.wave} />
 
         <div id="timeline" />
 

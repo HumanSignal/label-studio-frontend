@@ -1,12 +1,12 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { types, getParentOfType } from "mobx-state-tree";
+import { getParentOfType, types } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import { TextAreaModel } from "../tags/control/TextArea";
+import { TextAreaModel } from "../tags/control/TextArea/TextArea";
 import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
@@ -21,7 +21,7 @@ const Model = types
     _value: types.string,
     // states: types.array(types.union(ChoicesModel)),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     classification: true,
     perRegionTags: [],
     results: [],
@@ -31,7 +31,7 @@ const Model = types
     get parent() {
       return getParentOfType(self, TextAreaModel);
     },
-    get regionElement() {
+    getRegionElement() {
       return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
   }))
@@ -87,6 +87,7 @@ const HtxTextAreaRegionView = ({ item }) => {
   params.onDelete = item.deleteRegion;
 
   let divAttrs = {};
+
   if (!parent.perregion) {
     divAttrs = {
       onMouseOver: () => {

@@ -1,3 +1,5 @@
+import { toCamelCase } from "strman";
+
 /**
  * Internal helper to check if parameter is a string
  * @param {*} value
@@ -53,6 +55,17 @@ export function getUrl(i, text) {
 }
 
 /**
+ * Check if given string is a valid url for object data
+ * @param {string} str              - String to check
+ * @param {boolean} [relative=true] - Whether relative urls are good or nood
+ */
+export function isValidObjectURL(str, relative = false) {
+  if (!str) return false;
+  if (relative && str.startsWith("/")) return true;
+  return /^https?:\/\//.test(str);
+}
+
+/**
  * Convert MS to Time String
  * Example: 2000 -> 00:00:02
  * @param {number} ms
@@ -71,12 +84,14 @@ export function flatten(arr) {
 }
 
 export function hashCode(str) {
-  var hash = 0;
+  let hash = 0;
+
   if (str.length === 0) {
     return hash + "";
   }
-  for (var i = 0; i < str.length; i++) {
-    var char = str.charCodeAt(i);
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+
     hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
@@ -109,6 +124,16 @@ export function escapeHtml(unsafe) {
 }
 
 /**
+ * Compares two arrays; order matters
+ * @template T
+ * @param {T[]} arr1 array 1
+ * @param {T[]} arr2 array 2
+ */
+export function isArraysEqual(arr1, arr2) {
+  return arr1.length === arr2.length && arr1.every((value, index) => arr2[index] === value);
+}
+
+/**
  * Convert any value to an array
  * @template T
  * @param {T} value
@@ -120,4 +145,66 @@ export function wrapArray(value) {
 
 export function delay(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export const isDefined = value => {
+  return value !== null && value !== undefined;
+};
+
+export function findClosestParent(el, predicate = () => true, parentGetter = el => el.parent) {
+  while ((el = parentGetter(el))) {
+    if (predicate(el)) {
+      return el;
+    }
+  }
+  return null;
+}
+
+export function clamp(x, min, max) {
+  return Math.min(max, Math.max(min, x));
+}
+
+export const chunks = (source, chunkSize) => {
+  const result = [];
+  let i,j;
+
+  for (i=0,j=source.length; i<j; i+=chunkSize) {
+    result.push(source.slice(i,i+chunkSize));
+  }
+
+  return result;
+};
+
+export const userDisplayName = (user) => {
+  const firstName = user.firstName ?? user.firstName;
+  const lastName = user.lastName ?? user.lastName;
+
+  return (firstName || lastName)
+    ? [firstName, lastName].filter(n => !!n).join(" ").trim()
+    : (user.username)
+      ? user.username
+      : user.email;
+};
+
+export const camelizeKeys = (object) => {
+  return Object.fromEntries(Object.entries(object).map(([key, value]) => {
+    if (Object.prototype.toString.call(value) === '[object Object]') {
+      return [toCamelCase(key), camelizeKeys(value)];
+    } else {
+      return [toCamelCase(key), value];
+    }
+  }));
+};
+
+export function minMax(items) {
+  return items.reduce((acc, val) => {
+    acc[0] = acc[0] === undefined || val < acc[0] ? val : acc[0];
+    acc[1] = acc[1] === undefined || val > acc[1] ? val : acc[1];
+    return acc;
+  }, []);
+}
+
+// Detects if current OS is macOS
+export function isMacOS() {
+  return navigator.platform.indexOf('Mac') > -1;
 }

@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { types, getRoot } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 import NormalizationMixin from "../mixins/Normalization";
@@ -9,8 +9,9 @@ import { guidGenerator } from "../core/Helpers";
 import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { AnnotationMixin } from "../mixins/AnnotationMixin";
 
-const hotkeys = Hotkey("TimeSeries");
+const hotkeys = Hotkey("TimeSeries", "Time Series Segmentation");
 
 const Model = types
   .model("TimeSeriesRegionModel", {
@@ -23,17 +24,25 @@ const Model = types
     end: types.union(types.number, types.string),
     instant: false,
   })
+  .volatile(() => ({
+    hideable: true,
+  }))
   .views(self => ({
     get parent() {
       return self.object;
     },
 
+    // Do not remove this annotation getter until saving/updating annotation in LS will work without errors
     get annotation() {
-      return getRoot(self).annotationStore?.selected;
+      const root = getRoot(self);
+
+      return root !== self ? root.annotationStore?.selected : null;
     },
-    get regionElement() {
+
+    getRegionElement() {
       return self._brushRef;
     },
+
   }))
   .actions(self => ({
     growRight(size) {
@@ -56,21 +65,22 @@ const Model = types
       const one = 1000;
       const lots = one * 10;
 
-      hotkeys.addKey("left", () => self.growLeft(one), "Increase region to the left");
-      hotkeys.addKey("right", () => self.growRight(one), "Increase region to the right");
-      hotkeys.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
-      hotkeys.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
+      hotkeys.addNamed("ts:grow-left", () => self.growLeft(one));
+      hotkeys.addNamed("ts:grow-right", () => self.growRight(one));
+      hotkeys.addNamed("ts:shrink-left", () => self.shrinkLeft(one));
+      hotkeys.addNamed("ts:shrink-right", () => self.shrinkRight(one));
 
-      hotkeys.addKey("shift+left", () => self.growLeft(lots));
-      hotkeys.addKey("shift+right", () => self.growRight(lots));
-      hotkeys.addKey("shift+alt+left", () => self.shrinkLeft(lots));
-      hotkeys.addKey("shift+alt+right", () => self.shrinkRight(lots));
+      hotkeys.addNamed("ts:grow-left-largre", () => self.growLeft(lots));
+      hotkeys.addNamed("ts:grow-right-largre", () => self.growRight(lots));
+      hotkeys.addNamed("ts:shrink-left-largre", () => self.shrinkLeft(lots));
+      hotkeys.addNamed("ts:shrink-right-largre", () => self.shrinkRight(lots));
 
       self.parent.scrollToRegion(self);
     },
 
     updateAppearenceFromState() {
       const s = self.labelsState;
+
       if (!s) return;
 
       // @todo remove
@@ -86,6 +96,7 @@ const Model = types
     updateRegion(start, end) {
       self.start = start;
       self.end = end;
+      self.notifyDrawingFinished();
     },
 
     afterCreate() {
@@ -96,10 +107,10 @@ const Model = types
       }
     },
 
-    serialize(control, object) {
+    serialize() {
       // convert to original format from data/csv
       const format = self.parent.timeformat ? d3.timeFormat(self.parent.timeformat) : Number;
-      let res = {
+      const res = {
         value: {
           start: format(self.start),
           end: format(self.end),
@@ -117,6 +128,7 @@ const TimeSeriesRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  AnnotationMixin,
   Model,
 );
 

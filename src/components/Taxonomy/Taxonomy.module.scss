@@ -1,0 +1,134 @@
+.taxonomy {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 4px 4px 0; // margin of last row of selected divs will work as padding
+  width: max-content;
+  max-width: 100%;
+  position: relative;
+
+  & > span {
+    display: inline-block;
+    line-height: 32px;
+    padding: 0 5px; // 4px padding + 1px border to stay on the same indent as selected
+    margin-bottom: 4px; // also replaces padding to be consistent with selected divs
+    white-space: nowrap;
+    cursor: pointer;
+
+    &::after {
+      content: "";
+      display: inline-block;
+      margin-left: 6px;
+      border-width: 9px 5px 0;
+      border-color: #444 transparent transparent;
+      border-style: solid;
+    }
+  }
+}
+
+.taxonomy_open > span::after {
+  transform: rotate(-180deg);
+}
+
+.taxonomy__selected {
+  display: inline-flex;
+  flex-wrap: wrap;
+
+  div {
+    margin: 0 4px 4px 0;
+    background: #f4f4f4;
+    padding: 2px 4px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+  }
+
+  input[type=button] {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 6px 0 6px 12px;
+
+    &:hover {
+      color: red;
+    }
+  }
+}
+
+.taxonomy__dropdown {
+  position: absolute;
+  z-index: 10;
+  background: white;
+  border-radius: 6px;
+  padding: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+  left: -1px;
+  width: max-content;
+  min-width: 100%;
+  max-width: 50vw; // 100% is not enough
+  margin-top: 9px; // 4px padding + 1px border + 4px gap
+  box-shadow: 0 0 4px #d9d9d9;
+
+  input[type=checkbox] {
+    margin-right: 4px;
+    vertical-align: -3px;
+    width: 0.8em;
+    height: 0.8em;
+    font-size: 20px;
+    line-height: 30px;
+
+    &:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+}
+
+.taxonomy__search {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  padding: 6px 16px;
+  margin-bottom: 4px;
+  box-shadow: 0 -2px 0 6px white; // white background over scrolled items
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.taxonomy__item ~ div {
+  margin-left: 16px;
+}
+
+.taxonomy__item {
+  display: flex;
+  align-items: center;
+
+  &:focus-within {
+    background: #eee;
+  }
+}
+
+.taxonomy__item label {
+  flex-grow: 1;
+  flex-shrink: 0;
+  line-height: 2em;
+}
+
+.taxonomy__grouping {
+  font-family: monospace;
+  font-size: 16px;
+  display: inline-block;
+  width: 20px;
+  margin-left: -2px;
+  text-align: center;
+  user-select: none;
+  flex-shrink: 0;
+
+  &:not(:empty) {
+    cursor: pointer;
+  }
+}
+
+.taxonomy__collapsable {
+  cursor: pointer;
+}

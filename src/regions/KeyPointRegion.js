@@ -1,10 +1,8 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useContext } from "react";
 import { Circle } from "react-konva";
-import { observer } from "mobx-react";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
 import WithStatesMixin from "../mixins/WithStates";
-import Constants, { defaultStyle } from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
@@ -12,6 +10,11 @@ import { ImageModel } from "../tags/object/Image";
 import { guidGenerator } from "../core/Helpers";
 import { LabelOnKP } from "../components/ImageView/LabelOnRegion";
 import { AreaMixin } from "../mixins/AreaMixin";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { createDragBoundFunc } from "../utils/image";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 
 const Model = types
   .model({
@@ -25,15 +28,28 @@ const Model = types
 
     width: types.number,
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
+    negative: false,
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
     hideable: true,
+    supportsTransform: true,
+    useTransformer: false,
+    supportsRotate: false,
+    supportsScale: false,
   }))
   .views(self => ({
     get store() {
       return getRoot(self);
+    },
+    get bboxCoords() {
+      return {
+        left: self.x - self.width,
+        top: self.y - self.width,
+        right: self.x + self.width,
+        bottom: self.y + self.width,
+      };
     },
   }))
   .actions(self => ({
@@ -42,9 +58,11 @@ const Model = types
         // deserialization
         self.relativeX = self.x;
         self.relativeY = self.y;
+        self.checkSizes();
       } else {
         // creation
         const { stageWidth: width, stageHeight: height } = self.parent;
+
         if (width && height) {
           self.relativeX = (self.x / width) * 100;
           self.relativeY = (self.y / height) * 100;
@@ -52,8 +70,10 @@ const Model = types
       }
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
+
       self.setPosition(p.x, p.y);
     },
 
@@ -79,28 +99,50 @@ const Model = types
       }
     },
 
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "x": 3.1,
+     *     "y": 8.2,
+     *     "width": 2,
+     *     "keypointlabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} KeyPointRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number} value.x x coordinate by percentage of the image size (0-100)
+     * @property {number} value.y y coordinate by percentage of the image size (0-100)
+     * @property {number} value.width point size by percentage of the image size (0-100)
+     */
+
+    /**
+     * @return {KeyPointRegionResult}
+     */
     serialize() {
-      const object = self.object;
-      const { naturalWidth, naturalHeight, stageWidth, stageHeight } = object;
-      const degree = -self.parent.rotation;
-      const natural = self.rotateDimensions({ width: naturalWidth, height: naturalHeight }, degree);
-      const { width, height } = self.rotateDimensions({ width: stageWidth, height: stageHeight }, degree);
-
-      const { x, y } = self.rotatePoint(self, degree, false);
-
-      const res = {
-        original_width: natural.width,
-        original_height: natural.height,
+      const result = {
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
-
         value: {
-          x: (x * 100) / width,
-          y: (y * 100) / height,
-          width: (self.width * 100) / width, //  * (self.scaleX || 1)
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
         },
       };
 
-      return res;
+      if (self.dynamic) {
+        result.is_positive = !self.negative;
+        result.value.labels = self.labels;
+      }
+
+      return result;
     },
   }));
 
@@ -110,53 +152,62 @@ const KeyPointRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  KonvaRegionMixin,
   Model,
 );
 
 const HtxKeyPointView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
 
   const x = item.x;
   const y = item.y;
-  const style = item.style || item.tag || defaultStyle;
 
-  const props = {};
+  const regionStyles = useRegionStyles(item, {
+    includeFill: true,
+    defaultFillColor: "#000",
+    defaultStrokeColor: "#fff",
+    defaultFillOpacity: (item.style ?? item.tag) ? 0.6 : 1,
+    defaultStrokeWidth: 2,
+  });
 
-  props["opacity"] = +style.opacity;
+  const props = {
+    opacity: 1,
+    fill: regionStyles.fillColor,
+    stroke: regionStyles.strokeColor,
+    strokeWidth: Math.max(2, regionStyles.strokeWidth),
+    strokeScaleEnabled: false,
+    shadowBlur: 0,
+  };
 
-  if (style.fillcolor) {
-    props["fill"] = style.fillcolor;
-  }
-
-  props["stroke"] = style.strokecolor;
-  props["strokeWidth"] = +style.strokewidth;
-  props["strokeScaleEnabled"] = false;
-  props["shadowBlur"] = 0;
-
-  if (item.highlighted || item.selected) {
-    props["stroke"] = Constants.HIGHLIGHTED_STROKE_COLOR;
-    props["strokeWidth"] = Constants.HIGHLIGHTED_STROKE_WIDTH;
-  }
+  const stage = item.parent.stageRef;
 
   return (
     <Fragment>
       <Circle
         x={x}
         y={y}
-        radius={item.width}
+        radius={Math.max(item.width, 2)}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
         scaleX={1 / item.parent.zoomScale}
         scaleY={1 / item.parent.zoomScale}
-        name={item.id}
+        name={`${item.id} _transformable`}
+        onDragStart={e => {
+          if (item.parent.getSkipInteractions()) {
+            e.currentTarget.stopDrag(e.evt);
+            return;
+          }
+          item.annotation.history.freeze(item.id);
+        }}
         onDragEnd={e => {
           const t = e.target;
+
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
+          item.annotation.history.unfreeze(item.id);
+          item.notifyDrawingFinished();
         }}
-        dragBoundFunc={item.parent.fixForZoom(pos => {
+        dragBoundFunc={createDragBoundFunc(item.parent, pos => {
           const r = item.parent.stageWidth;
           const b = item.parent.stageHeight;
 
@@ -170,9 +221,18 @@ const HtxKeyPointView = ({ item }) => {
 
           return { x, y };
         })}
-        onMouseOver={e => {
-          const stage = item.parent.stageRef;
+        onTransformEnd={e => {
+          const t = e.target;
 
+          item.setPosition(
+            t.getAttr("x"),
+            t.getAttr("y"),
+          );
+
+          t.setAttr("scaleX", 1);
+          t.setAttr("scaleY", 1);
+        }}
+        onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = "crosshair";
@@ -180,8 +240,7 @@ const HtxKeyPointView = ({ item }) => {
             stage.container().style.cursor = "pointer";
           }
         }}
-        onMouseOut={e => {
-          const stage = item.parent.stageRef;
+        onMouseOut={() => {
           stage.container().style.cursor = "default";
 
           if (store.annotationStore.selected.relationMode) {
@@ -189,26 +248,25 @@ const HtxKeyPointView = ({ item }) => {
           }
         }}
         onClick={e => {
-          const stage = item.parent.stageRef;
-
-          if (!item.annotation.editable) return;
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
         {...props}
         draggable={item.editable}
+        listening={!suggestion}
       />
-      <LabelOnKP item={item} />
+      <LabelOnKP item={item} color={regionStyles.strokeColor}/>
     </Fragment>
   );
 };
 
-const HtxKeyPoint = observer(HtxKeyPointView);
+const HtxKeyPoint = AliveRegion(HtxKeyPointView);
 
 Registry.addTag("keypointregion", KeyPointRegionModel, HtxKeyPoint);
 Registry.addRegionType(

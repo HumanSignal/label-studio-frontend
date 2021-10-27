@@ -1,7 +1,7 @@
 export class DOMWatcher {
   constructor(root, element, callback) {
     this.root = root;
-    this.element = element.regionElement;
+    this.element = element.getRegionElement();
     this.callback = callback;
 
     this.handleUpdate();

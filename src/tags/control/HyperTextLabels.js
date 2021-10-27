@@ -6,12 +6,15 @@ import LabelMixin from "../../mixins/LabelMixin";
 import Registry from "../../core/Registry";
 import SelectedModelMixin from "../../mixins/SelectedModel";
 import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels";
+import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * HyperTextLabels tag creates labeled hyper text (HTML)
+ * The HyperTextLabels tag creates labeled hyper text (HTML). Use with the HyperText object tag to annotate HTML text or HTML elements for named entity recognition tasks.
+ *
+ * Use with the following data types: HTML
  * @example
+ * <!--Basic semantic text labeling configuration-->
  * <View>
  *   <HyperTextLabels name="labels" toName="ht">
  *     <Label value="Header" />
@@ -20,11 +23,13 @@ import ControlBase from "./Base";
  *   <HyperText name="ht" value="$html" />
  * </View>
  * @name HyperTextLabels
+ * @meta_title Hypertext Label Tag to Create Labeled Hypertext (HTML)
+ * @meta_description Customize Label Studio with the HyperTextLabels tag to label hypertext (HTML) for machine learning and data science projects.
  * @param {string} name                      - Name of the element
  * @param {string} toName                    - Name of the HTML element to label
  * @param {single|multiple=} [choice=single] - Configure if you can select one or multiple labels
- * @param {number} [maxUsages]               - Maximum available uses of a label
- * @param {boolean} [showInline=true]        - Show items in the same visual line
+ * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
+ * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -36,18 +41,20 @@ const Validation = types.model({
 });
 
 const ModelAttrs = types
-  .model("HyperTextLabelesModel", {
-    type: "htmllabels",
+  .model("HyperTextLabelsModel", {
+    type: "hypertextlabels",
     children: Types.unionArray(["label", "header", "view", "hypertext"]),
   })
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
     get serializableValue() {
       const obj = {};
+
       obj[self.resultType] = self.selectedValues();
 
       return obj;
@@ -58,7 +65,7 @@ const ModelAttrs = types
     },
 
     get valueType() {
-      return "htmllabels";
+      return "hypertextlabels";
     },
   }));
 

@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 export function Livewire() {}
 
 this.mousedown = function(event) {
@@ -25,7 +27,6 @@ this.mousedown = function(event) {
       command.onExecute = fireEvent;
       command.onUndo = fireEvent;
       // debug
-      console.log("Done.");
       // save command in undo stack
       app.addToUndoStack(command);
       // set flag
@@ -53,7 +54,6 @@ this.mousemove = function(event) {
   var results = 0;
   var stop = false;
   while (!parentPoints[p.y][p.x] && !stop) {
-    console.log("Getting ready...");
     results = scissors.doWork();
 
     if (results.length === 0) {
@@ -67,7 +67,6 @@ this.mousemove = function(event) {
       }
     }
   }
-  console.log("Ready!");
 
   // get the path
   currentPath = new dwv.math.Path();
@@ -107,7 +106,6 @@ this.mousemove = function(event) {
 };
 
 this.dblclick = function(/*event*/) {
-  console.log("dblclick");
   // save command in undo stack
   app.addToUndoStack(command);
   // set flag

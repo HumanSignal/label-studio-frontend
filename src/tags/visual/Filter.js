@@ -1,14 +1,16 @@
 import React from "react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { Input } from "antd";
 
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 /**
- * Add a filter search for a large number of labels.
+ * Use the Filter tag to add a filter search for a large number of labels or choices. Use with the Labels tag or Choices tag.
  * @example
+ * <!-- Add a filter to labels for a named entity recognition task -->
  * <View>
  *   <Filter name="filter" toName="ner"
  *           hotkey="shift+f" minlength="0"
@@ -20,6 +22,8 @@ import Registry from "../../core/Registry";
  *   <Text name="text" value="$text" />
  * </View>
  * @name Filter
+ * @meta_title Filter Tag for Filter Search
+ * @meta_description Customize Label Studio with the Filter tag to filter labels to accelerate labeling for machine learning and data science projects.
  * @param {string} [placeholder="Quick Filter"]      - Placeholder text for filter
  * @param {number} [minlength=3]      - Size of the filter
  * @param {string} [style]            - CSS style of the string
@@ -44,10 +48,6 @@ const Model = types
     toname: types.maybeNull(types.string),
   })
   .views(self => ({
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get toTag() {
       return self.annotation.names.get(self.toname);
     },
@@ -66,6 +66,7 @@ const Model = types
 
       tch.forEach(ch => {
         let chval = ch._value;
+
         if (!self.casesensetive) chval = chval.toLowerCase();
 
         if (chval.indexOf(value) !== -1) ch.setVisible(true);
@@ -74,7 +75,8 @@ const Model = types
     },
 
     applyFilterEv(e) {
-      let { value } = e.target;
+      const { value } = e.target;
+
       self._value = value;
 
       self.applyFilter();
@@ -94,6 +96,7 @@ const Model = types
 
     selectFirstElement() {
       const selected = self.toTag.selectFirstVisible();
+
       if (selected && self.cleanup) {
         self._value = "";
         self.applyFilter();
@@ -101,7 +104,7 @@ const Model = types
     },
   }));
 
-const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin);
+const FilterModel = types.compose("FilterModel", Model, TagAttrs, ProcessAttrsMixin, AnnotationMixin);
 
 const HtxFilter = observer(({ item }) => {
   const tag = item.toTag;

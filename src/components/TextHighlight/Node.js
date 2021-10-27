@@ -1,5 +1,5 @@
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 
 import TextNode from "../TextNode/TextNode";
 import Utils from "../../utils";
@@ -57,4 +57,5 @@ const HtxTextNodeView = ({ store, range, id, highlightStyle, style, charIndex, c
 };
 
 const HtxTextNode = inject("store")(observer(HtxTextNodeView));
+
 export { HtxTextNode };

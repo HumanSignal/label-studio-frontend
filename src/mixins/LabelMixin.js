@@ -25,7 +25,7 @@ const LabelMixin = types.model("LabelMixin").actions(self => ({
     });
   },
 
-  fromStateJSON(obj, fromModel) {
+  fromStateJSON(obj) {
     self.unselectAll();
 
     const objectType = obj.value[self._type];

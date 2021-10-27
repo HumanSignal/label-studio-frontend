@@ -1,6 +1,10 @@
+/* global describe, it, expect */
 import React from "react";
-import { shallow } from "enzyme";
+import Enzyme, { shallow } from "enzyme";
 import { shallowToJson } from "enzyme-to-json";
+import Adapter from 'enzyme-adapter-react-16';
+
+Enzyme.configure({ adapter: new Adapter() });
 
 import Hint from "./Hint";
 
@@ -11,6 +15,7 @@ describe("Hint", () => {
         Test
       </Hint>,
     );
+
     expect(shallowToJson(output)).toMatchSnapshot();
   });
 });

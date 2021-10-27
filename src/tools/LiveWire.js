@@ -10,7 +10,7 @@ const ToolView = observer(({ item }) => {
   return (
     <BasicTool
       selected={item.selected}
-      onClick={ev => {
+      onClick={() => {
         item.manager.unselectAll();
         item.setSelected(true);
       }}
@@ -20,10 +20,10 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model({})
+  .model("LiveWireTool", {})
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
   }))
   .actions(self => ({
@@ -31,15 +31,15 @@ const _Tool = types
       self.mode = "viewing";
     },
 
-    mousemoveEv(ev, [x, y]) {
+    mousemoveEv() {
       if (self.mode !== "drawing") return;
     },
 
-    mousedownEv(ev, [x, y]) {
+    mousedownEv() {
       self.mode = "drawing";
     },
   }));
 
-const LiveWire = types.compose(ToolMixin, _Tool, BaseTool);
+const LiveWire = types.compose(_Tool.name, ToolMixin, _Tool, BaseTool);
 
 export { LiveWire };

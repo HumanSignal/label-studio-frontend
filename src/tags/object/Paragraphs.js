@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { inject, observer } from "mobx-react";
+import { getRoot, types } from "mobx-state-tree";
 import ColorScheme from "pleasejs";
 import { Button } from "antd";
 import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
@@ -12,29 +12,43 @@ import Registry from "../../core/Registry";
 import Utils from "../../utils";
 import { ParagraphsRegionModel } from "../../regions/ParagraphsRegion";
 import { restoreNewsnapshot } from "../../core/Helpers";
-import { splitBoundaries, findNodeAt } from "../../utils/html";
+import { findNodeAt, matchesSelector, splitBoundaries } from "../../utils/html";
 import { parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 import styles from "./Paragraphs/Paragraphs.module.scss";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { isSelectionContainsSpan } from "../../utils/selection-tools";
+import { isValidObjectURL } from "../../utils/utilities";
 
 /**
- * Paragraphs tag shows paragraph markup that can be labeled.
- * it expects an array of objects like this: [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
+ * The Paragraphs tag expects task data formatted as an array of objects like the following:
+ * [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
+ *
+ * Use with the following data types: text
  * @example
+ * <!--Labeling configuration to label paragraph regions of text containing dialogue-->
  * <View>
  *   <Paragraphs name="dialogue-1" value="$dialogue" layout="dialogue" />
+ *   <ParagraphLabels name="importance" toName="dialogue-1">
+ *     <Label value="Important content"></Label>
+ *     <Label value="Random talk"></Label>
+ *   </ParagraphLabels>
  * </View>
  * @name Paragraphs
+ * @regions ParagraphsRegion
+ * @meta_title Paragraph Tags for Paragraphs
+ * @meta_description Customize Label Studio with the Paragraphs tag to annotate paragraphs for NLP and NER machine learning and data science projects.
  * @param {string} name                  - Name of the element
- * @param {string} value                 - Value of the element
- * @param {json|url} [valueType=json]    - Where the data is stored — directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} value                 - Data field containing the paragraph content
+ * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
  * @param {string} audioUrl              - Audio to sync phrases with
  * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
- * @param {no|yes} [saveTextResult=yes]  - Whether to save `text` to `value` or not
- * @param {none|dialogue} [layout=none]  - The styles layout to use
- * @param {string} [nameKey=author]      - The name key to use
- * @param {string} [textKey=text]        - The text key to use
+ * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
+ * @param {string} [nameKey=author]      - The key field to use for name
+ * @param {string} [textKey=text]        - The key field to use for the text
  */
 const TagAttrs = types.model("ParagraphsModel", {
   name: types.identifier,
@@ -65,6 +79,7 @@ const Model = types
   .views(self => ({
     get hasStates() {
       const states = self.states();
+
       return states && states.length > 0;
     },
 
@@ -72,15 +87,12 @@ const Model = types
       return getRoot(self);
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     get audio() {
       if (!self.audiourl) return null;
       if (self.audiourl[0] === "$") {
         const store = getRoot(self);
         const val = self.audiourl.substr(1);
+
         return store.task.dataObj[val];
       }
       return self.audiourl;
@@ -93,9 +105,10 @@ const Model = types
     layoutStyles(data) {
       if (self.layout === "dialogue") {
         const seed = data[self.namekey];
+
         return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: seed })[0], 0.25) },
-        };
+         phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.25) },
+       };
       }
 
       return {};
@@ -121,10 +134,11 @@ const Model = types
 
     activeStates() {
       const states = self.states();
+
       return states && states.filter(s => s.isSelected && s._type === "paragraphlabels");
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     _value: "",
     playingId: -1,
   }))
@@ -136,6 +150,7 @@ const Model = types
 
     function stop() {
       const audio = audioRef.current;
+
       if (audio.paused) return;
       if (audio.currentTime < endDuration) {
         stopIn(endDuration - audio.currentTime);
@@ -165,6 +180,7 @@ const Model = types
         const value = self._value[idx] || {};
         const { start, duration } = value;
         const end = duration ? start + duration : value.end || 0;
+
         if (!audioRef || isNaN(start) || isNaN(end)) return;
         const audio = audioRef.current;
 
@@ -198,8 +214,10 @@ const Model = types
 
       if (self.valuetype === "url") {
         const url = value;
-        if (!/^https?:\/\//.test(url)) {
+
+        if (!isValidObjectURL(url, true)) {
           const message = [];
+
           if (url) {
             message.push(`URL (${url}) is not valid.`);
             message.push(`You should not put data directly into your task if you use valuetype="url".`);
@@ -219,6 +237,7 @@ const Model = types
           .then(self.setRemoteValue)
           .catch(e => {
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
+
             store.annotationStore.addErrors([errorBuilder.generalError(message)]);
             self.setRemoteValue("");
           });
@@ -228,7 +247,8 @@ const Model = types
     },
 
     setRemoteValue(val) {
-      let errors = [];
+      const errors = [];
+
       if (!Array.isArray(val)) {
         errors.push(`Provided data is not an array`);
       } else {
@@ -246,6 +266,7 @@ const Model = types
           `defined by <b>nameKey</b> ("author" by default)`,
           `and <b>textKey</b> ("text" by default)`,
         ].join(" ");
+
         self.store.annotationStore.addErrors([
           errorBuilder.generalError(`${general}<ul>${errors.map(error => `<li>${error}</li>`).join("")}</ul>`),
         ]);
@@ -271,11 +292,15 @@ const Model = types
 
     addRegion(range) {
       const states = self.activeStates();
+
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+
+      area.notifyDrawingFinished();
+
       area._range = range._range;
       return area;
     },
@@ -299,8 +324,8 @@ const Model = types
         pid: obj.id,
         parentID: obj.parent_id === null ? "" : obj.parent_id,
 
-        startOffset: startOffset,
-        endOffset: endOffset,
+        startOffset,
+        endOffset,
 
         start,
         end,
@@ -321,9 +346,11 @@ const Model = types
     },
   }));
 
-const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase);
+const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
 
 class HtxParagraphsView extends Component {
+  _regionSpanSelector = ".htx-highlight";
+
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -335,33 +362,36 @@ class HtxParagraphsView extends Component {
 
   getPhraseElement(node) {
     const cls = this.props.item.layoutClasses;
+
     while (node && (!node.classList || !node.classList.contains(cls.text))) node = node.parentNode;
     return node;
   }
 
   getOffsetInPhraseElement(container, offset) {
     const node = this.getPhraseElement(container);
-    let range = document.createRange();
+    const range = document.createRange();
+
     range.setStart(node, 0);
     range.setEnd(container, offset);
     const fullOffset = range.toString().length;
     const phraseIndex = [...node.parentNode.parentNode.children].indexOf(node.parentNode);
     const phraseNode = node;
+
     return [fullOffset, phraseNode, phraseIndex];
   }
 
   captureDocumentSelection() {
     const cls = this.props.item.layoutClasses;
     const names = [...this.myRef.current.getElementsByClassName(cls.name)];
+
     names.forEach(el => {
       el.style.visibility = "hidden";
     });
 
-    var i,
-      self = this,
-      ranges = [],
-      rangesToIgnore = [],
-      selection = window.getSelection();
+    let i;
+
+    const ranges = [];
+    const selection = window.getSelection();
 
     if (selection.isCollapsed) {
       names.forEach(el => {
@@ -371,7 +401,7 @@ class HtxParagraphsView extends Component {
     }
 
     for (i = 0; i < selection.rangeCount; i++) {
-      var r = selection.getRangeAt(i);
+      const r = selection.getRangeAt(i);
 
       if (r.endContainer.nodeName === "DIV") {
         r.setEnd(r.startContainer, r.startContainer.length);
@@ -411,12 +441,48 @@ class HtxParagraphsView extends Component {
     return ranges;
   }
 
+  _selectRegions = (additionalMode) => {
+    const { item } = this.props;
+    const root = this.myRef.current;
+    const selection = window.getSelection();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+    const regions = [];
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+
+      if (node.nodeName === "SPAN" && node.matches(this._regionSpanSelector) && isSelectionContainsSpan(node)) {
+        const region = this._determineRegion(node);
+
+        regions.push(region);
+      }
+    }
+    if (regions.length) {
+      if (additionalMode) {
+        item.annotation.extendSelectionWith(regions);
+      } else {
+        item.annotation.selectAreas(regions);
+      }
+      selection.removeAllRanges();
+    }
+  };
+
+  _determineRegion(element) {
+    if (matchesSelector(element, this._regionSpanSelector)) {
+      const span = element.tagName === "SPAN" ? element : element.closest(this._regionSpanSelector);
+      const { item } = this.props;
+
+      return item.regs.find(region => region.find(span));
+    }
+  }
+
   onMouseUp(ev) {
     const item = this.props.item;
-    var selectedRanges = this.captureDocumentSelection();
     const states = item.activeStates();
 
-    if (!states || states.length === 0) return;
+    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
+
+    const selectedRanges = this.captureDocumentSelection();
 
     if (selectedRanges.length === 0) {
       return;
@@ -427,6 +493,7 @@ class HtxParagraphsView extends Component {
     const htxRange = item.addRegion(selectedRanges[0]);
 
     const spans = htxRange.createSpans();
+
     htxRange.addEventsToSpans(spans);
   }
 
@@ -463,8 +530,10 @@ class HtxParagraphsView extends Component {
           ) {
             // find region's text in the node (disregarding spaces)
             const match = startNode.textContent.match(new RegExp(r.text.replace(/\s+/g, "\\s+")));
+
             if (!match) console.warn("Can't find the text", r);
             const { index = 0 } = match || {};
+
             if (r.endOffset - r.startOffset !== r.text.length)
               console.warn("Text length differs from region length; possible regions overlap");
             startOffset = index;
@@ -482,6 +551,7 @@ class HtxParagraphsView extends Component {
 
         r._range = range;
         const spans = r.createSpans();
+
         r.addEventsToSpans(spans);
       } catch (err) {
         console.log(err, r);
@@ -542,6 +612,7 @@ const Phrases = observer(({ item }) => {
   const val = item._value.map((v, idx) => {
     const style = item.layoutStyles(v);
     const classNames = [styles.phrase];
+
     if (withAudio) classNames.push(styles.withAudio);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 

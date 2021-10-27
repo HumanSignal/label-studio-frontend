@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Select } from "antd";
 import { observer } from "mobx-react";
-import { types, getRoot } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import RequiredMixin from "../../mixins/Required";
 import PerRegionMixin from "../../mixins/PerRegion";
@@ -11,16 +11,20 @@ import SelectedModelMixin from "../../mixins/SelectedModel";
 import VisibilityMixin from "../../mixins/Visibility";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
-import { ChoiceModel } from "./Choice"; // eslint-disable-line no-unused-vars
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+
+import "./Choice";
 
 const { Option } = Select;
 
 /**
- * Use the Choices tag to create a group of choices, radio buttons, or checkboxes. Can
- * be used for single or multi-class classification.
+ * Use the Choices tag to create a group of choices, with radio buttons or checkboxes. Can be used for single or multi-class classification. Use for advanced classification tasks where annotators can choose one or multiple answers.
+ *
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
  * @example
+ * <!--Basic text classification labeling configuration-->
  * <View>
  *   <Choices name="gender" toName="txt-1" choice="single-radio">
  *     <Choice alias="M" value="Male" />
@@ -31,17 +35,19 @@ const { Option } = Select;
  *   <Text name="txt-1" value="John went to see Mary" />
  * </View>
  * @name Choices
+ * @meta_title Choices Tag for Multiple Choice Labels
+ * @meta_description Customize Label Studio with multiple choice labels for machine learning and data science projects.
  * @param {string} name                - Name of the group of choices
  * @param {string} toName              - Name of the data item that you want to label
  * @param {single|single-radio|multiple} [choice=single] - Single or multi-class classification
- * @param {boolean} [showInline=false] - Show items in the same visual line
+ * @param {boolean} [showInline=false] - Show choices in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - When true, show the contents of a view
- * @param {string} [whenTagName]       - Narrow down visibility by name of the tag, for regions use the name of the object tag, for choices use the name of the choices tag
+ * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - Control visibility of the choices.
+ * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
  * @param {string} [whenLabelValue]    - Narrow down visibility by label value
  * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
- * @param {boolean} [perRegion] use this tag for region labeling instead of the whole object labeling
+ * @param {boolean} [perRegion] - Use this tag to select a choice for a specific region instead of the entire task
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -69,16 +75,13 @@ const Model = types
       return self.choice === "single" || self.choice === "single-radio";
     },
 
-    get annotation() {
-      return getRoot(self).annotationStore.selected;
-    },
-
     states() {
       return self.annotation.toNames.get(self.name);
     },
 
     get serializableValue() {
       const choices = self.selectedValues();
+
       if (choices && choices.length) return { choices };
 
       return null;
@@ -87,6 +90,7 @@ const Model = types
     get result() {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
+
         if (!area) return null;
 
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
@@ -167,6 +171,7 @@ const Model = types
       } else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
+
           if (!area) return null;
           area.setValue(self);
         } else {
@@ -180,6 +185,7 @@ const Model = types
 
       if (names && names.length) {
         const toname = self.toname || self.name;
+
         return {
           id: self.pid,
           from_name: self.name,
@@ -192,7 +198,7 @@ const Model = types
       }
     },
 
-    fromStateJSON(obj, fromModel) {
+    fromStateJSON(obj) {
       self.unselectAll();
 
       if (!obj.value.choices) throw new Error("No labels param");
@@ -220,6 +226,7 @@ const ChoicesModel = types.compose(
   PerRegionMixin,
   VisibilityMixin,
   Model,
+  AnnotationMixin,
 );
 
 const HtxChoices = observer(({ item }) => {
@@ -237,13 +244,14 @@ const HtxChoices = observer(({ item }) => {
           style={{ width: "100%" }}
           value={item.selectedLabels.map(l => l._value)}
           mode={item.choice === "multiple" ? "multiple" : ""}
-          onChange={function(val, opt) {
+          onChange={function(val) {
             if (Array.isArray(val)) {
               item.resetSelected();
               val.forEach(v => item.findLabel(v).setSelected(true));
               item.updateResult();
             } else {
               const c = item.findLabel(val);
+
               if (c) {
                 c.toggleSelected();
               }

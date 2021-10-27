@@ -4,8 +4,9 @@ import { ChoicesModel } from "./Choices";
 import { HyperTextLabelsModel } from "./HyperTextLabels";
 import { KeyPointLabelsModel } from "./KeyPointLabels";
 import { KeyPointModel } from "./KeyPoint";
-import { LabelsModel } from "./Labels";
+import { LabelsModel } from "./Labels/Labels";
 import { ListModel } from "./List";
+import { NumberModel } from "./Number";
 import { PairwiseModel } from "./Pairwise";
 import { PolygonLabelsModel } from "./PolygonLabels";
 import { PolygonModel } from "./Polygon";
@@ -15,7 +16,7 @@ import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
 import { TaxonomyModel } from "./Taxonomy";
-import { TextAreaModel } from "./TextArea";
+import { TextAreaModel } from "./TextArea/TextArea";
 import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 import { ParagraphLabelsModel } from "./ParagraphLabels";
 
@@ -34,6 +35,7 @@ export {
   KeyPointLabelsModel,
   KeyPointModel,
   ListModel,
+  NumberModel,
   PairwiseModel,
   PolygonLabelsModel,
   PolygonModel,
@@ -49,5 +51,5 @@ export {
   EllipseModel,
   RelationsModel,
   RelationModel,
-  ParagraphLabelsModel,
+  ParagraphLabelsModel
 };

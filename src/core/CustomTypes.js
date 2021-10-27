@@ -17,6 +17,7 @@ const Range = (min = 0, max = 1) =>
     },
     isTargetType(value) {
       const floatValue = parseFloat(value);
+
       return min <= floatValue && floatValue <= max;
     },
     getValidationMessage(value) {
@@ -39,6 +40,7 @@ const CSSColor = types.custom({
   },
   isTargetType(value) {
     const colorTester = new Option().style;
+
     colorTester.color = value;
     return colorTester.color !== "";
   },

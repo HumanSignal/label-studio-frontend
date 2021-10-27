@@ -1,11 +1,17 @@
 import { types } from "mobx-state-tree";
 import isMatch from "lodash.ismatch";
 import InfoModal from "../../components/Infomodal/Infomodal";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const ObjectBase = types
   .model({
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
+  })
+  .volatile(() => {
+    return {
+      isReady: true,
+    };
   })
   .views(self => ({
     findRegion(params) {
@@ -23,11 +29,15 @@ const ObjectBase = types
       if (!self.regions) return;
 
       const objectsToReturn = self.regions.map(r => r.toStateJSON());
+
       return objectsToReturn;
+    },
+    setReady(value) {
+      self.isReady = value;
     },
   }))
   .actions(self => {
-    let props = {};
+    const props = {};
 
     function addProp(name, value) {
       props[name] = value;
@@ -49,9 +59,11 @@ const ObjectBase = types
       const allStates = self.states() || [];
       const exceeded = allStates.reduce(checkAndCollect, []);
       const states = self.activeStates() || [];
+
       if (states.length === 0) {
         if (exceeded.length) {
           const label = exceeded[0];
+
           InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
         }
         self.annotation.unselectAll();
@@ -66,4 +78,4 @@ const ObjectBase = types
     };
   });
 
-export default ObjectBase;
+export default types.compose(ObjectBase, AnnotationMixin);

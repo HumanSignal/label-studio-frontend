@@ -2,7 +2,7 @@
 
 import React from "react";
 
-const URL_CORS_DOCS = "https://app.heartex.ai/docs/guide/FAQ.html#Image-audio-resource-loading-error-while-labeling";
+const URL_CORS_DOCS = "https://labelstud.io/guide/storage.html#Troubleshoot-CORS-and-access-problems";
 
 export default {
   DONE: "Done!",
@@ -31,6 +31,12 @@ export default {
       .join(", ")}</b>`;
   },
 
+  ERR_PARENT_TAG_UNEXPECTED: ({ validType, value }) => {
+    return `Tag <b>${value}</b> must be a child of one of the tags <b>${[]
+      .concat(validType)
+      .join(", ")}</b>.`;
+  },
+
   ERR_BAD_TYPE: ({ modelName, field, validType }) => {
     return `Attribute <b>${field}</b> of tag <b>${modelName}</b> has invalid type. Valid types are: <b>${validType}</b>.`;
   },
@@ -56,7 +62,7 @@ export default {
     </p>
   ),
 
-  ERR_LOADING_S3: ({ attr, url, error }) => `
+  ERR_LOADING_S3: ({ attr, url }) => `
     <div>
       <p>
         There was an issue loading URL from <code>${attr}</code> value.
@@ -67,7 +73,7 @@ export default {
     </div>
   `,
 
-  ERR_LOADING_CORS: ({ attr, url, error }) => `
+  ERR_LOADING_CORS: ({ attr, url }) => `
     <div>
       <p>
         There was an issue loading URL from <code>${attr}</code> value.

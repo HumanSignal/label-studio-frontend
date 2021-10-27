@@ -1,6 +1,8 @@
-import { types, getParent, destroy } from "mobx-state-tree";
+import { destroy, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Result from "../regions/Result";
+import { defaultStyle } from "../core/Constants";
+import { PER_REGION_MODES } from "./PerRegion";
 
 export const AreaMixin = types
   .model({
@@ -14,12 +16,16 @@ export const AreaMixin = types
       return self.id.replace(/#.*/, "");
     },
 
-    get annotation() {
-      return getParent(self, 2);
+    get labeling() {
+      return self.results.find(r => r.type.endsWith("labels") && r.hasValue);
     },
 
-    get labeling() {
-      return self.results.find(r => r.type.endsWith("labels"));
+    get emptyLabel() {
+      return self.results.find(r => r.from_name?.emptyLabel)?.from_name?.emptyLabel;
+    },
+
+    get texting() {
+      return self.results.find(r => r.type === "textarea" && r.hasValue);
     },
 
     get tag() {
@@ -27,11 +33,46 @@ export const AreaMixin = types
     },
 
     hasLabel(value) {
-      return self.labeling?.mainValue?.includes(value);
+      const labels = self.labeling?.mainValue;
+
+      if (!labels) return false;
+      // label can contain comma, so check for full match first
+      if (labels.includes(value)) return true;
+      if (value.includes(",")) {
+        return value.split(",").some(v => labels.includes(v));
+      }
+      return false;
     },
 
     get perRegionTags() {
       return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
+    },
+
+    get perRegionDescControls() {
+      return self.perRegionTags.filter(tag => tag.displaymode === PER_REGION_MODES.REGION_LIST);
+    },
+
+    get perRegionFocusTarget() {
+      return self.perRegionTags.find(tag => tag.isVisible !== false && tag.focusable);
+    },
+
+    get labelName() {
+      return self.labeling?.mainValue?.[0] || self.emptyLabel?._value;
+    },
+
+    get labels() {
+      return Array.from(self.labeling?.mainValue ?? []);
+    },
+
+    getLabelText(joinstr) {
+      const label = self.labeling;
+      const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, " ");
+      const labelNames = label?.getSelectedString(joinstr);
+      const labelText = [];
+
+      if (labelNames) labelText.push(labelNames);
+      if (text) labelText.push(text);
+      return labelText.join(": ");
     },
 
     get parent() {
@@ -40,7 +81,13 @@ export const AreaMixin = types
 
     get style() {
       const styled = self.results.find(r => r.style);
-      return styled && styled.style;
+
+      if (styled && styled.style) {
+        return styled.style;
+      }
+      const emptyStyled = self.results.find(r => r.emptyStyle);
+
+      return emptyStyled && emptyStyled.emptyStyle;
     },
 
     // @todo may be slow, consider to add some code to annotation (un)select* methods
@@ -49,10 +96,18 @@ export const AreaMixin = types
     },
 
     getOneColor() {
-      return self.style?.fillcolor || "#ccc";
+      return (self.style || defaultStyle).fillcolor;
+    },
+
+    get highlighted() {
+      return self.parent?.selectionArea?.isActive ? self.isInSelectionArea : self._highlighted;
+    },
+
+    get isInSelectionArea() {
+      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
     },
   }))
-  .volatile(self => ({
+  .volatile(() => ({
     // selected: false,
   }))
   .actions(self => ({
@@ -80,6 +135,7 @@ export const AreaMixin = types
 
     removeResult(r) {
       const index = self.results.indexOf(r);
+
       if (index < 0) return;
       self.results.splice(index, 1);
       destroy(r);
@@ -89,6 +145,7 @@ export const AreaMixin = types
     setValue(tag) {
       const result = self.results.find(r => r.from_name === tag);
       const values = tag.selectedValues();
+
       if (result) {
         if (tag.holdsState) result.setValue(values);
         else self.removeResult(result);

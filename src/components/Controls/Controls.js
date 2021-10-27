@@ -1,11 +1,12 @@
 import React from "react";
-import { Button, Tooltip } from "antd";
-import { observer, inject } from "mobx-react";
-import { CheckOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { inject, observer } from "mobx-react";
+import { CheckCircleOutlined, CheckOutlined } from "@ant-design/icons";
 
 import Hint from "../Hint/Hint";
 import { DraftPanel } from "../Annotations/Annotations";
 import styles from "./Controls.module.scss";
+import { Button } from "../../common/Button/Button";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -14,7 +15,7 @@ export default inject("store")(
     /**
      * Buttons of Controls
      */
-    let buttons = {
+    const buttons = {
       skip: "",
       update: "",
       submit: "",
@@ -27,6 +28,7 @@ export default inject("store")(
      * Task information
      */
     let taskInformation;
+
     if (store.task) {
       taskInformation = <h4 className={styles.task + " ls-task-info"}>Task ID: {store.task.id}</h4>;
     }
@@ -54,7 +56,7 @@ export default inject("store")(
       if (store.hasInterface("skip")) {
         skipButton = (
           <Tooltip title="Cancel (skip) task: [ Ctrl+Space ]" mouseEnterDelay={TOOLTIP_DELAY}>
-            <Button disabled={disabled} type="ghost" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
+            <Button disabled={disabled} look="danger" onClick={store.skipTask} className={styles.skip + " ls-skip-btn"}>
               Skip {buttons.skip}
             </Button>
           </Tooltip>
@@ -66,7 +68,7 @@ export default inject("store")(
           <Tooltip title="Save results: [ Ctrl+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               disabled={disabled}
-              type="primary"
+              look="primary"
               icon={<CheckOutlined />}
               onClick={store.submitAnnotation}
               className={styles.submit + " ls-submit-btn"}
@@ -82,7 +84,7 @@ export default inject("store")(
           <Tooltip title="Update this task: [ Alt+Enter ]" mouseEnterDelay={TOOLTIP_DELAY}>
             <Button
               disabled={disabled}
-              type="primary"
+              look="primary"
               icon={<CheckCircleOutlined />}
               onClick={store.updateAnnotation}
               className="ls-update-btn"
@@ -98,7 +100,7 @@ export default inject("store")(
       }
     }
 
-    let content = (
+    const content = (
       <div className={styles.block}>
         <div className={styles.wrapper}>
           <div className={styles.container}>

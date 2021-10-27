@@ -1,158 +1,224 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
-import { HighlightOutlined } from "@ant-design/icons";
 
 import BaseTool from "./Base";
-import SliderTool from "../components/Tools/Slider";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
+import { clamp, findClosestParent } from "../utils/utilities";
+import { DrawingTool } from "../mixins/DrawingTool";
+import { Tool } from "../components/Toolbar/Tool";
+import { Range } from "../common/Range/Range";
+import { NodeViews } from "../components/Node/Node";
+
+const MIN_SIZE = 1;
+const MAX_SIZE = 50;
+
+const IconDot = ({ size }) => {
+  return (
+    <span style={{
+      display: 'block',
+      width: size,
+      height: size,
+      background: 'rgba(0, 0, 0, 0.25)',
+      borderRadius: '100%',
+    }}/>
+  );
+};
 
 const ToolView = observer(({ item }) => {
   return (
-    <SliderTool
-      selected={item.selected}
-      icon={<HighlightOutlined />}
-      onClick={ev => {
-        const sel = item.selected;
-        item.manager.unselectAll();
+    <Tool
+      label="Brush"
+      ariaLabel="brush-tool"
+      active={item.selected}
+      shortcut={item.shortcut}
+      extraShortcuts={item.extraShortcuts}
+      icon={item.iconClass}
+      tool={item}
+      onClick={() => {
+        if (item.selected) return;
 
-        item.setSelected(!sel);
-
-        if (item.selected) {
-          item.updateCursor();
-        }
+        item.manager.selectTool(item, true);
       }}
-      onChange={val => {
-        item.setStroke(val);
-        item.updateCursor();
-      }}
+      controls={item.controls}
     />
   );
 });
 
 const _Tool = types
-  .model({
-    strokeWidth: types.optional(types.number, 10),
+  .model("BrushTool", {
+    strokeWidth: types.optional(types.number, 15),
+    group: "segmentation",
+    shortcut: "B",
+    smart: true,
   })
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
-
+    get iconComponent() {
+      return self.dynamic
+        ? NodeViews.BrushRegionModel.altIcon
+        : NodeViews.BrushRegionModel.icon;
+    },
     get tagTypes() {
       return {
         stateTypes: "brushlabels",
         controlTagTypes: ["brushlabels", "brush"],
       };
     },
+    get controls() {
+      return [
+        <Range
+          key="brush-size"
+          value={self.strokeWidth}
+          min={MIN_SIZE}
+          max={MAX_SIZE}
+          reverse
+          align="vertical"
+          minIcon={<IconDot size={8}/>}
+          maxIcon={<IconDot size={16}/>}
+          onChange={(value) => {
+            self.setStroke(value);
+          }}
+        />,
+      ];
+    },
+    get extraShortcuts() {
+      return {
+        "[": ["Decrease size", () => {
+          self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
+        }],
+        "]": ["Increase size", () => {
+          self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
+        }],
+      };
+    },
   }))
-  .actions(self => ({
-    fromStateJSON(json, controlTag) {
-      const region = self.createFromJSON(json, controlTag);
+  .actions(self => {
+    let brush, isFirstBrushStroke;
 
-      if (json.value.points) {
-        const p = region.addPoints({ type: "add" });
-        p.addPoints(json.value.points);
-      }
+    return {
+      fromStateJSON(json, controlTag) {
+        const region = self.createFromJSON(json, controlTag);
 
-      if (json.value.format === "rle") {
-        region._rle = json.value.rle;
-      }
+        if (json.value.points) {
+          const p = region.addPoints({ type: "add" });
 
-      return region;
-    },
+          p.addPoints(json.value.points);
+        }
 
-    // fromStateJSON(obj, fromModel) {
-    //   if ("brushlabels" in obj.value) {
-    //     const states = restoreNewsnapshot(fromModel);
-    //     states.fromStateJSON(obj);
+        if (json.value.format === "rle") {
+          region._rle = json.value.rle;
+        }
 
-    //     const region = self.createRegion({
-    //       pid: obj.id,
-    //       stroke: states.getSelectedColor(),
-    //       states: states,
-    //       // coordstype: "px",
-    //       // points: obj.value.points,
-    //     });
+        return region;
+      },
 
-    //     if (obj.value.points) {
-    //       const p = region.addPoints({ type: "add" });
-    //       p.addPoints(obj.value.points);
-    //     }
+      commitDrawingRegion() {
+        const { currentArea, control, obj } = self;
+        const source = currentArea.toJSON();
 
-    //     if (obj.value.format === "rle") {
-    //       region._rle = obj.value.rle;
-    //     }
-    //   }
-    // },
+        const value = { coordstype: "px", touches: source.touches, dynamic: source.dynamic };
+        const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
-    createRegion(opts) {
-      const control = self.control;
-      const labels = { [control.valueType]: control.selectedValues?.() };
-      return self.obj.annotation.createResult(opts, labels, control, self.obj);
-    },
+        self.applyActiveStates(newArea);
+        self.deleteRegion();
+        return newArea;
+      },
 
-    updateCursor() {
-      const val = self.strokeWidth;
-      const stage = self.obj.stageRef;
-      const base64 = Canvas.brushSizeCircle(val);
-      const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
+      updateCursor() {
+        if (!self.selected || !self.obj.stageRef) return;
+        const val = self.strokeWidth;
+        const stage = self.obj.stageRef;
+        const base64 = Canvas.brushSizeCircle(val);
+        const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
 
-      stage.container().style.cursor = cursor.join("");
-    },
+        stage.container().style.cursor = cursor.join("");
+      },
 
-    setStroke(val) {
-      self.strokeWidth = val;
-    },
+      setStroke(val) {
+        self.strokeWidth = val;
+      },
 
-    mouseupEv() {
-      self.mode = "viewing";
-    },
+      afterUpdateSelected() {
+        self.updateCursor();
+      },
 
-    mousemoveEv(ev, [x, y]) {
-      if (self.mode !== "drawing") return;
+      addPoint(x, y) {
+        brush.addPoint(Math.floor(x), Math.floor(y));
+      },
 
-      const shape = self.getSelectedShape;
+      mouseupEv() {
+        if (self.mode !== "drawing") return;
+        self.mode = "viewing";
+        brush.setDrawing(false);
+        brush.endPath();
+        if (isFirstBrushStroke) {
+          const newBrush = self.commitDrawingRegion();
 
-      shape.currentTouch.addPoints(Math.floor(x), Math.floor(y));
-    },
+          self.obj.annotation.selectArea(newBrush);
+        }
+      },
 
-    mousedownEv(ev, [x, y]) {
-      const c = self.control;
-      const brush = self.getSelectedShape;
+      mousemoveEv(ev, [x, y]) {
+        if (self.mode !== "drawing") return;
+        if (
+          !findClosestParent(
+            ev.target,
+            el => el === self.obj.stageRef.content,
+            el => el.parentElement,
+          )
+        )
+          return;
 
-      if (brush) {
-        self.mode = "drawing";
+        self.addPoint(x, y);
+      },
 
-        const p = brush.addTouch({
-          type: "add",
-          strokeWidth: self.strokeWidth || c.strokeWidth,
-        });
+      mousedownEv(ev, [x, y]) {
+        if (
+          !findClosestParent(
+            ev.target,
+            el => el === self.obj.stageRef.content,
+            el => el.parentElement,
+          )
+        )
+          return;
+        const c = self.control;
 
-        p.addPoints(Math.floor(x), Math.floor(y));
-      } else {
-        if (c.isSelected) {
+        // Reset the timer if a user started drawing again
+        brush = self.getSelectedShape;
+        if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
-
-          const brush = self.createRegion({
-            touches: [],
-            coordstype: "px",
-          });
-
-          self.obj.annotation.selectArea(brush);
-
-          const p = brush.addTouch({
+          brush.setDrawing(true);
+          isFirstBrushStroke = false;
+          brush.beginPath({
             type: "add",
             strokeWidth: self.strokeWidth || c.strokeWidth,
           });
 
-          p.addPoints(Math.floor(x), Math.floor(y));
-        }
-      }
-    },
-  }));
+          self.addPoint(x, y);
+        } else {
+          if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
+          self.mode = "drawing";
+          isFirstBrushStroke = true;
+          brush = self.createDrawingRegion({
+            touches: [],
+            coordstype: "px",
+          });
 
-const Brush = types.compose(ToolMixin, BaseTool, _Tool);
+          brush.beginPath({
+            type: "add",
+            strokeWidth: self.strokeWidth || c.strokeWidth,
+          });
+
+          self.addPoint(x, y);
+        }
+      },
+    };
+  });
+
+const Brush = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);
 
 export { Brush };

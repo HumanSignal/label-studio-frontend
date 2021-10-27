@@ -1,20 +1,24 @@
-import React, { Fragment } from "react";
+import React, { useContext } from "react";
 import { Rect } from "react-konva";
-import { observer } from "mobx-react";
-import { types, getRoot, isAlive } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 
-import Constants, { defaultStyle } from "../core/Constants";
+import Constants  from "../core/Constants";
 import DisabledMixin from "../mixins/Normalization";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Registry from "../core/Registry";
-import Utils from "../utils";
 import WithStatesMixin from "../mixins/WithStates";
 import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { getBoundingBoxAfterChanges, fixRectToFit } from "../utils/image";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AliveRegion } from "./AliveRegion";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { RegionWrapper } from "./RegionWrapper";
+import { rotateBboxCoords } from "../utils/bboxCoords";
 
 /**
  * Rectangle object for Bounding Box
@@ -37,7 +41,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
 
@@ -51,11 +55,11 @@ const Model = types
     scaleX: 1,
     scaleY: 1,
 
-    opacity: 0.6,
+    opacity: 1,
 
     fill: true,
     fillColor: "#ff8800", // Constants.FILL_COLOR,
-    fillOpacity: 0.6,
+    fillOpacity: 0.2,
 
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
@@ -64,6 +68,14 @@ const Model = types
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
   }))
+  .volatile(() => {
+    return {
+      useTransformer: true,
+      preferTransformer: true,
+      supportsRotate: true,
+      supportsScale: true,
+    };
+  })
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -71,29 +83,47 @@ const Model = types
     get parent() {
       return self.object;
     },
+    get bboxCoords() {
+      const bboxCoords= {
+        left: self.x,
+        top: self.y,
+        right: self.x + self.width,
+        bottom: self.y + self.height,
+      };
+
+      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
+    },
   }))
   .actions(self => ({
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
 
-      if (self.coordstype === "perc") {
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-        self.relativeWidth = self.width;
-        self.relativeHeight = self.height;
+      switch (self.coordstype)  {
+        case "perc": {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case "px": {
+          const { stageWidth, stageHeight } = self.parent;
 
-        const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self.parent;
-        if (width && height) {
-          self.updateImageSize(width / naturalWidth, height / naturalHeight, width, height);
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+          }
+          break;
         }
       }
-
+      self.checkSizes();
       self.updateAppearenceFromState();
     },
 
+    // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
+
       if (degree === -90) p.y -= self.width;
       if (degree === 90) p.x -= self.height;
       self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
@@ -113,7 +143,7 @@ const Model = types
     },
 
     /**
-     * Boundg Box set position on canvas
+     * Bounding Box set position on canvas
      * @param {number} x
      * @param {number} y
      * @param {number} width
@@ -126,11 +156,11 @@ const Model = types
       self.width = width;
       self.height = height;
 
-      self.relativeX = (x / self.parent.stageWidth) * 100;
-      self.relativeY = (y / self.parent.stageHeight) * 100;
+      self.relativeX = (x / self.parent?.stageWidth) * 100;
+      self.relativeY = (y / self.parent?.stageHeight) * 100;
 
-      self.relativeWidth = (width / self.parent.stageWidth) * 100;
-      self.relativeHeight = (height / self.parent.stageHeight) * 100;
+      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
+      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
 
       self.rotation = (rotation + 360) % 360;
     },
@@ -163,36 +193,45 @@ const Model = types
       }
     },
 
+    /**
+     * @example
+     * {
+     *   "original_width": 1920,
+     *   "original_height": 1280,
+     *   "image_rotation": 0,
+     *   "value": {
+     *     "x": 3.1,
+     *     "y": 8.2,
+     *     "width": 20,
+     *     "height": 16,
+     *     "rectanglelabels": ["Car"]
+     *   }
+     * }
+     * @typedef {Object} RectRegionResult
+     * @property {number} original_width width of the original image (px)
+     * @property {number} original_height height of the original image (px)
+     * @property {number} image_rotation rotation degree of the image (deg)
+     * @property {Object} value
+     * @property {number} value.x x coordinate of the top left corner before rotation (0-100)
+     * @property {number} value.y y coordinate of the top left corner before rotation (0-100)
+     * @property {number} value.width width of the bounding box (0-100)
+     * @property {number} value.height height of the bounding box (0-100)
+     * @property {number} value.rotation rotation degree of the bounding box (deg)
+     */
+
+    /**
+     * @return {RectRegionResult}
+     */
     serialize() {
-      const object = self.object;
-      const degree = (360 - self.parent.rotation) % 360;
-      let { x, y } = self.rotatePoint(self, degree, false);
-      if (degree === 270) y -= self.width;
-      if (degree === 90) x -= self.height;
-      if (degree === 180) {
-        x -= self.width;
-        y -= self.height;
-      }
-
-      const natural = self.rotateDimensions({ width: object.naturalWidth, height: object.naturalHeight }, degree);
-      const stage = self.rotateDimensions({ width: object.stageWidth, height: object.stageHeight }, degree);
-      const { width, height } = self.rotateDimensions(
-        {
-          width: (self.width * (self.scaleX || 1) * 100) / object.stageWidth, //  * (self.scaleX || 1)
-          height: (self.height * (self.scaleY || 1) * 100) / object.stageHeight,
-        },
-        degree,
-      );
-
       return {
-        original_width: natural.width,
-        original_height: natural.height,
+        original_width: self.parent.naturalWidth,
+        original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (x * 100) / stage.width,
-          y: (y * 100) / stage.height,
-          width,
-          height,
+          x: self.convertXToPerc(self.x),
+          y: self.convertYToPerc(self.y),
+          width: self.convertHDimensionToPerc(self.width),
+          height: self.convertVDimensionToPerc(self.height),
           rotation: self.rotation,
         },
       };
@@ -206,86 +245,103 @@ const RectRegionModel = types.compose(
   NormalizationMixin,
   DisabledMixin,
   AreaMixin,
+  KonvaRegionMixin,
   Model,
 );
 
 const HtxRectangleView = ({ item }) => {
-  if (!isAlive(item)) return null;
-  if (item.hidden) return null;
-
   const { store } = item;
 
-  const style = item.style || item.tag || defaultStyle;
-  let { strokecolor, strokewidth } = style;
-  if (item.highlighted) {
-    strokecolor = Constants.HIGHLIGHTED_STROKE_COLOR;
-    strokewidth = Constants.HIGHLIGHTED_STROKE_WIDTH;
+  const { suggestion } = useContext(ImageViewContext) ?? {};
+  const regionStyles = useRegionStyles(item, { suggestion });
+  const stage = item.parent.stageRef;
+
+  const eventHandlers = {};
+
+  if (!suggestion) {
+    eventHandlers.onTransformEnd = (e) => {
+      const t = e.target;
+
+      item.setPosition(
+        t.getAttr("x"),
+        t.getAttr("y"),
+        t.getAttr("width") * t.getAttr("scaleX"),
+        t.getAttr("height") * t.getAttr("scaleY"),
+        t.getAttr("rotation"),
+      );
+
+      t.setAttr("scaleX", 1);
+      t.setAttr("scaleY", 1);
+
+      item.notifyDrawingFinished();
+    };
+
+    eventHandlers.onDragStart = (e) => {
+      if (item.parent.getSkipInteractions()) {
+        e.currentTarget.stopDrag(e.evt);
+        return;
+      }
+      item.annotation.history.freeze(item.id);
+    };
+
+    eventHandlers.onDragEnd = (e) => {
+      const t = e.target;
+
+      item.setPosition(
+        t.getAttr("x"),
+        t.getAttr("y"),
+        t.getAttr("width"),
+        t.getAttr("height"),
+        t.getAttr("rotation"),
+      );
+      item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
+      item.annotation.history.unfreeze(item.id);
+
+      item.notifyDrawingFinished();
+    };
+
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item.parent, pos => {
+      let { x, y } = pos;
+      const { width, height, rotation } = item;
+      const { stageHeight, stageWidth } = item.parent;
+      const selfRect = { x: 0, y: 0, width, height };
+      const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
+      const fixed = fixRectToFit(box, stageWidth, stageHeight);
+
+      if (fixed.width !== box.width) {
+        x += (fixed.width - box.width) * (fixed.x !== box.x ? -1 : 1);
+      }
+
+      if (fixed.height !== box.height) {
+        y += (fixed.height - box.height) * (fixed.y !== box.y ? -1 : 1);
+      }
+
+      return { x, y };
+    });
   }
 
   return (
-    <Fragment>
+    <RegionWrapper item={item}>
       <Rect
         x={item.x}
         y={item.y}
+        ref={node => item.setShapeRef(node)}
         width={item.width}
         height={item.height}
-        fill={item.fill ? Utils.Colors.convertToRGBA(style.fillcolor, +style.fillopacity) : null}
-        stroke={strokecolor}
-        strokeWidth={+strokewidth}
+        fill={regionStyles.fillColor}
+        stroke={regionStyles.strokeColor}
+        strokeWidth={regionStyles.strokeWidth}
         strokeScaleEnabled={false}
         shadowBlur={0}
+        dash={suggestion ? [10, 10] : null}
         scaleX={item.scaleX}
         scaleY={item.scaleY}
-        opacity={+style.opacity}
+        opacity={1}
         rotation={item.rotation}
-        name={item.id}
-        onTransformEnd={e => {
-          const t = e.target;
-
-          item.setPosition(
-            t.getAttr("x"),
-            t.getAttr("y"),
-            t.getAttr("width") * t.getAttr("scaleX"),
-            t.getAttr("height") * t.getAttr("scaleY"),
-            t.getAttr("rotation"),
-          );
-
-          t.setAttr("scaleX", 1);
-          t.setAttr("scaleY", 1);
-        }}
-        onDragEnd={e => {
-          const t = e.target;
-
-          item.setPosition(
-            t.getAttr("x"),
-            t.getAttr("y"),
-            t.getAttr("width"),
-            t.getAttr("height"),
-            t.getAttr("rotation"),
-          );
-          item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
-        }}
-        dragBoundFunc={item.parent.fixForZoom(pos => {
-          let { x, y } = pos;
-          const { width, height, rotation } = item;
-          const { stageHeight, stageWidth } = item.parent;
-          const selfRect = { x: 0, y: 0, width, height };
-          const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
-          const fixed = fixRectToFit(box, stageWidth, stageHeight);
-
-          if (fixed.width !== box.width) {
-            x += (fixed.width - box.width) * (fixed.x !== box.x ? -1 : 1);
-          }
-
-          if (fixed.height !== box.height) {
-            y += (fixed.height - box.height) * (fixed.y !== box.y ? -1 : 1);
-          }
-
-          return { x, y };
-        })}
-        onMouseOver={e => {
-          const stage = item.parent.stageRef;
-
+        draggable={item.editable}
+        name={`${item.id} _transformable`}
+        {...eventHandlers}
+        onMouseOver={() => {
           if (store.annotationStore.selected.relationMode) {
             item.setHighlight(true);
             stage.container().style.cursor = Constants.RELATION_MODE_CURSOR;
@@ -293,8 +349,7 @@ const HtxRectangleView = ({ item }) => {
             stage.container().style.cursor = Constants.POINTER_CURSOR;
           }
         }}
-        onMouseOut={e => {
-          const stage = item.parent.stageRef;
+        onMouseOut={() => {
           stage.container().style.cursor = Constants.DEFAULT_CURSOR;
 
           if (store.annotationStore.selected.relationMode) {
@@ -302,24 +357,22 @@ const HtxRectangleView = ({ item }) => {
           }
         }}
         onClick={e => {
-          const stage = item.parent.stageRef;
-          if (!item.annotation.editable) return;
-
+          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
 
           item.setHighlight(false);
-          item.onClickRegion();
+          item.onClickRegion(e);
         }}
-        draggable={item.editable}
+        listening={!suggestion}
       />
-      <LabelOnRect item={item} />
-    </Fragment>
+      <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
+    </RegionWrapper>
   );
 };
 
-const HtxRectangle = observer(HtxRectangleView);
+const HtxRectangle = AliveRegion(HtxRectangleView);
 
 Registry.addTag("rectangleregion", RectRegionModel, HtxRectangle);
 Registry.addRegionType(RectRegionModel, "image");

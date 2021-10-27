@@ -1,4 +1,4 @@
-import { getType, getSnapshot } from "mobx-state-tree";
+import { getSnapshot, getType } from "mobx-state-tree";
 import { guidGenerator } from "../utils/unique";
 
 /**
@@ -26,6 +26,7 @@ export function cloneNode(node) {
     ...snapshot,
     id: guidGenerator(),
   });
+
   return snapshotRandomId;
 }
 
