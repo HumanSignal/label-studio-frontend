@@ -165,7 +165,7 @@ const HtxVideoView = ({ item }) => {
             muted={item.muted}
             zoom={zoom}
             pan={pan}
-            framerate={item.frameRate}
+            framerate={item.framerate}
             onFrameChange={(position, length) => {
               setPosition(position);
               setVideoLength(length);
@@ -188,7 +188,7 @@ const HtxVideoView = ({ item }) => {
           length={videoLength}
           position={position}
           regions={regions}
-          framerate={item.frameRate}
+          framerate={item.framerate}
           onPositionChange={item.setFrame}
           onPlayToggle={setPlaying}
           onToggleVisibility={(id) => {

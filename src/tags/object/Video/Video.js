@@ -45,7 +45,7 @@ const TagAttrs = types.model({
   name: types.identifier,
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
-  framerate: types.optional(types.string, "0.04"),
+  framerate: types.optional(types.string, "24"),
   muted: false,
 });
 
@@ -69,12 +69,6 @@ const Model = types
 
     get regs() {
       return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-    },
-
-    get frameRate() {
-      const given = self.framerate ?? 25;
-
-      return +(given < 1 ? 1 / given : given);
     },
 
     get currentFrame() {
@@ -102,6 +96,13 @@ const Model = types
     },
   }))
   .actions(self => ({
+    afterCreate() {
+      const { framerate } = self;
+
+      if (!framerate) self.framerate = 24;
+      else if (framerate < 1) self.framerate = 1 / framerate;
+    },
+
     handleSyncSeek(time) {
       if (self.ref.current) {
         self.ref.current.currentTime = time;
@@ -131,7 +132,7 @@ const Model = types
 
     setFrame(frame) {
       self.frame = frame;
-      self.ref.current.currentTime = frame * self.framerate;
+      self.ref.current.currentTime = frame / self.framerate;
     },
 
     addRegion(data) {

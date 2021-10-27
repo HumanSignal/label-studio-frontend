@@ -185,7 +185,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   // Handle extrnal state change [position]
   useEffect(() => {
     if (videoRef.current && props.position) {
-      videoRef.current.currentTime = props.position * framerate;
+      videoRef.current.currentTime = props.position / framerate;
     }
   }, [framerate, props.position]);
 
