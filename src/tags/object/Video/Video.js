@@ -131,6 +131,17 @@ const Model = types
 
       return area;
     },
+
+    deleteRegion(id) {
+      const reg = self.regs.find(reg => reg.id === id || reg.pid === id);
+
+      console.log({ reg });
+      if (reg) self.annotation?.regionStore?.deleteRegion(reg);
+    },
+
+    findRegion(id) {
+      return self.regs.find(reg => reg.pid === id);
+    },
   }));
 
 export const VideoModel = types.compose("VideoModel", SyncMixin, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);

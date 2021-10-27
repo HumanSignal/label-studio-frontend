@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { IconMagnifyTool, IconMinifyTool } from "../../../assets/icons";
+import { Button } from "../../../common/Button/Button";
+import { Dropdown } from "../../../common/Dropdown/Dropdown";
+import { Menu } from "../../../common/Menu/Menu";
+import { Range } from "../../../common/Range/Range";
+import { Space } from "../../../common/Space/Space";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
 import { Hotkey } from "../../../core/Hotkey";
-import { Block } from "../../../utils/bem";
+import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
 
 import "./Video.styl";
@@ -13,20 +19,20 @@ import { VideoRegions } from "./VideoRegions";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
 
-const HtxVideoView = ({ item }) => {
+const HtxVideoView = ({ store, item }) => {
   if (!item._value) return null;
-  const root = useRef();
+  const videoContainerRef = useRef();
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(1);
 
   const [videoSize, setVideoSize] = useState([0, 0]);
-  const [zoom, setZoom] = useState();
+  const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const block = root.current;
+    const block = videoContainerRef.current;
 
     if (block) {
       setVideoSize([
@@ -50,14 +56,14 @@ const HtxVideoView = ({ item }) => {
       e.preventDefault();
     };
 
-    root.current.addEventListener('wheel', cancelWheel);
+    videoContainerRef.current.addEventListener('wheel', cancelWheel);
 
-    return () => root.current.removeEventListener('wheel', cancelWheel);
+    return () => videoContainerRef.current.removeEventListener('wheel', cancelWheel);
   }, []);
 
   useEffect(() => {
     const onResize = () => {
-      const block = root.current;
+      const block = videoContainerRef.current;
 
       if (block) {
         setVideoSize([
@@ -80,6 +86,24 @@ const HtxVideoView = ({ item }) => {
 
     setZoom(newZoom);
   }, []);
+
+  const zoomIn = useCallback(() => {
+    setZoom(zoom + 0.1);
+  }, [zoom]);
+
+  const zoomOut = useCallback(() => {
+    setZoom(zoom - 0.1);
+  }, [zoom]);
+
+  const zoomToFit = useCallback(() => {
+    setZoom(item.ref.current.videoDimensions.ratio);
+    setPan({ x: 0, y: 0 });
+  }, []);
+
+  const zoomToHundered = useCallback(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  });
 
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
@@ -105,39 +129,58 @@ const HtxVideoView = ({ item }) => {
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
 
-      <Block ref={root} name="video" style={{ minHeight: 600 }} onWheel={handleZoom}>
-        {loaded && (
-          <VideoRegions
-            item={item}
-            zoom={zoom}
-            pan={pan}
-            regions={item.regs}
+      <Block name="video">
+        <Elem tag={Space} name="controls" align="end" size="small">
+          <Dropdown.Trigger
+            content={(
+              <Menu size="medium" closeDropdownOnItemClick={false}>
+                <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
+                <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
+                <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
+                <Menu.Item onClick={zoomToHundered}>Zoom 100%</Menu.Item>
+              </Menu>
+            )}
+          >
+            <Button size="small">
+              Zoom {Math.round(zoom * 100)}%
+            </Button>
+          </Dropdown.Trigger>
+        </Elem>
+        <Elem ref={videoContainerRef} name="main" style={{ minHeight: 600 }} onWheel={handleZoom}>
+          {loaded && (
+            <VideoRegions
+              item={item}
+              zoom={zoom}
+              pan={pan}
+              regions={item.regs}
+              width={videoSize[0]}
+              height={videoSize[1]}
+            />
+          )}
+          <VideoCanvas
+            ref={item.ref}
+            src={item._value}
             width={videoSize[0]}
             height={videoSize[1]}
+            muted={item.muted}
+            zoom={zoom}
+            pan={pan}
+            framerate={item.frameRate}
+            onFrameChange={(position, length) => {
+              setPosition(position);
+              setVideoLength(length);
+              item.setOnlyFrame(position);
+            }}
+            onLoad={({ length }) => {
+              setLoaded(true);
+              setZoom(item.ref.current.videoDimensions.ratio);
+              setVideoLength(length);
+              item.setOnlyFrame(1);
+            }}
           />
-        )}
-        <VideoCanvas
-          ref={item.ref}
-          src={item._value}
-          width={videoSize[0]}
-          height={videoSize[1]}
-          muted={item.muted}
-          zoom={zoom}
-          pan={pan}
-          framerate={item.frameRate}
-          onFrameChange={(position, length) => {
-            setPosition(position);
-            setVideoLength(length);
-            item.setOnlyFrame(position);
-          }}
-          onLoad={({ length }) => {
-            setLoaded(true);
-            setVideoLength(length);
-            item.setOnlyFrame(1);
-          }}
-        />
-        {/* <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} /> */}
-        {/* <Controls item={item} video={mounted && item.ref.current} /> */}
+          {/* <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} /> */}
+          {/* <Controls item={item} video={mounted && item.ref.current} /> */}
+        </Elem>
       </Block>
       {loaded && (
         <Timeline
@@ -149,17 +192,13 @@ const HtxVideoView = ({ item }) => {
           onPositionChange={item.setFrame}
           onPlayToggle={setPlaying}
           onToggleVisibility={(id) => {
-            const reg = item.regs.find(reg => reg.pid === id || reg.id === id);
-
-            reg?.toggleHidden();
+            item.findRegion(id)?.toggleHidden();
           }}
-          // onDeleteRegion={(id) => {
-          //   // setRegions(regions.filter(reg => reg.id !== id));
-          // }}
+          onDeleteRegion={(id) => {
+            item.deleteRegion(id);
+          }}
           onSelectRegion={(_, id) => {
-            const reg = item.regs.find(reg => reg.pid === id || reg.id === id);
-
-            reg?.onClickRegion();
+            item.findRegion(id)?.onClickRegion();
           }}
           onAction={(_, action, data) => {
             const region = item.regs.find(reg => reg.selected);

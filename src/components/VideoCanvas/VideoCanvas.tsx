@@ -1,4 +1,4 @@
-import { forwardRef, LegacyRef, MouseEvent, useCallback, useEffect, useRef, useState, WheelEvent } from "react";
+import { forwardRef, LegacyRef, MouseEvent, useCallback, useEffect, useMemo, useRef, useState, WheelEvent } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
@@ -40,6 +40,11 @@ export interface VideoRef {
   height: number;
   zoom: number;
   pan: PanOptions;
+  videoDimensions: {
+    width: number,
+    height: number,
+    ratio: number,
+  };
   play: () => void;
   pause: () => void;
   goToFrame: (frame: number) => void;
@@ -63,8 +68,8 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const contextRef = useRef<CanvasRenderingContext2D | null>();
   const videoRef = useRef<HTMLVideoElement>();
 
-  const canvasWidth = props.width ?? 600;
-  const canvasHeight = props.height ?? 600;
+  const canvasWidth = useMemo(() => props.width ?? 600, [props.width]);
+  const canvasHeight = useMemo(() => props.height ?? 600, [props.height]);
 
   const [minZoom, maxZoom] = [zoomSteps[0], zoomSteps[zoomSteps.length - 1]];
 
@@ -72,11 +77,12 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const [loading, setLoading] = useState(true);
   const [length, setLength] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(props.position ?? 1);
-  const [size, setSize] = useState([0,0]);
   const [playing, setPlaying] = useState(false);
   const [buffering, setBuffering] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<PanOptions>({ x: 0, y: 0 });
+
+  const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
 
   const [contrast, setContrast] = useState(1);
   const [brightness, setBrightness] = useState(1.5);
@@ -86,10 +92,12 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     try {
       if (contextRef.current && videoRef.current) {
         const context = contextRef.current;
-        const ratio = Math.min(1, Math.min((canvasWidth / size[0]), (canvasHeight / size[1])));
+        const { width, height, ratio } = videoDimensions;
 
-        const resultWidth = (size[0] * ratio) * zoom;
-        const resultHeight = (size[1] * ratio) * zoom;
+        if (width === 0 && height === 0) return;
+
+        const resultWidth = (width * zoom);
+        const resultHeight = (height * zoom);
 
         const offsetLeft = ((canvasWidth - resultWidth) / 2) + pan.x;
         const offsetTop = ((canvasHeight - resultHeight) / 2) + pan.y;
@@ -99,7 +107,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
         context.save();
         context.filter = `contrast(${contrast}) brightness(${brightness}) saturate(${saturation})`;
         context.drawImage(videoRef.current,
-          0, 0, size[0], size[1],
+          0, 0, width, height,
           offsetLeft, offsetTop, resultWidth, resultHeight,
         );
         context.restore();
@@ -243,6 +251,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     playing,
     zoom,
     pan,
+    videoDimensions,
     width: canvasWidth,
     height: canvasHeight,
     set currentTime(time: number) {
@@ -311,6 +320,16 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   }
 
   useEffect(() => {
+    const { width, height } = videoDimensions;
+    const ratio = Math.min(1, Math.min((canvasWidth / width), (canvasHeight / height)));
+
+    if (videoDimensions.ratio !== ratio) {
+      setVideoDimensions({ ...videoDimensions, ratio });
+      setZoom(ratio);
+    }
+  }, [canvasWidth, canvasHeight, videoDimensions]);
+
+  useEffect(() => {
     let isLoaded = false;
 
     const checkVideoLoaded = () => {
@@ -322,10 +341,13 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
         setTimeout(() => {
           const length = Math.ceil(video.duration * framerate);
-          const size = [video.videoWidth, video.videoHeight];
 
+          setVideoDimensions({
+            width: video.videoWidth,
+            height: video.videoHeight,
+            ratio: 1,
+          });
           setLength(length);
-          setSize(size);
           setLoading(false);
           updateFrame(true);
 
