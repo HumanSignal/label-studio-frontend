@@ -19,7 +19,7 @@ import { VideoRegions } from "./VideoRegions";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
 
-const HtxVideoView = ({ store, item }) => {
+const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
   const videoContainerRef = useRef();
   const [loaded, setLoaded] = useState(false);

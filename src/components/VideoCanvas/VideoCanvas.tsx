@@ -40,6 +40,8 @@ export interface VideoRef {
   height: number;
   zoom: number;
   pan: PanOptions;
+  volume: number;
+  currentTime: number;
   videoDimensions: {
     width: number,
     height: number,
@@ -54,10 +56,6 @@ export interface VideoRef {
   setSaturation: (value: number) => void;
   setZoom: (value: number) => void;
   setPan: (x: number, y: number) => void;
-  set currentTime(time: number);
-  get currentTime(): number;
-  set volume(value: number);
-  get volume(): number;
   readonly duration: number;
 }
 
@@ -96,8 +94,8 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
         if (width === 0 && height === 0) return;
 
-        const resultWidth = (width * zoom);
-        const resultHeight = (height * zoom);
+        const resultWidth = width * zoom;
+        const resultHeight = height * zoom;
 
         const offsetLeft = ((canvasWidth - resultWidth) / 2) + pan.x;
         const offsetTop = ((canvasHeight - resultHeight) / 2) + pan.y;

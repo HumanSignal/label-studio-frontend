@@ -133,14 +133,11 @@ const Model = types
     },
 
     deleteRegion(id) {
-      const reg = self.regs.find(reg => reg.id === id || reg.pid === id);
-
-      console.log({ reg });
-      if (reg) self.annotation?.regionStore?.deleteRegion(reg);
+      self.findRegion(id)?.deleteRegion();
     },
 
     findRegion(id) {
-      return self.regs.find(reg => reg.pid === id);
+      return self.regs.find(reg => reg.id === id);
     },
   }));
 
