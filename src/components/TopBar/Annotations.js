@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconPlusCircle, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -8,6 +8,7 @@ import { isDefined, userDisplayName } from "../../utils/utilities";
 import "./Annotations.styl";
 
 export const Annotations = observer(({ store, annotationStore }) => {
+  const dropdownRef = useRef();
   const [opened, setOpened] = useState(false);
 
   const entities = [
@@ -25,13 +26,32 @@ export const Annotations = observer(({ store, annotationStore }) => {
     }
   }, [annotationStore]);
 
+  useEffect(() => {
+    const handleClick = (e) => {
+      const target = e.target;
+      const dropdown = dropdownRef.current;
+
+      if (target !== dropdown && !dropdown.contains(target)) {
+        setOpened(false);
+      }
+    };
+
+    document.addEventListener('click', handleClick);
+
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
+
+
   return (
     <Elem name="section" mod={{ flat: true }}>
-      <Block name="annotations-list">
+      <Block name="annotations-list" ref={dropdownRef}>
         <Elem name="selected">
           <Annotation
             entity={annotationStore.selected}
-            onClick={() => setOpened(!opened)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpened(!opened);
+            }}
             extra={(
               <Space size="none" style={{ marginRight: -8 }}>
                 <Elem name="counter">
