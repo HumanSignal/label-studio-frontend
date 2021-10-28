@@ -14,13 +14,6 @@ const getNodeAbsoluteDimensions = (node, workingArea) => {
   };
 };
 
-const setNodeMinSize = (node) => {
-  node.scaleX(1);
-  node.scaleY(1);
-  node.setWidth(Math.max(3, node.width() * node.scaleX()));
-  node.setHeight(node.height() * node.scaleY());
-};
-
 const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
   const box = reg.getBBox(frame);
   const style = useRegionStyles(reg, { includeFill: true });
@@ -48,15 +41,23 @@ const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
       opacity={reg.hidden ? 0 : 1}
       onTransformEnd={e => {
         const node = e.target;
+        const scaleX = node.scaleX();
+        const scaleY = node.scaleY();
+        // set minimal value
+        const w = Math.max(3, node.width() * scaleX);
+        const h = Math.max(3, node.height() * scaleY);
+
+        node.scaleX(1);
+        node.scaleY(1);
+        node.setWidth(w);
+        node.setHeight(h);
 
         reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
-        // setNodeMinSize(node);
       }}
       onDragEnd={e => {
         const node = e.target;
 
         reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
-        setNodeMinSize(node);
       }}
       {...rest}
     />

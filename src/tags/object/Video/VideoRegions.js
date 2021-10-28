@@ -83,14 +83,23 @@ const VideoRegionsPure = ({
 
   useEffect(() => {
     if (!isDrawing && newRegion) {
-      const { width, height } = workingArea;
+      const { width: waWidth, height: waHeight } = workingArea;
+      let x = (newRegion.x / waWidth) * 100;
+      let y = (newRegion.y / waHeight) * 100;
+      let width = (newRegion.width / waWidth) * 100;
+      let height = (newRegion.height / waHeight) * 100;
 
-      const fixedRegion = {
-        x: (newRegion.x / width) * 100,
-        y: (newRegion.y / height) * 100,
-        width: (newRegion.width / width) * 100,
-        height: (newRegion.height / height) * 100,
-      };
+      // deal with negative sizes
+      if (width < 0) {
+        width *= -1;
+        x -= width;
+      }
+      if (height < 0) {
+        height *= -1;
+        y -= height;
+      }
+
+      const fixedRegion = { x, y, width, height };
 
       item.addRegion(fixedRegion);
       setNewRegion(null);
