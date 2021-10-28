@@ -1,10 +1,9 @@
 import { observer } from "mobx-react-lite";
-import { getEnv } from "mobx-state-tree";
+import { useMemo } from "react";
 import { Button } from "../../common/Button/Button";
 import { Block, Elem } from "../../utils/bem";
 import { guidGenerator } from "../../utils/unique";
 import "./CurrentTask.styl";
-
 
 
 export const CurrentTask = observer(({ store }) => {
@@ -18,20 +17,41 @@ export const CurrentTask = observer(({ store }) => {
     store.prevTask();
   };
 
+  const currentIndex = useMemo(() => {
+    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
+  }, [store.taskHistory]);
+
   return (
     <Elem name="section">
       <Block name="current-task">
-        <Button
-          onClick={nextTask}
+        <Elem
+          name="task-id"
         >
-          Next
-        </Button>
-        <Button
+          {store.task.id ?? guidGenerator()}
+        </Elem>
+        <Elem
+          name="task-count"
+        >
+          {currentIndex} of {store.taskHistory.length}
+        </Elem>
+        <Elem
+          tag={Button}
+          name="prevnext"
+          mod={{ prev: true, disabled: !store.canGoPrevTask, hidden: !store.hasInterface('topbar:prevnext') }}
+          type="link"
+          disabled={!store.canGoPrevTask}
           onClick={prevTask}
-        >
-          Prev
-        </Button>
-        #{store.task.id ?? guidGenerator()}
+          style={{ background: 'none', backgroundColor: 'none' }}
+        />
+        <Elem
+          tag={Button}
+          name="prevnext"
+          mod={{ next: true, disabled: !store.canGoNextTask, hidden: !store.hasInterface('topbar:prevnext') }}
+          type="link"
+          disabled={!store.canGoNextTask}
+          onClick={nextTask}
+          style={{ background: 'none', backgroundColor: 'none' }}
+        />
       </Block>
     </Elem>
   );
