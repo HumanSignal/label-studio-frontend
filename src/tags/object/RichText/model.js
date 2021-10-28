@@ -223,10 +223,6 @@ const Model = types
       needsUpdate() {
         if (self.isLoaded === false) return;
         self.setReady(false);
-        const autosaveStopped = !self.annotation.autosave || self.annotation.autosave.paused;
-
-        if (!autosaveStopped) self.annotation.pauseAutosave();
-        self.annotation.history.freeze("richText_needsUpdate");
         beforeNeedsUpdateCalback?.();
         self.regs.forEach(region => {
           try {
@@ -236,8 +232,6 @@ const Model = types
           }
         });
         afterNeedsUpdateCalback?.();
-        self.annotation.history.unfreeze("richText_needsUpdate");
-        if (!autosaveStopped) self.annotation.startAutosave();
         for (const region of self.regs) {
           region.updateHighlightedText();
         }
