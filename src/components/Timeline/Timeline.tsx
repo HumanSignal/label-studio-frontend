@@ -14,14 +14,17 @@ export interface TimelineProps<D extends ViewTypes = "frames", V extends ViewTyp
   position: number;
   mode: D;
   framerate: number;
-  zoom?: number;
   playing: boolean;
+  zoom?: number;
+  fullscreen?: boolean;
+  className?: string;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility: (id: string, visibility: boolean) => void;
   onDeleteRegion: (id: string) => void;
   onSelectRegion: (event: MouseEvent<HTMLDivElement>, id: string) => void;
   onAction: (event: MouseEvent, action: string, data?: any) => void;
+  onFullscreenToggle: () => void;
 }
 
 export const Timeline: FC<TimelineProps> = ({
@@ -32,12 +35,15 @@ export const Timeline: FC<TimelineProps> = ({
   position = 1,
   framerate = 24,
   playing = false,
+  fullscreen = false,
+  className,
   onPlayToggle,
   onPositionChange,
   onToggleVisibility,
   onDeleteRegion,
   onSelectRegion,
   onAction,
+  onFullscreenToggle,
 }) => {
   const View = Views[mode];
 
@@ -60,7 +66,7 @@ export const Timeline: FC<TimelineProps> = ({
 
   return (
     <TimelineContextProvider value={{ position, length, regions, step, playing }}>
-      <Block name="timeline">
+      <Block name="timeline" className={className}>
         <Elem name="topbar">
           <Seeker
             length={length}
@@ -81,7 +87,8 @@ export const Timeline: FC<TimelineProps> = ({
             playing={playing}
             collapsed={viewCollapsed}
             onPlayToggle={onPlayToggle}
-            onFullScreenToggle={() => {}}
+            fullscreen={fullscreen}
+            onFullScreenToggle={() => onFullscreenToggle?.()}
             onStepBackward={() => onInternalPositionChange(currentPosition - 1)}
             onStepForward={() => onInternalPositionChange(currentPosition + 1)}
             onRewind={() => onInternalPositionChange(0)}

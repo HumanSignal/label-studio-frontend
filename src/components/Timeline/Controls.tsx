@@ -2,7 +2,7 @@ import { Block, Elem } from "../../utils/bem";
 import { Button } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 
-import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
+import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
 import { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useMemo, useRef, useState } from "react";
@@ -22,6 +22,7 @@ export interface ControlsProps {
   frameRate: number;
   playing: boolean;
   collapsed: boolean;
+  fullscreen: boolean;
   extraControls?: JSX.Element | null;
   onRewind: () => void;
   onForward: () => void;
@@ -39,9 +40,10 @@ export const Controls: FC<ControlsProps> = ({
   frameRate,
   playing,
   collapsed,
+  extraControls,
+  fullscreen,
   onRewind,
   onForward,
-  extraControls,
   onPlayToggle,
   onFullScreenToggle,
   onStepBackward,
@@ -108,9 +110,13 @@ export const Controls: FC<ControlsProps> = ({
             position={relativePosition(length, frameRate)}
           />
         </Elem>
-        {/* <ControlButton onClick={() => onFullScreenToggle?.(false)}>
-          <IconFullscreen/>
-        </ControlButton> */}
+        <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+          {fullscreen ? (
+            <IconFullscreenExit/>
+          ) : (
+            <IconFullscreen/>
+          )}
+        </ControlButton>
       </Elem>
     </Block>
   );

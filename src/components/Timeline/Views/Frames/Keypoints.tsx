@@ -1,6 +1,6 @@
 import { JSX } from "@babel/types";
 import chroma from "chroma-js";
-import { CSSProperties, FC, MouseEvent, useContext, useMemo, useState } from "react";
+import { FC, MouseEvent, useContext, useMemo, useState } from "react";
 import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
 import { TimelineContext } from "../../Context";

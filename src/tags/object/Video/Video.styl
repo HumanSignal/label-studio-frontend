@@ -2,13 +2,39 @@
   z-index 1
   position relative
 
+  &_fullscreen
+    display flex
+    flex-direction column
+    background-color #fff
+
+  &__main
+    ~/_fullscreen &
+      flex 1
+
+  &__timeline
+    ~/_fullscreen &
+      flex none
+
 .video
   video
     max-width 100%
 
+  &_fullscreen
+    flex 1
+    display flex
+    flex-direction column
+
+  &__main
+    ~/_fullscreen &
+      flex 1
+
   &__controls
     display flex
-    height: 48px
+    height: 32px
     align-items center
     background-color #fff
     justify-content flex-end
+
+    ~/_fullscreen &
+      flex none
+      padding 0 16px

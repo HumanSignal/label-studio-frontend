@@ -151,6 +151,8 @@ const VideoRegionsPure = ({
     onMouseUp: handleMouseUp,
   } : {};
 
+  console.log({ regions });
+
   return (
     <Stage
       ref={stageRef}

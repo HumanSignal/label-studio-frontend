@@ -11,6 +11,7 @@ export { ReactComponent as IconPlay } from "./play.svg";
 export { ReactComponent as IconPause } from "./pause.svg";
 export { ReactComponent as IconRewind } from "./rewind.svg";
 export { ReactComponent as IconFullscreen } from "./fullscreen.svg";
+export { ReactComponent as IconFullscreenExit } from "./fullscreen_exit.svg";
 export { ReactComponent as IconEyeOpened } from "./eye_opened.svg";
 export { ReactComponent as IconEyeClosed } from "./eye_closed.svg";
 export { ReactComponent as IconCross } from "./cross.svg";

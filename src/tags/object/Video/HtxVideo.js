@@ -19,6 +19,7 @@ import { VideoRegions } from "./VideoRegions";
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
   const videoContainerRef = useRef();
+  const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -29,6 +30,7 @@ const HtxVideoView = ({ item }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     const block = videoContainerRef.current;
@@ -100,6 +102,26 @@ const HtxVideoView = ({ item }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (fullscreen && !document.fullscreenElement) {
+      mainContentRef.current.requestFullscreen();
+    } else if (!fullscreen && document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  }, [fullscreen]);
+
+  useEffect(() => {
+    const onChangeFullscreen = () => {
+      if (!document.fullscreenElement) {
+        setFullscreen(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', onChangeFullscreen);
+
+    return () => document.removeEventListener('fullscreenchange', onChangeFullscreen);
+  }, []);
+
   const handleZoom = useCallback((e) => {
     if (!e.shiftKey) return;
 
@@ -107,7 +129,9 @@ const HtxVideoView = ({ item }) => {
     const video = item.ref.current;
     const newZoom = clamp(video.zoom + delta, 0.25, 16);
 
-    setZoom(newZoom);
+    requestAnimationFrame(() => {
+      setZoom(newZoom);
+    });
   }, []);
 
   const handlePan = useCallback((e) => {
@@ -122,7 +146,9 @@ const HtxVideoView = ({ item }) => {
         y: pan.y + (e.pageY - startY),
       };
 
-      setPan(position);
+      requestAnimationFrame(() => {
+        setPan(position);
+      });
     };
 
     const onMouseUp = () => {
@@ -170,16 +196,14 @@ const HtxVideoView = ({ item }) => {
     };
   });
 
-  console.log(pan);
-
   return (
     <ObjectTag item={item}>
-      <Block name="video-segmentation">
+      <Block name="video-segmentation" ref={mainContentRef} mod={{ fullscreen }}>
         {item.errors?.map((error, i) => (
           <ErrorMessage key={`err-${i}`} error={error} />
         ))}
 
-        <Block name="video">
+        <Block name="video" mod={{ fullscreen }}>
           <Elem tag={Space} name="controls" align="end" size="small">
             <Dropdown.Trigger
               content={(
@@ -246,14 +270,20 @@ const HtxVideoView = ({ item }) => {
           </Elem>
         </Block>
         {loaded && (
-          <Timeline
+          <Elem
+            name="timeline"
+            tag={Timeline}
             playing={playing}
             length={videoLength}
             position={position}
             regions={regions}
+            fullscreen={fullscreen}
             framerate={item.framerate}
             onPositionChange={item.setFrame}
             onPlayToggle={setPlaying}
+            onFullscreenToggle={() => {
+              setFullscreen(!fullscreen);
+            }}
             onToggleVisibility={(id) => {
               item.findRegion(id)?.toggleHidden();
             }}

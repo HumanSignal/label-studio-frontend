@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import { useRegionStyles } from "../../../hooks/useRegionColor";
 
 const getNodeAbsoluteDimensions = (node, workingArea) => {
-  const { width, height } = workingArea;
+  const { realWidth: width, realHeight: height } = workingArea;
 
   return {
     x: node.x() / width * 100,
@@ -24,6 +24,8 @@ const setNodeMinSize = (node) => {
 const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
   const box = reg.getBBox(frame);
   const style = useRegionStyles(reg, { includeFill: true });
+
+  console.log({ frame, box, seq: reg.sequence });
 
   if (!box) return null;
 
@@ -48,7 +50,7 @@ const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
         const node = e.target;
 
         reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
-        setNodeMinSize(node);
+        // setNodeMinSize(node);
       }}
       onDragEnd={e => {
         const node = e.target;
