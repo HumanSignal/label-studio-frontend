@@ -34,6 +34,7 @@ const VideoRegionsPure = ({
   height,
   zoom,
   workingArea,
+  locked = false,
   pan = { x: 0, y: 0 },
 }) => {
   const [newRegion, setNewRegion] = useState();
@@ -144,15 +145,20 @@ const VideoRegionsPure = ({
     tr.getLayer().batchDraw();
   };
 
+  const eventHandlers = !locked ? {
+    onMouseDown: handleMouseDown,
+    onMouseMove: handleMouseMove,
+    onMouseUp: handleMouseUp,
+  } : {};
+
   return (
     <Stage
       ref={stageRef}
       width={width}
       height={height}
       style={{ position: "absolute", zIndex: 1 }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      listening={locked === false}
+      {...eventHandlers}
     >
       <Layer {...layerProps}>
         {regions.map(reg => (
@@ -162,7 +168,7 @@ const VideoRegionsPure = ({
             reg={reg}
             frame={item.frame}
             workingArea={workinAreaCoordinates}
-            draggable={!isDrawing}
+            draggable={!isDrawing && !locked}
             selected={reg.selected}
             onClick={(e) => {
               // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;

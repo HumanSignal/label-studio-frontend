@@ -28,6 +28,7 @@ const HtxVideoView = ({ item }) => {
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [panMode, setPanMode] = useState(false);
 
   useEffect(() => {
     const block = videoContainerRef.current;
@@ -71,8 +72,32 @@ const HtxVideoView = ({ item }) => {
       }
     };
 
+    const onSpacePressed = (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+
+        if (!panMode) {
+          setPanMode(true);
+
+          const cancelPan = (e) => {
+            if (e.code === 'Space') {
+              setPanMode(false);
+              document.removeEventListener('keyup', cancelPan);
+            }
+          };
+
+          document.addEventListener('keyup', cancelPan);
+        }
+      }
+    };
+
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    document.addEventListener('keydown', onSpacePressed);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('keydown', onSpacePressed);
+    };
   }, []);
 
   const handleZoom = useCallback((e) => {
@@ -84,6 +109,30 @@ const HtxVideoView = ({ item }) => {
 
     setZoom(newZoom);
   }, []);
+
+  const handlePan = useCallback((e) => {
+    if (!panMode) return;
+
+    const startX = e.pageX;
+    const startY = e.pageY;
+
+    const onMouseMove = (e) => {
+      const position = {
+        x: pan.x + (e.pageX - startX),
+        y: pan.y + (e.pageY - startY),
+      };
+
+      setPan(position);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [panMode, pan]);
 
   const zoomIn = useCallback(() => {
     setZoom(clamp(zoom + 0.1, 0.25, 16));
@@ -121,6 +170,8 @@ const HtxVideoView = ({ item }) => {
     };
   });
 
+  console.log(pan);
+
   return (
     <ObjectTag item={item}>
       <Block name="video-segmentation">
@@ -150,6 +201,7 @@ const HtxVideoView = ({ item }) => {
             ref={videoContainerRef}
             style={{ minHeight: 600 }}
             onWheel={handleZoom}
+            onMouseDown={handlePan}
           >
             {videoSize && (
               <>
@@ -158,6 +210,7 @@ const HtxVideoView = ({ item }) => {
                     item={item}
                     zoom={zoom}
                     pan={pan}
+                    locked={panMode}
                     regions={item.regs}
                     width={videoSize[0]}
                     height={videoSize[1]}
