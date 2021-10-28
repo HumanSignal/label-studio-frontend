@@ -88,7 +88,7 @@ examples.forEach(example =>
         result.filter(r => r.id !== ids[0]),
       );
     }
-    I.click("Create Copy");
+    I.click('[aria-label="Copy Annotation"]');
     I.seeElement(locate(".lsf-entity-tab").at(2));
     AtSidebar.seeRegions(count);
   }),
