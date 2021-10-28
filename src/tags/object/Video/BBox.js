@@ -3,18 +3,40 @@ import { Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { useRegionStyles } from "../../../hooks/useRegionColor";
 
-const BBoxPure = ({ reg, frame, stageWidth, stageHeight, selected, ...rest }) => {
+const getNodeAbsoluteDimensions = (node, workingArea) => {
+  const { width, height } = workingArea;
+
+  return {
+    x: node.x() / width * 100,
+    y: node.y() / height * 100,
+    width: node.width() / width * 100,
+    height: node.height() / height * 100,
+  };
+};
+
+const setNodeMinSize = (node) => {
+  node.scaleX(1);
+  node.scaleY(1);
+  node.setWidth(Math.max(3, node.width() * node.scaleX()));
+  node.setHeight(node.height() * node.scaleY());
+};
+
+const BBoxPure = ({ reg, frame, stageWidth, stageHeight, workingArea, ...rest }) => {
   const box = reg.getBBox(frame);
   const style = useRegionStyles(reg, { includeFill: true });
 
   if (!box) return null;
 
+  const { realWidth: waWidth, realHeight: waHeight } = workingArea;
+
   const newBox = {
-    x: box.x * stageWidth / 100,
-    y: box.y * stageHeight / 100,
-    width: box.width * stageWidth / 100,
-    height: box.height * stageHeight / 100,
+    x: box.x * waWidth / 100,
+    y: box.y * waHeight / 100,
+    width: box.width * waWidth / 100,
+    height: box.height * waHeight / 100,
   };
+
+  console.log(box.x, waWidth, waWidth / workingArea.scale);
 
   return reg.isInLifespan(frame) ? (
     <Rect
@@ -26,33 +48,15 @@ const BBoxPure = ({ reg, frame, stageWidth, stageHeight, selected, ...rest }) =>
       opacity={reg.hidden ? 0 : 1}
       onTransformEnd={e => {
         const node = e.target;
-        const scaleX = node.scaleX();
-        const scaleY = node.scaleY();
-        // set minimal value
-        const w = Math.max(3, node.width() * scaleX);
-        const h = node.height() * scaleY;
 
-        reg.updateBBox({
-          x: node.x() / stageWidth * 100,
-          y: node.y() / stageHeight * 100,
-          width: w / stageWidth * 100,
-          height: h / stageHeight * 100,
-        }, frame);
-
-        node.scaleX(1);
-        node.scaleY(1);
-        node.setWidth(w);
-        node.setHeight(h);
+        reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
+        setNodeMinSize(node);
       }}
       onDragEnd={e => {
         const node = e.target;
 
-        reg.updateBBox({
-          x: node.x() / stageWidth * 100,
-          y: node.y() / stageHeight * 100,
-          width: node.width() / stageWidth * 100,
-          height: node.height() / stageHeight * 100,
-        }, frame);
+        reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
+        setNodeMinSize(node);
       }}
       {...rest}
     />

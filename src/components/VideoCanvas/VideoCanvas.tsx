@@ -32,6 +32,13 @@ const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 5, 10, 16];
 
 const clampZoom = (value: number) => clamp(value, zoomSteps[0], zoomSteps[zoomSteps.length - 1]);
 
+const zoomRatio = (
+  canvasWidth: number,
+  canvasHeight: number,
+  width: number,
+  height: number,
+) => Math.min(1, Math.min((canvasWidth / width), (canvasHeight / height)));
+
 export interface VideoRef {
   currentFrame: number;
   length: number;
@@ -90,7 +97,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     try {
       if (contextRef.current && videoRef.current) {
         const context = contextRef.current;
-        const { width, height, ratio } = videoDimensions;
+        const { width, height } = videoDimensions;
 
         if (width === 0 && height === 0) return;
 
@@ -319,7 +326,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
   useEffect(() => {
     const { width, height } = videoDimensions;
-    const ratio = Math.min(1, Math.min((canvasWidth / width), (canvasHeight / height)));
+    const ratio = zoomRatio(canvasWidth, canvasHeight, width, height);
 
     if (videoDimensions.ratio !== ratio) {
       setVideoDimensions({ ...videoDimensions, ratio });
@@ -339,18 +346,22 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
         setTimeout(() => {
           const length = Math.ceil(video.duration * framerate);
+          const [width, height] = [video.videoWidth, video.videoHeight];
 
-          setVideoDimensions({
-            width: video.videoWidth,
-            height: video.videoHeight,
-            ratio: 1,
-          });
+          const dimensions = {
+            width,
+            height,
+            ratio: zoomRatio(canvasWidth, canvasHeight, width, height),
+          };
+
+          setVideoDimensions(dimensions);
           setLength(length);
           setLoading(false);
           updateFrame(true);
 
           props.onLoad?.({
             ...refSource,
+            videoDimensions: dimensions,
             length,
           });
         }, 200);
