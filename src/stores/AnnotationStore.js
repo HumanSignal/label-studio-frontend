@@ -1068,7 +1068,7 @@ export default types
       c.setupHotKeys();
 
       getEnv(self).events.invoke('selectAnnotation', c, selected);
-
+      getParent(self).addAnnotationToTaskHistory(c.id);
       return c;
     }
 
