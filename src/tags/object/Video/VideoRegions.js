@@ -82,6 +82,7 @@ const VideoRegionsPure = ({
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
 
+    item.annotation.unselectAreas();
     setNewRegion({ x, y, width: 0, height: 0 });
     setDrawingMode(true);
   };
@@ -107,7 +108,6 @@ const VideoRegionsPure = ({
 
     if (Math.abs(newRegion.x - x) < MIN_SIZE && Math.abs(newRegion.y - y) < MIN_SIZE) {
       setNewRegion(null);
-      // setSelected(null);
     } else {
       setNewRegion(region => ({ ...region, width: x - region.x, height: y - region.y }));
     }

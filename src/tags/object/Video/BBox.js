@@ -21,7 +21,7 @@ const setNodeMinSize = (node) => {
   node.setHeight(node.height() * node.scaleY());
 };
 
-const BBoxPure = ({ reg, frame, stageWidth, stageHeight, workingArea, ...rest }) => {
+const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
   const box = reg.getBBox(frame);
   const style = useRegionStyles(reg, { includeFill: true });
 

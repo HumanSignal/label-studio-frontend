@@ -95,11 +95,11 @@ const Model = types
     },
 
     serialize() {
-      return {
-        value: {
-          sequence: self.sequence,
-        },
-      };
+      const value = { sequence: self.sequence };
+
+      if (self.labels?.length) value.labels = self.labels;
+
+      return { value };
     },
 
     toggleLifespan(frame) {

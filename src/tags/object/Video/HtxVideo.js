@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconMagnifyTool, IconMinifyTool } from "../../../assets/icons";
 import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown";
 import { Menu } from "../../../common/Menu/Menu";
-import { Range } from "../../../common/Range/Range";
 import { Space } from "../../../common/Space/Space";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
-import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
 
@@ -170,7 +167,7 @@ const HtxVideoView = ({ item }) => {
                   muted={item.muted}
                   zoom={zoom}
                   pan={pan}
-                  framerate={item.frameRate}
+                  framerate={item.framerate}
                   onFrameChange={(position, length) => {
                     setPosition(position);
                     setVideoLength(length);
@@ -196,7 +193,7 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
-            framerate={item.frameRate}
+            framerate={item.framerate}
             onPositionChange={item.setFrame}
             onPlayToggle={setPlaying}
             onToggleVisibility={(id) => {

@@ -5,7 +5,6 @@ import { alignElements } from "../../utils/dom";
 import { aroundTransition } from "../../utils/transition";
 import "./Dropdown.styl";
 import { DropdownContext } from "./DropdownContext";
-import { DropdownTrigger } from "./DropdownTrigger";
 
 let lastIndex = 1;
 

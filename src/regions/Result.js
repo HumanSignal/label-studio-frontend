@@ -235,6 +235,8 @@ const Result = types
 
       if (!data) return null;
       if (!self.isSubmitable) return null;
+      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
+      if (type === "labels" && self.to_name.mergeLabelsAndResults) return null;
       // cut off annotation id
       const id = self.area.cleanId;
 
