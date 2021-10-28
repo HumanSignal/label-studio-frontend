@@ -4,7 +4,7 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
-import { fixCodePointsInRange, rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { fixCodePointsInRange } from "../../../utils/selection-tools";
 import "./RichText.styl";
 import { isAlive } from "mobx-state-tree";
 import { LoadingOutlined } from "@ant-design/icons";

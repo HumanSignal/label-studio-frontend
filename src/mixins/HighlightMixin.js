@@ -6,7 +6,7 @@ import Constants, { defaultStyle } from "../core/Constants";
 
 export const HighlightMixin = types
   .model()
-  .volatile(self  =>({
+  .volatile(()  =>({
     _highlightedText: "",
   }))
   .views(self => ({

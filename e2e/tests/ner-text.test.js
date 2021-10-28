@@ -246,7 +246,7 @@ Scenario("NER Text with SECURE MODE", async function({ I }) {
   });
   I.executeAsyncScript(initLabelStudio, params);
   I.see("American political leader");
-  
+
   // restore saved result and check it back that it didn't change
   const result = await I.executeScript(serialize);
   // text should not be saved in secure mode

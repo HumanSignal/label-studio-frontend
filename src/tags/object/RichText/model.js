@@ -11,7 +11,7 @@ import Utils from "../../../utils";
 import { parseValue } from "../../../utils/data";
 import messages from "../../../utils/messages";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
-import { delay, escapeHtml, isValidObjectURL } from "../../../utils/utilities";
+import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 import * as xpath from "xpath-range";
 
@@ -102,7 +102,7 @@ const Model = types
       return self._isLoaded &&  self._loadedForAnnotation === self.annotation?.id;
     },
   }))
-  .volatile((self) => ({
+  .volatile(() => ({
     rootNodeRef: React.createRef(),
     originalContentRef: React.createRef(),
     visibleNodeRef: React.createRef(),
