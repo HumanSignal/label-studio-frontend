@@ -36,8 +36,6 @@ const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
     height: box.height * waHeight / 100,
   };
 
-  console.log(box.x, waWidth, waWidth / workingArea.scale);
-
   return reg.isInLifespan(frame) ? (
     <Rect
       {...newBox}

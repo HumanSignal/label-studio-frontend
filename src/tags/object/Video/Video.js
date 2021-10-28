@@ -136,6 +136,8 @@ const Model = types
     },
 
     addRegion(data) {
+      const control = self.control();
+
       const sequence = [
         {
           frame: self.frame,
@@ -145,12 +147,12 @@ const Model = types
         },
       ];
 
-      if (!self.control) {
+      if (!control) {
         console.error("NO CONTROL");
         return;
       }
 
-      const area = self.annotation.createResult({ sequence }, {}, self.control, self);
+      const area = self.annotation.createResult({ sequence }, {}, control, self);
 
       // add labels
       self.activeStates().forEach(state => {

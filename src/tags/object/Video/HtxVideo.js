@@ -145,7 +145,12 @@ const HtxVideoView = ({ item }) => {
               </Button>
             </Dropdown.Trigger>
           </Elem>
-          <Elem ref={videoContainerRef} name="main" style={{ minHeight: 600 }} onWheel={handleZoom}>
+          <Elem
+            name="main"
+            ref={videoContainerRef}
+            style={{ minHeight: 600 }}
+            onWheel={handleZoom}
+          >
             {videoSize && (
               <>
                 {loaded && (

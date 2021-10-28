@@ -3,8 +3,28 @@ import { Layer, Rect, Stage, Transformer } from "react-konva";
 import { inject, observer } from "mobx-react";
 import { BBox } from "./BBox";
 import Constants from "../../../core/Constants";
+import chroma from "chroma-js";
 
 const MIN_SIZE = 5;
+
+const SelectionRect = (props) => {
+  return (
+    <>
+      <Rect
+        {...props}
+        strokeWidth={2}
+        stroke="#fff"
+      />
+      <Rect
+        {...props}
+        fill={chroma("#0099FF").alpha(0.1).css()}
+        strokeWidth={2}
+        stroke="#0099FF"
+        dash={[2, 2]}
+      />
+    </>
+  );
+};
 
 const VideoRegionsPure = ({
   store,
@@ -158,7 +178,7 @@ const VideoRegionsPure = ({
       </Layer>
       {isDrawing && (
         <Layer {...layerProps}>
-          <Rect {...newRegion} fill="red"/>
+          <SelectionRect {...newRegion}/>
         </Layer>
       )}
       {selected?.length > 0 && (
