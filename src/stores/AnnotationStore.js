@@ -879,7 +879,8 @@ const Annotation = types
       if (obj["type"] !== "relation") {
         const { id, value: rawValue, type, ...data } = obj;
 
-        const { type: tagType } = self.names.get(obj.to_name) ?? {};
+        const object = self.names.get(obj.to_name) ?? {};
+        const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
         const areaId = `${id || guidGenerator()}#${self.id}`;
@@ -901,6 +902,16 @@ const Annotation = types
         }
 
         area.addResult({ ...data, id: resultId, type, value });
+
+        // if there is merged result with region data and type and also with the labels
+        // and object allows such merge — create new result with these labels
+        if (!type.endsWith("labels") && value.labels && object.mergeLabelsAndResults) {
+          const labels = value.labels;
+          const labelControl = object.states()?.find(control => control?.findLabel(labels[0]));
+
+          area.setValue(labelControl);
+          area.results.find(r => r.type.endsWith("labels"))?.setValue(labels);
+        }
       }
     },
 
