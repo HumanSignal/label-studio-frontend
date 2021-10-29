@@ -93,7 +93,7 @@ examples.forEach(example =>
     // Open annotations list
     I.click('[aria-label="Annotations List Toggle"]');
     // Check if new annotation exists
-    I.seeElement(locate('[aira-label="Annotation Item"]').at(2));
+    I.seeElement(locate('[aria-label="Annotation Item"]').at(2));
     AtSidebar.seeRegions(count);
   }),
 );
