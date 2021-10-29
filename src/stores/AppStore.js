@@ -31,8 +31,8 @@ export default types
 
     project: types.maybeNull(Project),
 
-    /** 
-     * History of task {taskId, annotationId}: 
+    /**
+     * History of task {taskId, annotationId}:
     */
     taskHistory: types.array(types.model({
       taskId: types.number,
@@ -365,7 +365,7 @@ export default types
       }
       self.task = Task.create(taskObject);
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
-        self.taskHistory.push({ taskId: self.task.id, 
+        self.taskHistory.push({ taskId: self.task.id,
           annotationId: null,
         });
       }
@@ -586,7 +586,11 @@ export default types
     });
 
     function addAnnotationToTaskHistory(annotationId) {
-      self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id)].annotationId = annotationId;
+      const taskIndex = self.taskHistory.findIndex(({ taskId }) => taskId === self.task.id);
+
+      if (taskIndex >= 0) {
+        self.taskHistory[taskIndex].annotationId = annotationId;
+      }
     }
 
     function nextTask() {
