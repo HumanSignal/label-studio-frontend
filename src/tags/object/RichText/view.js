@@ -4,8 +4,12 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
-import { fixCodePointsInRange, rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { fixCodePointsInRange } from "../../../utils/selection-tools";
 import "./RichText.styl";
+import { isAlive } from "mobx-state-tree";
+import { LoadingOutlined } from "@ant-design/icons";
+import { Block, Elem } from "../../../utils/bem";
+import { observe } from "mobx";
 
 class RichTextPieceView extends Component {
   _regionSpanSelector = ".htx-highlight";
@@ -16,6 +20,10 @@ class RichTextPieceView extends Component {
     this.rootNodeRef = React.createRef();
 
     this.originalContentRef = React.createRef();
+
+    this.workingNodeRef = React.createRef();
+
+    this.loadingRef = React.createRef();
 
     this.rootRef = props.item.rootNodeRef;
   }
@@ -110,14 +118,132 @@ class RichTextPieceView extends Component {
     const region = this._determineRegion(event.target);
     const { item } = this.props;
 
-    item.regs.forEach(r => r.setHighlight(false));
-
-    if (!region) return;
-
-    if (region.annotation.relationMode) {
-      region.setHighlight(true);
-    }
+    item.setHighlight(region);
   };
+
+  _applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
+    for (let i = 0; i < destDoc.styleSheets.length; i++) {
+      const styleSheet = destDoc.styleSheets[i];
+      const style = styleSheet.ownerNode;
+
+      if (!style.id) continue;
+      // Sometimes rules are not accessible
+      try {
+        const rules = rulesByStyleId[style.id];
+
+        if (!rules) continue;
+        for (let k = 0;k < rules.length; k++) {
+          style.sheet.insertRule(rules[k]);
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  _removeChildrenFrom(el) {
+    while (el.lastChild) {
+      el.removeChild(el.lastChild);
+    }
+  }
+
+  _moveElements(src, dest, withSubstitution) {
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0;i < src.childNodes.length;  withSubstitution && i++){
+      const currentChild = src.childNodes[i];
+
+      if (withSubstitution) {
+        const cloneChild = currentChild.cloneNode(true);
+
+        src.replaceChild(cloneChild, currentChild);
+      }
+
+      fragment.append(currentChild);
+    }
+    this._removeChildrenFrom(dest);
+    dest.appendChild(fragment);
+  }
+
+  _moveStyles(workingHead, rootHead) {
+    const rulesByStyleId = {};
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0; i < workingHead.children.length; ) {
+      const style = workingHead.children[i];
+
+      if (style?.tagName !== "STYLE") {
+        i++;
+        continue;
+      }
+
+      const styleSheet = style.sheet;
+
+      // Sometimes rules are not accessible
+      try {
+        const rules = styleSheet.rules;
+
+        const cssTexts = rulesByStyleId[style.id] = [];
+
+        for (let k = 0;k < rules.length; k++) {
+          cssTexts.push(rules[k].cssText);
+        }
+      } finally {
+        fragment.appendChild(style);
+      }
+    }
+    rootHead.appendChild(fragment);
+    this._applyHighlightStylesToDoc(rootHead.ownerDocument,rulesByStyleId);
+  }
+
+  _moveElementsToWorkingNode = () => {
+    const { item } = this.props;
+    const rootEl = this.rootNodeRef.current;
+    const workingEl = this.workingNodeRef.current;
+
+    if (item.inline) {
+      this._moveElements(rootEl, workingEl, true);
+    } else {
+      const rootHtml = rootEl.contentDocument.documentElement;
+      const rootBody = rootEl.contentDocument.body;
+      const workingHtml = workingEl.contentDocument.documentElement;
+      const workingHead = workingEl.contentDocument.head;
+      const workingBody = workingEl.contentDocument.body;
+
+      workingHtml.setAttribute("style", rootHtml.getAttribute("style"));
+      this._removeChildrenFrom(workingHead);
+      this._moveElements(rootBody, workingBody, true);
+    }
+    item.setRef(
+      this.workingNodeRef,
+      this.originalContentRef,
+    );
+  }
+
+  _returnElementsFromWorkingNode = () => {
+    const { item } = this.props;
+    const rootEl = this.rootNodeRef.current;
+    const workingEl = this.workingNodeRef.current;
+
+    if (item.inline) {
+      this._moveElements(workingEl, rootEl);
+    } else {
+      const rootHtml = rootEl.contentDocument.documentElement;
+      const rootHead = rootEl.contentDocument.head;
+      const rootBody = rootEl.contentDocument.body;
+      const workingHtml = workingEl.contentDocument.documentElement;
+      const workingHead = workingEl.contentDocument.head;
+      const workingBody = workingEl.contentDocument.body;
+
+      rootHtml.setAttribute("style", workingHtml.getAttribute("style"));
+      this._moveStyles(workingHead, rootHead);
+      this._moveElements(workingBody, rootBody);
+    }
+    item.setRef(
+      this.rootNodeRef,
+      this.originalContentRef,
+    );
+  }
 
   /**
    * Handle initial rendering and all subsequent updates
@@ -128,39 +254,17 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!item.inline) {
-      if (!root || root.tagName === "IFRAME" || !root.childElementCount) return;
+      if (!root || root.tagName === "IFRAME" || !root.childNodes.length || item.isLoaded === false) return;
     }
-
-    // Make refs accessible to the model
-    this.props.item.setRef(
-      this.rootNodeRef,
-      this.originalContentRef,
-    );
 
     // @todo both loops should be merged to fix old broken xpath using "dirty" html
     if (initial) {
-      item.regs.forEach((richTextRegion) => {
-        try {
-          const { start, startOffset, end, endOffset } = richTextRegion;
-          const range = xpath.toRange(start, startOffset, end, endOffset, root);
-          const [soff, eoff] = rangeToGlobalOffset(range, root);
-
-          richTextRegion.updateGlobalOffsets(soff, eoff);
-        } catch (e) {
-          // should never happen
-          // doesn't break anything if happens
-        }
-      });
+      item.initGlobalOffsets(root);
     }
 
     // Apply highlight to ranges of a current tag
-    item.regs.forEach(richTextRegion => {
-      try {
-        richTextRegion.applyHighlight();
-      } catch (err) {
-        console.log(err, { region: richTextRegion });
-      }
-    });
+    item.needsUpdate();
+    this.setReady(true);
   }
 
   /**
@@ -177,11 +281,53 @@ class RichTextPieceView extends Component {
   }
 
   componentDidMount() {
-    this._handleUpdate(true);
+    const { item } = this.props;
+
+    item.setNeedsUpdateCallbacks(
+      this._moveElementsToWorkingNode,
+      this._returnElementsFromWorkingNode,
+    );
+    if (item.inline) {
+      this._handleUpdate(true);
+    } else {
+      this.dispose = observe(item, "isReady", this.updateLoadingVisibility, true);
+    }
   }
 
   componentDidUpdate() {
     this._handleUpdate();
+  }
+
+  componentWillUnmount() {
+    this.dispose?.();
+    this.setReady(false);
+  }
+
+  setLoaded(value) {
+    const { item } = this.props;
+
+    if (!item || !isAlive(item)) return;
+    item.setLoaded(value);
+    this.updateLoadingVisibility();
+  }
+
+  setReady(value) {
+    const { item } = this.props;
+
+    if (!item || !isAlive(item)) return;
+    item.setReady(value);
+  }
+
+  updateLoadingVisibility = () => {
+    const { item } = this.props;
+    const loadingEl = this.loadingRef.current;
+
+    if(!loadingEl) return;
+    if (item && isAlive(item) && item.isLoaded && item.isReady) {
+      loadingEl.setAttribute("style", "display: none");
+    } else {
+      loadingEl.removeAttribute("style");
+    }
   }
 
   _passHotkeys = e => {
@@ -231,6 +377,8 @@ class RichTextPieceView extends Component {
       iframe.style.height = doc.children[0].offsetHeight + "px";
     }
 
+    this.setLoaded(true);
+
     // @todo for better updates, but may be redundant
     setTimeout(() => this._handleUpdate(true));
   }
@@ -242,16 +390,12 @@ class RichTextPieceView extends Component {
 
     const content = item._value || "";
     const newLineReplacement = "<br/>";
+
     const val = item.type === 'text'
       ? htmlEscape(content).replace(/\n|\r/g, newLineReplacement)
       : content;
 
     if (item.inline) {
-      const style = {
-        overflow: "auto",
-        fontSize: 16,
-        lineHeight: '26px',
-      };
       const eventHandlers = {
         onClickCapture: this._onRegionClick,
         onMouseUp: this._onMouseUp,
@@ -259,48 +403,83 @@ class RichTextPieceView extends Component {
       };
 
       return (
-        <ObjectTag item={item}>
-          <div
-            ref={this.rootNodeRef}
-            style={style}
+        <Block
+          name="richtext"
+          tag={ObjectTag}
+          item={item}
+        >
+          <Elem
+            key="root"
+            name="container"
+            ref={el => {
+              this.setLoaded(true);
+              this.setReady(false);
+              this.rootNodeRef.current = el;
+            }}
             className="htx-richtext"
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
           />
-          <div
+          <Elem
+            key="orig"
+            name="orig-container"
             ref={this.originalContentRef}
             className="htx-richtext-orig"
-            style={{ display: 'none' }}
             dangerouslySetInnerHTML={{ __html: val }}
           />
-        </ObjectTag>
+          <Elem
+            key="work"
+            name="work-container"
+            ref={this.workingNodeRef}
+            className="htx-richtext-work"
+          />
+        </Block>
       );
     } else {
-      const style = {
-        border: "none",
-        width: "100%",
-      };
-
       return (
-        <ObjectTag item={item}>
-          <iframe
+        <Block
+          name="richtext"
+          tag={ObjectTag}
+          item={item}
+        >
+          <Elem name="loading" ref={this.loadingRef}>
+            <LoadingOutlined />
+          </Elem>
+
+          <Elem
+            key="root"
+            name="iframe"
+            tag="iframe"
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
-            ref={this.rootNodeRef}
-            style={style}
+            ref={el => {
+              this.setReady(false);
+              this.rootNodeRef.current = el;
+            }}
             className="htx-richtext"
             srcDoc={val}
             onLoad={this.onIFrameLoad}
           />
-          <iframe
+          <Elem
+            key="orig"
+            name="orig-iframe"
+            tag="iframe"
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={this.originalContentRef}
             className="htx-richtext-orig"
-            style={{ display: 'none' }}
             srcDoc={val}
           />
-        </ObjectTag>
+          <Elem
+            key="work"
+            name="work-iframe"
+            tag="iframe"
+            referrerPolicy="no-referrer"
+            sandbox="allow-same-origin allow-scripts"
+            ref={this.workingNodeRef}
+            className="htx-richtext-work"
+          />
+        </Block>
       );
     }
   }

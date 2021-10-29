@@ -109,7 +109,7 @@ Scenario("NERText", async function({ I }) {
 
   I.pressKey("2");
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
   });
@@ -125,7 +125,7 @@ Scenario("NERText", async function({ I }) {
 
   I.pressKey("1");
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
   });
@@ -166,10 +166,9 @@ Scenario("NER Text with text field missing", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
   I.see("Alice remarked");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
+
   assert.deepEqual(result, results);
 });
 
@@ -186,10 +185,9 @@ Scenario("NER Text from url", async function({ I }) {
   // wait for text to be loaded
   I.see("American political leader");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
+
   assert.deepEqual(result, resultsFromUrlWithoutText);
 });
 
@@ -205,10 +203,10 @@ Scenario("NER Text from url with text saved", async function({ I }) {
   // wait for text to be loaded
   I.see("American political leader");
 
-  let result;
 
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
+
   assert.deepEqual(result, resultsFromUrl);
 });
 
@@ -249,11 +247,10 @@ Scenario("NER Text with SECURE MODE", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
   I.see("American political leader");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
   // text should not be saved in secure mode
+
   assert.deepEqual(result, resultsFromUrlWithoutText);
 
   I.executeScript(() => {

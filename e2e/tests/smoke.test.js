@@ -62,7 +62,7 @@ examples.forEach(example =>
     }
 
     if (Utils.xmlFindBy(configTree, node => ["text", "hypertext"].includes(node["#name"].toLowerCase()))) {
-      I.waitForVisible(".htx-richtext", 5);
+      I.waitForVisible(".lsf-htx-richtext", 5);
     }
 
     I.dontSeeElement(locate(".ls-errors"));
