@@ -43,6 +43,7 @@ const Annotation = types
     user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
     parent_prediction: types.maybeNull(types.integer),
     parent_annotation: types.maybeNull(types.integer),
+    last_annotation_history: types.maybeNull(types.integer),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
