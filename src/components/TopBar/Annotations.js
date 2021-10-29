@@ -103,7 +103,7 @@ const CreateAnnotation = observer(({ annotationStore, onClick }) => {
   }, [annotationStore, onClick]);
 
   return (
-    <Elem name="create" onClick={onCreateAnnotation}>
+    <Elem name="create" aria-label="Create Annotation" onClick={onCreateAnnotation}>
       <Space size="small">
         <Elem name="userpic" tag={Userpic} mod={{ prediction: true }}>
           <IconPlusCircle/>
