@@ -157,7 +157,7 @@ export const CurrentEntity = injector(observer(({
       <Space spread style={{ margin: "8px 0" }}>
         {!isPrediction ? (
           <HistoryActions
-            history={entity.history}
+            annotation={entity}
           />
         ) : (<div/>)}
 

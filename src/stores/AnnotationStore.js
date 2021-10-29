@@ -429,6 +429,28 @@ const Annotation = types
       destroy(area);
     },
 
+    undo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canUndo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.undo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
+    redo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canRedo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.redo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
     // update some fragile parts after snapshot manipulations (undo/redo)
     updateObjects() {
       self.unselectAll();

@@ -10,11 +10,16 @@ export default class TransformerComponent extends Component {
   backgroundRef = React.createRef()
 
   componentDidMount() {
-    setTimeout(()=>this.checkNode());
+    setTimeout(this.checkNode);
+    this._stopListeningHistory = this.props.item.annotation?.history?.onUpdate(this.checkNode);
   }
 
   componentDidUpdate() {
-    setTimeout(()=>this.checkNode());
+    setTimeout(this.checkNode);
+  }
+
+  componentWillUnmount() {
+    this._stopListeningHistory?.();
   }
 
   get freezeKey() {
@@ -37,7 +42,7 @@ export default class TransformerComponent extends Component {
     item.annotation.history.unfreeze(freezeKey);
   }
 
-  checkNode() {
+  checkNode = () => {
     if (!this.transformer) return;
 
     // here we need to manually attach or detach Transformer node
