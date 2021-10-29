@@ -88,8 +88,12 @@ examples.forEach(example =>
         result.filter(r => r.id !== ids[0]),
       );
     }
+    // Click on annotation copy button
     I.click('[aria-label="Copy Annotation"]');
-    I.seeElement(locate(".lsf-entity-tab").at(2));
+    // Open annotations list
+    I.click('[aria-label="Annotations List Toggle]');
+    // Check if new annotation exists
+    I.seeElement(locate('[aira-label="Annotation Item"]').at(2));
     AtSidebar.seeRegions(count);
   }),
 );

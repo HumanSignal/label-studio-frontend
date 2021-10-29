@@ -47,6 +47,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
       <Block name="annotations-list" ref={dropdownRef}>
         <Elem name="selected">
           <Annotation
+            aria-label="Annotations List Toggle"
             entity={annotationStore.selected}
             onClick={(e) => {
               e.stopPropagation();
@@ -76,6 +77,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
               <Annotation
                 key={`${ent.pk ?? ent.id}${ent.type}`}
                 entity={ent}
+                aria-label="Annotation Item"
                 selected={ent === annotationStore.selected}
                 onClick={e => {
                   e.preventDefault();
@@ -112,14 +114,14 @@ const CreateAnnotation = observer(({ annotationStore, onClick }) => {
   );
 });
 
-const Annotation = observer(({ entity, selected, onClick, extra }) => {
+const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => {
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
     firstName: entity.createdBy || 'Admin',
   });
 
   return (
-    <Elem name="entity" mod={{ selected }} onClick={onClick}>
+    <Elem {...props} name="entity" mod={{ selected }} onClick={onClick}>
       <Space spread>
         <Space size="small">
           <Elem

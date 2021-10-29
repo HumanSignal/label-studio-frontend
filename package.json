@@ -143,9 +143,6 @@
     "test:watch": "react-scripts test",
     "test": "npx jest src"
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",

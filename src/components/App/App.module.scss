@@ -29,6 +29,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
+  flex-direction: column;
   background-color: var(--main-bg-color);
 
   @include respond("phone") {
