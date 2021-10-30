@@ -432,7 +432,7 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        await getEnv(self).events.awaitInvoke('acceptAnnotation', self, { isDirty, entity });
+        await getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
       }, "Error during accept, try again");
     }
 
@@ -446,7 +446,7 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        await getEnv(self).events.awaitInvoke('rejectAnnotation', self, { isDirty, entity });
+        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
       }, "Error during reject, try again");
     }
 
