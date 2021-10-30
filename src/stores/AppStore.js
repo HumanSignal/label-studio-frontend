@@ -423,7 +423,7 @@ export default types
     }
 
     function acceptAnnotation() {
-      handleSubmittingFlag(() => {
+      handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
         entity.beforeSend();
@@ -432,12 +432,12 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
-      }, "Error during skip, try again");
+        await getEnv(self).events.awaitInvoke('acceptAnnotation', self, { isDirty, entity });
+      }, "Error during accept, try again");
     }
 
     function rejectAnnotation() {
-      handleSubmittingFlag(() => {
+      handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
         entity.beforeSend();
@@ -446,8 +446,8 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
-      }, "Error during skip, try again");
+        await getEnv(self).events.awaitInvoke('rejectAnnotation', self, { isDirty, entity });
+      }, "Error during reject, try again");
     }
 
     /**

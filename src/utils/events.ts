@@ -34,6 +34,23 @@ export class EventInvoker {
     }
   }
 
+  async awaitInvoke(eventName: string, ...args: any[]) {
+    const eventMap = await this.getEventMap(eventName);
+
+    if (eventMap.size > 0) {
+      let count = 0;
+
+      for (const event of eventMap) {
+        console.log(event);
+        await event(...args);
+        count += 1;
+        if (count >= eventMap.size) {
+          break;
+        }
+      }
+    }
+  }
+
   invokeFirst(eventName: string, ...args: any[]) {
     const eventMap = this.getEventMap(eventName);
 
