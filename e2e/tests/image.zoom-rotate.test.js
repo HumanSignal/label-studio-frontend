@@ -123,7 +123,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({ I, LabelStudio, A
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
 
-  for (let region of current.regions) {
+  for (const region of current.regions) {
     I.pressKey(["u"]);
     I.pressKey("1");
     AtImageView[current.action](...region.params);
@@ -134,7 +134,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({ I, LabelStudio, A
   let hasPixel = await AtImageView.hasPixelColor(100, 100, BLUEVIOLET.rgbArray);
 
   assert.equal(hasPixel, true);
-  for (let rotate of rotationQueue) {
+  for (const rotate of rotationQueue) {
     I.click(locate(`[aria-label='rotate-${rotate}']`));
     degree += rotate === "right" ? 90 : -90;
     hasPixel = await AtImageView.hasPixelColor(
@@ -162,7 +162,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({ I, LabelStudio, AtI
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
 
-  for (let region of current.regions) {
+  for (const region of current.regions) {
     I.pressKey(["u"]);
     I.pressKey("1");
     AtImageView[current.action](...region.params);
@@ -175,7 +175,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({ I, LabelStudio, AtI
   let hasPixel = await AtImageView.hasPixelColor(1, 1, BLUEVIOLET.rgbArray);
 
   assert.strictEqual(hasPixel, true);
-  for (let rotate of rotationQueue) {
+  for (const rotate of rotationQueue) {
     I.click(locate(`[aria-label='rotate-${rotate}']`));
     degree += rotate === "right" ? 90 : -90;
     hasPixel = await AtImageView.hasPixelColor(
@@ -197,7 +197,6 @@ windowSizesTable.add([1017, 970]);
 Data(windowSizesTable).Scenario("Rotation with different window sizes", async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const config = getConfigWithShape("Rectangle");
 
-  console.log(config);
   const params = {
     config,
     data: { image: IMAGE },
@@ -214,7 +213,7 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
 
   assert(Math.abs(canvasSize.width - imageSize.width) < 1);
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
-  for (let rotate of rotationQueue) {
+  for (const rotate of rotationQueue) {
     I.click(locate(`[aria-label='rotate-${rotate}']`));
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
