@@ -73,11 +73,11 @@ export const Annotations = observer(({ store, annotationStore }) => {
               />
             )}
 
-            {entities.map(ent => (
+            {entities.map((ent, i) => (
               <Annotation
                 key={`${ent.pk ?? ent.id}${ent.type}`}
                 entity={ent}
-                aria-label="Annotation Item"
+                aria-label={`${ent.type} ${i + 1}`}
                 selected={ent === annotationStore.selected}
                 onClick={e => {
                   e.preventDefault();

@@ -16,6 +16,7 @@ const examples = [
 ];
 
 const assert = require("assert");
+const { pause } = require("codeceptjs/lib");
 
 function roundFloats(struct) {
   return JSON.parse(
@@ -33,8 +34,8 @@ function assertWithTolerance(actual, expected) {
 
 Feature("Smoke test through all the examples");
 
-examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function({ I, AtImageView, AtAudioView, AtSidebar }) {
+examples.slice(-1).forEach(example =>
+  Scenario(example.title || "Noname smoke test", async function({ I, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
@@ -89,11 +90,12 @@ examples.forEach(example =>
       );
     }
     // Click on annotation copy button
-    I.click('[aria-label="Copy Annotation"]');
-    // Open annotations list
-    I.click('[aria-label="Annotations List Toggle"]');
+    AtTopbar.click(`[aria-label="Copy Annotation"]`);
+
     // Check if new annotation exists
-    I.seeElement(locate('[aria-label="Annotation Item"]').at(2));
+    AtTopbar.seeAnnotationAt(2);
+
+    // Check for regions count
     AtSidebar.seeRegions(count);
   }),
 );
