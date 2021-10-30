@@ -35,7 +35,7 @@ module.exports = {
     I.click(this._topbarLocator.withText(`${text}`));
   },
   clickAria(label) {
-    I.click(this.locate(`[aria-label="${label}"]`));
+    I.click(`[aria-label="${label}"]`, this._topbarLocator);
   },
   click(locator) {
     I.click(this.locate(locator));

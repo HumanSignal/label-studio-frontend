@@ -84,7 +84,7 @@ const newResult = {
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 
-Scenario("NERText", async function({ I }) {
+Scenario("NERText", async function({ I, AtTopbar }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -121,7 +121,7 @@ Scenario("NERText", async function({ I }) {
   assert.deepEqual(result, [newResult]);
 
   // delete this new annotation
-  I.click(".lsf-button[aria-label=Delete]");
+  AtTopbar.clickAria("Delete");
   I.click("Proceed"); // approve
 
   I.pressKey("1");

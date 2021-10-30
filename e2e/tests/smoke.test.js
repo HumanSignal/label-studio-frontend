@@ -16,7 +16,6 @@ const examples = [
 ];
 
 const assert = require("assert");
-const { pause } = require("codeceptjs/lib");
 
 function roundFloats(struct) {
   return JSON.parse(
