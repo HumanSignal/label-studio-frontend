@@ -4,10 +4,10 @@ const { I } = inject();
 const Helpers = require("../tests/helpers");
 
 module.exports = {
-  _rootSelector: ".htx-richtext",
+  _rootSelector: ".lsf-htx-richtext",
   selectTextByGlobalOffset(startOffset, endOffset) {
     I.executeAsyncScript(Helpers.selectText, {
-      selector: ".htx-richtext",
+      selector: ".lsf-htx-richtext",
       rangeStart: startOffset,
       rangeEnd: endOffset,
     });

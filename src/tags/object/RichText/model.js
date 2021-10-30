@@ -13,6 +13,7 @@ import messages from "../../../utils/messages";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
+import * as xpath from "xpath-range";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -96,156 +97,221 @@ const Model = types
 
       return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
     },
+
+    get isLoaded() {
+      return self._isLoaded &&  self._loadedForAnnotation === self.annotation?.id;
+    },
   }))
   .volatile(() => ({
     rootNodeRef: React.createRef(),
     originalContentRef: React.createRef(),
+    visibleNodeRef: React.createRef(),
     regsObserverDisposer: null,
+    isReady: false,
+    _isLoaded: false,
+    _loadedForAnnotation: null,
   }))
-  .actions(self => ({
-    setRef(rootNodeRef, originalContentRef) {
-      self.rootNodeRef = rootNodeRef;
-      self.originalContentRef = originalContentRef;
-    },
+  .actions(self => {
+    let beforeNeedsUpdateCalback, afterNeedsUpdateCalback;
 
-    updateValue: flow(function * (store) {
-      const value = parseValue(self.value, store.task.dataObj);
+    return {
+      setRef(rootNodeRef, originalContentRef, visibleNodeRef = rootNodeRef) {
+        self.rootNodeRef = rootNodeRef;
+        self.originalContentRef = originalContentRef;
+        self.visibleNodeRef = visibleNodeRef;
+      },
 
-      if (self.valuetype === "url") {
-        const url = value;
+      setLoaded(value = true) {
+        self._isLoaded = value;
+        self._loadedForAnnotation = self.annotation?.id;
+      },
 
-        if (!isValidObjectURL(url, true)) {
-          const message = [WARNING_MESSAGES.badURL(url), WARNING_MESSAGES.dataTypeMistmatch()];
+      updateValue: flow(function * (store) {
+        const value = parseValue(self.value, store.task.dataObj);
 
-          if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
+        if (self.valuetype === "url") {
+          const url = value;
 
-          self.annotationStore.addErrors([errorBuilder.generalError(message.join("<br/>\n"))]);
-          self.setRemoteValue("");
+          if (!isValidObjectURL(url, true)) {
+            const message = [WARNING_MESSAGES.badURL(url), WARNING_MESSAGES.dataTypeMistmatch()];
+
+            if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
+
+            self.annotationStore.addErrors([errorBuilder.generalError(message.join("<br/>\n"))]);
+            self.setRemoteValue("");
+            return;
+          }
+
+          try {
+            const response = yield fetch(url);
+            const { ok, status, statusText } = response;
+
+            if (!ok) throw new Error(`${status} ${statusText}`);
+
+            self.setRemoteValue(yield response.text());
+          } catch (error) {
+            const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url });
+
+            self.annotationStore.addErrors([errorBuilder.generalError(message)]);
+            self.setRemoteValue("");
+          }
+        } else {
+          self.setRemoteValue(value);
+        }
+      }),
+
+      setRemoteValue(val) {
+        self.loaded = true;
+
+        if (self.encoding === "base64") val = atob(val);
+        if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
+
+        // clean up the html — remove scripts and iframes
+        // nodes count better be the same, so replace them with stubs
+        val = val
+          .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
+            return [opener,body.replace(/<script\b.*?<\/script>/g,"<!--ls-stub></ls-stub-->"),closer].join("");
+          })
+          .replace(/<script\b.*?<\/script>/g, "<ls-stub></ls-stub>")
+          .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>");
+
+        self._value = val;
+
+        self._regionsCache.forEach(({ region, annotation }) => {
+          region.setText(self._value.substring(region.startOffset, region.endOffset));
+          self.regions.push(region);
+          annotation.addRegion(region);
+        });
+
+        self._regionsCache = [];
+      },
+
+      afterCreate() {
+        self._regionsCache = [];
+
+        if (self.type === "text") self.inline = true;
+
+        // security measure, if valuetype is set to url then LS
+        // doesn't save the text into the result, otherwise it does
+        // can be aslo directly configured
+        if (self.savetextresult === "none") {
+          if (self.valuetype === "url") self.savetextresult = "no";
+          else if (self.valuetype === "text") self.savetextresult = "yes";
+        }
+
+        // Watch all the changes to the regions list to properly update the text
+        // their XPaths relatively to each other
+        self.regsObserverDisposer = observe(self, 'regs', () => {
+          self.regs.forEach(reg => self.fixRegionsXPath(reg));
+        });
+      },
+
+      fixRegionsXPath(region) {
+      // Text regions don't use XPath
+        region._fixXPaths();
+      },
+
+      beforeDestroy() {
+        self.regsObserverDisposer?.();
+      },
+
+      setNeedsUpdateCallbacks(beforeCalback, afterCalback) {
+        beforeNeedsUpdateCalback = beforeCalback;
+        afterNeedsUpdateCalback = afterCalback;
+      },
+
+      needsUpdate() {
+        if (self.isLoaded === false) return;
+        self.setReady(false);
+        beforeNeedsUpdateCalback?.();
+        self.regs.forEach(region => {
+          try {
+            region.applyHighlight();
+          } catch {
+            // that's not a problem
+          }
+        });
+        afterNeedsUpdateCalback?.();
+        for (const region of self.regs) {
+          region.updateHighlightedText();
+        }
+
+        self.setReady(true);
+      },
+
+      initGlobalOffsets(rootElement) {
+        self.regs.forEach((richTextRegion) => {
+          try {
+            const { start, startOffset, end, endOffset } = richTextRegion;
+            const range = xpath.toRange(start, startOffset, end, endOffset, rootElement);
+            const [soff, eoff] = rangeToGlobalOffset(range, rootElement);
+
+            richTextRegion.updateGlobalOffsets(soff, eoff);
+          } catch (e) {
+          // should never happen
+          // doesn't break anything if happens
+          }
+        });
+      },
+
+      setHighlight(region) {
+        self.regs.forEach(r => r.setHighlight(false));
+        if (!region) return;
+
+        if (region.annotation.relationMode) {
+          region.setHighlight(true);
+        }
+      },
+
+      createRegion(regionData) {
+        const region = RichTextRegionModel.create({
+          ...regionData,
+          isText: self.type === "text",
+        });
+
+
+        if (self.valuetype === "url" && self.loaded === false) {
+          self._regionsCache.push({ region, annotation: self.annotation });
           return;
         }
 
-        try {
-          const response = yield fetch(url);
-          const { ok, status, statusText } = response;
-
-          if (!ok) throw new Error(`${status} ${statusText}`);
-
-          self.setRemoteValue(yield response.text());
-        } catch (error) {
-          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url });
-
-          self.annotationStore.addErrors([errorBuilder.generalError(message)]);
-          self.setRemoteValue("");
-        }
-      } else {
-        self.setRemoteValue(value);
-      }
-    }),
-
-    setRemoteValue(val) {
-      self.loaded = true;
-
-      if (self.encoding === "base64") val = atob(val);
-      if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
-
-      // clean up the html — remove scripts and iframes
-      // nodes count better be the same, so replace them with stubs
-      val = val
-        .replace(/<script\b.*?<\/script>/g, "<ls-stub></ls-stub>")
-        .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>");
-
-      self._value = val;
-
-      self._regionsCache.forEach(({ region, annotation }) => {
-        region.setText(self._value.substring(region.startOffset, region.endOffset));
         self.regions.push(region);
-        annotation.addRegion(region);
-      });
+        self.annotation.addRegion(region);
+        region.notifyDrawingFinished();
 
-      self._regionsCache = [];
-    },
+        region.applyHighlight();
 
-    afterCreate() {
-      self._regionsCache = [];
+        return region;
+      },
 
-      if (self.type === "text") self.inline = true;
+      addRegion(range) {
+        const states = self.getAvailableStates();
 
-      // security measure, if valuetype is set to url then LS
-      // doesn't save the text into the result, otherwise it does
-      // can be aslo directly configured
-      if (self.savetextresult === "none") {
-        if (self.valuetype === "url") self.savetextresult = "no";
-        else if (self.valuetype === "text") self.savetextresult = "yes";
-      }
+        if (states.length === 0) return;
 
-      // Watch all the changes to the regions list to properly update the text
-      // their XPaths relatively to each other
-      self.regsObserverDisposer = observe(self, 'regs', () => {
-        self.regs.forEach(reg => self.fixRegionsXPath(reg));
-      });
-    },
+        const control = states[0];
+        const labels = { [control.valueType]: control.selectedValues() };
+        const area = self.annotation.createResult(range, labels, control, self);
+        const rootEl = self.rootNodeRef.current;
+        const root = rootEl?.contentDocument?.body ?? rootEl;
 
-    fixRegionsXPath(region) {
-      // Text regions don't use XPath
-      region._fixXPaths();
-    },
+        area._range = range._range;
 
-    beforeDestroy() {
-      self.regsObserverDisposer?.();
-    },
+        const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
-    needsUpdate() {
-      self.regs.forEach(region => region.applyHighlight());
-    },
+        if (range.isText) {
+          area.updateOffsets(soff, eoff);
+        }
 
-    createRegion(regionData) {
-      const region = RichTextRegionModel.create({
-        ...regionData,
-        isText: self.type === "text",
-      });
+        area.updateGlobalOffsets(soff, eoff);
 
+        area.applyHighlight();
 
-      if (self.valuetype === "url" && self.loaded === false) {
-        self._regionsCache.push({ region, annotation: self.annotation });
-        return;
-      }
+        area.notifyDrawingFinished();
 
-      self.regions.push(region);
-      self.annotation.addRegion(region);
-      region.notifyDrawingFinished();
+        return area;
+      },
+    };
+  });
 
-      region.applyHighlight();
-
-      return region;
-    },
-
-    addRegion(range) {
-      const states = self.getAvailableStates();
-
-      if (states.length === 0) return;
-
-      const control = states[0];
-      const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.annotation.createResult(range, labels, control, self);
-      const rootEl = self.rootNodeRef.current;
-      const root = rootEl?.contentDocument?.body ?? rootEl;
-
-      area._range = range._range;
-
-      const [soff, eoff] = rangeToGlobalOffset(range._range, root);
-
-      if (range.isText) {
-        area.updateOffsets(soff, eoff);
-      }
-
-      area.updateGlobalOffsets(soff, eoff);
-
-      area.applyHighlight();
-
-      area.notifyDrawingFinished();
-
-      return area;
-    },
-  }));
-
-export const RichTextModel = types.compose("RichTextModel", RegionsMixin, TagAttrs, Model, AnnotationMixin, ObjectBase);
+export const RichTextModel = types.compose("RichTextModel", ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);

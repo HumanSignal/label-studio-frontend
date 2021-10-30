@@ -110,7 +110,7 @@ Scenario("NERText", async function({ I, AtTopbar }) {
 
   I.pressKey("2");
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
   });
@@ -126,7 +126,7 @@ Scenario("NERText", async function({ I, AtTopbar }) {
 
   I.pressKey("1");
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
   });
