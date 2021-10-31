@@ -269,8 +269,8 @@ Scenario("Rotation in the two columns template", async function({ I, LabelStudio
         rotatedImageSize = await AtImageView.getImageFrameSize();
 
         I.say("Dimensions must be equal in landscape");
-        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, "[landscape] Check width");
-        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, "[landscape] Check height");
+        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[landscape] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
+        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[landscape] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
 
         I.say("Change to vertcal layout");
         AtSettings.open();
@@ -284,8 +284,8 @@ Scenario("Rotation in the two columns template", async function({ I, LabelStudio
         rotatedImageSize = await AtImageView.getImageFrameSize();
 
         I.say(`Dimensions must be equal in portrain [stage: ${JSON.stringify(rotatedCanvasSize)}, image: ${JSON.stringify(rotatedImageSize)}]`);
-        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, "[portrait] Check width");
-        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, "[portrait] Check height");
+        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[portrait] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
+        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[portrait] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
 
         I.click(locate(`[aria-label='rotate-right']`));
         rotatedCanvasSize = await AtImageView.getCanvasSize();
@@ -293,8 +293,8 @@ Scenario("Rotation in the two columns template", async function({ I, LabelStudio
 
         I.say(`Dimensions must be equal after rotation in portrain [stage: ${JSON.stringify(rotatedCanvasSize)}, image: ${JSON.stringify(rotatedImageSize)}]`);
 
-        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, "[portrait, rotated] Check width");
-        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, "[portrait, rotated] Check height");
+        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[portrait, rotated] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
+        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[portrait, rotated] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
       }
     }
   }
