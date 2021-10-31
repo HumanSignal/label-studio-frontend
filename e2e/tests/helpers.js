@@ -303,8 +303,8 @@ const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
 
   done({
-    width: Math.round(stage.width()),
-    height: Math.round(stage.height()),
+    width: stage.width(),
+    height: stage.height(),
   });
 };
 const getImageSize = done => {
@@ -312,8 +312,8 @@ const getImageSize = done => {
   const clientRect = image.getBoundingClientRect();
 
   done({
-    width: Math.round(clientRect.width),
-    height: Math.round(clientRect.height),
+    width: clientRect.width,
+    height: clientRect.height,
   });
 };
 const getImageFrameSize = done => {

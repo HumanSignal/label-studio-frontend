@@ -261,8 +261,8 @@ const compareSize = async (I, AtImageView, message1, message2) => {
   const heightMessage = `[${message2}] Check height: [${[canvasHeight, imageHeight]}]`;
 
   I.say(`${message1} [stage: ${canvasWidth}x${canvasHeight}, image: ${imageWidth}x${imageHeight}]`);
-  assert(Math.abs(canvasWidth - imageWidth) < 1, widthMessage);
-  assert(Math.abs(canvasHeight - imageHeight) < 1, heightMessage);
+  assert(Math.abs(canvasWidth - imageWidth) <= 1, widthMessage);
+  assert(Math.abs(canvasHeight - imageHeight) <= 1, heightMessage);
 };
 
 Data(layoutVariations).Scenario("Rotation in the two columns template", async function({ I, LabelStudio, AtImageView, AtSidebar, AtSettings, current }) {
