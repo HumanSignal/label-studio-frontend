@@ -243,59 +243,67 @@ const twoColumnsConfigs = [`<View>
     </View>
 </View>`];
 
-Scenario("Rotation in the two columns template", async function({ I, LabelStudio, AtImageView, AtSidebar, AtSettings }) {
+const layoutVariations = new DataTable(['config', 'inline', 'reversed']);
+
+twoColumnsConfigs.forEach(config => {
+  for (const inline of [true, false]) {
+    for (const reversed of [true, false]) {
+      layoutVariations.add([config, inline, reversed]);
+    }
+  }
+});
+
+const compareSize = async (I, AtImageView, message1, message2) => {
+  const { width: canvasWidth, height: canvasHeight } = await AtImageView.getCanvasSize();
+  const { width: imageWidth, height: imageHeight } = await AtImageView.getImageFrameSize();
+
+  const widthMessage = `[${message2}] Check width: [${[canvasWidth, imageWidth]}]`;
+  const heightMessage = `[${message2}] Check height: [${[canvasHeight, imageHeight]}]`;
+
+  I.say(`${message1} [stage: ${canvasWidth}x${canvasHeight}, image: ${imageWidth}x${imageHeight}]`);
+  assert(Math.abs(canvasWidth - imageWidth) < 1, widthMessage);
+  assert(Math.abs(canvasHeight - imageHeight) < 1, heightMessage);
+};
+
+Data(layoutVariations).Scenario("Rotation in the two columns template", async function({ I, LabelStudio, AtImageView, AtSidebar, AtSettings, current }) {
   I.amOnPage("/");
   let isVerticalLayout = false;
 
-  for (const config of twoColumnsConfigs) {
-    for (const inline of [true, false]) {
-      for (const reversed of [true, false]) {
-        const direction = (inline ? "column" : "row") + (reversed ? "-reverse" : "");
-        const params = {
-          config: config.replace("{{direction}}", direction).replace("{{showInline}}",`${inline}`),
-          data: { image: IMAGE },
-        };
+  const { config, inline, reversed } = current;
 
-        I.say(`Two columns [config: ${twoColumnsConfigs.indexOf(config)}] [${direction}]`);
+  const direction = (inline ? "column" : "row") + (reversed ? "-reverse" : "");
+  const resultConfig = config.replace("{{direction}}", direction).replace("{{showInline}}",`${inline}`);
+  const params = {
+    config: resultConfig,
+    data: { image: IMAGE },
+  };
 
-        LabelStudio.init(params);
-        AtImageView.waitForImage();
-        AtSidebar.seeRegions(0);
-        let rotatedCanvasSize,rotatedImageSize;
+  console.log(resultConfig);
 
-        I.say("Rotate image in landscape orientation");
-        I.click(locate(`[aria-label='rotate-right']`));
-        rotatedCanvasSize = await AtImageView.getCanvasSize();
-        rotatedImageSize = await AtImageView.getImageFrameSize();
+  I.say(`Two columns [config: ${twoColumnsConfigs.indexOf(config)}] [${direction}]`);
 
-        I.say(`Dimensions must be equal in landscape [stage: ${JSON.stringify(rotatedCanvasSize)}, image: ${JSON.stringify(rotatedImageSize)}]`);
-        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[landscape] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
-        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[landscape] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
+  LabelStudio.init(params);
+  AtImageView.waitForImage();
+  AtSidebar.seeRegions(0);
 
-        I.say("Change to vertcal layout");
-        AtSettings.open();
-        isVerticalLayout = !isVerticalLayout;
-        AtSettings.setLayoutSettings({
-          [AtSettings.LAYOUT_SETTINGS.VERTICAL_LAYOUT]: isVerticalLayout,
-        });
-        AtSettings.close();
+  I.click(locate(`[aria-label='rotate-right']`));
+  I.wait(0.5);
 
-        rotatedCanvasSize = await AtImageView.getCanvasSize();
-        rotatedImageSize = await AtImageView.getImageFrameSize();
+  await compareSize(I, AtImageView, "Dimensions must be equal in landscape", "landscape, rotated");
 
-        I.say(`Dimensions must be equal in portrain [stage: ${JSON.stringify(rotatedCanvasSize)}, image: ${JSON.stringify(rotatedImageSize)}]`);
-        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[portrait] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
-        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[portrait] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
+  I.say("Change to vertcal layout");
+  AtSettings.open();
+  isVerticalLayout = !isVerticalLayout;
+  AtSettings.setLayoutSettings({
+    [AtSettings.LAYOUT_SETTINGS.VERTICAL_LAYOUT]: isVerticalLayout,
+  });
+  AtSettings.close();
 
-        I.click(locate(`[aria-label='rotate-right']`));
-        rotatedCanvasSize = await AtImageView.getCanvasSize();
-        rotatedImageSize = await AtImageView.getImageFrameSize();
+  I.wait(0.5);
+  await compareSize(I, AtImageView, "Dimensions must be equal in portrait", "portrait");
 
-        I.say(`Dimensions must be equal after rotation in portrain [stage: ${JSON.stringify(rotatedCanvasSize)}, image: ${JSON.stringify(rotatedImageSize)}]`);
+  I.click(locate(`[aria-label='rotate-right']`));
 
-        assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[portrait, rotated] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
-        assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[portrait, rotated] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
-      }
-    }
-  }
+  I.wait(0.5);
+  await compareSize(I, AtImageView, "Dimensions must be equal after rotation in portrain", "portrait, rotated");
 });
