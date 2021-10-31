@@ -268,7 +268,7 @@ Scenario("Rotation in the two columns template", async function({ I, LabelStudio
         rotatedCanvasSize = await AtImageView.getCanvasSize();
         rotatedImageSize = await AtImageView.getImageFrameSize();
 
-        I.say("Dimensions must be equal in landscape");
+        I.say(`Dimensions must be equal in landscape [stage: ${JSON.stringify(rotatedCanvasSize)}, image: ${JSON.stringify(rotatedImageSize)}]`);
         assert(Math.abs(rotatedCanvasSize.width - rotatedImageSize.width) < 1, `[landscape] Check width: [${[rotatedCanvasSize.width, rotatedImageSize.width]}]`);
         assert(Math.abs(rotatedCanvasSize.height - rotatedImageSize.height) < 1, `[landscape] Check height: [${[rotatedCanvasSize.height, rotatedImageSize.height]}]`);
 
