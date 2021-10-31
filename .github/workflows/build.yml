@@ -49,7 +49,7 @@ jobs:
     # because pr can contain unfinished job
     - run: npx serve -l tcp://localhost:3000 build &
       if: github.event_name == 'push'
-    - run: yarn run test:e2e:headless --steps
+    - run: yarn run test:e2e:headless
       if: github.event_name == 'push'
 
     - uses: actions/upload-artifact@master
