@@ -23,10 +23,10 @@ function onlyProps(props, obj) {
 }
 
 const Model = types
-  .model("VideoBBoxRegionModel", {
+  .model("VideoRectangleRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-    type: "videobboxregion",
+    type: "videorectangleregion",
     object: types.late(() => types.reference(VideoModel)),
 
     sequence: types.frozen([]),
@@ -44,7 +44,7 @@ const Model = types
       return self.object.annotation;
     },
 
-    getBBox(frame) {
+    getRectangle(frame) {
       let prev, next;
 
       for (const item of self.sequence) {
@@ -72,7 +72,7 @@ const Model = types
     },
   }))
   .actions(self => ({
-    updateBBox(data, frame) {
+    updateRectangle(data, frame) {
       const newItem = {
         frame,
         enabled: true,
@@ -135,7 +135,7 @@ const Model = types
       self.sequence = sequence;
 
       if (closestKeypoint) {
-        self.updateBBox({
+        self.updateRectangle({
           ...closestKeypoint,
           enabled: true,
         }, closestKeypoint.frame);
@@ -165,8 +165,8 @@ const Model = types
     },
   }));
 
-const VideoBBoxRegionModel = types.compose(
-  "VideoBBoxRegionModel",
+const VideoRectangleRegionModel = types.compose(
+  "VideoRectangleRegionModel",
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -174,6 +174,6 @@ const VideoBBoxRegionModel = types.compose(
   Model,
 );
 
-Registry.addRegionType(VideoBBoxRegionModel, "video");
+Registry.addRegionType(VideoRectangleRegionModel, "video");
 
-export { VideoBBoxRegionModel };
+export { VideoRectangleRegionModel };
