@@ -208,3 +208,10 @@ export function minMax(items) {
 export function isMacOS() {
   return navigator.platform.indexOf('Mac') > -1;
 }
+
+export const triggerResizeEvent = () => {
+  const event = new Event("resize");
+
+  event.initEvent("resize", false, false);
+  window.dispatchEvent(event);
+};

@@ -24,34 +24,34 @@ export const CurrentTask = observer(({ store }) => {
   return (
     <Elem name="section">
       <Block name="current-task">
-        <Elem
-          name="task-id"
-        >
+        <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
         </Elem>
-        <Elem
-          name="task-count"
-        >
-          {currentIndex} of {store.taskHistory.length}
-        </Elem>
-        <Elem
-          tag={Button}
-          name="prevnext"
-          mod={{ prev: true, disabled: !store.canGoPrevTask, hidden: !store.hasInterface('topbar:prevnext') }}
-          type="link"
-          disabled={!store.canGoPrevTask}
-          onClick={prevTask}
-          style={{ background: 'none', backgroundColor: 'none' }}
-        />
-        <Elem
-          tag={Button}
-          name="prevnext"
-          mod={{ next: true, disabled: !store.canGoNextTask, hidden: !store.hasInterface('topbar:prevnext') }}
-          type="link"
-          disabled={!store.canGoNextTask}
-          onClick={nextTask}
-          style={{ background: 'none', backgroundColor: 'none' }}
-        />
+        {store.hasInterface('topbar:prevnext') && (
+          <>
+            <Elem name="task-count">
+              {currentIndex} of {store.taskHistory.length}
+            </Elem>
+            <Elem
+              tag={Button}
+              name="prevnext"
+              mod={{ prev: true, disabled: !store.canGoPrevTask }}
+              type="link"
+              disabled={!store.canGoPrevTask}
+              onClick={prevTask}
+              style={{ background: 'none', backgroundColor: 'none' }}
+            />
+            <Elem
+              tag={Button}
+              name="prevnext"
+              mod={{ next: true, disabled: !store.canGoNextTask }}
+              type="link"
+              disabled={!store.canGoNextTask}
+              onClick={nextTask}
+              style={{ background: 'none', backgroundColor: 'none' }}
+            />
+          </>
+        )}
       </Block>
     </Elem>
   );

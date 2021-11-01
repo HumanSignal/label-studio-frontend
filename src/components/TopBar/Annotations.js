@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconPlusCircle, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -8,6 +8,7 @@ import { isDefined, userDisplayName } from "../../utils/utilities";
 import "./Annotations.styl";
 
 export const Annotations = observer(({ store, annotationStore }) => {
+  const dropdownRef = useRef();
   const [opened, setOpened] = useState(false);
 
   const entities = [
@@ -25,13 +26,33 @@ export const Annotations = observer(({ store, annotationStore }) => {
     }
   }, [annotationStore]);
 
+  useEffect(() => {
+    const handleClick = (e) => {
+      const target = e.target;
+      const dropdown = dropdownRef.current;
+
+      if (target !== dropdown && !dropdown.contains(target)) {
+        setOpened(false);
+      }
+    };
+
+    document.addEventListener('click', handleClick);
+
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
+
+
   return (
     <Elem name="section" mod={{ flat: true }}>
-      <Block name="annotations-list">
+      <Block name="annotations-list" ref={dropdownRef}>
         <Elem name="selected">
           <Annotation
+            aria-label="Annotations List Toggle"
             entity={annotationStore.selected}
-            onClick={() => setOpened(!opened)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpened(!opened);
+            }}
             extra={(
               <Space size="none" style={{ marginRight: -8 }}>
                 <Elem name="counter">
@@ -52,10 +73,11 @@ export const Annotations = observer(({ store, annotationStore }) => {
               />
             )}
 
-            {entities.map(ent => (
+            {entities.map((ent, i) => (
               <Annotation
                 key={`${ent.pk ?? ent.id}${ent.type}`}
                 entity={ent}
+                aria-label={`${ent.type} ${i + 1}`}
                 selected={ent === annotationStore.selected}
                 onClick={e => {
                   e.preventDefault();
@@ -81,7 +103,7 @@ const CreateAnnotation = observer(({ annotationStore, onClick }) => {
   }, [annotationStore, onClick]);
 
   return (
-    <Elem name="create" onClick={onCreateAnnotation}>
+    <Elem name="create" aria-label="Create Annotation" onClick={onCreateAnnotation}>
       <Space size="small">
         <Elem name="userpic" tag={Userpic} mod={{ prediction: true }}>
           <IconPlusCircle/>
@@ -92,14 +114,14 @@ const CreateAnnotation = observer(({ annotationStore, onClick }) => {
   );
 });
 
-const Annotation = observer(({ entity, selected, onClick, extra }) => {
+const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => {
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
     firstName: entity.createdBy || 'Admin',
   });
 
   return (
-    <Elem name="entity" mod={{ selected }} onClick={onClick}>
+    <Elem {...props} name="entity" mod={{ selected }} onClick={onClick}>
       <Space spread>
         <Space size="small">
           <Elem

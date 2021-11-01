@@ -4,6 +4,7 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Elem } from "../../utils/bem";
 import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import { EditingHistory } from "./HistoryActions";
+import { confirm } from "../../common/Modal/Modal";
 
 export const Actions = ({ store }) => {
   const entity = store.annotationStore.selected;

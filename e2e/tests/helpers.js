@@ -82,7 +82,7 @@ const convertToFixed = data => {
   if (typeof data === "object") {
     const result = {};
 
-    for (let key in data) {
+    for (const key in data) {
       result[key] = convertToFixed(data[key]);
     }
     return result;
@@ -113,7 +113,7 @@ const getSizeConvertor = (width, height) =>
     if (typeof data === "object") {
       const result = {};
 
-      for (let key in data) {
+      for (const key in data) {
         if (key === "rotation") result[key] = data[key];
         else if (key.startsWith("height") || key === "y" || key.endsWith("Y")) result[key] = convert(data[key], height);
         else result[key] = convert(data[key]);
@@ -165,7 +165,7 @@ const clickMultipleKonva = async (points, done) => {
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
   let lastPoint;
 
-  for (let point of points) {
+  for (const point of points) {
     if (lastPoint) {
       stage.fire("mousemove", { evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now() } });
       await delay();
@@ -191,7 +191,7 @@ const polygonKonva = async (points, done) => {
     const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
     const stage = window.Konva.stages[0];
 
-    for (let point of points) {
+    for (const point of points) {
       stage.fire("click", {
         evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
       });
@@ -263,7 +263,7 @@ const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
     return true;
   };
 
-  for (let layer of stage.getLayers()) {
+  for (const layer of stage.getLayers()) {
     const rgba = layer.getContext().getImageData(x, y, 1, 1).data;
 
     if (!areEqualRGB(rgbArray, rgba)) continue;
@@ -286,9 +286,9 @@ const areEqualRGB = (a, b, tolerance) => {
 
 const getKonvaPixelColorFromPoint = (x, y, done) => {
   const stage = window.Konva.stages[0];
-  let colors = [];
+  const colors = [];
 
-  for (let layer of stage.getLayers()) {
+  for (const layer of stage.getLayers()) {
     const context = layer.getContext();
     const ratio = context.canvas.pixelRatio;
     const rgba = context.getImageData(x * ratio, y * ratio, 1, 1).data;
@@ -302,19 +302,28 @@ const getKonvaPixelColorFromPoint = (x, y, done) => {
 const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
 
-  done({ width: stage.width(), height: stage.height() });
+  done({
+    width: stage.width(),
+    height: stage.height(),
+  });
 };
 const getImageSize = done => {
   const image = window.document.querySelector('img[alt="LS"]');
   const clientRect = image.getBoundingClientRect();
 
-  done({ width: clientRect.width, height: clientRect.height });
+  done({
+    width: clientRect.width,
+    height: clientRect.height,
+  });
 };
 const getImageFrameSize = done => {
   const image = window.document.querySelector('img[alt="LS"]').parentElement;
   const clientRect = image.getBoundingClientRect();
 
-  done({ width: clientRect.width, height: clientRect.height });
+  done({
+    width: Math.round(clientRect.width),
+    height: Math.round(clientRect.height),
+  });
 };
 const setZoom = (scale, x, y, done) => {
   Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
@@ -408,9 +417,9 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
     }
     return true;
   };
-  let points = [];
+  const points = [];
 
-  for (let layer of stage.getLayers()) {
+  for (const layer of stage.getLayers()) {
     const canvas = layer.getCanvas();
 
     for (let x = 0; x < canvas.width; x++) {
@@ -431,7 +440,7 @@ const dumpJSON = (obj) => {
 };
 
 function _isObject(value) {
-  var type = typeof value;
+  const type = typeof value;
 
   return value !== null && (type === "object" || type === "function");
 }

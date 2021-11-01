@@ -75,17 +75,17 @@ export const CurrentEntity = injector(observer(({
 
   return entity ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
-      <Elem name="info" tag={Space} spread>
+      {/* <Elem name="info" tag={Space} spread>
         <Elem name="id">
           {entity.type === 'annotation' ? <LsAnnotation /> : <LsSparks color="#944BFF"/>}
           <span className="text_id">ID: {entity.pk ?? entity.id}</span>
         </Elem>
-      </Elem>
+      </Elem> */}
 
-      <Elem name="parent_info">
-        <Space size="small">
-          {/*Always show container to keep the interface layout unchangeable*/}
-          {(entity.parent_prediction) && (
+      {/* <Elem name="parent_info">
+        <Space size="small"> */}
+      {/*Always show container to keep the interface layout unchangeable*/}
+      {/* {(entity.parent_prediction) && (
             <Tooltip title="Prediction ID from which this annotation was created">
               <Elem name="parent">
                 <Elem tag={LsParentLink} name="parent_link"/>
@@ -102,9 +102,9 @@ export const CurrentEntity = injector(observer(({
                 <Elem name="parent_text">ID: { entity.parent_annotation }</Elem>
               </Elem>
             </Tooltip>
-          )}
-        </Space>
-      </Elem>
+          )} */}
+      {/* </Space>
+      </Elem> */}
 
       <DraftPanel item={entity} />
 

@@ -1,3 +1,33 @@
-.richtext {
-  overflow: auto;
-}
+.richtext
+  position: relative;
+
+  &__container
+    overflow auto
+    fontSize 16
+    lineHeight 26px
+  &__orig-container
+    display: none !important
+  &__work-container
+    display: none !important
+
+  &__iframe
+    border none
+    width 100%
+
+  &__orig-iframe
+    display: none !important
+  &__work-iframe
+    display: none !important
+
+  &__loading
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    background: rgba(125,125,125,.15);
+    font-size: 24px;

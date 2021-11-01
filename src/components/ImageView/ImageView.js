@@ -737,7 +737,7 @@ export default observer(
               ref={ref => {
                 item.setStageRef(ref);
               }}
-              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+              style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
               width={item.stageComponentSize.width}
               height={item.stageComponentSize.height}

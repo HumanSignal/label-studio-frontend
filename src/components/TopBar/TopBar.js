@@ -26,7 +26,7 @@ export const TopBar = observer(({ store }) => {
           <DynamicPreannotationsToggle />
         </Elem>
         {store.hasInterface("controls") && (store.hasInterface("review") || !isPrediction) && (
-          <Elem name="section" mod={{ flat: true }}>
+          <Elem name="section" mod={{ flat: true }} style={{ width: 320, boxSizing: 'border-box' }}>
             <Controls annotation={entity}/>
           </Elem>
         )}
