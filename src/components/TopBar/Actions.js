@@ -16,7 +16,7 @@ export const Actions = ({ store }) => {
     <Elem name="section">
       {store.hasInterface("ground-truth") && <GroundTruth entity={entity}/>}
 
-      {!isPrediction && <EditingHistory history={history} />}
+      {!isPrediction && store.hasInterface('edit-history') && <EditingHistory history={history} />}
 
       {store.hasInterface("annotations:delete") && (
         <Tooltip title="Delete annotation">

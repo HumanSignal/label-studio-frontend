@@ -199,7 +199,7 @@ class App extends Component {
             </Segment>
           )}
 
-          {isDefined(store) && <TopBar store={store}/>}
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <div className={stCommon}>
             <div className={mainContainerClass.join(" ")}>
               {as.validation === null

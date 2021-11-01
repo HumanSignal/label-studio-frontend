@@ -10,11 +10,15 @@ import "./Annotations.styl";
 export const Annotations = observer(({ store, annotationStore }) => {
   const dropdownRef = useRef();
   const [opened, setOpened] = useState(false);
+  const enableAnnotations = store.hasInterface('annotations:tabs');
+  const enablePredictions = store.hasInterface('predictions:tabs');
+  const enableCreateAnnotation = store.hasInterface('annotations:add-new');
 
-  const entities = [
-    ...annotationStore.predictions,
-    ...annotationStore.annotations,
-  ];
+  const entities = [];
+
+  if (enableAnnotations) entities.push(...annotationStore.predictions);
+
+  if (enablePredictions) entities.push(...annotationStore.annotations);
 
   const onAnnotationSelect = useCallback((entity, isPrediction) => {
     if (!entity.selected) {
@@ -41,8 +45,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
-
-  return (
+  return (enableAnnotations || enablePredictions || enableCreateAnnotation) ? (
     <Elem name="section" mod={{ flat: true }}>
       <Block name="annotations-list" ref={dropdownRef}>
         <Elem name="selected">
@@ -91,7 +94,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
         )}
       </Block>
     </Elem>
-  );
+  ) : null;
 });
 
 const CreateAnnotation = observer(({ annotationStore, onClick }) => {
