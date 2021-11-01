@@ -9,7 +9,7 @@ import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
 import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
-import defaultOptions from './default_options';
+import defaultOptions from './defaultOptions';
 
 configure({
   isolateGlobalState: true,

@@ -18,6 +18,7 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
     "submit",
     "controls",
     "side-column",
+    "topbar",
     "annotations:history",
     "annotations:current",
     "annotations:tabs",
@@ -26,6 +27,7 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
     "annotations:delete",
     "predictions:tabs",
     "predictions:menu",
+    "edit-history",
   ];
   const task = { data, annotations, predictions };
 
