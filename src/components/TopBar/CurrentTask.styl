@@ -1,14 +1,21 @@
 .current-task
   padding 0 8px 0 8px
-  width 205px
+  width 220px
   display grid
-  grid-template-columns 1fr min-content min-content
-  grid-template-rows 1fr 1fr
-  grid-template-areas 't p n' 'c p n'
+  grid-template-columns 1fr min-content
+  grid-auto-rows 1fr
+  grid-template-areas 't . .'
   align-content center
+  align-items center
+
+  &_with-history
+    height 100%
+    grid-template-areas 'id buttons' 'counter buttons'
+    grid-template-rows 1fr 1fr
+    grid-auto-rows none
 
   &__task-id
-    grid-area t
+    grid-area id
     color black
     font-size 14px
 
@@ -16,9 +23,13 @@
       content '#'
 
   &__task-count
-    grid-area c
+    grid-area counter
     color rgba(0, 0, 0, 0.4)
     font-size 11px
+
+  &__history-controls
+    display flex
+    grid-area buttons
 
   &__prevnext
     width 32px
