@@ -100,7 +100,8 @@ Scenario("Check required param", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
 
   // Add new Annotation to be able to submit it
-  I.click(".lsf-annotation-tabs__add");
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
   I.click("Submit");
   waitForError("validation-label");
 
@@ -122,7 +123,8 @@ Scenario("Check required param", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
   // Page is reloaded, there are no new annotation from prev steps
   I.dontSee("New annotation");
-  I.click(".lsf-annotation-tabs__add");
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
   I.click("Valid");
   I.click("Submit");
   I.see("Warning");
@@ -193,7 +195,8 @@ Scenario("Check required param in complex config", async function({ I }) {
   I.click("Update");
   I.dontSee("Valid");
 
-  I.click(".lsf-annotation-tabs__add");
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
   I.click("Submit");
   waitForError("common-description");
   I.fillField("common-description", "some text");

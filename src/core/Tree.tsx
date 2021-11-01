@@ -164,7 +164,7 @@ function treeToModel(html: string, store: { task: { dataObj: Record<string, any>
     throw new Error(parserError);
   }
 
-  return tagIntoObject(root, store.task.dataObj);
+  return tagIntoObject(root, store.task?.dataObj ?? {});
 
   // this.serializer = new XMLSerializer();
 

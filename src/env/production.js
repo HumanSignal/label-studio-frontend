@@ -73,6 +73,8 @@ function configureApplication(params) {
     onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
     onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
+    onNextTask: params.onNextTask || External.onNextTask,
+    onPrevTask: params.onPrevTask || External.onPrevTask,
   };
 
   return options;

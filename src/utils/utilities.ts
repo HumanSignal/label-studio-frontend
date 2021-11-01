@@ -179,7 +179,7 @@ export const chunks = <T extends any[]>(source: T, chunkSize: number): T[][] => 
   return result;
 };
 
-export const userDisplayName = (user: any) => {
+export const userDisplayName = (user: any = {}) => {
   const firstName = user.firstName ?? user.firstName;
   const lastName = user.lastName ?? user.lastName;
 
@@ -212,3 +212,10 @@ export function minMax(items: number[]) {
 export function isMacOS() {
   return navigator.platform.indexOf('Mac') > -1;
 }
+
+export const triggerResizeEvent = () => {
+  const event = new Event("resize");
+
+  event.initEvent("resize", false, false);
+  window.dispatchEvent(event);
+};
