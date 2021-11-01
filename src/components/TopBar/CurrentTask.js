@@ -28,34 +28,33 @@ export const CurrentTask = observer(({ store }) => {
       <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
         <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
-        </Elem>
-        {historyEnabled && (
-          <>
+          {historyEnabled && (
             <Elem name="task-count">
               {currentIndex} of {store.taskHistory.length}
             </Elem>
-
-            <Elem name="history-controls">
-              <Elem
-                tag={Button}
-                name="prevnext"
-                mod={{ prev: true, disabled: !store.canGoPrevTask }}
-                type="link"
-                disabled={!store.canGoPrevTask}
-                onClick={prevTask}
-                style={{ background: 'none', backgroundColor: 'none' }}
-              />
-              <Elem
-                tag={Button}
-                name="prevnext"
-                mod={{ next: true, disabled: !store.canGoNextTask }}
-                type="link"
-                disabled={!store.canGoNextTask}
-                onClick={nextTask}
-                style={{ background: 'none', backgroundColor: 'none' }}
-              />
-            </Elem>
-          </>
+          )}
+        </Elem>
+        {historyEnabled && (
+          <Elem name="history-controls">
+            <Elem
+              tag={Button}
+              name="prevnext"
+              mod={{ prev: true, disabled: !store.canGoPrevTask }}
+              type="link"
+              disabled={!store.canGoPrevTask}
+              onClick={prevTask}
+              style={{ background: 'none', backgroundColor: 'none' }}
+            />
+            <Elem
+              tag={Button}
+              name="prevnext"
+              mod={{ next: true, disabled: !store.canGoNextTask }}
+              type="link"
+              disabled={!store.canGoNextTask}
+              onClick={nextTask}
+              style={{ background: 'none', backgroundColor: 'none' }}
+            />
+          </Elem>
         )}
       </Block>
     </Elem>
