@@ -90,8 +90,18 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
 
   const [contrast, setContrast] = useState(1);
-  const [brightness, setBrightness] = useState(1.5);
-  const [saturation, setSaturation] = useState(1.5);
+  const [brightness, setBrightness] = useState(1);
+  const [saturation, setSaturation] = useState(1);
+
+  const filters = useMemo(() => {
+    const result: string[] = [];
+
+    if (contrast !== 1) result.push(`contrast(${contrast})`);
+    if (brightness !== 1) result.push(`brightness(${brightness})`);
+    if (saturation !== 1) result.push(`saturate(${saturation})`);
+
+    return result.join(" ");
+  }, [brightness, contrast, saturation]);
 
   const drawVideo = () => {
     try {
@@ -110,7 +120,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
         context.clearRect(0, 0, canvasWidth, canvasHeight);
 
         context.save();
-        context.filter = `contrast(${contrast}) brightness(${brightness}) saturate(${saturation})`;
+        context.filter = filters;
         context.drawImage(videoRef.current,
           0, 0, width, height,
           offsetLeft, offsetTop, resultWidth, resultHeight,
@@ -249,6 +259,10 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       setSaturation(props.saturation);
     }
   }, [props.saturation]);
+
+  useEffect(() => {
+    drawVideo();
+  }, [filters]);
 
   const refSource: VideoRef = {
     currentFrame,
