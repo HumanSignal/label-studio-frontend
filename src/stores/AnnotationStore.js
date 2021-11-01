@@ -244,6 +244,7 @@ const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
+      getRoot(self).addAnnotationToTaskHistory(self.pk);
     },
 
     toggleVisibility(visible) {
@@ -1070,7 +1071,7 @@ export default types
       c.setupHotKeys();
 
       getEnv(self).events.invoke('selectAnnotation', c, selected);
-
+      if (c.pk) getParent(self).addAnnotationToTaskHistory(c.pk);
       return c;
     }
 

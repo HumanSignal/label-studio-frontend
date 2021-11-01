@@ -211,7 +211,7 @@ class App extends Component {
                 {store.hasInterface("side-column") && (
                   <SidebarTabs active="annotation">
                     <SidebarPage name="annotation" title="Annotation">
-                      <AnnotationTab store={store} />
+                      <AnnotationTab store={store}/>
                     </SidebarPage>
                     {this.props.panels.map(({ name, title, Component }) => (
                       <SidebarPage key={name} name={name} title={title}>
