@@ -120,7 +120,7 @@ Scenario("Check good nested Choice for Text", async function({ I, AtLabels, AtSi
   I.seeElement(personTag);
   I.click(personTag);
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 51,
     rangeEnd: 55,
   });

@@ -84,7 +84,7 @@ const newResult = {
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 
-Scenario("NERText", async function({ I }) {
+Scenario("NERText", async function({ I, AtTopbar }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -105,11 +105,12 @@ Scenario("NERText", async function({ I }) {
   assert.deepEqual(result, results);
 
   // Create a new annotation to create the same result from scratch
-  I.click(".lsf-annotation-tabs__add");
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
 
   I.pressKey("2");
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
   });
@@ -120,12 +121,12 @@ Scenario("NERText", async function({ I }) {
   assert.deepEqual(result, [newResult]);
 
   // delete this new annotation
-  I.click(".lsf-button[aria-label=Delete]");
+  AtTopbar.clickAria("Delete");
   I.click("Proceed"); // approve
 
   I.pressKey("1");
   I.executeAsyncScript(selectText, {
-    selector: ".htx-richtext",
+    selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
   });
@@ -166,10 +167,9 @@ Scenario("NER Text with text field missing", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
   I.see("Alice remarked");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
+
   assert.deepEqual(result, results);
 });
 
@@ -186,10 +186,9 @@ Scenario("NER Text from url", async function({ I }) {
   // wait for text to be loaded
   I.see("American political leader");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
+
   assert.deepEqual(result, resultsFromUrlWithoutText);
 });
 
@@ -205,10 +204,9 @@ Scenario("NER Text from url with text saved", async function({ I }) {
   // wait for text to be loaded
   I.see("American political leader");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
+
   assert.deepEqual(result, resultsFromUrl);
 });
 
@@ -249,11 +247,10 @@ Scenario("NER Text with SECURE MODE", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
   I.see("American political leader");
 
-  let result;
-
   // restore saved result and check it back that it didn't change
-  result = await I.executeScript(serialize);
+  const result = await I.executeScript(serialize);
   // text should not be saved in secure mode
+
   assert.deepEqual(result, resultsFromUrlWithoutText);
 
   I.executeScript(() => {

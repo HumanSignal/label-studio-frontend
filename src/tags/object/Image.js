@@ -581,11 +581,9 @@ const Model = types.model({
     handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
       if (val) {
         self.freezeHistory();
-        const stage = self.stageRef;
         let stageScale = self.stageScale;
         let zoomScale = self.zoomScale;
 
-        window.stage = stage;
         const mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
           y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
