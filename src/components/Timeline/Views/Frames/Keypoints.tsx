@@ -1,6 +1,6 @@
 import { JSX } from "@babel/types";
 import chroma from "chroma-js";
-import { FC, MouseEvent, useContext, useMemo, useState } from "react";
+import { FC, MouseEvent, useCallback, useContext, useMemo, useState } from "react";
 import { IconCross, IconEyeClosed, IconEyeOpened } from "../../../../assets/icons/timeline";
 import { Block, Elem } from "../../../../utils/bem";
 import { TimelineContext } from "../../Context";
@@ -50,6 +50,11 @@ export const Keypoints: FC<KeypointsProps> = ({
     return visualizeLifespans(sequence, step);
   }, [sequence, start, step]);
 
+  const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    onSelectRegion?.(e, region.id);
+  }, [region]);
+
   return (
     <Block
       name="keypoints"
@@ -60,10 +65,7 @@ export const Keypoints: FC<KeypointsProps> = ({
       <Elem name="label">
         <Elem
           name="name"
-          onClick={(e: MouseEvent<HTMLDivElement>) => {
-            e.stopPropagation();
-            onSelectRegion?.(e, region.id);
-          }}
+          onClick={onSelectRegionHandler}
         >
           {label}
         </Elem>
@@ -81,7 +83,7 @@ export const Keypoints: FC<KeypointsProps> = ({
           />
         </Elem>
       </Elem>
-      <Elem name="keypoints">
+      <Elem name="keypoints" onClick={onSelectRegionHandler}>
         {lifespans.map((lifespan, i) => {
           const isLast = i + 1 === lifespans.length;
           const left = lifespan.offset + (step / 2);
