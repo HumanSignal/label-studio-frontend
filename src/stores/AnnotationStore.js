@@ -94,6 +94,7 @@ const Annotation = types
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
+      acceptedState: sn.accepted_state ?? sn.acceptedState ?? null,
     };
   })
   .views(self => ({

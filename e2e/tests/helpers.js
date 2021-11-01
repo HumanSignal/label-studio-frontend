@@ -302,19 +302,28 @@ const getKonvaPixelColorFromPoint = (x, y, done) => {
 const getCanvasSize = done => {
   const stage = window.Konva.stages[0];
 
-  done({ width: stage.width(), height: stage.height() });
+  done({
+    width: stage.width(),
+    height: stage.height(),
+  });
 };
 const getImageSize = done => {
   const image = window.document.querySelector('img[alt="LS"]');
   const clientRect = image.getBoundingClientRect();
 
-  done({ width: clientRect.width, height: clientRect.height });
+  done({
+    width: clientRect.width,
+    height: clientRect.height,
+  });
 };
 const getImageFrameSize = done => {
   const image = window.document.querySelector('img[alt="LS"]').parentElement;
   const clientRect = image.getBoundingClientRect();
 
-  done({ width: clientRect.width, height: clientRect.height });
+  done({
+    width: Math.round(clientRect.width),
+    height: Math.round(clientRect.height),
+  });
 };
 const setZoom = (scale, x, y, done) => {
   Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);

@@ -84,7 +84,7 @@ const newResult = {
   value: { start: 233, end: 237, text: "come", labels: ["Words"] },
 };
 
-Scenario("NERText", async function({ I }) {
+Scenario("NERText", async function({ I, AtTopbar }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -105,7 +105,8 @@ Scenario("NERText", async function({ I }) {
   assert.deepEqual(result, results);
 
   // Create a new annotation to create the same result from scratch
-  I.click(".lsf-annotation-tabs__add");
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
 
   I.pressKey("2");
   I.executeAsyncScript(selectText, {
@@ -120,7 +121,7 @@ Scenario("NERText", async function({ I }) {
   assert.deepEqual(result, [newResult]);
 
   // delete this new annotation
-  I.click(".lsf-button[aria-label=Delete]");
+  AtTopbar.clickAria("Delete");
   I.click("Proceed"); // approve
 
   I.pressKey("1");
@@ -202,7 +203,6 @@ Scenario("NER Text from url with text saved", async function({ I }) {
   I.executeAsyncScript(initLabelStudio, params);
   // wait for text to be loaded
   I.see("American political leader");
-
 
   // restore saved result and check it back that it didn't change
   const result = await I.executeScript(serialize);

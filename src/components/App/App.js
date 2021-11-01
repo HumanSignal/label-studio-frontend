@@ -14,6 +14,7 @@ import Tree from "../../core/Tree";
 /**
  * Components
  */
+import { TopBar } from "../TopBar/TopBar";
 import Debug from "../Debug";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
@@ -40,6 +41,7 @@ import { Block, Elem } from "../../utils/bem";
 import './App.styl';
 import { Space } from "../../common/Space/Space";
 import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
+import { isDefined } from "../../utils/utilities";
 
 /**
  * App
@@ -197,15 +199,9 @@ class App extends Component {
             </Segment>
           )}
 
+          {isDefined(store) && <TopBar store={store}/>}
           <div className={stCommon}>
             <div className={mainContainerClass.join(" ")}>
-              <AnnotationTabs
-                store={store}
-                showAnnotations={store.hasInterface("annotations:tabs")}
-                showPredictions={store.hasInterface("predictions:tabs")}
-                allowCreateNew={store.hasInterface("annotations:add-new")}
-                allowViewAll={store.hasInterface('annotations:view-all')}
-              />
               {as.validation === null
                 ? this._renderUI(as.selectedHistory?.root ?? root, as)
                 : this.renderConfigValidationException(store)}

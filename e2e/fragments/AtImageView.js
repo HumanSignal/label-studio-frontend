@@ -7,43 +7,43 @@ module.exports = {
   _stageSelector: ".konvajs-content",
   _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
 
-  async grabStageBBox () {
+  async grabStageBBox() {
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
 
     return bbox;
   },
 
-  async lookForStage () {
+  async lookForStage() {
     I.scrollPageToTop();
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
 
     this._stageBBox = bbox;
   },
 
-  waitForImage () {
+  waitForImage() {
     I.executeAsyncScript(Helpers.waitForImage);
     I.waitForVisible("canvas", 5);
   },
 
-  async getCanvasSize () {
+  async getCanvasSize() {
     const sizes = await I.executeAsyncScript(Helpers.getCanvasSize);
 
     return sizes;
   },
 
-  async getImageSize () {
+  async getImageSize() {
     const sizes = await I.executeAsyncScript(Helpers.getImageSize);
 
     return sizes;
   },
 
-  async getImageFrameSize () {
+  async getImageFrameSize() {
     const sizes = await I.executeAsyncScript(Helpers.getImageFrameSize);
 
     return sizes;
   },
 
-  setZoom (scale, x, y) {
+  setZoom(scale, x, y) {
     I.executeAsyncScript(Helpers.setZoom, scale, x, y);
   },
 
@@ -52,14 +52,14 @@ module.exports = {
    * @param {number} x
    * @param {number} y
    */
-  clickKonva (x, y) {
+  clickKonva(x, y) {
     I.executeAsyncScript(Helpers.clickKonva, x, y);
   },
   /**
    * Click multiple times on the main Stage
    * @param {number[][]} points
    */
-  clickPointsKonva (points) {
+  clickPointsKonva(points) {
     I.executeAsyncScript(Helpers.clickMultipleKonva, points);
   },
   /**
@@ -67,7 +67,7 @@ module.exports = {
    * @param {number[][]} points
    * @deprecated Use drawByClickingPoints instead
    */
-  clickPolygonPointsKonva (points) {
+  clickPolygonPointsKonva(points) {
     I.executeAsyncScript(Helpers.polygonKonva, points);
   },
   /**
@@ -78,7 +78,7 @@ module.exports = {
    * @param {number} shiftY
    * @deprecated Use drawByDrag instead
    */
-  dragKonva (x, y, shiftX, shiftY) {
+  dragKonva(x, y, shiftX, shiftY) {
     I.executeAsyncScript(Helpers.dragKonva, x, y, shiftX, shiftY);
   },
 
@@ -89,7 +89,7 @@ module.exports = {
    * @param {number[]} rgbArray
    * @param {number} tolerance
    */
-  async hasPixelColor (x, y, rgbArray, tolerance = 3) {
+  async hasPixelColor(x, y, rgbArray, tolerance = 3) {
     const colorPixels = await I.executeAsyncScript(Helpers.getKonvaPixelColorFromPoint, x, y);
     const hasPixel = Helpers.areEqualRGB(rgbArray, colorPixels, tolerance);
 
@@ -97,13 +97,13 @@ module.exports = {
   },
 
   // Only for debugging
-  async whereIsPixel (rgbArray, tolerance = 3) {
+  async whereIsPixel(rgbArray, tolerance = 3) {
     const points = await I.executeAsyncScript(Helpers.whereIsPixel, rgbArray, tolerance);
 
     return points;
   },
 
-  async countKonvaShapes () {
+  async countKonvaShapes() {
     const count = await I.executeAsyncScript(Helpers.countKonvaShapes);
 
     return count;
@@ -119,7 +119,7 @@ module.exports = {
    * @param shiftX
    * @param shiftY
    */
-  drawByDrag (x, y, shiftX, shiftY) {
+  drawByDrag(x, y, shiftX, shiftY) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBBox.x + x, this._stageBBox.y + y);
     I.pressMouseDown();
@@ -133,7 +133,7 @@ module.exports = {
    * AtImageView.drawByClickingPoints([[50,50],[100,50],[100,100],[50,100],[50,50]]);
    * @param {number[][]} points
    */
-  drawByClickingPoints (points) {
+  drawByClickingPoints(points) {
     I.scrollPageToTop();
     for (const point of points) {
       I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
@@ -148,7 +148,7 @@ module.exports = {
    * @param {"steps"|"rate"} mode - mode of firing mousemove event
    * @param {number} parameter - parameter for mode
    */
-  drawThroughPoints (points, mode = "steps", parameter = 1) {
+  drawThroughPoints(points, mode = "steps", parameter = 1) {
     I.scrollPageToTop();
     const calcSteps = {
       steps: () => parameter,
@@ -166,16 +166,16 @@ module.exports = {
     }
     I.pressMouseUp();
   },
-  clickAt (x, y) {
+  clickAt(x, y) {
     I.scrollPageToTop();
     I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
   },
-  dblClickAt (x, y) {
+  dblClickAt(x, y) {
     I.scrollPageToTop();
     I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
     I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
   },
-  drawByClick (x, y) {
+  drawByClick(x, y) {
     I.scrollPageToTop();
     this.clickAt(x, y);
   },
