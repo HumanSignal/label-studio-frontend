@@ -341,7 +341,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-      let evt = e.evt || e;
+      const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
@@ -737,7 +737,7 @@ export default observer(
               ref={ref => {
                 item.setStageRef(ref);
               }}
-              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+              style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
               width={item.stageComponentSize.width}
               height={item.stageComponentSize.height}

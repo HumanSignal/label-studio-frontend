@@ -120,7 +120,7 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
-  let regions = [];
+  const regions = [];
 
   // Prepare shapes params
   Object.keys(createShape).forEach((shapeName, shapeIdx) => {
@@ -138,7 +138,7 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
   });
 
   // Running a test scenario for each shape type
-  for (let region of regions) {
+  for (const region of regions) {
 
     LabelStudio.init(params);
     AtImageView.waitForImage();

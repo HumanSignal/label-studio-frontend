@@ -31,6 +31,7 @@ const createRegion = (from_name, type, values) => ({
   from_name,
   to_name: "img",
   type,
+  origin: "manual",
   value: {
     height: 10.458911419423693,
     rotation: 0,

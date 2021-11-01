@@ -127,8 +127,8 @@ const shapes = [
 ];
 
 // eslint-disable-next-line no-undef,codeceptjs/no-skipped-tests
-xScenario("Simple shapes on Image", async function ({ I, AtImageView, AtSidebar }) {
-  for (let shape of shapes) {
+xScenario("Simple shapes on Image", async function({ I, AtImageView, AtSidebar }) {
+  for (const shape of shapes) {
     const params = {
       config: getConfigWithShape(shape.shape, shape.props),
       data: { image: IMAGE },
@@ -142,7 +142,7 @@ xScenario("Simple shapes on Image", async function ({ I, AtImageView, AtSidebar 
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);
 
-    for (let region of shape.regions) {
+    for (const region of shape.regions) {
       // draw the shape using corresponding helper and params
       const err = await I.executeAsyncScript(shape.action, ...region.params);
 

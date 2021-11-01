@@ -26,6 +26,7 @@ const result = [
     original_width: 2242,
     to_name: "img",
     type: "ellipselabels",
+    origin: "manual",
     value: {
       x: 50.4,
       y: 50.763073639274279,
@@ -40,6 +41,7 @@ const result = [
     id: "CkRNBWbSiK",
     to_name: "img",
     type: "choices",
+    origin: "manual",
     value: {
       choices: ["Space"],
     },

@@ -33,8 +33,8 @@ function assertWithTolerance(actual, expected) {
 
 Feature("Smoke test through all the examples");
 
-examples.forEach(example =>
-  Scenario(example.title || "Noname smoke test", async function({ I, AtImageView, AtAudioView, AtSidebar }) {
+examples.slice(-1).forEach(example =>
+  Scenario(example.title || "Noname smoke test", async function({ I, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: "test", result }], config, data };
@@ -62,7 +62,7 @@ examples.forEach(example =>
     }
 
     if (Utils.xmlFindBy(configTree, node => ["text", "hypertext"].includes(node["#name"].toLowerCase()))) {
-      I.waitForVisible(".htx-richtext", 5);
+      I.waitForVisible(".lsf-htx-richtext", 5);
     }
 
     I.dontSeeElement(locate(".ls-errors"));
@@ -88,8 +88,13 @@ examples.forEach(example =>
         result.filter(r => r.id !== ids[0]),
       );
     }
-    I.click("Create Copy");
-    I.seeElement(locate(".lsf-entity-tab").at(2));
+    // Click on annotation copy button
+    AtTopbar.click(`[aria-label="Copy Annotation"]`);
+
+    // Check if new annotation exists
+    AtTopbar.seeAnnotationAt(2);
+
+    // Check for regions count
     AtSidebar.seeRegions(count);
   }),
 );

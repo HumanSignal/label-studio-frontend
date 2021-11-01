@@ -15,7 +15,7 @@ export default inject("store")(
     /**
      * Buttons of Controls
      */
-    let buttons = {
+    const buttons = {
       skip: "",
       update: "",
       submit: "",
@@ -100,7 +100,7 @@ export default inject("store")(
       }
     }
 
-    let content = (
+    const content = (
       <div className={styles.block}>
         <div className={styles.wrapper}>
           <div className={styles.container}>

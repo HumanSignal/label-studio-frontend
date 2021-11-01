@@ -217,7 +217,10 @@ export const captureSelection = (
 ) => {
   const selection = window.getSelection();
 
-  trimSelection(selection);
+  if (selection.isCollapsed) return;
+  if (granularity !== "symbol") {
+    trimSelection(selection);
+  }
   const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
@@ -300,7 +303,8 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
  * @param {Range} range
  */
 const fixRange = range => {
-  let { startContainer, endContainer, startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
+  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startContainer, endContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
@@ -493,6 +497,7 @@ export const findNodesBetween = (startNode, endNode, root) => {
  * @param {HTMLSpanElement[]} spans
  */
 export const removeRange = spans => {
+  if (!spans) return;
   spans.forEach(hl => {
     const fragment = hl.ownerDocument.createDocumentFragment();
     const parent = hl.parentNode;
@@ -528,8 +533,8 @@ export const removeRange = spans => {
  */
 export const findRange = (start, end, root) => {
   return {
-    startContainer: findOnPosition(root, start, "right"),
-    endContainer: findOnPosition(root, end, "left"),
+    startContainer: codePointsToChars(findOnPosition(root, start, "right")),
+    endContainer: codePointsToChars(findOnPosition(root, end, "left")),
   };
 };
 
@@ -547,6 +552,50 @@ export const findRangeNative = (start, end, root) => {
 };
 
 /**
+ * Convert position in node from code points count to chars count
+ * May be useful to do some string operations and then convert it back
+ * @param {{ node: Node, position: number }} container
+ * @return {{ node: Node, position: number }}
+ */
+export const codePointsToChars = ({ node, position }) => {
+  const codePoints = [...node.textContent].slice(0, position);
+  const chars = codePoints.join("").length;
+
+  return { node, position: chars };
+};
+
+/**
+ * Fix position in node from chars count to code points count
+ * In python and other modern tools complex unicode symbols handled as code points, not UTF chars
+ * So for external usage js length should be converted to code points count
+ * string to array conversion splits string into code points array, that's the easiest way
+ * @param {{ node: Node, position: number }} container
+ * @return {{ node: Node, position: number }}
+ */
+export const charsToCodePoints = ({ node, position }) => {
+  const chars = node.textContent.substr(0, position);
+  const codePoints = [...chars].length;
+
+  return { node, position: codePoints };
+};
+
+/**
+ * Fix Range start/end offsets to code points count instead of chars count
+ * Alters given range
+ * @param {Range} range
+ * @return {Range} the same range
+ */
+export const fixCodePointsInRange = (range) => {
+  const start = charsToCodePoints({ node: range.startContainer, position: range.startOffset });
+  const end = charsToCodePoints({ node: range.endContainer, position: range.endOffset });
+
+  range.setStart(range.startContainer, start.position);
+  range.setEnd(range.endContainer, end.position);
+
+  return range;
+};
+
+/**
  * Find a node by text offset
  * @param {Node} root
  * @param {number} position
@@ -557,22 +606,33 @@ export const findOnPosition = (root, position, borderSide = "left") => {
   let lastPosition = 0;
   let currentNode = walker.nextNode();
   let nextNode = walker.nextNode();
+  // set to finish on the next text
+  let finishHere = false;
 
   while (currentNode) {
     const isText = currentNode.nodeType === Node.TEXT_NODE;
     const isBR = currentNode.nodeName === "BR";
 
-    if (isText || isBR) {
-      const length = currentNode.length ?? 1;
+    if (isBR) {
+      lastPosition++;
+    }
+
+    if (isText && finishHere) {
+      return { node: currentNode, position: 0 };
+    }
+
+    if (isText) {
+      // convert chars count to code points count, see `charsToCodePoints`
+      const length = [...currentNode.textContent].length;
 
       if (length + lastPosition >= position || !nextNode) {
         if (borderSide === "right" && length + lastPosition === position && nextNode) {
-          return { node: nextNode, position: 0 };
+          finishHere = true;
+        } else {
+          return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
         }
-        return { node: currentNode, position: isBR ? 0 : clamp(position - lastPosition, 0, length) };
-      } else {
-        lastPosition += length;
       }
+      lastPosition += length;
     }
 
     currentNode = nextNode;

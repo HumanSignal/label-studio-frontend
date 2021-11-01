@@ -6,6 +6,7 @@ import { Hotkey } from "../../core/Hotkey";
 
 import "./Settings.styl";
 import { Block, Elem } from "../../utils/bem";
+import { triggerResizeEvent } from "../../utils/utilities";
 
 const HotkeysDescription = () => {
   const columns = [
@@ -149,6 +150,7 @@ export default observer(({ store }) => {
             checked={store.settings.bottomSidePanel}
             onChange={() => {
               store.settings.toggleBottomSP();
+              setTimeout(triggerResizeEvent);
             }}
           >
             Move sidepanel to the bottom

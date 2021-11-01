@@ -121,7 +121,7 @@ Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
-  let regionPairs = [];
+  const regionPairs = [];
 
   Object.keys(createShape).forEach((shapeName, shapeIdx) => {
     const hotKey = `${shapeIdx + 1}`;
@@ -141,7 +141,7 @@ Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar
       regionPairs.push([outerRegion, innerRegion]);
     });
   });
-  for (let regionPair of regionPairs) {
+  for (const regionPair of regionPairs) {
     const [outerRegion, innerRegion] = regionPair;
 
     LabelStudio.init(params);
@@ -180,7 +180,7 @@ Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
-  let regionPairs = [];
+  const regionPairs = [];
 
   Object.keys(createShape).forEach((shapeName, shapeIdx) => {
     const hotKey = `${shapeIdx + 1}`;
@@ -202,7 +202,7 @@ Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar
       }
     });
   });
-  for (let regionPair of regionPairs) {
+  for (const regionPair of regionPairs) {
     const [outerRegion, innerRegion] = regionPair;
 
     LabelStudio.init(params);

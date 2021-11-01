@@ -158,12 +158,12 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
   const regions = REGIONS.map(r => ({ ...r, x: r.x * canvasSize.width / 100, y: r.y * canvasSize.height / 100, width: r.width * canvasSize.width / 100, height: r.height * canvasSize.height / 100 }));
 
   I.say("Drawing");
-  for (let region of regions) {
+  for (const region of regions) {
     AtImageView.drawByDrag(region.x, region.y, region.width, region.height);
   }
   AtSidebar.seeRegions(regions.length);
   I.say("Labeling");
-  for (let [idx, region] of Object.entries(regions)) {
+  for (const [idx, region] of Object.entries(regions)) {
     AtImageView.dblClickAt(region.x + region.width / 2, region.y + region.height / 2);
     AtLabels.clickLabel(region.label);
     if (region.text) {
@@ -172,7 +172,7 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
   }
   const results = await LabelStudio.serialize();
 
-  for (let region of regions) {
+  for (const region of regions) {
     if (region.text) {
       const hasText = results.find(result => (result && result.value && result.value.text && result.value.text[0] === region.text));
 
@@ -184,7 +184,7 @@ Scenario("Drawing multiple blank regions and then attaching labels", async ({ I,
     LabelStudio.init({ config: createConfig( ), data, annotations: [{ id: "test", result: results }] });
     AtImageView.waitForImage();
     AtSidebar.seeRegions(regions.length);
-    for (let [idx, region] of Object.entries(regions)) {
+    for (const [idx, region] of Object.entries(regions)) {
       if (region.text) {
         I.seeInField(AtSidebar.locate(".lsf-region-item").withText(`${+idx+1}`).find(".lsf-textarea-tag__input"), region.text);
       }

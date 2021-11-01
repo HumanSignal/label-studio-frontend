@@ -23,6 +23,9 @@ export const configureStore = async (params, events) => {
   } else if (params?.task) {
     params.task = env.getData(params.task);
   }
+  if (params.task?.id) {
+    params.taskHistory = [{ taskId: params.task.id, annotationId: null }];
+  }
 
   const store = AppStore.create(params, {
     ...env.configureApplication(params),

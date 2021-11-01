@@ -26,8 +26,8 @@ const TimeTraveller = types
   .actions(self => {
     let targetStore;
     let snapshotDisposer;
-    let updateHandlers = new Set();
-    let freezingLockSet = new Set();
+    const updateHandlers = new Set();
+    const freezingLockSet = new Set();
     let frozenChanges = false;
 
     function triggerHandlers() {

@@ -1,6 +1,6 @@
 import chroma from "chroma-js";
 
-let gradients = [
+const gradients = [
   "#c22525",
   "#c13025",
   "#bf3b24",
@@ -34,7 +34,7 @@ let gradients = [
   "#1c992d",
 ];
 
-let colorNames = {
+const colorNames = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
   aqua: "#00ffff",
@@ -182,7 +182,7 @@ const RGBARegEx = /^rgba\((25[0-5]|2[0-4]\d|1\d{2}|\d\d?)\s*,\s*(25[0-5]|2[0-4]\
 const RGBRegEx = /^rgb\((25[0-5]|2[0-4]\d|1\d{2}|\d\d?)\s*,\s*(25[0-5]|2[0-4]\d|1\d{2}|\d\d?)\s*,\s*(25[0-5]|2[0-4]\d|1\d{2}|\d\d?)\s*\)$/;
 
 function hexToRGBArray(hex) {
-  let rgb = [0, 0, 0];
+  const rgb = [0, 0, 0];
   /**
    * If HEX = 3
    */
@@ -209,7 +209,7 @@ function hexToRGBArray(hex) {
  * @param {number?} opacity From 0 to 1
  */
 export function hexToRGBA(hex, opacity) {
-  let rgb = hexToRGBArray(hex);
+  const rgb = hexToRGBArray(hex);
   let a = 0.3;
 
   if (typeof parseInt(opacity) === "number") {
@@ -259,7 +259,7 @@ export function stringToColor(str) {
   let color = "#";
 
   for (let i = 0; i < 3; i++) {
-    let value = (hash >> (i * 8)) & 0xff;
+    const value = (hash >> (i * 8)) & 0xff;
 
     color += ("00" + value.toString(16)).substr(-2);
   }

@@ -52,7 +52,7 @@ const Model = types
     },
 
     serialize() {
-      let res = {
+      const res = {
         value: {},
       };
 
@@ -177,7 +177,7 @@ const Model = types
     },
 
     _createNativeRange(useOriginalContent = false) {
-      let rootNode = self._getRootNode(useOriginalContent);
+      const rootNode = self._getRootNode(useOriginalContent);
 
       if (rootNode === undefined) return undefined;
 

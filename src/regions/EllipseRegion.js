@@ -128,8 +128,8 @@ const Model = types
       const cx = self.x;
       const cy = self.y;
       //going to system where center coordinates are (0,0)
-      var rel_x = x - cx;
-      var rel_y = y - cy;
+      let rel_x = x - cx;
+      let rel_y = y - cy;
 
       //going to system where our ellipse has angle 0 to X-Axis via rotate matrix
       const theta = self.rotation;
@@ -298,6 +298,7 @@ const HtxEllipseView = ({ item }) => {
 
           t.setAttr("scaleX", 1);
           t.setAttr("scaleY", 1);
+          item.notifyDrawingFinished();
         }}
         onDragStart={e => {
           if (item.parent.getSkipInteractions()) {
@@ -318,6 +319,7 @@ const HtxEllipseView = ({ item }) => {
           );
           item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
           item.annotation.history.unfreeze(item.id);
+          item.notifyDrawingFinished();
         }}
         dragBoundFunc={createDragBoundFunc(item.parent,pos => {
           let { x, y } = pos;

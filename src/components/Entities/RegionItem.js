@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
 import { Button } from "../../common/Button/Button";
 import { Node, NodeIcon } from "../Node/Node";
-import { LsCollapse, LsExpand, LsInvisible, LsVisible } from "../../assets/icons";
+import { LsCollapse, LsExpand, LsInvisible, LsSparks, LsVisible } from "../../assets/icons";
 import styles from "./Entities.module.scss";
 import Utils from "../../utils";
 
@@ -63,11 +63,14 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
         <Elem name="title" tag={Node} node={item} mix={styles.node}/>
 
         <Space size="small">
-          <Elem
-            tag="span"
-            name="id"
-          >
+          <Elem tag="span" name="id">
             <NodeIcon node={item}/>
+          </Elem>
+
+          <Elem name="prediction">
+            {item.origin === 'prediction' && (
+              <LsSparks style={{ width: 16, height: 16 }}/>
+            )}
           </Elem>
 
           {!item.editable && <Badge count={"ro"} style={{ backgroundColor: "#ccc" }}/>}

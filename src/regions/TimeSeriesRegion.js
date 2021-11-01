@@ -65,15 +65,15 @@ const Model = types
       const one = 1000;
       const lots = one * 10;
 
-      hotkeys.addKey("left", () => self.growLeft(one), "Increase region to the left");
-      hotkeys.addKey("right", () => self.growRight(one), "Increase region to the right");
-      hotkeys.addKey("alt+left", () => self.shrinkLeft(one), "Decrease region on the left");
-      hotkeys.addKey("alt+right", () => self.shrinkRight(one), "Decrease region on the right");
+      hotkeys.addNamed("ts:grow-left", () => self.growLeft(one));
+      hotkeys.addNamed("ts:grow-right", () => self.growRight(one));
+      hotkeys.addNamed("ts:shrink-left", () => self.shrinkLeft(one));
+      hotkeys.addNamed("ts:shrink-right", () => self.shrinkRight(one));
 
-      hotkeys.addKey("shift+left", () => self.growLeft(lots));
-      hotkeys.addKey("shift+right", () => self.growRight(lots));
-      hotkeys.addKey("shift+alt+left", () => self.shrinkLeft(lots));
-      hotkeys.addKey("shift+alt+right", () => self.shrinkRight(lots));
+      hotkeys.addNamed("ts:grow-left-largre", () => self.growLeft(lots));
+      hotkeys.addNamed("ts:grow-right-largre", () => self.growRight(lots));
+      hotkeys.addNamed("ts:shrink-left-largre", () => self.shrinkLeft(lots));
+      hotkeys.addNamed("ts:shrink-right-largre", () => self.shrinkRight(lots));
 
       self.parent.scrollToRegion(self);
     },
@@ -96,6 +96,7 @@ const Model = types
     updateRegion(start, end) {
       self.start = start;
       self.end = end;
+      self.notifyDrawingFinished();
     },
 
     afterCreate() {
@@ -109,7 +110,7 @@ const Model = types
     serialize() {
       // convert to original format from data/csv
       const format = self.parent.timeformat ? d3.timeFormat(self.parent.timeformat) : Number;
-      let res = {
+      const res = {
         value: {
           start: format(self.start),
           end: format(self.end),

@@ -247,7 +247,7 @@ const Model = types
     },
 
     setRemoteValue(val) {
-      let errors = [];
+      const errors = [];
 
       if (!Array.isArray(val)) {
         errors.push(`Provided data is not an array`);
@@ -298,6 +298,8 @@ const Model = types
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
+
+      area.notifyDrawingFinished();
 
       area._range = range._range;
       return area;
@@ -367,7 +369,7 @@ class HtxParagraphsView extends Component {
 
   getOffsetInPhraseElement(container, offset) {
     const node = this.getPhraseElement(container);
-    let range = document.createRange();
+    const range = document.createRange();
 
     range.setStart(node, 0);
     range.setEnd(container, offset);
@@ -386,9 +388,10 @@ class HtxParagraphsView extends Component {
       el.style.visibility = "hidden";
     });
 
-    var i,
-      ranges = [],
-      selection = window.getSelection();
+    let i;
+
+    const ranges = [];
+    const selection = window.getSelection();
 
     if (selection.isCollapsed) {
       names.forEach(el => {
@@ -398,7 +401,7 @@ class HtxParagraphsView extends Component {
     }
 
     for (i = 0; i < selection.rangeCount; i++) {
-      var r = selection.getRangeAt(i);
+      const r = selection.getRangeAt(i);
 
       if (r.endContainer.nodeName === "DIV") {
         r.setEnd(r.startContainer, r.startContainer.length);
@@ -479,7 +482,7 @@ class HtxParagraphsView extends Component {
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
 
-    var selectedRanges = this.captureDocumentSelection();
+    const selectedRanges = this.captureDocumentSelection();
 
     if (selectedRanges.length === 0) {
       return;
