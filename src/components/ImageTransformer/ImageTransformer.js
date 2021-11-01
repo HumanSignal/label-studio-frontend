@@ -8,10 +8,15 @@ import Constants from "../../core/Constants";
 
 export default class TransformerComponent extends Component {
   backgroundRef = React.createRef()
+  // For forcing image transformer area recalculation
+  needsUpdate = false
 
   componentDidMount() {
     setTimeout(this.checkNode);
-    this._stopListeningHistory = this.props.item.annotation?.history?.onUpdate(this.checkNode);
+    this._stopListeningHistory = this.props.item.annotation?.history?.onUpdate(() => {
+      this.needsUpdate = true;
+      this.checkNode();
+    });
   }
 
   componentDidUpdate() {
@@ -77,10 +82,22 @@ export default class TransformerComponent extends Component {
     const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
 
-    if (selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx])) {
+    if (!this.needsUpdate && selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx])) {
       return;
     }
 
+    if (this.needsUpdate) {
+      const { item } = this.props;
+      const { selectedRegionsBBox } = item;
+
+      this.backgroundRef.current.setAttrs({
+        x:selectedRegionsBBox.left,
+        y:selectedRegionsBBox.top,
+        width:selectedRegionsBBox.right-selectedRegionsBBox.left,
+        height:selectedRegionsBBox.bottom-selectedRegionsBBox.top,
+      });
+      this.needsUpdate = false;
+    }
     if (selectedNodes.length) {
       // attach to another node
       if (this.backgroundRef.current) {
