@@ -37,12 +37,14 @@
       content ''
       display block
       position absolute
-
+      cursor pointer
+      z-index 3
 
   &__connection
     top 50%
     height 2px
     width 100%
+    z-index 1
     position absolute
     transform translateY(-50%)
     background-color var(--point-color)
@@ -56,6 +58,7 @@
     top 50%
     width 6px
     height 6px
+    z-index 2
     position absolute
     border-radius 2px
     transform translate3d(-50%, -50%, 0) rotate(45deg)
