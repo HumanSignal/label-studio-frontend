@@ -11,6 +11,7 @@ const getNodeAbsoluteDimensions = (node, workingArea) => {
     y: node.y() / height * 100,
     width: node.width() / width * 100,
     height: node.height() / height * 100,
+    rotation: node.rotation(),
   };
 };
 
@@ -29,6 +30,7 @@ const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
     y: box.y * waHeight / 100,
     width: box.width * waWidth / 100,
     height: box.height * waHeight / 100,
+    rotation: box.rotation,
   };
 
   return reg.isInLifespan(frame) ? (

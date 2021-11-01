@@ -200,7 +200,7 @@ const VideoRegionsPure = ({
       )}
       {selected?.length > 0 && (
         <Layer>
-          <Transformer ref={initTransform} keepRatio={false} rotateEnabled={false} ignoreStroke/>
+          <Transformer ref={initTransform} keepRatio={false} ignoreStroke flipEnabled={false} />
         </Layer>
       )}
     </Stage>
