@@ -1,18 +1,16 @@
 .current-task
   padding 0 8px 0 8px
-  width 220px
-  display grid
-  grid-template-columns 1fr min-content
-  grid-auto-rows 1fr
-  grid-template-areas 't . .'
+  display flex
   align-content center
   align-items center
 
   &_with-history
     height 100%
+    display grid
+    width 220px
+    grid-template-columns 1fr min-content
     grid-template-areas 'id buttons' 'id buttons'
     grid-template-rows 1fr 1fr
-    grid-auto-rows none
 
   &__task-id
     grid-area id
