@@ -11,22 +11,22 @@ const TagAttrs = types.model({
 });
 
 const ModelAttrs = types
-  .model("VideoBBoxModel", {
+  .model("VideoRectangleModel", {
     pid: types.optional(types.string, guidGenerator),
-    type: "videobbox",
+    type: "videorectangle",
   });
 
-const VideoBBoxModel = types.compose(
-  "VideoBBoxModel",
+const VideoRectangleModel = types.compose(
+  "VideoRectangleModel",
   ModelAttrs,
   TagAttrs,
   ControlBase,
 );
 
-const HtxVideoBBox = observer(() => {
+const HtxVideoRectangle = observer(() => {
   return null;
 });
 
-Registry.addTag("videobbox", VideoBBoxModel, HtxVideoBBox);
+Registry.addTag("videorectangle", VideoRectangleModel, HtxVideoRectangle);
 
-export { HtxVideoBBox, VideoBBoxModel };
+export { HtxVideoRectangle, VideoRectangleModel };

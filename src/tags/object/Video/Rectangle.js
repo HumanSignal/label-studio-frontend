@@ -15,8 +15,8 @@ const getNodeAbsoluteDimensions = (node, workingArea) => {
   };
 };
 
-const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
-  const box = reg.getBBox(frame);
+const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
+  const box = reg.getRectangle(frame);
   const style = useRegionStyles(reg, { includeFill: true });
 
   console.log({ frame, box, seq: reg.sequence });
@@ -54,16 +54,16 @@ const BBoxPure = ({ reg, frame, workingArea, ...rest }) => {
         node.setWidth(w);
         node.setHeight(h);
 
-        reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
+        reg.updateRectangle(getNodeAbsoluteDimensions(node, workingArea), frame);
       }}
       onDragEnd={e => {
         const node = e.target;
 
-        reg.updateBBox(getNodeAbsoluteDimensions(node, workingArea), frame);
+        reg.updateRectangle(getNodeAbsoluteDimensions(node, workingArea), frame);
       }}
       {...rest}
     />
   ) : null;
 };
 
-export const BBox = observer(BBoxPure);
+export const Rectangle = observer(RectanglePure);

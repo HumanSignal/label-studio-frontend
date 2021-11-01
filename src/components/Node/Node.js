@@ -49,7 +49,7 @@ const NodeViews = {
     altIcon: IconRectangleToolSmart,
   }),
 
-  VideoBBoxRegionModel: NodeView({
+  VideoRectangleRegionModel: NodeView({
     name: "Video Rect",
     icon: IconRectangleTool,
     altIcon: IconRectangleToolSmart,

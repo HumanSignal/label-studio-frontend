@@ -19,7 +19,7 @@ import { TaxonomyModel } from "./Taxonomy";
 import { TextAreaModel } from "./TextArea/TextArea";
 import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 import { ParagraphLabelsModel } from "./ParagraphLabels";
-import { VideoBBoxModel } from "./VideoBBox";
+import { VideoRectangleModel } from "./VideoRectangle";
 
 import { EllipseLabelsModel } from "./EllipseLabels";
 import { EllipseModel } from "./Ellipse";
@@ -52,6 +52,6 @@ export {
   EllipseModel,
   RelationsModel,
   RelationModel,
-  VideoBBoxModel,
+  VideoRectangleModel,
   ParagraphLabelsModel
 };

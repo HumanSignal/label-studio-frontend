@@ -166,6 +166,7 @@ export const Frames: FC<TimelineViewProps> = ({
     }
   }, [currentOffsetX, currentOffsetY]);
 
+  // wheel is a passive event, so we have to add proper event to prevent default scroll
   useEffect(() => {
     const handler = (e: globalThis.WheelEvent) => e.preventDefault();
 

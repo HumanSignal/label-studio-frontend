@@ -88,7 +88,7 @@ const Model = types
       "paragraphs",
       "paragraphlabels",
       "video",
-      "videobbox",
+      "videorectangle",
     ]),
   });
 

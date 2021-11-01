@@ -51,7 +51,7 @@ const Result = types
       "textarea",
       "rating",
       "pairwise",
-      "videobbox",
+      "videorectangle",
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({

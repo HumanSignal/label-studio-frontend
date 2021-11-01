@@ -21,7 +21,7 @@ import { Dialogue } from "../examples/phrases";
 import { AudioClassification } from "../examples/audio_classification";
 import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
-import { VideoBBoxes } from "../examples/video_bboxes";
+import { VideoRectangles } from "../examples/video_bboxes";
 
 /**
  * Image
@@ -62,7 +62,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoBBoxes;
+const data = VideoRectangles;
 
 function getData(task) {
   if (task && task.data) {

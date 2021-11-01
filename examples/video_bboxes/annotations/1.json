@@ -29,7 +29,7 @@
                   "id": "tJhYZLMC9G",
                   "from_name": "box",
                   "to_name": "video",
-                  "type": "videobbox",
+                  "type": "videorectangle",
                   "origin": "manual"
               },
               {
@@ -76,7 +76,7 @@
                   "id": "FstfiS1SLJ",
                   "from_name": "box",
                   "to_name": "video",
-                  "type": "videobbox",
+                  "type": "videorectangle",
                   "origin": "manual"
               },
                 {
@@ -483,7 +483,7 @@
                     "id": "HdYVzM7SwV",
                     "from_name": "box",
                     "to_name": "video",
-                    "type": "videobbox",
+                    "type": "videorectangle",
                     "origin": "manual"
                 }
             ]

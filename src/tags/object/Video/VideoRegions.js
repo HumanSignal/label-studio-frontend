@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Layer, Rect, Stage, Transformer } from "react-konva";
 import { inject, observer } from "mobx-react";
-import { BBox } from "./BBox";
+import { Rectangle } from "./Rectangle";
 import Constants from "../../../core/Constants";
 import chroma from "chroma-js";
 
@@ -173,7 +173,7 @@ const VideoRegionsPure = ({
     >
       <Layer {...layerProps}>
         {regions.map(reg => (
-          <BBox
+          <Rectangle
             id={reg.id}
             key={reg.id}
             reg={reg}
