@@ -27,6 +27,7 @@ export const Seeker: FC<SeekerProps> = ({
   const root = useRef<HTMLDivElement>();
   const indicator = useRef<HTMLDivElement>();
 
+  const showIndicator = seekVisible > 0;
   const width = `${seekVisible / length * 100}%`;
   const offsetLimit = length - seekVisible;
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
@@ -84,7 +85,9 @@ export const Seeker: FC<SeekerProps> = ({
   return (
     <Block name="seeker" ref={root} onMouseDown={onSeekerDrag}>
       <Elem name="track"/>
-      <Elem name="indicator" style={{ left: windowOffset, width }} onMouseDown={onIndicatorDrag}/>
+      {showIndicator && (
+        <Elem name="indicator" style={{ left: windowOffset, width }} onMouseDown={onIndicatorDrag}/>
+      )}
       <Elem name="position" ref={indicator} style={{ left: `${seekerOffset}%` }}/>
       <Elem name="minimap">{minimap}</Elem>
     </Block>
