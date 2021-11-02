@@ -8,6 +8,13 @@ const View: TimelineView<typeof Controls> = {
   View: Frames,
   Minimap,
   Controls,
+  settings: {
+    altStepHandler() {
+      console.log('hello');
+    },
+    stepBackHotkey: 'video:frame-backward',
+    stepForwardHotkey: 'video:frame-forward',
+  },
 };
 
 export default View;

@@ -172,10 +172,11 @@ export const Frames: FC<TimelineViewProps> = ({
       const target = scrollable.current!;
       const currentScroll = target.scrollTop;
       const maxScroll = target.scrollHeight - target.clientHeight;
+      const horizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
 
       const { deltaY: delta } = e;
 
-      const allowScroll = (currentScroll === 0 && delta < 0) || (currentScroll === maxScroll && delta > 0);
+      const allowScroll = !horizontalScroll && ((currentScroll === 0 && delta < 0) || (currentScroll === maxScroll && delta > 0));
 
       if (!allowScroll) e.preventDefault();
     };

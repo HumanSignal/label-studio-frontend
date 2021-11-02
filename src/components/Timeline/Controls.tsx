@@ -1,12 +1,14 @@
 import { Block, Elem } from "../../utils/bem";
-import { Button } from "../../common/Button/Button";
+import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 
-import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconPause, IconPlay, IconRewind } from "../../assets/icons/timeline";
+import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
-import { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useMemo, useRef, useState } from "react";
+import React, { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { clamp } from "../../utils/utilities";
+import { TimelineContextValue } from "./Types";
+import { TimelineContext } from "./Context";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -51,6 +53,8 @@ export const Controls: FC<ControlsProps> = ({
   onStepForward,
   onToggleCollapsed,
 }) => {
+  const { settings } = useContext(TimelineContext);
+  const [steppedControlsAlt, setSteppedControlsAlt] = useState(false);
   const [inputMode, setInputMode] = useState(false);
 
   const time = useMemo(() => {
@@ -60,6 +64,26 @@ export const Controls: FC<ControlsProps> = ({
   const currentTime = useMemo(() => {
     return position / frameRate;
   }, [position, frameRate]);
+
+  useEffect(() => {
+    const keyboardHandler = (e: KeyboardEvent) => {
+      if (!settings?.altStepHandler) return;
+
+      if (e.type === 'keydown' && e.shiftKey) {
+        setSteppedControlsAlt(true);
+      } else if (e.type === 'keyup' && steppedControlsAlt) {
+        setSteppedControlsAlt(false);
+      }
+    };
+
+    document.addEventListener('keydown', keyboardHandler, { capture: true });
+    document.addEventListener('keyup', keyboardHandler, { capture: true });
+
+    return () => {
+      document.removeEventListener('keydown', keyboardHandler, { capture: true });
+      document.removeEventListener('keyup', keyboardHandler, { capture: true });
+    };
+  }, [steppedControlsAlt]);
 
   return (
     <Block name="timeline-controls" tag={Space} spread>
@@ -82,11 +106,11 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="hll"></Elem>
         <Elem name="actions" tag={Space} collapsed>
-          <ControlButton onClick={onStepBackward}>
-            <IconChevronLeft/>
+          <ControlButton onClick={onStepBackward} hotkey={settings?.stepBackHotkey ?? "left"}>
+            {steppedControlsAlt ? <IconPrev/> : <IconChevronLeft/>}
           </ControlButton>
-          <ControlButton onClick={onStepForward}>
-            <IconChevronRight/>
+          <ControlButton onClick={onStepForward} hotkey={settings?.stepForwardHotkey ?? "right"}>
+            {steppedControlsAlt ? <IconNext/> : <IconChevronRight/>}
           </ControlButton>
           {extraControls}
         </Elem>
@@ -122,7 +146,7 @@ export const Controls: FC<ControlsProps> = ({
   );
 };
 
-export const ControlButton: FC<DOMAttributes<HTMLButtonElement> & {disabled?: boolean}> = ({ children, ...props }) => {
+export const ControlButton: FC<ButtonProps & {disabled?: boolean}> = ({ children, ...props }) => {
   return (
     <Button
       {...props}

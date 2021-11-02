@@ -19,8 +19,6 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
   const box = reg.getRectangle(frame);
   const style = useRegionStyles(reg, { includeFill: true });
 
-  console.log({ frame, box, seq: reg.sequence });
-
   if (!box) return null;
 
   const { realWidth: waWidth, realHeight: waHeight } = workingArea;

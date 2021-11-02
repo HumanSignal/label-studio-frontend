@@ -35,6 +35,7 @@ export interface TimelineContextValue {
   regions: TimelineRegion[];
   step: number;
   playing: boolean;
+  settings?: TimelineSettings;
 }
 
 export interface TimelineMinimapProps {
@@ -43,6 +44,11 @@ export interface TimelineMinimapProps {
   length: number;
 }
 
+export type TimelineSettings = {
+  stepBackHotkey?: string,
+  stepForwardHotkey?: string,
+  altStepHandler?: () => void,
+}
 export interface TimelineExtraControls<A extends string, D extends any> {
   onAction?: <T extends Element>(e: MouseEvent<T>, action: A, data?: D) => void;
 }
@@ -51,4 +57,5 @@ export type TimelineView<D extends FC<TimelineExtraControls<any, any>> = any> = 
   View: FC<TimelineViewProps>,
   Minimap?: FC<any>,
   Controls?: D,
+  settings?: TimelineSettings,
 }

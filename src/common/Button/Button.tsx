@@ -1,10 +1,15 @@
-import React, { CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent } from "react";
+import Keymaster from "keymaster";
+import React, { CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent, useEffect, useRef, useState } from "react";
+import { Hotkey } from "../../core/Hotkey";
+import { useHotkey } from "../../hooks/useHotkey";
 import { Block, CNTagName, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
 import "./Button.styl";
 
+const hotkeys = Hotkey();
+
 export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
-  type: "text" | "link";
+  type?: "text" | "link";
   href?: string;
   extra?: JSX.Element;
   className?: string;
@@ -15,6 +20,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   look?: "primary" | "danger" | "destructive";
   primary?: boolean;
   style?: CSSProperties;
+  hotkey?: string;
 }
 
 export interface ButtonGroupProps {
@@ -37,6 +43,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   tag,
   look,
   primary,
+  hotkey,
   ...rest
 }, ref) => {
   const finalTag = tag ?? (rest.href ? "a" : "button");
@@ -67,6 +74,8 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
         return icon;
     }
   }, [icon, size]);
+
+  useHotkey(hotkey, rest.onClick as unknown as Keymaster.KeyHandler);
 
   return (
     <Block

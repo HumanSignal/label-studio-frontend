@@ -2,13 +2,14 @@ import { Block, Elem } from "../../utils/bem";
 import { Controls } from "./Controls";
 import { Seeker } from "./Seeker";
 import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { default as Views, ViewType, ViewTypes } from "./Views";
+import { default as Views, ViewTypes } from "./Views";
 
 import "./Timeline.styl";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
+import { TimelineContextValue } from "./Types";
 
-export interface TimelineProps<D extends ViewTypes = "frames", V extends ViewType<D> = ViewType<D>> {
+export interface TimelineProps<D extends ViewTypes = "frames"> {
   regions: any[];
   length: number;
   position: number;
@@ -54,18 +55,28 @@ export const Timeline: FC<TimelineProps> = ({
   const step = useMemo(() => 10 * zoom, [zoom]);
 
   const onInternalPositionChange = useCallback((value: number) => {
+    console.log({ value });
     const clampedValue = clamp(value, 1, length);
 
     setCurrentPosition(clampedValue);
     onPositionChange?.(clampedValue);
   }, [setCurrentPosition, length]);
 
+  const contextValue: TimelineContextValue = {
+    position,
+    length,
+    regions,
+    step,
+    playing,
+    settings: View.settings,
+  };
+
   useEffect(() => {
     setCurrentPosition(clamp(position, 1, length));
   }, [position, length]);
 
   return (
-    <TimelineContextProvider value={{ position, length, regions, step, playing }}>
+    <TimelineContextProvider value={contextValue}>
       <Block name="timeline" className={className}>
         <Elem name="topbar">
           <Seeker
