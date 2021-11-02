@@ -30,6 +30,7 @@ type PanOptions = {
   y: number,
 }
 
+// @todo not in use; move all the zoom handling up the callstack
 const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 5, 10, 16];
 
 const clampZoom = (value: number) => clamp(value, zoomSteps[0], zoomSteps[zoomSteps.length - 1]);

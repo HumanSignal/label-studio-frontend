@@ -133,11 +133,9 @@ const HtxVideoView = ({ item }) => {
     if (!e.shiftKey) return;
 
     const delta = e.deltaY * 0.01;
-    const video = item.ref.current;
-    const newZoom = clamp(video.zoom + delta, 0.25, 16);
 
     requestAnimationFrame(() => {
-      setZoom(newZoom);
+      setZoom(zoom => clamp(zoom + delta, 0.25, 16));
     });
   }, []);
 
