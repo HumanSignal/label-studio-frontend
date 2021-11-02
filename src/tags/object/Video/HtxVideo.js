@@ -8,13 +8,14 @@ import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
+import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 
-// const hotkeys = Hotkey("Video", "Video Annotation");
+const hotkeys = Hotkey("Video", "Video Annotation");
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
@@ -50,6 +51,12 @@ const HtxVideoView = ({ item }) => {
       playing ? video.play() : video.pause();
     }
   }, [playing]);
+
+  useEffect(() => {
+    hotkeys.addNamed("video:playpause", () => setPlaying(playing => !playing));
+
+    return () => hotkeys.removeNamed("video:playpause");
+  }, []);
 
   useEffect(() => {
     const cancelWheel = (e) => {
@@ -229,7 +236,7 @@ const HtxVideoView = ({ item }) => {
           >
             {videoSize && (
               <>
-                {loaded && (
+                {loaded && item.store.hasSegmentation && (
                   <VideoRegions
                     item={item}
                     zoom={zoom}
@@ -262,6 +269,7 @@ const HtxVideoView = ({ item }) => {
                     setVideoLength(length);
                     item.setOnlyFrame(1);
                   }}
+                  onClick={() => setPlaying(playing => !playing)}
                 />
               </>
             )}
@@ -278,6 +286,7 @@ const HtxVideoView = ({ item }) => {
             position={position}
             regions={regions}
             fullscreen={fullscreen}
+            disableFrames={!item.store.hasSegmentation}
             framerate={item.framerate}
             onPositionChange={item.setFrame}
             onPlayToggle={setPlaying}

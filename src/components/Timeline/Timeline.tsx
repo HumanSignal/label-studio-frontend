@@ -17,6 +17,7 @@ export interface TimelineProps<D extends ViewTypes = "frames", V extends ViewTyp
   playing: boolean;
   zoom?: number;
   fullscreen?: boolean;
+  disableFrames?: boolean;
   className?: string;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
@@ -36,6 +37,7 @@ export const Timeline: FC<TimelineProps> = ({
   framerate = 24,
   playing = false,
   fullscreen = false,
+  disableFrames = false,
   className,
   onPlayToggle,
   onPositionChange,
@@ -88,14 +90,15 @@ export const Timeline: FC<TimelineProps> = ({
             collapsed={viewCollapsed}
             onPlayToggle={onPlayToggle}
             fullscreen={fullscreen}
-            onFullScreenToggle={() => onFullscreenToggle?.()}
+            disableFrames={disableFrames}
+            onFullScreenToggle={onFullscreenToggle}
             onStepBackward={() => onInternalPositionChange(currentPosition - 1)}
             onStepForward={() => onInternalPositionChange(currentPosition + 1)}
             onRewind={() => onInternalPositionChange(0)}
             onForward={() => onInternalPositionChange(length)}
-            onPositionChange={(value) => onInternalPositionChange(value)}
-            onToggleCollapsed={(collapsed) => setViewCollapsed(collapsed)}
-            extraControls={View.Controls ? (
+            onPositionChange={onInternalPositionChange}
+            onToggleCollapsed={setViewCollapsed}
+            extraControls={View.Controls && !disableFrames ? (
               <View.Controls
                 onAction={(e, action, data) => {
                   onAction?.(e, action, data);
@@ -105,7 +108,7 @@ export const Timeline: FC<TimelineProps> = ({
           />
         </Elem>
 
-        {!viewCollapsed && (
+        {!viewCollapsed && !disableFrames && (
           <Elem name="view">
             <View.View
               step={step}

@@ -14,11 +14,13 @@ type VideoProps = {
   muted?: boolean,
   zoom?: number,
   pan?: PanOptions,
+  allowInteractions?: boolean,
 
   contrast?: number,
   brightness?: number,
   saturation?: number,
 
+  onClick?: () => void,
   onLoad?: (data: VideoRef) => void,
   onFrameChange?: (frame: number, length: number) => void,
 }
@@ -225,6 +227,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   }, [playing, props.playing]);
 
   useEffect(() => {
+    if (!props.allowInteractions) return;
     rootRef.current?.addEventListener("wheel", (e) => {
       e.preventDefault();
     });
@@ -408,8 +411,9 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       )}
       <Elem
         name="view"
-        onWheel={handleZoom}
-        onMouseDown={handlePan}
+        onWheel={props.allowInteractions ? handleZoom : undefined}
+        onMouseDown={props.allowInteractions ? handlePan : undefined}
+        onClick={props.onClick}
         style={{
           width: canvasWidth,
           height: canvasHeight,
