@@ -56,14 +56,14 @@ export const Annotations = observer(({ store, annotationStore }) => {
               e.stopPropagation();
               setOpened(!opened);
             }}
-            extra={(
+            extra={entities.length > 0 ? (
               <Space size="none" style={{ marginRight: -8 }}>
                 <Elem name="counter">
                   {entities.indexOf(annotationStore.selected) + 1}/{entities.length}
                 </Elem>
                 <Elem name="toggle" mod={{ opened }}/>
               </Space>
-            )}
+            ) : null}
           />
         </Elem>
 
