@@ -56,13 +56,24 @@ export const Timeline: FC<TimelineProps> = ({
   const [viewCollapsed, setViewCollapsed] = useState(false);
   const step = useMemo(() => 10 * zoom, [zoom]);
 
-  const onInternalPositionChange = useCallback((value: number) => {
+  const onInternalPositionChange = (value: number) => {
     console.log({ value });
     const clampedValue = clamp(value, 1, length);
 
-    setCurrentPosition(clampedValue);
-    onPositionChange?.(clampedValue);
-  }, [setCurrentPosition, length]);
+    if (clampedValue !== currentPosition) {
+      console.log({ clampedValue });
+      setCurrentPosition(clampedValue);
+      onPositionChange?.(clampedValue);
+    }
+  };
+
+  const increasePosition = () => {
+    onInternalPositionChange(currentPosition + 1);
+  };
+
+  const decreasePosition = () => {
+    onInternalPositionChange(currentPosition - 1);
+  };
 
   const contextValue: TimelineContextValue = {
     position,
@@ -103,8 +114,8 @@ export const Timeline: FC<TimelineProps> = ({
             fullscreen={fullscreen}
             disableFrames={disableFrames}
             onFullScreenToggle={onFullscreenToggle}
-            onStepBackward={() => onInternalPositionChange(currentPosition - 1)}
-            onStepForward={() => onInternalPositionChange(currentPosition + 1)}
+            onStepBackward={() => decreasePosition()}
+            onStepForward={() => increasePosition()}
             onRewind={() => onInternalPositionChange(0)}
             onForward={() => onInternalPositionChange(length)}
             onPositionChange={onInternalPositionChange}

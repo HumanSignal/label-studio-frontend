@@ -9,6 +9,7 @@ import React, { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useConte
 import { clamp } from "../../utils/utilities";
 import { TimelineContextValue } from "./Types";
 import { TimelineContext } from "./Context";
+import { Hotkey } from "../../core/Hotkey";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -17,6 +18,8 @@ const relativePosition = (pos: number, fps: number) => {
 
   return result.toString().padStart(roundedFps.toString().length, '0');
 };
+
+const hotkeys = Hotkey("Video");
 
 export interface ControlsProps {
   length: number;
@@ -87,6 +90,15 @@ export const Controls: FC<ControlsProps> = ({
     };
   }, [steppedControlsAlt]);
 
+  useEffect(() => {
+    if (settings && settings.stepForwardHotkey) {
+      hotkeys.overwriteNamed(settings.stepBackHotkey, () => onStepBackward());
+    }
+    if (settings && settings.stepForwardHotkey) {
+      hotkeys.overwriteNamed(settings.stepForwardHotkey, () => onStepForward());
+    }
+  }, []);
+
   return (
     <Block name="timeline-controls" tag={Space} spread>
       <Elem name="group" tag={Space} size="small">
@@ -108,10 +120,10 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="hll"></Elem>
         <Elem name="actions" tag={Space} collapsed>
-          <ControlButton onClick={onStepBackward} hotkey={settings?.stepBackHotkey ?? "left"}>
+          <ControlButton onClick={onStepBackward}>
             {steppedControlsAlt ? <IconPrev/> : <IconChevronLeft/>}
           </ControlButton>
-          <ControlButton onClick={onStepForward} hotkey={settings?.stepForwardHotkey ?? "right"}>
+          <ControlButton onClick={onStepForward}>
             {steppedControlsAlt ? <IconNext/> : <IconChevronRight/>}
           </ControlButton>
           {extraControls}

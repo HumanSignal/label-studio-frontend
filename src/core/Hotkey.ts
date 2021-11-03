@@ -193,7 +193,7 @@ export const Hotkey = (
 
         this.overwriteKey(shortcut, func, hotkey.description, scope);
       } else {
-        throw new Error(`Unknown named hotkey ${hotkey}`);
+        throw new Error(`Unknown named hotkey ${name}`);
       }
     },
 

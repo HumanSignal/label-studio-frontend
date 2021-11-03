@@ -9,7 +9,10 @@ export const useHotkey = (hotkey?: string, handler?: Keymaster.KeyHandler) => {
   const currentHandler = useRef<Keymaster.KeyHandler | null>(null);
 
   useEffect(() => {
-    if (hotkey !== currentHotkey.current && handler !== currentHandler.current) {
+    const hotkeyChanged = hotkey !== currentHotkey.current;
+    const handlerChanged = handler !== currentHandler.current;
+
+    if (hotkeyChanged || handlerChanged) {
       if (hotkey && handler) {
         if (Hotkey.keymap[hotkey]) {
           console.log(`added named hotkey ${hotkey}`);
