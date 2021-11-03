@@ -602,7 +602,6 @@ export default types
     }
 
     function prevTask() {
-      console.log(self.canGoPrevTask, self.taskHistory, self.task.id);
       if (self.canGoPrevTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1];
 
