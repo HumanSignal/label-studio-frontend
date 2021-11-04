@@ -53,6 +53,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
  */
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
+import { Table } from "../examples/table";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
@@ -62,7 +63,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = RichTextHtml;
+const data = ImageBbox;
 
 function getData(task) {
   if (task && task.data) {
@@ -146,6 +147,8 @@ function configureApplication(params) {
     onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
     onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
+    onNextTask: params.onNextTask || External.onNextTask,
+    onPrevTask: params.onPrevTask || External.onPrevTask,
   };
 
   return options;

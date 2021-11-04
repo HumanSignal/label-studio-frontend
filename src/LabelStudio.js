@@ -9,6 +9,7 @@ import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
 import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
+import defaultOptions from './defaultOptions';
 
 configure({
   isolateGlobalState: true,
@@ -22,16 +23,19 @@ export class LabelStudio {
     this.instances.clear();
   }
 
-  constructor(root, options = {}) {
+  constructor(root, userOptions = {}) {
+    const options = Object.assign({}, defaultOptions, userOptions ?? {});
+
     if (options.keymap) {
       Hotkey.setKeymap(options.keymap);
     }
 
     this.root = root;
     this.events = new EventInvoker();
-    this.supportLgacyEvents(options);
     this.options = options ?? {};
     this.destroy = (() => { /* noop */ });
+
+    this.supportLgacyEvents(options);
     this.createApp();
 
     this.constructor.instances.add(this);
@@ -70,11 +74,11 @@ export class LabelStudio {
     this.destroy = destructor;
   }
 
-  supportLgacyEvents(options) {
+  supportLgacyEvents() {
     const keys = Object.keys(legacyEvents);
 
     keys.forEach(key => {
-      const callback = options[key];
+      const callback = this.options[key];
 
       if (isDefined(callback)) {
         const eventName = toCamelCase(key.replace(/^on/, ''));

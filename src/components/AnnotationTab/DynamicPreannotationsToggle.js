@@ -16,6 +16,7 @@ const injector = inject(({ store }) => {
     store,
     annotation,
     suggestions,
+    interfaces: Array.from(store?.interfaces),
   };
 });
 
