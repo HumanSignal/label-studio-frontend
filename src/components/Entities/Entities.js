@@ -47,7 +47,6 @@ export default observer(({
 
           <Tooltip title="Delete All Regions">
             <Button
-              size="small"
               look="danger"
               type="text"
               aria-label="Delete All Regions"

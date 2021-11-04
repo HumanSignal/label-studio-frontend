@@ -16,9 +16,9 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
   const entities = [];
 
-  if (enableAnnotations) entities.push(...annotationStore.predictions);
+  if (enablePredictions) entities.push(...annotationStore.predictions);
 
-  if (enablePredictions) entities.push(...annotationStore.annotations);
+  if (enableAnnotations) entities.push(...annotationStore.annotations);
 
   const onAnnotationSelect = useCallback((entity, isPrediction) => {
     if (!entity.selected) {
@@ -56,14 +56,14 @@ export const Annotations = observer(({ store, annotationStore }) => {
               e.stopPropagation();
               setOpened(!opened);
             }}
-            extra={(
-              <Space size="none" style={{ marginRight: -8 }}>
+            extra={entities.length > 0 ? (
+              <Space size="none" style={{ marginRight: -8, marginLeft: -8 }}>
                 <Elem name="counter">
                   {entities.indexOf(annotationStore.selected) + 1}/{entities.length}
                 </Elem>
                 <Elem name="toggle" mod={{ opened }}/>
               </Space>
-            )}
+            ) : null}
           />
         </Elem>
 

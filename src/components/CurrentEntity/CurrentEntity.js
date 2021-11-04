@@ -1,9 +1,6 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { LsAnnotation, LsParentLink, LsSparks } from "../../assets/icons";
-import { Space } from "../../common/Space/Space";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { Block, Elem } from "../../utils/bem";
+import { Block } from "../../utils/bem";
 import { AnnotationHistory } from "./AnnotationHistory";
 import "./CurrentEntity.styl";
 import { DraftPanel } from "../DraftPanel/DraftPanel";

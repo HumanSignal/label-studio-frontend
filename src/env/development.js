@@ -54,6 +54,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
  */
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
+import { Table } from "../examples/table";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
