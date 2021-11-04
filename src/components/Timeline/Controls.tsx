@@ -91,7 +91,7 @@ export const Controls: FC<ControlsProps> = ({
   }, [steppedControlsAlt]);
 
   useEffect(() => {
-    if (settings && settings.stepForwardHotkey) {
+    if (settings && settings.stepBackHotkey) {
       hotkeys.overwriteNamed(settings.stepBackHotkey, () => onStepBackward());
     }
     if (settings && settings.stepForwardHotkey) {
