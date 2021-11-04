@@ -16,9 +16,9 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
   const entities = [];
 
-  if (enableAnnotations) entities.push(...annotationStore.predictions);
+  if (enablePredictions) entities.push(...annotationStore.predictions);
 
-  if (enablePredictions) entities.push(...annotationStore.annotations);
+  if (enableAnnotations) entities.push(...annotationStore.annotations);
 
   const onAnnotationSelect = useCallback((entity, isPrediction) => {
     if (!entity.selected) {
