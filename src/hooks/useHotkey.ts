@@ -2,26 +2,28 @@ import Keymaster from "keymaster";
 import { useEffect, useRef } from "react";
 import { Hotkey } from "../core/Hotkey";
 
+type Keyname = keyof typeof Hotkey.keymap;
+
 const hotkeys = Hotkey();
 
-const attachHotkey = (key: string, handler: Keymaster.KeyHandler) => {
+const attachHotkey = (key: Keyname, handler: Keymaster.KeyHandler) => {
   if (Hotkey.keymap[key]) {
-    hotkeys.overwriteNamed(key, handler);
+    hotkeys.overwriteNamed(key as string, handler);
   } else {
-    hotkeys.overwriteKey(key, handler);
+    hotkeys.overwriteKey(key as string, handler);
   }
 };
 
-const removeHotkey = (key: string) => {
+const removeHotkey = (key: Keyname) => {
   if (Hotkey.keymap[key]) {
-    hotkeys.removeNamed(key);
+    hotkeys.removeNamed(key as string);
   } else {
-    hotkeys.removeKey(key);
+    hotkeys.removeKey(key as string);
   }
 };
 
-export const useHotkey = (hotkey?: string, handler?: Keymaster.KeyHandler) => {
-  const lastHotkey = useRef<string | null>(null);
+export const useHotkey = (hotkey?: Keyname, handler?: Keymaster.KeyHandler) => {
+  const lastHotkey = useRef<Keyname | null>(null);
   const handlerFunction = useRef<Keymaster.KeyHandler | undefined>(handler);
 
   // we wanna cache handler function so the prop change does not trigger re-attaching a hotkey

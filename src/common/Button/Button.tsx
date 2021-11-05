@@ -20,7 +20,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   look?: "primary" | "danger" | "destructive";
   primary?: boolean;
   style?: CSSProperties;
-  hotkey?: string;
+  hotkey?: keyof typeof Hotkey.keymap;
 }
 
 export interface ButtonGroupProps {
@@ -77,7 +77,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
 
   useHotkey(hotkey, rest.onClick as unknown as Keymaster.KeyHandler);
 
-  return (
+  const buttonBody = (
     <Block
       name="button"
       mod={mods}
@@ -98,6 +98,16 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
       </>
     </Block>
   );
+
+  if (hotkey && isDefined(Hotkey.keymap[hotkey])) {
+    return (
+      <Hotkey.Tooltip name={hotkey}>
+        {buttonBody}
+      </Hotkey.Tooltip>
+    );
+  }
+
+  return buttonBody;
 });
 
 Button.displayName = "Button";

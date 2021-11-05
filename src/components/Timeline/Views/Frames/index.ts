@@ -12,6 +12,7 @@ const View: TimelineView<typeof Controls> = {
     altStepHandler() {
       console.log('hello');
     },
+    playpauseHotkey: "video:playpause",
     stepBackHotkey: 'video:frame-backward',
     stepForwardHotkey: 'video:frame-forward',
   },

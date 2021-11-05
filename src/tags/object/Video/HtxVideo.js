@@ -53,12 +53,6 @@ const HtxVideoView = ({ item }) => {
   }, [playing]);
 
   useEffect(() => {
-    hotkeys.addNamed("video:playpause", () => setPlaying(playing => !playing));
-
-    return () => hotkeys.removeNamed("video:playpause");
-  }, []);
-
-  useEffect(() => {
     const cancelWheel = (e) => {
       if (!e.shiftKey) return;
       e.preventDefault();

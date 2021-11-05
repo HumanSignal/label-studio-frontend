@@ -96,10 +96,10 @@
   },
   "video:frame-backward": {
     "key": "alt+left",
-    "description": "Go back for one frame"
+    "description": "Go one frame back"
   },
   "video:frame-forward": {
     "key": "alt+right",
-    "description": "Go forward for one frame"
+    "description": "Go one frame forward"
   }
 }

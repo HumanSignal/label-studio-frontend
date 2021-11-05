@@ -77,7 +77,7 @@ export const Controls: FC<ControlsProps> = ({
 
       if (e.type === 'keydown' && e.shiftKey) {
         setSteppedControlsAlt(true);
-      } else if (e.type === 'keyup' && steppedControlsAlt) {
+      } else if (e.type === 'keyup' && e.key === 'Shift' && steppedControlsAlt) {
         setSteppedControlsAlt(false);
       }
     };
@@ -90,9 +90,6 @@ export const Controls: FC<ControlsProps> = ({
       document.removeEventListener('keyup', keyboardHandler, { capture: true });
     };
   }, [steppedControlsAlt]);
-
-  useHotkey(settings?.stepBackHotkey, () => onStepBackward());
-  useHotkey(settings?.stepForwardHotkey, () => onStepForward());
 
   return (
     <Block name="timeline-controls" tag={Space} spread>
@@ -115,10 +112,10 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="hll"></Elem>
         <Elem name="actions" tag={Space} collapsed>
-          <ControlButton onClick={onStepBackward}>
+          <ControlButton onClick={onStepBackward} hotkey={settings?.stepBackHotkey}>
             {steppedControlsAlt ? <IconPrev/> : <IconChevronLeft/>}
           </ControlButton>
-          <ControlButton onClick={onStepForward}>
+          <ControlButton onClick={onStepForward} hotkey={settings?.stepForwardHotkey}>
             {steppedControlsAlt ? <IconNext/> : <IconChevronRight/>}
           </ControlButton>
           {extraControls}
@@ -127,7 +124,9 @@ export const Controls: FC<ControlsProps> = ({
 
       <Elem name="group" tag={Space} collapsed>
         <ControlButton onClick={() => onRewind?.()}><IconRewind/></ControlButton>
-        <ControlButton onClick={() => onPlayToggle?.(!playing)}>{playing ? <IconPause/> : <IconPlay/>}</ControlButton>
+        <ControlButton onClick={() => onPlayToggle?.(!playing)} hotkey={settings?.playpauseHotkey}>
+          {playing ? <IconPause/> : <IconPlay/>}
+        </ControlButton>
         <ControlButton onClick={() => onForward?.()}><IconForward/></ControlButton>
       </Elem>
 

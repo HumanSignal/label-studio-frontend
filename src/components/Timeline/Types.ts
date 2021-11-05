@@ -47,6 +47,7 @@ export interface TimelineMinimapProps {
 export type TimelineSettings = {
   stepBackHotkey?: string,
   stepForwardHotkey?: string,
+  playpauseHotkey?: string,
   altStepHandler?: () => void,
 }
 export interface TimelineExtraControls<A extends string, D extends any> {
