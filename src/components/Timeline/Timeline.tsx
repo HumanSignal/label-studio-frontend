@@ -68,10 +68,12 @@ export const Timeline: FC<TimelineProps> = ({
   };
 
   const increasePosition = () => {
+    console.log('increase');
     onInternalPositionChange(currentPosition + 1);
   };
 
   const decreasePosition = () => {
+    console.log('decrease');
     onInternalPositionChange(currentPosition - 1);
   };
 
@@ -114,8 +116,8 @@ export const Timeline: FC<TimelineProps> = ({
             fullscreen={fullscreen}
             disableFrames={disableFrames}
             onFullScreenToggle={onFullscreenToggle}
-            onStepBackward={() => decreasePosition()}
-            onStepForward={() => increasePosition()}
+            onStepBackward={decreasePosition}
+            onStepForward={increasePosition}
             onRewind={() => onInternalPositionChange(0)}
             onForward={() => onInternalPositionChange(length)}
             onPositionChange={onInternalPositionChange}

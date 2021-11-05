@@ -5,11 +5,12 @@ import { Space } from "../../common/Space/Space";
 import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 
 import "./Controls.styl";
-import React, { DOMAttributes, FC, MouseEventHandler, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { DOMAttributes, FC, MouseEvent, MouseEventHandler, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextValue } from "./Types";
 import { TimelineContext } from "./Context";
 import { Hotkey } from "../../core/Hotkey";
+import { useHotkey } from "../../hooks/useHotkey";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -34,8 +35,8 @@ export interface ControlsProps {
   onForward: () => void;
   onPlayToggle: (playing: boolean) => void;
   onFullScreenToggle: (fullscreen: boolean) => void;
-  onStepBackward: MouseEventHandler<HTMLButtonElement>;
-  onStepForward: MouseEventHandler<HTMLButtonElement>;
+  onStepBackward: (e?: MouseEvent<HTMLButtonElement>) => void;
+  onStepForward: (e?: MouseEvent<HTMLButtonElement>) => void;
   onPositionChange: (position: number) => void;
   onToggleCollapsed: (collapsed: boolean) => void;
 }
@@ -90,14 +91,8 @@ export const Controls: FC<ControlsProps> = ({
     };
   }, [steppedControlsAlt]);
 
-  useEffect(() => {
-    if (settings && settings.stepBackHotkey) {
-      hotkeys.overwriteNamed(settings.stepBackHotkey, () => onStepBackward());
-    }
-    if (settings && settings.stepForwardHotkey) {
-      hotkeys.overwriteNamed(settings.stepForwardHotkey, () => onStepForward());
-    }
-  }, []);
+  useHotkey(settings?.stepBackHotkey, () => onStepBackward());
+  useHotkey(settings?.stepForwardHotkey, () => onStepForward());
 
   return (
     <Block name="timeline-controls" tag={Space} spread>
