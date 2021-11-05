@@ -35,7 +35,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
       const target = e.target;
       const dropdown = dropdownRef.current;
 
-      if (target !== dropdown && !dropdown.contains(target)) {
+      if (target !== dropdown && !dropdown?.contains(target)) {
         setOpened(false);
       }
     };
