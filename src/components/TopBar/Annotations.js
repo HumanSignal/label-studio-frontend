@@ -137,7 +137,8 @@ const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => 
           >{isPrediction && <LsSparks color="#944BFF" style={{ width: 18, height: 18 }}/>}</Elem>
           <Space direction="vertical" size="none">
             <Elem name="user">
-              <Elem name="name">{username} <span>#{entity.pk ?? entity.id}</span></Elem>
+              <Elem tag="span" name="name">{username}</Elem>
+              <Elem tag="span" name="entity-id">#{entity.pk ?? entity.id}</Elem>
             </Elem>
 
             {isDefined(entity.acceptedState) && (
