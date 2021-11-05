@@ -1247,6 +1247,14 @@ export default types
 
     function selectHistory(item) {
       self.selectedHistory = item;
+      setTimeout(() => {
+        // update classifications after render
+        const updatedItem = item ?? self.selected;
+
+        updatedItem?.results
+          .filter(r => r.area.classification)
+          .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+      });
     }
 
     function addAnnotationFromPrediction(entity) {
