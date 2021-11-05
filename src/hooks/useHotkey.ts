@@ -51,8 +51,9 @@ export const useHotkey = (hotkey?: string, handler?: Keymaster.KeyHandler) => {
     })();
   }, [hotkey]);
 
-  // by changing the ref we can ensure that render won't be
-  // triggered as refs are mutable and doesn't trigger any updates
+  // by changing the ref we can handled won't be re-attached
+  // as refs are mutable and doesn't trigger any updates
+  // but the hotkey itself will call a proper function
   useEffect(() => {
     handlerFunction.current = handler;
   }, [handler]);
