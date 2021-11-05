@@ -555,9 +555,9 @@ export default types
           editable: false,
         });
 
-        const result = item.fixed_annotation_history_result ?? item.previous_annotation_history_result ?? [];
+        const result = item.previous_annotation_history_result ?? [];
 
-        obj.deserializeResults(result);
+        obj.deserializeResults(result, { hidden: true });
       });
     }
 

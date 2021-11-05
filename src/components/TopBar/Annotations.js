@@ -57,7 +57,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
               setOpened(!opened);
             }}
             extra={entities.length > 0 ? (
-              <Space size="none" style={{ marginRight: -8, marginLeft: -8 }}>
+              <Space size="none" style={{ marginRight: -8, marginLeft: 8 }}>
                 <Elem name="counter">
                   {entities.indexOf(annotationStore.selected) + 1}/{entities.length}
                 </Elem>
