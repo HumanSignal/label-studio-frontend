@@ -61,6 +61,7 @@ const Model = types
     errors: [],
     ref: React.createRef(),
     frame: 1,
+    length: 1,
   }))
   .views(self => ({
     get store() {
@@ -130,6 +131,10 @@ const Model = types
       }
     },
 
+    setLength(length) {
+      self.length = length;
+    },
+
     setOnlyFrame(frame) {
       self.frame = frame;
     },
@@ -175,4 +180,11 @@ const Model = types
     },
   }));
 
-export const VideoModel = types.compose("VideoModel", SyncMixin, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
+export const VideoModel = types.compose("VideoModel",
+  SyncMixin,
+  TagAttrs,
+  ProcessAttrsMixin,
+  ObjectBase,
+  AnnotationMixin,
+  Model,
+);

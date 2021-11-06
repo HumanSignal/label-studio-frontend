@@ -22,17 +22,15 @@ export const onlyProps = (props, obj) => {
 };
 
 const Model = types
-  .model("VideoRectangleRegionModel", {
+  .model("VideoRegionModel", {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-    type: "videorectangleregion",
     object: types.late(() => types.reference(VideoModel)),
 
     sequence: types.frozen([]),
   })
   .volatile(() => ({
     hideable: true,
-    props: ["x", "y", "width", "height", "rotation"],
   }))
   .views(self => ({
     get parent() {
@@ -57,7 +55,14 @@ const Model = types
     },
 
     serialize() {
-      const value = { sequence: self.sequence };
+      const { framerate, length } = self.object;
+
+      const value = {
+        sequence: self.sequence.map((keyframe) => {
+          return { ...keyframe, time: keyframe.frame / framerate };
+        }),
+        framesCount: length,
+      };
 
       if (self.labels?.length) value.labels = self.labels;
 

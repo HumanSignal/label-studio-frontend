@@ -260,6 +260,7 @@ const HtxVideoView = ({ item }) => {
                     setVideoDimensions(videoDimensions);
                     setVideoLength(length);
                     item.setOnlyFrame(1);
+                    item.setLength(length);
                   }}
                   onClick={() => setPlaying(playing => !playing)}
                 />

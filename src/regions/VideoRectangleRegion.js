@@ -2,8 +2,6 @@ import { types } from "mobx-state-tree";
 
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
-import { VideoModel } from "../tags/object/Video";
-import { guidGenerator } from "../core/Helpers";
 import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
@@ -11,15 +9,9 @@ import { interpolateProp, onlyProps, VideoRegion } from "./VideoRegion";
 
 const Model = types
   .model("VideoRectangleRegionModel", {
-    id: types.optional(types.identifier, guidGenerator),
-    pid: types.optional(types.string, guidGenerator),
     type: "videorectangleregion",
-    object: types.late(() => types.reference(VideoModel)),
-
-    sequence: types.frozen([]),
   })
   .volatile(() => ({
-    hideable: true,
     props: ["x", "y", "width", "height", "rotation"],
   }))
   .views(self => ({
@@ -72,14 +64,6 @@ const Model = types
           ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }
-    },
-
-    serialize() {
-      const value = { sequence: self.sequence };
-
-      if (self.labels?.length) value.labels = self.labels;
-
-      return { value };
     },
   }));
 
