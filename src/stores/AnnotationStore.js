@@ -828,7 +828,7 @@ const Annotation = types
      * suggestions: boolean
      * }} options Deserialization options
      */
-    deserializeResults(json, { suggestions=false } = {}) {
+    deserializeResults(json, { suggestions = false, hidden = false } = {}) {
       try {
         const objAnnotation = self.prepareAnnotation(json);
         const areas = suggestions ? self.suggestions : self.areas;
@@ -842,7 +842,7 @@ const Annotation = types
           );
         });
 
-        self.results
+        !hidden && self.results
           .filter(r => r.area.classification)
           .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
@@ -1258,6 +1258,14 @@ export default types
 
     function selectHistory(item) {
       self.selectedHistory = item;
+      setTimeout(() => {
+        // update classifications after render
+        const updatedItem = item ?? self.selected;
+
+        updatedItem?.results
+          .filter(r => r.area.classification)
+          .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+      });
     }
 
     function addAnnotationFromPrediction(entity) {

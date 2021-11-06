@@ -558,7 +558,7 @@ export default types
 
         const result = item.previous_annotation_history_result ?? [];
 
-        obj.deserializeResults(result);
+        obj.deserializeResults(result, { hidden: true });
       });
     }
 
