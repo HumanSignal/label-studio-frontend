@@ -16,7 +16,7 @@ const getNodeAbsoluteDimensions = (node, workingArea) => {
 };
 
 const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
-  const box = reg.getRectangle(frame);
+  const box = reg.getShape(frame);
   const style = useRegionStyles(reg, { includeFill: true });
 
   if (!box) return null;
@@ -52,12 +52,12 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
         node.setWidth(w);
         node.setHeight(h);
 
-        reg.updateRectangle(getNodeAbsoluteDimensions(node, workingArea), frame);
+        reg.updateShape(getNodeAbsoluteDimensions(node, workingArea), frame);
       }}
       onDragEnd={e => {
         const node = e.target;
 
-        reg.updateRectangle(getNodeAbsoluteDimensions(node, workingArea), frame);
+        reg.updateShape(getNodeAbsoluteDimensions(node, workingArea), frame);
       }}
       {...rest}
     />

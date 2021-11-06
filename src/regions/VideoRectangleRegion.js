@@ -7,20 +7,7 @@ import { guidGenerator } from "../core/Helpers";
 import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
-
-function interpolateProp(start, end, frame, prop) {
-  // @todo edge cases
-  const r = (frame - start.frame) / (end.frame - start.frame);
-
-  return start[prop] + (end[prop] - start[prop]) * r;
-}
-
-function onlyProps(props, obj) {
-  return Object.fromEntries(props.map(prop => [
-    prop,
-    obj[prop],
-  ]));
-}
+import { interpolateProp, onlyProps, VideoRegion } from "./VideoRegion";
 
 const Model = types
   .model("VideoRectangleRegionModel", {
@@ -36,21 +23,14 @@ const Model = types
     props: ["x", "y", "width", "height", "rotation"],
   }))
   .views(self => ({
-    get parent() {
-      return self.object;
-    },
-
-    get annotation() {
-      return self.object.annotation;
-    },
-
-    getRectangle(frame) {
+    getShape(frame) {
       let prev, next;
 
       for (const item of self.sequence) {
         if (item.frame === frame) {
           return onlyProps(self.props, item);
         }
+
         if (item.frame > frame) {
           next = item;
           break;
@@ -72,7 +52,7 @@ const Model = types
     },
   }))
   .actions(self => ({
-    updateRectangle(data, frame) {
+    updateShape(data, frame) {
       const newItem = {
         frame,
         enabled: true,
@@ -101,74 +81,13 @@ const Model = types
 
       return { value };
     },
-
-    toggleLifespan(frame) {
-      const keypoint = self.closestKeypoint(frame);
-
-      if (keypoint) {
-        const index = self.sequence.indexOf(keypoint);
-
-        self.sequence = [
-          ...self.sequence.slice(0, index),
-          { ...keypoint, enabled: !keypoint.enabled },
-          ...self.sequence.slice(index + 1),
-        ];
-      }
-    },
-
-    addKeypoint(frame) {
-      const sequence = Array.from(self.sequence);
-      const closestKeypoint = self.closestKeypoint(frame);
-
-      sequence.push({
-        ...(closestKeypoint ?? {
-          x: 0,
-          y: 0,
-          enabled: true,
-        }),
-        frame,
-        rotation: 0,
-      });
-
-      sequence.sort((a, b) => a.frame - b.frame);
-
-      self.sequence = sequence;
-
-      if (closestKeypoint) {
-        self.updateRectangle({
-          ...closestKeypoint,
-          enabled: true,
-        }, closestKeypoint.frame);
-      }
-    },
-
-    removeKeypoint(frame) {
-      self.sequence = self.sequence.filter(closestKeypoint => closestKeypoint.frame !== frame);
-    },
-
-    isInLifespan(targetFrame) {
-      const closestKeypoint = self.closestKeypoint(targetFrame);
-
-      if (closestKeypoint) {
-        const { enabled, frame } = closestKeypoint;
-
-        if (frame === targetFrame && !enabled) return true;
-        return enabled;
-      }
-      return false;
-    },
-
-    closestKeypoint(targetFrame) {
-      const keypoints = self.sequence.filter(k => k.frame <= targetFrame);
-
-      return keypoints[keypoints.length - 1];
-    },
   }));
 
 const VideoRectangleRegionModel = types.compose(
   "VideoRectangleRegionModel",
   WithStatesMixin,
   RegionsMixin,
+  VideoRegion,
   AreaMixin,
   NormalizationMixin,
   Model,
