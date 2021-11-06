@@ -24,8 +24,9 @@ export const Seeker: FC<SeekerProps> = ({
   onSeek,
   minimap,
 }) => {
-  const root = useRef<HTMLDivElement>();
-  const indicator = useRef<HTMLDivElement>();
+  const rootRef = useRef<HTMLDivElement>();
+  const seekerRef = useRef<HTMLDivElement>();
+  const viewRef = useRef<HTMLDivElement>();
 
   const showIndicator = seekVisible > 0;
   const width = `${seekVisible / length * 100}%`;
@@ -34,13 +35,21 @@ export const Seeker: FC<SeekerProps> = ({
   const seekerOffset = position / length * 100;
 
   const onIndicatorDrag = useCallback((e) => {
-    const indicator = e.target;
-    const startOffset = indicator.offsetLeft;
-    const startDrag = e.pageX;
-    const parentWidth = indicator.parentNode.clientWidth;
+    const indicator = viewRef.current!;
+    const dimensions = rootRef.current!.getBoundingClientRect();
+    const indicatorWidth = indicator.clientWidth;
+
+    const startDrag = e.pageX - dimensions.left;
+    const startOffset = startDrag - (indicatorWidth / 2);
+    const parentWidth = dimensions.width;
+    const limit = parentWidth - indicatorWidth;
+
+    const jump = clamp(Math.ceil(length * (startOffset / parentWidth)), 0, limit);
+
+    console.log({ jump });
+    onIndicatorMove?.(jump);
 
     const onMouseMove = (e: globalThis.MouseEvent) => {
-      const limit = parentWidth - indicator.clientWidth;
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;
 
@@ -56,39 +65,13 @@ export const Seeker: FC<SeekerProps> = ({
     document.addEventListener("mouseup", onMouseUp);
   }, [length]);
 
-  const onSeekerDrag = useCallback((e) => {
-    const startDrag = e.pageX;
-    const dimensions = root.current!.getBoundingClientRect();
-    const indicatorWidth = indicator.current!.clientWidth;
-    const startOffset = e.pageX - dimensions.left;
-    const parentWidth = dimensions.width;
-
-    onSeek?.(Math.ceil(length * (startOffset / parentWidth)));
-
-    const onMouseMove = (e: globalThis.MouseEvent) => {
-      const limit = parentWidth - indicatorWidth;
-      const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
-      const percent = newOffset / parentWidth;
-
-      onSeek?.(Math.ceil(length * percent));
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  }, [length]);
-
   return (
-    <Block name="seeker" ref={root} onMouseDown={onSeekerDrag}>
+    <Block name="seeker" ref={rootRef} onMouseDown={onIndicatorDrag}>
       <Elem name="track"/>
       {showIndicator && (
-        <Elem name="indicator" style={{ left: windowOffset, width }} onMouseDown={onIndicatorDrag}/>
+        <Elem name="indicator" ref={viewRef} style={{ left: windowOffset, width }}/>
       )}
-      <Elem name="position" ref={indicator} style={{ left: `${seekerOffset}%` }}/>
+      <Elem name="position" ref={seekerRef} style={{ left: `${seekerOffset}%` }}/>
       <Elem name="minimap">{minimap}</Elem>
     </Block>
   );
