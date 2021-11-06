@@ -86,8 +86,7 @@ const Model = types
     addKeypoint(frame) {
       const sequence = Array.from(self.sequence);
       const closestKeypoint = self.closestKeypoint(frame);
-
-      sequence.push({
+      const newKeypoint = {
         ...(closestKeypoint ?? {
           x: 0,
           y: 0,
@@ -95,18 +94,17 @@ const Model = types
         }),
         frame,
         rotation: 0,
-      });
+      };
+
+      sequence.push(newKeypoint);
 
       sequence.sort((a, b) => a.frame - b.frame);
 
       self.sequence = sequence;
 
-      if (closestKeypoint) {
-        self.updateShape({
-          ...closestKeypoint,
-          enabled: true,
-        }, closestKeypoint.frame);
-      }
+      self.updateShape({
+        ...newKeypoint,
+      }, newKeypoint.frame);
     },
 
     removeKeypoint(frame) {
