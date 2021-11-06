@@ -1,16 +1,12 @@
-import { Block, Elem } from "../../utils/bem";
+import React, { FC, MouseEvent, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
-
-import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
-
-import "./Controls.styl";
-import React, { DOMAttributes, FC, MouseEvent, MouseEventHandler, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Block, Elem } from "../../utils/bem";
 import { clamp } from "../../utils/utilities";
-import { TimelineContextValue } from "./Types";
 import { TimelineContext } from "./Context";
-import { Hotkey } from "../../core/Hotkey";
-import { useHotkey } from "../../hooks/useHotkey";
+import "./Controls.styl";
+import { TimelineStepFunction } from "./Types";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -20,7 +16,10 @@ const relativePosition = (pos: number, fps: number) => {
   return result.toString().padStart(roundedFps.toString().length, '0');
 };
 
-const hotkeys = Hotkey("Video");
+export type ControlsStepHandler = (
+  e?: MouseEvent<HTMLButtonElement>,
+  stepSize?: TimelineStepFunction
+) => void;
 
 export interface ControlsProps {
   length: number;
@@ -35,8 +34,8 @@ export interface ControlsProps {
   onForward: () => void;
   onPlayToggle: (playing: boolean) => void;
   onFullScreenToggle: (fullscreen: boolean) => void;
-  onStepBackward: (e?: MouseEvent<HTMLButtonElement>) => void;
-  onStepForward: (e?: MouseEvent<HTMLButtonElement>) => void;
+  onStepBackward: ControlsStepHandler;
+  onStepForward: ControlsStepHandler;
   onPositionChange: (position: number) => void;
   onToggleCollapsed: (collapsed: boolean) => void;
 }
@@ -71,23 +70,29 @@ export const Controls: FC<ControlsProps> = ({
     return position / frameRate;
   }, [position, frameRate]);
 
+  const stepHandlerWrapper = (handler: ControlsStepHandler) => (_: MouseEvent<HTMLButtonElement>) => {
+    const stepSize = steppedControlsAlt ? settings?.stepSize : undefined;
+
+    handler(_, stepSize);
+  };
+
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
-      if (!settings?.altStepHandler) return;
+      if (!settings?.stepSize) return;
 
-      if (e.type === 'keydown' && e.shiftKey) {
+      if (e.type === 'keydown' && e.key === 'Shift') {
         setSteppedControlsAlt(true);
       } else if (e.type === 'keyup' && e.key === 'Shift' && steppedControlsAlt) {
         setSteppedControlsAlt(false);
       }
     };
 
-    document.addEventListener('keydown', keyboardHandler, { capture: true });
-    document.addEventListener('keyup', keyboardHandler, { capture: true });
+    document.addEventListener('keydown', keyboardHandler);
+    document.addEventListener('keyup', keyboardHandler);
 
     return () => {
-      document.removeEventListener('keydown', keyboardHandler, { capture: true });
-      document.removeEventListener('keyup', keyboardHandler, { capture: true });
+      document.removeEventListener('keydown', keyboardHandler);
+      document.removeEventListener('keyup', keyboardHandler);
     };
   }, [steppedControlsAlt]);
 
@@ -112,10 +117,17 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="hll"></Elem>
         <Elem name="actions" tag={Space} collapsed>
-          <ControlButton onClick={onStepBackward} hotkey={settings?.stepBackHotkey}>
+          <ControlButton
+            onClick={stepHandlerWrapper(onStepBackward)}
+            hotkey={settings?.stepBackHotkey}
+          >
             {steppedControlsAlt ? <IconPrev/> : <IconChevronLeft/>}
           </ControlButton>
-          <ControlButton onClick={onStepForward} hotkey={settings?.stepForwardHotkey}>
+
+          <ControlButton
+            onClick={stepHandlerWrapper(onStepForward)}
+            hotkey={settings?.stepForwardHotkey}
+          >
             {steppedControlsAlt ? <IconNext/> : <IconChevronRight/>}
           </ControlButton>
           {extraControls}
@@ -123,11 +135,15 @@ export const Controls: FC<ControlsProps> = ({
       </Elem>
 
       <Elem name="group" tag={Space} collapsed>
-        <ControlButton onClick={() => onRewind?.()}><IconRewind/></ControlButton>
+        <ControlButton onClick={() => onRewind?.()}>
+          <IconRewind/>
+        </ControlButton>
         <ControlButton onClick={() => onPlayToggle?.(!playing)} hotkey={settings?.playpauseHotkey}>
           {playing ? <IconPause/> : <IconPlay/>}
         </ControlButton>
-        <ControlButton onClick={() => onForward?.()}><IconForward/></ControlButton>
+        <ControlButton onClick={() => onForward?.()}>
+          <IconForward/>
+        </ControlButton>
       </Elem>
 
       <Elem name="group" tag={Space} size="small">

@@ -48,8 +48,11 @@ export type TimelineSettings = {
   stepBackHotkey?: string,
   stepForwardHotkey?: string,
   playpauseHotkey?: string,
-  altStepHandler?: () => void,
+  stepSize?: TimelineStepFunction,
 }
+
+export type TimelineStepFunction = (position: number, regions: TimelineRegion[], direction: -1 | 1) => number;
+
 export interface TimelineExtraControls<A extends string, D extends any> {
   onAction?: <T extends Element>(e: MouseEvent<T>, action: A, data?: D) => void;
 }

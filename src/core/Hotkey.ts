@@ -8,7 +8,7 @@ import { isDefined, isMacOS } from "../utils/utilities";
 import defaultKeymap from "./settings/keymap.json";
 
 // Validate keymap integrity
-const allowedKeympaKeys = ['key', 'mac', 'description'];
+const allowedKeympaKeys = ['key', 'mac', 'description', 'modifier', 'modifierDescription'];
 
 const validateKeymap = (keymap: Keymap) => {
   Object.entries(keymap).forEach(([name, settings]) => {
@@ -159,6 +159,10 @@ export const Hotkey = (
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
 
         this.addKey(shortcut, func, hotkey.description, scope);
+
+        if (hotkey.modifier) {
+          this.addKey(`${hotkey.modifier}+${shortcut}`, func, hotkey.modifierDescription, scope);
+        }
       } else {
         throw new Error(`Unknown named hotkey ${hotkey}`);
       }
@@ -174,6 +178,10 @@ export const Hotkey = (
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
 
         this.removeKey(shortcut, scope);
+
+        if (hotkey.modifier) {
+          this.removeKey(`${hotkey.modifier}+${shortcut}`);
+        }
       } else {
         throw new Error(`Unknown named hotkey ${hotkey}`);
       }
@@ -192,6 +200,11 @@ export const Hotkey = (
         const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
 
         this.overwriteKey(shortcut, func, hotkey.description, scope);
+
+        if (hotkey.modifier) {
+          this.overwriteKey(`${hotkey.modifier}+${shortcut}`, func, hotkey.modifierDescription, scope);
+        }
+
       } else {
         throw new Error(`Unknown named hotkey ${name}`);
       }

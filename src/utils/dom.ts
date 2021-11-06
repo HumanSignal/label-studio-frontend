@@ -1,9 +1,7 @@
 /**
  * Returns element absolute position relative to document
- * @param {HTMLElement} elem
- * @returns
  */
-const getAbsolutePosition = (elem) => { // crossbrowser version
+const getAbsolutePosition = (elem: HTMLElement) => { // crossbrowser version
   const box = elem.getBoundingClientRect();
 
   const body = document.body;
@@ -32,7 +30,7 @@ const getAbsolutePosition = (elem) => { // crossbrowser version
  * @param {HTMLElement} source
  * @param {HTMLElement} target
  */
-const positioner = (source, target) => {
+const positioner = (source: HTMLElement, target: HTMLElement) => {
   const sourcePosition = getAbsolutePosition(source);
   const targetPosition = getAbsolutePosition(target);
 
@@ -57,7 +55,9 @@ const positioner = (source, target) => {
   };
 };
 
-export const alignElements = (elem, target, align, padding = 0) => {
+export type ElementAlignment = "top-center" | "top-left" | "top-right" | "bottom-center" | "bottom-left" | "bottom-right"
+
+export const alignElements = (elem: HTMLElement, target: HTMLElement, align: ElementAlignment, padding = 0) => {
   let offsetLeft = 0;
   let offsetTop = 0;
 
@@ -109,5 +109,5 @@ export const alignElements = (elem, target, align, padding = 0) => {
     resultAlign[1] = "right";
   }
 
-  return { top: offsetTop, left: offsetLeft, pos, align: resultAlign.join("-") };
+  return { top: offsetTop, left: offsetLeft, pos, align: resultAlign.join("-") as ElementAlignment };
 };

@@ -2,6 +2,8 @@ declare interface Hotkey {
   description: string;
   key: string;
   mac?: string;
+  modifier?: string;
+  modifierDescription?: string;
 }
 
 declare interface Keymap {

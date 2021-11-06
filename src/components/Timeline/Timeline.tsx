@@ -1,5 +1,5 @@
 import { Block, Elem } from "../../utils/bem";
-import { Controls } from "./Controls";
+import { Controls, ControlsStepHandler } from "./Controls";
 import { Seeker } from "./Seeker";
 import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { default as Views, ViewTypes } from "./Views";
@@ -7,7 +7,7 @@ import { default as Views, ViewTypes } from "./Views";
 import "./Timeline.styl";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
-import { TimelineContextValue } from "./Types";
+import { TimelineContextValue, TimelineStepFunction } from "./Types";
 
 export interface TimelineProps<D extends ViewTypes = "frames"> {
   regions: any[];
@@ -56,25 +56,25 @@ export const Timeline: FC<TimelineProps> = ({
   const [viewCollapsed, setViewCollapsed] = useState(false);
   const step = useMemo(() => 10 * zoom, [zoom]);
 
-  const onInternalPositionChange = (value: number) => {
-    console.log({ value });
-    const clampedValue = clamp(value, 1, length);
+  const setInternalPosition = (newPosition: number) => {
+    const clampedValue = clamp(newPosition, 1, length);
 
     if (clampedValue !== currentPosition) {
-      console.log({ clampedValue });
       setCurrentPosition(clampedValue);
       onPositionChange?.(clampedValue);
     }
   };
 
-  const increasePosition = () => {
-    console.log('increase');
-    onInternalPositionChange(currentPosition + 1);
+  const increasePosition: ControlsStepHandler = (_, stepSize) => {
+    const nextPosition = stepSize?.(position, regions, 1) ?? currentPosition + 1;
+
+    setInternalPosition(nextPosition);
   };
 
-  const decreasePosition = () => {
-    console.log('decrease');
-    onInternalPositionChange(currentPosition - 1);
+  const decreasePosition: ControlsStepHandler = (_, stepSize) => {
+    const nextPosition = stepSize?.(position, regions, -1) ?? currentPosition - 1;
+
+    setInternalPosition(nextPosition);
   };
 
   const contextValue: TimelineContextValue = {
@@ -100,7 +100,7 @@ export const Timeline: FC<TimelineProps> = ({
             seekOffset={seekOffset}
             seekVisible={seekVisibleWidth}
             onIndicatorMove={setSeekOffset}
-            onSeek={onInternalPositionChange}
+            onSeek={setInternalPosition}
             minimap={View.Minimap ? (
               <View.Minimap/>
             ): null}
@@ -118,9 +118,9 @@ export const Timeline: FC<TimelineProps> = ({
             onFullScreenToggle={onFullscreenToggle}
             onStepBackward={decreasePosition}
             onStepForward={increasePosition}
-            onRewind={() => onInternalPositionChange(0)}
-            onForward={() => onInternalPositionChange(length)}
-            onPositionChange={onInternalPositionChange}
+            onRewind={() => setInternalPosition(0)}
+            onForward={() => setInternalPosition(length)}
+            onPositionChange={setInternalPosition}
             onToggleCollapsed={setViewCollapsed}
             extraControls={View.Controls && !disableFrames ? (
               <View.Controls
@@ -143,7 +143,7 @@ export const Timeline: FC<TimelineProps> = ({
               offset={seekOffset}
               onScroll={setSeekOffset}
               onResize={setSeekVisibleWidth}
-              onChange={onInternalPositionChange}
+              onChange={setInternalPosition}
               onToggleVisibility={onToggleVisibility}
               onDeleteRegion={onDeleteRegion}
               onSelectRegion={onSelectRegion}

@@ -96,10 +96,14 @@
   },
   "video:frame-backward": {
     "key": "alt+left",
-    "description": "Go one frame back"
+    "modifier": "shift",
+    "description": "Go one frame back",
+    "modifierDescription": "Go to previous keyframe"
   },
   "video:frame-forward": {
     "key": "alt+right",
-    "description": "Go one frame forward"
+    "modifier": "shift",
+    "description": "Go one frame forward",
+    "modifierDescription": "Go to next keyframe"
   }
 }
