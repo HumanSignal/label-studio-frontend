@@ -1,24 +1,48 @@
-import { IconCopy, IconInfo, LsSettings, LsTrash } from "../../assets/icons";
+import { IconCopy, IconInfo, IconViewAll, LsSettings, LsTrash } from "../../assets/icons";
 import { Button } from "../../common/Button/Button";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Elem } from "../../utils/bem";
 import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import { EditingHistory } from "./HistoryActions";
 import { confirm } from "../../common/Modal/Modal";
+import { useCallback } from "react";
 
 export const Actions = ({ store }) => {
-  const entity = store.annotationStore.selected;
+  const annotationStore = store.annotationStore;
+  const entity = annotationStore.selected;
   const saved = !entity.userGenerate || entity.sentUserGenerate;
   const isPrediction = entity?.type === 'prediction';
   const history = entity.history;
+  const isViewAll = annotationStore.viewingAll;
+
+  const onToggleVisibility = useCallback(() => {
+    annotationStore.toggleViewingAllAnnotations();
+  }, [annotationStore]);
 
   return (
     <Elem name="section">
       {store.hasInterface("ground-truth") && <GroundTruth entity={entity}/>}
 
-      {!isPrediction && store.hasInterface('edit-history') && <EditingHistory history={history} />}
+      {store.hasInterface("annotations:view-all") && (
+        <Tooltip title="View all annotations">
+          <Button
+            icon={<IconViewAll />}
+            type="text"
+            aria-label="View All"
+            onClick={() => onToggleVisibility()}
+            primary={ isViewAll }
+            style={{
+              height: 36,
+              width: 36,
+              padding: 0,
+            }}
+          />
+        </Tooltip>
+      )}
 
-      {store.hasInterface("annotations:delete") && (
+      {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory history={history} />}
+
+      {!isViewAll && store.hasInterface("annotations:delete") && (
         <Tooltip title="Delete annotation">
           <Button
             icon={<LsTrash />}
@@ -43,7 +67,7 @@ export const Actions = ({ store }) => {
         </Tooltip>
       )}
 
-      {store.hasInterface("annotations:add-new") && saved && (
+      {!isViewAll && store.hasInterface("annotations:add-new") && saved && (
         <Tooltip title={`Create copy of current ${entity.type}`}>
           <Button
             icon={<IconCopy style={{ width: 36, height: 36 }}/>}
