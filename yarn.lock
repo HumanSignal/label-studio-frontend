@@ -7563,7 +7563,7 @@ jsprim@^1.2.2:
 
 "keymaster@git+https://github.com/nicholasrq/keymaster.git":
   version "1.6.3"
-  resolved "git+https://github.com/nicholasrq/keymaster.git#b0a526c5aeb412c8944c3d29b753678b0c87f90c"
+  resolved "git+https://github.com/nicholasrq/keymaster.git#bc593dae57d8a30caca18fd397fd37a22da00a68"
 
 kind-of@^6.0.2, kind-of@^6.0.3:
   version "6.0.3"
