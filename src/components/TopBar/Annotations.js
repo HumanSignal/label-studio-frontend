@@ -5,7 +5,6 @@ import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
 import { isDefined, userDisplayName } from "../../utils/utilities";
-import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import "./Annotations.styl";
 
 export const Annotations = observer(({ store, annotationStore }) => {
@@ -14,7 +13,6 @@ export const Annotations = observer(({ store, annotationStore }) => {
   const enableAnnotations = store.hasInterface('annotations:tabs');
   const enablePredictions = store.hasInterface('predictions:tabs');
   const enableCreateAnnotation = store.hasInterface('annotations:add-new');
-  const groundTrurhEnabled = store.hasInterface('ground-truth');
 
   const entities = [];
 
@@ -90,9 +88,6 @@ export const Annotations = observer(({ store, annotationStore }) => {
                   setOpened(false);
                   onAnnotationSelect?.(ent, ent.type === 'prediction');
                 }}
-                extra={groundTrurhEnabled && (
-                  <GroundTruth entity={ent}/>
-                )}
               />
             ))}
           </Elem>
