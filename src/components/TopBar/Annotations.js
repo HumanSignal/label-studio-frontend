@@ -91,7 +91,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
                   onAnnotationSelect?.(ent, ent.type === 'prediction');
                 }}
                 extra={groundTrurhEnabled && (
-                  <GroundTruth entity={ent}/>
+                  <GroundTruth entity={ent} disabled/>
                 )}
               />
             ))}
