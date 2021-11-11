@@ -18,7 +18,7 @@ import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
-import ResizeObserver from "resize-observer-polyfill";
+import ResizeObserver from "../../utils/resize-observer";
 
 Konva.showWarnings = false;
 
