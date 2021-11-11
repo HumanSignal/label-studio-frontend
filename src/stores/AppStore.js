@@ -239,7 +239,12 @@ export default types
        */
       if (self.hasInterface("submit", "update", "review")) {
         hotkeys.addNamed("annotation:submit", () => {
-          const entity = self.annotationStore.selected;
+          const annotationStore = self.annotationStore;
+
+          if (annotationStore.viewingAll) return;
+
+          const entity = annotationStore.selected;
+
 
           if (self.hasInterface("review")) {
             self.acceptAnnotation();
@@ -256,6 +261,8 @@ export default types
        */
       if (self.hasInterface("skip", "review")) {
         hotkeys.addNamed("annotation:skip", () => {
+          if (self.annotationStore.viewingAll) return;
+
           if (self.hasInterface("review")){
             self.rejectAnnotation();
           } else {
