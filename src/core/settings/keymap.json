@@ -39,7 +39,7 @@
   },
   "annotation:skip": {
     "key": "ctrl+space",
-    "mac": "command+space",
+    "mac": "alt+enter",
     "description": "Skip task"
   },
   "annotation:undo": {
