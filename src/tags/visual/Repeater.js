@@ -1,8 +1,8 @@
 // this is just a virtual tag, expanded directly in Tree.tsx during config parsing
 
 /**
- * Repeater Tag for using multiple data objects with the same semantics.
- * It repeats tags inside it for every item in given data array
+ * Repeater Tag for annotating multiple data objects with the same semantics.
+ * It repeats tags inside it for every item in a given data array from your dataset. Supports all tags except Labels.
  * @example
  * <Repeater on="$utterances" indexFlag="{{idx}}">
  *   <Text name="user_{{idx}}" value="$utterances[{{idx}}].text"/>
@@ -14,8 +14,8 @@
  *   </Choices>
  * </Repeater>
  * @name Repeater
- * @meta_title Repeater Tag for using multiple data objects with the same semantics
- * @meta_description Allow to repeat similar data blocks in a simple way — like different versions of the text or different views on the same object for segmentation
+ * @meta_title Repeater Tag to duplicate annotation settings
+ * @meta_description Customize Label Studio with the Repeater tag to repeat similar data blocks to accelerate labeling for machine learning and data science projects.
  * @param {string} on                  - Data field object with array with similar data
  * @param {string} [indexFlag={{idx}}] - Placeholder for array index in params of underlying tags
  */
