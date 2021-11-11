@@ -18,10 +18,12 @@ export const TopBar = observer(({ store }) => {
     <Block name="topbar">
       <Elem name="group">
         <CurrentTask store={store}/>
-        <Annotations
-          store={store}
-          annotationStore={store.annotationStore}
-        />
+        {!isViewAll && (
+          <Annotations
+            store={store}
+            annotationStore={store.annotationStore}
+          />
+        )}
         <Actions store={store}/>
       </Elem>
       <Elem name="group">
