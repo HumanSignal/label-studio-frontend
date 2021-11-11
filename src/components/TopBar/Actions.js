@@ -21,8 +21,6 @@ export const Actions = ({ store }) => {
 
   return (
     <Elem name="section">
-      {store.hasInterface("ground-truth") && <GroundTruth entity={entity}/>}
-
       {store.hasInterface("annotations:view-all") && (
         <Tooltip title="View all annotations">
           <Button
@@ -39,6 +37,8 @@ export const Actions = ({ store }) => {
           />
         </Tooltip>
       )}
+
+      {!isViewAll && store.hasInterface("ground-truth") && <GroundTruth entity={entity}/>}
 
       {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory history={history} />}
 
