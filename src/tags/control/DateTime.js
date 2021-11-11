@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import React from "react";
-import { observer, inject } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import InfoModal from "../../components/Infomodal/Infomodal";
@@ -266,7 +266,7 @@ const DateTimeModel = types.compose("DateTimeModel", ControlBase, TagAttrs, Mode
 
 const HtxDateTime = inject("store")(
   observer(({ item }) => {
-    const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+    const visibleStyle = item.perRegionVisible() ? { margin: "0 0 1em" } : { display: "none" };
     const visual = {
       style: { width: "auto", marginRight: "4px" },
       className: "ant-input",
