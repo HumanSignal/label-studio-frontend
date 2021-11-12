@@ -41,8 +41,10 @@ const Annotation = types
     createdAgo: types.maybeNull(types.string),
     createdBy: types.optional(types.string, "Admin"),
     user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
+
     parent_prediction: types.maybeNull(types.integer),
     parent_annotation: types.maybeNull(types.integer),
+    last_annotation_history: types.maybeNull(types.integer),
 
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
@@ -92,6 +94,7 @@ const Annotation = types
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
+      acceptedState: sn.accepted_state ?? sn.acceptedState ?? null,
     };
   })
   .views(self => ({
@@ -241,6 +244,7 @@ const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
+      getRoot(self).addAnnotationToTaskHistory(self.pk);
     },
 
     toggleVisibility(visible) {
@@ -824,7 +828,7 @@ const Annotation = types
      * suggestions: boolean
      * }} options Deserialization options
      */
-    deserializeResults(json, { suggestions=false } = {}) {
+    deserializeResults(json, { suggestions = false, hidden = false } = {}) {
       try {
         const objAnnotation = self.prepareAnnotation(json);
         const areas = suggestions ? self.suggestions : self.areas;
@@ -838,7 +842,7 @@ const Annotation = types
           );
         });
 
-        self.results
+        !hidden && self.results
           .filter(r => r.area.classification)
           .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
@@ -1067,7 +1071,7 @@ export default types
       c.setupHotKeys();
 
       getEnv(self).events.invoke('selectAnnotation', c, selected);
-
+      if (c.pk) getParent(self).addAnnotationToTaskHistory(c.pk);
       return c;
     }
 
@@ -1243,6 +1247,14 @@ export default types
 
     function selectHistory(item) {
       self.selectedHistory = item;
+      setTimeout(() => {
+        // update classifications after render
+        const updatedItem = item ?? self.selected;
+
+        updatedItem?.results
+          .filter(r => r.area.classification)
+          .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+      });
     }
 
     function addAnnotationFromPrediction(entity) {

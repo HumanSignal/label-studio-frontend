@@ -18,6 +18,7 @@ export { ReactComponent as LsChevron } from "./chevron.svg";
 export { ReactComponent as LsExpand } from "./expand.svg";
 export { ReactComponent as LsCollapse } from "./collapse.svg";
 export { ReactComponent as LsDate } from "./date.svg";
+export { ReactComponent as IconPlusCircle } from "./plus_circle.svg";
 
 export { ReactComponent as IconCheck } from "./check.svg";
 export { ReactComponent as IconCross } from "./cross.svg";
@@ -47,4 +48,6 @@ export { ReactComponent as IconMoveTool } from './tools/move-tool.svg';
 export { ReactComponent as IconRotateLeftTool } from './tools/rotate-left-tool.svg';
 export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool.svg';
 export { ReactComponent as IconInfo } from './info.svg';
+export { ReactComponent as IconCopy } from './copy.svg';
 export { ReactComponent as IconText } from './text.svg';
+export { ReactComponent as IconViewAll } from './view_all.svg';

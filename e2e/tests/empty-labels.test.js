@@ -91,7 +91,7 @@ examples.forEach(example => {
     }
   });
 
-  Scenario(`Nonexistent from_name -> ${title}`, async ({ I, LabelStudio, AtSidebar }) => {
+  Scenario(`Nonexistent from_name -> ${title}`, async ({ I, LabelStudio, AtTopbar, AtSidebar }) => {
     const params = { annotations: [{ id: "test", result }], data };
     const configTree = Utils.parseXml(config);
 
@@ -103,7 +103,7 @@ examples.forEach(example => {
 
     I.amOnPage("/");
     LabelStudio.init(params);
-    AtSidebar.see("Update");
+    AtTopbar.see("Update");
     AtSidebar.dontSeeRegions(regionsCount);
     AtSidebar.dontSeeRegions();
   });
