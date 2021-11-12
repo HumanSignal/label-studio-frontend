@@ -1,7 +1,7 @@
 // this is just a virtual tag, expanded directly in Tree.tsx during config parsing
 
 /**
- * Repeater Tag for annotating multiple data objects with the same semantics.
+ * Repeater Tag for annotating multiple data objects in a dynamic range with the same semantics. You can loop through data items in a python-like for cycle in the labeling process.
  * It repeats tags inside it for every item in a given data array from your dataset. Supports all tags except Labels.
  * @example
  * <Repeater on="$utterances" indexFlag="{{idx}}">
