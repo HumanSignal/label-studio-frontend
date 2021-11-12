@@ -107,8 +107,8 @@ const Model = types
         const seed = data[self.namekey];
 
         return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.1) },
-        };
+         phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.25) },
+       };
       }
 
       return {};
