@@ -351,7 +351,7 @@ export default types
       hotkeys.addNamed("region:cycle", () => {
         const c = self.annotationStore.selected;
 
-        c && c.regionStore.selectNext();
+        c && c.regionStore.selectNext(self.settings.enableAutoPlayNextRegion);
       });
 
       // duplicate selected regions

@@ -382,7 +382,7 @@ export default types.model("RegionStore", {
     self.regions.forEach(r => r.setHighlight(false));
   },
 
-  selectNext() {
+  selectNext(enableAutoPlayNextRegion = true) {
     const { regions } = self;
     const idx = self.regions.findIndex(r => r.selected);
 
@@ -390,10 +390,12 @@ export default types.model("RegionStore", {
       const region = regions[0];
 
       region && self.annotation.selectArea(region);
+      enableAutoPlayNextRegion && region && region.type === "audioregion" && region._ws_region.play();
     } else {
       const next = isDefined(regions[idx + 1]) ? regions[idx + 1] : regions[0];
 
       next && self.annotation.selectArea(next);
+      enableAutoPlayNextRegion && next && next.type === "audioregion" &&  next._ws_region.play();
     }
   },
 

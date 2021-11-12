@@ -34,6 +34,11 @@ const SettingsModel = types
     // select regions after creating them
     selectAfterCreate: false,
 
+    /**
+     * Play the next audio region if enable
+     */
+    enableAutoPlayNextRegion: types.optional(types.boolean, true),
+
     fullscreen: types.optional(types.boolean, false),
 
     bottomSidePanel: types.optional(types.boolean, false),
@@ -185,6 +190,11 @@ const SettingsModel = types
     togglePredictionsPanel() {
       self.showPredictionsPanel = !self.showPredictionsPanel;
     },
+
+    toggleAutoPlayNextRegion() {
+      self.enableAutoPlayNextRegion = !self.enableAutoPlayNextRegion;
+    },
+
   }));
 
 export default SettingsModel;

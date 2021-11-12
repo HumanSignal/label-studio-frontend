@@ -126,6 +126,11 @@ export default observer(({ store }) => {
             Show line numbers for Text
           </Checkbox>
 
+          <br />
+          <Checkbox checked={store.settings.enableAutoPlayNextRegion} onChange={store.settings.toggleAutoPlayNextRegion}>
+            Autoplay next region
+          </Checkbox>
+
           {/* <br /> */}
           {/* <Checkbox */}
           {/*   value="Enable auto-save" */}
