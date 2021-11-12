@@ -25,12 +25,6 @@
     margin-bottom: 12px;
     transition: margin-bottom 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   }
-  .ant-tree-switcher_close + .ant-tree-node-content-wrapper {
-    margin-bottom: 24px;
-  }
-  .ant-tree-switcher-noop + .ant-tree-node-content-wrapper {
-    margin-bottom: 12px;
-  }
 
   .ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected,
   .ant-tree .ant-tree-node-content-wrapper:hover {
@@ -38,27 +32,32 @@
   }
 
   .ant-tree .ant-tree-switcher {
-    left: -8px;
-    top: 0px;
-    margin-right: -24px;
     width: 24px;
+    height: 32px;
     text-align: center;
     z-index: 100;
     display: flex;
     flex-flow: column;
     justify-content: center;
-    align-self: flex-end;
-    height: 32px;
-    position: absolute;
-    transform: translateY(calc(100% + 12px));
     transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
 
     &.ant-tree-switcher_close {
-      transform: translateY(calc(100% + 12px)) scaleY(-1);
+      transform: scaleY(-1);
     }
   }
 
   .ant-tree .ant-tree-indent-unit {
     width: 16px;
+  }
+
+  .ant-tree .ant-tree-indent:empty {
+    & + .ant-tree-switcher {
+      margin-left: -12px;
+    }
+
+    & + .ant-tree-switcher.ant-tree-switcher-noop {
+      margin-left: 0;
+      display: none;
+    }
   }
 }

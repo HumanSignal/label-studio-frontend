@@ -14,16 +14,16 @@ module.exports = {
   _modalLocator: locate(".ant-modal"),
   _tabLocator: locate(".ant-tabs-tab"),
   _activeTabLocator: locate(".ant-tabs-tab-active"),
-  open () {
+  open() {
     I.click(this._openButtonLocator);
     I.seeElement(this._modalLocator);
   },
-  close () {
+  close() {
     I.click(this._closeButtonLocator);
     I.waitToHide(this._modalLocator);
   },
-  _setSettings (settings = {}) {
-    for (let [setting, value] of Object.entries(settings)) {
+  _setSettings(settings = {}) {
+    for (const [setting, value] of Object.entries(settings)) {
       if (value) {
         I.dontSeeCheckboxIsChecked(setting);
         I.checkOption(setting);
@@ -35,15 +35,15 @@ module.exports = {
       }
     }
   },
-  goToTab (tabName) {
+  goToTab(tabName) {
     I.click(this._tabLocator.withText(tabName));
     I.seeElement(this._activeTabLocator.withText(tabName));
   },
-  setGeneralSettings (settings = {}) {
+  setGeneralSettings(settings = {}) {
     this.goToTab("General");
     this._setSettings(settings);
   },
-  setLayoutSettings (settings = {}){
+  setLayoutSettings(settings = {}){
     this.goToTab("Layout");
     this._setSettings(settings);
   },

@@ -101,11 +101,11 @@ const _detect = region => {
       if (container?.tagName === "IFRAME") {
         const iframeBbox = Geometry.getDOMBBox(container, true);
 
-        return regionBbox.map(bbox => ({
+        return regionBbox?.map(bbox => ({
           ...bbox,
           x: bbox.x + iframeBbox.x,
           y: bbox.y + iframeBbox.y,
-        }));
+        })) || null;
       }
 
       return regionBbox;

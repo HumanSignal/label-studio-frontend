@@ -497,6 +497,7 @@ export const findNodesBetween = (startNode, endNode, root) => {
  * @param {HTMLSpanElement[]} spans
  */
 export const removeRange = spans => {
+  if (!spans) return;
   spans.forEach(hl => {
     const fragment = hl.ownerDocument.createDocumentFragment();
     const parent = hl.parentNode;

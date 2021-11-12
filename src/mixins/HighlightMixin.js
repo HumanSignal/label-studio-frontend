@@ -6,11 +6,17 @@ import Constants, { defaultStyle } from "../core/Constants";
 
 export const HighlightMixin = types
   .model()
+  .volatile(()  =>({
+    _highlightedText: "",
+  }))
   .views(self => ({
     get _hasSpans() {
       return self._spans ? (
         self._spans.every(span => span.isConnected)
       ) : false;
+    },
+    get highlightedText() {
+      return self.text || self._highlightedText;
     },
   }))
   .actions(self => ({
@@ -18,6 +24,7 @@ export const HighlightMixin = types
      * Create highlights from the stored `Range`
      */
     applyHighlight() {
+      if (self.parent.isLoaded === false) return;
       // Avoid calling this method twice
       // spans in iframe disappear on every annotation switch, so check for it
       // in iframe spans still isConnected, but window is missing
@@ -41,16 +48,6 @@ export const HighlightMixin = types
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
 
-      // retrieve the text, it may not be saved, but it should be displayed
-      // later methods may break the range, so do this before
-      // Range swallows all the new lines and <br>s, so we have to create Selection from range
-      const selection = root.ownerDocument.defaultView.getSelection();
-
-      selection.removeAllRanges();
-      selection.addRange(range);
-      self.text = String(selection);
-      selection.removeAllRanges();
-
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames: ["htx-highlight", stylesheet.className],
@@ -58,6 +55,25 @@ export const HighlightMixin = types
       });
 
       return self._spans;
+    },
+
+    updateHighlightedText() {
+      if (!self.text) {
+        // Concatinating of spans' innerText is up to 10 times faster, but loses "\n"
+        const range = self.rangeFromGlobalOffset();
+        const root = self._getRootNode();
+
+        if (!range || !root) {
+          return;
+        }
+        const selection = root.ownerDocument.defaultView.getSelection();
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+        self._highlightedText = String(selection);
+        selection.removeAllRanges();
+
+      }
     },
 
     updateSpans() {

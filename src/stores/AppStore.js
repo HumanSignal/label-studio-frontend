@@ -32,6 +32,14 @@ export default types
     project: types.maybeNull(Project),
 
     /**
+     * History of task {taskId, annotationId}:
+    */
+    taskHistory: types.array(types.model({
+      taskId: types.number,
+      annotationId: types.maybeNull(types.string),
+    }), []),
+
+    /**
      * Configure the visual UI shown to the user
      */
     interfaces: types.array(types.string),
@@ -148,6 +156,18 @@ export default types
 
       return match.find(v => v === true) ?? false;
     },
+    get canGoNextTask() {
+      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
+        return true;
+      }
+      return false;
+    },
+    get canGoPrevTask() {
+      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[0].taskId) {
+        return true;
+      }
+      return false;
+    },
   }))
   .actions(self => {
     /**
@@ -217,11 +237,18 @@ export default types
       /**
        * Hotkey for submit
        */
-      if (self.hasInterface("submit", "update")) {
+      if (self.hasInterface("submit", "update", "review")) {
         hotkeys.addNamed("annotation:submit", () => {
-          const entity = self.annotationStore.selected;
+          const annotationStore = self.annotationStore;
 
-          if (!isDefined(entity.pk) && self.hasInterface("submit")) {
+          if (annotationStore.viewingAll) return;
+
+          const entity = annotationStore.selected;
+
+
+          if (self.hasInterface("review")) {
+            self.acceptAnnotation();
+          } else if (!isDefined(entity.pk) && self.hasInterface("submit")) {
             self.submitAnnotation();
           } else if (self.hasInterface("update")) {
             self.updateAnnotation();
@@ -232,8 +259,16 @@ export default types
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) {
-        hotkeys.addNamed("annotation:skip", self.skipTask);
+      if (self.hasInterface("skip", "review")) {
+        hotkeys.addNamed("annotation:skip", () => {
+          if (self.annotationStore.viewingAll) return;
+
+          if (self.hasInterface("review")){
+            self.rejectAnnotation();
+          } else {
+            self.skipTask();
+          }
+        });
       }
 
       /**
@@ -344,6 +379,11 @@ export default types
         };
       }
       self.task = Task.create(taskObject);
+      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
+        self.taskHistory.push({ taskId: self.task.id,
+          annotationId: null,
+        });
+      }
     }
 
     function assignConfig(config) {
@@ -423,7 +463,7 @@ export default types
     }
 
     function acceptAnnotation() {
-      handleSubmittingFlag(() => {
+      handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
         entity.beforeSend();
@@ -432,12 +472,12 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
-      }, "Error during skip, try again");
+        await getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
+      }, "Error during accept, try again");
     }
 
     function rejectAnnotation() {
-      handleSubmittingFlag(() => {
+      handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
         entity.beforeSend();
@@ -446,8 +486,8 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
-      }, "Error during skip, try again");
+        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
+      }, "Error during reject, try again");
     }
 
     /**
@@ -532,7 +572,7 @@ export default types
 
         const result = item.previous_annotation_history_result ?? [];
 
-        obj.deserializeResults(result);
+        obj.deserializeResults(result, { hidden: true });
       });
     }
 
@@ -546,7 +586,7 @@ export default types
       localStorage.setItem("autoAcceptSuggestions", value);
     };
 
-    const loadSuggestions = flow(function *(request, dataParser) {
+    const loadSuggestions = flow(function* (request, dataParser) {
       const requestId = guidGenerator();
 
       self.suggestionsRequest = requestId;
@@ -559,6 +599,30 @@ export default types
         self.setFlags({ awaitingSuggestions: false });
       }
     });
+
+    function addAnnotationToTaskHistory(annotationId) {
+      const taskIndex = self.taskHistory.findIndex(({ taskId }) => taskId === self.task.id);
+
+      if (taskIndex >= 0) {
+        self.taskHistory[taskIndex].annotationId = annotationId;
+      }
+    }
+
+    function nextTask() {
+      if (self.canGoNextTask) {
+        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
+
+        getEnv(self).events.invoke('nextTask', taskId, annotationId);
+      }
+    }
+
+    function prevTask() {
+      if (self.canGoPrevTask) {
+        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1];
+
+        getEnv(self).events.invoke('prevTask', taskId, annotationId);
+      }
+    }
 
     return {
       setFlags,
@@ -588,5 +652,9 @@ export default types
       setAutoAnnotation,
       setAutoAcceptSuggestions,
       loadSuggestions,
+
+      addAnnotationToTaskHistory,
+      nextTask,
+      prevTask,
     };
   });

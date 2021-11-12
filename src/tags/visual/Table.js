@@ -19,6 +19,7 @@ import Registry from "../../core/Registry";
  */
 const Model = types
   .model({
+    name: types.identifier,
     type: "table",
     value: types.maybeNull(types.string),
     // _value: types.optional(types.string, ""),
@@ -62,5 +63,6 @@ const HtxTable = inject("store")(
 );
 
 Registry.addTag("table", TableModel, HtxTable);
+Registry.addObjectType(TableModel);
 
 export { HtxTable, TableModel };

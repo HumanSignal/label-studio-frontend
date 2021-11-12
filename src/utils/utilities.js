@@ -175,7 +175,7 @@ export const chunks = (source, chunkSize) => {
   return result;
 };
 
-export const userDisplayName = (user) => {
+export const userDisplayName = (user = {}) => {
   const firstName = user.firstName ?? user.firstName;
   const lastName = user.lastName ?? user.lastName;
 
@@ -208,3 +208,10 @@ export function minMax(items) {
 export function isMacOS() {
   return navigator.platform.indexOf('Mac') > -1;
 }
+
+export const triggerResizeEvent = () => {
+  const event = new Event("resize");
+
+  event.initEvent("resize", false, false);
+  window.dispatchEvent(event);
+};
