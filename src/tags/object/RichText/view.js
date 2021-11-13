@@ -343,7 +343,9 @@ class RichTextPieceView extends Component {
 
   onIFrameLoad = () => {
     const iframe = this.rootNodeRef.current;
-    const body = iframe?.contentDocument?.body;
+    const doc = iframe?.contentDocument;
+    const body = doc?.body;
+    const htmlEl = body?.parentElement;
     const eventHandlers = {
       click: [this._onRegionClick, true],
       keydown: [this._passHotkeys, false],
@@ -360,7 +362,6 @@ class RichTextPieceView extends Component {
     }
 
     // fix unselectable links
-    const doc = body.ownerDocument;
     const style = doc.createElement("style");
 
     style.textContent = "body a { pointer-events: all; }";
@@ -374,7 +375,9 @@ class RichTextPieceView extends Component {
 
     // auto-height
     if (body.scrollHeight) {
-      iframe.style.height = doc.children[0].offsetHeight + "px";
+      // body dimensions sometimes doesn't count some inner content offsets
+      // but html's offsetHeight sometimes is zero, so get the max of both
+      iframe.style.height = Math.max(body.scrollHeight, htmlEl.offsetHeight) + "px";
     }
 
     this.setLoaded(true);

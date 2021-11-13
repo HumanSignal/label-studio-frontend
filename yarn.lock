@@ -1769,11 +1769,6 @@
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.8.tgz"
   integrity sha512-YSBPTLTVm2e2OoQIDYx8HaeWJ5tTToLH67kXR7zYNGupXMEHa2++G8k+DczX2cFVgalypqtyZIcU19AFcmOpmg==
 
-"@types/keymaster@^1.6.30":
-  version "1.6.30"
-  resolved "https://registry.yarnpkg.com/@types/keymaster/-/keymaster-1.6.30.tgz#11c3d8b9cb05f207816b77b9621afc6ec8ad01be"
-  integrity sha512-mtL/NuDBX72zmyIa3cYHA1bQj1WAYlSC4eZcIQj+DHJkcRyTRF2XJXo7DBmkkY8TEq7XaAf7B8TGxs5PHhjRtw==
-
 "@types/lodash@^4.14.105":
   version "4.14.171"
   resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.171.tgz"
@@ -7589,7 +7584,7 @@ jsprim@^1.2.2:
 
 "keymaster@git+https://github.com/nicholasrq/keymaster.git":
   version "1.6.3"
-  resolved "git+https://github.com/nicholasrq/keymaster.git#1634476c17ee56097e6dae4242c152a5e16c0e70"
+  resolved "git+https://github.com/nicholasrq/keymaster.git#bc593dae57d8a30caca18fd397fd37a22da00a68"
 
 kind-of@^6.0.2, kind-of@^6.0.3:
   version "6.0.3"
