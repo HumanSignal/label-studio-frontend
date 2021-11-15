@@ -29,6 +29,8 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
  * @param {number} [strokeWidth=3]                - Width of stroke
  * @param {small|medium|large} [pointSize=small]  - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=circle]  - Style of points
+ * @param {boolean} [smart]                       - Show smart tool for interactive pre-annotations
+ * @param {boolean} [smartOnly]                   - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
   name: types.identifier,

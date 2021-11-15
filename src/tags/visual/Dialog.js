@@ -62,7 +62,7 @@ const HtxDialogView = inject("store")(
       return <Empty />;
     }
 
-    let result = [];
+    const result = [];
     let name = item.value;
 
     if (name.charAt(0) === "$") {

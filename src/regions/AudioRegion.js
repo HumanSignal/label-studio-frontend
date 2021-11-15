@@ -29,7 +29,7 @@ const Model = types
 
     wsRegionElement(wsRegion) {
       const elID = wsRegion.id;
-      let el = document.querySelector(`[data-id="${elID}"]`);
+      const el = document.querySelector(`[data-id="${elID}"]`);
 
       return el;
     },
@@ -71,7 +71,7 @@ const Model = types
      * @returns {AudioRegionResult}
      */
     serialize() {
-      let res = {
+      const res = {
         original_length: self.object._ws?.getDuration(),
         value: {
           start: self.start,
@@ -191,6 +191,7 @@ const Model = types
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
       self.updateColor(self.selected ? 0.8 : 0.3);
+      self.notifyDrawingFinished();
     },
 
     toggleHidden(e) {

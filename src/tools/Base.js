@@ -2,7 +2,7 @@ import { getEnv, getRoot, getSnapshot, getType, types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import React from "react";
 import { Tool } from "../components/Toolbar/Tool";
-import { slugify, toKebabCase } from "strman";
+import { toKebabCase } from "strman";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -38,7 +38,7 @@ const BaseTool = types
         return self.control.isSeparated;
       },
       get viewClass() {
-        return self.shouldRenderView ? <ToolView item={self} /> : null;
+        return () => self.shouldRenderView ? <ToolView item={self} /> : null;
       },
       get viewTooltip() {
         return null;

@@ -16,6 +16,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
+    origin: "manual",
     value: { start: 0, end: 17, labels: ["Person"] },
   },
   {
@@ -23,6 +24,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "labels",
+    origin: "manual",
     value: { start: 453, end: 474, labels: ["Words"] },
   },
 ];

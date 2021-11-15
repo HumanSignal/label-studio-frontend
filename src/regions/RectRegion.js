@@ -12,7 +12,7 @@ import { ImageModel } from "../tags/object/Image";
 import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
 import { guidGenerator } from "../core/Helpers";
 import { AreaMixin } from "../mixins/AreaMixin";
-import { fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
 import { useRegionStyles } from "../hooks/useRegionColor";
 import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
@@ -272,6 +272,8 @@ const HtxRectangleView = ({ item }) => {
 
       t.setAttr("scaleX", 1);
       t.setAttr("scaleY", 1);
+
+      item.notifyDrawingFinished();
     };
 
     eventHandlers.onDragStart = (e) => {
@@ -279,6 +281,7 @@ const HtxRectangleView = ({ item }) => {
         e.currentTarget.stopDrag(e.evt);
         return;
       }
+      item.annotation.history.freeze(item.id);
     };
 
     eventHandlers.onDragEnd = (e) => {
@@ -292,9 +295,12 @@ const HtxRectangleView = ({ item }) => {
         t.getAttr("rotation"),
       );
       item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
+      item.annotation.history.unfreeze(item.id);
+
+      item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = item.parent.fixForZoom(pos => {
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item.parent, pos => {
       let { x, y } = pos;
       const { width, height, rotation } = item;
       const { stageHeight, stageWidth } = item.parent;
@@ -331,8 +337,8 @@ const HtxRectangleView = ({ item }) => {
         scaleX={item.scaleX}
         scaleY={item.scaleY}
         opacity={1}
-        rotation={item.rotation && !suggestion}
-        draggable={item.editable && !suggestion}
+        rotation={item.rotation}
+        draggable={item.editable}
         name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {
@@ -359,6 +365,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
+        listening={!suggestion}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

@@ -26,7 +26,7 @@ const ToolView = observer(({ item }) => {
         icon={<IconMagnifyTool />}
         ariaLabel="zoom-in"
         label="Zoom In"
-        shortcut="alt+plus"
+        shortcut="ctrl+plus"
         onClick={() => {
           item.handleZoom(1);
         }}
@@ -35,7 +35,7 @@ const ToolView = observer(({ item }) => {
         icon={<IconMinifyTool />}
         ariaLabel="zoom-out"
         label="Zoom Out"
-        shortcut="alt+minus"
+        shortcut="ctrl+minus"
         onClick={() => {
           item.handleZoom(-1);
         }}
@@ -45,13 +45,13 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("ZoomTool", {
+  .model("ZoomPanTool", {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
     group: "control",
   })
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
 
     get stageContainer() {
@@ -59,6 +59,10 @@ const _Tool = types
     },
   }))
   .actions(self => ({
+    shouldSkipInteractions() {
+      return true;
+    },
+
     mouseupEv() {
       self.mode = "viewing";
       self.stageContainer.style.cursor = "grab";
@@ -76,8 +80,8 @@ const _Tool = types
 
     handleDrag(ev) {
       const item = self.obj;
-      let posx = item.zoomingPositionX + ev.movementX;
-      let posy = item.zoomingPositionY + ev.movementY;
+      const posx = item.zoomingPositionX + ev.movementX;
+      const posy = item.zoomingPositionY + ev.movementY;
 
       item.setZoomPosition(posx, posy);
     },

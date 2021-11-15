@@ -52,6 +52,7 @@ const result = [
     from_name: "ner",
     to_name: "my_text",
     type: "labels",
+    origin: "manual",
   },
   {
     value: { start: 186, end: 192, text: ["huge corp"] },
@@ -59,6 +60,7 @@ const result = [
     from_name: "description",
     to_name: "my_text",
     type: "textarea",
+    origin: "manual",
   },
   {
     value: { start: 186, end: 192, text: "amazon", choices: ["Male"] },
@@ -66,6 +68,7 @@ const result = [
     from_name: "gender",
     to_name: "my_text",
     type: "choices",
+    origin: "manual",
   },
   {
     value: { start: 186, end: 192, text: "amazon", choices: ["Negative"] },
@@ -73,6 +76,7 @@ const result = [
     from_name: "sentiment2",
     to_name: "my_text",
     type: "choices",
+    origin: "manual",
   },
   {
     value: { choices: ["Neutral"] },
@@ -80,6 +84,7 @@ const result = [
     from_name: "sentiment",
     to_name: "my_text",
     type: "choices",
+    origin: "manual",
   },
   {
     value: { start: 0, end: 3, text: "Not", labels: ["Time"] },
@@ -87,6 +92,7 @@ const result = [
     from_name: "ner",
     to_name: "my_text",
     type: "labels",
+    origin: "manual",
   },
   {
     value: { start: 0, end: 3, text: "Not", choices: ["Positive"] },
@@ -94,6 +100,7 @@ const result = [
     from_name: "sentiment2",
     to_name: "my_text",
     type: "choices",
+    origin: "manual",
   },
 ];
 

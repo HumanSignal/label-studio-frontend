@@ -5,11 +5,14 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
-import { findClosestParent } from "../utils/utilities";
+import { clamp, findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
 import { Tool } from "../components/Toolbar/Tool";
 import { Range } from "../common/Range/Range";
 import { NodeViews } from "../components/Node/Node";
+
+const MIN_SIZE = 1;
+const MAX_SIZE = 50;
 
 const IconDot = ({ size }) => {
   return (
@@ -45,14 +48,14 @@ const ToolView = observer(({ item }) => {
 
 const _Tool = types
   .model("BrushTool", {
-    strokeWidth: types.optional(types.number, 10),
+    strokeWidth: types.optional(types.number, 15),
     group: "segmentation",
     shortcut: "B",
     smart: true,
   })
   .views(self => ({
     get viewClass() {
-      return <ToolView item={self} />;
+      return () => <ToolView item={self} />;
     },
     get iconComponent() {
       return self.dynamic
@@ -70,8 +73,8 @@ const _Tool = types
         <Range
           key="brush-size"
           value={self.strokeWidth}
-          min={10}
-          max={50}
+          min={MIN_SIZE}
+          max={MAX_SIZE}
           reverse
           align="vertical"
           minIcon={<IconDot size={8}/>}
@@ -85,10 +88,10 @@ const _Tool = types
     get extraShortcuts() {
       return {
         "[": ["Decrease size", () => {
-          self.setStroke(Math.max(10, self.strokeWidth - 5));
+          self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
         }],
         "]": ["Increase size", () => {
-          self.setStroke(Math.min(50, self.strokeWidth + 5));
+          self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
         }],
       };
     },

@@ -14,7 +14,7 @@ it("Should repeat blocks based on store key", () => {
      </View>
   `,  createStore(["hello", "world"]));
 
-  expect(result.children).toHaveLength(2);
+  expect(result.children[0].children).toHaveLength(2);
 });
 
 it("Should have 0 children when wrong or invalid key is passed", () => {
@@ -26,8 +26,8 @@ it("Should have 0 children when wrong or invalid key is passed", () => {
      </View>
   `,  createStore(["hello", "world"]));
 
-
-  expect(result.children).toBe(null);
+  // Repeater View -> null
+  expect(result.children[0].children[0]).toBe(undefined);
 });
 
 it("Should replace child three {{idx}} with current itteration of index", () => {
@@ -39,8 +39,10 @@ it("Should replace child three {{idx}} with current itteration of index", () => 
      </View>
   `,  createStore(["hello", "world"]));
 
-  const textTag1 = result.children[0].children[0];
-  const textTag2 = result.children[1].children[0];
+  const container = result.children[0];
+  // Text[n] View -> Text
+  const textTag1 = container.children[0].children[0];
+  const textTag2 = container.children[1].children[0];
 
   expect(textTag1.name).toBe("user_0");
   expect(textTag2.name).toBe("user_1");
@@ -58,7 +60,8 @@ it("Should support custom index flags", () => {
      </View>
   `,  createStore(["hello", "world"]));
 
-  const textTag = result.children[0].children[0];
+  // Repeater View -> Text[0] View -> Text
+  const textTag = result.children[0].children[0].children[0];
 
   expect(textTag.name).toBe("user_0");
   expect(textTag.value).toBe("$utterances[0].text");

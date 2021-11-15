@@ -68,6 +68,10 @@ function onStorageInitialized(ls) {}
 
 function onSubmitDraft(entity) {}
 
+function onNextTask(nextTaskId) {}
+
+function onPrevTask(prevTaskId) {}
+
 export default {
   onDeleteAnnotation,
   onEntityCreate,
@@ -83,4 +87,6 @@ export default {
   onAcceptAnnotation,
   onRejectAnnotation,
   onStorageInitialized,
+  onNextTask,
+  onPrevTask,
 };

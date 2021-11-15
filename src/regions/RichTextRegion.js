@@ -52,7 +52,7 @@ const Model = types
     },
 
     serialize() {
-      let res = {
+      const res = {
         value: {},
       };
 
@@ -70,6 +70,8 @@ const Model = types
             self.globalOffsets.end,
             root,
           );
+
+          if (!range) throw new Error;
 
           const xpathRange = xpath.fromRange(range, root);
 
@@ -135,6 +137,8 @@ const Model = types
           root,
         );
 
+        if (!rangeFromGlobal) return;
+
         const normedRange = xpath.fromRange(rangeFromGlobal, root);
 
         if (!isDefined(normedRange)) return;
@@ -173,7 +177,7 @@ const Model = types
     },
 
     _createNativeRange(useOriginalContent = false) {
-      let rootNode = self._getRootNode(useOriginalContent);
+      const rootNode = self._getRootNode(useOriginalContent);
 
       if (rootNode === undefined) return undefined;
 
@@ -183,6 +187,8 @@ const Model = types
         if (self.isText) {
           const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
           const range = document.createRange();
+
+          if (!startContainer || !endContainer) return;
 
           range.setStart(startContainer.node, startContainer.position);
           range.setEnd(endContainer.node, endContainer.position);

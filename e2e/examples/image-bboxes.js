@@ -22,6 +22,7 @@ const result = [
     original_width: 2242,
     to_name: "img",
     type: "rectanglelabels",
+    origin: "manual",
     value: {
       height: 10.458911419423693,
       rectanglelabels: ["Moonwalker"],

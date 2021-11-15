@@ -57,8 +57,8 @@ const TagAttrs = types.model({
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
-  gridSize: types.optional(types.number, 30),
-  gridColor: types.optional(customTypes.color, "#EEEEF4"),
+  gridsize: types.optional(types.string, "30"),
+  gridcolor: types.optional(customTypes.color, "#EEEEF4"),
 
   zoom: types.optional(types.boolean, true),
   negativezoom: types.optional(types.boolean, false),
@@ -127,16 +127,19 @@ const ImageSelection = types.model({
       return self.start && self.end;
     },
     get x() {
-      return Math.min(self.start.x, self.end.x);
+      return Math.min((self.start.x * self.scale), (self.end.x * self.scale));
     },
     get y() {
-      return Math.min(self.start.y, self.end.y);
+      return Math.min((self.start.y * self.scale), (self.end.y * self.scale));
     },
     get width() {
-      return Math.abs(self.end.x - self.start.x);
+      return Math.abs((self.end.x * self.scale) - (self.start.x * self.scale));
     },
     get height() {
-      return Math.abs(self.end.y - self.start.y);
+      return Math.abs((self.end.y * self.scale) - (self.start.y * self.scale));
+    },
+    get scale() {
+      return self.obj.zoomScale;
     },
     get bbox() {
       const { start, end } = self;
@@ -150,6 +153,20 @@ const ImageSelection = types.model({
     },
     includesBbox(bbox) {
       return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
+    },
+    intersectsBbox(bbox) {
+      if (!self.isActive || !bbox) return false;
+      const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
+      const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
+      const selfWidth = self.bbox.right - self.bbox.left;
+      const selfHeight = self.bbox.bottom - self.bbox.top;
+      const targetCenterX = (bbox.left + bbox.right) / 2;
+      const targetCenterY = (bbox.top + bbox.bottom) / 2;
+      const targetWidth = bbox.right - bbox.left;
+      const targetHeight = bbox.bottom - bbox.top;
+
+      return (Math.abs(selfCenterX - targetCenterX) * 2 < (selfWidth + targetWidth)) &&
+        (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
     },
     get selectionBorders() {
       return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
@@ -291,6 +308,24 @@ const Model = types.model({
     return self.regs.filter(region => region.inSelection);
   },
 
+  get selectedRegionsBBox() {
+    let bboxCoords;
+
+    self.selectedRegions.forEach((region) => {
+      if (bboxCoords) {
+        bboxCoords = {
+          left: Math.min(region.bboxCoords.left, bboxCoords.left),
+          top: Math.min(region.bboxCoords.top, bboxCoords.top),
+          right: Math.max(region.bboxCoords.right, bboxCoords.right),
+          bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+        };
+      } else {
+        bboxCoords = region.bboxCoords;
+      }
+    });
+    return bboxCoords;
+  },
+
   get regionsInSelectionArea() {
     return self.regs.filter(region => region.isInSelectionArea);
   },
@@ -419,7 +454,11 @@ const Model = types.model({
     return {
       views: {
         getSkipInteractions() {
-          return skipInteractions;
+          const manager = self.getToolsManager();
+
+          const isPanning = manager.findSelectedTool()?.toolName === "ZoomPanTool";
+
+          return skipInteractions || isPanning;
         },
       },
       actions: {
@@ -500,7 +539,7 @@ const Model = types.model({
     },
 
     setGridSize(value) {
-      self.gridSize = value;
+      self.gridsize = String(value);
     },
 
     setCurrentImage(i) {
@@ -542,15 +581,10 @@ const Model = types.model({
     handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
       if (val) {
         self.freezeHistory();
-        const stage = self.stageRef;
         let stageScale = self.stageScale;
         let zoomScale = self.zoomScale;
 
-        let mouseAbsolutePos;
-        let zoomingPosition;
-
-        window.stage = stage;
-        mouseAbsolutePos = {
+        const mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
           y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
         };
@@ -558,10 +592,11 @@ const Model = types.model({
         stageScale = val > 0 ? stageScale * self.zoomBy : stageScale / self.zoomBy;
         zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
 
-        zoomingPosition = {
+        const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,
         };
+
         if (self.negativezoom !== true && zoomScale <= 1) {
           self.setZoom(1, 0, 0);
           return;
@@ -730,14 +765,15 @@ const Model = types.model({
      * @return {PointFn} outer function do some math with screen coords
      */
     fixForZoom(fn) {
-      return p => {
-        const asArray = p.x === undefined;
-        const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
-        const modified = fn(asArray ? [x, y] : { x, y });
-        const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
+      return p => this.fixForZoomWrapper(p, fn);
+    },
+    fixForZoomWrapper(p, fn) {
+      const asArray = p.x === undefined;
+      const [x, y] = self.fixZoomedCoords(asArray ? p : [p.x, p.y]);
+      const modified = fn(asArray ? [x, y] : { x, y });
+      const zoomed = self.zoomOriginalCoords(asArray ? modified : [modified.x, modified.y]);
 
-        return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
-      };
+      return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
 
     /**
