@@ -106,19 +106,19 @@ export default class TransformerComponent extends Component {
 
       // bounding box, got by applying current shift and rotation to normalized box
       const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
-      const fixed = fixRectToFit(clientRect, stage.width(), stage.height());
+      const fixed = fixRectToFit(clientRect, stage.width(), stage.height(), stage.x(), stage.y());
 
       // if bounding box is out of stage — do nothing
       if (["x", "y", "width", "height"].some(key => fixed[key] !== clientRect[key])) return oldBox;
       return newBox;
     } else {
-      return fixRectToFit(newBox, stage.width(), stage.height());
+      return fixRectToFit(newBox, stage.width(), stage.height(), stage.x(), stage.y());
     }
   };
 
   dragBoundFunc = (pos) => {
     const { item } = this.props;
-    
+
     return item.fixForZoomWrapper(pos,pos => {
       if (!this.transformer || !item) return;
 

@@ -112,19 +112,19 @@ export function getBoundingBoxAfterChanges(rect, shiftPoint, degRotation = 0) {
  * @param {number} stageWidth
  * @param {number} stageHeight
  */
-export function fixRectToFit(rect, stageWidth, stageHeight) {
+export function fixRectToFit(rect, stageWidth, stageHeight, stageX=0, stageY=0) {
   let { x, y, width, height } = rect;
 
-  if (x < 0) {
+  if (x < stageX) {
     width += x;
-    x = 0;
+    x = stageX;
   } else if (x + width > stageWidth) {
     width = stageWidth - x;
   }
 
-  if (y < 0) {
+  if (y < stageY) {
     height += y;
-    y = 0;
+    y = stageY;
   } else if (y + height > stageHeight) {
     height = stageHeight - y;
   }
