@@ -50,3 +50,4 @@ export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool
 export { ReactComponent as IconInfo } from './info.svg';
 export { ReactComponent as IconCopy } from './copy.svg';
 export { ReactComponent as IconText } from './text.svg';
+export { ReactComponent as IconViewAll } from './view_all.svg';

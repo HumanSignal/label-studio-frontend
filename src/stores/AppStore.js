@@ -237,11 +237,18 @@ export default types
       /**
        * Hotkey for submit
        */
-      if (self.hasInterface("submit", "update")) {
+      if (self.hasInterface("submit", "update", "review")) {
         hotkeys.addNamed("annotation:submit", () => {
-          const entity = self.annotationStore.selected;
+          const annotationStore = self.annotationStore;
 
-          if (!isDefined(entity.pk) && self.hasInterface("submit")) {
+          if (annotationStore.viewingAll) return;
+
+          const entity = annotationStore.selected;
+
+
+          if (self.hasInterface("review")) {
+            self.acceptAnnotation();
+          } else if (!isDefined(entity.pk) && self.hasInterface("submit")) {
             self.submitAnnotation();
           } else if (self.hasInterface("update")) {
             self.updateAnnotation();
@@ -252,8 +259,16 @@ export default types
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) {
-        hotkeys.addNamed("annotation:skip", self.skipTask);
+      if (self.hasInterface("skip", "review")) {
+        hotkeys.addNamed("annotation:skip", () => {
+          if (self.annotationStore.viewingAll) return;
+
+          if (self.hasInterface("review")){
+            self.rejectAnnotation();
+          } else {
+            self.skipTask();
+          }
+        });
       }
 
       /**
