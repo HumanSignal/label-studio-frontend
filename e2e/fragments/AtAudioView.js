@@ -4,7 +4,7 @@ const { I } = inject();
 const Helpers = require("../tests/helpers");
 
 module.exports = {
-  waitForAudio () {
+  waitForAudio() {
     I.executeAsyncScript(Helpers.waitForAudio);
   },
 };

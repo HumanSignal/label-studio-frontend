@@ -33,7 +33,15 @@ export const AreaMixin = types
     },
 
     hasLabel(value) {
-      return self.labeling?.mainValue?.includes(value);
+      const labels = self.labeling?.mainValue;
+
+      if (!labels) return false;
+      // label can contain comma, so check for full match first
+      if (labels.includes(value)) return true;
+      if (value.includes(",")) {
+        return value.split(",").some(v => labels.includes(v));
+      }
+      return false;
     },
 
     get perRegionTags() {
@@ -96,7 +104,7 @@ export const AreaMixin = types
     },
 
     get isInSelectionArea() {
-      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.includesBbox(self.bboxCoords) : false;
+      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
     },
   }))
   .volatile(() => ({

@@ -150,39 +150,42 @@ const SelectionBorders = observer(({ item }) => {
 });
 
 const SelectionRect = observer(({ item }) => {
+  const { x, y, width, height } = item;
+
+  const positionProps = {
+    x,
+    y,
+    width,
+    height,
+    listening: false,
+    strokeWidth: 1,
+  };
+
   return (
     <>
       <Rect
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        {...positionProps}
         stroke={SELECTION_COLOR}
-        strokeWidth={1}
         dash={SELECTION_DASH}
-        listening={false}
       />
       <Rect
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
-        strokeWidth={1}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
-        listening={false}
       />
     </>
   );
 });
 
+const TRANSFORMER_BACK_NAME = "transformer_back";
 const SelectedRegions = observer(({ selectedRegions }) => {
   if (!selectedRegions) return null;
   const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
 
   return (
     <>
+      <Layer id={TRANSFORMER_BACK_NAME} />
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -208,6 +211,8 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
+  const scale = 1 / (item.zoomScale ||1);
+
   let supportsTransform = true;
   let supportsRotate = true;
   let supportsScale = true;
@@ -217,11 +222,25 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsRotate = supportsRotate && shape.canRotate === true;
     supportsScale = supportsScale && true;
   });
+
   supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
+
   return (
-    <Layer>
-      { selectionArea.isActive ? <SelectionRect item={selectionArea} /> : (!supportsTransform && item.selectedRegions.length>1 ? <SelectionBorders item={selectionArea} /> : null)}
-      <ImageTransformer item={item} rotateEnabled={supportsRotate} supportsTransform={supportsTransform} supportsScale={supportsScale} selectedShapes={item.selectedRegions} />
+    <Layer scaleX={scale} scaleY={scale}>
+      { selectionArea.isActive ? (
+        <SelectionRect item={selectionArea}/>
+      ) : (!supportsTransform && item.selectedRegions.length>1 ? (
+        <SelectionBorders item={selectionArea} />
+      ) : null)}
+
+      <ImageTransformer
+        item={item}
+        rotateEnabled={supportsRotate}
+        supportsTransform={supportsTransform}
+        supportsScale={supportsScale}
+        selectedShapes={item.selectedRegions}
+        draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
+      />
     </Layer>
   );
 });
@@ -230,9 +249,7 @@ const Selection = observer(({ item, selectionArea }) => {
   return (
     <>
       <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
-
       <SelectionLayer item={item} selectionArea={selectionArea} />
-
     </>
   );
 });
@@ -324,7 +341,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-      let evt = e.evt || e;
+      const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
@@ -341,7 +358,7 @@ export default observer(
 
       if (
         // create regions over another regions with Cmd/Ctrl pressed
-        (e.evt && (e.evt.metaKey || e.evt.ctrlKey)) ||
+        item.getSkipInteractions() ||
         e.target === e.target.getStage() ||
         findClosestParent(
           e.target,
@@ -395,6 +412,7 @@ export default observer(
       const { item } = this.props;
 
       item.freezeHistory();
+      item.setSkipInteractions(false);
 
       return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
     };
@@ -406,9 +424,17 @@ export default observer(
 
       this.updateCrosshair(e);
 
-      if (e.evt && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey)) && item.zoomScale > 1) {
+      const isMouseWheelClick = e.evt && e.evt.buttons === 4;
+      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+
+      if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
+        item.setSkipInteractions(true);
         e.evt.preventDefault();
-        const newPos = { x: item.zoomingPositionX + e.evt.movementX, y: item.zoomingPositionY + e.evt.movementY };
+
+        const newPos = {
+          x: item.zoomingPositionX + e.evt.movementX,
+          y: item.zoomingPositionY + e.evt.movementY,
+        };
 
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
@@ -711,7 +737,7 @@ export default observer(
               ref={ref => {
                 item.setStageRef(ref);
               }}
-              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+              style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
               width={item.stageComponentSize.width}
               height={item.stageComponentSize.height}

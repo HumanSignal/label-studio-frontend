@@ -198,11 +198,13 @@ const HtxKeyPointView = ({ item }) => {
             e.currentTarget.stopDrag(e.evt);
             return;
           }
+          item.annotation.history.freeze(item.id);
         }}
         onDragEnd={e => {
           const t = e.target;
 
           item.setPosition(t.getAttr("x"), t.getAttr("y"));
+          item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
         dragBoundFunc={createDragBoundFunc(item.parent, pos => {

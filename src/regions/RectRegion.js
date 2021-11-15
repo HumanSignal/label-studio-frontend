@@ -272,6 +272,8 @@ const HtxRectangleView = ({ item }) => {
 
       t.setAttr("scaleX", 1);
       t.setAttr("scaleY", 1);
+
+      item.notifyDrawingFinished();
     };
 
     eventHandlers.onDragStart = (e) => {
@@ -279,6 +281,7 @@ const HtxRectangleView = ({ item }) => {
         e.currentTarget.stopDrag(e.evt);
         return;
       }
+      item.annotation.history.freeze(item.id);
     };
 
     eventHandlers.onDragEnd = (e) => {
@@ -292,9 +295,12 @@ const HtxRectangleView = ({ item }) => {
         t.getAttr("rotation"),
       );
       item.setScale(t.getAttr("scaleX"), t.getAttr("scaleY"));
+      item.annotation.history.unfreeze(item.id);
+
+      item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(pos => {
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item.parent, pos => {
       let { x, y } = pos;
       const { width, height, rotation } = item;
       const { stageHeight, stageWidth } = item.parent;

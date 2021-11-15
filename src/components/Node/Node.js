@@ -4,7 +4,6 @@ import { observer } from "mobx-react";
 import {
   ApartmentOutlined,
   AudioOutlined,
-  FontColorsOutlined,
   LineChartOutlined,
   MessageOutlined
 } from "@ant-design/icons";
@@ -12,19 +11,19 @@ import {
 import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
-import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangleTool, IconRectangleToolSmart } from "../../assets/icons";
+import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangleTool, IconRectangleToolSmart, IconText } from "../../assets/icons";
 import { NodeView } from "./NodeView";
 
 const NodeViews = {
   RichTextRegionModel: NodeView({
     name: "HTML",
-    icon: FontColorsOutlined,
-    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+    icon: IconText,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.highlightedText}</span>,
   }),
 
   ParagraphsRegionModel: NodeView({
     name: "Paragraphs",
-    icon: FontColorsOutlined,
+    icon: IconText,
     getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
   }),
 
@@ -91,7 +90,7 @@ const Node = observer(({ className, node }) => {
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
-  let { getContent } = NodeViews[name];
+  const { getContent } = NodeViews[name];
   const labelName = node.labelName;
 
   return (
@@ -103,14 +102,14 @@ const Node = observer(({ className, node }) => {
   );
 });
 
-const NodeIcon = observer(({ node }) => {
+const NodeIcon = observer(({ node, ...props }) => {
   const name = getType(node).name;
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
   const { icon: Icon } = NodeViews[name];
 
-  return <Icon />;
+  return <Icon {...props}/>;
 });
 
 const NodeMinimal = observer(({ node }) => {

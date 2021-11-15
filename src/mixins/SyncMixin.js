@@ -9,6 +9,7 @@ const SyncMixin = types
   .volatile(() => ({
     events: new EventInvoker(),
     synced: false,
+    syncedObject: null,
     currentEvent: null,
   }))
   .actions(self => ({
@@ -46,6 +47,8 @@ const SyncMixin = types
         const object = self.annotation?.names?.get(self.sync);
 
         if (!object?.events) return;
+
+        self.syncedObject = object;
 
         object.events.on("play", self.handleSyncPlay);
         object.events.on("pause", self.handleSyncPause);

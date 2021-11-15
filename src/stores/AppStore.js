@@ -32,6 +32,14 @@ export default types
     project: types.maybeNull(Project),
 
     /**
+     * History of task {taskId, annotationId}:
+    */
+    taskHistory: types.array(types.model({
+      taskId: types.number,
+      annotationId: types.maybeNull(types.string),
+    }), []),
+
+    /**
      * Configure the visual UI shown to the user
      */
     interfaces: types.array(types.string),
@@ -148,6 +156,18 @@ export default types
 
       return match.find(v => v === true) ?? false;
     },
+    get canGoNextTask() {
+      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
+        return true;
+      }
+      return false;
+    },
+    get canGoPrevTask() {
+      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[0].taskId) {
+        return true;
+      }
+      return false;
+    },
   }))
   .actions(self => {
     /**
@@ -176,7 +196,7 @@ export default types
         "awaitingSuggestions",
       ];
 
-      for (let n of names) if (n in flags) self[n] = flags[n];
+      for (const n of names) if (n in flags) self[n] = flags[n];
     }
 
     /**
@@ -184,8 +204,8 @@ export default types
      * @param {string} name
      * @returns {string | undefined}
      */
-    function hasInterface(name) {
-      return self.interfaces.find(i => name === i) !== undefined;
+    function hasInterface(...names) {
+      return self.interfaces.find(i => names.includes(i)) !== undefined;
     }
 
     function addInterface(name) {
@@ -217,67 +237,72 @@ export default types
       /**
        * Hotkey for submit
        */
-      if (self.hasInterface("submit")) {
-        hotkeys.addKey("ctrl+enter", () => {
-          const entity = self.annotationStore.selected;
+      if (self.hasInterface("submit", "update", "review")) {
+        hotkeys.addNamed("annotation:submit", () => {
+          const annotationStore = self.annotationStore;
 
-          if (!isDefined(entity.pk)) {
+          if (annotationStore.viewingAll) return;
+
+          const entity = annotationStore.selected;
+
+
+          if (self.hasInterface("review")) {
+            self.acceptAnnotation();
+          } else if (!isDefined(entity.pk) && self.hasInterface("submit")) {
             self.submitAnnotation();
-          } else {
+          } else if (self.hasInterface("update")) {
             self.updateAnnotation();
           }
-        }, "Submit a task", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+        });
       }
 
       /**
        * Hotkey for skip task
        */
-      if (self.hasInterface("skip")) hotkeys.addKey("ctrl+space", self.skipTask, "Skip a task");
+      if (self.hasInterface("skip", "review")) {
+        hotkeys.addNamed("annotation:skip", () => {
+          if (self.annotationStore.viewingAll) return;
 
-      /**
-       * Hotkey for update annotation
-       */
-      if (self.hasInterface("update")) hotkeys.addKey("alt+enter", self.updateAnnotation, "Update a task");
+          if (self.hasInterface("review")){
+            self.rejectAnnotation();
+          } else {
+            self.skipTask();
+          }
+        });
+      }
 
       /**
        * Hotkey for delete
        */
-      hotkeys.addKey(
-        "command+backspace, ctrl+backspace",
-        function() {
-          const { selected } = self.annotationStore;
+      hotkeys.addNamed("region:delete-all", () => {
+        const { selected } = self.annotationStore;
 
-          if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
-            selected.deleteAllRegions();
-          }
-        },
-        "Delete all regions",
-      );
+        if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+          selected.deleteAllRegions();
+        }
+      });
 
       // create relation
-      hotkeys.overwriteKey("alt+r", function() {
+      hotkeys.overwriteNamed("region:relation", () => {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {
           c.startRelationMode(c.highlightedNode);
         }
-      }, "Create relation between regions");
+      });
 
       // Focus fist focusable perregion when region is selected
-      hotkeys.addKey(
-        "enter",
-        function(e) {
-          e.preventDefault();
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:focus", (e) => {
+        e.preventDefault();
+        const c = self.annotationStore.selected;
 
-          if (c && c.highlightedNode && !c.relationMode) {
-            c.highlightedNode.requestPerRegionFocus();
-          }
-        },
-      );
+        if (c && c.highlightedNode && !c.relationMode) {
+          c.highlightedNode.requestPerRegionFocus();
+        }
+      });
 
       // unselect region
-      hotkeys.addKey("alt+u", function() {
+      hotkeys.addNamed("region:unselect", function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode) {
@@ -285,7 +310,7 @@ export default types
         }
       });
 
-      hotkeys.addKey("alt+h", function() {
+      hotkeys.addNamed("region:visibility", function() {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {
@@ -293,56 +318,44 @@ export default types
         }
       });
 
-      hotkeys.addKey("command+z, ctrl+z", function() {
+      hotkeys.addNamed("annotation:undo", function() {
         const { history } = self.annotationStore.selected;
 
         history && history.canUndo && history.undo();
       });
 
-      hotkeys.addKey("command+shift+z, ctrl+shift+z", function() {
+      hotkeys.addNamed("annotation:redo", function() {
         const { history } = self.annotationStore.selected;
 
         history && history.canRedo && history.redo();
       });
 
-      hotkeys.addKey(
-        "escape",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:exit", () => {
+        const c = self.annotationStore.selected;
 
-          if (c && c.relationMode) {
-            c.stopRelationMode();
-          } else {
-            c.unselectAll();
-          }
-        },
-        "Unselect region, exit relation mode",
-      );
+        if (c && c.relationMode) {
+          c.stopRelationMode();
+        } else {
+          c.unselectAll();
+        }
+      });
 
-      hotkeys.addKey(
-        "backspace",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:delete", () => {
+        const c = self.annotationStore.selected;
 
-          if (c) {
-            c.deleteSelectedRegions();
-          }
-        },
-        "Delete selected region",
-      );
+        if (c) {
+          c.deleteSelectedRegions();
+        }
+      });
 
-      hotkeys.addKey(
-        "alt+.",
-        function() {
-          const c = self.annotationStore.selected;
+      hotkeys.addNamed("region:cycle", () => {
+        const c = self.annotationStore.selected;
 
-          c && c.regionStore.selectNext();
-        },
-        "Circle through entities",
-      );
+        c && c.regionStore.selectNext();
+      });
 
       // duplicate selected regions
-      hotkeys.addKey("command+d, ctrl+d", function(e) {
+      hotkeys.addNamed("region:duplicate", (e) => {
         const { selected } = self.annotationStore;
         const { serializedSelection } = selected || {};
 
@@ -366,6 +379,11 @@ export default types
         };
       }
       self.task = Task.create(taskObject);
+      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
+        self.taskHistory.push({ taskId: self.task.id,
+          annotationId: null,
+        });
+      }
     }
 
     function assignConfig(config) {
@@ -445,7 +463,7 @@ export default types
     }
 
     function acceptAnnotation() {
-      handleSubmittingFlag(() => {
+      handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
         entity.beforeSend();
@@ -454,12 +472,12 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
-      }, "Error during skip, try again");
+        await getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
+      }, "Error during accept, try again");
     }
 
     function rejectAnnotation() {
-      handleSubmittingFlag(() => {
+      handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
         entity.beforeSend();
@@ -468,8 +486,8 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
-      }, "Error during skip, try again");
+        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
+      }, "Error during reject, try again");
     }
 
     /**
@@ -507,7 +525,10 @@ export default types
         const obj = as.addPrediction(p);
 
         as.selectPrediction(obj.id);
-        obj.deserializeResults(p.result);
+        obj.deserializeResults(p.result.map(r => ({
+          ...r,
+          origin: "prediction",
+        })));
       });
 
       [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
@@ -551,7 +572,7 @@ export default types
 
         const result = item.previous_annotation_history_result ?? [];
 
-        obj.deserializeResults(result);
+        obj.deserializeResults(result, { hidden: true });
       });
     }
 
@@ -565,7 +586,7 @@ export default types
       localStorage.setItem("autoAcceptSuggestions", value);
     };
 
-    const loadSuggestions = flow(function *(request, dataParser) {
+    const loadSuggestions = flow(function* (request, dataParser) {
       const requestId = guidGenerator();
 
       self.suggestionsRequest = requestId;
@@ -578,6 +599,30 @@ export default types
         self.setFlags({ awaitingSuggestions: false });
       }
     });
+
+    function addAnnotationToTaskHistory(annotationId) {
+      const taskIndex = self.taskHistory.findIndex(({ taskId }) => taskId === self.task.id);
+
+      if (taskIndex >= 0) {
+        self.taskHistory[taskIndex].annotationId = annotationId;
+      }
+    }
+
+    function nextTask() {
+      if (self.canGoNextTask) {
+        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
+
+        getEnv(self).events.invoke('nextTask', taskId, annotationId);
+      }
+    }
+
+    function prevTask() {
+      if (self.canGoPrevTask) {
+        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1];
+
+        getEnv(self).events.invoke('prevTask', taskId, annotationId);
+      }
+    }
 
     return {
       setFlags,
@@ -607,5 +652,9 @@ export default types
       setAutoAnnotation,
       setAutoAcceptSuggestions,
       loadSuggestions,
+
+      addAnnotationToTaskHistory,
+      nextTask,
+      prevTask,
     };
   });

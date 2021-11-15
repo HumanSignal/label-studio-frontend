@@ -195,8 +195,8 @@ const Model = types
       const p1 = self.points[0];
       const p2 = { x, y };
 
-      var r = 50;
-      var dist_points = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+      const r = 50;
+      const dist_points = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
 
       if (dist_points < r) {
         return true;
@@ -458,7 +458,7 @@ const HtxPolygonView = ({ item }) => {
     const name = "borders";
 
     return (
-      <Group key={name} name={name}>
+      <Group key={name} name={name} listening={!(item.parent.useTransformer && item.closed)}>
         {points.map((p, idx) => {
           const idx1 = idx;
           const idx2 = idx === points.length - 1 ? 0 : idx + 1;
@@ -507,11 +507,13 @@ const HtxPolygonView = ({ item }) => {
         isDragging = true;
         item.annotation.setDragMode(true);
 
-        var arrX = item.points.map(p => p.x);
-        var arrY = item.points.map(p => p.y);
+        const arrX = item.points.map(p => p.x);
+        const arrY = item.points.map(p => p.y);
 
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
+
+        item.annotation.history.freeze(item.id);
       },
       dragBoundFunc: createDragBoundFunc(item.parent, pos => {
         if (!isDragging) return pos;
@@ -536,9 +538,8 @@ const HtxPolygonView = ({ item }) => {
           item.annotation.setDragMode(false);
           if (!item.closed) item.closePoly();
 
-          item.annotation.history.freeze();
           item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
-          item.annotation.history.unfreeze();
+          item.annotation.history.unfreeze(item.id);
         }
 
         t.setAttr("x", 0);

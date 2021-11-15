@@ -5,11 +5,14 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import Canvas from "../utils/canvas";
-import { findClosestParent } from "../utils/utilities";
+import { clamp, findClosestParent } from "../utils/utilities";
 import { DrawingTool } from "../mixins/DrawingTool";
 import { IconEraserTool } from "../assets/icons";
 import { Tool } from "../components/Toolbar/Tool";
 import { Range } from "../common/Range/Range";
+
+const MIN_SIZE = 1;
+const MAX_SIZE = 50;
 
 const IconDot = ({ size }) => {
   return (
@@ -38,22 +41,7 @@ const ToolView = observer(({ item }) => {
         item.manager.selectTool(item, true);
       }}
       icon={item.iconClass}
-
-      controls={[
-        <Range
-          key="brush-size"
-          value={item.strokeWidth}
-          min={10}
-          max={50}
-          reverse
-          align="vertical"
-          minIcon={<IconDot size={8}/>}
-          maxIcon={<IconDot size={16}/>}
-          onChange={(value) => {
-            item.setStroke(value);
-          }}
-        />,
-      ]}
+      controls={item.controls}
     />
   );
 });
@@ -73,13 +61,30 @@ const _Tool = types
     get iconComponent() {
       return IconEraserTool;
     },
+    get controls() {
+      return [
+        <Range
+          key="eraser-size"
+          value={self.strokeWidth}
+          min={MIN_SIZE}
+          max={MAX_SIZE}
+          reverse
+          align="vertical"
+          minIcon={<IconDot size={8}/>}
+          maxIcon={<IconDot size={16}/>}
+          onChange={(value) => {
+            self.setStroke(value);
+          }}
+        />,
+      ];
+    },
     get extraShortcuts() {
       return {
         "[": ["Decrease size", () => {
-          self.setStroke(Math.max(10, self.strokeWidth - 5));
+          self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
         }],
         "]": ["Increase size", () => {
-          self.setStroke(Math.min(50, self.strokeWidth + 5));
+          self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
         }],
       };
     },

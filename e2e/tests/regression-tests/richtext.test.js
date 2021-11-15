@@ -9,12 +9,11 @@ const createConfig = (tag = "Text", granularity = "symbol") => {
     <Labels name="label" toName="text">
         <Label value="Label" background="green"/>
     </Labels>
-    <${tag} name="text" value="$text" ${granularity ? `granularity="${granularity}"` : ""}/>
+    <${tag} name="text" value="$text" inline="true" ${granularity ? `granularity="${granularity}"` : ""}/>
 </View>`;
 };
 
 Scenario("Broken limits", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -43,7 +42,6 @@ Scenario("Broken limits", async ({ I, LabelStudio, AtSidebar, AtRichText, Errors
 });
 
 Scenario("The selection in degenerate cases", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -62,7 +60,6 @@ Scenario("The selection in degenerate cases", async ({ I, LabelStudio, AtSidebar
 });
 
 Scenario("Exactly 1 word", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -86,7 +83,6 @@ Scenario("Exactly 1 word", async ({ I, LabelStudio, AtSidebar, AtRichText, Error
 });
 
 Scenario("Trim spaces around the word", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -115,7 +111,6 @@ Scenario("Trim spaces around the word", async ({ I, LabelStudio, AtSidebar, AtRi
   }
 });
 Scenario("Trim spaces with BRs", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -141,7 +136,6 @@ Scenario("Trim spaces with BRs", async ({ I, LabelStudio, AtSidebar, AtRichText,
 });
 
 Scenario("Overlap checks", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -167,7 +161,6 @@ Scenario("Overlap checks", async ({ I, LabelStudio, AtSidebar, AtRichText, Error
 });
 
 Scenario("Non-standard characters in words", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -191,7 +184,6 @@ Scenario("Non-standard characters in words", async ({ I, LabelStudio, AtSidebar,
 });
 
 Scenario("Should not select words from next line", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
-  I.AtRichText = AtRichText;
   I.amOnPage("/");
   await ErrorsCollector.run();
   LabelStudio.init({
@@ -208,6 +200,28 @@ Scenario("Should not select words from next line", async ({ I, LabelStudio, AtSi
   AtSidebar.seeRegions(1);
   AtSidebar.see("Оne");
   AtSidebar.dontSee("line");
+  const errors = await ErrorsCollector.grabErrors();
+
+  if (errors.length) {
+    assert.fail(`Got an error: ${errors[0]}`);
+  }
+});
+
+Scenario("Trying to select alt attr", async ({ I, LabelStudio, AtSidebar, ErrorsCollector, AtRichText }) => {
+  I.amOnPage("/");
+  await ErrorsCollector.run();
+  LabelStudio.init({
+    annotations: [
+      {
+        id: "test", result: [],
+      }],
+    config: createConfig("HyperText", "word"),
+    data: { text: "The bad <img alt='image'> we got here" },
+  });
+  AtSidebar.seeRegions(0);
+  I.pressKey("1");
+  AtRichText.dblClickOnElement('img[alt="image"]');
+  AtSidebar.seeRegions(0);
   const errors = await ErrorsCollector.grabErrors();
 
   if (errors.length) {

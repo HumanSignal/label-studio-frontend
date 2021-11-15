@@ -45,7 +45,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("ZoomTool", {
+  .model("ZoomPanTool", {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
     group: "control",
   })
@@ -59,6 +59,10 @@ const _Tool = types
     },
   }))
   .actions(self => ({
+    shouldSkipInteractions() {
+      return true;
+    },
+
     mouseupEv() {
       self.mode = "viewing";
       self.stageContainer.style.cursor = "grab";
@@ -76,8 +80,8 @@ const _Tool = types
 
     handleDrag(ev) {
       const item = self.obj;
-      let posx = item.zoomingPositionX + ev.movementX;
-      let posy = item.zoomingPositionY + ev.movementY;
+      const posx = item.zoomingPositionX + ev.movementX;
+      const posy = item.zoomingPositionY + ev.movementY;
 
       item.setZoomPosition(posx, posy);
     },

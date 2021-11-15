@@ -8,7 +8,7 @@ const config = require("./webpack.config-builder")({
 const port = config.devServer?.port || 3000;
 
 config.entry.main.unshift(
-  `webpack-dev-server/client?http://localhost:${port}/`,
+  `webpack-dev-server/client?http://localhost:${config.devServer.port}/`,
   `webpack/hot/dev-server`,
 );
 

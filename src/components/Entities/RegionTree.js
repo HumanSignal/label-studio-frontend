@@ -16,7 +16,7 @@ export const RegionTree = observer(({ regionStore }) => {
   useEffect(() => {
     setTimeout(renderNow);
   }, [renderNow]);
-  
+
   const canDrag = useRef(true);
   const setDraggable = useCallback((isDraggable)=>{
     canDrag.current = isDraggable;
@@ -100,9 +100,7 @@ export const RegionTree = observer(({ regionStore }) => {
             // example if we have a tree of A -> B -> C -> D and
             // we're moving B -> C part somewhere then it'd have a
             // height of 1
-            let treeHeight;
-
-            treeHeight = function(node) {
+            const treeHeight = function(node) {
               if (!node) return 0;
 
               // TODO this can blow up if we have lots of stuff there
