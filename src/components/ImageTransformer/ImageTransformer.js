@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { MIN_SIZE } from "../../tools/Base";
-import { fixRectToFit, getBoundingBoxAfterChanges } from "../../utils/image";
+import { getBoundingBoxAfterChanges } from "../../utils/image";
 import LSTransformer from "./LSTransformer";
 import { Rect } from "react-konva";
 import { Portal } from "react-konva-utils";
@@ -92,7 +92,7 @@ export default class TransformerComponent extends Component {
   fitBBoxToScaledStage(box, stage) {
     let { x, y, width, height } = box;
 
-    const [realX, realY] = [box.x + stage.x, box.y + stage.y];
+    const [realX, realY] = [box.x - stage.x, box.y - stage.y];
 
     if (realX < 0) {
       x = 0;
@@ -114,7 +114,7 @@ export default class TransformerComponent extends Component {
   getStageAbsoluteDimensions() {
     const stage = this.transformer.getStage();
     const [scaledStageWidth, scaledStageHeight] = [stage.width() * stage.scaleX(), stage.height() * stage.scaleY()];
-    const [stageX, stageY] = [stage.x(), stage.y()].map(Math.abs);
+    const [stageX, stageY] = [stage.x(), stage.y()];
 
     return {
       width: scaledStageWidth,
