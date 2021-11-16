@@ -7,7 +7,7 @@ import { Block, Elem } from "../../utils/bem";
 import { isDefined, userDisplayName } from "../../utils/utilities";
 import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import "./Annotations.styl";
-import TimeAgo from "../../common/TimeAgo/TimeAgo";
+import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
 
 export const Annotations = observer(({ store, annotationStore }) => {
   const dropdownRef = useRef();
