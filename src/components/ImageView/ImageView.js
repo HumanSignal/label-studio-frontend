@@ -239,6 +239,8 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
         supportsTransform={supportsTransform}
         supportsScale={supportsScale}
         selectedShapes={item.selectedRegions}
+        singleNodeMode={item.selectedRegions.length === 1}
+        useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
         draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
       />
     </Layer>
