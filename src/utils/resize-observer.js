@@ -7,4 +7,4 @@ class ResizeObserverFallback {
   }
 }
 
-export default ResizeObserver ?? ResizeObserverFallback;
+export default window.ResizeObserver ?? ResizeObserverFallback;
