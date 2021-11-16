@@ -557,7 +557,9 @@ export const findRangeNative = (start, end, root) => {
  * @param {{ node: Node, position: number }} container
  * @return {{ node: Node, position: number }}
  */
-export const codePointsToChars = ({ node, position }) => {
+export const codePointsToChars = ({ node, position } = {}) => {
+  if (!node) return;
+
   const codePoints = [...node.textContent].slice(0, position);
   const chars = codePoints.join("").length;
 

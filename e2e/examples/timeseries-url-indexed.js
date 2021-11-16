@@ -18,7 +18,7 @@ const config = `
 `;
 
 const data = {
-  csv: "https://app.heartex.ai/samples/time-series.csv?time=time&values=velocity%2Cacceleration&sep=%2C",
+  csv: "https://app.heartex.com/samples/time-series.csv?time=time&values=velocity%2Cacceleration&sep=%2C",
 };
 
 const result = [
