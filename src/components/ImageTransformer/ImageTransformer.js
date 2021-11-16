@@ -89,30 +89,64 @@ export default class TransformerComponent extends Component {
     this.transformer.getLayer().batchDraw();
   }
 
+  fitBBoxToScaledStage(box, stage) {
+    let { x, y, width, height } = box;
+
+    const [realX, realY] = [box.x + stage.x, box.y + stage.y];
+
+    if (realX < 0) {
+      x = 0;
+      width += realX;
+    } else if (realX + box.width > stage.width) {
+      width = stage.width - realX;
+    }
+
+    if (realY < 0) {
+      y = 0;
+      height += realY;
+    } else if (realY + box.height > stage.height) {
+      height = stage.height - realY;
+    }
+
+    return { ...box, x, y, width, height };
+  }
+
+  getStageAbsoluteDimensions() {
+    const stage = this.transformer.getStage();
+    const [scaledStageWidth, scaledStageHeight] = [stage.width() * stage.scaleX(), stage.height() * stage.scaleY()];
+    const [stageX, stageY] = [stage.x(), stage.y()].map(Math.abs);
+
+    return {
+      width: scaledStageWidth,
+      height: scaledStageHeight,
+      x: stageX,
+      y: stageY,
+    };
+  }
+
   constrainSizes = (oldBox, newBox) => {
     // it's important to compare against `undefined` because it can be missed (not rotated box?)
     const rotation = newBox.rotation !== undefined ? newBox.rotation : oldBox.rotation;
     const isRotated = rotation !== oldBox.rotation;
-
-    const stage = this.transformer.getStage();
+    const stageDimensions = this.getStageAbsoluteDimensions();
 
     if (newBox.width < MIN_SIZE) newBox.width = MIN_SIZE;
     if (newBox.height < MIN_SIZE) newBox.height = MIN_SIZE;
 
-    // it's harder to fix sizes for rotated box, so just block changes out of stage
+    // // it's harder to fix sizes for rotated box, so just block changes out of stage
     if (rotation || isRotated) {
       const { x, y, width, height } = newBox;
       const selfRect = { x: 0, y: 0, width, height };
 
       // bounding box, got by applying current shift and rotation to normalized box
       const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
-      const fixed = fixRectToFit(clientRect, stage.width(), stage.height(), stage.x(), stage.y());
+      const fixed = this.fitBBoxToScaledStage(clientRect, stageDimensions);
 
       // if bounding box is out of stage — do nothing
       if (["x", "y", "width", "height"].some(key => fixed[key] !== clientRect[key])) return oldBox;
       return newBox;
     } else {
-      return fixRectToFit(newBox, stage.width(), stage.height(), stage.x(), stage.y());
+      return this.fitBBoxToScaledStage(newBox, stageDimensions);
     }
   };
 
