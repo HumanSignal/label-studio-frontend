@@ -305,6 +305,7 @@ const HtxRectangleView = ({ item }) => {
       const { width, height, rotation } = item;
       const { stageHeight, stageWidth } = item.parent;
       const selfRect = { x: 0, y: 0, width, height };
+
       const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
       const fixed = fixRectToFit(box, stageWidth, stageHeight);
 
