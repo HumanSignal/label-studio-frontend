@@ -27,8 +27,9 @@ const TimeTraveller = types
     let targetStore;
     let snapshotDisposer;
     const updateHandlers = new Set();
+    // A way to handle multiple simultaneous freezes from different places
     const freezingLockSet = new Set();
-    let frozenChanges = false;
+    let changesDuringFreeze = false;
 
     function triggerHandlers() {
       updateHandlers.forEach(handler => handler());
@@ -38,7 +39,7 @@ const TimeTraveller = types
       freeze(key) {
         freezingLockSet.add(key);
         if (!self.isFrozen) {
-          frozenChanges = false;
+          changesDuringFreeze = false;
           self.isFrozen = true;
         }
       },
@@ -46,7 +47,7 @@ const TimeTraveller = types
       unfreeze(key) {
         freezingLockSet.delete(key);
         self.isFrozen = freezingLockSet.size > 0;
-        if (!self.isFrozen && frozenChanges) {
+        if (!self.isFrozen && changesDuringFreeze) {
           self.recordNow();
         }
       },
@@ -64,7 +65,7 @@ const TimeTraveller = types
 
       addUndoState(recorder) {
         if (self.isFrozen) {
-          frozenChanges = true;
+          changesDuringFreeze = true;
           return;
         }
         if (self.skipNextUndoState) {
@@ -79,7 +80,7 @@ const TimeTraveller = types
         self.history.splice(self.undoIdx + 1);
         self.history.push(recorder);
         self.undoIdx = self.history.length - 1;
-        frozenChanges = false;
+        changesDuringFreeze = false;
       },
 
       reinit() {
