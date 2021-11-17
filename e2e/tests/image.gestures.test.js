@@ -205,7 +205,7 @@ Scenario("Creating regions by various gestures", async function({ I, AtImageView
   for (const [idx, region] of Object.entries(regions)) {
     I.pressKey(region.hotKey);
     AtImageView[region.action](...region.params);
-    AtSidebar.seeRegions(idx+1);
+    AtSidebar.seeRegions(+idx+1);
   }
   const result = await I.executeScript(serialize);
 
