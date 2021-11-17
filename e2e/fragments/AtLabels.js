@@ -2,13 +2,13 @@
 const { I } = inject();
 
 module.exports = {
-  locateLabel (text) {
+  locateLabel(text) {
     return locate(".lsf-label").withText(text);
   },
-  locateSelected () {
+  locateSelected() {
     return locate(".lsf-label.lsf-label_selected");
   },
-  clickLabel (text) {
+  clickLabel(text) {
     I.click(this.locateLabel(text));
   },
 };
