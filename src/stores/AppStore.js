@@ -319,15 +319,15 @@ export default types
       });
 
       hotkeys.addNamed("annotation:undo", function() {
-        const { history } = self.annotationStore.selected;
+        const annotation = self.annotationStore.selected;
 
-        history && history.canUndo && history.undo();
+        annotation.undo();
       });
 
       hotkeys.addNamed("annotation:redo", function() {
-        const { history } = self.annotationStore.selected;
+        const annotation = self.annotationStore.selected;
 
-        history && history.canRedo && history.redo();
+        annotation.redo();
       });
 
       hotkeys.addNamed("region:exit", () => {
