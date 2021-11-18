@@ -19,6 +19,7 @@ import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
 import { FilterImage } from "./FilterImage";
+import ResizeObserver from "../../utils/resize-observer";
 
 Konva.showWarnings = false;
 
@@ -211,6 +212,8 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
         supportsTransform={supportsTransform}
         supportsScale={supportsScale}
         selectedShapes={item.selectedRegions}
+        singleNodeMode={item.selectedRegions.length === 1}
+        useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
         draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
       />
     </Layer>
@@ -486,6 +489,8 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
+      this.resizeObserver = new ResizeObserver(this.onResize);
+      this.resizeObserver.observe(this.container);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
@@ -498,6 +503,7 @@ export default observer(
     }
 
     componentWillUnmount() {
+      this.resizeObserver.disconnect();
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
 
