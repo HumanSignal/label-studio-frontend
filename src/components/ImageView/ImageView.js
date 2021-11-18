@@ -18,6 +18,7 @@ import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
+import ResizeObserver from "../../utils/resize-observer";
 
 Konva.showWarnings = false;
 
@@ -538,6 +539,8 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
+      this.resizeObserver = new ResizeObserver(this.onResize);
+      this.resizeObserver.observe(this.container);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
@@ -550,6 +553,7 @@ export default observer(
     }
 
     componentWillUnmount() {
+      this.resizeObserver.disconnect();
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
 
