@@ -80,7 +80,7 @@ export const HighlightMixin = types
       if (self._hasSpans) {
         const lastSpan = self._spans[self._spans.length - 1];
 
-        lastSpan.setAttribute("data-label", self.getLabels());
+        lastSpan.setAttribute("data-label", self.getLabels() ?? "");
       }
     },
 

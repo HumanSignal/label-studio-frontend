@@ -362,7 +362,7 @@ export const highlightRange = (range, { label, classNames }) => {
 
   const lastLabel = highlights[highlights.length - 1];
 
-  if (lastLabel) lastLabel.setAttribute("data-label", label);
+  if (lastLabel) lastLabel.setAttribute("data-label", label ?? "");
 
   return highlights;
 };
@@ -455,7 +455,7 @@ export const applySpanStyles = (spanNode, { classNames, label }) => {
   }
 
   if (label === null) spanNode.removeAttribute("data-label");
-  else if (label) spanNode.setAttribute("data-label", label);
+  else if (label) spanNode.setAttribute("data-label", label ?? "");
 };
 
 /**
