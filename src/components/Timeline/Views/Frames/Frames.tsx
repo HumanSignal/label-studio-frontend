@@ -17,10 +17,10 @@ const roundToStep = (num: number, step: number) => {
 };
 
 export const Frames: FC<TimelineViewProps> = ({
-  step = 10,
-  offset=0,
+  offset = 0,
   position = 1,
   length = 1024,
+  step,
   playing,
   regions,
   onScroll,
@@ -31,6 +31,7 @@ export const Frames: FC<TimelineViewProps> = ({
   onSelectRegion,
 }) => {
   const scrollMultiplier = 1.25;
+  const timelineStartOffset = 150;
 
   const scrollable = useRef<HTMLDivElement>();
   const [hoverEnabled, setHoverEnabled] = useState(true);
@@ -89,6 +90,8 @@ export const Frames: FC<TimelineViewProps> = ({
 
   }, [scrollable, offsetX, offsetY, setScroll]);
 
+  const timelineOffsetSteps = roundToStep(timelineStartOffset, step);
+
   const currentOffsetX = useMemo(() => {
     const value = roundToStep(offsetX, step);
 
@@ -141,7 +144,13 @@ export const Frames: FC<TimelineViewProps> = ({
 
   const hoverHandler = useCallback((e) => {
     if (scrollable.current) {
-      setHoverOffset(e.pageX - scrollable.current.getBoundingClientRect().left);
+      const currentOffset = e.pageX - scrollable.current.getBoundingClientRect().left - timelineStartOffset;
+
+      if (currentOffset > 0) {
+        setHoverOffset(currentOffset);
+      } else {
+        setHoverOffset(null);
+      }
     }
   }, [currentOffsetX, step]);
 
@@ -156,8 +165,14 @@ export const Frames: FC<TimelineViewProps> = ({
     const pixelOffset = clamp(position-1, 0, length - 1) * step;
     const value = roundToStep(pixelOffset, step);
 
-    return value - currentOffsetX;
+    return value - currentOffsetX + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
+
+  const hoverOffsetStep = useMemo(() => {
+    if (hoverOffset) {
+      return roundToStep(hoverOffset, step) - timelineStartOffset + timelineOffsetSteps;
+    }
+  }, [hoverOffset]);
 
   useEffect(() => {
     if (scrollable.current) {
@@ -207,6 +222,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const styles = {
     "--frame-size": `${step}px`,
     "--view-size": `${viewWidth}px`,
+    "--offset": `${timelineStartOffset}px`,
   };
 
   return (
@@ -221,7 +237,7 @@ export const Frames: FC<TimelineViewProps> = ({
         {isDefined(hoverOffset) && hoverEnabled && (
           <Elem
             name="hover"
-            style={{ left: roundToStep(hoverOffset, step) }}
+            style={{ left: roundToStep(hoverOffset, step), marginLeft: timelineStartOffset }}
             data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
           />
         )}
@@ -241,6 +257,7 @@ export const Frames: FC<TimelineViewProps> = ({
               <Keypoints
                 key={region.id}
                 region={region}
+                startOffset={timelineStartOffset}
                 onSelectRegion={onSelectRegion}
                 onToggleVisibility={onToggleVisibility}
                 onDeleteRegion={onDeleteRegion}

@@ -20,6 +20,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   fullscreen?: boolean;
   disableFrames?: boolean;
   className?: string;
+  defaultStepSize?: number;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility: (id: string, visibility: boolean) => void;
@@ -39,6 +40,7 @@ export const Timeline: FC<TimelineProps> = ({
   playing = false,
   fullscreen = false,
   disableFrames = false,
+  defaultStepSize = 10,
   className,
   onPlayToggle,
   onPositionChange,
@@ -54,7 +56,7 @@ export const Timeline: FC<TimelineProps> = ({
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
   const [viewCollapsed, setViewCollapsed] = useState(false);
-  const step = useMemo(() => 10 * zoom, [zoom]);
+  const step = useMemo(() => defaultStepSize * zoom, [zoom, defaultStepSize]);
 
   const setInternalPosition = (newPosition: number) => {
     const clampedValue = clamp(newPosition, 1, length);
@@ -94,18 +96,6 @@ export const Timeline: FC<TimelineProps> = ({
     <TimelineContextProvider value={contextValue}>
       <Block name="timeline" className={className}>
         <Elem name="topbar">
-          <Seeker
-            length={length}
-            position={currentPosition}
-            seekOffset={seekOffset}
-            seekVisible={seekVisibleWidth}
-            onIndicatorMove={setSeekOffset}
-            onSeek={setInternalPosition}
-            minimap={View.Minimap ? (
-              <View.Minimap/>
-            ): null}
-          />
-
           <Controls
             length={length}
             position={currentPosition}
@@ -129,6 +119,18 @@ export const Timeline: FC<TimelineProps> = ({
                 }}
               />
             ) : null}
+          />
+
+          <Seeker
+            length={length}
+            position={currentPosition}
+            seekOffset={seekOffset}
+            seekVisible={seekVisibleWidth}
+            onIndicatorMove={setSeekOffset}
+            onSeek={setInternalPosition}
+            minimap={View.Minimap ? (
+              <View.Minimap/>
+            ): null}
           />
         </Elem>
 

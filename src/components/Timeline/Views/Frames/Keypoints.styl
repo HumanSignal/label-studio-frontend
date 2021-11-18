@@ -1,31 +1,26 @@
 .keypoints
-  margin 8px 0
-  padding 8px 0
-  transition background-color 100ms ease
-  background-color rgba(#fff, 0)
+  height 24px
+  display flex
 
   &__label
     left 0
-    height 20px
-    width min-content
+    flex none
+    width var(--offset)
+    height 24px
+    display flex
+    z-index 2
+    align-items center
     position sticky
     display flex
 
   &__name
-    color #fff
-    padding 0 6px
-    display flex
-    cursor pointer
-    border-radius 4px
+    font-size 14px
     width min-content
     color var(--color)
-    font-size 13px
-    line-height 16px
-    align-items center
-    background var(--background)
-    box-shadow 0 0 0 1px var(--border) inset
 
   &__keypoints
+    flex 1
+    z-index 1
     height 10px
     margin-top 2px
     position relative

@@ -10,6 +10,7 @@ import "./Keypoints.styl";
 import { visualizeLifespans } from "./Utils";
 export interface KeypointsProps {
   region: TimelineRegion;
+  startOffset: number;
   onToggleVisibility: (id: string, visible: boolean) => void;
   onDeleteRegion: (id: string) => void;
   onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void;
@@ -17,6 +18,7 @@ export interface KeypointsProps {
 
 export const Keypoints: FC<KeypointsProps> = ({
   region,
+  startOffset,
   onSelectRegion,
   onToggleVisibility,
   onDeleteRegion,
@@ -29,17 +31,12 @@ export const Keypoints: FC<KeypointsProps> = ({
   const borderColor = chroma(color).alpha(0.2).css();
 
   const firtsPoint = sequence[0];
-  const lastPoint = sequence[sequence.length - 1];
-
   const start = firtsPoint.frame - 1;
-  const end = lastPoint.frame;
-  const infinite = lastPoint.enabled === true;
   const offset = start * step;
 
   const styles = {
-    'marginLeft': `${offset}px`,
-    'width': infinite ? 'auto' : (end * step) - offset,
     '--hover': background,
+    '--offset': `${startOffset}px`,
     '--background': selected ? color : background,
     '--border': selected ? 'transparent' : borderColor,
     '--color': selected ? '#fff' : color,
@@ -86,7 +83,7 @@ export const Keypoints: FC<KeypointsProps> = ({
       <Elem name="keypoints" onClick={onSelectRegionHandler}>
         {lifespans.map((lifespan, i) => {
           const isLast = i + 1 === lifespans.length;
-          const left = lifespan.offset + (step / 2);
+          const left = offset + lifespan.offset + (step / 2);
           const right = (isLast && lifespan.enabled) ? 0 : 'auto';
           const width = (isLast && lifespan.enabled) ? 'auto' : lifespan.width;
 
