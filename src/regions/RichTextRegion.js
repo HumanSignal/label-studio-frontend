@@ -124,6 +124,7 @@ const Model = types
 
     // For external XPath updates
     _fixXPaths() {
+      // Text regions don't use XPath
       if (self.isText) return;
 
       const range = self._getRange(true);

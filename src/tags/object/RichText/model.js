@@ -199,15 +199,12 @@ const Model = types
           else if (self.valuetype === "text") self.savetextresult = "yes";
         }
 
-        // Watch all the changes to the regions list to properly update the text
-        // their XPaths relatively to each other
-        self.regsObserverDisposer = observe(self, 'regs', () => {
-          self.regs.forEach(reg => self.fixRegionsXPath(reg));
-        });
+        // @todo check how this impacts performance
+        // run in next tick because store was not fully initialized yet
+        setTimeout(() => self.regs.forEach(reg => self.fixRegionsXPath(reg)));
       },
 
       fixRegionsXPath(region) {
-      // Text regions don't use XPath
         region._fixXPaths();
       },
 
@@ -242,6 +239,8 @@ const Model = types
       initGlobalOffsets(rootElement) {
         self.regs.forEach((richTextRegion) => {
           try {
+            if (richTextRegion.globalOffsets) return;
+
             const { start, startOffset, end, endOffset } = richTextRegion;
             const range = xpath.toRange(start, startOffset, end, endOffset, rootElement);
             const [soff, eoff] = rangeToGlobalOffset(range, rootElement);
