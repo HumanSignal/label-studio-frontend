@@ -28,8 +28,12 @@ const useImage = (url, crossOrigin, onLoad, onError) => {
 
     // https://konvajs.org/docs/posts/Tainted_Canvas.html
     crossOrigin && (img.crossOrigin = crossOrigin);
+
+    const urlObject = new URL(url);
+
     // CORS error: https://www.hacksoft.io/blog/handle-images-cors-error-in-chrome
-    const fixedUrl = `${url.toString()}?time=${Date.now().toString()}`;
+    urlObject.searchParams.set('time', Date.now().toString());
+    const fixedUrl = urlObject.toString();
 
     img.src = fixedUrl;
 
