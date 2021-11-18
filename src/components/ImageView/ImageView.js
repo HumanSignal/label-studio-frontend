@@ -490,7 +490,7 @@ export default observer(
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
       this.resizeObserver = new ResizeObserver(this.onResize);
-      this.resizeObserver.observe(this.container);
+      this.resizeObserver.observe(this.containerRef.current);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
