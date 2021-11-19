@@ -1,6 +1,9 @@
 .keypoints
+  --hover transparent
+
   height 24px
   display flex
+  background-color var(--hover)
 
   &__label
     left 0
@@ -12,6 +15,8 @@
     align-items center
     position sticky
     display flex
+    background linear-gradient(0deg, var(--hover), var(--hover) 100%), linear-gradient(0deg, #FAFAFA, #FAFAFA 100%)
+    box-shadow 1px 0px 0px rgba(0, 0, 0, 0.05)
 
   &__name
     font-size 14px
@@ -21,38 +26,25 @@
   &__keypoints
     flex 1
     z-index 1
-    height 10px
-    margin-top 2px
+    height 100%
     position relative
 
-    &::before
-      top -3px
-      bottom -3px
-      width 100%
-      content ''
-      display block
-      position absolute
-      cursor pointer
-      z-index 3
-
-  &__connection
+  &__lifespan
     top 50%
     height 2px
     width 100%
     z-index 1
     position absolute
     transform translateY(-50%)
-    background-color var(--point-color)
+    background-color var(--lifespan-color)
 
     &_hidden
-      opacity 0.4
-      background-color transparent
-      background repeating-linear-gradient(90deg, var(--point-color), var(--point-color) 2px, transparent 2px, transparent 4px)
+      opacity 0.3
 
   &__point
     top 50%
-    width 6px
-    height 6px
+    width 9px
+    height 9px
     z-index 2
     position absolute
     border-radius 2px
@@ -62,8 +54,8 @@
   &__actions
     display flex
 
-  &:hover
-    background-color var(--hover)
+  &:hover, &_selected
+    --hover rgba(#000, 0.04)
 
 .region-action
   margin 1px

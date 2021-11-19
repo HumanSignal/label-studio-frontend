@@ -4,8 +4,8 @@
   <VideoRectangle name="box" toName="video" />
 
   <Labels name="videoLabels" toName="video">
-    <Label value="Car"/>
-    <Label value="Airplane"/>
-    <Label value="Possum"/>
+    <Label value="Car" background="#944BFF"/>
+    <Label value="Airplane" background="#98C84E"/>
+    <Label value="Possum" background="#FA8C16"/>
   </Labels>
 </View>

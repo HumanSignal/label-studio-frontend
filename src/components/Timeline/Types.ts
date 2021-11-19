@@ -10,9 +10,9 @@ export interface TimelineViewProps {
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;
-  onToggleVisibility: (id: string, visible: boolean) => void;
-  onDeleteRegion: (id: string) => void;
-  onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void;
+  onToggleVisibility?: (id: string, visible: boolean) => void;
+  onDeleteRegion?: (id: string) => void;
+  onSelectRegion?: (e: MouseEvent<HTMLDivElement>, id: string) => void;
 }
 
 export interface TimelineRegion {

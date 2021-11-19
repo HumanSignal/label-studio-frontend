@@ -243,6 +243,8 @@ export const Frames: FC<TimelineViewProps> = ({
         )}
       </Elem>
 
+      <Elem name="labels-bg" style={{ width: timelineStartOffset }}/>
+
       <Elem
         name="scroll"
         ref={scrollable as any}
@@ -258,9 +260,7 @@ export const Frames: FC<TimelineViewProps> = ({
                 key={region.id}
                 region={region}
                 startOffset={timelineStartOffset}
-                onSelectRegion={onSelectRegion}
-                onToggleVisibility={onToggleVisibility}
-                onDeleteRegion={onDeleteRegion}
+                onSelectRegion={(e, id) => onSelectRegion?.(e, id)}
               />
             ))}
           </Elem>

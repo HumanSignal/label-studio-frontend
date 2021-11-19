@@ -186,11 +186,11 @@ const HtxVideoView = ({ item }) => {
     }));
 
     return {
-      id: reg.id,
+      id: reg.cleanId,
       label,
       color,
       visible: !reg.hidden,
-      selected: reg.selected,
+      selected: reg.selected || reg.inSelection,
       sequence,
     };
   });
@@ -287,19 +287,13 @@ const HtxVideoView = ({ item }) => {
             onFullscreenToggle={() => {
               setFullscreen(!fullscreen);
             }}
-            onToggleVisibility={(id) => {
-              item.findRegion(id)?.toggleHidden();
-            }}
-            onDeleteRegion={(id) => {
-              item.deleteRegion(id);
-            }}
             onSelectRegion={(_, id) => {
               item.findRegion(id)?.onClickRegion();
             }}
             onAction={(_, action, data) => {
-              const region = item.regs.find(reg => reg.selected);
+              const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
 
-              if (isDefined(region)) {
+              regions.forEach(region => {
                 switch(action) {
                   case "lifespan_add":
                   case "lifespan_remove":
@@ -314,7 +308,7 @@ const HtxVideoView = ({ item }) => {
                   default:
                     console.log('unknown action');
                 }
-              }
+              });
             }}
           />
         )}

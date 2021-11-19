@@ -23,11 +23,11 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   defaultStepSize?: number;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
-  onToggleVisibility: (id: string, visibility: boolean) => void;
-  onDeleteRegion: (id: string) => void;
-  onSelectRegion: (event: MouseEvent<HTMLDivElement>, id: string) => void;
-  onAction: (event: MouseEvent, action: string, data?: any) => void;
-  onFullscreenToggle: () => void;
+  onToggleVisibility?: (id: string, visibility: boolean) => void;
+  onDeleteRegion?: (id: string) => void;
+  onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string) => void;
+  onAction?: (event: MouseEvent, action: string, data?: any) => void;
+  onFullscreenToggle?: () => void;
 }
 
 export const Timeline: FC<TimelineProps> = ({
@@ -105,7 +105,7 @@ export const Timeline: FC<TimelineProps> = ({
             onPlayToggle={onPlayToggle}
             fullscreen={fullscreen}
             disableFrames={disableFrames}
-            onFullScreenToggle={onFullscreenToggle}
+            onFullScreenToggle={() => onFullscreenToggle?.()}
             onStepBackward={decreasePosition}
             onStepForward={increasePosition}
             onRewind={() => setInternalPosition(0)}

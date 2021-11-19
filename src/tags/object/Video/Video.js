@@ -176,7 +176,7 @@ const Model = types
     },
 
     findRegion(id) {
-      return self.regs.find(reg => reg.id === id);
+      return self.regs.find(reg => reg.cleanId === id);
     },
   }));
 
