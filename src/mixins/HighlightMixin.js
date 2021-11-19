@@ -166,9 +166,7 @@ export const HighlightMixin = types
     },
 
     getLabels() {
-      const settings = getRoot(self).settings;
-
-      if (!self.parent.showlabels || !settings.showLabels) return null;
+      if (!self.parent.showlabels) return null;
 
       return self.labeling?.mainValue ?? [];
     },
