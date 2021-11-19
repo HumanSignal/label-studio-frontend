@@ -49,6 +49,12 @@ jobs:
     # because pr can contain unfinished job
     - run: npx serve -l tcp://localhost:3000 build &
       if: github.event_name == 'push'
+    - id: wait_for_npx_server
+      timeout-minutes: 1
+      run: |
+        while [ "$(curl -s -o /dev/null -L -w ''%{http_code}'' "http://localhost:3000/" != "200" ]; do
+          echo "=> Waiting for service to become available" && sleep 2s
+        done
     - run: yarn run test:e2e:headless
       if: github.event_name == 'push'
 
