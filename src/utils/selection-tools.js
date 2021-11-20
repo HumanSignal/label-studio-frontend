@@ -454,8 +454,8 @@ export const applySpanStyles = (spanNode, { classNames, label }) => {
     spanNode.classList.add(...classNames);
   }
 
-  if (label === null) spanNode.removeAttribute("data-label");
-  else if (label) spanNode.setAttribute("data-label", label ?? "");
+  if (!label?.length) spanNode.removeAttribute("data-label");
+  else spanNode.setAttribute("data-label", label);
 };
 
 /**
