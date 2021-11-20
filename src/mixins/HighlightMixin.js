@@ -265,6 +265,7 @@ const createSpanStylesheet = (document, identifier, color) => {
       font-family: Monaco;
       vertical-align: super;
       content: attr(data-label);
+      line-height: 0;
     `,
     [classNames.active]: `
       color: ${Utils.Colors.contrastColor(initialActiveColor)};
