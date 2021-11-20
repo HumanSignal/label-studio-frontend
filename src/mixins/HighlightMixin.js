@@ -113,7 +113,7 @@ export const HighlightMixin = types
       const lastSpan = self._spans[self._spans.length - 1];
 
       self._stylesheet.setColor(self.getLabelColor());
-      Utils.Selection.applySpanStyles(lastSpan, { label: "" });
+      Utils.Selection.applySpanStyles(lastSpan, { label: self.getLabels() });
     },
 
     /**
