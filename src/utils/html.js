@@ -6,16 +6,11 @@ function toggleLabelsAndScores(show) {
   const els = document.getElementsByClassName("htx-highlight");
 
   Array.from(els).forEach(el => {
-    let foundCls = null;
+    // labels presence controlled by explicit `showLabels` in the config
+    if (el.classList.contains("htx-manual-label")) return;
 
-    Array.from(el.classList).forEach(cls => {
-      if (cls.indexOf("htx-label-") !== -1) foundCls = cls;
-    });
-
-    if (foundCls !== null) {
-      if (show) el.classList.remove("htx-no-label");
-      else el.classList.add("htx-no-label");
-    }
+    if (show) el.classList.remove("htx-no-label");
+    else el.classList.add("htx-no-label");
   });
 }
 

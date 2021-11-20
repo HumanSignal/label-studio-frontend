@@ -54,6 +54,11 @@ export const HighlightMixin = types
         classNames.push("htx-no-label");
       }
 
+      // in this case labels presence can't be changed from settings — manual mode
+      if (isDefined(self.parent.showlabels)) {
+        classNames.push("htx-manual-label");
+      }
+
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
         classNames,
