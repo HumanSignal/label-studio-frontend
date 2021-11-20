@@ -92,6 +92,7 @@ export const HighlightMixin = types
         const lastSpan = self._spans[self._spans.length - 1];
         const label = self.getLabels();
 
+        // label is array, string or null, so check for length
         if (!label?.length) lastSpan.removeAttribute("data-label");
         else lastSpan.setAttribute("data-label", label);
       }

@@ -454,6 +454,7 @@ export const applySpanStyles = (spanNode, { classNames, label }) => {
     spanNode.classList.add(...classNames);
   }
 
+  // label is array, string or null, so check for length
   if (!label?.length) spanNode.removeAttribute("data-label");
   else spanNode.setAttribute("data-label", label);
 };
