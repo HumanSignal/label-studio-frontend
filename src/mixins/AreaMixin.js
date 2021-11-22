@@ -87,7 +87,13 @@ export const AreaMixin = types
       }
       const emptyStyled = self.results.find(r => r.emptyStyle);
 
-      return emptyStyled && emptyStyled.emptyStyle;
+      if (emptyStyled && emptyStyled.emptyStyle) {
+        return emptyStyled.emptyStyle;
+      }
+
+      const controlStyled = self.results.find(r => self.type.startsWith(r.type));
+
+      return controlStyled && controlStyled.controlStyle;
     },
 
     // @todo may be slow, consider to add some code to annotation (un)select* methods
