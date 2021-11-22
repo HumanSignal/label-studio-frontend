@@ -46,8 +46,9 @@ export const Keypoints: FC<KeypointsProps> = ({
       name="keypoints"
       style={styles}
       mod={{ selected }}
+      onClick={onSelectRegionHandler}
     >
-      <Elem name="label" onClick={onSelectRegionHandler}>
+      <Elem name="label">
         <Elem name="name">
           {label}
         </Elem>

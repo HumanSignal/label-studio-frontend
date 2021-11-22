@@ -1,13 +1,12 @@
 .timeline-controls
   &__counter
     height 36px
-    width 120px
+    width 115px
     display flex
     align-items center
     justify-content center
-    background #FAFAFA
-    box-shadow inset 0px 1px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.15)
-    border-radius 3px
+    background rgba(#000, 0.05)
+    border-radius 4px
 
     font-weight 500
     font-size 16px
@@ -17,6 +16,7 @@
     span
       opacity 0.4
       padding-left 5px
+      font-weight 400
 
     input
       width 100%
@@ -29,9 +29,13 @@
       line-height 19px
       text-align center
 
-  &__actions
-    .button
-      background none
+  .button
+    background none
+    width 36px
+    height 36px
+
+    &:hover
+      box-shadow inset 0px -1px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.15)
 
   &__time
     display flex
@@ -40,8 +44,16 @@
 .timeline-time
   padding 0 5px
   font-size 16px
+  display inline-flex
+  align-items center
   color rgba(#000, 0.4)
 
   span
     font-size 11px
-    color rgba(#000, 0.3)
+    min-width 22px
+    border-radius 2px
+    text-align center
+    margin-left 5px
+    display inline-block
+    color rgba(#000, 0.4)
+    background rgba(0, 0, 0, 0.05)

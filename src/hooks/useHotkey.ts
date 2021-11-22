@@ -26,8 +26,8 @@ export const useHotkey = (hotkey?: Keyname, handler?: Keymaster.KeyHandler) => {
   const lastHotkey = useRef<Keyname | null>(null);
   const handlerFunction = useRef<Keymaster.KeyHandler | undefined>(handler);
 
-  // we wanna cache handler function so the prop change does not trigger re-attaching a hotkey
-  // refs are perfect fit for this purpose as they're mutable and cached during hook lifecycle
+  // we wanna cache handler function so the prop change does not re-attac a hotkey
+  // refs are perfect fit for this purpose as they're mutable and cached during the hook lifecycle
   const handlerWrapper = useRef<Keymaster.KeyHandler>((e, h) => {
     handlerFunction.current?.(e, h);
   });
@@ -53,9 +53,9 @@ export const useHotkey = (hotkey?: Keyname, handler?: Keymaster.KeyHandler) => {
     })();
   }, [hotkey]);
 
-  // by changing the ref we can handled won't be re-attached
-  // as refs are mutable and doesn't trigger any updates
-  // but the hotkey itself will call a proper function
+  // by changing the ref we can safely update the handler
+  // as refs are mutable and doesn't trigger react-updates
+  // but the hotkey will still have access to a proper function
   useEffect(() => {
     handlerFunction.current = handler;
   }, [handler]);

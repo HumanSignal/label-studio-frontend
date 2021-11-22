@@ -10,6 +10,7 @@ export { ReactComponent as IconKeypointDisabled } from "./keypoint_disabled.svg"
 export { ReactComponent as IconPlay } from "./play.svg";
 export { ReactComponent as IconPause } from "./pause.svg";
 export { ReactComponent as IconRewind } from "./rewind.svg";
+export { ReactComponent as IconReplay } from "./replay.svg";
 export { ReactComponent as IconFullscreen } from "./fullscreen.svg";
 export { ReactComponent as IconFullscreenExit } from "./fullscreen_exit.svg";
 export { ReactComponent as IconEyeOpened } from "./eye_opened.svg";

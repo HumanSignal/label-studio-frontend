@@ -70,10 +70,10 @@ export const Controls: FC<ControlsProps> = ({
     return position / frameRate;
   }, [position, frameRate]);
 
-  const stepHandlerWrapper = (handler: ControlsStepHandler) => (_: MouseEvent<HTMLButtonElement>) => {
+  const stepHandlerWrapper = (handler: ControlsStepHandler) => (e: MouseEvent<HTMLButtonElement>) => {
     const stepSize = steppedControlsAlt ? settings?.stepSize : undefined;
 
-    handler(_, stepSize);
+    handler(e, stepSize);
   };
 
   useEffect(() => {
@@ -150,6 +150,14 @@ export const Controls: FC<ControlsProps> = ({
         {!disableFrames && (
           <ControlButton onClick={() => onToggleCollapsed?.(!collapsed)}>{collapsed ? <IconExpand/> : <IconCollapse/>}</ControlButton>
         )}
+        <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+          {fullscreen ? (
+            <IconFullscreenExit/>
+          ) : (
+            <IconFullscreen/>
+          )}
+        </ControlButton>
+
 
         <Elem name="time">
           <Time
@@ -160,13 +168,6 @@ export const Controls: FC<ControlsProps> = ({
             position={relativePosition(length, frameRate)}
           />
         </Elem>
-        <ControlButton onClick={() => onFullScreenToggle?.(false)}>
-          {fullscreen ? (
-            <IconFullscreenExit/>
-          ) : (
-            <IconFullscreen/>
-          )}
-        </ControlButton>
       </Elem>
     </Block>
   );
@@ -185,11 +186,14 @@ export const ControlButton: FC<ButtonProps & {disabled?: boolean}> = ({ children
 };
 
 const Time: FC<{time: number, position: string}> = ({ time, position }) => {
-  const formatted = new Date(time * 1000).toISOString().substr(11, 8);
+  const timeDate = new Date(time * 1000).toISOString();
+  const formatted = time > 3600
+    ? timeDate.substr(11, 8)
+    : timeDate.substr(14, 5);
 
   return (
     <Block name="timeline-time">
-      {formatted}{position ? <span>:{position}</span> : null}
+      {formatted}{position ? <span>{position}</span> : null}
     </Block>
   );
 };

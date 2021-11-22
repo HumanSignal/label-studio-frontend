@@ -183,8 +183,9 @@ export const Frames: FC<TimelineViewProps> = ({
 
   // wheel is a passive event, so we have to add proper event to prevent default scroll
   useEffect(() => {
+    const target = scrollable.current!;
+
     const handler = (e: globalThis.WheelEvent) => {
-      const target = scrollable.current!;
       const currentScroll = target.scrollTop;
       const maxScroll = target.scrollHeight - target.clientHeight;
       const horizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
@@ -196,9 +197,9 @@ export const Frames: FC<TimelineViewProps> = ({
       if (!allowScroll) e.preventDefault();
     };
 
-    scrollable.current!.addEventListener('wheel', handler);
+    target.addEventListener('wheel', handler);
 
-    return () => scrollable.current!.removeEventListener('wheel', handler);
+    return () =>  target.removeEventListener('wheel', handler);
   }, []);
 
   useEffect(() => {
