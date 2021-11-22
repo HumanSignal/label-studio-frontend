@@ -18,7 +18,7 @@ const config = `
 `;
 
 const data = {
-  csv: "https://app.heartex.com/samples/time-series.csv?time=time&values=velocity%2Cacceleration&sep=%2C",
+  csv: "https://htx-pub.s3.amazonaws.com/datasets/timeseries/time-series-velocity-acceleration.csv",
 };
 
 const result = [
