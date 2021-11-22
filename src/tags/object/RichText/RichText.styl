@@ -31,3 +31,8 @@
     align-items: center;
     background: rgba(125,125,125,.15);
     font-size: 24px;
+
+// global.scss is not included to final build, so define it here
+:global(.htx-no-label)::after {
+  display: none;
+}
