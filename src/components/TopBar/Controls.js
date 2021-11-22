@@ -60,7 +60,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       </Elem>);
     buttons.push(
       <ButtonTooltip key="cancel-skip" title="Cancel skip: []">
-        <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={() => store.annotationStore.deleteAnnotation(annotation)}>
+        <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={store.cancelSkippingTask}>
           Cancel skip
         </Button>
       </ButtonTooltip>,
