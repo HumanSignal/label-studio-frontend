@@ -2,12 +2,12 @@ name: Build and Test
 
 on:
   push:
-    branches: [master, "*/*", "*/**"]
+    branches: [master, "*/*", "*/**", "dev-*", "DEV-*"]
 
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v2
-  NODE: '12'
+  NODE: "12"
 
 jobs:
   build:
@@ -16,61 +16,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.4.1
-      with:
-        node-version: "${{ env.NODE }}"
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-node@v2.4.1
+        with:
+          node-version: "${{ env.NODE }}"
 
-    - name: Upgrade Yarn
-      run: npm install -g yarn@1.22
+      - name: Upgrade Yarn
+        run: npm install -g yarn@1.22
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-    - name: Configure yarn cache
-      uses: actions/cache@v2.1.6
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Configure yarn cache
+        uses: actions/cache@v2.1.6
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
 
-    - name: Print Yarn cache size
-      run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
+      - name: Print Yarn cache size
+        run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
-    - name: Install dependencies
-      run: rm package-lock.json && yarn install
+      - name: Install dependencies
+        run: rm package-lock.json && yarn install
 
-    - name: Unit tests
-      run: yarn test
+      - name: Unit tests
+        run: yarn test
 
-    - name: Build distribution package
-      run: yarn run build:module
-      env:
-        CI: false # on true webpack breaks on warnings, and we have them a lot
-        NODE_ENV: 'production'
+      - name: Build distribution package
+        run: yarn run build:module
+        env:
+          CI: false # on true webpack breaks on warnings, and we have them a lot
+          NODE_ENV: "production"
 
-    # run http-server with build in background (will be killed after job ends)
-    # do this only for master branch (so only for push event)
-    # because pr can contain unfinished job
-    - run: npx serve -l tcp://localhost:3000 build &
-      if: github.event_name == 'push'
-    - id: wait_for_npx_server
-      timeout-minutes: 1
-      run: |
-        while [ "$(curl -s -o /dev/null -L -w ''%{http_code}'' "http://localhost:3000/")" != "200" ]; do
-          echo "=> Waiting for service to become available" && sleep 2s
-        done
-    - run: yarn run test:e2e:headless
-      if: github.event_name == 'push'
+      # run http-server with build in background (will be killed after job ends)
+      # do this only for master branch (so only for push event)
+      # because pr can contain unfinished job
+      - run: npx serve -l tcp://localhost:3000 build &
+        if: github.event_name == 'push'
+      - id: wait_for_npx_server
+        timeout-minutes: 1
+        run: |
+          while [ "$(curl -s -o /dev/null -L -w ''%{http_code}'' "http://localhost:3000/")" != "200" ]; do
+            echo "=> Waiting for service to become available" && sleep 2s
+          done
+      - run: yarn run test:e2e:headless
+        if: github.event_name == 'push'
 
-    - uses: actions/upload-artifact@v2.2.4
-      if: ${{ failure() }}
-      with:
-        name: e2e output
-        path: e2e/output/
+      - uses: actions/upload-artifact@v2.2.4
+        if: ${{ failure() }}
+        with:
+          name: e2e output
+          path: e2e/output/
 
-    # upload this build as artifact to current Action
-    - uses: actions/upload-artifact@v2.2.4
-      with:
-        name: build ${{ github.event.pull_request.head.sha || github.sha }}
-        path: build/
+      # upload this build as artifact to current Action
+      - uses: actions/upload-artifact@v2.2.4
+        with:
+          name: build ${{ github.event.pull_request.head.sha || github.sha }}
+          path: build/
