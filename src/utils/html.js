@@ -2,16 +2,23 @@ import insertAfter from "insert-after";
 import * as Checkers from "./utilities";
 import Canvas from "./canvas";
 
+// fast way to change labels visibility for all text regions
 function toggleLabelsAndScores(show) {
-  const els = document.getElementsByClassName("htx-highlight");
+  const toggleInDocument = document => {
+    const els = document.getElementsByClassName("htx-highlight");
 
-  Array.from(els).forEach(el => {
-    // labels presence controlled by explicit `showLabels` in the config
-    if (el.classList.contains("htx-manual-label")) return;
+    Array.from(els).forEach(el => {
+      // labels presence controlled by explicit `showLabels` in the config
+      if (el.classList.contains("htx-manual-label")) return;
 
-    if (show) el.classList.remove("htx-no-label");
-    else el.classList.add("htx-no-label");
-  });
+      if (show) el.classList.remove("htx-no-label");
+      else el.classList.add("htx-no-label");
+    });
+  };
+
+  toggleInDocument(document);
+  document.querySelectorAll("iframe.lsf-htx-richtext")
+    .forEach(iframe => toggleInDocument(iframe.contentWindow.document));
 }
 
 const labelWithCSS = (function() {
