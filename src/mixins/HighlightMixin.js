@@ -238,6 +238,7 @@ const stateClass = {
   highlighted: "__highlighted",
   collapsed: "__collapsed",
   hidden: "__hidden",
+  noLabel: "htx-no-label",
 };
 
 /**
@@ -296,6 +297,9 @@ const createSpanStylesheet = (document, identifier, color) => {
       display: none
     `,
     [`${className}.${stateClass.hidden}::after`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.noLabel}::after`]: `
       display: none
     `,
   };
