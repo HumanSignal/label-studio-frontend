@@ -1,8 +1,9 @@
-import { getRoot, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Utils from "../utils";
 import { guidGenerator } from "../utils/unique";
 import Constants, { defaultStyle } from "../core/Constants";
+import { isDefined } from "../utils/utilities";
 
 export const HighlightMixin = types
   .model()
@@ -47,10 +48,20 @@ export const HighlightMixin = types
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
+      const classNames = ["htx-highlight", stylesheet.className];
+
+      if (!(self.parent.showlabels ?? self.store.settings.showLabels)) {
+        classNames.push("htx-no-label");
+      }
+
+      // in this case labels presence can't be changed from settings — manual mode
+      if (isDefined(self.parent.showlabels)) {
+        classNames.push("htx-manual-label");
+      }
 
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
-        classNames: ["htx-highlight", stylesheet.className],
+        classNames,
         label: self.getLabels(),
       });
 
@@ -79,8 +90,11 @@ export const HighlightMixin = types
     updateSpans() {
       if (self._hasSpans) {
         const lastSpan = self._spans[self._spans.length - 1];
+        const label = self.getLabels();
 
-        lastSpan.setAttribute("data-label", self.getLabels());
+        // label is array, string or null, so check for length
+        if (!label?.length) lastSpan.removeAttribute("data-label");
+        else lastSpan.setAttribute("data-label", label);
       }
     },
 
@@ -100,7 +114,7 @@ export const HighlightMixin = types
       const lastSpan = self._spans[self._spans.length - 1];
 
       self._stylesheet.setColor(self.getLabelColor());
-      Utils.Selection.applySpanStyles(lastSpan, { label: "" });
+      Utils.Selection.applySpanStyles(lastSpan, { label: self.getLabels() });
     },
 
     /**
@@ -166,10 +180,6 @@ export const HighlightMixin = types
     },
 
     getLabels() {
-      const settings = getRoot(self).settings;
-
-      if (!self.parent.showlabels && !settings.showLabels) return null;
-
       return self.labeling?.mainValue ?? [];
     },
 
@@ -228,6 +238,7 @@ const stateClass = {
   highlighted: "__highlighted",
   collapsed: "__collapsed",
   hidden: "__hidden",
+  noLabel: "htx-no-label",
 };
 
 /**
@@ -267,6 +278,7 @@ const createSpanStylesheet = (document, identifier, color) => {
       font-family: Monaco;
       vertical-align: super;
       content: attr(data-label);
+      line-height: 0;
     `,
     [classNames.active]: `
       color: ${Utils.Colors.contrastColor(initialActiveColor)};
@@ -285,6 +297,9 @@ const createSpanStylesheet = (document, identifier, color) => {
       display: none
     `,
     [`${className}.${stateClass.hidden}::after`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.noLabel}::after`]: `
       display: none
     `,
   };
