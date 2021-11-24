@@ -52,9 +52,9 @@ export const Keypoints: FC<KeypointsProps> = ({
         <Elem name="name">
           {label}
         </Elem>
-        <Elem name="data">
+        {/* <Elem name="data">
           {region.id}
-        </Elem>
+        </Elem> */}
       </Elem>
       <Elem name="keypoints">
         {lifespans.map((lifespan, i) => {
