@@ -249,6 +249,7 @@ const HtxVideoView = ({ item }) => {
                   zoom={zoom}
                   pan={pan}
                   framerate={item.framerate}
+                  allowInteractions={false}
                   onFrameChange={(position, length) => {
                     setPosition(position);
                     setVideoLength(length);
@@ -263,6 +264,7 @@ const HtxVideoView = ({ item }) => {
                     item.setLength(length);
                   }}
                   onClick={() => setPlaying(playing => !playing)}
+                  onEnded={() => setPlaying(false)}
                 />
               </>
             )}
@@ -283,7 +285,12 @@ const HtxVideoView = ({ item }) => {
             disableFrames={!item.store.hasSegmentation}
             framerate={item.framerate}
             onPositionChange={item.setFrame}
-            onPlayToggle={setPlaying}
+            onPlayToggle={(playing) => {
+              if (position === videoLength) {
+                setPosition(1);
+              }
+              setPlaying(playing);
+            }}
             onFullscreenToggle={() => {
               setFullscreen(!fullscreen);
             }}

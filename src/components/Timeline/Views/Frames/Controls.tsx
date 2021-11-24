@@ -1,6 +1,5 @@
 import { FC, MouseEvent, useContext, useMemo } from "react";
-import { IconInterpolationAdd, IconInterpolationDisabled, IconInterpolationRemove, IconKeypointAdd, IconKeypointDelete, IconKeypointDisabled } from "../../../../assets/icons/timeline";
-import { isDefined } from "../../../../utils/utilities";
+import { IconInterpolationAdd, IconInterpolationRemove, IconKeypointAdd, IconKeypointDelete } from "../../../../assets/icons/timeline";
 import { TimelineContext } from "../../Context";
 import { ControlButton } from "../../Controls";
 import { TimelineExtraControls } from "../../Types";
@@ -48,9 +47,7 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
   const canAddInterpolation = closestKeypoint?.enabled === false;
 
   const keypointIcon = useMemo(() => {
-    if (!isDefined(closestKeypoint)) {
-      return <IconKeypointDisabled/>;
-    } else if (canAddKeypoint) {
+    if (canAddKeypoint) {
       return <IconKeypointAdd/>;
     }
 
@@ -58,9 +55,7 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
   }, [canAddKeypoint, closestKeypoint]);
 
   const interpolationIcon = useMemo(() => {
-    if (!isDefined(closestKeypoint)) {
-      return <IconInterpolationDisabled/>;
-    } else if (canAddInterpolation) {
+    if (canAddInterpolation) {
       return <IconInterpolationAdd/>;
     }
 

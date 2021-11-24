@@ -8,6 +8,7 @@ import "./Tooltip.styl";
 export interface TooltipProps {
   title: string;
   children: JSX.Element;
+  theme?: "light" | "dark";
   defaultVisible?: boolean;
   mouseEnterDelay?: number;
   enabled?: boolean;
@@ -20,6 +21,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
   defaultVisible,
   mouseEnterDelay = 0,
   enabled = true,
+  theme = "dark",
   style,
 }, ref) => {
   if (!children || Array.isArray(children)) {
@@ -89,7 +91,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
         <Block
           ref={tooltipElement}
           name="tooltip"
-          mod={{ align }}
+          mod={{ align, theme }}
           mix={visibilityClasses}
           style={{ ...offset, ...(style ?? {}) }}
         >

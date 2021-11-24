@@ -68,13 +68,13 @@ export const Timeline: FC<TimelineProps> = ({
   };
 
   const increasePosition: ControlsStepHandler = (_, stepSize) => {
-    const nextPosition = stepSize?.(position, regions, 1) ?? currentPosition + 1;
+    const nextPosition = stepSize?.(length, position, regions, 1) ?? currentPosition + 1;
 
     setInternalPosition(nextPosition);
   };
 
   const decreasePosition: ControlsStepHandler = (_, stepSize) => {
-    const nextPosition = stepSize?.(position, regions, -1) ?? currentPosition - 1;
+    const nextPosition = stepSize?.(length, position, regions, -1) ?? currentPosition - 1;
 
     setInternalPosition(nextPosition);
   };

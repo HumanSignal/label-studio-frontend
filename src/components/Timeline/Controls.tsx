@@ -1,9 +1,9 @@
 import React, { FC, MouseEvent, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
+import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
-import { clamp } from "../../utils/utilities";
+import { clamp, isMacOS } from "../../utils/utilities";
 import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import { TimelineStepFunction } from "./Types";
@@ -59,8 +59,9 @@ export const Controls: FC<ControlsProps> = ({
   onToggleCollapsed,
 }) => {
   const { settings } = useContext(TimelineContext);
-  const [steppedControlsAlt, setSteppedControlsAlt] = useState(false);
+  const [altControlsMode, setAltControlsMode] = useState(false);
   const [inputMode, setInputMode] = useState(false);
+  const [startReached, endReached] = [position === 1, position === length];
 
   const time = useMemo(() => {
     return length / frameRate;
@@ -70,20 +71,19 @@ export const Controls: FC<ControlsProps> = ({
     return position / frameRate;
   }, [position, frameRate]);
 
-  const stepHandlerWrapper = (handler: ControlsStepHandler) => (e: MouseEvent<HTMLButtonElement>) => {
-    const stepSize = steppedControlsAlt ? settings?.stepSize : undefined;
-
-    handler(e, stepSize);
+  const stepHandlerWrapper = (handler: ControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
+    handler(e, stepSize ?? undefined);
   };
 
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
       if (!settings?.stepSize) return;
+      const altMode = e.key === "Shift";
 
-      if (e.type === 'keydown' && e.key === 'Shift') {
-        setSteppedControlsAlt(true);
-      } else if (e.type === 'keyup' && e.key === 'Shift' && steppedControlsAlt) {
-        setSteppedControlsAlt(false);
+      if (e.type === 'keydown' && altMode) {
+        setAltControlsMode(true);
+      } else if (e.type === 'keyup' && altMode && altControlsMode) {
+        setAltControlsMode(false);
       }
     };
 
@@ -94,7 +94,7 @@ export const Controls: FC<ControlsProps> = ({
       document.removeEventListener('keydown', keyboardHandler);
       document.removeEventListener('keyup', keyboardHandler);
     };
-  }, [steppedControlsAlt]);
+  }, [altControlsMode]);
 
   return (
     <Block name="timeline-controls" tag={Space} spread>
@@ -115,49 +115,110 @@ export const Controls: FC<ControlsProps> = ({
             <>{position} <span>of {length}</span></>
           )}
         </Elem>
-        <Elem name="hll"></Elem>
-        <Elem name="actions" tag={Space} collapsed>
-          <ControlButton
-            onClick={stepHandlerWrapper(onStepBackward)}
-            hotkey={settings?.stepBackHotkey}
-          >
-            {steppedControlsAlt ? <IconPrev/> : <IconChevronLeft/>}
-          </ControlButton>
+      </Elem>
 
-          <ControlButton
-            onClick={stepHandlerWrapper(onStepForward)}
-            hotkey={settings?.stepForwardHotkey}
-          >
-            {steppedControlsAlt ? <IconNext/> : <IconChevronRight/>}
-          </ControlButton>
+      <Elem name="main-controls">
+        <Elem name="group" tag={Space} collapsed>
           {extraControls}
+        </Elem>
+        <Elem name="group" tag={Space} collapsed>
+          <AltControls
+            showAlterantive={altControlsMode}
+            main={(
+              <>
+                {settings?.stepSize && (
+                  <ControlButton
+                    onClick={stepHandlerWrapper(onStepBackward, settings.stepSize)}
+                    hotkey={settings?.stepAltBack}
+                    disabled={startReached}
+                  >
+                    {<IconPrev/>}
+                  </ControlButton>
+                )}
+                <ControlButton
+                  onClick={stepHandlerWrapper(onStepBackward)}
+                  hotkey={settings?.stepBackHotkey}
+                  disabled={startReached}
+                >
+                  <IconChevronLeft/>
+                </ControlButton>
+              </>
+            )}
+            alt={(
+              <>
+                <ControlButton
+                  onClick={() => onRewind?.()}
+                  disabled={startReached}
+                >
+                  <IconRewind/>
+                </ControlButton>
+                <ControlButton
+                  onClick={() => onRewind?.()}
+                  disabled={startReached}
+                >
+                  <IconBackward/>
+                </ControlButton>
+              </>
+            )}
+          />
+          <ControlButton onClick={() => onPlayToggle?.(!playing)} hotkey={settings?.playpauseHotkey}>
+            {playing ? <IconPause/> : <IconPlay/>}
+          </ControlButton>
+          <AltControls
+            showAlterantive={altControlsMode}
+            main={(
+              <>
+                <ControlButton
+                  onClick={(e) => onStepForward(e)}
+                  hotkey={settings?.stepForwardHotkey}
+                  disabled={endReached}
+                >
+                  <IconChevronRight/>{}
+                </ControlButton>
+                {settings?.stepSize && (
+                  <ControlButton
+                    disabled={endReached}
+                    onClick={(e) => onStepForward(e, settings.stepSize)}
+                    hotkey={settings?.stepAltForward}
+                  >
+                    <IconNext/>
+                  </ControlButton>
+                )}
+              </>
+            )}
+            alt={(
+              <>
+                <ControlButton
+                  onClick={() => onForward?.()}
+                  disabled={endReached}
+                >
+                  <IconForward/>
+                </ControlButton>
+                <ControlButton
+                  onClick={() => onForward?.()}
+                  disabled={endReached}
+                >
+                  <IconFastForward/>
+                </ControlButton>
+              </>
+            )}
+          />
+        </Elem>
+        <Elem name="group" tag={Space} collapsed>
+          {!disableFrames && (
+            <ControlButton onClick={() => onToggleCollapsed?.(!collapsed)}>{collapsed ? <IconExpand/> : <IconCollapse/>}</ControlButton>
+          )}
+          <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+            {fullscreen ? (
+              <IconFullscreenExit/>
+            ) : (
+              <IconFullscreen/>
+            )}
+          </ControlButton>
         </Elem>
       </Elem>
 
-      <Elem name="group" tag={Space} collapsed>
-        <ControlButton onClick={() => onRewind?.()}>
-          <IconRewind/>
-        </ControlButton>
-        <ControlButton onClick={() => onPlayToggle?.(!playing)} hotkey={settings?.playpauseHotkey}>
-          {playing ? <IconPause/> : <IconPlay/>}
-        </ControlButton>
-        <ControlButton onClick={() => onForward?.()}>
-          <IconForward/>
-        </ControlButton>
-      </Elem>
-
       <Elem name="group" tag={Space} size="small">
-        {!disableFrames && (
-          <ControlButton onClick={() => onToggleCollapsed?.(!collapsed)}>{collapsed ? <IconExpand/> : <IconCollapse/>}</ControlButton>
-        )}
-        <ControlButton onClick={() => onFullScreenToggle?.(false)}>
-          {fullscreen ? (
-            <IconFullscreenExit/>
-          ) : (
-            <IconFullscreen/>
-          )}
-        </ControlButton>
-
 
         <Elem name="time">
           <Time
@@ -196,6 +257,16 @@ const Time: FC<{time: number, position: string}> = ({ time, position }) => {
       {formatted}{position ? <span>{position}</span> : null}
     </Block>
   );
+};
+
+type AltControlsProps = {
+  showAlterantive: boolean,
+  main: JSX.Element,
+  alt: JSX.Element,
+}
+
+const AltControls: FC<AltControlsProps> = (props) => {
+  return props.showAlterantive ? props.alt : props.main;
 };
 
 const allowedKeys = [

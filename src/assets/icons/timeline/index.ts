@@ -1,6 +1,8 @@
 export { ReactComponent as IconChevronLeft } from "./chevron_left.svg";
 export { ReactComponent as IconChevronRight } from "./chevron_right.svg";
 export { ReactComponent as IconForward } from "./forward.svg";
+export { ReactComponent as IconBackward } from "./backward.svg";
+export { ReactComponent as IconFastForward } from "./fastforward.svg";
 export { ReactComponent as IconInterpolationDisabled } from "./interpolation_disabled.svg";
 export { ReactComponent as IconInterpolationAdd } from "./interpolation_add.svg";
 export { ReactComponent as IconInterpolationRemove } from "./interpolation_remove.svg";

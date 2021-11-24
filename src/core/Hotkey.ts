@@ -1,9 +1,10 @@
 import keymaster from "keymaster";
 import { inject } from "mobx-react";
 import { observer } from "mobx-react-lite";
-import { createElement } from "react";
+import { createElement, Fragment } from "react";
 import { Tooltip } from "../common/Tooltip/Tooltip";
 import Hint from "../components/Hint/Hint";
+import { Block, Elem } from "../utils/bem";
 import { isDefined, isMacOS } from "../utils/utilities";
 import defaultKeymap from "./settings/keymap.json";
 
@@ -309,13 +310,30 @@ Hotkey.Tooltip = inject("store")(observer(({ store, name, children, ...props }: 
   if (isDefined(hotkey)) {
     const shortcut = isMacOS() ? hotkey.mac ?? hotkey.key : hotkey.key;
 
-    const title = enabled
-      ? `${props.title ?? hotkey.description}: [${shortcut}]`
-      : hotkey.description;
+    const description = props.title ?? hotkey.description;
+    const hotkeys: JSX.Element[] = [];
+
+    if (enabled) {
+      shortcut.split(",").forEach((combination) => {
+        const keys = combination
+          .split("+")
+          .map(key => createElement(Elem, {
+            tag: 'kbd',
+            name: 'key',
+          }, key));
+
+        hotkeys.push(createElement(Block, {
+          name: 'key-group',
+          tag: 'span',
+          style: { marginLeft: 5 },
+        }, ...keys));
+      });
+    }
 
     return createElement(Tooltip, {
       ...props,
-      title,
+      theme: "light",
+      title: createElement(Fragment, {}, ...[description,...hotkeys]),
     }, children);
   }
 

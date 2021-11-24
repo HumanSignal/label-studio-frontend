@@ -27,12 +27,17 @@ const View: TimelineView<typeof Controls> = {
   Minimap,
   Controls,
   settings: {
-    stepSize(position, regions, direction) {
+    stepSize(_, position, regions, direction) {
       return getKeyframePosition(position, regions, direction);
+    },
+    fastTravelSize() {
+      return 10;
     },
     playpauseHotkey: "video:playpause",
     stepBackHotkey: 'video:frame-backward',
     stepForwardHotkey: 'video:frame-forward',
+    stepAltBack: "video:keyframe-backward",
+    stepAltForward: "video:keyframe-forward",
   },
 };
 

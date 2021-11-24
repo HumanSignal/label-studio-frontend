@@ -39,8 +39,8 @@ export const Seeker: FC<SeekerProps> = ({
     const dimensions = rootRef.current!.getBoundingClientRect();
     const indicatorWidth = indicator.clientWidth;
 
-    const startDrag = e.pageX - dimensions.left;
-    const startOffset = startDrag - (indicatorWidth / 2);
+    const startDrag = e.pageX;
+    const startOffset = startDrag - dimensions.left - (indicatorWidth / 2);
     const parentWidth = dimensions.width;
     const limit = parentWidth - indicatorWidth;
 

@@ -23,6 +23,7 @@ type VideoProps = {
   onClick?: () => void,
   onLoad?: (data: VideoRef) => void,
   onFrameChange?: (frame: number, length: number) => void,
+  onEnded?: () => void,
 }
 
 type PanOptions = {
@@ -463,6 +464,11 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
         }}
         onWaiting={() => {
           setBuffering(true);
+        }}
+        onEnded={() => {
+          setPlaying(false);
+          setBuffering(false);
+          props.onEnded?.();
         }}
       />
     </Block>
