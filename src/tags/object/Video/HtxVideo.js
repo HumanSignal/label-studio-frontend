@@ -23,7 +23,7 @@ const HtxVideoView = ({ item }) => {
   const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [playing, _setPlaying] = useState(false);
   const [position, setPosition] = useState(1);
 
   const [videoSize, setVideoSize] = useState(null);
@@ -32,6 +32,20 @@ const HtxVideoView = ({ item }) => {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+
+  const setPlaying = (playing) => {
+    _setPlaying(playing);
+    if (playing) item.triggerSyncPlay();
+    else item.triggerSyncPause();
+  };
+
+  const togglePlaying = () => {
+    _setPlaying(playing => {
+      if (!playing) item.triggerSyncPlay();
+      else item.triggerSyncPause();
+      return !playing;
+    });
+  };
 
   useEffect(() => {
     const block = videoContainerRef.current;
@@ -263,7 +277,7 @@ const HtxVideoView = ({ item }) => {
                     item.setOnlyFrame(1);
                     item.setLength(length);
                   }}
-                  onClick={() => setPlaying(playing => !playing)}
+                  onClick={togglePlaying}
                   onEnded={() => setPlaying(false)}
                 />
               </>
