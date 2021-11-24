@@ -278,7 +278,10 @@ const HtxVideoView = ({ item }) => {
                     item.setLength(length);
                   }}
                   onClick={togglePlaying}
-                  onEnded={() => setPlaying(false)}
+                  onEnded={() => {
+                    setPlaying(false);
+                    setPosition(videoLength);
+                  }}
                 />
               </>
             )}
