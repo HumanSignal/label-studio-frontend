@@ -362,7 +362,7 @@ export const highlightRange = (range, { label, classNames }) => {
 
   const lastLabel = highlights[highlights.length - 1];
 
-  if (lastLabel) lastLabel.setAttribute("data-label", label);
+  if (lastLabel) lastLabel.setAttribute("data-label", label ?? "");
 
   return highlights;
 };
@@ -454,8 +454,9 @@ export const applySpanStyles = (spanNode, { classNames, label }) => {
     spanNode.classList.add(...classNames);
   }
 
-  if (label === null) spanNode.removeAttribute("data-label");
-  else if (label) spanNode.setAttribute("data-label", label);
+  // label is array, string or null, so check for length
+  if (!label?.length) spanNode.removeAttribute("data-label");
+  else spanNode.setAttribute("data-label", label);
 };
 
 /**
@@ -557,7 +558,9 @@ export const findRangeNative = (start, end, root) => {
  * @param {{ node: Node, position: number }} container
  * @return {{ node: Node, position: number }}
  */
-export const codePointsToChars = ({ node, position }) => {
+export const codePointsToChars = ({ node, position } = {}) => {
+  if (!node) return;
+
   const codePoints = [...node.textContent].slice(0, position);
   const chars = codePoints.join("").length;
 
