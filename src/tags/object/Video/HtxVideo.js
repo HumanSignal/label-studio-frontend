@@ -67,14 +67,16 @@ const HtxVideoView = ({ item }) => {
   }, [playing]);
 
   useEffect(() => {
+    const container = videoContainerRef.current;
+
     const cancelWheel = (e) => {
       if (!e.shiftKey) return;
       e.preventDefault();
     };
 
-    videoContainerRef.current.addEventListener('wheel', cancelWheel);
+    container.addEventListener('wheel', cancelWheel);
 
-    return () => videoContainerRef.current.removeEventListener('wheel', cancelWheel);
+    return () => container.removeEventListener('wheel', cancelWheel);
   }, []);
 
   useEffect(() => {
