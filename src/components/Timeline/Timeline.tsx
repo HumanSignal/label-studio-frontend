@@ -52,7 +52,7 @@ export const Timeline: FC<TimelineProps> = ({
 }) => {
   const View = Views[mode];
 
-  const [currentPosition, setCurrentPosition] = useState(position);
+  const [currentPosition, setCurrentPosition] = useState(clamp(position, 1, Infinity));
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
   const [viewCollapsed, setViewCollapsed] = useState(false);
@@ -68,13 +68,13 @@ export const Timeline: FC<TimelineProps> = ({
   };
 
   const increasePosition: ControlsStepHandler = (_, stepSize) => {
-    const nextPosition = stepSize?.(length, position, regions, 1) ?? currentPosition + 1;
+    const nextPosition = stepSize?.(length, currentPosition, regions, 1) ?? currentPosition + 1;
 
     setInternalPosition(nextPosition);
   };
 
   const decreasePosition: ControlsStepHandler = (_, stepSize) => {
-    const nextPosition = stepSize?.(length, position, regions, -1) ?? currentPosition - 1;
+    const nextPosition = stepSize?.(length, currentPosition, regions, -1) ?? currentPosition - 1;
 
     setInternalPosition(nextPosition);
   };

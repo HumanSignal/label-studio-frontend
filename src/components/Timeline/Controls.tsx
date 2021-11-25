@@ -169,7 +169,7 @@ export const Controls: FC<ControlsProps> = ({
             main={(
               <>
                 <ControlButton
-                  onClick={(e) => onStepForward(e)}
+                  onClick={stepHandlerWrapper(onStepForward)}
                   hotkey={settings?.stepForwardHotkey}
                   disabled={endReached}
                 >
@@ -178,7 +178,7 @@ export const Controls: FC<ControlsProps> = ({
                 {settings?.stepSize && (
                   <ControlButton
                     disabled={endReached}
-                    onClick={(e) => onStepForward(e, settings.stepSize)}
+                    onClick={stepHandlerWrapper(onStepForward, settings.stepSize)}
                     hotkey={settings?.stepAltForward}
                   >
                     <IconNext/>
