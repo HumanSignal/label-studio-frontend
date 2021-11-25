@@ -14,7 +14,7 @@ const RequiredMixin = types
         const objectTag = self.annotation.names.get(self.toname);
 
         for (const reg of objectTag.regs) {
-          const s = reg.results.find(s => s.type === self.resultType);
+          const s = reg.results.find(s => s.from_name === self);
 
           if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
             continue;
