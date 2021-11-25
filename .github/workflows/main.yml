@@ -22,8 +22,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - name: install dependencies
-        run: npm ci
       - name: npm audit action
         uses: oke-py/npm-audit-action@v1.8.2
         with:
