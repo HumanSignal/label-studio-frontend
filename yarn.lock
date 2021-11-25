@@ -7760,7 +7760,7 @@
     "object.assign" "^4.1.2"
 
 "keymaster@*":
-  "resolved" "git+https://git@github.com/nicholasrq/keymaster.git#f6209b180da69c93cc09e6fdc4bae26e6d93a8cc"
+  "resolved" "git+https://git@github.com/nicholasrq/keymaster.git"
   "version" "1.6.3"
 
 "kind-of@^6.0.2", "kind-of@^6.0.3":
