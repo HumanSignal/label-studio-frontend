@@ -76,7 +76,6 @@ const TimeTraveller = types
         self.history.splice(self.undoIdx + 1);
         self.history.push(recorder);
         self.undoIdx = self.history.length - 1;
-        console.trace("Undo state created");
       },
 
       reinit() {
