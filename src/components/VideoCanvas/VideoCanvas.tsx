@@ -87,16 +87,14 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const canvasWidth = useMemo(() => props.width ?? 600, [props.width]);
   const canvasHeight = useMemo(() => props.height ?? 600, [props.height]);
 
-  const [minZoom, maxZoom] = [zoomSteps[0], zoomSteps[zoomSteps.length - 1]];
-
   const framerate = props.framerate ?? 29.97;
   const [loading, setLoading] = useState(true);
   const [length, setLength] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(props.position ?? 1);
   const [playing, setPlaying] = useState(false);
   const [buffering, setBuffering] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState<PanOptions>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(props.zoom ?? 1);
+  const [pan, setPan] = useState<PanOptions>(props.pan ?? { x: 0, y: 0 });
 
   const [videoDimensions, setVideoDimensions] = useState<VideoDimentions>({ width: 0, height: 0, ratio: 1 });
 
@@ -114,13 +112,15 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     return result.join(" ");
   }, [brightness, contrast, saturation]);
 
-  const drawVideo = () => {
+  const drawVideo = useCallback(() => {
     try {
       if (contextRef.current && videoRef.current) {
         const context = contextRef.current;
         const { width, height } = videoDimensions;
 
         if (width === 0 && height === 0) return;
+
+        console.log({ zoom, pan });
 
         const resultWidth = width * zoom;
         const resultHeight = height * zoom;
@@ -141,7 +141,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     } catch(e) {
       console.log('Error rendering video', e);
     }
-  };
+  }, [videoDimensions, zoom, pan, filters, canvasWidth, canvasHeight]);
 
   const updateFrame = useCallback((force = false) => {
     if (buffering && force !== true) return;
@@ -155,35 +155,6 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       onChange(frame, length);
     }
   }, [buffering, framerate, currentFrame, drawVideo, props.onFrameChange, length]);
-
-  const handleZoom = useCallback((e: WheelEvent<HTMLDivElement>) => {
-    const delta = e.deltaY * 0.01;
-    const newZoom = clampZoom(zoom + delta);
-
-    setZoom(newZoom);
-  }, [maxZoom, minZoom, zoom]);
-
-  const handlePan = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    const startX = e.pageX;
-    const startY = e.pageY;
-
-    const onMouseMove = (e: globalThis.MouseEvent) => {
-      const position: PanOptions = {
-        x: pan.x + (e.pageX - startX),
-        y: pan.y + (e.pageY - startY),
-      };
-
-      setPan(position);
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  }, [pan.x, pan.y]);
 
   useEffect(() => {
     if (!playing) {
@@ -276,7 +247,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
   useEffect(() => {
     drawVideo();
-  }, [filters]);
+  }, [filters, zoom, pan, canvasWidth, canvasHeight]);
 
   useEffect(() => {
     const observer = new ResizeObserver(() => {
@@ -367,10 +338,15 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     const ratio = zoomRatio(canvasWidth, canvasHeight, width, height);
 
     if (videoDimensions.ratio !== ratio) {
-      setVideoDimensions({ ...videoDimensions, ratio });
-      setZoom(ratio);
+      const result = { ...videoDimensions, ratio };
+
+      setVideoDimensions(result);
+
+      if (props.zoom !== videoDimensions.ratio) {
+        props.onResize?.(result);
+      }
     }
-  }, [canvasWidth, canvasHeight, videoDimensions]);
+  }, [zoom, canvasWidth, canvasHeight, videoDimensions]);
 
   useEffect(() => {
     let isLoaded = false;
@@ -432,8 +408,6 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       )}
       <Elem
         name="view"
-        onWheel={props.allowInteractions ? handleZoom : undefined}
-        onMouseDown={props.allowInteractions ? handlePan : undefined}
         onClick={props.onClick}
         style={{
           width: canvasWidth,
@@ -494,4 +468,4 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   );
 });
 
-VideoCanvas.displayName = "VideoCanvas";
+

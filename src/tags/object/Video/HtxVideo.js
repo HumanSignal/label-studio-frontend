@@ -188,7 +188,7 @@ const HtxVideoView = ({ item }) => {
     setPan({ x: 0, y: 0 });
   }, []);
 
-  const zoomToHundered = useCallback(() => {
+  const zoomReset = useCallback(() => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
   });
@@ -226,7 +226,7 @@ const HtxVideoView = ({ item }) => {
                   <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
                   <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
                   <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
-                  <Menu.Item onClick={zoomToHundered}>Zoom 100%</Menu.Item>
+                  <Menu.Item onClick={zoomReset}>Zoom 100%</Menu.Item>
                 </Menu>
               )}
             >

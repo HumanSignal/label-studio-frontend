@@ -44,6 +44,7 @@ const VideoRegionsPure = ({
   const selected = regions.filter((reg) => reg.selected && !reg.hidden);
 
   const workinAreaCoordinates = useMemo(() => {
+    console.log('update');
     const resultWidth = videoDimensions.width * zoom;
     const resultHeight = videoDimensions.height * zoom;
 
@@ -59,7 +60,7 @@ const VideoRegionsPure = ({
       realWidth: videoDimensions.width,
       realHeight: videoDimensions.height,
     };
-  }, [pan, zoom, videoDimensions, width, height]);
+  }, [pan.x, pan.y, zoom, videoDimensions, width, height]);
 
   const layerProps = useMemo(() => ({
     width: workinAreaCoordinates.width,
@@ -71,8 +72,6 @@ const VideoRegionsPure = ({
       y: workinAreaCoordinates.y,
     },
   }), [workinAreaCoordinates, zoom]);
-
-  console.log(workinAreaCoordinates, videoDimensions);
 
   const normalizeMouseOffsets = useCallback((x, y) => {
     const { x: offsetLeft, y: offsetTop } = workinAreaCoordinates;
