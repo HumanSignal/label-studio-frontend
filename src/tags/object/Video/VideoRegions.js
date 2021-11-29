@@ -33,7 +33,7 @@ const VideoRegionsPure = ({
   width,
   height,
   zoom,
-  workingArea,
+  workingArea: videoDimensions,
   locked = false,
   pan = { x: 0, y: 0 },
 }) => {
@@ -44,8 +44,8 @@ const VideoRegionsPure = ({
   const selected = regions.filter((reg) => reg.selected && !reg.hidden);
 
   const workinAreaCoordinates = useMemo(() => {
-    const resultWidth = workingArea.width * zoom;
-    const resultHeight = workingArea.height * zoom;
+    const resultWidth = videoDimensions.width * zoom;
+    const resultHeight = videoDimensions.height * zoom;
 
     const offsetLeft = ((width - resultWidth) / 2) + pan.x;
     const offsetTop = ((height - resultHeight) / 2) + pan.y;
@@ -56,10 +56,10 @@ const VideoRegionsPure = ({
       x: offsetLeft,
       y: offsetTop,
       scale: zoom,
-      realWidth: workingArea.width,
-      realHeight: workingArea.height,
+      realWidth: videoDimensions.width,
+      realHeight: videoDimensions.height,
     };
-  }, [pan, zoom, workingArea, width, height]);
+  }, [pan, zoom, videoDimensions, width, height]);
 
   const layerProps = useMemo(() => ({
     width: workinAreaCoordinates.width,
@@ -72,6 +72,8 @@ const VideoRegionsPure = ({
     },
   }), [workinAreaCoordinates, zoom]);
 
+  console.log(workinAreaCoordinates, videoDimensions);
+
   const normalizeMouseOffsets = useCallback((x, y) => {
     const { x: offsetLeft, y: offsetTop } = workinAreaCoordinates;
 
@@ -83,7 +85,7 @@ const VideoRegionsPure = ({
 
   useEffect(() => {
     if (!isDrawing && newRegion) {
-      const { width: waWidth, height: waHeight } = workingArea;
+      const { width: waWidth, height: waHeight } = videoDimensions;
       let x = (newRegion.x / waWidth) * 100;
       let y = (newRegion.y / waHeight) * 100;
       let width = (newRegion.width / waWidth) * 100;
@@ -104,7 +106,7 @@ const VideoRegionsPure = ({
       item.addRegion(fixedRegion);
       setNewRegion(null);
     }
-  }, [isDrawing, workinAreaCoordinates, workingArea]);
+  }, [isDrawing, workinAreaCoordinates, videoDimensions]);
 
   const handleMouseDown = e => {
     if (stageRef.current?.pointertargetShape) return;

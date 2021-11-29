@@ -279,6 +279,9 @@ const HtxVideoView = ({ item }) => {
                     item.setOnlyFrame(1);
                     item.setLength(length);
                   }}
+                  onResize={(videoDimensions) => {
+                    setVideoDimensions(videoDimensions);
+                  }}
                   onClick={togglePlaying}
                   onEnded={() => {
                     setPlaying(false);

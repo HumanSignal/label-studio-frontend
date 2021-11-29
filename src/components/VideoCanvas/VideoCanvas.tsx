@@ -24,11 +24,18 @@ type VideoProps = {
   onLoad?: (data: VideoRef) => void,
   onFrameChange?: (frame: number, length: number) => void,
   onEnded?: () => void,
+  onResize?: (dimensions: VideoDimentions) => void,
 }
 
 type PanOptions = {
   x: number,
   y: number,
+}
+
+type VideoDimentions = {
+  width: number,
+  height: number,
+  ratio: number,
 }
 
 // @todo not in use; move all the zoom handling up the callstack
@@ -91,7 +98,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<PanOptions>({ x: 0, y: 0 });
 
-  const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
+  const [videoDimensions, setVideoDimensions] = useState<VideoDimentions>({ width: 0, height: 0, ratio: 1 });
 
   const [contrast, setContrast] = useState(1);
   const [brightness, setBrightness] = useState(1);
@@ -270,6 +277,16 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   useEffect(() => {
     drawVideo();
   }, [filters]);
+
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      props.onResize?.(videoDimensions);
+    });
+
+    observer.observe(rootRef.current!);
+
+    return () => observer.disconnect();
+  }, [videoDimensions]);
 
   const refSource: VideoRef = {
     currentFrame,
