@@ -961,6 +961,12 @@ const Annotation = types
         ...item.toJSON(),
         fromSuggestion: true,
       });
+      const area = self.areas.get(id);
+      const activeStates = area.object.activeStates();
+
+      activeStates.forEach(state => {
+        area.setValue(state);
+      });
       self.suggestions.delete(id);
     },
 
