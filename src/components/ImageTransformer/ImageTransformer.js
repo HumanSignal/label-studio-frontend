@@ -230,12 +230,12 @@ export default class TransformerComponent extends Component {
 
     return (
       <>
-        { draggableBackground }
+        { this.props.singleNodeMode !== true && draggableBackground }
         <LSTransformer
           resizeEnabled={true}
           ignoreStroke={true}
-          keepRatio={false}
-          useSingleNodeRotation={this.props.rotateEnabled}
+          keepRatio={this.props.singleNodeMode !== true}
+          useSingleNodeRotation={this.props.useSingleNodeRotation}
           rotateEnabled={this.props.rotateEnabled}
           borderDash={[3, 1]}
           // borderStroke={"red"}
@@ -263,7 +263,8 @@ export default class TransformerComponent extends Component {
           ref={node => {
             this.transformer = node;
           }}
-        /></>
+        />
+      </>
     );
   }
 }
