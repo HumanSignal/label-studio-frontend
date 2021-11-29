@@ -73,8 +73,6 @@ const RegionsMixin = types
 
       setDrawing(val) {
         self.isDrawing = val;
-
-        self.notifyDrawingFinished();
       },
 
       setShapeRef(ref) {

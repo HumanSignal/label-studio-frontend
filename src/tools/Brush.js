@@ -125,6 +125,7 @@ const _Tool = types
 
         self.applyActiveStates(newArea);
         self.deleteRegion();
+        newArea.notifyDrawingFinished();
         return newArea;
       },
 
