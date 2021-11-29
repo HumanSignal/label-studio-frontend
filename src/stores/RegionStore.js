@@ -100,7 +100,7 @@ const SelectionMap = types.model(
 
 export default types.model("RegionStore", {
   sort: types.optional(types.enumeration(["date", "score"]), "date"),
-  sortOrder: types.optional(types.enumeration(["asc", "desc"]), "desc"),
+  sortOrder: types.optional(types.enumeration(["asc", "desc"]), "asc"),
 
   group: types.optional(types.enumeration(["type", "label"]), "type"),
 
@@ -179,7 +179,7 @@ export default types.model("RegionStore", {
 
     get sortedRegions() {
       const sorts = {
-        date: isDesc => (isDesc ? self.regions : [...self.regions].reverse()),
+        date: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
         score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
