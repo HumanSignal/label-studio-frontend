@@ -66,7 +66,7 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
     <>
       <ControlButton
         onClick={canAddKeypoint ? onKeypointAdd : onKeypointRemove}
-        disabled={!closestKeypoint}
+        disabled={!canAddKeypoint}
       >{keypointIcon}</ControlButton>
       <ControlButton
         onClick={canAddInterpolation ? onLifespanAdd : onLifespanRemove}
