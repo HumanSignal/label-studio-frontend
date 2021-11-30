@@ -30,6 +30,38 @@ function detectParseError(doc?: Document) {
   }
 }
 
+const deepReplaceAttributes = (
+  root: Element,
+  idx: number,
+  indexFlag = "{{idx}}",
+) => {
+  function recursiveClone(node: Element) {
+    console.log({ node, idx, indexFlag });
+
+    if (node.attributes === undefined) return console.log('no attributes. skipping');
+
+    const attrNames = Array.from(node.attributes).map(att => att.name);
+
+    for (const name of attrNames) {
+      const value = node.getAttribute(name);
+
+      console.log(name, value);
+      if (name === '$$') {
+        node.setAttribute(name, value?.map(c => recursiveClone(c)));
+      } else if (name === '$') {
+        node.setAttribute(name, recursiveClone(value));
+      } else if (typeof name === 'string') {
+        node.setAttribute(name, value?.replace?.(indexFlag, idx));
+      }
+
+    }
+
+    node.childNodes.forEach(node => recursiveClone(node as Element));
+  }
+
+  recursiveClone(root);
+};
+
 function tagIntoObject(
   node: Element,
   taskData: Record<string, any>,
@@ -37,6 +69,7 @@ function tagIntoObject(
 ): ConfigNode {
   const props = attrsToProps(node, replaces);
   const type = node.tagName.toLowerCase();
+  const indexFlag = props.indexFlag ?? "{{idx}}";
   const data: ConfigNode = {
     ...props,
     id: guidGenerator(),
@@ -49,16 +82,24 @@ function tagIntoObject(
     const views = [];
 
     for (let i = 0; i < repeaterArray.length; i++) {
-      const newReplaces: Record<string, string> = { ...replaces, [props.indexflag ?? "{{idx}}"]: i };
+      const newReplaces: Record<string, string> = { ...replaces, [indexFlag]: i };
       const view = {
         id: guidGenerator(),
         tagName: "View",
         type: "view",
-        children: [...node.children].map(child => tagIntoObject(child, taskData, newReplaces)),
+        children: [...node.children].map(child => {
+          const clonedNode = child.cloneNode(true) as Element;
+
+          deepReplaceAttributes(clonedNode, i, indexFlag);
+
+          return tagIntoObject(clonedNode, taskData, newReplaces);
+        }),
       };
 
       views.push(view);
     }
+
+    console.log(views);
 
     data.tagName = "View";
     data.type = "view";
