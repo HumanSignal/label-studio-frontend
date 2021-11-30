@@ -65,7 +65,7 @@ function tagIntoObject(
 ): ConfigNode {
   const props = attrsToProps(node, replaces);
   const type = node.tagName.toLowerCase();
-  const indexFlag = props.indexFlag ?? "{{idx}}";
+  const indexFlag = props.indexflag ?? "{{idx}}";
   const data: ConfigNode = {
     ...props,
     id: guidGenerator(),
