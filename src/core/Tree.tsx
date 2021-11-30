@@ -36,16 +36,13 @@ const deepReplaceAttributes = (
   indexFlag = "{{idx}}",
 ) => {
   function recursiveClone(node: Element) {
-    console.log({ node, idx, indexFlag });
-
-    if (node.attributes === undefined) return console.log('no attributes. skipping');
+    if (node.attributes === undefined) return;
 
     const attrNames = Array.from(node.attributes).map(att => att.name);
 
     for (const name of attrNames) {
       const value = node.getAttribute(name);
 
-      console.log(name, value);
       if (name === '$$') {
         node.setAttribute(name, value?.map(c => recursiveClone(c)));
       } else if (name === '$') {
@@ -53,7 +50,6 @@ const deepReplaceAttributes = (
       } else if (typeof name === 'string') {
         node.setAttribute(name, value?.replace?.(indexFlag, idx));
       }
-
     }
 
     node.childNodes.forEach(node => recursiveClone(node as Element));
