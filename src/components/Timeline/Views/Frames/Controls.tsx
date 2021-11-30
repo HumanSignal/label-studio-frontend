@@ -13,6 +13,7 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
   onAction,
 }) => {
   const { position, regions } = useContext(TimelineContext);
+  const hasSelectedRegion = regions.some(({ selected }) => selected);
   const closestKeypoint = useMemo(() => {
     const region = regions.find(r => r.selected);
 
@@ -66,7 +67,7 @@ export const Controls: FC<TimelineExtraControls<Actions, DataType>> = ({
     <>
       <ControlButton
         onClick={canAddKeypoint ? onKeypointAdd : onKeypointRemove}
-        disabled={!canAddKeypoint}
+        disabled={!hasSelectedRegion}
       >{keypointIcon}</ControlButton>
       <ControlButton
         onClick={canAddInterpolation ? onLifespanAdd : onLifespanRemove}
