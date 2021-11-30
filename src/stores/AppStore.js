@@ -169,7 +169,6 @@ export default types
       return false;
     },
     get forceAutoAnnotation() {
-      console.log(`forceAutoAnnotation`, getEnv(self).forceAutoAnnotation);
       return getEnv(self).forceAutoAnnotation;
     },
     get forceAutoAcceptSuggestions() {
