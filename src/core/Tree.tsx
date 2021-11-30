@@ -33,7 +33,7 @@ function detectParseError(doc?: Document) {
 const deepReplaceAttributes = (
   root: Element,
   idx: number,
-  indexFlag = "{{idx}}",
+  indexFlag: string,
 ) => {
   function recursiveClone(node: Element) {
     if (node.attributes === undefined) return;
@@ -48,7 +48,7 @@ const deepReplaceAttributes = (
       } else if (name === '$') {
         node.setAttribute(name, recursiveClone(value));
       } else if (typeof name === 'string') {
-        node.setAttribute(name, value?.replace?.(indexFlag, idx));
+        node.setAttribute(name, value?.replace?.(indexFlag, `${idx}`) ?? "");
       }
     }
 
@@ -94,8 +94,6 @@ function tagIntoObject(
 
       views.push(view);
     }
-
-    console.log(views);
 
     data.tagName = "View";
     data.type = "view";
