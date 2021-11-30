@@ -256,14 +256,14 @@ export const Frames: FC<TimelineViewProps> = ({
       >
         <Elem name="filler">
           <Elem name="keypoints">
-            {regions.map(region => (
+            {regions.map(region => region.sequence.length > 0 ? (
               <Keypoints
                 key={region.id}
                 region={region}
                 startOffset={timelineStartOffset}
                 onSelectRegion={(e, id) => onSelectRegion?.(e, id)}
               />
-            ))}
+            ) : null)}
           </Elem>
         </Elem>
       </Elem>
