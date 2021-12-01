@@ -44,7 +44,6 @@ const VideoRegionsPure = ({
   const selected = regions.filter((reg) => reg.selected && !reg.hidden);
 
   const workinAreaCoordinates = useMemo(() => {
-    console.log('update');
     const resultWidth = videoDimensions.width * zoom;
     const resultHeight = videoDimensions.height * zoom;
 

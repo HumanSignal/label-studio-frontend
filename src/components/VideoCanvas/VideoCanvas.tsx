@@ -120,8 +120,6 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
 
         if (width === 0 && height === 0) return;
 
-        console.log({ zoom, pan });
-
         const resultWidth = width * zoom;
         const resultHeight = height * zoom;
 

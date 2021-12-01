@@ -17,6 +17,26 @@ import { VideoRegions } from "./VideoRegions";
 
 const hotkeys = Hotkey("Video", "Video Annotation");
 
+const enterFullscreen = (el) => {
+  if ('webkitRequestFullscreen' in el) {
+    el.webkitRequestFullscreen();
+  } else {
+    el.requestFullscreen();
+  }
+};
+
+const cancelFullscreen = () => {
+  if ('webkitCancelFullScreen' in document) {
+    document.webkitCancelFullScreen();
+  } else {
+    document.exitFullscreen();
+  }
+};
+
+const getFullscreenElement = () => {
+  return document.webkitCurrentFullScreenElement ?? document.fullscreenElement;
+};
+
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
   const videoContainerRef = useRef();
@@ -120,23 +140,29 @@ const HtxVideoView = ({ item }) => {
   }, []);
 
   useEffect(() => {
-    if (fullscreen && !document.fullscreenElement) {
-      mainContentRef.current.requestFullscreen();
-    } else if (!fullscreen && document.fullscreenElement) {
-      document.exitFullscreen();
+    const fullscreenElement = getFullscreenElement();
+
+    if (fullscreen && !fullscreenElement) {
+      enterFullscreen(mainContentRef.current);
+    } else if (!fullscreen && fullscreenElement) {
+      cancelFullscreen();
     }
   }, [fullscreen]);
 
   useEffect(() => {
     const onChangeFullscreen = () => {
-      if (!document.fullscreenElement) {
-        setFullscreen(false);
-      }
+      console.log('fullscreen change');
+      const fullscreenElement = getFullscreenElement();
+
+      if (!fullscreenElement) setFullscreen(false);
     };
 
-    document.addEventListener('fullscreenchange', onChangeFullscreen);
+    const evt = 'onwebkitfullscreenchange' in document ? 'webkitfullscreenchange' : 'fullscreenchange';
 
-    return () => document.removeEventListener('fullscreenchange', onChangeFullscreen);
+    console.log(`attached to ${evt}`);
+    document.addEventListener(evt, onChangeFullscreen);
+
+    return () => document.removeEventListener(evt, onChangeFullscreen);
   }, []);
 
   const handleZoom = useCallback((e) => {
