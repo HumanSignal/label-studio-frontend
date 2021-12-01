@@ -12,7 +12,7 @@ interface HintProps {
 /**
  * Hint Component
  */
-export const Hint: FC<HintProps> = (props) => {
+const Hint: FC<HintProps> = (props) => {
   return (
     <Block
       name="hint"
@@ -25,3 +25,5 @@ export const Hint: FC<HintProps> = (props) => {
     </Block>
   );
 };
+
+export default Hint;
