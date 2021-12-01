@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown";
@@ -66,6 +67,10 @@ const HtxVideoView = ({ item }) => {
       return !playing;
     });
   };
+
+  const supportsRegions = useMemo(() => {
+    return item.control().type.match("video");
+  }, [item]);
 
   useEffect(() => {
     const block = videoContainerRef.current;
@@ -151,7 +156,6 @@ const HtxVideoView = ({ item }) => {
 
   useEffect(() => {
     const onChangeFullscreen = () => {
-      console.log('fullscreen change');
       const fullscreenElement = getFullscreenElement();
 
       if (!fullscreenElement) setFullscreen(false);
@@ -159,7 +163,6 @@ const HtxVideoView = ({ item }) => {
 
     const evt = 'onwebkitfullscreenchange' in document ? 'webkitfullscreenchange' : 'fullscreenchange';
 
-    console.log(`attached to ${evt}`);
     document.addEventListener(evt, onChangeFullscreen);
 
     return () => document.removeEventListener(evt, onChangeFullscreen);
@@ -270,7 +273,7 @@ const HtxVideoView = ({ item }) => {
           >
             {videoSize && (
               <>
-                {loaded && item.store.hasSegmentation && (
+                {loaded && supportsRegions && (
                   <VideoRegions
                     item={item}
                     zoom={zoom}
@@ -330,7 +333,7 @@ const HtxVideoView = ({ item }) => {
             regions={regions}
             fullscreen={fullscreen}
             defaultStepSize={16}
-            disableFrames={!item.store.hasSegmentation}
+            disableFrames={!supportsRegions}
             framerate={item.framerate}
             onPositionChange={item.setFrame}
             onPlayToggle={(playing) => {

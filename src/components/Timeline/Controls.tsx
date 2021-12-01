@@ -123,6 +123,7 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           <AltControls
+            hidden={disableFrames ?? false}
             showAlterantive={altControlsMode}
             main={(
               <>
@@ -165,6 +166,7 @@ export const Controls: FC<ControlsProps> = ({
             {playing ? <IconPause/> : <IconPlay/>}
           </ControlButton>
           <AltControls
+            hidden={disableFrames ?? false}
             showAlterantive={altControlsMode}
             main={(
               <>
@@ -261,11 +263,13 @@ const Time: FC<{time: number, position: string}> = ({ time, position }) => {
 
 type AltControlsProps = {
   showAlterantive: boolean,
+  hidden: boolean,
   main: JSX.Element,
   alt: JSX.Element,
 }
 
 const AltControls: FC<AltControlsProps> = (props) => {
+  if (props.hidden) return null;
   return props.showAlterantive ? props.alt : props.main;
 };
 
