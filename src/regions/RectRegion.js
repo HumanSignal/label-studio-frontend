@@ -258,7 +258,7 @@ const HtxRectangleView = ({ item }) => {
 
   const eventHandlers = {};
 
-  if (!suggestion && !item.editable) {
+  if (!suggestion && item.editable) {
     eventHandlers.onTransformEnd = (e) => {
       const t = e.target;
 
@@ -366,7 +366,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && !item.editable}
+        listening={!suggestion && item.editable}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

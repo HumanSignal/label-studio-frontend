@@ -584,7 +584,7 @@ const HtxBrushView = ({ item }) => {
             item.setHighlight(false);
             item.onClickRegion(e);
           }}
-          listening={!suggestion && !item.editable}
+          listening={!suggestion && item.editable}
         >
           {/* RLE */}
           <Image

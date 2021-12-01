@@ -592,7 +592,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
-      listening={!suggestion && !item.editable}
+      listening={!suggestion && item.editable}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 

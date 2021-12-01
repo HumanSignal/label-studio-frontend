@@ -259,7 +259,7 @@ const HtxKeyPointView = ({ item }) => {
         }}
         {...props}
         draggable={item.editable}
-        listening={!suggestion && !item.editable}
+        listening={!suggestion && item.editable}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>
     </Fragment>

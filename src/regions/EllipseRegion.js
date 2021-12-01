@@ -366,7 +366,7 @@ const HtxEllipseView = ({ item }) => {
           item.onClickRegion(e);
         }}
         draggable={item.editable}
-        listening={!suggestion && !item.editable}
+        listening={!suggestion && item.editable}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
     </Fragment>
