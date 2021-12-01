@@ -12,6 +12,10 @@ export const parseValue = (value, task) => {
 
   if (!value) return "";
 
+  if (value.match(reVar)?.length === 1) {
+    return get(task, value.substr(1));
+  }
+
   // case for visual Text tags to display some additional info ("Title: $title")
   return value.replace(reVar, (v) => {
     if (v && v.startsWith('$')) {
