@@ -1,4 +1,4 @@
-import { Component, CSSProperties } from "react";
+import { CSSProperties, FC } from "react";
 import { Block } from "../../utils/bem";
 
 import "./Hint.styl";
@@ -12,18 +12,16 @@ interface HintProps {
 /**
  * Hint Component
  */
-export default class Hint extends Component<HintProps> {
-  render() {
-    return (
-      <Block
-        name="hint"
-        tag="sup"
-        className={this.props.className}
-        data-copy={this.props.copy}
-        style={this.props.style}
-      >
-        {this.props.children}
-      </Block>
-    );
-  }
-}
+export const Hint: FC<HintProps> = (props) => {
+  return (
+    <Block
+      name="hint"
+      tag="sup"
+      className={props.className}
+      data-copy={props.copy}
+      style={props.style}
+    >
+      {props.children}
+    </Block>
+  );
+};
