@@ -115,7 +115,7 @@ export function atobUnicode(str: string) {
  * @param {string} unsafe
  */
 export function escapeHtml(unsafe: string) {
-  return unsafe
+  return (unsafe ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
