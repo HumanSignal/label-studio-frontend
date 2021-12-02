@@ -152,9 +152,10 @@ export default types
     },
 
     get hasSegmentation() {
-      const match = Array.from(self.annotationStore.names.values()).map(({ type }) => !!type.match(/labels/));
+      // not an object and not a classification
+      const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;
 
-      return match.find(v => v === true) ?? false;
+      return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
     get canGoNextTask() {
       if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {

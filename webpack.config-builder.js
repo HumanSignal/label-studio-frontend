@@ -62,7 +62,7 @@ const optimizer = () => {
     runtimeChunk: true,
   };
 
-  if (process.env.NODE_ENV === 'production') {
+  if (DEFAULT_NODE_ENV === 'production') {
     result.minimizer.push(
       new TerserPlugin({
         parallel: true,
