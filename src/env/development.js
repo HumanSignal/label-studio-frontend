@@ -16,12 +16,13 @@ import { Nested } from "../examples/nested_choices/complicated";
 import { Dialogue } from "../examples/phrases";
 
 /**
- * Audio
+ * Audio/Video
  */
 import { AudioClassification } from "../examples/audio_classification";
 import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
-import { VideoRegions } from "../examples/video";
+import { VideoRectangles } from "../examples/video_bboxes";
+import { VideoClassification } from "../examples/video";
 
 /**
  * Image
