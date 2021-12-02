@@ -949,11 +949,19 @@ const Annotation = types
       Array.from(self.suggestions.keys()).forEach((id) => {
         self.acceptSuggestion(id);
       });
+      self.deleteAllDynamicregions();
     },
 
     rejectAllSuggestions() {
       Array.from(self.suggestions.keys).forEach((id) => {
         self.suggestions.delete(id);
+      });
+      self.deleteAllDynamicregions();
+    },
+
+    deleteAllDynamicregions() {
+      self.regions.forEach(r => {
+        r.dynamic && r.deleteRegion();
       });
     },
 
@@ -963,6 +971,12 @@ const Annotation = types
       self.areas.set(id, {
         ...item.toJSON(),
         fromSuggestion: true,
+      });
+      const area = self.areas.get(id);
+      const activeStates = area.object.activeStates();
+
+      activeStates.forEach(state => {
+        area.setValue(state);
       });
       self.suggestions.delete(id);
     },

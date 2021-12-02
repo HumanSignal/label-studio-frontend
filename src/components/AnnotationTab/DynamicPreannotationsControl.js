@@ -4,7 +4,7 @@ import { Block } from "../../utils/bem";
 import "./DynamicPreannotationsControl.styl";
 
 export const DynamicPreannotationsControl = inject("store")(observer(({ store }) => {
-  return store.autoAnnotation ? (
+  return store.autoAnnotation && !store.forceAutoAcceptSuggestions ? (
     <Block name="dynamic-preannotations-control">
       <Input
         type="checkbox"

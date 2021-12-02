@@ -65,7 +65,7 @@ const Model = types
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
 
-    supportsTransform: true,
+    _supportsTransform: true,
     hideable: true,
   }))
   .volatile(() => {
@@ -366,7 +366,7 @@ const HtxEllipseView = ({ item }) => {
           item.onClickRegion(e);
         }}
         draggable={item.editable}
-        listening={!suggestion}
+        listening={!suggestion && item.editable}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
     </Fragment>

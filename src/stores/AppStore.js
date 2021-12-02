@@ -117,12 +117,12 @@ export default types
     /**
      * Dynamic preannotations
      */
-    autoAnnotation: false,
+    _autoAnnotation: false,
 
     /**
      * Auto accept suggested annotations
      */
-    autoAcceptSuggestions: false,
+    _autoAcceptSuggestions: false,
 
     /**
      * Indicator for suggestions awaiting
@@ -134,8 +134,8 @@ export default types
   .preProcessSnapshot((sn) => {
     return {
       ...sn,
-      autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
-      autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
+      _autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
+      _autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
     };
   })
   .volatile(() => ({
@@ -168,6 +168,18 @@ export default types
         return true;
       }
       return false;
+    },
+    get forceAutoAnnotation() {
+      return getEnv(self).forceAutoAnnotation;
+    },
+    get forceAutoAcceptSuggestions() {
+      return getEnv(self).forceAutoAcceptSuggestions;
+    },
+    get autoAnnotation() {
+      return self.forceAutoAnnotation || self._autoAnnotation;
+    },
+    get autoAcceptSuggestions() {
+      return self.forceAutoAcceptSuggestions || self._autoAcceptSuggestions;
     },
   }))
   .actions(self => {
@@ -578,12 +590,12 @@ export default types
     }
 
     const setAutoAnnotation = (value) => {
-      self.autoAnnotation = value;
+      self._autoAnnotation = value;
       localStorage.setItem("autoAnnotation", value);
     };
 
     const setAutoAcceptSuggestions = (value) => {
-      self.autoAcceptSuggestions = value;
+      self._autoAcceptSuggestions = value;
       localStorage.setItem("autoAcceptSuggestions", value);
     };
 

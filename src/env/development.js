@@ -150,6 +150,9 @@ function configureApplication(params) {
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
     onNextTask: params.onNextTask || External.onNextTask,
     onPrevTask: params.onPrevTask || External.onPrevTask,
+    // other settings aka flags
+    forceAutoAnnotation: params.forceAutoAnnotation ?? false,
+    forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions ?? false,
   };
 
   return options;
