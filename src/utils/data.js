@@ -14,6 +14,11 @@ export const parseValue = (value, task) => {
 
   if (!value) return "";
 
+  // value can refer to structures, not only texts, so just replace wouldn't be enough
+  if (value.match(reVar)?.[0] === value) {
+    return get(task, value.substr(1)) ?? "";
+  }
+
   return value.replace(reVar, (v) => get(task, v.substr(1) ?? ""));
 };
 
