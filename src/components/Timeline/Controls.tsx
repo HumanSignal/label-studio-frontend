@@ -123,11 +123,10 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           <AltControls
-            hidden={disableFrames ?? false}
-            showAlterantive={altControlsMode}
+            showAlterantive={altControlsMode && !disableFrames}
             main={(
               <>
-                {settings?.stepSize && (
+                {settings?.stepSize && !disableFrames && (
                   <ControlButton
                     onClick={stepHandlerWrapper(onStepBackward, settings.stepSize)}
                     hotkey={settings?.stepAltBack}
@@ -166,8 +165,7 @@ export const Controls: FC<ControlsProps> = ({
             {playing ? <IconPause/> : <IconPlay/>}
           </ControlButton>
           <AltControls
-            hidden={disableFrames ?? false}
-            showAlterantive={altControlsMode}
+            showAlterantive={altControlsMode && !disableFrames}
             main={(
               <>
                 <ControlButton
@@ -177,7 +175,7 @@ export const Controls: FC<ControlsProps> = ({
                 >
                   <IconChevronRight/>{}
                 </ControlButton>
-                {settings?.stepSize && (
+                {settings?.stepSize && !disableFrames && (
                   <ControlButton
                     disabled={endReached}
                     onClick={stepHandlerWrapper(onStepForward, settings.stepSize)}
@@ -263,9 +261,9 @@ const Time: FC<{time: number, position: string}> = ({ time, position }) => {
 
 type AltControlsProps = {
   showAlterantive: boolean,
-  hidden: boolean,
   main: JSX.Element,
   alt: JSX.Element,
+  hidden?: boolean,
 }
 
 const AltControls: FC<AltControlsProps> = (props) => {
