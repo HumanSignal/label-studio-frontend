@@ -69,7 +69,9 @@ const HtxVideoView = ({ item }) => {
   };
 
   const supportsRegions = useMemo(() => {
-    return item.control().type.match("video");
+    const controlType = item.control()?.type;
+
+    return controlType ? controlType.match("video") : false;
   }, [item]);
 
   useEffect(() => {
