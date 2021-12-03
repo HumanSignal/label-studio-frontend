@@ -44,10 +44,14 @@ const TimeTraveller = types
         }
       },
 
-      unfreeze(key) {
+      safeUnfreeze(key) {
         freezingLockSet.delete(key);
         self.isFrozen = freezingLockSet.size > 0;
-        if (!self.isFrozen && changesDuringFreeze) {
+      },
+
+      unfreeze(key) {
+        self.safeUnfreeze(key);
+        if (!self.isFrozen) {
           self.recordNow();
         }
       },

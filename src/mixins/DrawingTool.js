@@ -100,7 +100,7 @@ const DrawingTool = types
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, self.dynamic);
+        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
@@ -111,13 +111,14 @@ const DrawingTool = types
         const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
           value[key] = source[key];
           return value;
-        }, { coordstype: "px" });
+        }, { coordstype: "px", dynamic: self.dynamic  });
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
         self.deleteRegion();
+        newArea.notifyDrawingFinished();
         return newArea;
       },
       createRegion(opts) {

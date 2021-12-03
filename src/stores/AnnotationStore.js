@@ -905,10 +905,11 @@ const Annotation = types
       if (obj["type"] !== "relation") {
         const { id, value: rawValue, type, ...data } = obj;
 
-        const { type: tagType } = self.names.get(obj.to_name) ?? {};
+        const object = self.names.get(obj.to_name) ?? {};
+        const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
-        const areaId = `${id || guidGenerator()}#${self.id}`;
+        const areaId = `${id || guidGenerator()}#${self.pk ?? self.id}`;
         const resultId = `${data.from_name}@${areaId}`;
         const value = self.prepareValue(rawValue, tagType);
 
@@ -927,6 +928,16 @@ const Annotation = types
         }
 
         area.addResult({ ...data, id: resultId, type, value });
+
+        // if there is merged result with region data and type and also with the labels
+        // and object allows such merge — create new result with these labels
+        if (!type.endsWith("labels") && value.labels && object.mergeLabelsAndResults) {
+          const labels = value.labels;
+          const labelControl = object.states()?.find(control => control?.findLabel(labels[0]));
+
+          area.setValue(labelControl);
+          area.results.find(r => r.type.endsWith("labels"))?.setValue(labels);
+        }
       }
     },
 
@@ -960,11 +971,19 @@ const Annotation = types
       Array.from(self.suggestions.keys()).forEach((id) => {
         self.acceptSuggestion(id);
       });
+      self.deleteAllDynamicregions();
     },
 
     rejectAllSuggestions() {
       Array.from(self.suggestions.keys).forEach((id) => {
         self.suggestions.delete(id);
+      });
+      self.deleteAllDynamicregions();
+    },
+
+    deleteAllDynamicregions() {
+      self.regions.forEach(r => {
+        r.dynamic && r.deleteRegion();
       });
     },
 
@@ -974,6 +993,12 @@ const Annotation = types
       self.areas.set(id, {
         ...item.toJSON(),
         fromSuggestion: true,
+      });
+      const area = self.areas.get(id);
+      const activeStates = area.object.activeStates();
+
+      activeStates.forEach(state => {
+        area.setValue(state);
       });
       self.suggestions.delete(id);
     },

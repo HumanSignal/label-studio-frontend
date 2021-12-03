@@ -1,15 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Hint Should render correctly 1`] = `
-<sup
-  className="main test"
+<Block
+  className="test"
   data-copy="test"
+  name="hint"
   style={
     Object {
       "background": "red",
     }
   }
+  tag="sup"
 >
   Test
-</sup>
+</Block>
 `;
