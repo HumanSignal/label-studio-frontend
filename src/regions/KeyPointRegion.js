@@ -34,7 +34,7 @@ const Model = types
     relativeX: 0,
     relativeY: 0,
     hideable: true,
-    supportsTransform: true,
+    _supportsTransform: true,
     useTransformer: false,
     supportsRotate: false,
     supportsScale: false,
@@ -259,7 +259,7 @@ const HtxKeyPointView = ({ item }) => {
         }}
         {...props}
         draggable={item.editable}
-        listening={!suggestion}
+        listening={!suggestion && item.editable}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>
     </Fragment>

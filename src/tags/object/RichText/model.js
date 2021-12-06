@@ -65,7 +65,7 @@ const TagAttrs = types.model("RichTextModel", {
 
   highlightcolor: types.maybeNull(customTypes.color),
 
-  showlabels: types.optional(types.boolean, true),
+  showlabels: types.maybeNull(types.boolean),
 
   encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
 

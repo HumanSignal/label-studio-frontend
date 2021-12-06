@@ -49,6 +49,13 @@ const NodeViews = {
     altIcon: IconRectangleToolSmart,
   }),
 
+  VideoRectangleRegionModel: NodeView({
+    name: "Video Rect",
+    icon: IconRectangleTool,
+    altIcon: IconRectangleToolSmart,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>from {node.sequence[0]?.frame} frame</span>,
+  }),
+
   PolygonRegionModel: NodeView({
     name: "Polygon",
     icon: IconPolygonTool,

@@ -40,7 +40,7 @@ export const Actions = ({ store }) => {
 
       {!isViewAll && store.hasInterface("ground-truth") && <GroundTruth entity={entity}/>}
 
-      {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory history={history} />}
+      {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory entity={entity} />}
 
       {!isViewAll && store.hasInterface("annotations:delete") && (
         <Tooltip title="Delete annotation">
