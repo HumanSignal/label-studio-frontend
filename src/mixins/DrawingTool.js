@@ -132,7 +132,6 @@ const DrawingTool = types
       deleteRegion() {
         self.currentArea = null;
         self.obj.deleteDrawingRegion();
-        self._resetState();
       },
       applyActiveStates(area) {
         const activeStates = self.obj.activeStates();
@@ -160,10 +159,7 @@ const DrawingTool = types
           self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
         } else {
-          // It takes time to finish drawing before commit the region
-          setTimeout(()=>{
-            self._finishDrawing();
-          });
+          self._finishDrawing();
         }
       },
       _finishDrawing() {
