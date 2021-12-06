@@ -169,11 +169,15 @@ const Model = types
         // clean up the html — remove scripts and iframes
         // nodes count better be the same, so replace them with stubs
         val = val
-          .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
-            return [opener,body.replace(/<script\b.*?<\/script>/g,"<!--ls-stub></ls-stub-->"),closer].join("");
+          .replace(/(<head[^>]*>)([\s\S]*?)(<\/head>)/,(match, opener, body, closer) => {
+            return [
+              opener,
+              body.replace(/<script\b[\s\S]*?<\/script>/g,"<!--ls-stub></ls-stub-->"),
+              closer,
+            ].join("");
           })
-          .replace(/<script\b.*?<\/script>/g, "<ls-stub></ls-stub>")
-          .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>");
+          .replace(/<script\b[\s\S]*?<\/script>/g, "<ls-stub></ls-stub>")
+          .replace(/<iframe\b[\s\S]*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>");
 
         self._value = val;
 
