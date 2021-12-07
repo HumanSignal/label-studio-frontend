@@ -90,7 +90,7 @@ export default class TransformerComponent extends Component {
       const { item } = this.props;
       const { selectedRegionsBBox } = item;
 
-      this.backgroundRef.current.setAttrs({
+      this.backgroundRef.current?.setAttrs({
         x:selectedRegionsBBox.left,
         y:selectedRegionsBBox.top,
         width:selectedRegionsBBox.right-selectedRegionsBBox.left,
