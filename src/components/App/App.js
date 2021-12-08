@@ -36,6 +36,7 @@ import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
 import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
+import { SidePanels } from "../SidePanels/SidePanels";
 import { Block, Elem } from "../../utils/bem";
 import './App.styl';
 import { Space } from "../../common/Space/Space";
@@ -176,20 +177,10 @@ class App extends Component {
     if (!root) return this.renderNoAnnotation();
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
-    const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
-    const stCommon = [
-      settings.bottomSidePanel ? styles.commonbsp : styles.common,
-      viewingAll ? styles["view-all"] : "",
-      "ls-common",
-    ].join(" ");
     const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
-    const mainContainerClass = [styles["main-content-wrapper"]];
-
-    if (store.hasInterface("side-column")) mainContainerClass.push(styles["with-side-column"]);
-
     return (
-      <div className={stEditor + " ls-editor"}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen }}>
         <Settings store={store} />
         <Provider store={store}>
           {store.showingDescription && (
@@ -199,12 +190,15 @@ class App extends Component {
           )}
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <div className={stCommon}>
-            <div className={mainContainerClass.join(" ")}>
-              {as.validation === null
-                ? this._renderUI(as.selectedHistory?.root ?? root, as)
-                : this.renderConfigValidationException(store)}
-            </div>
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel }}>
+            <SidePanels>
+              <Block name="main-content">
+                {as.validation === null
+                  ? this._renderUI(as.selectedHistory?.root ?? root, as)
+                  : this.renderConfigValidationException(store)}
+              </Block>
+            </SidePanels>
+
             {(viewingAll === false) && (
               <div className={stMenu + " ls-menu"}>
                 {store.hasInterface("side-column") && (
@@ -212,6 +206,7 @@ class App extends Component {
                     <SidebarPage name="annotation" title="Annotation">
                       <AnnotationTab store={store}/>
                     </SidebarPage>
+
                     {this.props.panels.map(({ name, title, Component }) => (
                       <SidebarPage key={name} name={name} title={title}>
                         <Component/>
@@ -221,10 +216,10 @@ class App extends Component {
                 )}
               </div>
             )}
-          </div>
+          </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
-      </div>
+      </Block>
     );
   }
 

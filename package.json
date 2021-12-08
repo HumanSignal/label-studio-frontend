@@ -176,20 +176,29 @@
     "env": {
       "test": {
         "presets": [
-          ["@babel/preset-env", {
-            "targets": {
-              "node": "current"
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
             }
-          }],
-          ["@babel/preset-react", {
-            "runtime": "automatic"
-          }],
+          ],
+          [
+            "@babel/preset-react",
+            {
+              "runtime": "automatic"
+            }
+          ],
           "@babel/preset-typescript"
         ],
         "plugins": [
-          ["@babel/plugin-transform-react-jsx", {
-            "runtime": "automatic"
-          }]
+          [
+            "@babel/plugin-transform-react-jsx",
+            {
+              "runtime": "automatic"
+            }
+          ]
         ]
       }
     }
@@ -211,6 +220,7 @@
     "babel-preset-react-app": "^9.1.1",
     "d3": "^5.16.0",
     "magic-wand-js": "^1.0.0",
+    "rc-tree": "^5.3.0",
     "react-konva-utils": "^0.2.0"
   },
   "nohoist": [

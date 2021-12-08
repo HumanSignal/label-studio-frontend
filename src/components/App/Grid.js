@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Button } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import Tree from "../../core/Tree";
-import styles from "./App.module.scss";
+import styles from "./Grid.module.scss";
 import { EntityTab } from '../AnnotationTabs/AnnotationTabs';
 import { observe } from "mobx";
 

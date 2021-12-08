@@ -196,31 +196,42 @@ export default types.model("RegionStore", {
       // would create a tree of two elements
 
       const arr = self.sortedRegions;
-      const tree = [],
-        lookup = {};
+      const tree = [];
+      const lookup = new Map();
 
       const onClick = createClickRegionInTreeHandler(tree);
 
       arr.forEach((el, idx) => {
-        lookup[el.id] = enrich(el, idx, onClick);
-        lookup[el.id]["item"] = el;
-        lookup[el.id]["children"] = [];
-        lookup[el.id].isArea = true;
+        const result = enrich(el, idx, onClick);
+
+        Object.assign(result, {
+          item: el,
+          children: [],
+          isArea: true,
+        });
+
+        lookup.set(el.cleanId, result);
       });
 
-      Object.keys(lookup).forEach(key => {
-        const el = lookup[key];
-        const pid = el["item"].parentID;
+      Array.from(lookup.keys()).forEach(key => {
+        const el = lookup.get(key);
+        const pid = el.item.parentID;
 
         if (pid) {
-          let parent = lookup[pid];
+          let parent = lookup.get(pid);
 
-          if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
+          console.log(pid, parent);
+
+          if (!parent) {
+            parent = lookup[`${pid}#${self.annotation.id}`];
+          }
+
           if (parent) {
             parent.children.push(el);
             return;
           }
         }
+
         tree.push(el);
       });
 

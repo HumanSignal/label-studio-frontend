@@ -1,0 +1,45 @@
+.tree
+  &-list
+    display block
+
+  &-treenode
+    height 32px
+    display flex
+    padding 4px
+    align-items center
+
+    &:hover
+      background-color rgba(#000, 0.04)
+
+  &-switcher
+    width 24px
+    height 24px
+    opacity 0.4
+    transform rotate(-90deg)
+
+    &_open
+      transform rotate(0deg)
+
+    &-noop
+      width calc(24px - 16px)
+
+  &-node
+    &-content-wrapper
+      display flex
+      align-items center
+      padding 0 4px
+
+  &-iconEle
+    width 24px
+    height 24px
+    display flex
+    align-items center
+    justify-content center
+
+  &-indent
+    display inline-block
+    height 0
+
+    &-unit
+      width 16px
+      display inline-block
