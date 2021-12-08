@@ -68,9 +68,11 @@ const HtxVideoView = ({ item }) => {
     });
   };
 
-  const setPosition = (frame) => {
-    _setPposition(clamp(frame, 1, length));
-  };
+  const setPosition = useCallback((frame) => {
+    if (frame !== position) {
+      _setPposition(clamp(frame, 1, videoLength));
+    }
+  }, [position, length, _setPposition]);
 
   const supportsRegions = useMemo(() => {
     const controlType = item.control()?.type;
