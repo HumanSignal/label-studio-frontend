@@ -38,7 +38,6 @@ export const Keypoints: FC<KeypointsProps> = ({
   const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     onSelectRegion?.(e, region.id);
-    console.log(123123);
   }, [region.id, onSelectRegion]);
 
   return (

@@ -45,7 +45,7 @@ const HtxVideoView = ({ item }) => {
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
   const [playing, _setPlaying] = useState(false);
-  const [position, setPosition] = useState(1);
+  const [position, _setPposition] = useState(1);
 
   const [videoSize, setVideoSize] = useState(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
@@ -66,6 +66,10 @@ const HtxVideoView = ({ item }) => {
       else item.triggerSyncPause();
       return !playing;
     });
+  };
+
+  const setPosition = (frame) => {
+    _setPposition(clamp(frame, 1, length));
   };
 
   const supportsRegions = useMemo(() => {
@@ -366,7 +370,7 @@ const HtxVideoView = ({ item }) => {
                     region.removeKeypoint(data.frame);
                     break;
                   default:
-                    console.log('unknown action');
+                    console.warn('unknown action');
                 }
               });
             }}

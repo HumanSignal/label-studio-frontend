@@ -1,4 +1,4 @@
-import { forwardRef, LegacyRef, MouseEvent, useCallback, useEffect, useMemo, useRef, useState, WheelEvent } from "react";
+import { forwardRef, LegacyRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
@@ -144,7 +144,9 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
   const updateFrame = useCallback((force = false) => {
     if (buffering && force !== true) return;
 
-    const frame = Math.ceil((videoRef.current?.currentTime ?? 0) * framerate);
+    const currentTime = videoRef.current?.currentTime ?? 0;
+    const frameNumber = Math.ceil(currentTime * framerate);
+    const frame = clamp(frameNumber, 1, length || 1);
     const onChange = props.onFrameChange ?? (() => {});
 
     if (frame !== currentFrame || force === true) {
