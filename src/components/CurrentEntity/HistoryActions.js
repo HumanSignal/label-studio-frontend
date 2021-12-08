@@ -6,7 +6,9 @@ import { Block, Elem } from "../../utils/bem";
 import "./HistoryActions.styl";
 import { Hotkey } from '../../core/Hotkey';
 
-export const HistoryActions = observer(({ history }) => {
+export const HistoryActions = observer(({ annotation }) => {
+  const { history } = annotation;
+
   return (
     <Block name="history">
       <Hotkey.Tooltip name="annotation:undo">
@@ -16,7 +18,7 @@ export const HistoryActions = observer(({ history }) => {
           type="text"
           aria-label="Undo"
           disabled={!history?.canUndo}
-          onClick={() => history?.canUndo && history.undo()}
+          onClick={() => annotation.undo()}
           icon={<LsUndo />}
         />
       </Hotkey.Tooltip>
@@ -27,7 +29,7 @@ export const HistoryActions = observer(({ history }) => {
           type="text"
           aria-label="Redo"
           disabled={!history?.canRedo}
-          onClick={() => history?.canRedo && history.redo()}
+          onClick={() => annotation.redo()}
           icon={<LsRedo />}
         />
       </Hotkey.Tooltip>

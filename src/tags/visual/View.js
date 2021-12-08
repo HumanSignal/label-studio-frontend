@@ -88,6 +88,7 @@ const Model = types
       "paragraphs",
       "paragraphlabels",
       "video",
+      "videorectangle",
     ]),
   });
 

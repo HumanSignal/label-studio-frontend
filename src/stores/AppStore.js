@@ -117,12 +117,12 @@ export default types
     /**
      * Dynamic preannotations
      */
-    autoAnnotation: false,
+    _autoAnnotation: false,
 
     /**
      * Auto accept suggested annotations
      */
-    autoAcceptSuggestions: false,
+    _autoAcceptSuggestions: false,
 
     /**
      * Indicator for suggestions awaiting
@@ -134,8 +134,8 @@ export default types
   .preProcessSnapshot((sn) => {
     return {
       ...sn,
-      autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
-      autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
+      _autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
+      _autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
     };
   })
   .volatile(() => ({
@@ -152,9 +152,10 @@ export default types
     },
 
     get hasSegmentation() {
-      const match = Array.from(self.annotationStore.names.values()).map(({ type }) => !!type.match(/labels/));
+      // not an object and not a classification
+      const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;
 
-      return match.find(v => v === true) ?? false;
+      return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
     get canGoNextTask() {
       if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
@@ -167,6 +168,18 @@ export default types
         return true;
       }
       return false;
+    },
+    get forceAutoAnnotation() {
+      return getEnv(self).forceAutoAnnotation;
+    },
+    get forceAutoAcceptSuggestions() {
+      return getEnv(self).forceAutoAcceptSuggestions;
+    },
+    get autoAnnotation() {
+      return self.forceAutoAnnotation || self._autoAnnotation;
+    },
+    get autoAcceptSuggestions() {
+      return self.forceAutoAcceptSuggestions || self._autoAcceptSuggestions;
     },
   }))
   .actions(self => {
@@ -319,15 +332,15 @@ export default types
       });
 
       hotkeys.addNamed("annotation:undo", function() {
-        const { history } = self.annotationStore.selected;
+        const annotation = self.annotationStore.selected;
 
-        history && history.canUndo && history.undo();
+        annotation.undo();
       });
 
       hotkeys.addNamed("annotation:redo", function() {
-        const { history } = self.annotationStore.selected;
+        const annotation = self.annotationStore.selected;
 
-        history && history.canRedo && history.redo();
+        annotation.redo();
       });
 
       hotkeys.addNamed("region:exit", () => {
@@ -577,12 +590,12 @@ export default types
     }
 
     const setAutoAnnotation = (value) => {
-      self.autoAnnotation = value;
+      self._autoAnnotation = value;
       localStorage.setItem("autoAnnotation", value);
     };
 
     const setAutoAcceptSuggestions = (value) => {
-      self.autoAcceptSuggestions = value;
+      self._autoAcceptSuggestions = value;
       localStorage.setItem("autoAcceptSuggestions", value);
     };
 

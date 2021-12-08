@@ -31,6 +31,7 @@
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.13",
     "@babel/plugin-proposal-optional-chaining": "^7.12.17",
     "@babel/plugin-transform-modules-commonjs": "^7.15.4",
+    "@babel/plugin-transform-react-jsx": "^7.16.0",
     "@babel/plugin-transform-runtime": "^7.12.17",
     "@babel/preset-env": "^7.12.17",
     "@babel/preset-react": "^7.12.13",
@@ -39,6 +40,9 @@
     "@svgr/webpack": "^5.5.0",
     "@types/chroma-js": "^2.1.3",
     "@types/jest": "^27.0.1",
+    "@types/keymaster": "^1.6.30",
+    "@types/react-dom": "^17.0.11",
+    "@types/strman": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
     "antd": "^4.3.3",
@@ -172,16 +176,20 @@
     "env": {
       "test": {
         "presets": [
-          [
-            "@babel/preset-env",
-            {
-              "targets": {
-                "node": "current"
-              }
+          ["@babel/preset-env", {
+            "targets": {
+              "node": "current"
             }
-          ],
-          "@babel/preset-react",
+          }],
+          ["@babel/preset-react", {
+            "runtime": "automatic"
+          }],
           "@babel/preset-typescript"
+        ],
+        "plugins": [
+          ["@babel/plugin-transform-react-jsx", {
+            "runtime": "automatic"
+          }]
         ]
       }
     }

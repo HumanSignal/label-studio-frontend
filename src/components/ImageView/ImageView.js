@@ -539,8 +539,7 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
-      this.resizeObserver = new ResizeObserver(this.onResize);
-      this.resizeObserver.observe(this.container);
+      this.attachObserver(this.container);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
@@ -552,8 +551,24 @@ export default observer(
       hotkeys.addDescription("shift", "Pan image");
     }
 
+    attachObserver = (node) => {
+      if (this.resizeObserver) this.detachObserver();
+
+      if (node) {
+        this.resizeObserver = new ResizeObserver(this.onResize);
+        this.resizeObserver.observe(this.container);
+      }
+    }
+
+    detachObserver = () => {
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
+        this.resizeObserver = null;
+      }
+    }
+
     componentWillUnmount() {
-      this.resizeObserver.disconnect();
+      this.detachObserver();
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
 
@@ -716,6 +731,7 @@ export default observer(
           <div
             ref={node => {
               this.container = node;
+              this.attachObserver(node);
             }}
             className={containerClassName}
             style={containerStyle}

@@ -64,7 +64,7 @@ const Model = types
     strokeColor: Constants.STROKE_COLOR,
     strokeWidth: Constants.STROKE_WIDTH,
 
-    supportsTransform: true,
+    _supportsTransform: true,
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
   }))
@@ -258,7 +258,7 @@ const HtxRectangleView = ({ item }) => {
 
   const eventHandlers = {};
 
-  if (!suggestion) {
+  if (!suggestion && item.editable) {
     eventHandlers.onTransformEnd = (e) => {
       const t = e.target;
 
@@ -366,7 +366,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion}
+        listening={!suggestion && item.editable}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>
