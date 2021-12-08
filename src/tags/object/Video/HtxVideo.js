@@ -124,15 +124,17 @@ const HtxVideoView = ({ item }) => {
       }
     };
 
-    const onSpacePressed = (e) => {
-      if (e.code === 'Space') {
+    const onKeyDown = (e) => {
+      console.log(e.code);
+
+      if (e.code.startsWith('Shift')) {
         e.preventDefault();
 
         if (!panMode) {
           setPanMode(true);
 
           const cancelPan = (e) => {
-            if (e.code === 'Space') {
+            if (e.code.startsWith('Shift')) {
               setPanMode(false);
               document.removeEventListener('keyup', cancelPan);
             }
@@ -144,11 +146,11 @@ const HtxVideoView = ({ item }) => {
     };
 
     window.addEventListener('resize', onResize);
-    document.addEventListener('keydown', onSpacePressed);
+    document.addEventListener('keydown', onKeyDown);
 
     return () => {
       window.removeEventListener('resize', onResize);
-      document.removeEventListener('keydown', onSpacePressed);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, []);
 
@@ -353,8 +355,13 @@ const HtxVideoView = ({ item }) => {
             onFullscreenToggle={() => {
               setFullscreen(!fullscreen);
             }}
-            onSelectRegion={(_, id) => {
-              item.findRegion(id)?.onClickRegion();
+            onSelectRegion={(_, id, select) => {
+              const region = item.findRegion(id);
+              const selected = region?.selected || region?.inSelection;
+
+              if (!region || (isDefined(select) && selected === select)) return;
+
+              region.onClickRegion();
             }}
             onAction={(_, action, data) => {
               const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
