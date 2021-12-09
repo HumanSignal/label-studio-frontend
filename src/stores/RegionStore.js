@@ -215,7 +215,7 @@ export default types.model("RegionStore", {
         if (pid) {
           let parent = lookup[pid];
 
-          if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
+          if (!parent) parent = lookup[`${pid}#${self.annotation.pk}`];
           if (parent) {
             parent.children.push(el);
             return;
@@ -433,7 +433,7 @@ export default types.model("RegionStore", {
   clearSelection() {
     self.selection.clear();
   },
-  
+
   selectRegionsByIds(ids) {
     self.regions.map(region => {
       if (ids.indexOf(region.id) === -1) return;
