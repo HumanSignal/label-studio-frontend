@@ -215,7 +215,7 @@ export default types.model("RegionStore", {
         if (pid) {
           let parent = lookup[pid];
 
-          if (!parent) parent = lookup[`${pid}#${self.annotation.pk}`];
+          if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
           if (parent) {
             parent.children.push(el);
             return;
