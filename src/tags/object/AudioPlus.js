@@ -14,6 +14,8 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { SyncMixin } from "../../mixins/SyncMixin";
+import { useRef } from "react";
+import { useEffect } from "react";
 
 /**
  * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -288,6 +290,17 @@ const Model = types
 const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
 
 const HtxAudioView = ({ store, item }) => {
+  /** @type {import("react").RefObject<Waveform>} */
+  const wfRef = useRef();
+
+  useEffect(() => {
+    const wf = wfRef.current;
+
+    return () => {
+      wf?.wavesurfer?.destroy();
+    };
+  }, []);
+
   if (!item._value) return null;
 
   return (
@@ -297,6 +310,7 @@ const HtxAudioView = ({ store, item }) => {
           <ErrorMessage key={`err-${i}`} error={error} />
         ))}
         <Waveform
+          ref={wfRef}
           dataField={item.value}
           src={item._value}
           selectRegion={item.selectRegion}

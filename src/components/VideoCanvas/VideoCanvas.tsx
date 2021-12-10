@@ -435,6 +435,18 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     checkVideoLoaded();
   }, []);
 
+  // Trick to dispose the video
+  useEffect(() => {
+    const video = videoRef.current;
+
+    return () => {
+      console.log("Disposing a video", video);
+      video?.pause();
+      video?.removeAttribute("src");
+      video?.load();
+    };
+  }, []);
+
   const delayedUpdate = useCallback(() => {
     const video = videoRef.current;
 
