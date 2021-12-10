@@ -101,7 +101,6 @@ const compare = (prevProps: VideoProps, nextProps: VideoProps) => {
 
 export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) => {
   const raf = useRef<number>();
-  const canvasTargetRef = useRef<HTMLDivElement>();
   const rootRef = useRef<HTMLDivElement>();
   const canvasRef = useRef<HTMLCanvasElement>();
   const contextRef = useRef<CanvasRenderingContext2D | null>();
@@ -448,6 +447,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       video?.pause();
       source.remove();
       video?.load();
+      videoRef.current = undefined;
     };
   }, [props.src]);
 
