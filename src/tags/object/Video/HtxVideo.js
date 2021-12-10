@@ -58,7 +58,7 @@ const HtxVideoView = ({ item }) => {
     _setPlaying(playing);
     if (playing) item.triggerSyncPlay();
     else item.triggerSyncPause();
-  }, [item, playing]);
+  }, [item]);
 
   const togglePlaying = useCallback(() => {
     _setPlaying(playing => {
@@ -66,7 +66,7 @@ const HtxVideoView = ({ item }) => {
       else item.triggerSyncPause();
       return !playing;
     });
-  }, [item, playing]);
+  }, [item]);
 
   const setPosition = useCallback((value) => {
     if (value !== position) _setPosition(value);
