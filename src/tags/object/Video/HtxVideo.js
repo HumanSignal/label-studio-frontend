@@ -255,7 +255,7 @@ const HtxVideoView = ({ item }) => {
   const handleVideoEnded = useCallback(() => {
     setPlaying(false);
     setPosition(videoLength);
-  }, []);
+  }, [videoLength]);
 
   // TIMELINE EVENT HANDLERS
   const handlePlayToggle = useCallback((playing) => {
