@@ -424,15 +424,21 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   useEffect(() => {
     const video = videoRef.current;
 
+    // Instead of usign src attr we use source as it can be safely
+    // removed without causing errors on the video tag
     const source = document.createElement("source");
 
     source.src = props.src;
     video?.appendChild(source);
 
     return () => {
+      // To unload the source from the memory we need to remove the <source/>
+      // from the video tag and then load "nothingness" to flush internal cache
       video?.pause();
       source.remove();
       video?.load();
+      // To ensure that nothing relies on the video tag we nullify the ref
+      // Ideally it should be collected by the GC and that's it
       videoRef.current = undefined;
     };
   }, [props.src]);
