@@ -293,6 +293,9 @@ const HtxAudioView = ({ store, item }) => {
   /** @type {import("react").RefObject<Waveform>} */
   const wfRef = useRef();
 
+  // Disposing the audio
+  // We can't directly access <audio/> tag that Wavesurfer uses,
+  // so we have to rely on Wavesurfer's #destroy() method
   useEffect(() => {
     const wf = wfRef.current;
 
