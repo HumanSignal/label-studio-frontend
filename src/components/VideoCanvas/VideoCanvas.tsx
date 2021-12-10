@@ -1,4 +1,4 @@
-import { forwardRef, LegacyRef, MouseEvent, useCallback, useEffect, useMemo, useRef, useState, WheelEvent } from "react";
+import { forwardRef, LegacyRef, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
@@ -38,10 +38,7 @@ type VideoDimentions = {
   ratio: number,
 }
 
-// @todo not in use; move all the zoom handling up the callstack
-const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 5, 10, 16];
-
-const clampZoom = (value: number) => clamp(value, zoomSteps[0], zoomSteps[zoomSteps.length - 1]);
+const clampZoom = (value: number) => clamp(value, 0.25, 16);
 
 const zoomRatio = (
   canvasWidth: number,
@@ -77,8 +74,34 @@ export interface VideoRef {
   readonly duration: number;
 }
 
-export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
+const compare = (prevProps: VideoProps, nextProps: VideoProps) => {
+  const simpleKeys: (keyof Partial<VideoProps>)[] = [
+    'src',
+    'width',
+    'height',
+    'position',
+    'currentTime',
+    'playing',
+    'framerate',
+    'muted',
+    'zoom',
+    'pan',
+    'allowInteractions',
+    'contrast',
+    'brightness',
+    'saturation',
+  ];
+
+  if (simpleKeys.some(k => nextProps[k] !== prevProps[k])) {
+    return false;
+  }
+
+  return true;
+};
+
+export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) => {
   const raf = useRef<number>();
+  const canvasTargetRef = useRef<HTMLDivElement>();
   const rootRef = useRef<HTMLDivElement>();
   const canvasRef = useRef<HTMLCanvasElement>();
   const contextRef = useRef<CanvasRenderingContext2D | null>();
@@ -153,6 +176,32 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       onChange(frame, length);
     }
   }, [buffering, framerate, currentFrame, drawVideo, props.onFrameChange, length]);
+
+  // VIDEO EVENTS'
+  const handleVideoPlay = useCallback(() => {
+    setPlaying(true);
+    setBuffering(false);
+  }, []);
+
+  const handleVideoPause = useCallback(() => {
+    setPlaying(false);
+    setBuffering(false);
+  }, []);
+
+  const handleVideoPlaying = useCallback(() => {
+    setBuffering(false);
+    delayedUpdate();
+  }, []);
+
+  const handleVideoWaiting = useCallback(() => {
+    setBuffering(true);
+  }, []);
+
+  const handleVideoEnded = useCallback(() => {
+    setPlaying(false);
+    setBuffering(false);
+    props.onEnded?.();
+  }, [props.onEnded]);
 
   useEffect(() => {
     if (!playing) {
@@ -386,7 +435,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     checkVideoLoaded();
   }, []);
 
-  const delayedUpdate = () => {
+  const delayedUpdate = useCallback(() => {
     const video = videoRef.current;
 
     if (video && video.networkState === video.NETWORK_IDLE) {
@@ -395,7 +444,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
     } else {
       setBuffering(true);
     }
-  };
+  }, [videoRef, playing]);
 
   return (
     <Block ref={rootRef} name="video-canvas">
@@ -414,7 +463,7 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       >
         <canvas
           ref={(instance) => {
-            if (instance) {
+            if (instance && canvasRef.current !== instance) {
               canvasRef.current = instance;
               contextRef.current = instance.getContext('2d');
             }
@@ -429,41 +478,26 @@ export const VideoCanvas = forwardRef<VideoRef, VideoProps>((props, ref) => {
       </Elem>
 
       <video
+        ref={videoRef as LegacyRef<HTMLVideoElement>}
         controls={false}
         src={props.src}
         preload="auto"
         style={{ width: 0, position: 'absolute' }}
-        ref={videoRef as LegacyRef<HTMLVideoElement>}
         muted={props.muted ?? false}
-        onPlay={() => {
-          setPlaying(true);
-          setBuffering(false);
-        }}
-        onPause={() => {
-          setPlaying(false);
-          setBuffering(false);
-        }}
+        onPlay={handleVideoPlay}
+        onPause={handleVideoPause}
         onLoadedData={delayedUpdate}
         onCanPlay={delayedUpdate}
         onSeeked={delayedUpdate}
         onSeeking={delayedUpdate}
         onTimeUpdate={delayedUpdate}
         onProgress={delayedUpdate}
-        onPlaying={() => {
-          setBuffering(false);
-          delayedUpdate();
-        }}
-        onWaiting={() => {
-          setBuffering(true);
-        }}
-        onEnded={() => {
-          setPlaying(false);
-          setBuffering(false);
-          props.onEnded?.();
-        }}
+        onPlaying={handleVideoPlaying}
+        onWaiting={handleVideoWaiting}
+        onEnded={handleVideoEnded}
       />
     </Block>
   );
-});
+}), compare);
 
 
