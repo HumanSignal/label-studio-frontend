@@ -439,13 +439,18 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   useEffect(() => {
     const video = videoRef.current;
 
+    const source = document.createElement("source");
+
+    source.src = props.src;
+    video?.appendChild(source);
+
     return () => {
       console.log("Disposing a video", video);
       video?.pause();
-      video?.removeAttribute("src");
+      source.remove();
       video?.load();
     };
-  }, []);
+  }, [props.src]);
 
   const delayedUpdate = useCallback(() => {
     const video = videoRef.current;
@@ -492,7 +497,6 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       <video
         ref={videoRef as LegacyRef<HTMLVideoElement>}
         controls={false}
-        src={props.src}
         preload="auto"
         style={{ width: 0, position: 'absolute' }}
         muted={props.muted ?? false}
