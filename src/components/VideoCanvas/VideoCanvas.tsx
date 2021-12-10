@@ -62,6 +62,7 @@ export interface VideoRef {
     height: number,
     ratio: number,
   };
+  readonly duration: number;
   play: () => void;
   pause: () => void;
   goToFrame: (frame: number) => void;
@@ -71,33 +72,7 @@ export interface VideoRef {
   setSaturation: (value: number) => void;
   setZoom: (value: number) => void;
   setPan: (x: number, y: number) => void;
-  readonly duration: number;
 }
-
-const compare = (prevProps: VideoProps, nextProps: VideoProps) => {
-  const simpleKeys: (keyof Partial<VideoProps>)[] = [
-    'src',
-    'width',
-    'height',
-    'position',
-    'currentTime',
-    'playing',
-    'framerate',
-    'muted',
-    'zoom',
-    'pan',
-    'allowInteractions',
-    'contrast',
-    'brightness',
-    'saturation',
-  ];
-
-  if (simpleKeys.some(k => nextProps[k] !== prevProps[k])) {
-    return false;
-  }
-
-  return true;
-};
 
 export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) => {
   const raf = useRef<number>();
@@ -513,6 +488,6 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       />
     </Block>
   );
-}), compare);
+}));
 
 
