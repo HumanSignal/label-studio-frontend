@@ -45,7 +45,7 @@ const HtxVideoView = ({ item }) => {
   const [loaded, setLoaded] = useState(false);
   const [videoLength, setVideoLength] = useState(0);
   const [playing, _setPlaying] = useState(false);
-  const [position, _setPposition] = useState(1);
+  const [position, _setPosition] = useState(1);
 
   const [videoSize, setVideoSize] = useState(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
@@ -70,9 +70,9 @@ const HtxVideoView = ({ item }) => {
 
   const setPosition = useCallback((frame) => {
     if (frame !== position) {
-      _setPposition(clamp(frame, 1, videoLength));
+      _setPosition(clamp(frame, 1, videoLength));
     }
-  }, [position, length, _setPposition]);
+  }, [position, length, _setPosition]);
 
   const supportsRegions = useMemo(() => {
     const controlType = item.control()?.type;
@@ -125,8 +125,6 @@ const HtxVideoView = ({ item }) => {
     };
 
     const onKeyDown = (e) => {
-      console.log(e.code);
-
       if (e.code.startsWith('Shift')) {
         e.preventDefault();
 
