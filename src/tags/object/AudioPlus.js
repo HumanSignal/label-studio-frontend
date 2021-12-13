@@ -285,6 +285,12 @@ const Model = types
     wsCreated(ws) {
       self._ws = ws;
     },
+
+    beforeDestroy() {
+      self._ws.destroy();
+      self._ws = null;
+      self._ws_region = null;
+    },
   }));
 
 const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
@@ -300,7 +306,8 @@ const HtxAudioView = ({ store, item }) => {
     const wf = wfRef.current;
 
     return () => {
-      wf?.wavesurfer?.destroy();
+      wf?.wavesurfer?.destroy?.();
+      wfRef.current = undefined;
     };
   }, []);
 

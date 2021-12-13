@@ -1,7 +1,9 @@
-import { forwardRef, LegacyRef, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, LegacyRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
+import { VirtualCanvas } from "./VirtualCanvas";
+import { VirtualVideo } from "./VirtualVideo";
 
 type VideoProps = {
   src: string,
@@ -125,13 +127,11 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
         context.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        context.save();
         context.filter = filters;
         context.drawImage(videoRef.current,
           0, 0, width, height,
           offsetLeft, offsetTop, resultWidth, resultHeight,
         );
-        context.restore();
       }
     } catch(e) {
       console.log('Error rendering video', e);
@@ -140,11 +140,13 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   const updateFrame = useCallback((force = false) => {
     if (buffering && force !== true) return;
+    if (!contextRef.current) return;
 
     const frame = Math.ceil((videoRef.current?.currentTime ?? 0) * framerate);
     const onChange = props.onFrameChange ?? (() => {});
 
     if (frame !== currentFrame || force === true) {
+      console.log('Update frame', videoDimensions);
       setCurrentFrame(frame);
       drawVideo();
       onChange(frame, length);
@@ -152,6 +154,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [buffering, framerate, currentFrame, drawVideo, props.onFrameChange, length]);
 
   const delayedUpdate = useCallback(() => {
+    if (!videoRef.current) return;
+    if (!contextRef.current) return;
+
     const video = videoRef.current;
 
     if (video && video.networkState === video.NETWORK_IDLE) {
@@ -160,7 +165,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     } else {
       setBuffering(true);
     }
-  }, [playing]);
+  }, [playing, updateFrame]);
 
   // VIDEO EVENTS'
   const handleVideoPlay = useCallback(() => {
@@ -215,11 +220,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   // Handle extrnal state change [position]
   useEffect(() => {
-    setTimeout(() => {
-      if (videoRef.current && props.position) {
-        videoRef.current.currentTime = props.position / framerate;
-      }
-    });
+    if (videoRef.current && props.position) {
+      videoRef.current.currentTime = props.position / framerate;
+    }
   }, [framerate, props.position]);
 
   // Handle extrnal state change [current time]
@@ -348,14 +351,14 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       const video = videoRef.current!;
 
       video.currentTime = clamp(time, 0, video.duration);
-      setTimeout(() => drawVideo(), 100);
+      requestAnimationFrame(() => drawVideo());
     },
     goToFrame(frame: number) {
       const video = videoRef.current!;
       const frameClamped = clamp(frame, 1, length);
 
       video.currentTime = frameClamped / framerate;
-      setTimeout(() => drawVideo(), 100);
+      requestAnimationFrame(() => drawVideo());
     },
   };
 
@@ -420,28 +423,23 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     checkVideoLoaded();
   }, []);
 
+
+
   // Trick to load/dispose the video
   useEffect(() => {
-    const video = videoRef.current;
-
-    // Instead of usign src attr we use source as it can be safely
-    // removed without causing errors on the video tag
-    const source = document.createElement("source");
-
-    source.src = props.src;
-    video?.appendChild(source);
-
     return () => {
-      // To unload the source from the memory we need to remove the <source/>
-      // from the video tag and then load "nothingness" to flush internal cache
-      video?.pause();
-      source.remove();
-      video?.load();
-      // To ensure that nothing relies on the video tag we nullify the ref
-      // Ideally it should be collected by the GC and that's it
+      const context = contextRef.current;
+
+      if (context) {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      }
+
+      contextRef.current = undefined;
+      canvasRef.current = undefined;
       videoRef.current = undefined;
+      rootRef.current = undefined;
     };
-  }, [props.src]);
+  }, []);
 
   return (
     <Block ref={rootRef} name="video-canvas">
@@ -458,7 +456,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
           height: canvasHeight,
         }}
       >
-        <canvas
+        <VirtualCanvas
           ref={(instance) => {
             if (instance && canvasRef.current !== instance) {
               canvasRef.current = instance;
@@ -467,18 +465,17 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
           }}
           width={canvasWidth}
           height={canvasHeight}
-          style={{ background: "#efefef" }}
         />
         {!loading && buffering && (
           <Elem name="buffering"/>
         )}
       </Elem>
 
-      <video
-        ref={videoRef as LegacyRef<HTMLVideoElement>}
+      <VirtualVideo
+        ref={videoRef as MutableRefObject<HTMLVideoElement>}
         controls={false}
         preload="auto"
-        style={{ width: 0, position: 'absolute' }}
+        src={props.src}
         muted={props.muted ?? false}
         onPlay={handleVideoPlay}
         onPause={handleVideoPause}

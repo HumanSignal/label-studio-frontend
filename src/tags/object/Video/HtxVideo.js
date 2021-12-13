@@ -294,6 +294,10 @@ const HtxVideoView = ({ item }) => {
     });
   }, [item]);
 
+  useEffect(() => () => {
+    item.ref.current = null;
+  }, []);
+
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
     const label = reg.labels.join(", ") || "Empty";
