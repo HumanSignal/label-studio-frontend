@@ -76,7 +76,7 @@ Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSide
         I.dontSeeElement(ONE_HIDDEN_SELECTOR);
         break;
     }
-    let count = await I.executeAsyncScript(countKonvaShapes);
+    const count = await I.executeAsyncScript(countKonvaShapes);
 
     assert.strictEqual(count, num);
   };
@@ -148,7 +148,7 @@ Scenario("Checking regions grouped by label", async ({ I, AtImageView }) => {
         I.dontSeeElement(ONE_HIDDEN_SELECTOR);
         break;
     }
-    let count = await I.executeAsyncScript(countKonvaShapes);
+    const count = await I.executeAsyncScript(countKonvaShapes);
 
     assert.strictEqual(count, num);
   };

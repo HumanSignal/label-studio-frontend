@@ -4,9 +4,12 @@ import Result from "../regions/Result";
 import { defaultStyle } from "../core/Constants";
 import { PER_REGION_MODES } from "./PerRegion";
 
+let ouid = 1;
+
 export const AreaMixin = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
+    ouid: types.optional(types.number, () => ouid++),
     results: types.array(Result),
     parentID: types.maybeNull(types.string),
   })
@@ -124,7 +127,7 @@ export const AreaMixin = types
      */
     deleteRegion() {
       if (!self.annotation.editable) return;
-      if (self.selected) self.annotation.unselectAll();
+      if (self.selected) self.annotation.unselectAll(true);
       if (self.destroyRegion) self.destroyRegion();
       self.annotation.deleteRegion(self);
     },
