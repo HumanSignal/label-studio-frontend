@@ -142,6 +142,7 @@ const Model = types
     setFrame(frame) {
       self.frame = frame;
       self.ref.current.currentTime = frame / self.framerate;
+      console.log(self.ref.current);
       // trigger only here, this method already has side effects, so it would be controlled
       self.triggerSyncSeek(frame / self.framerate);
     },
