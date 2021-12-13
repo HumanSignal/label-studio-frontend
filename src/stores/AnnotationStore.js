@@ -909,7 +909,7 @@ const Annotation = types
         const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
-        const areaId = `${id || guidGenerator()}#${self.pk ?? self.id}`;
+        const areaId = `${id || guidGenerator()}#${self.id}`;
         const resultId = `${data.from_name}@${areaId}`;
         const value = self.prepareValue(rawValue, tagType);
 
