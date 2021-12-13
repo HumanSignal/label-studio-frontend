@@ -7,7 +7,7 @@ const DEBUG_MODE = false;
 export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((props, ref) => {
   const video = useRef<HTMLVideoElement | null>(null);
   const source = useRef<HTMLSourceElement | null>(null);
-  const attachedEvets = useRef<[string, any][]>([]);
+  const attachedEvents = useRef<[string, any][]>([]);
 
   const createVideoElement = useCallback(() => {
     const videoEl = document.createElement('video');
@@ -36,11 +36,11 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     video.current = videoEl;
   }, []);
 
-  const attachRef = useCallback(() => {
+  const attachRef = useCallback((video: HTMLVideoElement | null) => {
     if (ref instanceof Function) {
-      ref(video.current);
+      ref(video);
     } else if (ref) {
-      ref.current = video.current;
+      ref.current = video;
     }
   }, []);
 
@@ -59,17 +59,17 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
       attached.push([evtName, handler]);
     });
 
-    attachedEvets.current = attached;
+    attachedEvents.current = attached;
   };
 
   const detachEventListeners = () => {
-    if (!video) return;
+    if (!video.current) return;
 
-    (attachedEvets.current ?? []).forEach(([evt, handler]) => {
+    (attachedEvents.current ?? []).forEach(([evt, handler]) => {
       video.current?.removeEventListener(evt, handler);
     });
 
-    attachedEvets.current = [];
+    attachedEvents.current = [];
   };
 
   const unloadSource = () => {
@@ -100,14 +100,14 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
   useEffect(() => {
     detachEventListeners();
     attachEventListeners();
-  }, [props, video]);
+  });
 
   // Create a video tag
   useEffect(() => {
     createVideoElement();
     attachEventListeners();
     attachSource();
-    attachRef();
+    attachRef(video.current);
 
     document.body.append(video.current!);
   }, []);
@@ -116,7 +116,8 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
   useEffect(() => () => {
     detachEventListeners();
     unloadSource();
-    video?.current?.remove();
+    attachRef(null);
+    video.current?.remove();
     video.current = null;
   }, []);
 
