@@ -1,2 +1,3 @@
 webpack.*
 eslintrc.js
+*.styl

@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.4.1
+    - uses: actions/setup-node@v2.5.0
       with:
         node-version: "${{ env.NODE }}"
 
@@ -29,7 +29,7 @@ jobs:
       run: echo "::set-output name=dir::$(yarn cache dir)"
 
     - name: Configure yarn cache
-      uses: actions/cache@v2.1.6
+      uses: actions/cache@v2.1.7
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
@@ -44,6 +44,7 @@ jobs:
       run: yarn test
 
     - name: Build distribution package
+      timeout-minutes: 10
       run: yarn run build:module
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
@@ -61,6 +62,7 @@ jobs:
           echo "=> Waiting for service to become available" && sleep 2s
         done
     - run: yarn run test:e2e:headless
+      timeout-minutes: 15
       if: github.event_name == 'push'
 
     - uses: actions/upload-artifact@v2.2.4

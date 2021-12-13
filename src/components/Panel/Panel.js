@@ -22,7 +22,8 @@ import Hint from "../Hint/Hint";
  * Settings
  */
 export default observer(({ store }) => {
-  const { history } = store.annotationStore.selected;
+  const annotation = store.annotationStore.selected;
+  const { history } = annotation;
   const classname = [
     styles.block,
     styles.block__controls,
@@ -37,7 +38,7 @@ export default observer(({ store }) => {
           icon={<UndoOutlined />}
           disabled={!history?.canUndo}
           onClick={ev => {
-            history && history.canUndo && history.undo();
+            annotation?.undo();
             ev.preventDefault();
           }}
         >
@@ -49,7 +50,7 @@ export default observer(({ store }) => {
           disabled={!history?.canRedo}
           icon={<RedoOutlined />}
           onClick={ev => {
-            history && history.canRedo && history.redo();
+            annotation?.redo();
             ev.preventDefault();
           }}
         >

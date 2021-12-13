@@ -64,6 +64,15 @@ const RegionsMixin = types
       return self.annotation?.regionStore.isSelected(self);
     },
 
+    getConnectedDynamicRegions(selfExcluding) {
+      const { regions = [] } = getRoot(self).annotationStore?.selected || {};
+
+      return regions.filter(r => {
+        if (selfExcluding && r === self) return false;
+        return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+      });
+    },
+
   }))
   .actions(self => {
     return {
@@ -73,8 +82,6 @@ const RegionsMixin = types
 
       setDrawing(val) {
         self.isDrawing = val;
-
-        self.notifyDrawingFinished();
       },
 
       setShapeRef(ref) {
@@ -293,13 +300,6 @@ const RegionsMixin = types
         // everything above is related to dynamic preannotations
         if (!self.dynamic || self.fromSuggestion) return;
 
-        const { regions } = getRoot(self).annotationStore.selected;
-
-        const connectedRegions = regions.filter(r => {
-          if (destroy && r === self) return false;
-          return r.dynamic && r.type === self.type && r.labelName === self.labelName;
-        });
-
         clearTimeout(self.drawingTimeout);
 
         if (self.isDrawing === false) {
@@ -307,7 +307,7 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke("regionFinishedDrawing", self, connectedRegions);
+            env.events.invoke("regionFinishedDrawing", self, self.getConnectedDynamicRegions(destroy));
           }, timeout);
         }
       },
