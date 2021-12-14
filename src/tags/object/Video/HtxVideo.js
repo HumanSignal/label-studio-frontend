@@ -43,7 +43,7 @@ const HtxVideoView = ({ item }) => {
   const videoContainerRef = useRef();
   const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
-  const [videoLength, setVideoLength] = useState(0);
+  const [videoLength, _setVideoLength] = useState(0);
   const [playing, _setPlaying] = useState(false);
   const [position, _setPosition] = useState(1);
 
@@ -54,25 +54,27 @@ const HtxVideoView = ({ item }) => {
   const [panMode, setPanMode] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
-  const setPlaying = (playing) => {
+  const setPlaying = useCallback((playing) => {
     _setPlaying(playing);
     if (playing) item.triggerSyncPlay();
     else item.triggerSyncPause();
-  };
+  }, [item]);
 
-  const togglePlaying = () => {
+  const togglePlaying = useCallback(() => {
     _setPlaying(playing => {
       if (!playing) item.triggerSyncPlay();
       else item.triggerSyncPause();
       return !playing;
     });
-  };
+  }, [item]);
 
-  const setPosition = useCallback((frame) => {
-    if (frame !== position) {
-      _setPosition(clamp(frame, 1, videoLength));
-    }
-  }, [position, length, _setPosition]);
+  const setPosition = useCallback((value) => {
+    if (value !== position) _setPosition(clamp(value, 1, videoLength));
+  }, [position]);
+
+  const setVideoLength = useCallback((value) => {
+    if (value !== videoLength) _setVideoLength(value);
+  }, [videoLength]);
 
   const supportsRegions = useMemo(() => {
     const controlType = item.control()?.type;
@@ -230,6 +232,77 @@ const HtxVideoView = ({ item }) => {
     setPan({ x: 0, y: 0 });
   });
 
+  // VIDEO EVENT HANDLERS
+  const handleFrameChange = useCallback((position, length) => {
+    setPosition(position);
+    setVideoLength(length);
+    item.setOnlyFrame(position);
+  }, [item]);
+
+  const handleVideoLoad = useCallback(({ length, videoDimensions }) => {
+    setLoaded(true);
+    setZoom(videoDimensions.ratio);
+    setVideoDimensions(videoDimensions);
+    setVideoLength(length);
+    item.setOnlyFrame(1);
+    item.setLength(length);
+  }, [item]);
+
+  const handleVideoResize = useCallback((videoDimensions) => {
+    setVideoDimensions(videoDimensions);
+  }, []);
+
+  const handleVideoEnded = useCallback(() => {
+    setPlaying(false);
+    setPosition(videoLength);
+  }, [videoLength]);
+
+  // TIMELINE EVENT HANDLERS
+  const handlePlayToggle = useCallback((playing) => {
+    if (position === videoLength) {
+      setPosition(1);
+    }
+    setPlaying(playing);
+  }, [position, videoLength]);
+
+  const handleFullscreenToggle = useCallback(() => {
+    setFullscreen(!fullscreen);
+  }, [fullscreen]);
+
+  const handleSelectRegion = useCallback((_, id, select) => {
+    const region = item.findRegion(id);
+    const selected = region?.selected || region?.inSelection;
+
+    if (!region || (isDefined(select) && selected === select)) return;
+
+    region.onClickRegion();
+  }, [item]);
+
+  const handleAction = useCallback((_, action, data) => {
+    const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
+
+    regions.forEach(region => {
+      switch(action) {
+        case "lifespan_add":
+        case "lifespan_remove":
+          region.toggleLifespan(data.frame);
+          break;
+        case "keypoint_add":
+          region.addKeypoint(data.frame);
+          break;
+        case "keypoint_remove":
+          region.removeKeypoint(data.frame);
+          break;
+        default:
+          console.warn('unknown action');
+      }
+    });
+  }, [item]);
+
+  useEffect(() => () => {
+    item.ref.current = null;
+  }, []);
+
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
     const label = reg.labels.join(", ") || "Empty";
@@ -303,32 +376,14 @@ const HtxVideoView = ({ item }) => {
                   pan={pan}
                   framerate={item.framerate}
                   allowInteractions={false}
-                  onFrameChange={(position, length) => {
-                    setPosition(position);
-                    setVideoLength(length);
-                    item.setOnlyFrame(position);
-                  }}
-                  onLoad={({ length, videoDimensions }) => {
-                    setLoaded(true);
-                    setZoom(videoDimensions.ratio);
-                    setVideoDimensions(videoDimensions);
-                    setVideoLength(length);
-                    item.setOnlyFrame(1);
-                    item.setLength(length);
-                  }}
-                  onResize={(videoDimensions) => {
-                    setVideoDimensions(videoDimensions);
-                  }}
+                  onFrameChange={handleFrameChange}
+                  onLoad={handleVideoLoad}
+                  onResize={handleVideoResize}
                   onClick={togglePlaying}
-                  onEnded={() => {
-                    setPlaying(false);
-                    setPosition(videoLength);
-                  }}
+                  onEnded={handleVideoEnded}
                 />
               </>
             )}
-            {/* <video src={item._value} ref={item.ref} onClick={onPlayPause} muted={item.muted} /> */}
-            {/* <Controls item={item} video={mounted && item.ref.current} /> */}
           </Elem>
         </Block>
         {loaded && (
@@ -344,43 +399,10 @@ const HtxVideoView = ({ item }) => {
             disableFrames={!supportsRegions}
             framerate={item.framerate}
             onPositionChange={item.setFrame}
-            onPlayToggle={(playing) => {
-              if (position === videoLength) {
-                setPosition(1);
-              }
-              setPlaying(playing);
-            }}
-            onFullscreenToggle={() => {
-              setFullscreen(!fullscreen);
-            }}
-            onSelectRegion={(_, id, select) => {
-              const region = item.findRegion(id);
-              const selected = region?.selected || region?.inSelection;
-
-              if (!region || (isDefined(select) && selected === select)) return;
-
-              region.onClickRegion();
-            }}
-            onAction={(_, action, data) => {
-              const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
-
-              regions.forEach(region => {
-                switch(action) {
-                  case "lifespan_add":
-                  case "lifespan_remove":
-                    region.toggleLifespan(data.frame);
-                    break;
-                  case "keypoint_add":
-                    region.addKeypoint(data.frame);
-                    break;
-                  case "keypoint_remove":
-                    region.removeKeypoint(data.frame);
-                    break;
-                  default:
-                    console.warn('unknown action');
-                }
-              });
-            }}
+            onPlayToggle={handlePlayToggle}
+            onFullscreenToggle={handleFullscreenToggle}
+            onSelectRegion={handleSelectRegion}
+            onAction={handleAction}
           />
         )}
       </Block>

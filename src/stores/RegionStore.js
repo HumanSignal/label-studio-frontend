@@ -433,7 +433,7 @@ export default types.model("RegionStore", {
   clearSelection() {
     self.selection.clear();
   },
-  
+
   selectRegionsByIds(ids) {
     self.regions.map(region => {
       if (ids.indexOf(region.id) === -1) return;
