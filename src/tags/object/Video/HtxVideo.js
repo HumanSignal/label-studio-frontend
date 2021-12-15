@@ -69,8 +69,10 @@ const HtxVideoView = ({ item }) => {
   }, [item]);
 
   const setPosition = useCallback((value) => {
-    if (value !== position) _setPosition(clamp(value, 1, videoLength));
-  }, [position]);
+    if (value !== position) {
+      _setPosition(clamp(value, 1, videoLength));
+    }
+  }, [position, videoLength]);
 
   const setVideoLength = useCallback((value) => {
     if (value !== videoLength) _setVideoLength(value);
@@ -237,7 +239,7 @@ const HtxVideoView = ({ item }) => {
     setPosition(position);
     setVideoLength(length);
     item.setOnlyFrame(position);
-  }, [item]);
+  }, [item, setPosition, setVideoLength]);
 
   const handleVideoLoad = useCallback(({ length, videoDimensions }) => {
     setLoaded(true);
@@ -246,7 +248,7 @@ const HtxVideoView = ({ item }) => {
     setVideoLength(length);
     item.setOnlyFrame(1);
     item.setLength(length);
-  }, [item]);
+  }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
     setVideoDimensions(videoDimensions);
@@ -255,7 +257,7 @@ const HtxVideoView = ({ item }) => {
   const handleVideoEnded = useCallback(() => {
     setPlaying(false);
     setPosition(videoLength);
-  }, [videoLength]);
+  }, [videoLength, setPosition, setPlaying]);
 
   // TIMELINE EVENT HANDLERS
   const handlePlayToggle = useCallback((playing) => {
@@ -263,7 +265,7 @@ const HtxVideoView = ({ item }) => {
       setPosition(1);
     }
     setPlaying(playing);
-  }, [position, videoLength]);
+  }, [position, videoLength, setPosition]);
 
   const handleFullscreenToggle = useCallback(() => {
     setFullscreen(!fullscreen);
@@ -297,7 +299,7 @@ const HtxVideoView = ({ item }) => {
           console.warn('unknown action');
       }
     });
-  }, [item]);
+  }, [item.regs]);
 
   useEffect(() => () => {
     item.ref.current = null;
@@ -398,7 +400,10 @@ const HtxVideoView = ({ item }) => {
             defaultStepSize={16}
             disableFrames={!supportsRegions}
             framerate={item.framerate}
-            onPositionChange={item.setFrame}
+            onPositionChange={(frame) => {
+              item.setFrame(frame);
+              setPosition(frame);
+            }}
             onPlayToggle={handlePlayToggle}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}

@@ -148,7 +148,6 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     const onChange = props.onFrameChange ?? (() => {});
 
     if (frame !== currentFrame || force === true) {
-      console.log('Update frame', videoDimensions);
       setCurrentFrame(frame);
       drawVideo();
       onChange(frame, length);
