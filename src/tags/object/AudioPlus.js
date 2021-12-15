@@ -16,6 +16,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { SyncMixin } from "../../mixins/SyncMixin";
 import { useRef } from "react";
 import { useEffect } from "react";
+import { isDefined } from "../../utils/utilities";
 
 /**
  * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -287,9 +288,11 @@ const Model = types
     },
 
     beforeDestroy() {
-      self._ws.destroy();
-      self._ws = null;
-      self._ws_region = null;
+      if (isDefined(self._ws)) {
+        self._ws.destroy();
+        self._ws = null;
+        self._ws_region = null;
+      }
     },
   }));
 
