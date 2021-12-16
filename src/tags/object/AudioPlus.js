@@ -289,7 +289,6 @@ const Model = types
 
     beforeDestroy() {
       if (isDefined(self._ws)) {
-        console.log("Destroyed");
         self._ws.destroy();
         self._ws = null;
       }
