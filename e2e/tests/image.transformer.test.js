@@ -1202,7 +1202,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasRotator))
       const rectangleResult = await LabelStudio.serialize();
 
       Asserts.deepEqualWithTolerance(
-        rectangleResult[0].value.rotation,
+        Math.round(rectangleResult[0].value.rotation),
         45 * i,
       );
 
