@@ -97,8 +97,17 @@ const SELECTION_COLOR = "#40A9FF";
 const SELECTION_SECOND_COLOR = "white";
 const SELECTION_DASH = [3,3];
 
-const SelectionBorders = observer(({ item }) => {
-  const { selectionBorders: bbox } = item;
+const SelectionBorders = observer(({ item, selectionArea }) => {
+  const { selectionBorders: bbox } = selectionArea;
+  const offset = {
+    x: item.zoomingPositionX || 0,
+    y: item.zoomingPositionY || 0,
+  };
+
+  bbox.left = bbox.left * item.stageScale;
+  bbox.right = bbox.right* item.stageScale;
+  bbox.top = bbox.top* item.stageScale ;
+  bbox.bottom = bbox.bottom* item.stageScale ;
 
   const points = bbox? [
     {
