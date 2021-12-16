@@ -207,20 +207,8 @@ const HtxKeyPointView = ({ item }) => {
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
-        dragBoundFunc={createDragBoundFunc(item.parent, pos => {
-          const r = item.parent.stageWidth;
-          const b = item.parent.stageHeight;
-
-          let { x, y } = pos;
-
-          if (x < 0) x = 0;
-          if (y < 0) y = 0;
-
-          if (x > r) x = r;
-          if (y > b) y = b;
-
-          return { x, y };
-        })}
+        dragBoundFunc={createDragBoundFunc(item)}
+        transformsEnabled="position"
         onTransformEnd={e => {
           const t = e.target;
 
