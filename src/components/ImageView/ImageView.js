@@ -19,6 +19,7 @@ import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
 import ResizeObserver from "../../utils/resize-observer";
+import { debounce } from "../../utils/debounce";
 
 Konva.showWarnings = false;
 
@@ -528,18 +529,17 @@ export default observer(
       );
     }
 
-    onResize = () => {
+    onResize = debounce(() => {
       if (!this.container) return;
       if (this.container.offsetWidth <= 1) return;
       if (this.lastOffsetWidth === this.container.offsetWidth) return;
 
       this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
       this.lastOffsetWidth = this.container.offsetWidth;
-    };
+    }, 16);
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
-      this.attachObserver(this.container);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
