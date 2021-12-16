@@ -133,7 +133,7 @@ export default class TransformerComponent extends Component {
       const selfRect = { x: 0, y: 0, width, height };
 
       // bounding box, got by applying current shift and rotation to normalized box
-      const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
+      const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation / Math.PI * 180);
       const fixed = this.fitBBoxToScaledStage(clientRect, stageDimensions);
 
       // if bounding box is out of stage — do nothing
