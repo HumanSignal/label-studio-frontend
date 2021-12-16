@@ -34,6 +34,7 @@ Scenario("Brush relations shouldn't crash everything", async ({ I, LabelStudio, 
   };
 
   I.amOnPage("/");
+  await ErrorsCollector.run();
   LabelStudio.init(params);
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
