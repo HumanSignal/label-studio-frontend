@@ -16,6 +16,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { SyncMixin } from "../../mixins/SyncMixin";
 import { useRef } from "react";
 import { useEffect } from "react";
+import { isDefined } from "../../utils/utilities";
 
 /**
  * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -287,30 +288,16 @@ const Model = types
     },
 
     beforeDestroy() {
-      self._ws.destroy();
-      self._ws = null;
-      self._ws_region = null;
+      if (isDefined(self._ws)) {
+        self._ws.destroy();
+        self._ws = null;
+      }
     },
   }));
 
 const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
 
 const HtxAudioView = ({ store, item }) => {
-  /** @type {import("react").RefObject<Waveform>} */
-  const wfRef = useRef();
-
-  // Disposing the audio
-  // We can't directly access <audio/> tag that Wavesurfer uses,
-  // so we have to rely on Wavesurfer's #destroy() method
-  useEffect(() => {
-    const wf = wfRef.current;
-
-    return () => {
-      wf?.wavesurfer?.destroy?.();
-      wfRef.current = undefined;
-    };
-  }, []);
-
   if (!item._value) return null;
 
   return (
@@ -320,7 +307,6 @@ const HtxAudioView = ({ store, item }) => {
           <ErrorMessage key={`err-${i}`} error={error} />
         ))}
         <Waveform
-          ref={wfRef}
           dataField={item.value}
           src={item._value}
           selectRegion={item.selectRegion}
