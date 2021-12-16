@@ -259,6 +259,11 @@ const HtxRectangleView = ({ item }) => {
   const eventHandlers = {};
 
   if (!suggestion && item.editable) {
+    eventHandlers.onTransform = ({ target }) => {
+      // resetting the skew makes transformations weird but predictable
+      target.setAttr("skewX", 0);
+      target.setAttr("skewY", 0);
+    };
     eventHandlers.onTransformEnd = (e) => {
       const t = e.target;
 

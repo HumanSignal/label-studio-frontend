@@ -285,6 +285,11 @@ const HtxEllipseView = ({ item }) => {
         opacity={1}
         rotation={item.rotation}
         name={`${item.id} _transformable`}
+        onTransform={({ target }) => {
+          // resetting the skew makes transformations weird but predictable
+          target.setAttr("skewX", 0);
+          target.setAttr("skewY", 0);
+        }}
         onTransformEnd={e => {
           const t = e.target;
 
