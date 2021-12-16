@@ -1,4 +1,4 @@
-/* global Feature, DataTable, Data, locate, Scenario, pause */
+/* global Feature, DataTable, Data, locate, Scenario */
 
 const { serialize } = require("./helpers");
 
