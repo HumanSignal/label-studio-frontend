@@ -138,7 +138,9 @@ const _detect = region => {
     }
     case "brushregion": {
       // If there is no imageData we just wait for the next render
-      return region.imageData && imageRelatedBBox(
+      const bbox = region.imageData && Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height);
+
+      return bbox && imageRelatedBBox(
         region,
         Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
       );
