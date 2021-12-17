@@ -69,8 +69,10 @@ const HtxVideoView = ({ item }) => {
   }, [item]);
 
   const setPosition = useCallback((value) => {
-    if (value !== position) _setPosition(value);
-  }, [position]);
+    if (value !== position) {
+      _setPosition(clamp(value, 1, videoLength));
+    }
+  }, [position, videoLength]);
 
   const setVideoLength = useCallback((value) => {
     if (value !== videoLength) _setVideoLength(value);
@@ -126,15 +128,15 @@ const HtxVideoView = ({ item }) => {
       }
     };
 
-    const onSpacePressed = (e) => {
-      if (e.code === 'Space') {
+    const onKeyDown = (e) => {
+      if (e.code.startsWith('Shift')) {
         e.preventDefault();
 
         if (!panMode) {
           setPanMode(true);
 
           const cancelPan = (e) => {
-            if (e.code === 'Space') {
+            if (e.code.startsWith('Shift')) {
               setPanMode(false);
               document.removeEventListener('keyup', cancelPan);
             }
@@ -146,11 +148,11 @@ const HtxVideoView = ({ item }) => {
     };
 
     window.addEventListener('resize', onResize);
-    document.addEventListener('keydown', onSpacePressed);
+    document.addEventListener('keydown', onKeyDown);
 
     return () => {
       window.removeEventListener('resize', onResize);
-      document.removeEventListener('keydown', onSpacePressed);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, []);
 
@@ -237,7 +239,7 @@ const HtxVideoView = ({ item }) => {
     setPosition(position);
     setVideoLength(length);
     item.setOnlyFrame(position);
-  }, [item]);
+  }, [item, setPosition, setVideoLength]);
 
   const handleVideoLoad = useCallback(({ length, videoDimensions }) => {
     setLoaded(true);
@@ -246,7 +248,7 @@ const HtxVideoView = ({ item }) => {
     setVideoLength(length);
     item.setOnlyFrame(1);
     item.setLength(length);
-  }, [item]);
+  }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
     setVideoDimensions(videoDimensions);
@@ -255,7 +257,7 @@ const HtxVideoView = ({ item }) => {
   const handleVideoEnded = useCallback(() => {
     setPlaying(false);
     setPosition(videoLength);
-  }, [videoLength]);
+  }, [videoLength, setPosition, setPlaying]);
 
   // TIMELINE EVENT HANDLERS
   const handlePlayToggle = useCallback((playing) => {
@@ -263,14 +265,19 @@ const HtxVideoView = ({ item }) => {
       setPosition(1);
     }
     setPlaying(playing);
-  }, [position, videoLength]);
+  }, [position, videoLength, setPosition]);
 
   const handleFullscreenToggle = useCallback(() => {
     setFullscreen(!fullscreen);
   }, [fullscreen]);
 
-  const handleSelectRegion = useCallback((_, id) => {
-    item.findRegion(id)?.onClickRegion();
+  const handleSelectRegion = useCallback((_, id, select) => {
+    const region = item.findRegion(id);
+    const selected = region?.selected || region?.inSelection;
+
+    if (!region || (isDefined(select) && selected === select)) return;
+
+    region.onClickRegion();
   }, [item]);
 
   const handleAction = useCallback((_, action, data) => {
@@ -289,10 +296,10 @@ const HtxVideoView = ({ item }) => {
           region.removeKeypoint(data.frame);
           break;
         default:
-          console.log('unknown action');
+          console.warn('unknown action');
       }
     });
-  }, [item]);
+  }, [item.regs]);
 
   useEffect(() => () => {
     item.ref.current = null;
@@ -393,7 +400,10 @@ const HtxVideoView = ({ item }) => {
             defaultStepSize={16}
             disableFrames={!supportsRegions}
             framerate={item.framerate}
-            onPositionChange={item.setFrame}
+            onPositionChange={(frame) => {
+              item.setFrame(frame);
+              setPosition(frame);
+            }}
             onPlayToggle={handlePlayToggle}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}
