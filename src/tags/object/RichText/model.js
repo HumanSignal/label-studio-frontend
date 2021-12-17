@@ -41,7 +41,7 @@ const WARNING_MESSAGES = {
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
  * @param {boolean} [clickableLinks=false]                 – allow annotator to open resources from links
  * @param {string} [highlightColor]                       - hex string with highlight color, if not provided uses the labels color
- * @param {boolean} [showLabels=true]                     - whether or not to show labels next to the region
+ * @param {boolean} [showLabels]                          - whether or not to show labels next to the region
  * @param {none|base64|base64unicode} [encoding]          - decode value from an encoded string
  * @param {symbol|word|sentence|paragraph} [granularity]   - control region selection granularity
  */
