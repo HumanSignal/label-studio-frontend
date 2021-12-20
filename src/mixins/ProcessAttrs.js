@@ -1,14 +1,23 @@
 import { flow, types } from "mobx-state-tree";
+import Papa from "papaparse";
 
-import { parseCSV, parseValue } from "../utils/data";
+import { parseValue } from "../utils/data";
 
 const resolvers = {
   // @todo comments/types
   csv(content, options = {}) {
-    const [results, names] = parseCSV(content, options.separator);
-    const { column = names[0] } = options;
+    const header = !options.headless;
+    const { data, meta: { fields } } = Papa.parse(content, { delimiter: options.separator, header });
+    const { column = header ? fields[0] : 0 } = options;
+    const row = data[0];
+    let cell = row[column];
 
-    return String(results[column][0]);
+    if (cell === undefined) {
+      // if `column` is a number even if csv has header
+      cell = row[fields[column] ?? fields[0]];
+    }
+
+    return String(cell ?? "");
   },
 };
 
@@ -48,7 +57,7 @@ const ProcessAttrsMixin = types
         pairs.forEach(pair => {
           const [k, v] = pair.split("=", 2);
 
-          options[k] = v;
+          options[k] = v ?? true; // options without values are `true`
         });
       }
 
