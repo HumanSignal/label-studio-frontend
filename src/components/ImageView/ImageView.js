@@ -533,7 +533,11 @@ export default observer(
       if (this.container.offsetWidth <= 1) return;
       if (this.lastOffsetWidth === this.container.offsetWidth) return;
 
-      this.props.item.onResize(this.imageRef.current.offsetWidth, this.imageRef.current.offsetHeight, true);
+      if ([90, 270].includes(this.props.item.rotation)) {
+        this.props.item.onResize(this.imageRef.current.offsetHeight, this.imageRef.current.offsetWidth, true);
+      } else {
+        this.props.item.onResize(this.imageRef.current.offsetWidth, this.imageRef.current.offsetHeight, true);
+      }
       this.lastOffsetWidth = this.container.offsetWidth;
     };
 
