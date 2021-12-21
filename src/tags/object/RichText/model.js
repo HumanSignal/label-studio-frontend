@@ -25,6 +25,8 @@ const WARNING_MESSAGES = {
 };
 
 /**
+ * WARNING: this is not a real doc, that's just a main reference; real docs are in their stub files: HyperText and Text
+ *
  * RichText tag shows text or HTML and allows labeling
  * @example
  * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
