@@ -23,7 +23,7 @@
  * @param {string} name                                   Name of the element
  * @param {string} value                                  Value of the element
  * @param {url|text} [valueType=text]                     Whether the text is stored directly in uploaded data or needs to be loaded from a URL
- * @param {boolean} [inline=false]                        Whether to embed html directly to LS or use iframe
+ * @param {boolean} [inline=false]                        Whether to embed HTML directly in Label Studio or use an iframe
  * @param {yes|no} [saveTextResult]                       Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
  * @param {none|base64|base64unicode} [encoding]          How to decode values from encoded strings
  * @param {boolean} [selectionEnabled=true]               Enable or disable selection
