@@ -46,6 +46,7 @@ const result = [
     from_name: "ner",
     to_name: "text",
     type: "paragraphlabels",
+    origin: "manual",
     value: {
       start: "2",
       end: "4",

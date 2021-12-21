@@ -29,6 +29,7 @@ const createRegion = (from_name, type, values) => ({
   from_name,
   to_name: "img",
   type,
+  origin: "manual",
   value: {
     height: 10.458911419423693,
     rotation: 0,
@@ -75,7 +76,7 @@ Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSide
         I.dontSeeElement(ONE_HIDDEN_SELECTOR);
         break;
     }
-    let count = await I.executeAsyncScript(countKonvaShapes);
+    const count = await I.executeAsyncScript(countKonvaShapes);
 
     assert.strictEqual(count, num);
   };
@@ -147,7 +148,7 @@ Scenario("Checking regions grouped by label", async ({ I, AtImageView }) => {
         I.dontSeeElement(ONE_HIDDEN_SELECTOR);
         break;
     }
-    let count = await I.executeAsyncScript(countKonvaShapes);
+    const count = await I.executeAsyncScript(countKonvaShapes);
 
     assert.strictEqual(count, num);
   };

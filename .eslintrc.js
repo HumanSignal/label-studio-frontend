@@ -53,6 +53,25 @@ module.exports = {
       "SwitchCase": 1,
       "MemberExpression": 1,
     }],
+    "@typescript-eslint/member-delimiter-style": ["error", {
+      "multiline": {
+        "delimiter": "comma",
+        "requireLast": true,
+      },
+      "singleline": {
+        "delimiter": "comma",
+        "requireLast": false,
+      },
+      "overrides": {
+        "interface": {
+          "multiline": {
+            "delimiter": "semi",
+            "requireLast": true,
+          },
+        },
+      },
+      "multilineDetection": "brackets",
+    }],
     "sort-imports": ["error", {
       "ignoreCase": true,
       "ignoreDeclarationSort": true,
@@ -91,6 +110,11 @@ module.exports = {
       "anonymous": "never",
       "named": "never",
       "asyncArrow": "always",
+    }],
+    "no-var": "error",
+    "prefer-const": ["error", {
+      "destructuring": "any",
+      "ignoreReadBeforeAssign": false,
     }],
   },
 };

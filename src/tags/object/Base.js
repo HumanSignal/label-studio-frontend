@@ -40,7 +40,7 @@ const ObjectBase = types
     },
   }))
   .actions(self => {
-    let props = {};
+    const props = {};
 
     function addProp(name, value) {
       props[name] = value;

@@ -112,7 +112,7 @@ const Model = types
       if (self.selectionstyle) {
         const s = Tree.cssConverter(self.selectionstyle);
 
-        for (let key in s) {
+        for (const key in s) {
           selection[key] = s[key];
         }
       } else {

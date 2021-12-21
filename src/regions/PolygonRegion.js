@@ -38,7 +38,7 @@ const Model = types
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
-    supportsTransform: true,
+    _supportsTransform: true,
     useTransformer: true,
     preferTransformer: false,
     supportsRotate: false,
@@ -195,8 +195,8 @@ const Model = types
       const p1 = self.points[0];
       const p2 = { x, y };
 
-      var r = 50;
-      var dist_points = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+      const r = 50;
+      const dist_points = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
 
       if (dist_points < r) {
         return true;
@@ -507,8 +507,8 @@ const HtxPolygonView = ({ item }) => {
         isDragging = true;
         item.annotation.setDragMode(true);
 
-        var arrX = item.points.map(p => p.x);
-        var arrY = item.points.map(p => p.y);
+        const arrX = item.points.map(p => p.x);
+        const arrY = item.points.map(p => p.y);
 
         [minX, maxX] = minMax(arrX);
         [minY, maxY] = minMax(arrY);
@@ -592,7 +592,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
-      listening={!suggestion}
+      listening={!suggestion && item.editable}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 

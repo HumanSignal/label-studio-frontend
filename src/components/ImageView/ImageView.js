@@ -18,6 +18,7 @@ import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
+import ResizeObserver from "../../utils/resize-observer";
 
 Konva.showWarnings = false;
 
@@ -239,6 +240,8 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
         supportsTransform={supportsTransform}
         supportsScale={supportsScale}
         selectedShapes={item.selectedRegions}
+        singleNodeMode={item.selectedRegions.length === 1}
+        useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
         draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
       />
     </Layer>
@@ -341,7 +344,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-      let evt = e.evt || e;
+      const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
@@ -536,6 +539,7 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
+      this.attachObserver(this.container);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
@@ -547,7 +551,24 @@ export default observer(
       hotkeys.addDescription("shift", "Pan image");
     }
 
+    attachObserver = (node) => {
+      if (this.resizeObserver) this.detachObserver();
+
+      if (node) {
+        this.resizeObserver = new ResizeObserver(this.onResize);
+        this.resizeObserver.observe(this.container);
+      }
+    }
+
+    detachObserver = () => {
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
+        this.resizeObserver = null;
+      }
+    }
+
     componentWillUnmount() {
+      this.detachObserver();
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
 
@@ -710,6 +731,7 @@ export default observer(
           <div
             ref={node => {
               this.container = node;
+              this.attachObserver(node);
             }}
             className={containerClassName}
             style={containerStyle}
@@ -737,7 +759,7 @@ export default observer(
               ref={ref => {
                 item.setStageRef(ref);
               }}
-              style={{ position: "absolute", top: 0, left: 0, brightness: "150%" }}
+              style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
               width={item.stageComponentSize.width}
               height={item.stageComponentSize.height}

@@ -12,6 +12,9 @@ import { SoundOutlined } from "@ant-design/icons";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
 
+const MIN_ZOOM_Y = 1;
+const MAX_ZOOM_Y = 50;
+
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
  * as with more detail as the number of pixels per second increases.
@@ -28,12 +31,12 @@ import { Hotkey } from "../../core/Hotkey";
  */
 function formatTimeCallback(seconds, pxPerSec) {
   seconds = Number(seconds);
-  var minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor(seconds / 60);
 
   seconds = seconds % 60;
 
   // fill up seconds with zeroes
-  var secondsStr = Math.round(seconds).toString();
+  let secondsStr = Math.round(seconds).toString();
 
   if (pxPerSec >= 25 * 10) {
     secondsStr = seconds.toFixed(2);
@@ -61,7 +64,7 @@ function formatTimeCallback(seconds, pxPerSec) {
  * @param: pxPerSec
  */
 function timeInterval(pxPerSec) {
-  var retval = 1;
+  let retval = 1;
 
   if (pxPerSec >= 25 * 100) {
     retval = 0.01;
@@ -95,7 +98,7 @@ function timeInterval(pxPerSec) {
  * @param pxPerSec
  */
 function primaryLabelInterval(pxPerSec) {
-  var retval = 1;
+  let retval = 1;
 
   if (pxPerSec >= 25 * 100) {
     retval = 10;
@@ -151,6 +154,7 @@ export default class Waveform extends React.Component {
         progressColor: "#52c41a",
       },
       zoom: 0,
+      zoomY: MIN_ZOOM_Y,
       speed: 1,
       volume: 1,
     };
@@ -167,6 +171,19 @@ export default class Waveform extends React.Component {
 
     this.wavesurfer.zoom(value);
   };
+
+  onChangeZoomY = value => {
+
+    this.setState({
+      ...this.state,
+      zoomY: value,
+    }, this.updateZoomY);
+  };
+
+  updateZoomY = throttle(() => {
+    this.wavesurfer.params.barHeight = this.state.zoomY;
+    this.wavesurfer.drawBuffer();
+  }, 100)
 
   onChangeVolume = value => {
     this.setState({
@@ -211,6 +228,28 @@ export default class Waveform extends React.Component {
     return false;
   };
 
+  onZoomYPlus = (ev, step = 1) => {
+    let val = this.state.zoomY;
+
+    val = val + step;
+    if (val > MAX_ZOOM_Y) val = MAX_ZOOM_Y;
+
+    this.onChangeZoomY(val);
+    ev.preventDefault();
+    return false;
+  };
+
+  onZoomYMinus = (ev, step = 1) => {
+    let val = this.state.zoomY;
+
+    val = val - step;
+    if (val < MIN_ZOOM_Y) val = MIN_ZOOM_Y;
+
+    this.onChangeZoomY(val);
+    ev && ev.preventDefault();
+    return false;
+  };
+
   onWheel = e => {
     if (e && !e.shiftKey) {
       return;
@@ -245,6 +284,7 @@ export default class Waveform extends React.Component {
       progressColor: this.state.colors.progressColor,
 
       splitChannels: true,
+      barHeight: 1,
     };
 
     if (this.props.regions) {
@@ -385,7 +425,7 @@ export default class Waveform extends React.Component {
       this.props.onLoad(this.wavesurfer);
     }
 
-    this.hotkeys.addKey("ctrl+b", this.onBack, "Back for one second", Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
+    this.hotkeys.addNamed("audio:back", this.onBack, Hotkey.DEFAULT_SCOPE + "," + Hotkey.INPUT_SCOPE);
   }
 
   componentWillUnmount() {
@@ -409,7 +449,7 @@ export default class Waveform extends React.Component {
 
         {this.props.zoom && (
           <Row gutter={16} style={{ marginTop: "1em" }}>
-            <Col flex={12} style={{ textAlign: "right", marginTop: "6px" }}>
+            <Col flex={8} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
                   <ZoomOutOutlined onClick={this.onZoomMinus} className={globalStyles.link} />
@@ -427,6 +467,27 @@ export default class Waveform extends React.Component {
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
                   <ZoomInOutlined onClick={this.onZoomPlus} className={globalStyles.link} />
+                </div>
+              </div>
+            </Col>
+            <Col flex={4} style={{ textAlign: "right", marginTop: "6px" }}>
+              <div style={{ display: "flex" }}>
+                <div style={{ marginTop: "6px", marginRight: "5px" }}>
+                  <ZoomOutOutlined onClick={this.onZoomYMinus} className={globalStyles.link} />
+                </div>
+                <div style={{ width: "100%" }}>
+                  <Slider
+                    min={MIN_ZOOM_Y}
+                    step={.1}
+                    max={MAX_ZOOM_Y}
+                    value={typeof this.state.zoomY === "number" ? this.state.zoomY : MIN_ZOOM_Y}
+                    onChange={value => {
+                      this.onChangeZoomY(value);
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: "6px", marginLeft: "5px" }}>
+                  <ZoomInOutlined onClick={this.onZoomYPlus} className={globalStyles.link} />
                 </div>
               </div>
             </Col>

@@ -51,6 +51,7 @@ const Result = types
       "textarea",
       "rating",
       "pairwise",
+      "videorectangle",
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
@@ -72,6 +73,7 @@ const Result = types
       brushlabels: types.maybe(types.array(types.string)),
       timeserieslabels: types.maybe(types.array(types.string)),
       taxonomy: types.frozen(), // array of arrays of strings
+      sequence: types.frozen(),
     }),
     // info about object and region
     // meta: types.frozen(),
@@ -226,13 +228,15 @@ const Result = types
     // label, becuase it takes color from the label
     updateAppearenceFromState() {},
 
-    serialize() {
+    serialize(options) {
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
-      const data = self.area ? self.area.serialize() : {};
+      const data = self.area ? self.area.serialize(options) : {};
 
       if (!data) return null;
       if (!self.isSubmitable) return null;
+      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
+      if (type === "labels" && self.to_name.mergeLabelsAndResults) return null;
       // cut off annotation id
       const id = self.area.cleanId;
 
@@ -253,10 +257,12 @@ const Result = types
         data.parentID = self.area.parentID.replace(/#.*/, "");
       }
 
-      Object.assign(data, { id, from_name, to_name, type });
+      Object.assign(data, { id, from_name, to_name, type, origin: self.area.origin });
+
       if (isDefined(value[valueType])) {
         Object.assign(data.value, { [valueType]: value[valueType] });
       }
+
       if (typeof score === "number") data.score = score;
 
       return data;

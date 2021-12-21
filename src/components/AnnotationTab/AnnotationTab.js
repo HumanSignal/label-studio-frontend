@@ -3,7 +3,6 @@ import { CurrentEntity } from "../CurrentEntity/CurrentEntity";
 import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
-import { DynamicPreannotationsToggle } from "./DynamicPreannotationsToggle";
 
 export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
@@ -13,7 +12,6 @@ export const AnnotationTab = observer(({ store }) => {
 
   return (
     <>
-      <DynamicPreannotationsToggle />
       {store.hasInterface("annotations:current") && (
         <CurrentEntity
           entity={as.selected}

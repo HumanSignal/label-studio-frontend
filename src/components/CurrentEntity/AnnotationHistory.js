@@ -32,7 +32,7 @@ export const AnnotationHistory = injector(observer(({
     <Block name="annotation-history">
       <HistoryItem
         user={createdBy}
-        // extra="final"
+        extra="final state"
         entity={selected}
         onClick={() => annotationStore.selectHistory(null)}
         selected={!isDefined(selectedHistory)}
@@ -40,19 +40,19 @@ export const AnnotationHistory = injector(observer(({
 
       {history.length > 0 && (
         <>
-          <Elem name="divider" title="Review history"/>
-          {history.map((annotation) => {
-            const { id, user, createdDate } = annotation;
+          <Elem name="divider" title="History"/>
+          {history.map((item) => {
+            const { id, user, createdDate } = item;
 
             return (
               <HistoryItem
                 key={`h-${id}`}
-                user={user ?? { email: annotation?.createdBy }}
+                user={user ?? { email: item?.createdBy }}
                 date={createdDate}
-                acceptedState={annotation.acceptedState}
-                selected={selectedHistory?.id === annotation.id}
-                selectable={annotation.results.length}
-                onClick={() => annotationStore.selectHistory(annotation)}
+                acceptedState={item.acceptedState}
+                selected={selectedHistory?.id === item.id}
+                selectable={item.results.length}
+                onClick={() => annotationStore.selectHistory(item)}
               />
             );
           })}
@@ -77,7 +77,7 @@ const HistoryItem = observer(({ entity, user, date, extra, acceptedState, select
             showUsername
             username={isPrediction ? entity.createdBy : null}
             mod={{ prediction: isPrediction }}
-          >{isPrediction && <LsSparks/>}</Elem>
+          >{isPrediction && <LsSparks style={{ width: 16, height: 16 }}/>}</Elem>
           {isPrediction ? entity.createdBy : userDisplayName(user)}
         </Space>
 

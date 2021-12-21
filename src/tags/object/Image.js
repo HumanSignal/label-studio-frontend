@@ -57,8 +57,8 @@ const TagAttrs = types.model({
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
-  gridSize: types.optional(types.number, 30),
-  gridColor: types.optional(customTypes.color, "#EEEEF4"),
+  gridsize: types.optional(types.string, "30"),
+  gridcolor: types.optional(customTypes.color, "#EEEEF4"),
 
   zoom: types.optional(types.boolean, true),
   negativezoom: types.optional(types.boolean, false),
@@ -542,7 +542,7 @@ const Model = types.model({
     },
 
     setGridSize(value) {
-      self.gridSize = value;
+      self.gridsize = String(value);
     },
 
     setCurrentImage(i) {
@@ -584,15 +584,10 @@ const Model = types.model({
     handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
       if (val) {
         self.freezeHistory();
-        const stage = self.stageRef;
         let stageScale = self.stageScale;
         let zoomScale = self.zoomScale;
 
-        let mouseAbsolutePos;
-        let zoomingPosition;
-
-        window.stage = stage;
-        mouseAbsolutePos = {
+        const mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
           y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
         };
@@ -600,10 +595,11 @@ const Model = types.model({
         stageScale = val > 0 ? stageScale * self.zoomBy : stageScale / self.zoomBy;
         zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
 
-        zoomingPosition = {
+        const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,
         };
+
         if (self.negativezoom !== true && zoomScale <= 1) {
           self.setZoom(1, 0, 0);
           return;

@@ -52,6 +52,7 @@ const Model = types
       "taxonomy",
       "choices",
       "choice",
+      "collapse",
       "number",
       "rating",
       "ranker",
@@ -87,6 +88,7 @@ const Model = types
       "paragraphs",
       "paragraphlabels",
       "video",
+      "videorectangle",
     ]),
   });
 

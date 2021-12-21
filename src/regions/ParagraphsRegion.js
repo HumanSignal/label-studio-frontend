@@ -77,7 +77,7 @@ const Model = types
     serialize() {
       const { start, end } = self;
 
-      let res = {
+      const res = {
         value: {
           start,
           end,

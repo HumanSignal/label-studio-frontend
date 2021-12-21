@@ -1,16 +1,23 @@
-import { getRoot, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Utils from "../utils";
 import { guidGenerator } from "../utils/unique";
 import Constants, { defaultStyle } from "../core/Constants";
+import { isDefined } from "../utils/utilities";
 
 export const HighlightMixin = types
   .model()
+  .volatile(()  =>({
+    _highlightedText: "",
+  }))
   .views(self => ({
     get _hasSpans() {
       return self._spans ? (
         self._spans.every(span => span.isConnected)
       ) : false;
+    },
+    get highlightedText() {
+      return self.text || self._highlightedText;
     },
   }))
   .actions(self => ({
@@ -18,6 +25,7 @@ export const HighlightMixin = types
      * Create highlights from the stored `Range`
      */
     applyHighlight() {
+      if (self.parent.isLoaded === false) return;
       // Avoid calling this method twice
       // spans in iframe disappear on every annotation switch, so check for it
       // in iframe spans still isConnected, but window is missing
@@ -40,21 +48,53 @@ export const HighlightMixin = types
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
+      const classNames = ["htx-highlight", stylesheet.className];
+
+      if (!(self.parent.showlabels ?? self.store.settings.showLabels)) {
+        classNames.push("htx-no-label");
+      }
+
+      // in this case labels presence can't be changed from settings — manual mode
+      if (isDefined(self.parent.showlabels)) {
+        classNames.push("htx-manual-label");
+      }
 
       self._stylesheet = stylesheet;
       self._spans = Utils.Selection.highlightRange(range, {
-        classNames: ["htx-highlight", stylesheet.className],
+        classNames,
         label: self.getLabels(),
       });
 
       return self._spans;
     },
 
+    updateHighlightedText() {
+      if (!self.text) {
+        // Concatinating of spans' innerText is up to 10 times faster, but loses "\n"
+        const range = self.rangeFromGlobalOffset();
+        const root = self._getRootNode();
+
+        if (!range || !root) {
+          return;
+        }
+        const selection = root.ownerDocument.defaultView.getSelection();
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+        self._highlightedText = String(selection);
+        selection.removeAllRanges();
+
+      }
+    },
+
     updateSpans() {
       if (self._hasSpans) {
-        self._spans.forEach(span => {
-          span.setAttribute("data-label", self.getLabels());
-        });
+        const lastSpan = self._spans[self._spans.length - 1];
+        const label = self.getLabels();
+
+        // label is array, string or null, so check for length
+        if (!label?.length) lastSpan.removeAttribute("data-label");
+        else lastSpan.setAttribute("data-label", label);
       }
     },
 
@@ -74,7 +114,7 @@ export const HighlightMixin = types
       const lastSpan = self._spans[self._spans.length - 1];
 
       self._stylesheet.setColor(self.getLabelColor());
-      Utils.Selection.applySpanStyles(lastSpan, { label: "" });
+      Utils.Selection.applySpanStyles(lastSpan, { label: self.getLabels() });
     },
 
     /**
@@ -140,10 +180,6 @@ export const HighlightMixin = types
     },
 
     getLabels() {
-      const settings = getRoot(self).settings;
-
-      if (!self.parent.showlabels && !settings.showLabels) return null;
-
       return self.labeling?.mainValue ?? [];
     },
 
@@ -202,6 +238,7 @@ const stateClass = {
   highlighted: "__highlighted",
   collapsed: "__collapsed",
   hidden: "__hidden",
+  noLabel: "htx-no-label",
 };
 
 /**
@@ -241,6 +278,7 @@ const createSpanStylesheet = (document, identifier, color) => {
       font-family: Monaco;
       vertical-align: super;
       content: attr(data-label);
+      line-height: 0;
     `,
     [classNames.active]: `
       color: ${Utils.Colors.contrastColor(initialActiveColor)};
@@ -261,6 +299,9 @@ const createSpanStylesheet = (document, identifier, color) => {
     [`${className}.${stateClass.hidden}::after`]: `
       display: none
     `,
+    [`${className}.${stateClass.noLabel}::after`]: `
+      display: none
+    `,
   };
 
   const styleTag = document.createElement("style");
@@ -273,7 +314,7 @@ const createSpanStylesheet = (document, identifier, color) => {
   const supportInserion = !!stylesheet.insertRule;
   let lastRuleIndex = 0;
 
-  for (let ruleName in rules) {
+  for (const ruleName in rules) {
     if (!Object.prototype.hasOwnProperty.call(rules, ruleName)) continue;
     if (supportInserion) stylesheet.insertRule(`${ruleName} { ${rules[ruleName]} } `, lastRuleIndex++);
     else stylesheet.addRule(ruleName, rules);

@@ -18,6 +18,12 @@ const RegionsMixin = types
 
     // Dynamic preannotations enabled
     dynamic: false,
+
+    origin: types.optional(types.enumeration([
+      'prediction',
+      'prediction-changed',
+      'manual',
+    ]), 'manual'),
   })
   .volatile(() => ({
     // selected: false,
@@ -62,6 +68,15 @@ const RegionsMixin = types
       return true;
     },
 
+    getConnectedDynamicRegions(selfExcluding) {
+      const { regions = [] } = getRoot(self).annotationStore?.selected || {};
+
+      return regions.filter(r => {
+        if (selfExcluding && r === self) return false;
+        return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+      });
+    },
+
   }))
   .actions(self => {
     return {
@@ -71,8 +86,6 @@ const RegionsMixin = types
 
       setDrawing(val) {
         self.isDrawing = val;
-
-        self.notifyDrawingFinished();
       },
 
       setShapeRef(ref) {
@@ -284,13 +297,12 @@ const RegionsMixin = types
       },
 
       notifyDrawingFinished({ destroy = false } = {}) {
-        if (!self.dynamic || self.fromSuggestion) return;
-        const { regions } = getRoot(self).annotationStore.selected;
+        if (self.origin === 'prediction') {
+          self.origin = 'prediction-changed';
+        }
 
-        const connectedRegions = regions.filter(r => {
-          if (destroy && r === self) return false;
-          return r.dynamic && r.type === self.type && r.labelName === self.labelName;
-        });
+        // everything above is related to dynamic preannotations
+        if (!self.dynamic || self.fromSuggestion) return;
 
         clearTimeout(self.drawingTimeout);
 
@@ -299,10 +311,11 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke("regionFinishedDrawing", self, connectedRegions);
+            env.events.invoke("regionFinishedDrawing", self, self.getConnectedDynamicRegions(destroy));
           }, timeout);
         }
       },
-    };});
+    };
+  });
 
 export default types.compose(RegionsMixin, AnnotationMixin);

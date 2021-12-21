@@ -16,7 +16,7 @@ function isLabels(val, key) {
 }
 
 examples.forEach(example => {
-  let { annotations, config, data, result = annotations[0].result, title } = example;
+  const { annotations, config, data, result = annotations[0].result, title } = example;
 
   Scenario(`Nonexistent label -> ${title}`, async ({ I, LabelStudio, AtSidebar, AtImageView, AtAudioView }) => {
     let { result = annotations[0].result } = example;
@@ -91,7 +91,7 @@ examples.forEach(example => {
     }
   });
 
-  Scenario(`Nonexistent from_name -> ${title}`, async ({ I, LabelStudio, AtSidebar }) => {
+  Scenario(`Nonexistent from_name -> ${title}`, async ({ I, LabelStudio, AtTopbar, AtSidebar }) => {
     const params = { annotations: [{ id: "test", result }], data };
     const configTree = Utils.parseXml(config);
 
@@ -103,7 +103,7 @@ examples.forEach(example => {
 
     I.amOnPage("/");
     LabelStudio.init(params);
-    AtSidebar.see("Update");
+    AtTopbar.see("Update");
     AtSidebar.dontSeeRegions(regionsCount);
     AtSidebar.dontSeeRegions();
   });
@@ -115,13 +115,13 @@ const MULTIPLE_TYPE = "multiple";
 [SINGLE_TYPE, MULTIPLE_TYPE].forEach(type => {
   Scenario(`Making labels empty -> choice="${type}"`, async ({ I, LabelStudio, AtSidebar, AtAudioView, AtLabels }) => {
     async function expectSelectedLabels(expectedNum) {
-      let selectedLabelsNum = await I.grabNumberOfVisibleElements(AtLabels.locateSelected());
+      const selectedLabelsNum = await I.grabNumberOfVisibleElements(AtLabels.locateSelected());
 
       assert.strictEqual(selectedLabelsNum, expectedNum);
     }
     async function clickLabelWithLengthExpection(labelNumber, expectedLength, expectSelectedNum) {
       AtLabels.clickLabel(`${labelNumber}`);
-      let restored = await LabelStudio.serialize();
+      const restored = await LabelStudio.serialize();
 
       assert.strictEqual(restored[0].value.labels.length, expectedLength);
       await expectSelectedLabels(expectSelectedNum);
@@ -135,7 +135,9 @@ const MULTIPLE_TYPE = "multiple";
       await expectSelectedLabels(expectSelectedNum);
     }
 
-    let { annotations, config, data, result = annotations[0].result } = require("../examples/audio-regions");
+    const audioRegions = require("../examples/audio-regions");
+    const { annotations, config, data } = audioRegions;
+    let { result = annotations[0].result } = require("../examples/audio-regions");
 
     result = result.filter(r => isLabelType(r.type)).filter((r, idx) => !idx);
     const params = { annotations: [{ id: "test", result }], data, config };
@@ -159,7 +161,7 @@ const MULTIPLE_TYPE = "multiple";
     I.click(locate(".lsf-region-item"));
     AtLabels.clickLabel("1");
 
-    let restored = await LabelStudio.serialize();
+    const restored = await LabelStudio.serialize();
 
     Asserts.notDeepEqualWithTolerance(result[0], restored[0]);
     Asserts.deepEqualWithTolerance(Helpers.omitBy(result[0], isLabels), Helpers.omitBy(restored[0], isLabels));
@@ -218,7 +220,7 @@ Scenario(`Consistency of empty labels`, async ({ I, LabelStudio, AtSidebar, AtIm
   const shapesNum = await AtImageView.countKonvaShapes();
 
   assert.strictEqual(shapesNum, 1);
-  let restored = await LabelStudio.serialize();
+  const restored = await LabelStudio.serialize();
   const canvasSize = await AtImageView.getCanvasSize();
   const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
 

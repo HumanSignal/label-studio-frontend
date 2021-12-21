@@ -1,7 +1,7 @@
 import { Modal } from "antd";
 
 const wrapper = (_type, value, title) => {
-  let custom = {
+  const custom = {
     type: "",
     title: "",
   };

@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Group, Image, Layer, Shape } from "react-konva";
 import { observer } from "mobx-react";
-import { cast, getParent, getRoot, hasParent, types } from "mobx-state-tree";
+import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
 
 import Canvas from "../utils/canvas";
 import NormalizationMixin from "../mixins/Normalization";
@@ -263,6 +263,9 @@ const Model = types
       },
 
       beginPath({ type, strokeWidth, opacity = self.opacity }) {
+        // don't start to save another regions in the middle of drawing process
+        self.object.annotation.pauseAutosave();
+
         pathPoints = Points.create({ id: guidGenerator(), type, strokeWidth, opacity });
         cachedPoints = [];
         return pathPoints;
@@ -275,6 +278,11 @@ const Model = types
       },
 
       endPath() {
+        const { annotation } = self.object;
+
+        // will resume in the next tick...
+        annotation.startAutosave();
+
         if (cachedPoints.length === 2) {
           cachedPoints.push(cachedPoints[0]);
           cachedPoints.push(cachedPoints[1]);
@@ -285,6 +293,11 @@ const Model = types
         lastPointX = lastPointY = -1;
         pathPoints = null;
         cachedPoints = [];
+
+        self.notifyDrawingFinished();
+
+        // ...so we run this toggled function also delayed
+        annotation.autosave && setTimeout(() => annotation.autosave());
       },
 
       convertPointsToMask() {},
@@ -313,7 +326,7 @@ const Model = types
             color: self.strokeColor,
           });
 
-          self.toches = cast([]);
+          self.touches = [];
           self.rle = Array.from(rle);
         }
       },
@@ -340,23 +353,31 @@ const Model = types
        */
 
       /**
+       * @param {{ fast?: boolean }} options `fast` is for saving only touches, without RLE
        * @return {BrushRegionResult}
        */
-      serialize() {
+      serialize(options) {
         const object = self.object;
-        const rle = Canvas.Region2RLE(self, object);
+        const value = { format: "rle" };
 
-        if (!rle || !rle.length) return null;
+        if (options?.fast) {
+          value.rle = self.rle;
+
+          if (self.touches.length) value.touches = self.touches;
+        } else {
+          const rle = Canvas.Region2RLE(self, object);
+
+          if (!rle || !rle.length) return null;
+
+          // UInt8Array serializes as object, not an array :(
+          value.rle = Array.from(rle);
+        }
 
         const res = {
           original_width: object.naturalWidth,
           original_height: object.naturalHeight,
           image_rotation: object.rotation,
-          value: {
-            format: "rle",
-            // UInt8Array serializes as object, not an array :(
-            rle: Array.from(rle),
-          },
+          value,
         };
 
         return res;
@@ -486,7 +507,6 @@ const HtxBrushView = ({ item }) => {
       const isDrawing = item.parent?.drawingRegion === item;
 
       if (isDrawing || !layer || done) return;
-      let dataUrl;
       let highlightEl;
 
       if (highlighted) {
@@ -494,7 +514,9 @@ const HtxBrushView = ({ item }) => {
         highlightEl.hide();
       }
       layer.draw();
-      dataUrl = layer.canvas.toDataURL();
+
+      const dataUrl = layer.canvas.toDataURL();
+
       item.cacheImageData();
 
       if (highlighted) {
@@ -570,8 +592,9 @@ const HtxBrushView = ({ item }) => {
             item.setHighlight(false);
             item.onClickRegion(e);
           }}
-          listening={!suggestion}
+          listening={!suggestion && item.editable}
         >
+          {/* RLE */}
           <Image
             image={image}
             hitFunc={imageHitFunc}
@@ -579,10 +602,12 @@ const HtxBrushView = ({ item }) => {
             height={item.parent.stageHeight}
           />
 
+          {/* Touches */}
           <Group>
             <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
           </Group>
 
+          {/* Highlight */}
           <Image
             name="highlight"
             image={highlightedImageRef.current}

@@ -3,7 +3,7 @@ const config = `
   <Image name="img" value="$image" zoom="true"></Image>
   <KeyPointLabels name="tag" toName="img" strokewidth="5" fillcolor="red">
     <Label value="Hello" background="yellow"></Label>
-    <Label value="World" background="blue"></Label>  
+    <Label value="World" background="blue"></Label>
   </KeyPointLabels>
 </View>
 `;
@@ -21,6 +21,7 @@ const result = [
     original_height: 501,
     original_width: 800,
     type: "keypointlabels",
+    origin: "manual",
     value: {
       x: 49.6,
       y: 52.34042553191489,
@@ -36,6 +37,7 @@ const result = [
     original_height: 501,
     original_width: 800,
     type: "keypointlabels",
+    origin: "manual",
     value: {
       x: 47.73333333333334,
       y: 52.765957446808514,

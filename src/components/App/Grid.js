@@ -20,7 +20,7 @@ class Item extends Component {
   componentDidMount() {
     Promise.all(this.props.annotation.objects.map(o => {
       return o.isReady || new Promise(resolve => {
-        let dispose = observe(o, "isReady", ()=>{
+        const dispose = observe(o, "isReady", ()=>{
           dispose();
           resolve();
         });

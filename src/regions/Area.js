@@ -11,6 +11,7 @@ import { RichTextRegionModel } from "./RichTextRegion";
 import { BrushRegionModel } from "./BrushRegion";
 import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
 import { ParagraphsRegionModel } from "./ParagraphsRegion";
+import { VideoRectangleRegionModel } from "./VideoRectangleRegion";
 
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
@@ -34,6 +35,7 @@ const Area = types.union(
       if (sn.$treenode) return sn.$treenode.type;
       if (
         !sn.points && // dirty hack to make it work with polygons, but may be the whole condition is not necessary at all
+        !sn.sequence &&
         sn.value &&
         Object.values(sn.value).length <= 1
       )
@@ -59,6 +61,7 @@ const Area = types.union(
   EllipseRegionModel,
   PolygonRegionModel,
   BrushRegionModel,
+  VideoRectangleRegionModel,
   ClassificationArea,
 );
 

@@ -61,7 +61,7 @@ fetch(currentTagsUrl)
       let results = "";
 
       if (regions) {
-        for (let region of regions.value.split(/,\s*/)) {
+        for (const region of regions.value.split(/,\s*/)) {
           const files = path.resolve(__dirname + "/../src/regions/" + region + ".js");
           const regionsData = jsdoc2md.getTemplateDataSync({ files });
           // region descriptions named after region and defined as separate type:
@@ -113,7 +113,7 @@ fetch(currentTagsUrl)
       return str;
     }
 
-    for (let { dir, title, nested } of groups) {
+    for (const { dir, title, nested } of groups) {
       console.log("## " + title);
       const prefix = __dirname + "/../src/tags/" + dir;
       const getTemplateDataByGlob = glob =>
@@ -125,7 +125,7 @@ fetch(currentTagsUrl)
       }
       // tags inside nested dirs go after others, so we have to resort file list
       templateData.sort((a, b) => a.name > b.name ? 1 : -1);
-      for (let t of templateData) {
+      for (const t of templateData) {
         const name = t.name.toLowerCase();
         const str = processTemplate(t, dir);
 

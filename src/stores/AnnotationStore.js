@@ -42,6 +42,10 @@ const Annotation = types
     createdBy: types.optional(types.string, "Admin"),
     user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
 
+    parent_prediction: types.maybeNull(types.integer),
+    parent_annotation: types.maybeNull(types.integer),
+    last_annotation_history: types.maybeNull(types.integer),
+
     loadedDate: types.optional(types.Date, new Date()),
     leadTime: types.maybeNull(types.number),
 
@@ -90,6 +94,7 @@ const Annotation = types
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
+      acceptedState: sn.accepted_state ?? sn.acceptedState ?? null,
     };
   })
   .views(self => ({
@@ -239,6 +244,7 @@ const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
+      getRoot(self).addAnnotationToTaskHistory(self.pk);
     },
 
     toggleVisibility(visible) {
@@ -266,7 +272,7 @@ const Annotation = types
     },
 
     extendSelectionWith(areas) {
-      for (let area of (Array.isArray(areas) ? areas : [areas])) {
+      for (const area of (Array.isArray(areas) ? areas : [areas])) {
         self.regionStore.toggleSelection(area, true);
       }
     },
@@ -405,7 +411,7 @@ const Annotation = types
      * @param {*} region
      */
     deleteRegion(region) {
-      let { regions } = self.regionStore;
+      const { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
 
@@ -423,6 +429,28 @@ const Annotation = types
 
     deleteArea(area) {
       destroy(area);
+    },
+
+    undo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canUndo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.undo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
+    redo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canRedo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.redo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
     },
 
     // update some fragile parts after snapshot manipulations (undo/redo)
@@ -457,7 +485,7 @@ const Annotation = types
       if (!isDraft && !self.versions.draft) return;
       self.autosave.flush();
       self.pauseAutosave();
-      if (isDraft) self.versions.draft = self.serializeAnnotation();
+      if (isDraft) self.versions.draft = self.serializeAnnotation({ fast: true });
       self.deleteAllRegions({ deleteReadOnly: true });
       if (isDraft) {
         self.deserializeResults(self.versions.result);
@@ -489,7 +517,7 @@ const Annotation = types
         () => {
           if (self.autosave.paused) return;
 
-          const result = self.serializeAnnotation();
+          const result = self.serializeAnnotation({ fast: true });
           // if this is new annotation and no regions added yet
 
           if (!self.pk && !result.length) return;
@@ -581,7 +609,7 @@ const Annotation = types
 
       let audiosNum = 0;
       let audioNode = null;
-      let mod = "shift+space";
+      const mod = "shift+space";
       let comb = mod;
 
       // [TODO] we need to traverse this two times, fix
@@ -696,8 +724,19 @@ const Annotation = types
       return self.regionStore.regions.slice(prevSize);
     },
 
-    serializeAnnotation() {
-      return self.serialized;
+    serializeAnnotation(options) {
+      // return self.serialized;
+
+      document.body.style.cursor = "wait";
+
+      const result = self.results
+        .map(r => r.serialize(options))
+        .filter(Boolean)
+        .concat(self.relationStore.serializeAnnotation(options));
+
+      document.body.style.cursor = "default";
+
+      return result;
     },
 
     // Some annotations may be created with wrong assumptions
@@ -811,7 +850,7 @@ const Annotation = types
      * suggestions: boolean
      * }} options Deserialization options
      */
-    deserializeResults(json, { suggestions=false } = {}) {
+    deserializeResults(json, { suggestions = false, hidden = false } = {}) {
       try {
         const objAnnotation = self.prepareAnnotation(json);
         const areas = suggestions ? self.suggestions : self.areas;
@@ -825,7 +864,7 @@ const Annotation = types
           );
         });
 
-        self.results
+        !hidden && self.results
           .filter(r => r.area.classification)
           .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
 
@@ -866,7 +905,8 @@ const Annotation = types
       if (obj["type"] !== "relation") {
         const { id, value: rawValue, type, ...data } = obj;
 
-        const { type: tagType } = self.names.get(obj.to_name) ?? {};
+        const object = self.names.get(obj.to_name) ?? {};
+        const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
         const areaId = `${id || guidGenerator()}#${self.id}`;
@@ -888,6 +928,16 @@ const Annotation = types
         }
 
         area.addResult({ ...data, id: resultId, type, value });
+
+        // if there is merged result with region data and type and also with the labels
+        // and object allows such merge — create new result with these labels
+        if (!type.endsWith("labels") && value.labels && object.mergeLabelsAndResults) {
+          const labels = value.labels;
+          const labelControl = object.states()?.find(control => control?.findLabel(labels[0]));
+
+          area.setValue(labelControl);
+          area.results.find(r => r.type.endsWith("labels"))?.setValue(labels);
+        }
       }
     },
 
@@ -921,11 +971,19 @@ const Annotation = types
       Array.from(self.suggestions.keys()).forEach((id) => {
         self.acceptSuggestion(id);
       });
+      self.deleteAllDynamicregions();
     },
 
     rejectAllSuggestions() {
       Array.from(self.suggestions.keys).forEach((id) => {
         self.suggestions.delete(id);
+      });
+      self.deleteAllDynamicregions();
+    },
+
+    deleteAllDynamicregions() {
+      self.regions.forEach(r => {
+        r.dynamic && r.deleteRegion();
       });
     },
 
@@ -935,6 +993,12 @@ const Annotation = types
       self.areas.set(id, {
         ...item.toJSON(),
         fromSuggestion: true,
+      });
+      const area = self.areas.get(id);
+      const activeStates = area.object.activeStates();
+
+      activeStates.forEach(state => {
+        area.setValue(state);
       });
       self.suggestions.delete(id);
     },
@@ -1059,7 +1123,7 @@ export default types
       c.setupHotKeys();
 
       getEnv(self).events.invoke('selectAnnotation', c, selected);
-
+      if (c.pk) getParent(self).addAnnotationToTaskHistory(c.pk);
       return c;
     }
 
@@ -1163,7 +1227,7 @@ export default types
       const pk = options.pk || options.id;
 
       //
-      let node = {
+      const node = {
         userGenerate: false,
 
         ...options,
@@ -1235,11 +1299,19 @@ export default types
 
     function selectHistory(item) {
       self.selectedHistory = item;
+      setTimeout(() => {
+        // update classifications after render
+        const updatedItem = item ?? self.selected;
+
+        updatedItem?.results
+          .filter(r => r.area.classification)
+          .forEach(r => r.from_name.updateFromResult?.(r.mainValue));
+      });
     }
 
-    function addAnnotationFromPrediction(prediction) {
+    function addAnnotationFromPrediction(entity) {
       // immutable work, because we'll change ids soon
-      const s = prediction._initialAnnotationObj.map(r => ({ ...r }));
+      const s = entity._initialAnnotationObj.map(r => ({ ...r }));
       const c = self.addAnnotation({ userGenerate: true, result: s });
 
       const ids = {};
@@ -1265,6 +1337,16 @@ export default types
       selectAnnotation(c.id);
       c.deserializeAnnotation(s);
       c.updateObjects();
+
+      // parent link for the new annotations
+      if (entity.pk) {
+        if (entity.type === 'prediction') {
+          c.parent_prediction = parseInt(entity.pk);
+        }
+        else if (entity.type === 'annotation') {
+          c.parent_annotation = parseInt(entity.pk);
+        }
+      }
 
       return c;
     }

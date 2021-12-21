@@ -6,14 +6,14 @@ import * as Colors from "./colors";
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
-  var canvas = document.createElement("canvas");
-  var ctx = canvas.getContext("2d");
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
   canvas.width = imagedata.width;
   canvas.height = imagedata.height;
   ctx.putImageData(imagedata, 0, 0);
 
-  var image = new Image();
+  const image = new Image();
 
   image.src = canvas.toDataURL();
   return image;
@@ -24,8 +24,8 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
-  var canvas = document.createElement("canvas");
-  var ctx = canvas.getContext("2d");
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
   canvas.width = nw;
   canvas.height = nh;
@@ -44,7 +44,7 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   }
   ctx.putImageData(newdata, 0, 0);
 
-  var new_image = new Image();
+  const new_image = new Image();
 
   new_image.src = canvas.toDataURL();
   return new_image;
@@ -124,8 +124,8 @@ function Region2RLE(region, image) {
 }
 
 function brushSizeCircle(size) {
-  var canvas = document.createElement("canvas");
-  var ctx = canvas.getContext("2d");
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
   canvas.width = size * 4 + 8;
   canvas.height = size * 4 + 8;
@@ -141,7 +141,7 @@ function brushSizeCircle(size) {
 }
 
 function encodeSVG(data) {
-  var externalQuotesValue = "single";
+  const externalQuotesValue = "single";
 
   function getQuotes() {
     const double = `"`;
@@ -153,7 +153,7 @@ function encodeSVG(data) {
     };
   }
 
-  var quotes = getQuotes();
+  const quotes = getQuotes();
 
   function addNameSpace(data) {
     if (data.indexOf("http://www.w3.org/2000/svg") < 0) {
@@ -164,7 +164,7 @@ function encodeSVG(data) {
   }
 
   data = addNameSpace(data);
-  var symbols = /[\r\n%#()<>?[\\\]^`{|}]/g;
+  const symbols = /[\r\n%#()<>?[\\\]^`{|}]/g;
 
   // Use single quotes instead of double to avoid encoding.
   if (externalQuotesValue === "double") {
@@ -178,7 +178,7 @@ function encodeSVG(data) {
 
   // var resultCss = `background-image: url();`;
 
-  var escaped = data.replace(symbols, encodeURIComponent);
+  const escaped = data.replace(symbols, encodeURIComponent);
 
   return `${quotes.level1}data:image/svg+xml,${escaped}${quotes.level1}`;
 }

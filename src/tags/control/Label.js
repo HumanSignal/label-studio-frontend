@@ -115,7 +115,7 @@ const Model = types.model({
     const sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
       return region.parent?.name === self.parent?.toname;
     });
-    let affectedRegions = sameObjectSelectedRegions.filter(region => {
+    const affectedRegions = sameObjectSelectedRegions.filter(region => {
       return region.editable;
     });
 
@@ -136,7 +136,7 @@ const Model = types.model({
     // check if there is a region selected and if it is and user
     // is changing the label we need to make sure that region is
     // not going to endup without results at all
-    let applicableRegions =  affectedRegions.filter(region => {
+    const applicableRegions =  affectedRegions.filter(region => {
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
@@ -171,7 +171,7 @@ const Model = types.model({
     }
 
     if (self.isEmpty) {
-      let selected = self.selected;
+      const selected = self.selected;
 
       labels.unselectAll();
       self.setSelected(!selected);
@@ -212,7 +212,7 @@ const Model = types.model({
     applicableRegions.forEach(region => {
       if (region) {
         region.setValue(self.parent);
-
+        region.notifyDrawingFinished();
         // hack to trigger RichText re-render the region
         region.updateSpans?.();
       }

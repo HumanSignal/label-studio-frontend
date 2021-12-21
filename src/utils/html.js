@@ -2,21 +2,23 @@ import insertAfter from "insert-after";
 import * as Checkers from "./utilities";
 import Canvas from "./canvas";
 
+// fast way to change labels visibility for all text regions
 function toggleLabelsAndScores(show) {
-  const els = document.getElementsByClassName("htx-highlight");
+  const toggleInDocument = document => {
+    const els = document.getElementsByClassName("htx-highlight");
 
-  Array.from(els).forEach(el => {
-    let foundCls = null;
+    Array.from(els).forEach(el => {
+      // labels presence controlled by explicit `showLabels` in the config
+      if (el.classList.contains("htx-manual-label")) return;
 
-    Array.from(el.classList).forEach(cls => {
-      if (cls.indexOf("htx-label-") !== -1) foundCls = cls;
-    });
-
-    if (foundCls !== null) {
       if (show) el.classList.remove("htx-no-label");
       else el.classList.add("htx-no-label");
-    }
-  });
+    });
+  };
+
+  toggleInDocument(document);
+  document.querySelectorAll("iframe.lsf-htx-richtext")
+    .forEach(iframe => toggleInDocument(iframe.contentWindow.document));
 }
 
 const labelWithCSS = (function() {
@@ -47,7 +49,7 @@ const labelWithCSS = (function() {
 
 // work directly with the html tree
 function createClass(name, rules) {
-  var style = document.createElement("style");
+  const style = document.createElement("style");
 
   style.type = "text/css";
   document.getElementsByTagName("head")[0].appendChild(style);
@@ -91,11 +93,11 @@ function getNextNode(node) {
 }
 
 function getNodesInRange(range) {
-  var start = range.startContainer;
-  var end = range.endContainer;
-  var commonAncestor = range.commonAncestorContainer;
-  var nodes = [];
-  var node;
+  const start = range.startContainer;
+  const end = range.endContainer;
+  const commonAncestor = range.commonAncestorContainer;
+  const nodes = [];
+  let node;
 
   // walk parent nodes from start to common ancestor
   for (node = start.parentNode; node; node = node.parentNode) {
@@ -130,7 +132,7 @@ function documentReverse(node) {
  * @param {number} offset
  */
 function splitText(node, offset) {
-  let tail = node.cloneNode(false);
+  const tail = node.cloneNode(false);
 
   tail.deleteData(0, offset);
   node.deleteData(offset, node.length - offset);
@@ -139,7 +141,7 @@ function splitText(node, offset) {
 
 function normalizeBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
-  let node, next, last, start, end;
+  let node, next, last;
 
   // Move the start container to the last leaf before any sibling boundary,
   // guaranteeing that any children of the container are within the range.
@@ -170,7 +172,7 @@ function normalizeBoundaries(range) {
   next = node => (node === last ? null : documentForward(node));
   last = lastLeaf(endContainer);
   while (node && !isTextNodeInRange(node)) node = next(node);
-  start = node;
+  const start = node;
 
   // Find the end TextNode.
   // Similarly, a reverse document order traversal visits every Node in the
@@ -179,7 +181,7 @@ function normalizeBoundaries(range) {
   next = node => (node === last ? null : documentReverse(node));
   last = firstLeaf(startContainer);
   while (node && !isTextNodeInRange(node)) node = next(node);
-  end = node;
+  const end = node;
 
   range.setStart(start, 0);
   range.setEnd(end, end.length);
@@ -193,9 +195,9 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   const allNodes = getNodesInRange(normedRange._range);
   const textNodes = allNodes.filter(n => isTextNode(n));
 
-  var white = /^\s*$/;
+  const white = /^\s*$/;
 
-  var nodes = textNodes; // normedRange.textNodes(),
+  const nodes = textNodes; // normedRange.textNodes(),
 
   let start = 0;
 
@@ -207,11 +209,11 @@ function highlightRange(normedRange, cssClass, cssStyle) {
 
   const results = [];
 
-  for (var i = start, len = nlen; i < len; i++) {
-    var node = nodes[i];
+  for (let i = start, len = nlen; i < len; i++) {
+    const node = nodes[i];
 
     if (!white.test(node.nodeValue)) {
-      var hl = window.document.createElement("span");
+      const hl = window.document.createElement("span");
 
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
@@ -231,7 +233,8 @@ function highlightRange(normedRange, cssClass, cssStyle) {
  * @param {Range} range
  */
 function splitBoundaries(range) {
-  let { startContainer, startOffset, endContainer, endOffset } = range;
+  let { startContainer, endContainer  } = range;
+  const { startOffset, endOffset } = range;
 
   if (isTextNode(endContainer)) {
     if (endOffset > 0 && endOffset < endContainer.length) {
@@ -262,7 +265,7 @@ const toGlobalOffset = (container, element, len) => {
     if (node.nodeName === "#text") pos = pos + node.length;
     if (node.nodeName === "BR") pos = pos + 1;
 
-    for (var i = 0; i <= node.childNodes.length; i++) {
+    for (let i = 0; i <= node.childNodes.length; i++) {
       const n = node.childNodes[i];
 
       if (n) {
@@ -277,7 +280,7 @@ const toGlobalOffset = (container, element, len) => {
 };
 
 const mainOffsets = element => {
-  var range = window
+  const range = window
     .getSelection()
     .getRangeAt(0)
     .cloneRange();
@@ -303,7 +306,7 @@ const mainOffsets = element => {
     }
 
     if (node.childNodes.length > 0) {
-      for (var i = 0; i <= node.childNodes.length; i++) {
+      for (let i = 0; i <= node.childNodes.length; i++) {
         const n = node.childNodes[i];
 
         if (n) {
@@ -332,7 +335,7 @@ const findIdxContainer = (el, globidx) => {
     } else if (node.nodeName === "BR") {
       len = len - 1;
     } else if (node.childNodes.length > 0) {
-      for (var i = 0; i <= node.childNodes.length; i++) {
+      for (let i = 0; i <= node.childNodes.length; i++) {
         const n = node.childNodes[i];
 
         if (n) {
@@ -350,7 +353,7 @@ const findIdxContainer = (el, globidx) => {
 };
 
 function removeSpans(spans) {
-  var norm = [];
+  const norm = [];
 
   if (spans) {
     spans.forEach(span => {

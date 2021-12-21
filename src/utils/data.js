@@ -8,16 +8,22 @@ import get from "lodash.get";
  * @param {object} task
  */
 export const parseValue = (value, task) => {
-  const reVar =      /\$[a-z0-9_.]+/ig;
-  const reVarOnly = /^\$[a-z0-9_.]+$/ig;
+  const reVar = /\$[\w[\].{}]+/ig;
 
   if (!value) return "";
-  if (reVarOnly.test(value)) {
-    return get(task, value.substr(1)) ?? "";
+
+  if (value.match(reVar)?.length === 1) {
+    return get(task, value.substr(1));
   }
 
   // case for visual Text tags to display some additional info ("Title: $title")
-  return value.replace(reVar, v => get(task, v.substr(1)));
+  return value.replace(reVar, (v) => {
+    if (v && v.startsWith('$')) {
+      return get(task, v.substr(1));
+    }
+
+    return v;
+  });
 };
 
 /**
@@ -95,7 +101,7 @@ export const parseCSV = (text, separator = "auto") => {
 
   const result = {};
 
-  for (let name of names) result[name] = [];
+  for (const name of names) result[name] = [];
 
   if (names.length !== split(lines[0]).length) {
     throw new Error(
@@ -111,7 +117,7 @@ export const parseCSV = (text, separator = "auto") => {
   let row;
   let i;
 
-  for (let line of lines) {
+  for (const line of lines) {
     // skip empty lines including the last line
     if (!line.trim()) continue;
     row = split(line);
