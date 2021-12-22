@@ -7,6 +7,7 @@ import { observe } from "mobx";
 import Konva from "konva";
 import { Annotation } from "./Annotation";
 import { isDefined } from "../../utils/utilities";
+import { moveStylesBetweenHeadTags } from "../../utils/html";
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -88,6 +89,16 @@ export default class Grid extends Component {
 
     clonedCanvas.forEach((canvas, i) => {
       canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
+    });
+
+    /* Procedure created style rules are not clonable so for iframe we should take care about them (highlight styles) */
+    const sourceIframe = item.querySelectorAll("iframe");
+    const clonedIframe = clone.querySelectorAll("iframe");
+
+    clonedIframe.forEach((iframe, idx) => {
+      iframe.contentWindow.document.open();
+      iframe.contentWindow.document.write(sourceIframe[idx].contentDocument.documentElement.outerHTML);
+      moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
     });
 
     this.renderNext();

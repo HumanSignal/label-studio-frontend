@@ -99,7 +99,15 @@ const Model = types
     },
 
     get isLoaded() {
-      return self._isLoaded &&  self._loadedForAnnotation === self.annotation?.id;
+      return self._isLoaded && self._loadedForAnnotation === self.annotation?.id;
+    },
+
+    get isRootRendered() {
+      return self.rootNodeRef === self.visibleNodeRef;
+    },
+
+    get isReady() {
+      return self.isLoaded  && self._isReady;
     },
   }))
   .volatile(() => ({
@@ -107,7 +115,7 @@ const Model = types
     originalContentRef: React.createRef(),
     visibleNodeRef: React.createRef(),
     regsObserverDisposer: null,
-    isReady: false,
+    _isReady: false,
     _isLoaded: false,
     _loadedForAnnotation: null,
   }))
