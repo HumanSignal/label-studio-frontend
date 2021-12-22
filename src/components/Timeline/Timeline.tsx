@@ -25,7 +25,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   onPositionChange: (value: number) => void;
   onToggleVisibility?: (id: string, visibility: boolean) => void;
   onDeleteRegion?: (id: string) => void;
-  onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string) => void;
+  onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
   onAction?: (event: MouseEvent, action: string, data?: any) => void;
   onFullscreenToggle?: () => void;
 }
