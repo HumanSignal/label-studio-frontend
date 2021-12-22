@@ -11,6 +11,7 @@ import { HtxRectangle, RectRegionModel } from "./RectRegion";
 import { EllipseRegionModel, HtxEllipse } from "./EllipseRegion";
 import { HtxTextAreaRegion, TextAreaRegionModel } from "./TextAreaRegion";
 import { RichTextRegionModel } from "./RichTextRegion";
+import { VideoRectangleRegionModel } from "./VideoRectangleRegion";
 
 const AllRegionsType = types.union(
   AudioRegionModel,
@@ -24,6 +25,7 @@ const AllRegionsType = types.union(
   RichTextRegionModel,
   TimeSeriesRegionModel,
   ParagraphsRegionModel,
+  VideoRectangleRegionModel,
 );
 
 export {
@@ -45,5 +47,6 @@ export {
   PolygonPointView,
   PolygonRegionModel,
   RectRegionModel,
-  TextAreaRegionModel
+  TextAreaRegionModel,
+  VideoRectangleRegionModel
 };

@@ -100,7 +100,7 @@ const DrawingTool = types
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, self.dynamic);
+        self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
@@ -111,13 +111,14 @@ const DrawingTool = types
         const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
           value[key] = source[key];
           return value;
-        }, { coordstype: "px" });
+        }, { coordstype: "px", dynamic: self.dynamic  });
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
         self.deleteRegion();
+        newArea.notifyDrawingFinished();
         return newArea;
       },
       createRegion(opts) {
@@ -131,7 +132,6 @@ const DrawingTool = types
       deleteRegion() {
         self.currentArea = null;
         self.obj.deleteDrawingRegion();
-        self._resetState();
       },
       applyActiveStates(area) {
         const activeStates = self.obj.activeStates();
@@ -159,10 +159,7 @@ const DrawingTool = types
           self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
         } else {
-          // It takes time to finish drawing before commit the region
-          setTimeout(()=>{
-            self._finishDrawing();
-          });
+          self._finishDrawing();
         }
       },
       _finishDrawing() {

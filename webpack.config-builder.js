@@ -62,7 +62,7 @@ const optimizer = () => {
     runtimeChunk: true,
   };
 
-  if (process.env.NODE_ENV === 'production') {
+  if (DEFAULT_NODE_ENV === 'production') {
     result.minimizer.push(
       new TerserPlugin({
         parallel: true,
@@ -188,7 +188,7 @@ const cssLoader = (withLocalIdent = true) => {
 };
 
 const devServer = () => {
-  return (process.env.NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
+  return (DEFAULT_NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
     devServer: {
       compress: true,
       port: 3000,

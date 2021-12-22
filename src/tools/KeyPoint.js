@@ -44,6 +44,7 @@ const _Tool = types
       });
 
       keyPoint.setDrawing(false);
+      keyPoint.notifyDrawingFinished();
     },
   }));
 

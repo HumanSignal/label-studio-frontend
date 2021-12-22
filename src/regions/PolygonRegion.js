@@ -38,7 +38,7 @@ const Model = types
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
-    supportsTransform: true,
+    _supportsTransform: true,
     useTransformer: true,
     preferTransformer: false,
     supportsRotate: false,
@@ -592,7 +592,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
-      listening={!suggestion}
+      listening={!suggestion && item.editable}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
