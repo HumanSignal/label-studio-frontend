@@ -6,7 +6,6 @@ export function Annotation({ annotation, root }) {
   useEffect(()=>{
     return ()=>{
       if (annotation && isAlive(annotation)) {
-        console.log(`resetReady`, annotation.pk, annotation.id);
         annotation.resetReady();
       }
     };
