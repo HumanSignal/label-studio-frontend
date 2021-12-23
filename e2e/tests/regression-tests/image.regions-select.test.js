@@ -121,7 +121,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
 
-  for (let region of current.regions) {
+  for (const region of current.regions) {
     I.pressKey(["u"]);
     I.pressKey("1");
     AtImageView[current.action](...convertParamsToPixels(region.params, canvasSize));

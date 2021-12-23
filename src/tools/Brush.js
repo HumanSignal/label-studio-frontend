@@ -151,15 +151,21 @@ const _Tool = types
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv() {
+      mouseupEv(ev, [x, y]) {
         if (self.mode !== "drawing") return;
+        self.addPoint(x, y);
         self.mode = "viewing";
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
-          const newBrush = self.commitDrawingRegion();
+          setTimeout(()=>{
+            const newBrush = self.commitDrawingRegion();
 
-          self.obj.annotation.selectArea(newBrush);
+            self.obj.annotation.selectArea(newBrush);
+            self.annotation.history.unfreeze();
+          });
+        } else {
+          self.annotation.history.unfreeze();
         }
       },
 
@@ -191,6 +197,7 @@ const _Tool = types
         // Reset the timer if a user started drawing again
         brush = self.getSelectedShape;
         if (brush && brush.type === "brushregion") {
+          self.annotation.history.freeze();
           self.mode = "drawing";
           brush.setDrawing(true);
           isFirstBrushStroke = false;
@@ -202,6 +209,7 @@ const _Tool = types
           self.addPoint(x, y);
         } else {
           if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
+          self.annotation.history.freeze();
           self.mode = "drawing";
           isFirstBrushStroke = true;
           brush = self.createDrawingRegion({

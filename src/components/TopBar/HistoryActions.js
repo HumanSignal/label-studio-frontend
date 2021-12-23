@@ -5,7 +5,9 @@ import { Tooltip } from "../../common/Tooltip/Tooltip";
 import { Block, Elem } from "../../utils/bem";
 import "./HistoryActions.styl";
 
-export const EditingHistory = observer(({ history }) => {
+export const EditingHistory = observer(({ entity }) => {
+  const { history } = entity;
+  
   return (
     <Block name="history">
       <Tooltip title="Undo">
@@ -15,7 +17,7 @@ export const EditingHistory = observer(({ history }) => {
           type="text"
           aria-label="Undo"
           disabled={!history?.canUndo}
-          onClick={() => history?.canUndo && history.undo()}
+          onClick={() => entity.undo()}
           icon={<LsUndo />}
         />
       </Tooltip>
@@ -26,7 +28,7 @@ export const EditingHistory = observer(({ history }) => {
           type="text"
           aria-label="Redo"
           disabled={!history?.canRedo}
-          onClick={() => history?.canRedo && history.redo()}
+          onClick={() => entity.redo()}
           icon={<LsRedo />}
         />
       </Tooltip>
