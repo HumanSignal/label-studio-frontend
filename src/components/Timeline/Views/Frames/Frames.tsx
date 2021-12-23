@@ -168,12 +168,6 @@ export const Frames: FC<TimelineViewProps> = ({
     return value - currentOffsetX + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
 
-  const hoverOffsetStep = useMemo(() => {
-    if (hoverOffset) {
-      return roundToStep(hoverOffset, step) - timelineStartOffset + timelineOffsetSteps;
-    }
-  }, [hoverOffset]);
-
   useEffect(() => {
     if (scrollable.current) {
       scrollable.current.scrollLeft = currentOffsetX;
@@ -252,7 +246,7 @@ export const Frames: FC<TimelineViewProps> = ({
         onWheel={scrollHandler}
         onMouseMove={hoverHandler}
         onMouseLeave={() => setHoverOffset(null)}
-        onClick={scrollClickHandler}
+        onClickCapture={scrollClickHandler}
       >
         <Elem name="filler">
           <Elem name="keypoints">
@@ -261,7 +255,7 @@ export const Frames: FC<TimelineViewProps> = ({
                 key={region.id}
                 region={region}
                 startOffset={timelineStartOffset}
-                onSelectRegion={(e, id) => onSelectRegion?.(e, id)}
+                onSelectRegion={onSelectRegion}
               />
             ) : null)}
           </Elem>
