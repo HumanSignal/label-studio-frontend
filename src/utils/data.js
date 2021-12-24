@@ -4,6 +4,8 @@ import get from "lodash.get";
 /**
  * Simple way to retrieve linked data in `value` param from task
  * Works only for prefixed values ($image); non-prefixed values left as is
+ * It's possible to add some text which will be left untouched; that's useful for
+ * visual Text tags to display some additional info ("Title: $title")
  * @param {string} value param
  * @param {object} task
  */
@@ -12,18 +14,12 @@ export const parseValue = (value, task) => {
 
   if (!value) return "";
 
-  if (value.match(reVar)?.length === 1) {
-    return get(task, value.substr(1));
+  // value can refer to structures, not only texts, so just replace wouldn't be enough
+  if (value.match(reVar)?.[0] === value) {
+    return get(task, value.substr(1)) ?? "";
   }
 
-  // case for visual Text tags to display some additional info ("Title: $title")
-  return value.replace(reVar, (v) => {
-    if (v && v.startsWith('$')) {
-      return get(task, v.substr(1));
-    }
-
-    return v;
-  });
+  return value.replace(reVar, (v) => get(task, v.substr(1) ?? ""));
 };
 
 /**
