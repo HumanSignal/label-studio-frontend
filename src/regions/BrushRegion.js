@@ -348,8 +348,8 @@ const Model = types
        */
 
       /**
-       * @param {Object} options
-       * @param {boolean} [options.fast] save only touches, without RLE
+       * @param {object} options
+       * @param {boolean} [options.fast] saving only touches, without RLE
        * @return {BrushRegionResult}
        */
       serialize(options) {
