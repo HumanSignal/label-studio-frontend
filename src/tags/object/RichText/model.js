@@ -14,6 +14,7 @@ import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 import * as xpath from "xpath-range";
+import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -129,7 +130,8 @@ const Model = types
       },
 
       updateValue: flow(function * (store) {
-        const value = parseValue(self.value, store.task.dataObj);
+        const valueFromTask = parseValue(self.value, store.task.dataObj);
+        const value = yield self.resolveValue(valueFromTask);
 
         if (self.valuetype === "url") {
           const url = value;
@@ -316,4 +318,4 @@ const Model = types
     };
   });
 
-export const RichTextModel = types.compose("RichTextModel", ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);
+export const RichTextModel = types.compose("RichTextModel", ProcessAttrsMixin, ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);
