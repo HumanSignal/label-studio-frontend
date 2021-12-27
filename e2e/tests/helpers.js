@@ -44,7 +44,10 @@ const waitForImage = async done => {
   const img = document.querySelector("[alt=LS]");
 
   if (!img || img.complete) return done();
-  img.onload = done;
+  // this should be rewritten to isReady when it is ready
+  img.onload = ()=>{
+    setTimeout(done, 100);
+  };
 };
 
 /**
@@ -72,20 +75,20 @@ const waitForAudio = async done => {
  * to same structures but with rounded numbers (int for ints, fixed(2) for floats)
  * @param {*} data
  */
-const convertToFixed = data => {
+const convertToFixed = (data, fractionDigits = 2) => {
   if (["string", "number"].includes(typeof data)) {
     const n = Number(data);
 
-    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(2);
+    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(fractionDigits);
   }
   if (Array.isArray(data)) {
-    return data.map(n => convertToFixed(n));
+    return data.map(n => convertToFixed(n, fractionDigits));
   }
   if (typeof data === "object") {
     const result = {};
 
     for (const key in data) {
-      result[key] = convertToFixed(data[key]);
+      result[key] = convertToFixed(data[key], fractionDigits);
     }
     return result;
   }

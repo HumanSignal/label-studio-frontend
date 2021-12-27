@@ -373,7 +373,7 @@ export default observer(
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
-        const { left, top } = this.container.getBoundingClientRect();
+        const { left, top } = this.props.item.containerRef.getBoundingClientRect();
 
         this.canvasX = left;
         this.canvasY = top;
@@ -530,11 +530,10 @@ export default observer(
     }
 
     onResize = debounce(() => {
-      if (!this.container) return;
-      const { offsetWidth, offsetHeight } = this.container;
+      if (!this?.props?.item?.containerRef) return;
+      const { offsetWidth, offsetHeight } = this.props.item.containerRef;
 
-      if (offsetWidth <= 1) return;
-      if (offsetHeight <= 1) return;
+      if (this.props.item.naturalWidth <= 1) return;
       if (this.lastOffsetWidth === offsetWidth && this.lastOffsetHeight === offsetHeight) return;
 
       this.props.item.onResize(offsetWidth, offsetHeight, true);
@@ -544,7 +543,7 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
-      this.attachObserver(this.container);
+      this.attachObserver(this.props.item.containerRef);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
@@ -561,7 +560,7 @@ export default observer(
 
       if (node) {
         this.resizeObserver = new ResizeObserver(this.onResize);
-        this.resizeObserver.observe(this.container);
+        this.resizeObserver.observe(node);
       }
     };
 
@@ -680,7 +679,7 @@ export default observer(
         >
           <div
             ref={node => {
-              this.container = node;
+              item.setContainerRef(node);
               this.attachObserver(node);
             }}
             className={containerClassName}
@@ -695,7 +694,10 @@ export default observer(
             />
             <div
               className={styles.frame}
-              style={{ width: item.stageComponentSize.width, height: item.stageComponentSize.height }}
+              style={{
+                width: item.stageComponentSize.width,
+                height: item.stageComponentSize.height,
+              }}
             >
               <img
                 ref={ref => {
@@ -707,7 +709,8 @@ export default observer(
                 onLoad={item.updateImageSize}
                 onError={this.handleError}
                 alt="LS"
-              /></div>
+              />
+            </div>
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
           {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (

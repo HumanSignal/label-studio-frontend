@@ -670,6 +670,10 @@ const Model = types.model({
       self.imageRef = ref;
     },
 
+    setContainerRef(ref) {
+      self.containerRef = ref;
+    },
+
     setStageRef(ref) {
       self.stageRef = ref;
 
@@ -730,10 +734,9 @@ const Model = types.model({
       self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
     },
 
-    _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
-      if (naturalWidth !== undefined) {
-        self.naturalWidth = naturalWidth;
-        self.naturalHeight = naturalHeight;
+    _updateImageSize({ width, height, userResize }) {
+      if (self.naturalWidth === undefined) {
+        return;
       }
       if (width > 1 && height > 1) {
         self.containerWidth = width;
@@ -745,8 +748,8 @@ const Model = types.model({
       self._updateRegionsSizes({
         width: self.stageWidth,
         height: self.stageHeight,
-        naturalWidth,
-        naturalHeight,
+        naturalWidth: self.naturalWidth,
+        naturalHeight: self.naturalHeight,
         userResize,
       });
     },
@@ -761,11 +764,12 @@ const Model = types.model({
     },
 
     updateImageSize(ev) {
-      const { width, height, naturalWidth, naturalHeight } = ev.target;
+      const { naturalWidth, naturalHeight } = ev.target;
+      const { offsetWidth, offsetHeight } = self.containerRef;
 
-      self.initialWidth = width;
-      self.initialHeight = height;
-      self._updateImageSize({ width, height, naturalWidth, naturalHeight });
+      self.naturalWidth = naturalWidth;
+      self.naturalHeight = naturalHeight;
+      self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
