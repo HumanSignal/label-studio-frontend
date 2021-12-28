@@ -840,7 +840,7 @@ const Annotation = types
         });
       }
 
-      self.updateObjects();
+      self.objects.forEach(obj => obj.needsUpdate?.());
     },
 
     /**
