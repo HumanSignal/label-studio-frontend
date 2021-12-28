@@ -363,15 +363,17 @@ class RichTextPieceView extends Component {
 
     // fix unselectable links
     const style = doc.createElement("style");
+    const script = doc.createElement("script");
 
-    style.textContent = "body a { pointer-events: all; }";
+    style.textContent = "body a { pointer-events: all !important; } .htx-highlight {display: inline !important;}";
+    script.textContent = `
+    document.querySelectorAll("a").forEach(a => a.removeAttribute("href"));
+    window.addEventListener("mousedown", ()=>{
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+    })`;
     doc.head.appendChild(style);
-
-    // // @todo make links selectable; dragstart supressing doesn't help — they are still draggable
-    // body.addEventListener("dragstart", e => {
-    //   e.stopPropagation();
-    //   e.preventDefault();
-    // });
+    doc.head.appendChild(script);
 
     // auto-height
     if (body.scrollHeight) {
