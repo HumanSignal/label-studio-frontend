@@ -368,9 +368,11 @@ class RichTextPieceView extends Component {
     style.textContent = "body a { pointer-events: all !important; } .htx-highlight {display: inline !important;}";
     script.textContent = `
     document.querySelectorAll("a").forEach(a => a.removeAttribute("href"));
-    window.addEventListener("mousedown", ()=>{
-      const selection = window.getSelection();
-      selection.removeAllRanges();
+    window.addEventListener("mousedown", (ev)=>{
+      if (!ev.shiftKey && !ev.metaKey && !ev.shiftKey) {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+      }
     })`;
     doc.head.appendChild(style);
     doc.head.appendChild(script);
