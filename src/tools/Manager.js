@@ -71,7 +71,7 @@ class ToolsManager {
   }
 
   selectTool(tool, value) {
-    if (value) {
+    if (value && !tool.selected) {
       this.unselectAll();
       if (tool.setSelected) tool.setSelected(true);
     } else {
