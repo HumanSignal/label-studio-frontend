@@ -7,6 +7,7 @@ import { Block, Elem } from "../../utils/bem";
 import { isDefined, userDisplayName } from "../../utils/utilities";
 import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import "./Annotations.styl";
+import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
 
 export const Annotations = observer(({ store, annotationStore }) => {
   const dropdownRef = useRef();
@@ -146,9 +147,13 @@ const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => 
               <Elem tag="span" name="entity-id">#{entity.pk ?? entity.id}</Elem>
             </Elem>
 
-            {isDefined(entity.acceptedState) && (
+            {isDefined(entity.acceptedState) ? (
               <Elem name="review" mod={{ state: entity.acceptedState }}>
                 {entity.acceptedState}
+              </Elem>
+            ) : (
+              <Elem name="created">
+                created, <Elem name="date" component={TimeAgo} date={entity.createdDate}/>
               </Elem>
             )}
           </Space>
