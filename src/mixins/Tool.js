@@ -1,4 +1,4 @@
-import { getEnv, types } from "mobx-state-tree";
+import { getEnv, getRoot, types } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -23,6 +23,10 @@ const ToolMixin = types
 
     get viewClass() {
       return () => null;
+    },
+
+    get fullName() {
+      return self.toolName + (self.dynamic ? '-dynamic' : '');
     },
 
     get clonedStates() {
@@ -55,11 +59,27 @@ const ToolMixin = types
     get extraShortcuts() {
       return {};
     },
+
+    get shouldPreserveSelectedTool() {
+      return (self.obj ? getRoot(self.obj).settings : {}).preserveSelectedTool ?? false;
+    },
+
+    get isPreserved() {
+      return window.localStorage.getItem(`selected-tool:${self.obj?.name}`) === self.fullName;
+    },
   }))
   .actions(self => ({
-    setSelected(val) {
-      self.selected = val;
+    setSelected(selected) {
+      self.selected = selected;
       self.afterUpdateSelected();
+
+      if (selected && self.obj) {
+        const storeName = `selected-tool:${self.obj.name}`;
+
+        if (self.shouldPreserveSelectedTool) {
+          window.localStorage.setItem(storeName, self.fullName);
+        }
+      }
     },
 
     afterUpdateSelected() {},

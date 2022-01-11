@@ -164,8 +164,9 @@ const Model = types.model({
       const selectedTool = manager.findSelectedTool();
       const sameType = (tool && selectedTool) ? getType(selectedTool).name === getType(tool).name : false;
       const sameLabel = selectedTool ? tool?.control?.name === selectedTool?.control?.name : false;
+      const isNotSameTool = selectedTool && (!sameType || !sameLabel);
 
-      if (tool && (!selectedTool || (selectedTool && (!sameType || !sameLabel)))) {
+      if (tool && (isNotSameTool || !selectedTool)) {
         manager.selectTool(tool, true);
       }
     }

@@ -31,10 +31,14 @@ class ToolsManager {
     INSTANCES.forEach((manager) => manager.removeAllTools());
   }
 
-  constructor({ name } = {}) {
+  constructor({
+    name,
+  } = {}) {
     this.name = name;
     this.tools = {};
     this._default_tool = null;
+
+    this.preservedTool = window.localStorage.getItem(`selected-tool:${this.name}`);
   }
 
   get obj() {
@@ -43,12 +47,20 @@ class ToolsManager {
 
   addTool(name, tool, prefix = guidGenerator()) {
     if (tool.smart && tool.smartOnly) return;
-    // todo: It seems that key is using only for storing,
+    // todo: It seems that key is used only for storing,
     // but not for finding tools, so may be there might
     // be an array instead of an object
     const key = `${prefix}#${name}`;
 
     this.tools[key] = tool;
+
+    if (tool.shouldPreserveSelectedTool && (tool.fullName === this.preservedTool)) {
+      if (tool.setSelected) {
+        this.unselectAll();
+        tool.setSelected(true);
+      }
+      return;
+    }
 
     if (tool.default && !this._default_tool && !this.hasSelected) {
       this._default_tool = tool;
@@ -70,8 +82,8 @@ class ToolsManager {
     }
   }
 
-  selectTool(tool, value) {
-    if (value) {
+  selectTool(tool, selected) {
+    if (selected) {
       this.unselectAll();
       if (tool.setSelected) tool.setSelected(true);
     } else {
