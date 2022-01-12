@@ -54,7 +54,7 @@ export const Keypoints: FC<KeypointsProps> = ({
           {region.id}
         </Elem> */}
       </Elem>
-      <Elem name="keypoints" onClick={(e) => onSelectRegionHandler(e, true)}>
+      <Elem name="keypoints" onClick={(e: MouseEvent<HTMLDivElement>) => onSelectRegionHandler(e, true)}>
         {lifespans.map((lifespan, i) => {
           const isLast = i + 1 === lifespans.length;
           const { points, ...data } = lifespan;

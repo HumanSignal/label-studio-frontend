@@ -33,6 +33,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const scrollMultiplier = 1.25;
   const timelineStartOffset = 150;
 
+  const rootRef = useRef<HTMLDivElement>();
   const scrollable = useRef<HTMLDivElement>();
   const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
@@ -89,8 +90,6 @@ export const Frames: FC<TimelineViewProps> = ({
     }
 
   }, [scrollable, offsetX, offsetY, setScroll]);
-
-  const timelineOffsetSteps = roundToStep(timelineStartOffset, step);
 
   const currentOffsetX = useMemo(() => {
     const value = roundToStep(offsetX, step);
@@ -197,8 +196,20 @@ export const Frames: FC<TimelineViewProps> = ({
   }, []);
 
   useEffect(() => {
+    const rootElem = rootRef.current!;
+    const observer = new ResizeObserver(() => {
+      onResize?.(toSteps(scrollable.current!.clientWidth, step));
+    });
+
+    observer.observe(rootElem);
+
     onResize?.(toSteps(scrollable.current!.clientWidth, step));
-  }, [viewWidth, step]);
+
+    return () => {
+      observer.unobserve(rootElem);
+      observer.disconnect();
+    };
+  }, [step]);
 
   useEffect(() => {
     const scroll = scrollable.current;
@@ -221,7 +232,7 @@ export const Frames: FC<TimelineViewProps> = ({
   };
 
   return (
-    <Block name="timeline-frames" style={styles as any}>
+    <Block ref={rootRef} name="timeline-frames" style={styles as any}>
       <Elem name="controls">
         <Elem
           name="indicator"

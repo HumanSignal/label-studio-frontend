@@ -29,10 +29,12 @@ export const Seeker: FC<SeekerProps> = ({
   const viewRef = useRef<HTMLDivElement>();
 
   const showIndicator = seekVisible > 0;
-  const width = `${seekVisible / length * 100}%`;
-  const offsetLimit = length - seekVisible;
+  const width = clamp(seekVisible, 0 ,length) / length * 100;
+  const offsetLimit = clamp(length - seekVisible, 0, length);
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
   const seekerOffset = position / length * 100;
+
+  console.log(seekOffset, offsetLimit, length);
 
   const onIndicatorDrag = useCallback((e) => {
     const indicator = viewRef.current!;
@@ -91,13 +93,13 @@ export const Seeker: FC<SeekerProps> = ({
     document.addEventListener("mouseup", onMouseUp);
   }, [length]);
 
-  const navigationHandler = showIndicator ? onIndicatorDrag : onSeekerDrag;
+  const navigationHandler = (showIndicator && width < 100) ? onIndicatorDrag : onSeekerDrag;
 
   return (
     <Block name="seeker" ref={rootRef} onMouseDown={navigationHandler}>
       <Elem name="track"/>
-      {showIndicator && (
-        <Elem name="indicator" ref={viewRef} style={{ left: windowOffset, width }}/>
+      {showIndicator && width < 100 && (
+        <Elem name="indicator" ref={viewRef} style={{ left: windowOffset, width: `${width}%` }}/>
       )}
       <Elem name="position" ref={seekerRef} style={{ left: `${seekerOffset}%` }}/>
       <Elem name="minimap">{minimap}</Elem>
