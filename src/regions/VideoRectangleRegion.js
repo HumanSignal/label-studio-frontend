@@ -18,6 +18,8 @@ const Model = types
     getShape(frame) {
       let prev, next;
 
+      console.log(self.sequence);
+
       for (const item of self.sequence) {
         if (item.frame === frame) {
           return onlyProps(self.props, item);
