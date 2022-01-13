@@ -19,6 +19,7 @@ import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { RegionWrapper } from "./RegionWrapper";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import IsReadyMixin from "../mixins/IsReadyMixin";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -150,7 +151,6 @@ const Model = types
     hideable: true,
     layerRef: undefined,
     imageData: null,
-    _isReady: false,
   }))
   .views(self => {
     return {
@@ -205,10 +205,6 @@ const Model = types
         // const newdata = ctx.createImageData(750, 937);
         //     newdata.data.set(item._cached_mask);
         //     var img = imagedata_to_image(newdata);
-      },
-
-      setReady(value = true) {
-        self._isReady = value;
       },
 
       setLayerRef(ref) {
@@ -393,6 +389,7 @@ const BrushRegionModel = types.compose(
   NormalizationMixin,
   AreaMixin,
   KonvaRegionMixin,
+  IsReadyMixin,
   Model,
 );
 
