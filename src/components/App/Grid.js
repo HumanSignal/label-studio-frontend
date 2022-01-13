@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Button } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import styles from "./App.module.scss";
-import { EntityTab } from '../AnnotationTabs/AnnotationTabs';
+import { EntityTab } from "../AnnotationTabs/AnnotationTabs";
 import { observe } from "mobx";
 import Konva from "konva";
 import { Annotation } from "./Annotation";
@@ -59,9 +59,9 @@ export default class Grid extends Component {
 
   renderNext(idx) {
     this.setState(
-      { item: isDefined(idx)?idx:this.state.item+1 },
+      { item: isDefined(idx) ? idx : this.state.item + 1 },
       () => {
-        if (this.state.item<this.props.annotations.length) {
+        if (this.state.item < this.props.annotations.length) {
           this.props.store._selectItem(this.props.annotations[this.state.item]);
         } else {
           this.props.store._unselectAll();
@@ -81,7 +81,7 @@ export default class Grid extends Component {
     c.children[this.state.item].appendChild(clone);
 
     // Force redraw
-    Konva.stages.map(stage=>stage.draw());
+    Konva.stages.map(stage => stage.draw());
 
     /* canvas are cloned empty, so clone their content */
     const sourceCanvas = item.querySelectorAll("canvas");
@@ -159,7 +159,7 @@ export default class Grid extends Component {
                 bordered={false}
                 style={{ height: 44 }}
               />
-              <Item root={this.props.root} onFinish={this.onFinish} key={i} annotation={selected}/>
+              <Item root={this.props.root} onFinish={this.onFinish} key={i} annotation={selected} />
             </div>
           )}
         </div>
