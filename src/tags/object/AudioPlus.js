@@ -99,6 +99,10 @@ const Model = types
       if (self.sync) self.initSync();
     },
 
+    onReady() {
+      self.setReady(true);
+    },
+
     handleSyncPlay() {
       self._ws?.play();
     },
@@ -296,7 +300,7 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
+const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, IsReadyMixin, Model);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
@@ -316,6 +320,7 @@ const HtxAudioView = ({ store, item }) => {
           onCreate={item.wsCreated}
           addRegion={item.addRegion}
           onLoad={item.onLoad}
+          onReady={item.onReady}
           onError={item.onError}
           speed={item.speed}
           zoom={item.zoom}
