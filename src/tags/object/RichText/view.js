@@ -368,7 +368,7 @@ class RichTextPieceView extends Component {
             name="container"
             ref={el => {
               this.setLoaded(true);
-              this.setReady(false);
+              this.setReady(true);
               this.rootNodeRef.current = el;
             }}
             className="htx-richtext"
