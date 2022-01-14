@@ -45,17 +45,18 @@ class ToolsManager {
     return root.annotationStore.names.get(this.name);
   }
 
-  addTool(name, tool, prefix = guidGenerator()) {
+  addTool(toolName, tool, prefix = guidGenerator()) {
     if (tool.smart && tool.smartOnly) return;
     // todo: It seems that key is used only for storing,
     // but not for finding tools, so may be there might
     // be an array instead of an object
+    const name = tool.toolName ?? toolName;
     const key = `${prefix}#${name}`;
 
     this.tools[key] = tool;
 
-    if (tool.shouldPreserveSelectedTool && (tool.fullName === this.preservedTool)) {
-      if (tool.setSelected) {
+    if (this.preservedTool && tool.shouldPreserveSelectedState) {
+      if (tool.fullName === this.preservedTool && tool.setSelected) {
         this.unselectAll();
         tool.setSelected(true);
       }

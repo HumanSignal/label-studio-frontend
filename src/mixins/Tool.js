@@ -10,7 +10,7 @@ const ToolMixin = types
   })
   .views(self => ({
     get obj() {
-      return self.manager?.obj;
+      return self.manager?.obj ?? getEnv(self).object;
     },
 
     get manager() {
@@ -60,8 +60,15 @@ const ToolMixin = types
       return {};
     },
 
-    get shouldPreserveSelectedTool() {
-      return (self.obj ? getRoot(self.obj).settings : {}).preserveSelectedTool ?? false;
+    get shouldPreserveSelectedState() {
+      try {
+        const settings = getRoot(self.obj).settings;
+
+        return settings.preserveSelectedTool;
+      } catch (err) {
+        console.log('something is missing');
+        return false;
+      }
     },
 
     get isPreserved() {
@@ -76,7 +83,7 @@ const ToolMixin = types
       if (selected && self.obj) {
         const storeName = `selected-tool:${self.obj.name}`;
 
-        if (self.shouldPreserveSelectedTool) {
+        if (self.shouldPreserveSelectedState) {
           window.localStorage.setItem(storeName, self.fullName);
         }
       }
