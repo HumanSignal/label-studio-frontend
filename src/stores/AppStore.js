@@ -669,5 +669,8 @@ export default types
       addAnnotationToTaskHistory,
       nextTask,
       prevTask,
+      beforeDestroy() {
+        ToolsManager.removeAllTools();
+      },
     };
   });

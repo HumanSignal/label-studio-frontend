@@ -10,6 +10,7 @@ import { toCamelCase } from "strman";
 import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
 import defaultOptions from './defaultOptions';
+import { destroy } from "mobx-state-tree";
 
 configure({
   isolateGlobalState: true,
@@ -69,6 +70,7 @@ export class LabelStudio {
 
     const destructor = () => {
       unmountComponentAtNode(rootElement);
+      destroy(this.store);
     };
 
     this.destroy = destructor;

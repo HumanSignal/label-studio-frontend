@@ -37,8 +37,10 @@ class ToolsManager {
     this.name = name;
     this.tools = {};
     this._default_tool = null;
+  }
 
-    this.preservedTool = window.localStorage.getItem(`selected-tool:${this.name}`);
+  get preservedTool() {
+    return window.localStorage.getItem(`selected-tool:${this.name}`);
   }
 
   get obj() {
