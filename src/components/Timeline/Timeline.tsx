@@ -65,6 +65,23 @@ export const Timeline: FC<TimelineProps> = ({
       setCurrentPosition(clampedValue);
       onPositionChange?.(clampedValue);
     }
+
+    setSeekViewPosition(newPosition);
+  };
+
+  const setSeekViewPosition = (newPosition: number) => {
+    const increase = newPosition > currentPosition;
+    const isInView = newPosition >= seekOffset && newPosition <= (seekOffset + seekVisibleWidth);
+
+    console.log(isInView);
+    console.log({ newPosition, left: seekOffset, right: seekOffset + seekVisibleWidth });
+    if (isInView) return;
+
+    if (increase && newPosition > (seekOffset + seekVisibleWidth)) {
+      setSeekOffset(clamp(newPosition, 1, length));
+    } else if (!increase && newPosition < seekOffset) {
+      setSeekOffset(clamp(newPosition - seekVisibleWidth + 1, 1, length));
+    }
   };
 
   const increasePosition: ControlsStepHandler = (_, stepSize) => {

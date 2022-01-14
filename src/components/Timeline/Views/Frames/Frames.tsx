@@ -65,7 +65,7 @@ export const Frames: FC<TimelineViewProps> = ({
 
       onScroll?.(clamp(frame + 1, 1, length));
     }
-  }, [offsetX, offsetY, step]);
+  }, [offsetX, offsetY, step, onScroll]);
 
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
@@ -198,7 +198,7 @@ export const Frames: FC<TimelineViewProps> = ({
 
   useEffect(() => {
     onResize?.(toSteps(scrollable.current!.clientWidth, step));
-  }, [viewWidth, step]);
+  }, [viewWidth, onResize, step]);
 
   useEffect(() => {
     const scroll = scrollable.current;
