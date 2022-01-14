@@ -41,7 +41,7 @@ const VideoRegionsPure = ({
   const [isDrawing, setDrawingMode] = useState(false);
   const stageRef = useRef();
 
-  const selected = regions.filter((reg) => reg.selected && !reg.hidden);
+  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden);
 
   const workinAreaCoordinates = useMemo(() => {
     const resultWidth = videoDimensions.width * zoom;
@@ -107,7 +107,7 @@ const VideoRegionsPure = ({
   }, [isDrawing, workinAreaCoordinates, videoDimensions]);
 
   const handleMouseDown = e => {
-    if (stageRef.current?.pointertargetShape) return;
+    if (e.target !== stageRef.current) return;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
@@ -178,7 +178,7 @@ const VideoRegionsPure = ({
             frame={item.frame}
             workingArea={workinAreaCoordinates}
             draggable={!isDrawing && !locked}
-            selected={reg.selected}
+            selected={reg.selected || reg.inSelection}
             onClick={(e) => {
               // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
               if (store.annotationStore.selected.relationMode) {
