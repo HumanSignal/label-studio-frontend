@@ -55,17 +55,18 @@ class ToolsManager {
 
     this.tools[key] = tool;
 
+    if (tool.default && !this._default_tool) this._default_tool = tool;
+
     if (this.preservedTool && tool.shouldPreserveSelectedState) {
       if (tool.fullName === this.preservedTool && tool.setSelected) {
         this.unselectAll();
-        tool.setSelected(true);
+        this.selectTool(tool, true);
       }
       return;
     }
 
-    if (tool.default && !this._default_tool && !this.hasSelected) {
-      this._default_tool = tool;
-      if (tool.setSelected) tool.setSelected(true);
+    if (this._default_tool && !this.hasSelected) {
+      this.selectTool(this._default_tool, true);
     }
   }
 
