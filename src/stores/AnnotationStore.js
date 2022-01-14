@@ -1224,6 +1224,7 @@ export default types
       //
       const node = {
         userGenerate: false,
+        createdDate: Utils.UDate.currentISODate(),
 
         ...options,
 

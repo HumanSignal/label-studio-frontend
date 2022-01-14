@@ -64,7 +64,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = RichTextHtml;
+const data = VideoRectangles;
 
 function getData(task) {
   if (task && task.data) {
