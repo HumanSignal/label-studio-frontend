@@ -73,8 +73,6 @@ export const Timeline: FC<TimelineProps> = ({
     const increase = newPosition > currentPosition;
     const isInView = newPosition >= seekOffset && newPosition <= (seekOffset + seekVisibleWidth);
 
-    console.log(isInView);
-    console.log({ newPosition, left: seekOffset, right: seekOffset + seekVisibleWidth });
     if (isInView) return;
 
     if (increase && newPosition > (seekOffset + seekVisibleWidth)) {
