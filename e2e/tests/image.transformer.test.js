@@ -724,8 +724,8 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionTr
     AtSidebar.seeRegions(1);
 
     // Draw the second region
-    I.pressKeyDown("Control");
     I.pressKey(Shape.hotKey);
+    I.pressKeyDown("Control");
     drawShapeByBbox(Shape, bbox2.x, bbox2.y, bbox2.width, bbox2.height, AtImageView);
     I.pressKeyUp("Control");
     AtSidebar.seeRegions(2);
