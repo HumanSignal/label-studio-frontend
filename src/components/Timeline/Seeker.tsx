@@ -8,8 +8,8 @@ import "./Seeker.styl";
 export interface SeekerProps {
   position: number;
   length: number;
-  seekOffset: number;
-  seekVisible: number;
+  timelineOverviewOffset: number;
+  timelineVisibleWidth: number;
   minimap?: ReactElement<TimelineMinimapProps> | null;
   onIndicatorMove: (position: number) => void;
   onSeek: (position: number) => void;
@@ -18,8 +18,8 @@ export interface SeekerProps {
 export const Seeker: FC<SeekerProps> = ({
   position,
   length,
-  seekOffset,
-  seekVisible,
+  timelineOverviewOffset,
+  timelineVisibleWidth,
   onIndicatorMove,
   onSeek,
   minimap,
@@ -28,10 +28,10 @@ export const Seeker: FC<SeekerProps> = ({
   const seekerRef = useRef<HTMLDivElement>();
   const viewRef = useRef<HTMLDivElement>();
 
-  const showIndicator = seekVisible > 0;
-  const width = `${seekVisible / length * 100}%`;
-  const offsetLimit = length - seekVisible;
-  const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
+  const showIndicator = timelineVisibleWidth > 0;
+  const width = `${timelineVisibleWidth / length * 100}%`;
+  const offsetLimit = length - timelineVisibleWidth;
+  const windowOffset = `${Math.min(timelineOverviewOffset, offsetLimit) / length * 100}%`;
   const seekerOffset = position / length * 100;
 
   const onIndicatorDrag = useCallback((e) => {

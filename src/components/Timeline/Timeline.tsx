@@ -53,8 +53,8 @@ export const Timeline: FC<TimelineProps> = ({
   const View = Views[mode];
 
   const [currentPosition, setCurrentPosition] = useState(clamp(position, 1, Infinity));
-  const [seekOffset, setSeekOffset] = useState(0);
-  const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
+  const [timelineOverviewOffset, setTimelineOverviewOffset] = useState(0);
+  const [timelineVisibleWidth, setTimelineVisibleWidth] = useState(0);
   const [viewCollapsed, setViewCollapsed] = useState(false);
   const step = useMemo(() => defaultStepSize * zoom, [zoom, defaultStepSize]);
 
@@ -71,15 +71,21 @@ export const Timeline: FC<TimelineProps> = ({
 
   const setSeekViewPosition = (newPosition: number) => {
     const increase = newPosition > currentPosition;
-    const isInView = newPosition >= seekOffset && newPosition <= (seekOffset + seekVisibleWidth);
+    const isInView = newPosition >= timelineOverviewOffset && newPosition <= (timelineOverviewOffset + timelineVisibleWidth);
 
     if (isInView) return;
 
-    if (increase && newPosition > (seekOffset + seekVisibleWidth)) {
-      setSeekOffset(clamp(newPosition, 1, length));
-    } else if (!increase && newPosition < seekOffset) {
-      setSeekOffset(clamp(newPosition - seekVisibleWidth + 1, 1, length));
+    let newOverviewOffset = timelineOverviewOffset;
+
+    if (increase) {
+      newOverviewOffset = clamp(newPosition, 1, length);
+    } else {
+      newOverviewOffset = clamp(newPosition - timelineVisibleWidth + 1, 1, length);
     }
+
+    if(newOverviewOffset === timelineOverviewOffset) return;
+
+    setTimelineOverviewOffset(newOverviewOffset);
   };
 
   const increasePosition: ControlsStepHandler = (_, stepSize) => {
@@ -139,9 +145,9 @@ export const Timeline: FC<TimelineProps> = ({
           <Seeker
             length={length}
             position={currentPosition}
-            seekOffset={seekOffset}
-            seekVisible={seekVisibleWidth}
-            onIndicatorMove={setSeekOffset}
+            timelineOverviewOffset={timelineOverviewOffset}
+            timelineVisibleWidth={timelineVisibleWidth}
+            onIndicatorMove={setTimelineOverviewOffset}
             onSeek={setInternalPosition}
             minimap={View.Minimap ? (
               <View.Minimap/>
@@ -157,9 +163,9 @@ export const Timeline: FC<TimelineProps> = ({
               regions={regions}
               playing={playing}
               position={currentPosition}
-              offset={seekOffset}
-              onScroll={setSeekOffset}
-              onResize={setSeekVisibleWidth}
+              offset={timelineOverviewOffset}
+              onScroll={setTimelineOverviewOffset}
+              onResize={setTimelineVisibleWidth}
               onChange={setInternalPosition}
               onToggleVisibility={onToggleVisibility}
               onDeleteRegion={onDeleteRegion}
