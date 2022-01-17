@@ -34,8 +34,6 @@ export const Seeker: FC<SeekerProps> = ({
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
   const seekerOffset = position / length * 100;
 
-  console.log(seekOffset, offsetLimit, length);
-
   const onIndicatorDrag = useCallback((e) => {
     const indicator = viewRef.current!;
     const dimensions = rootRef.current!.getBoundingClientRect();
