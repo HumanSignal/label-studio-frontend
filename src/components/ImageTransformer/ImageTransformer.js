@@ -66,11 +66,9 @@ export default class TransformerComponent extends Component {
     });
     const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
+    const nodesWereNotChanged = selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx]);
 
-    if (
-      selectedNodes?.length === prevNodes?.length
-      && !selectedNodes.find((node, idx) => node !== prevNodes[idx])
-    ) {
+    if (nodesWereNotChanged) {
       return;
     }
 
