@@ -4,6 +4,7 @@ import { inject, observer } from "mobx-react";
 import { getRoot, types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
+import Base from "../object/Base";
 
 /**
  * Use the Table tag to display object keys and values in a table.
@@ -35,7 +36,7 @@ const Model = types
     },
   }));
 
-const TableModel = types.compose("TableModel", Model);
+const TableModel = types.compose("TableModel", Base, Model);
 
 const HtxTable = inject("store")(
   observer(({ store, item }) => {

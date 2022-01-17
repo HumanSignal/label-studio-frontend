@@ -9,7 +9,7 @@ import { visualizeLifespans } from "./Utils";
 export interface KeypointsProps {
   region: TimelineRegion;
   startOffset: number;
-  onSelectRegion: (e: MouseEvent<HTMLDivElement>, id: string) => void;
+  onSelectRegion?: (e: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
 }
 
 export const Keypoints: FC<KeypointsProps> = ({
@@ -35,10 +35,9 @@ export const Keypoints: FC<KeypointsProps> = ({
     return visualizeLifespans(sequence, step);
   }, [sequence, start, step]);
 
-  const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>) => {
+  const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>, select?: boolean) => {
     e.stopPropagation();
-    onSelectRegion?.(e, region.id);
-    console.log(123123);
+    onSelectRegion?.(e, region.id, select);
   }, [region.id, onSelectRegion]);
 
   return (
@@ -46,9 +45,8 @@ export const Keypoints: FC<KeypointsProps> = ({
       name="keypoints"
       style={styles}
       mod={{ selected }}
-      onClick={onSelectRegionHandler}
     >
-      <Elem name="label">
+      <Elem name="label" onClick={onSelectRegionHandler}>
         <Elem name="name">
           {label}
         </Elem>
@@ -56,7 +54,7 @@ export const Keypoints: FC<KeypointsProps> = ({
           {region.id}
         </Elem> */}
       </Elem>
-      <Elem name="keypoints">
+      <Elem name="keypoints" onClick={(e) => onSelectRegionHandler(e, true)}>
         {lifespans.map((lifespan, i) => {
           const isLast = i + 1 === lifespans.length;
           const { points, ...data } = lifespan;

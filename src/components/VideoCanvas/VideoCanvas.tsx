@@ -1,4 +1,4 @@
-import { forwardRef, LegacyRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
@@ -142,11 +142,12 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (buffering && force !== true) return;
     if (!contextRef.current) return;
 
-    const frame = Math.ceil((videoRef.current?.currentTime ?? 0) * framerate);
+    const currentTime = videoRef.current?.currentTime ?? 0;
+    const frameNumber = Math.ceil(currentTime * framerate);
+    const frame = clamp(frameNumber, 1, length || 1);
     const onChange = props.onFrameChange ?? (() => {});
 
     if (frame !== currentFrame || force === true) {
-      console.log('Update frame', videoDimensions);
       setCurrentFrame(frame);
       drawVideo();
       onChange(frame, length);
