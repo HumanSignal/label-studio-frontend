@@ -5,6 +5,7 @@ import { isDefined } from "../../../../utils/utilities";
 import { TimelineViewProps } from "../../Types";
 import "./Frames.styl";
 import { Keypoints } from "./Keypoints";
+import ResizeObserver from "../../../../utils/resize-observer";
 
 const toSteps = (num: number, step: number) => {
   return Math.floor(num / step);
