@@ -83,7 +83,7 @@ export const Timeline: FC<TimelineProps> = ({
       newOverviewOffset = clamp(newPosition - timelineVisibleWidth + 1, 1, length);
     }
 
-    if(newOverviewOffset === timelineOverviewOffset) return;
+    if (newOverviewOffset === timelineOverviewOffset) return;
 
     setTimelineOverviewOffset(newOverviewOffset);
   };
