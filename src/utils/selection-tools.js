@@ -1,4 +1,4 @@
-import { clamp } from "./utilities";
+import { clamp, isDefined } from "./utilities";
 
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
@@ -685,7 +685,7 @@ const findGlobalOffset = (node, position, root) => {
     }
 
     if (isText || isBR) {
-      let length = currentNode.length ?? 1;
+      let length = isDefined(currentNode.length) ? [...currentNode.textContent].length : 1;
 
       if (atTargetNode) {
         length = Math.min(position, length);
