@@ -14,7 +14,7 @@ const BLUEVIOLET = {
 };
 const getConfigWithShapes = (shapes, props = "") => `
    <View>
-    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
+    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true" maxHeight="auto"/>
     ${shapes
     .map(
       shape => `
