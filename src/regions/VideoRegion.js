@@ -55,13 +55,16 @@ const Model = types
     },
 
     serialize() {
-      const { framerate, length } = self.object;
+      const { framerate, length: framesCount } = self.object;
+
+      const duration = self.object?.ref?.current?.duration ?? 0;
 
       const value = {
+        framesCount,
+        duration,
         sequence: self.sequence.map((keyframe) => {
           return { ...keyframe, time: keyframe.frame / framerate };
         }),
-        framesCount: length,
       };
 
       if (self.labels?.length) value.labels = self.labels;

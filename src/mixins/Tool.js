@@ -1,4 +1,4 @@
-import { getEnv, types } from "mobx-state-tree";
+import { getEnv, getRoot, types } from "mobx-state-tree";
 import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
 
@@ -10,7 +10,7 @@ const ToolMixin = types
   })
   .views(self => ({
     get obj() {
-      return self.manager?.obj;
+      return self.manager?.obj ?? getEnv(self).object;
     },
 
     get manager() {
@@ -23,6 +23,10 @@ const ToolMixin = types
 
     get viewClass() {
       return () => null;
+    },
+
+    get fullName() {
+      return self.toolName + (self.dynamic ? '-dynamic' : '');
     },
 
     get clonedStates() {
@@ -55,11 +59,34 @@ const ToolMixin = types
     get extraShortcuts() {
       return {};
     },
+
+    get shouldPreserveSelectedState() {
+      try {
+        const settings = getRoot(self.obj).settings;
+
+        return settings.preserveSelectedTool;
+      } catch (err) {
+        console.log('something is missing');
+        return false;
+      }
+    },
+
+    get isPreserved() {
+      return window.localStorage.getItem(`selected-tool:${self.obj?.name}`) === self.fullName;
+    },
   }))
   .actions(self => ({
-    setSelected(val) {
-      self.selected = val;
+    setSelected(selected) {
+      self.selected = selected;
       self.afterUpdateSelected();
+
+      if (selected && self.obj) {
+        const storeName = `selected-tool:${self.obj.name}`;
+
+        if (self.shouldPreserveSelectedState) {
+          window.localStorage.setItem(storeName, self.fullName);
+        }
+      }
     },
 
     afterUpdateSelected() {},
