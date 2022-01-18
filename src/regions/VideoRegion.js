@@ -134,8 +134,7 @@ const Model = types
       result = keypoints[keypoints.length - 1];
 
       if (!result) {
-        keypoints = seq.filter(({ frame }) => frame >= targetFrame);
-        result = keypoints[0];
+        result = seq.find(({ frame }) => frame >= targetFrame);
       }
 
       return result;
