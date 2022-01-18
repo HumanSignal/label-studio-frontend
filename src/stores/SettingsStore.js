@@ -55,6 +55,8 @@ const SettingsModel = types
 
     showPredictionsPanel: types.optional(types.boolean, true),
     // showScore: types.optional(types.boolean, false),
+
+    preserveSelectedTool: types.optional(types.boolean, true),
   })
   .views(self => ({
     get annotation() {
@@ -137,6 +139,10 @@ const SettingsModel = types
 
     toggleAutoSave() {
       self.enableAutoSave = !self.enableAutoSave;
+    },
+
+    togglepreserveSelectedTool() {
+      self.preserveSelectedTool = !self.preserveSelectedTool;
     },
 
     toggleHotkeys() {

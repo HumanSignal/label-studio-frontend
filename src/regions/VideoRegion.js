@@ -127,9 +127,17 @@ const Model = types
     },
 
     closestKeypoint(targetFrame) {
-      const keypoints = self.sequence.filter(k => k.frame <= targetFrame);
+      const seq = self.sequence;
+      let keypoints, result;
 
-      return keypoints[keypoints.length - 1];
+      keypoints = seq.filter(({ frame }) => frame <= targetFrame);
+      result = keypoints[keypoints.length - 1];
+
+      if (!result) {
+        result = seq.find(({ frame }) => frame >= targetFrame);
+      }
+
+      return result;
     },
   }));
 
