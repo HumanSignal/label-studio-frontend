@@ -12,7 +12,6 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import messages from "../../utils/messages";
 import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
-import { observe } from "mobx";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
@@ -334,7 +333,6 @@ export default observer(
     canvasY;
     lastOffsetWidth = -1;
     lastOffsetHeight = -1;
-    propsObserverDispose = [];
     state = {
       imgStyle: {},
       pointer: [0, 0],
@@ -544,12 +542,6 @@ export default observer(
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
       this.attachObserver(this.props.item.containerRef);
-
-      if (this.props.item && isAlive(this.props.item)) {
-        this.updateImageTransform();
-        this.observerObjectUpdate();
-      }
-
       this.updateReadyStatus();
 
       hotkeys.addDescription("shift", "Pan image");
@@ -574,17 +566,12 @@ export default observer(
     componentWillUnmount() {
       this.detachObserver();
       window.removeEventListener("resize", this.onResize);
-      this.propsObserverDispose.forEach(dispose => dispose());
 
       hotkeys.removeDescription("shift");
     }
 
     componentDidUpdate(prevProps) {
       this.onResize();
-
-      if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
-        this.observerObjectUpdate();
-      }
       this.updateReadyStatus();
     }
 
@@ -595,23 +582,6 @@ export default observer(
       if (!item || !isAlive(item) || !imageRef.current) return;
       if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
-
-    observerObjectUpdate() {
-      this.propsObserverDispose.forEach(dispose => dispose());
-      this.propsObserverDispose = [
-        "imageTransform",
-      ].map((prop) => {
-        return observe(this.props.item, prop, this.updateImageTransform, true);
-      });
-    }
-
-    updateImageTransform = () => {
-      const { item } = this.props;
-
-      if (this.imageRef.current) {
-        Object.assign(this.imageRef.current.style, item.imageTransform);
-      }
-    };
 
     renderTools() {
       const { item, store } = this.props;

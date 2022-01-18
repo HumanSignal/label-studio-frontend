@@ -55,7 +55,7 @@ const TagAttrs = types.model({
   width: types.optional(types.string, "100%"),
   height: types.maybeNull(types.string),
   maxwidth: types.optional(types.string, "100%"),
-  maxheight: types.optional(types.string, "100vh"),
+  maxheight: types.optional(types.string, "calc(100vh - 194px)"),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
@@ -268,9 +268,9 @@ const Model = types.model({
 }).volatile(() => ({
   currentImage: 0,
   stageRatio: 1,
+  // Container's sizes causing limits to calculate a scale factor
   containerWidth: 1,
   containerHeight: 1,
-  targetWidth: 0,
 })).views(self => ({
   get store() {
     return getRoot(self);
