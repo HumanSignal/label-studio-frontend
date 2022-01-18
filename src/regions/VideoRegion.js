@@ -55,13 +55,16 @@ const Model = types
     },
 
     serialize() {
-      const { framerate, length } = self.object;
+      const { framerate, length: framesCount } = self.object;
+
+      const duration = self.object?.ref?.current?.duration ?? 0;
 
       const value = {
+        framesCount,
+        duration,
         sequence: self.sequence.map((keyframe) => {
           return { ...keyframe, time: keyframe.frame / framerate };
         }),
-        framesCount: length,
       };
 
       if (self.labels?.length) value.labels = self.labels;
@@ -124,9 +127,17 @@ const Model = types
     },
 
     closestKeypoint(targetFrame) {
-      const keypoints = self.sequence.filter(k => k.frame <= targetFrame);
+      const seq = self.sequence;
+      let keypoints, result;
 
-      return keypoints[keypoints.length - 1];
+      keypoints = seq.filter(({ frame }) => frame <= targetFrame);
+      result = keypoints[keypoints.length - 1];
+
+      if (!result) {
+        result = seq.find(({ frame }) => frame >= targetFrame);
+      }
+
+      return result;
     },
   }));
 

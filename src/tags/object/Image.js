@@ -46,7 +46,7 @@ import { guidGenerator } from "../../utils/unique";
  * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
- * @param {boolean} [crosshair=false]         – Show crosshair cursor
+ * @param {boolean} [crosshair=false]         - Show crosshair cursor
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -471,32 +471,30 @@ const Model = types.model({
   // actions for the tools
   .actions(self => {
     const manager = ToolsManager.getInstance({ name: self.name });
-    const env = { manager, control: self };
+    const env = { manager, control: self, object: self };
 
-    manager.reload({ name: self.name });
-
-    function afterCreate() {
+    function afterAttach() {
       if (self.selectioncontrol)
-        manager.addTool("selection", Tools.Selection.create({}, env));
+        manager.addTool("MoveTool", Tools.Selection.create({}, env));
 
       if (self.zoomcontrol)
-        manager.addTool("zoom", Tools.Zoom.create({}, env));
+        manager.addTool("ZoomPanTool", Tools.Zoom.create({}, env));
 
       if (self.brightnesscontrol)
-        manager.addTool("brightness", Tools.Brightness.create({}, env));
+        manager.addTool("BrightnessTool", Tools.Brightness.create({}, env));
 
       if (self.contrastcontrol)
-        manager.addTool("contrast", Tools.Contrast.create({}, env));
+        manager.addTool("ContrastTool", Tools.Contrast.create({}, env));
 
       if (self.rotatecontrol)
-        manager.addTool("rotate", Tools.Rotate.create({}, env));
+        manager.addTool("RotateTool", Tools.Rotate.create({}, env));
     }
 
     function getToolsManager() {
       return manager;
     }
 
-    return { afterCreate, getToolsManager };
+    return { afterAttach, getToolsManager };
   }).extend((self) => {
     let skipInteractions = false;
 
