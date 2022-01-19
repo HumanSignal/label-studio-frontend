@@ -9,7 +9,13 @@
  * @param {object[]} params.predictions
  * @param {function} done
  */
-const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
+const initLabelStudio = async ({ 
+  config, 
+  data, 
+  annotations = [{ result: [] }], 
+  predictions = [],
+  settings = {},
+},  done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -32,7 +38,7 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  new window.LabelStudio("label-studio", { interfaces, config, task });
+  new window.LabelStudio("label-studio", { interfaces, config, task, settings });
   done();
 };
 

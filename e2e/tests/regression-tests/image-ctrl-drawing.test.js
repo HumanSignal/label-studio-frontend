@@ -172,6 +172,9 @@ Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
+    settings: {
+      preserveSelectedTool: false,
+    },
   };
 
   I.amOnPage("/");
