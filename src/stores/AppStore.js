@@ -433,9 +433,9 @@ export default types
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
-      // but block for at least 0.5s to prevent from double clicking.
+      // but block for at least 0.2s to prevent from double clicking.
 
-      Promise.race([Promise.all([res, delay(500)]), delay(5000)])
+      Promise.race([Promise.all([res, delay(200)]), delay(5000)])
         .catch(err => showModal(err?.message || err || defaultMessage))
         .then(() => self.setFlags({ isSubmitting: false }));
     }
