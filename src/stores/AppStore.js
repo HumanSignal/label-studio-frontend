@@ -451,20 +451,24 @@ export default types
       if (!entity.validate()) return;
 
       entity.sendUserGenerate();
-      handleSubmittingFlag(() => {
-        getEnv(self).events.invoke(event, self, entity);
+      handleSubmittingFlag(async () => {
+        await getEnv(self).events.invoke(event, self, entity);
       });
       entity.dropDraft();
     }
 
     function updateAnnotation() {
+      if (self.isSubmitting) return;
+
       const entity = self.annotationStore.selected;
 
       entity.beforeSend();
 
       if (!entity.validate()) return;
 
-      getEnv(self).events.invoke('updateAnnotation', self, entity);
+      handleSubmittingFlag(async () => {
+        await getEnv(self).events.invoke('updateAnnotation', self, entity);
+      });
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
@@ -476,6 +480,8 @@ export default types
     }
 
     function acceptAnnotation() {
+      if (self.isSubmitting) return;
+
       handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
@@ -490,6 +496,8 @@ export default types
     }
 
     function rejectAnnotation() {
+      if (self.isSubmitting) return;
+
       handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
@@ -516,6 +524,7 @@ export default types
       self.attachHotkeys();
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
+      self.initialized = false;
 
       // const c = self.annotationStore.addInitialAnnotation();
 
