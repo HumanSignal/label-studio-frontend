@@ -433,9 +433,9 @@ export default types
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
-      // but block for at least 0.5s to prevent from double clicking.
+      // but block for at least 0.2s to prevent from double clicking.
 
-      Promise.race([Promise.all([res, delay(500)]), delay(5000)])
+      Promise.race([Promise.all([res, delay(200)]), delay(5000)])
         .catch(err => showModal(err?.message || err || defaultMessage))
         .then(() => self.setFlags({ isSubmitting: false }));
     }
@@ -451,20 +451,24 @@ export default types
       if (!entity.validate()) return;
 
       entity.sendUserGenerate();
-      handleSubmittingFlag(() => {
-        getEnv(self).events.invoke(event, self, entity);
+      handleSubmittingFlag(async () => {
+        await getEnv(self).events.invoke(event, self, entity);
       });
       entity.dropDraft();
     }
 
     function updateAnnotation() {
+      if (self.isSubmitting) return;
+
       const entity = self.annotationStore.selected;
 
       entity.beforeSend();
 
       if (!entity.validate()) return;
 
-      getEnv(self).events.invoke('updateAnnotation', self, entity);
+      handleSubmittingFlag(async () => {
+        await getEnv(self).events.invoke('updateAnnotation', self, entity);
+      });
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
@@ -476,6 +480,8 @@ export default types
     }
 
     function acceptAnnotation() {
+      if (self.isSubmitting) return;
+
       handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
@@ -490,6 +496,8 @@ export default types
     }
 
     function rejectAnnotation() {
+      if (self.isSubmitting) return;
+
       handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
@@ -516,6 +524,7 @@ export default types
       self.attachHotkeys();
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
+      self.initialized = false;
 
       // const c = self.annotationStore.addInitialAnnotation();
 
