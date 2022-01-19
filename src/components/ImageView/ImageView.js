@@ -21,6 +21,7 @@ import { useObserver } from "mobx-react-lite";
 import ResizeObserver from "../../utils/resize-observer";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
+import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -342,6 +343,11 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
   const [visible, setVisible] = useState(false);
   const strokeWidth = 1;
   const dashStyle = [3,3];
+  let enableStrokeScale = true;
+
+  if (isFF(FF_DEV_1285)) {
+    enableStrokeScale = false;
+  }
 
   if (ref) {
     ref.current = {
@@ -374,6 +380,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           points={pointsH}
           stroke="#fff"
           strokeWidth={strokeWidth}
+          strokeScaleEnabled={enableStrokeScale}
         />
         <Line
           name="v-black"
@@ -381,6 +388,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           stroke="#000"
           strokeWidth={strokeWidth}
           dash={dashStyle}
+          strokeScaleEnabled={enableStrokeScale}
         />
       </Group>
       <Group>
@@ -389,6 +397,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           points={pointsV}
           stroke="#fff"
           strokeWidth={strokeWidth}
+          strokeScaleEnabled={enableStrokeScale}
         />
         <Line
           name="h-black"
@@ -396,6 +405,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           stroke="#000"
           strokeWidth={strokeWidth}
           dash={dashStyle}
+          strokeScaleEnabled={enableStrokeScale}
         />
       </Group>
     </Layer>
@@ -525,7 +535,11 @@ export default observer(
       if (this.crosshairRef.current) {
         const { x, y } = e.currentTarget.getPointerPosition();
 
-        this.crosshairRef.current.updatePointer(x, y);
+        if (isFF(FF_DEV_1285)) {
+          this.crosshairRef.current.updatePointer(...this.props.item.fixZoomedCoords([x, y]));
+        } else {
+          this.crosshairRef.current.updatePointer(x, y);
+        }
       }
     }
 
@@ -892,8 +906,8 @@ export default observer(
               {item.crosshair && (
                 <Crosshair
                   ref={this.crosshairRef}
-                  width={item.stageComponentSize.width}
-                  height={item.stageComponentSize.height}
+                  width={isFF(FF_DEV_1285) ? item.stageWidth : item.stageComponentSize.width}
+                  height={isFF(FF_DEV_1285) ? item.stageHeight : item.stageComponentSize.height}
                 />
               )}
             </Stage>
