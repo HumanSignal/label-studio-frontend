@@ -1,4 +1,4 @@
-import { destroy, getParentOfType, getRoot, isValidReference, types } from "mobx-state-tree";
+import { destroy, getEnv, getParentOfType, getRoot, isValidReference, types } from "mobx-state-tree";
 
 import { cloneNode, guidGenerator } from "../core/Helpers";
 import { RelationsModel } from "../tags/control/Relations";
@@ -126,12 +126,14 @@ const RelationStore = types
 
       // self.relations.unshift(rl);
       self._relations.push(rl);
+      getEnv(self).events.invoke('addRelation', rl);
 
       return rl;
     },
 
     deleteRelation(rl) {
       destroy(rl);
+      getEnv(self).events.invoke('deleteRelation', rl);
     },
 
     deleteNodeRelation(node) {
