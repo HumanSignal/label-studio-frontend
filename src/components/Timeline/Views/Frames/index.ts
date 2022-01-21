@@ -38,6 +38,7 @@ const View: TimelineView<typeof Controls> = {
     stepForwardHotkey: 'video:frame-forward',
     stepAltBack: "video:keyframe-backward",
     stepAltForward: "video:keyframe-forward",
+    leftOffset: 150,
   },
 };
 

@@ -26,12 +26,11 @@ export const Frames: FC<TimelineViewProps> = ({
   onScroll,
   onChange,
   onResize,
-  onToggleVisibility,
-  onDeleteRegion,
   onSelectRegion,
+  ...props
 }) => {
   const scrollMultiplier = 1.25;
-  const timelineStartOffset = 150;
+  const timelineStartOffset = props.leftOffset ?? 150;
 
   const scrollable = useRef<HTMLDivElement>();
   const [hoverEnabled, setHoverEnabled] = useState(true);

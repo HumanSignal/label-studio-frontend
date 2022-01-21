@@ -141,6 +141,7 @@ export const Timeline: FC<TimelineProps> = ({
               length={length}
               regions={regions}
               playing={playing}
+              leftOffset={View.settings?.leftOffset}
               position={currentPosition}
               offset={seekOffset}
               onScroll={setSeekOffset}

@@ -7,6 +7,7 @@ export interface TimelineViewProps {
   length: number;
   playing: boolean;
   regions: TimelineRegion[];
+  leftOffset?: number;
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;
@@ -52,6 +53,7 @@ export type TimelineSettings = {
   stepAltForward?: string,
   fastTravelSize?: TimelineStepFunction,
   stepSize?: TimelineStepFunction,
+  leftOffset?: number,
 }
 
 export type TimelineStepFunction = (length: number, position: number, regions: TimelineRegion[], direction: -1 | 1) => number;
