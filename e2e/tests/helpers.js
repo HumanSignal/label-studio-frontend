@@ -9,7 +9,14 @@
  * @param {object[]} params.predictions
  * @param {function} done
  */
-const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
+const initLabelStudio = async ({
+  config,
+  data,
+  annotations = [{ result: [] }],
+  predictions = [],
+  additionalInterfaces = [],
+  params = {},
+}, done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -28,12 +35,28 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
     "predictions:tabs",
     "predictions:menu",
     "edit-history",
+    ...additionalInterfaces,
   ];
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  new window.LabelStudio("label-studio", { interfaces, config, task });
+  window.labelStudio = new window.LabelStudio("label-studio", { interfaces, config, task, ...params });
+
   done();
+};
+
+const createAddEventListenerScript = (eventName, callback) => {
+  const args = (new Array(callback.length)).fill().map((v, idx) => {
+    return `v${idx}`;
+  }).join(", ");
+
+  return new Function("done", `
+    function ${eventName}(${args}) {
+      return (${callback.toString()})(${args});
+    }
+    window.labelStudio.on("${eventName}",${eventName});
+    done();
+`);
 };
 
 /**
@@ -195,7 +218,10 @@ const polygonKonva = async (points, done) => {
 
     for (const point of points) {
       stage.fire("click", {
-        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+        evt: {
+          offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {
+          },
+        },
       });
       await delay(50);
     }
@@ -211,7 +237,12 @@ const polygonKonva = async (points, done) => {
     firstPoint.fire("mouseover");
     await delay(100);
     // and only after that we can click on it
-    firstPoint.fire("click", { evt: { preventDefault: () => {} } });
+    firstPoint.fire("click", {
+      evt: {
+        preventDefault: () => {
+        },
+      },
+    });
     done();
   } catch (e) {
     done(String(e));
@@ -476,6 +507,7 @@ function hasSelectedRegion(done) {
 
 module.exports = {
   initLabelStudio,
+  createAddEventListenerScript,
   waitForImage,
   waitForAudio,
   delay,

@@ -831,7 +831,10 @@ const Annotation = types
       });
 
       if (getRoot(self).autoAcceptSuggestions) {
-        self.acceptAllSuggestions();
+        if (rawSuggestions?.length) {
+          self.history.setReplaceNextUndoState(true);
+          self.acceptAllSuggestions();
+        }
       } else {
         self.suggestions.forEach((suggestion) => {
           if (['richtextregion', 'text'].includes(suggestion.type)) {
