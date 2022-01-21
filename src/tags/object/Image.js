@@ -266,6 +266,7 @@ const Model = types.model({
 }).volatile(() => ({
   currentImage: 0,
   stageRatio: 1,
+  isReady: false,
 })).views(self => ({
   get store() {
     return getRoot(self);
