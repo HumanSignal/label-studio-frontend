@@ -4,7 +4,6 @@ import { Tooltip } from "../Tooltip/Tooltip";
 import "./Userpic.styl";
 import chroma from 'chroma-js';
 import { isDefined, userDisplayName } from "../../utils/utilities";
-import { FF_DEV_1507, isFF } from "../../utils/feature-flags";
 
 const FALLBACK_IMAGE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
@@ -29,15 +28,13 @@ export const Userpic = forwardRef(({
   const [imgVisible, setImgVisible] = useState(false);
   const [nameVisible, setNameVisible] = useState(true);
 
-  if (isFF(FF_DEV_1507)) {
-    useEffect(()=>{
-      if (propsSrc !== finalSrc) {
-        setFinalSrc(propsSrc);
-        setImgVisible(false);
-        setNameVisible(true);
-      }
-    }, [propsSrc]);
-  }
+  useEffect(()=>{
+    if (propsSrc !== finalSrc) {
+      setFinalSrc(propsSrc);
+      setImgVisible(false);
+      setNameVisible(true);
+    }
+  }, [propsSrc]);
 
   if (size) {
     style = Object.assign({ width: size, height: size, fontSize: size * 0.4 }, style);
