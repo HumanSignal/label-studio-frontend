@@ -123,6 +123,7 @@ export const Timeline: FC<TimelineProps> = ({
 
           <Seeker
             length={length}
+            step={step}
             position={currentPosition}
             seekOffset={seekOffset}
             seekVisible={seekVisibleWidth}
