@@ -4,7 +4,7 @@ const { I } = inject();
 const Helpers = require("../tests/helpers");
 
 module.exports = {
-  init({ events, ...params }) {
+  init({ events = {}, ...params }) {
     I.executeAsyncScript(Helpers.initLabelStudio, params);
     for (const [eventName, callback] of Object.entries(events)) {
       this.on(eventName, callback);
