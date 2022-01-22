@@ -87,7 +87,7 @@
     "mobx-react": "^6",
     "mobx-state-tree": "^3.16.0",
     "nanoid": "^2.1.11",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "node-sass": "^6.0.1",
     "pleasejs": "^0.4.2",
     "prettier": "^1.19.1",
