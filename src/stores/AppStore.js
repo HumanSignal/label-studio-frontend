@@ -479,6 +479,12 @@ export default types
       }, "Error during skip, try again");
     }
 
+    function cancelSkippingTask() {
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke('cancelSkippingTask', self);
+      }, "Error during cancel skipping task, try again");
+    }
+
     function acceptAnnotation() {
       if (self.isSubmitting) return;
 
@@ -660,6 +666,7 @@ export default types
       attachHotkeys,
 
       skipTask,
+      cancelSkippingTask,
       submitDraft,
       submitAnnotation,
       updateAnnotation,
