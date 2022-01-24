@@ -22,6 +22,11 @@ function onDeleteAnnotation() {}
 function onSkipTask() {}
 
 /**
+ * Callback on unskip task
+ */
+function onCancelSkippingTask() {}
+
+/**
  * Callback on task load
  */
 function onTaskLoad() {}
@@ -79,6 +84,7 @@ export default {
   onGroundTruth,
   onLabelStudioLoad,
   onSkipTask,
+  onCancelSkippingTask,
   onSubmitAnnotation,
   onSubmitDraft,
   onTaskLoad,
