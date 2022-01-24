@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="//fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link href="//fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+      -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <title>Label Studio</title>
+  <script defer src="main.js"></script><link href="main.css" rel="stylesheet"></head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+
+    <div id="header">
+      <a id="logo" href="/">
+        <img src="/images/ls_logo.svg" alt="label studio logo">
+      </a>
+      <ul id="nav">
+        <li><a href="https://labelstud.io/guide">Docs</a></li>
+        <li><a class="github-button" href="https://github.com/heartexlabs/label-studio"
+           data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star heartexlabs/label-studio on GitHub"><img src="./images/GitHub-Mark-64px.png" height="25" /></a></li>
+      </ul>
+    </div>
+
+    <div id="ls-container">
+      <div id="label-studio"></div>
+    </div>
+    <footer class="footer">
+      <span>
+        Made with <img src="/images/3nowhite.svg" height="16" /> by <a target="_blank" href="https://heartex.net">Heartex</a> in San Francisco
+      </span>
+    </footer>
+
+    <script>
+      (function (d, o) {
+          d.domReady = function (n, a) {
+              o.addEventListener && o.addEventListener("DOMContentLoaded", function e(t) {
+                  o.removeEventListener("DOMContentLoaded", e), n.call(a || d, t)
+              }) || o.attachEvent && o.attachEvent("onreadystatechange", function e(t) {
+                  "complete" === o.readyState && (o.detachEvent("onreadystatechange", e), n.call(a || d, t))
+              })
+          }
+      })(window, document);
+    </script>
+    <script>
+      domReady(function () {
+        var labelStudio = new LabelStudio('label-studio', {
+          config: `
+<View>
+  <Labels name="emotion" toName="audio" choice="multiple">
+    <Label value="Fear" background="#ff0000" />
+    <Label value="Anger" background="#d50000" />
+    <Label value="Sadness" background="#5050ff" />
+    <Label value="Joy" background="#ffff53" />
+    <Label value="Disgust" background="#ff53ff" />
+    <Label value="Surprise" background="#58beff" />
+    <Label value="Trust" background="#009700" />
+    <Label value="Anticipation" background="#ffa953" />
+  </Labels>
+
+  <AudioPlus name="audio" value="$audio"/>
+</View>
+    `,
+
+          interfaces: [
+            "panel",
+            "update",
+            "submit",
+            "controls",
+            "side-column",
+            "annotations:menu",
+            "annotations:add-new",
+            "annotations:delete",
+            "predictions:menu",
+          ],
+
+          user: {
+            pk: 1,
+            firstName: "James",
+            lastName: "Dean"
+          },
+
+          task: {
+            annotations: [],
+            predictions: [],
+            id: 1,
+            data: {
+              // image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
+              "audio": "https://app.heartex.ai/static/samples/game.wav",
+              // video: "https://www.w3schools.com/html/movie.mp4"
+            }
+          },
+
+          onLabelStudioLoad: function(LS) {
+            var c = LS.annotationStore.addAnnotation({
+              userGenerate: true
+            });
+            LS.annotationStore.selectAnnotation(c.id);
+          }
+        });
+      })
+    </script>
+  </body>
+</html>
