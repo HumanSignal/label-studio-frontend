@@ -124,6 +124,7 @@ export const Timeline: FC<TimelineProps> = ({
           <Seeker
             length={length}
             step={step}
+            leftOffset={View.settings?.leftOffset}
             position={currentPosition}
             seekOffset={seekOffset}
             seekVisible={seekVisibleWidth}
