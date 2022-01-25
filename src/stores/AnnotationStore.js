@@ -840,7 +840,7 @@ const Annotation = types
         });
       }
 
-      self.objects.forEach(obj => obj.needsUpdate?.());
+      self.updateObjects();
     },
 
     /**
@@ -1332,7 +1332,8 @@ export default types
 
       selectAnnotation(c.id);
       c.deserializeResults(s);
-      c.updateObjects();
+      // reinit will trigger `updateObjects()` so we omit it here
+      c.reinitHistory();
 
       // parent link for the new annotations
       if (entity.pk) {
