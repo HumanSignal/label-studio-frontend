@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.5.0
+    - uses: actions/setup-node@v2.5.1
       with:
         node-version: "${{ env.NODE }}"
 
@@ -44,6 +44,7 @@ jobs:
       run: yarn test
 
     - name: Build distribution package
+      timeout-minutes: 10
       run: yarn run build:module
       env:
         CI: false # on true webpack breaks on warnings, and we have them a lot
@@ -61,16 +62,17 @@ jobs:
           echo "=> Waiting for service to become available" && sleep 2s
         done
     - run: yarn run test:e2e:headless
+      timeout-minutes: 15
       if: github.event_name == 'push'
 
-    - uses: actions/upload-artifact@v2.2.4
+    - uses: actions/upload-artifact@v2.3.1
       if: ${{ failure() }}
       with:
         name: e2e output
         path: e2e/output/
 
     # upload this build as artifact to current Action
-    - uses: actions/upload-artifact@v2.2.4
+    - uses: actions/upload-artifact@v2.3.1
       with:
         name: build ${{ github.event.pull_request.head.sha || github.sha }}
         path: build/

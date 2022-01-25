@@ -167,8 +167,8 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
       regions.forEach((region, idx) => {
         toolSelectors[idx](shapeName, shapeIdx);
         AtImageView[region.action](...region.params);
-        I.pressKey(["u"]);
         AtSidebar.seeRegions(idx + 1);
+        I.pressKey(["u"]);
       });
 
       I.click(toolSelector);
@@ -188,7 +188,7 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
         assert.strictEqual(expectedCount, labelsCounter(results, currentLabelName));
       }
 
-      let expectedCount = 3;
+      const expectedCount = 3;
 
       regions.forEach((region, idx) => {
         AtSidebar.clickRegion(+idx + 1);

@@ -291,6 +291,10 @@ export default types.model("RegionStore", {
     isSelected(region) {
       return self.selection.isSelected(region);
     },
+
+    get selectedIds() {
+      return Array.from(self.selection.selected.values()).map(reg => reg.id);
+    },
   };
 }).actions(self => ({
   addRegion(region) {
@@ -439,6 +443,13 @@ export default types.model("RegionStore", {
 
   clearSelection() {
     self.selection.clear();
+  },
+
+  selectRegionsByIds(ids) {
+    self.regions.map(region => {
+      if (ids.indexOf(region.id) === -1) return;
+      self.toggleSelection(region, true);
+    });
   },
 
   toggleSelection(region, isSelected) {

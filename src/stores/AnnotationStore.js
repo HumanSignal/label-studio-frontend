@@ -431,6 +431,28 @@ const Annotation = types
       destroy(area);
     },
 
+    undo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canUndo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.undo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
+    redo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canRedo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.redo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
     // update some fragile parts after snapshot manipulations (undo/redo)
     updateObjects() {
       self.unselectAll();
@@ -887,7 +909,7 @@ const Annotation = types
         const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
-        const areaId = `${id || guidGenerator()}#${self.pk ?? self.id}`;
+        const areaId = `${id || guidGenerator()}#${self.id}`;
         const resultId = `${data.from_name}@${areaId}`;
         const value = self.prepareValue(rawValue, tagType);
 
@@ -1202,6 +1224,7 @@ export default types
       //
       const node = {
         userGenerate: false,
+        createdDate: Utils.UDate.currentISODate(),
 
         ...options,
 

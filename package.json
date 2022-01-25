@@ -221,6 +221,7 @@
     "d3": "^5.16.0",
     "magic-wand-js": "^1.0.0",
     "rc-tree": "^5.3.0",
+    "papaparse": "^5.3.1",
     "react-konva-utils": "^0.2.0"
   },
   "nohoist": [

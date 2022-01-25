@@ -31,28 +31,44 @@ class ToolsManager {
     INSTANCES.forEach((manager) => manager.removeAllTools());
   }
 
-  constructor({ name } = {}) {
+  constructor({
+    name,
+  } = {}) {
     this.name = name;
     this.tools = {};
     this._default_tool = null;
+  }
+
+  get preservedTool() {
+    return window.localStorage.getItem(`selected-tool:${this.name}`);
   }
 
   get obj() {
     return root.annotationStore.names.get(this.name);
   }
 
-  addTool(name, tool, prefix = guidGenerator()) {
+  addTool(toolName, tool, prefix = guidGenerator()) {
     if (tool.smart && tool.smartOnly) return;
-    // todo: It seems that key is using only for storing,
+    // todo: It seems that key is used only for storing,
     // but not for finding tools, so may be there might
     // be an array instead of an object
+    const name = tool.toolName ?? toolName;
     const key = `${prefix}#${name}`;
 
     this.tools[key] = tool;
 
-    if (tool.default && !this._default_tool && !this.hasSelected) {
-      this._default_tool = tool;
-      if (tool.setSelected) tool.setSelected(true);
+    if (tool.default && !this._default_tool) this._default_tool = tool;
+
+    if (this.preservedTool && tool.shouldPreserveSelectedState) {
+      if (tool.fullName === this.preservedTool && tool.setSelected) {
+        this.unselectAll();
+        this.selectTool(tool, true);
+      }
+      return;
+    }
+
+    if (this._default_tool && !this.hasSelected) {
+      this.selectTool(this._default_tool, true);
     }
   }
 
@@ -70,8 +86,8 @@ class ToolsManager {
     }
   }
 
-  selectTool(tool, value) {
-    if (value) {
+  selectTool(tool, selected) {
+    if (selected) {
       this.unselectAll();
       if (tool.setSelected) tool.setSelected(true);
     } else {
