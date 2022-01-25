@@ -40,7 +40,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   if (isReview) {
     buttons.push(
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button  aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
+        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
           Reject
         </Button>
       </ButtonTooltip>,
@@ -56,8 +56,14 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   } else if (annotation.skipped) {
     buttons.push(
       <Elem name="skipped-info" key="skipped">
-        <IconBan color="#d00" /> Annotation skipped
-      </Elem>,
+        <IconBan color="#d00" /> Was skipped
+      </Elem>);
+    buttons.push(
+      <ButtonTooltip key="cancel-skip" title="Cancel skip: []">
+        <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={store.cancelSkippingTask}>
+          Cancel skip
+        </Button>
+      </ButtonTooltip>,
     );
   } else {
     if (store.hasInterface("skip")) {
