@@ -11,6 +11,7 @@ import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
 import defaultOptions from './defaultOptions';
 import { destroy } from "mobx-state-tree";
+import { readMedia } from "./utils/mediainfo";
 
 configure({
   isolateGlobalState: true,
@@ -30,6 +31,8 @@ export class LabelStudio {
     if (options.keymap) {
       Hotkey.setKeymap(options.keymap);
     }
+
+    Object.assign(window, { readMedia });
 
     this.root = root;
     this.events = new EventInvoker();

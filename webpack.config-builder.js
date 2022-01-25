@@ -7,6 +7,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin')
 const { EnvironmentPlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
@@ -218,6 +219,11 @@ const plugins = [
     ...cssOutput(),
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
+  new CopyPlugin({
+    patterns: [
+      { from: path.join(__dirname, 'node_modules/mediainfo.js/dist/MediaInfoModule.wasm'), to: "."}
+    ]
+  })
 ];
 
 if (isDevelopment) {
@@ -272,6 +278,10 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    fallback: {
+      fs: false,
+      path: false,
+    }
   },
   plugins: withDevServer ? [
     ...plugins,
@@ -289,6 +299,7 @@ module.exports = ({withDevServer = true} = {}) => ({
     cachedAssets: false,
     orphanModules: false,
   },
+  node: false,
   module: {
     rules: [
       {
