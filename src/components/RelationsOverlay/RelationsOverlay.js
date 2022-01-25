@@ -4,6 +4,7 @@ import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { FF_DEV_1429, isFF } from "../../utils/feature-flags";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -177,6 +178,29 @@ class RelationsOverlay extends PureComponent {
     if (this.rootNode.current && !this.state.shouldRender) {
       this.setState({ shouldRender: true });
     }
+    if (isFF(FF_DEV_1429)) {
+      this.checkViewport();
+    }
+  }
+
+  componentDidMount() {
+    if (isFF(FF_DEV_1429)) {
+      this.checkViewport();
+    }
+  }
+
+  checkViewport() {
+    if (this.rootNode.current && this.props.onNeedOffset) {
+      if (!this.rootNode.current.children[0]) {
+        // Resetting offset by sending non numerical value
+        this.props.onNeedOffset();
+      } else {
+        const rootY = this.rootNode.current.getBoundingClientRect().y;
+        const elementsY = this.rootNode.current.children[0]?.getBoundingClientRect().y;
+
+        this.props.onNeedOffset(rootY - elementsY);
+      }
+    }
   }
 
   render() {
@@ -235,7 +259,7 @@ class RelationsOverlay extends PureComponent {
 const RelationObserverView = observer(RelationsOverlay);
 
 const RelationsOverlayObserver = observer(
-  forwardRef(({ store, tags }, ref) => {
+  forwardRef(({ store, tags, onNeedOffset }, ref) => {
     const { relations, showConnections, highlighted } = store;
 
     return (
@@ -245,6 +269,7 @@ const RelationsOverlayObserver = observer(
         visible={showConnections}
         highlighted={highlighted}
         tags={Array.from(tags?.values?.() ?? [])}
+        onNeedOffset={onNeedOffset}
       />
     );
   }),

@@ -1,7 +1,7 @@
 /**
  * Libraries
  */
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
 import { Result, Spin } from "antd";
 import { getEnv, getRoot } from "mobx-state-tree";
 import { observer, Provider } from "mobx-react";
@@ -46,6 +46,7 @@ import { isDefined } from "../../utils/utilities";
  * App
  */
 class App extends Component {
+  annotationRef = createRef();
   relationsRef = React.createRef();
 
   renderSuccess() {
@@ -106,7 +107,7 @@ class App extends Component {
             name="main-view"
             onScrollCapture={this._notifyScroll}
           >
-            <Elem name="annotation">
+            <Elem name="annotation" ref={this.annotationRef}>
               {Tree.renderItem(root)}
               {this.renderRelations(as.selected)}
             </Elem>
@@ -155,8 +156,23 @@ class App extends Component {
         ref={this.relationsRef}
         tags={selectedStore.names}
         taskData={taskData}
+        onNeedOffset={this.changeOffsetHandler}
       />
     );
+  }
+
+  annotationTopOffset = 0;
+  changeOffsetHandler = (dOffset) => {
+    const annotationNode = this.annotationRef.current;
+
+    if (annotationNode) {
+      const newOffset = Number.isFinite(dOffset) ? Math.max(this.annotationTopOffset + dOffset, 0) : 0;
+
+      if (newOffset !== this.annotationTopOffset) {
+        annotationNode.children[0].style.paddingTop = `${newOffset}px`;
+        this.annotationTopOffset = newOffset;
+      }
+    }
   }
 
   render() {
