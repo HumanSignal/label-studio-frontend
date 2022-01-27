@@ -17,6 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
+import { FF_DEV_1555, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -840,7 +841,11 @@ const Annotation = types
         });
       }
 
-      self.updateObjects();
+      if (isFF(FF_DEV_1555)) {
+        self.updateObjects();
+      } else {
+        self.objects.forEach(obj => obj.needsUpdate?.());
+      }
     },
 
     /**
