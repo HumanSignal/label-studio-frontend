@@ -494,7 +494,7 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <Tooltip placement="topLeft" title="Vertical zoom out">
+                  <Tooltip placement="topLeft" title="Vertical zoom in">
                     <ZoomInOutlined onClick={this.onZoomYPlus} className={globalStyles.link} />
                   </Tooltip>
                 </div>
