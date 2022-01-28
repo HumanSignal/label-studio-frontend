@@ -260,6 +260,8 @@ class RichTextPieceView extends Component {
     // @todo both loops should be merged to fix old broken xpath using "dirty" html
     if (initial) {
       item.initGlobalOffsets(root);
+      // lot of changes possibly made during regions preparation, so clear the history
+      item.annotation.reinitHistory();
     }
 
     // Apply highlight to ranges of a current tag
