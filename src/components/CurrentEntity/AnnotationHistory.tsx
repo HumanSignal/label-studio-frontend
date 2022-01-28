@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
+import { FC } from "react";
 import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -21,7 +22,7 @@ const injector = inject(({ store }) => {
   };
 });
 
-export const AnnotationHistory = injector(observer(({
+const AnnotationHistoryComponent: FC<any> = ({
   annotationStore,
   selected,
   createdBy,
@@ -41,7 +42,7 @@ export const AnnotationHistory = injector(observer(({
       {history.length > 0 && (
         <>
           <Elem name="divider" title="History"/>
-          {history.map((item) => {
+          {history.map((item: any) => {
             const { id, user, createdDate } = item;
 
             return (
@@ -60,10 +61,18 @@ export const AnnotationHistory = injector(observer(({
       )}
     </Block>
   );
-}));
-AnnotationHistory.displayName = 'AnnotationHistory';
+};
 
-const HistoryItem = observer(({ entity, user, date, extra, acceptedState, selected = false, selectable = true, onClick }) => {
+const HistoryItemComponent: FC<any> = ({
+  entity,
+  user,
+  date,
+  extra,
+  acceptedState,
+  selected = false,
+  selectable = true,
+  onClick,
+}) => {
   const isPrediction = entity?.type === 'prediction';
 
   return (
@@ -103,6 +112,12 @@ const HistoryItem = observer(({ entity, user, date, extra, acceptedState, select
       </Space>
     </Block>
   );
-});
+};
+
+const HistoryItem = observer(HistoryItemComponent);
 
 HistoryItem.displayName = 'HistoryItem';
+
+export const AnnotationHistory = injector(observer(AnnotationHistoryComponent));
+
+AnnotationHistory.displayName = 'AnnotationHistory';

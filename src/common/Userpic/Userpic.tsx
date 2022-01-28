@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
+import { CSSProperties, forwardRef, useCallback, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { Tooltip } from "../Tooltip/Tooltip";
 import "./Userpic.styl";
@@ -8,7 +8,20 @@ import { isDefined, userDisplayName } from "../../utils/utilities";
 const FALLBACK_IMAGE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
-export const Userpic = forwardRef(({
+interface UserpicProps {
+  badge?: Record<string, any> | null;
+  className?: string;
+  faded?: boolean;
+  showUsername?: boolean;
+  size?: any;
+  src?: string;
+  style?: CSSProperties;
+  user?: any;
+  username?: string;
+  useRandomBackground?: boolean;
+}
+
+export const Userpic = forwardRef<any, UserpicProps>(({
   badge = null,
   className,
   faded = false,
@@ -37,7 +50,7 @@ export const Userpic = forwardRef(({
 
   const background = useMemo(() => {
     if (isDefined(user.id)) {
-      const color = localStorage.getItem(`userpic-color-${user.id}`) ?? chroma.average([chroma.random(), "#cfcfcf"]);
+      const color = localStorage.getItem(`userpic-color-${user.id}`) ?? chroma.average([chroma.random(), "#cfcfcf"]).css();
 
       localStorage.setItem(`userpic-color-${user.id}`, color);
       return color;

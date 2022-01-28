@@ -8,7 +8,7 @@ interface OutlinerPanelProps extends PanelProps {
   regions: any;
 }
 
-export const OutlinerPanel: FC<OutlinerPanelProps> = observer(({ regions, ...props }) => {
+const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
   const [grouping, setGrouping] = useState<GroupingOptions | null>(null);
   const [ordering, setOrdering] = useState<OrderingOptions | null>(null);
 
@@ -20,7 +20,14 @@ export const OutlinerPanel: FC<OutlinerPanelProps> = observer(({ regions, ...pro
         onOrderingChange={value => setOrdering(value)}
         onGroupingChange={value => setGrouping(value)}
       />
-      <OutlinerTree regions={regions}/>
+      <OutlinerTree
+        regions={regions}
+        grouping={grouping}
+        ordering={ordering}
+        selectedKeys={regions.selection.keys}
+      />
     </PanelBase>
   );
-});
+};
+
+export const OutlinerPanel = observer(OutlinerPanelComponent);

@@ -14,9 +14,16 @@ const defaultStyles = {
   defaultSuggestionWidth: Constants.SUGGESTION_STROKE_WIDTH,
 };
 
-export const useRegionStyles = (region, {
+type StyleOptions = (typeof defaultStyles) & {
+  suggestion?: boolean,
+  includeFill?: boolean,
+  useStrokeAsFill?: boolean,
+}
+
+export const getRegionStyles = (region: any, {
   includeFill = false,
   useStrokeAsFill = false,
+  suggestion = false,
   defaultFillOpacity = defaultStyle.fillopacity,
   defaultFillColor = defaultStyle.fillcolor,
   defaultStrokeColor = defaultStyle.strokecolor,
@@ -24,9 +31,8 @@ export const useRegionStyles = (region, {
   defaultStrokeWidth = defaultStyle.strokewidth,
   defaultStrokeWidthHighlighted = Constants.HIGHLIGHTED_STROKE_WIDTH,
   defaultSuggestionWidth = Constants.SUGGESTION_STROKE_WIDTH,
-} = defaultStyles) => {
+}: StyleOptions = defaultStyles) => {
   const style = region.style || region.tag;
-  const { suggestion } = useContext(ImageViewContext) ?? {};
   const [highlighted, setHighlighted] = useState(region.highlighted);
   const [shouldFill, setShouldFill] = useState(region.fill ?? (useStrokeAsFill || includeFill));
 
@@ -88,4 +94,16 @@ export const useRegionStyles = (region, {
     fillColor,
     strokeWidth,
   };
+};
+
+
+export const useRegionStyles = (region: any, options?: StyleOptions) => {
+  const { suggestion } = useContext(ImageViewContext) ?? {};
+  const styles = getRegionStyles(region, {
+    ...defaultStyles,
+    ...(options ?? {}),
+    suggestion,
+  });
+
+  return styles;
 };

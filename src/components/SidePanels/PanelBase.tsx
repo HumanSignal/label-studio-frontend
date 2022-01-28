@@ -14,6 +14,7 @@ interface PanelBaseProps {
   visible?: boolean;
   collapsable?: boolean;
   position?: "left" | "right";
+  currentEntity?: any;
   onResize?: ResizeHandler;
   onVisibilityChange?: (name: string, visible: boolean) => void;
 }
@@ -24,8 +25,6 @@ export const PanelBase: FC<PanelBaseProps> = ({ name, title, width, onResize, ch
   const resizeHandler = useMemo(() => {
     return (size: number) => onResize?.(name, size);
   }, [name, onResize]);
-
-  console.log(props);
 
   return (
     <Block

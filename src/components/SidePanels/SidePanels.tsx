@@ -2,22 +2,24 @@ import { FC, useCallback, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { DetailsPanel } from "./DetailsPanel/DetailsPanel";
 import { OutlinerPanel } from "./OutlinerPanel/OutlinerPanel";
-import { inject } from "mobx-react";
+import { observer } from "mobx-react";
 
 import "./SidePanels.styl";
 
 interface SidePanelsProps {
   panelsHidden: boolean;
   store: any;
+  currentEntity: any;
+  regions: any;
 }
 
-const injector = inject("store");
-
-export const SidePanels: FC<SidePanelsProps> = injector(({ store, panelsHidden, children }) => {
-  const annotationStore = store.annotationStore;
-  const currentEntity = annotationStore.selected;
-  const regions = currentEntity.regionStore;
-
+const SidePanelsComponent: FC<SidePanelsProps> = ({
+  store,
+  currentEntity,
+  regions,
+  panelsHidden,
+  children,
+}) => {
   const [panelSizes, setPanelSizes] = useState({
     outliner: 320,
     details: 320,
@@ -59,6 +61,7 @@ export const SidePanels: FC<SidePanelsProps> = injector(({ store, panelsHidden, 
             position="left"
             onVisibilityChange={onPanelVisibilityChange}
             regions={regions}
+            currentEntity={currentEntity}
           />
           <DetailsPanel
             width={panelSizes.details}
@@ -66,9 +69,12 @@ export const SidePanels: FC<SidePanelsProps> = injector(({ store, panelsHidden, 
             onResize={onPanelResize}
             position="right"
             onVisibilityChange={onPanelVisibilityChange}
+            currentEntity={currentEntity}
           />
         </>
       )}
     </Block>
   );
-});
+};
+
+export const SidePanels = observer(SidePanelsComponent);

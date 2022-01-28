@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import { getRoot, getType } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import {
@@ -8,7 +8,6 @@ import {
   MessageOutlined
 } from "@ant-design/icons";
 
-import styles from "./Node.module.scss";
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
 import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangleTool, IconRectangleToolSmart, IconText } from "../../assets/icons";
@@ -92,8 +91,8 @@ const NodeViews = {
   }),
 };
 
-const Node = observer(({ className, node }) => {
-  const name = getType(node).name;
+const Node: FC<any> = observer(({ className, node }) => {
+  const name = useNodeName(node);
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
@@ -101,16 +100,16 @@ const Node = observer(({ className, node }) => {
   const labelName = node.labelName;
 
   return (
-    <span className={[styles.node, className].filter(Boolean).join(" ")}>
+    <Block name="node" tag="span" className={className}>
       {labelName}
       {" "}
       {getContent(node)}
-    </span>
+    </Block>
   );
 });
 
-const NodeIcon = observer(({ node, ...props }) => {
-  const name = getType(node).name;
+const NodeIcon: FC<any> = observer(({ node, ...props }) => {
+  const name = useNodeName(node);
 
   if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
 
@@ -119,24 +118,34 @@ const NodeIcon = observer(({ node, ...props }) => {
   return <Icon {...props}/>;
 });
 
-const NodeMinimal = observer(({ node }) => {
-  const { sortedRegions: regions } = getRoot(node).annotationStore.selected.regionStore;
+const NodeMinimal: FC<any> = observer(({ node }) => {
+  const { sortedRegions: regions } = useRegionStore(node);
   const index = regions.indexOf(node);
-  const name = getType(node).name;
+  const name = useNodeName(node);
 
   if (!(name in NodeViews)) return null;
 
-  const { name: text, Icon } = NodeViews[name];
+  const { name: text, icon } = NodeViews[name];
 
   return (
     <Block name="node-minimal" tag="span">
       {index >= 0 && <Elem name="counter">{index + 1}</Elem>}
 
-      <Elem name="icon" tag={Icon}/>
+      <Elem name="icon" tag={icon}/>
 
       {text}
     </Block>
   );
 });
+
+const useNodeName = (node: any) => {
+  return getType(node).name as keyof typeof NodeViews;
+};
+
+const useRegionStore = (node: any) => {
+  const root = getRoot(node);
+
+  return (root as any).annotationStore.selected.regionStore;
+};
 
 export { Node, NodeIcon, NodeMinimal, NodeViews };

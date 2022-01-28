@@ -191,7 +191,11 @@ class App extends Component {
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel }}>
-            <SidePanels>
+            <SidePanels
+              store={store}
+              currentEntity={as.selected}
+              regions={as.selected.regionStore}
+            >
               <Block name="main-content">
                 {as.validation === null
                   ? this._renderUI(as.selectedHistory?.root ?? root, as)

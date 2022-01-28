@@ -13,6 +13,9 @@ const SelectionMap = types.model(
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
   }).views(self => {
   return {
+    get keys() {
+      return Array.from(self.selected.keys());
+    },
     get annotation() {
       return getParent(self).annotation;
     },
@@ -188,7 +191,9 @@ export default types.model("RegionStore", {
       return sorted;
     },
 
-    asTree(enrich) {
+    asTree(enrich, {
+      groupBy = null,
+    } = {}) {
       // every region has a parentID
       // parentID is an empty string - "" if it's top level
       // or it can contain a string key to the parent region
@@ -213,27 +218,20 @@ export default types.model("RegionStore", {
         lookup.set(el.cleanId, result);
       });
 
-      Array.from(lookup.keys()).forEach(key => {
-        const el = lookup.get(key);
-        const pid = el.item.parentID;
+      const groupingFunction = (() => {
+        switch(groupBy) {
+          default: return (el => {
+            const pid = el.item.parentID;
+            const parent = pid ? (lookup.get(pid) ?? lookup.get(pid.replace(/#(.+)/i, ''))) : null;
 
-        if (pid) {
-          let parent = lookup.get(pid);
+            if (parent) return parent.children.push(el);
 
-          console.log(pid, parent);
-
-          if (!parent) {
-            parent = lookup[`${pid}#${self.annotation.id}`];
-          }
-
-          if (parent) {
-            parent.children.push(el);
-            return;
-          }
+            tree.push(el);
+          });
         }
+      })();
 
-        tree.push(el);
-      });
+      lookup.forEach(groupingFunction);
 
       return tree;
     },
