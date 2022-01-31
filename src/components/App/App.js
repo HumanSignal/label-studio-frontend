@@ -192,7 +192,6 @@ class App extends Component {
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel }}>
             <SidePanels
-              store={store}
               currentEntity={as.selected}
               regions={as.selected.regionStore}
             >

@@ -1,17 +1,16 @@
-import { Block, CN, cn, Elem } from "../../../utils/bem";
-import Tree from 'rc-tree';
-import "./TreeView.styl";
-import { FC, useCallback, useMemo, useState } from "react";
-import { NodeIcon } from "../../Node/Node";
-import { IconArrow } from "../../../assets/icons/tree";
-import { observer } from "mobx-react-lite";
-import { GroupingOptions, OrderingOptions } from "./ViewControls";
-import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
-import { getRegionStyles } from "../../../hooks/useRegionColor";
 import chroma from "chroma-js";
-import { Button, ButtonProps } from "../../../common/Button/Button";
-import { IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
+import { observer } from "mobx-react";
+import Tree from 'rc-tree';
+import { FC, useCallback, useMemo, useState } from "react";
 import { LsSparks } from "../../../assets/icons";
+import { IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
+import { IconArrow } from "../../../assets/icons/tree";
+import { Button, ButtonProps } from "../../../common/Button/Button";
+import { Block, CN, cn, Elem } from "../../../utils/bem";
+import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
+import { NodeIcon } from "../../Node/Node";
+import "./TreeView.styl";
+import { GroupingOptions, OrderingOptions } from "./ViewControls";
 
 interface OutlinerTreeProps {
   regions: any;
@@ -28,16 +27,10 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
 }) => {
   const rootClass = cn('tree');
   const [hovered, setHovered] = useState<string | null>(null);
-  const regionsTree = useDataTree(regions, grouping, ordering, hovered, rootClass);
-  const eventHandlers = useEventHandlers(regions, {
-    onHover: (hovered, id) => {
-      if (hovered) {
-        setHovered(id);
-      } else {
-        setHovered(null);
-      }
-    },
-  });
+  const onHover = (hovered: boolean, id: string) => setHovered(hovered ? id : null);
+
+  const eventHandlers = useEventHandlers({ regions, onHover });
+  const regionsTree = useDataTree({ regions, hovered, rootClass });
 
   return (
     <Block name="outliner-tree">
@@ -46,30 +39,24 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
         multiple
         defaultExpandAll
         defaultExpandParent
-        // allowDrop={(data) => {
-        //   console.log(data);
-        //   return true;
-        // }}
         checkable={false}
         prefixCls="lsf-tree"
         className={rootClass.toClassName()}
         treeData={regionsTree}
         selectedKeys={selectedKeys}
-        icon={NodeIconComponent}
-        switcherIcon={SwitcherIcon}
+        icon={({ item }: any) => <NodeIconComponent node={item}/>}
+        switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
         {...eventHandlers}
       />
     </Block>
   );
 };
 
-const useDataTree = (
-  data: any,
-  grouping: GroupingOptions | null,
-  ordering: OrderingOptions | null,
-  hovered: string | null,
-  rootClass: CN,
-) => {
+const useDataTree = ({
+  regions,
+  hovered,
+  rootClass,
+}: any) => {
   const createResult = useCallback((item) => {
     return {
       key: item.id,
@@ -81,12 +68,12 @@ const useDataTree = (
   }, [hovered]);
 
   const processor = useCallback((item: any) => {
+    const result: any = createResult(item);
+
     const toName = item.labeling?.to_name;
     const groupType = toName?.type;
     const groupLabel = toName?.parsedValue ?? toName?.value;
 
-    const result: any = createResult(item);
-    const styles = getRegionStyles(item);
     const color = chroma(item.getOneColor()).alpha(1);
     const mods: Record<string, any> = {};
 
@@ -94,7 +81,6 @@ const useDataTree = (
 
     const classNames = rootClass.elem('node').mod(mods);
 
-    result.styles = styles;
     result.color = color.css();
     result.style = {
       '--icon-color': color.css(),
@@ -114,29 +100,25 @@ const useDataTree = (
     return result;
   }, [createResult]);
 
-  // const result = useMemo(() => {
-  //   switch(grouping) {
-  //     default: return data.asTree(processor);
-  //   }
-  // }, [data, processor]);
-
-  return data.asTree(processor);
+  return regions.asTree(processor);
 };
 
-const useEventHandlers = (regionStore: any, {
+const useEventHandlers = ({
+  regions,
   onHover,
 }: {
+  regions: any,
   onHover: (hovered: boolean, id: string) => void,
 }) => {
   const onSelect = useCallback((_, evt) => {
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node, selected } = evt;
 
-    if (!multi) regionStore.selection.clear();
+    if (!multi) regions.selection.clear();
 
-    if (selected) regionStore.selection.select(node.item);
-    else regionStore.selection.unselect(node.item);
-  }, [regionStore.selection]);
+    if (selected) regions.selection.select(node.item);
+    else regions.selection.unselect(node.item);
+  }, []);
 
   const onMouseEnter = useCallback(({ node }: any) => {
     onHover(true, node.key);
@@ -157,7 +139,7 @@ const useEventHandlers = (regionStore: any, {
     if (!node) return 0;
 
     // TODO this can blow up if we have lots of stuff there
-    const nodes: any[] = regionStore.filterByParentID(node.pid);
+    const nodes: any[] = regions.filterByParentID(node.pid);
     const childrenHeight = nodes.map(c => treeHeight(c));
 
     if (!childrenHeight.length) return 0;
@@ -174,10 +156,10 @@ const useEventHandlers = (regionStore: any, {
     dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
     const treeDepth = dropPos.length;
 
-    const dragReg = regionStore.findRegionID(dragKey);
-    const dropReg = regionStore.findRegionID(dropKey);
+    const dragReg = regions.findRegionID(dragKey);
+    const dropReg = regions.findRegionID(dropKey);
 
-    regionStore.unhighlightAll();
+    regions.unhighlightAll();
 
     if (treeDepth === 2 && dropToGap && dropPosition === -1) {
       dragReg.setParentID("");
@@ -204,7 +186,7 @@ const useEventHandlers = (regionStore: any, {
           let reg = dropReg;
 
           while (reg) {
-            reg = regionStore.findRegion(reg.parentID);
+            reg = regions.findRegion(reg.parentID);
             maxDepth = maxDepth - 1;
           }
 
@@ -224,13 +206,13 @@ const useEventHandlers = (regionStore: any, {
   };
 };
 
-const SwitcherIcon: FC<any> = ({ isLeaf }) => {
+const SwitcherIcon: FC<any> = observer(({ isLeaf }) => {
   return isLeaf ? null : <IconArrow/>;
-};
+});
 
-const NodeIconComponent: FC<any> = ({ item }) => {
-  return item ? <NodeIcon node={item}/> : null;
-};
+const NodeIconComponent: FC<any> = observer(({ node }) => {
+  return node ? <NodeIcon node={node}/> : null;
+});
 
 const RootTitle: FC<any> = observer(({
   item,
@@ -293,12 +275,5 @@ const RegionControlButton: FC<ButtonProps> = ({ children, onClick, ...props }) =
   );
 };
 
-const RegionNode: FC = (props) => {
-  return (
-    <div>
-      {props.children}
-    </div>
-  );
-};
 
 export const OutlinerTree = observer(OutlinerTreeComponent);

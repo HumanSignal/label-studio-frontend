@@ -110,6 +110,22 @@
       --button-color #fff
       background-color $danger_color
 
+    &_alt
+      --button-color #000
+      box-shadow none
+      background-color rgba(0,0,0,.05)
+
+      &:hover,
+      &:focus,
+      &:active
+        --button-color #000
+        box-shadow none
+        background-color rgba(0,0,0,.08)
+
+      &:disabled
+        --button-color rgba(0,0,0,.02)
+        background-color rgba(0,0,0,.05)
+
   &_look_destructive:disabled,
   &_look_destructive&_waiting
     --button-color rgba(#fff, 0.5)

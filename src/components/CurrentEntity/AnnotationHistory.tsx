@@ -28,10 +28,12 @@ const AnnotationHistoryComponent: FC<any> = ({
   createdBy,
   selectedHistory,
   history,
+  inline = false,
 }) => {
   return (
-    <Block name="annotation-history">
+    <Block name="annotation-history" mod={{ inline }}>
       <HistoryItem
+        inline={inline}
         user={createdBy}
         extra="final state"
         entity={selected}
@@ -48,6 +50,7 @@ const AnnotationHistoryComponent: FC<any> = ({
             return (
               <HistoryItem
                 key={`h-${id}`}
+                inline={inline}
                 user={user ?? { email: item?.createdBy }}
                 date={createdDate}
                 acceptedState={item.acceptedState}
@@ -71,12 +74,13 @@ const HistoryItemComponent: FC<any> = ({
   acceptedState,
   selected = false,
   selectable = true,
+  inline = false,
   onClick,
 }) => {
   const isPrediction = entity?.type === 'prediction';
 
   return (
-    <Block name="history-item" mod={{ selected, disabled: !selectable }} onClick={onClick}>
+    <Block name="history-item" mod={{ inline, selected, disabled: !selectable }} onClick={onClick}>
       <Space spread>
         <Space size="small">
           <Elem

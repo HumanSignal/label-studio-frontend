@@ -37,7 +37,9 @@ export const PanelBase: FC<PanelBaseProps> = ({ name, title, width, onResize, ch
         {title}
       </Elem>
       <Elem name="content">
-        {children}
+        <Block name={name}>
+          {children}
+        </Block>
       </Elem>
     </Block>
   );

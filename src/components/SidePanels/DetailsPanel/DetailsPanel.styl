@@ -1,4 +1,59 @@
 .details
   &__section
     &-head
-      font-size 16px
+      display flex
+      height 48px
+      padding 0 16px
+      font-size 15px
+      font-weight 500
+      align-items center
+      justify-content space-between
+
+      span
+        opacity 0.6
+        font-weight normal
+
+.detailed-region
+  &__icon
+    width 24px
+    height 24px
+    margin-right 8px
+
+  &__head
+    height 32px
+    display flex
+    margin 8px 0
+    padding 0 8px
+    align-items center
+    justify-content space-between
+
+    span
+      color #000
+
+      &:before
+        content "ID: "
+
+  &__title
+    display flex
+    align-items center
+
+.region-actions
+  margin 8px
+  height 36px
+  display flex
+  align-items stretch
+  justify-content space-between
+
+  &__group
+    display grid
+    grid-column-gap 8px
+    grid-auto-flow column
+    grid-auto-columns 36px
+    align-items center
+
+    &_align
+      &_left
+        justify-content flex-start
+
+      &_right
+        justify-content flex-end

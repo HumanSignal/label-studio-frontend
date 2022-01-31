@@ -1,6 +1,9 @@
 .annotation-history
   margin 0 0 8px
 
+  &_inline
+    padding 0 8px
+
   &__divider
     height 1px
     position relative
@@ -19,9 +22,9 @@
       background-color #fff
 
 .history-item
-  cursor default
+  margin 0
   padding 6px 10px
-  margin 0 -10px
+  cursor default
   border-radius 5px
 
   &__date
@@ -44,3 +47,6 @@
       color #944BFF
       background-color #E9DDF8
       box-shadow inset 0px 0px 0px 1px rgba(148, 75, 255, 0.15)
+
+  &:not(&_inline)
+    margin 0 -10px

@@ -14,7 +14,6 @@ interface SidePanelsProps {
 }
 
 const SidePanelsComponent: FC<SidePanelsProps> = ({
-  store,
   currentEntity,
   regions,
   panelsHidden,
@@ -69,6 +68,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
             onResize={onPanelResize}
             position="right"
             onVisibilityChange={onPanelVisibilityChange}
+            regions={regions}
+            selection={regions.selection}
             currentEntity={currentEntity}
           />
         </>

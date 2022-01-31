@@ -25,6 +25,9 @@ const SelectionMap = types.model(
     get size() {
       return self.selected.size;
     },
+    get list() {
+      return Array.from(self.selected.values());
+    },
     isSelected(region) {
       return self.selected.has(region.id);
     },
