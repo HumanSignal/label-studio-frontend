@@ -76,11 +76,11 @@ const RegionItem: FC<{region: any}> = observer(({ region }) => {
   const [editMode, setEditMode] = useState(false);
 
   const hasEditableNodes = useMemo(() => {
-    return !!nodes.find(node => node.editable);
+    return !!nodes.find((node: any) => node.editable);
   }, [nodes]);
 
   const hasEditableRegions = useMemo(() => {
-    return !!nodes.find(node => node.editable && !node.classification);
+    return !!nodes.find((node: any) => node.editable && !node.classification);
   }, [nodes]);
 
   const title = useMemo(() => {
