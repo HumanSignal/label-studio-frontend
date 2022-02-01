@@ -17,6 +17,16 @@ export class HtxTextBox extends React.Component {
   textRef = React.createRef();
   inputRef = React.createRef();
 
+  static getDerivedStateFromProps(props, state) {
+    if (isFF(FF_DEV_1566) && props.text !== state.prevPropsText) {
+      return {
+        value: props.text,
+        prevPropsText: props.text,
+      };
+    }
+    return null;
+  }
+
   componentDidMount() {
     if (isFF(FF_DEV_1566)) {
       window.addEventListener("click", this.handleGlobalClick, { capture: true });
