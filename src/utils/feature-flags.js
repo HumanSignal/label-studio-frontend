@@ -1,5 +1,3 @@
-const FEATURE_FLAGS = window.APP_SETTINGS?.feature_flags || {};
-
 // Fix crosshair working with zoom & rotation
 export const FF_DEV_1285 = "ff_front_dev_1285_crosshair_wrong_zoom_140122_short";
 
@@ -16,6 +14,10 @@ export const FF_DEV_1564_DEV_1565 = "ff_front_dev_1564_dev_1565_shortcuts_focus_
 // @requires FF_DEV_1564_DEV_1565
 export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short";
 
+function getFeatureFlags() {
+  return window.APP_SETTINGS?.feature_flags || {};
+}
+
 export function isFF(id) {
-  return FEATURE_FLAGS[id] === true;
+  return getFeatureFlags()[id] === true;
 }
