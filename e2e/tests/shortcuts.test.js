@@ -43,6 +43,9 @@ Data(configParams).Scenario("Should keep the focus and cursor position.", async 
   };
 
   I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_1564_dev_1565_shortcuts_focus_and_cursor_010222_short: true,
+  });
   LabelStudio.init(params);
   AtSidebar.seeRegions(0);
 
@@ -102,6 +105,9 @@ Data(configParams).Scenario("Should work with emoji.", async ({ I, LabelStudio, 
   };
 
   I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_1564_dev_1565_shortcuts_focus_and_cursor_010222_short: true,
+  });
   LabelStudio.init(params);
   AtSidebar.seeRegions(0);
 
