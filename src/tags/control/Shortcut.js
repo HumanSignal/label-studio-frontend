@@ -8,7 +8,6 @@ import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
 import { Hotkey } from "../../core/Hotkey";
-import { FF_DEV_1564_DEV_1565, isFF } from "../../utils/feature-flags";
 
 /**
  * Use the Shortcut tag to define a shortcut that annotators can use to add a predefined object, such as a specific label value, with a hotkey or keyboard shortcut.
@@ -49,9 +48,7 @@ const Model = types
 
       if (textarea.onShortcut) {
         textarea.onShortcut(self.value);
-        if (isFF(FF_DEV_1564_DEV_1565)) {
-          textarea.returnFocus?.();
-        }
+        textarea.returnFocus?.();
       }
     },
 
@@ -61,9 +58,7 @@ const Model = types
       // fired on a wrong element
 
       if (textarea.name !== name) return;
-      if (isFF(FF_DEV_1564_DEV_1565)) {
-        event.preventDefault();
-      }
+      event.preventDefault();
       return self.onClick();
     },
   }));
@@ -82,10 +77,8 @@ const HtxShortcutView = inject("store")(
     return (
       <Tag
         onClick={(e) => {
-          if (isFF(FF_DEV_1564_DEV_1565)) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
+          e.preventDefault();
+          e.stopPropagation();
           item.onClick();
           return false;
         }}

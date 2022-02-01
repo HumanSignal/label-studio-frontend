@@ -18,7 +18,6 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
 import { Block, Elem } from "../../../utils/bem";
 import "./TextArea.styl";
-import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 
 const { TextArea } = Input;
 
@@ -224,14 +223,10 @@ const Model = types.model({
     },
 
     onShortcut(value) {
-      if (isFF(FF_DEV_1564_DEV_1565)) {
-        if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
+      if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
 
-        lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, "end");
-        lastActiveElementModel.setValue(lastActiveElement.value);
-      } else {
-        self.setValue(self._value + value);
-      }
+      lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, "end");
+      lastActiveElementModel.setValue(lastActiveElement.value);
     },
 
     toStateJSON() {
@@ -284,9 +279,7 @@ const TextAreaModel = types.compose(
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
   const onFocus = useCallback((ev, model) => {
-    if (isFF(FF_DEV_1564_DEV_1565)) {
-      item.setLastFocusedElement(ev.target, model);
-    }
+    item.setLastFocusedElement(ev.target, model);
   }, [item]);
 
   const props = {
