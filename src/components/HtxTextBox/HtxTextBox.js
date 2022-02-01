@@ -61,7 +61,7 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", rows = 1, onlyEdit, ...props } = this.props;
+    const { className = "", rows = 1, onlyEdit, onFocus, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
@@ -71,6 +71,7 @@ export class HtxTextBox extends React.Component {
       ref: this.inputRef,
       value,
       onBlur: this.save,
+      onFocus,
       onChange: e => {
         this.setValue(e.target.value);
         this.updateHeight();
@@ -106,7 +107,7 @@ export class HtxTextBox extends React.Component {
   }
 
   renderView() {
-    const { onChange, onDelete, text, ...props } = this.props;
+    const { onChange, onDelete, text, onFocus, ...props } = this.props;
 
     return (
       <>

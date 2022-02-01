@@ -62,9 +62,9 @@ const TextAreaRegionModel = types.compose(
   Model,
 );
 
-const HtxTextAreaRegionView = ({ item }) => {
+const HtxTextAreaRegionView = ({ item, onFocus }) => {
   const classes = [styles.mark];
-  const params = {};
+  const params = { onFocus: e => onFocus(e, item) };
   const { parent } = item;
   const { relationMode } = item.annotation;
 
