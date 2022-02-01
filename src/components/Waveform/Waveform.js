@@ -285,6 +285,8 @@ export default class Waveform extends React.Component {
       progressColor: this.state.colors.progressColor,
 
       splitChannels: true,
+      cursorWidth: this.props.cursorWidth,
+      cursorColor: this.props.cursorColor,
       barHeight: 1,
     };
 
