@@ -11,7 +11,6 @@ import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
 import { HtxTextBox } from "../components/HtxTextBox/HtxTextBox";
-import { FF_DEV_1566, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model("TextAreaRegionModel", {
@@ -117,7 +116,7 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
         rows={parent.rows}
         text={item._value}
         {...params}
-        ignoreShortcuts={isFF(FF_DEV_1566)}
+        ignoreShortcuts
       />
     </div>
   );

@@ -3,7 +3,6 @@ import { Tooltip, Typography } from "antd";
 import { DeleteOutlined, EditOutlined, EnterOutlined } from "@ant-design/icons";
 import styles from "./HtxTextBox.module.scss";
 import throttle from "lodash.throttle";
-import { FF_DEV_1566, isFF } from "../../utils/feature-flags";
 
 const { Paragraph } = Typography;
 
@@ -18,7 +17,7 @@ export class HtxTextBox extends React.Component {
   inputRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
-    if (isFF(FF_DEV_1566) && props.text !== state.prevPropsText) {
+    if (props.text !== state.prevPropsText) {
       return {
         value: props.text,
         prevPropsText: props.text,
@@ -28,15 +27,11 @@ export class HtxTextBox extends React.Component {
   }
 
   componentDidMount() {
-    if (isFF(FF_DEV_1566)) {
-      window.addEventListener("click", this.handleGlobalClick, { capture: true });
-    }
+    window.addEventListener("click", this.handleGlobalClick, { capture: true });
   }
 
   componentWillUnmount() {
-    if (isFF(FF_DEV_1566)) {
-      window.removeEventListener("click", this.handleGlobalClick, { capture: true });
-    }
+    window.removeEventListener("click", this.handleGlobalClick, { capture: true });
   }
 
   handleGlobalClick = (e) => {
@@ -104,9 +99,9 @@ export class HtxTextBox extends React.Component {
       autoFocus: true,
       ref: this.inputRef,
       value,
-      onBlur: isFF(FF_DEV_1566) ? ()=>{
+      onBlur: ()=>{
         this.props.onChange(this.state.value);
-      } : this.save,
+      },
       onFocus,
       onChange: e => {
         this.setValue(e.target.value);
@@ -124,7 +119,7 @@ export class HtxTextBox extends React.Component {
           }
         } else if (key === "Escape") {
           this.cancel();
-        } else if (isFF(FF_DEV_1566) && key === "Tab") {
+        } else if (key === "Tab") {
           this.setEditing(false);
         }
       },
