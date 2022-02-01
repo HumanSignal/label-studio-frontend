@@ -128,3 +128,67 @@ Data(configParams).Scenario("Should work with emoji.", async ({ I, LabelStudio, 
   AtSidebar.see("🐱🐱‍👤🐱");
 });
 
+Data(configParams).Scenario("Should work with existent regions.", async ({ I, LabelStudio, AtSidebar, current }) => {
+  const { inline } = current;
+  const config = createConfig({
+    rows: inline ? "1" : "3",
+  });
+
+  const params = {
+    config,
+    data: { audio: AUDIO_URL },
+    annotations: [{
+      id: "Test", result: [
+        {
+          "value": { "text": ["A B"] },
+          "id": "floE-bRC8E",
+          "from_name": "text",
+          "to_name": "audio",
+          "type": "textarea",
+        }],
+    }],
+  };
+
+  I.amOnPage("/");
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(1);
+
+  // Start editing
+  I.click('[aria-label="edit"]');
+
+  // Try to use shortcuts
+  // A B|
+  // Shortcut by pressing hotkey (the cursor is at the end)
+  I.pressKey("3");
+  // A B!|
+  I.pressKey("ArrowLeft");
+  // A B|!
+  I.pressKey("ArrowLeft");
+  // A |B!
+  // Select space
+  I.pressKeyDown("Shift");
+  I.pressKey("ArrowLeft");
+  I.pressKeyUp("Shift");
+  // A| |B!
+  // Shortcut by clicking button (the cursor is in the middle)
+  I.click(locate(".ant-tag").toXPath() + "[contains(text(), '[ + ]')]");
+  // A + |B!
+  I.pressKey("ArrowLeft");
+  // A +| B!
+  I.pressKey("ArrowLeft");
+  // A |+ B!
+  I.pressKey("ArrowLeft");
+  // A| + B!
+  I.pressKey("ArrowLeft");
+  // |A + B!
+  // Shortcut by pressing hotkey (the cursor is at the begin)
+  I.pressKey("1");
+  // -|A + B!
+  // Commit
+  I.pressKey(["Shift", "Enter"]);
+
+  // If we got an expected result then we didn't lost focus.
+  AtSidebar.seeRegions(1);
+  AtSidebar.see("-A + B!");
+}).tag("@this");
+
