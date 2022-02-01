@@ -119,7 +119,8 @@ const SettingsModel = types
 
       // hack to enable it from outside, because Text spawns spans on every rerender
       // @todo it should be enabled inside Text
-      document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
+      document.querySelectorAll(".lsf-htx-richtext")
+        .forEach(text => text.dataset.linenumbers = self.showLineNumbers ? "enabled" : "disabled");
     },
 
     toggleContinuousLabeling() {

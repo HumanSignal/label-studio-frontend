@@ -391,12 +391,16 @@ class RichTextPieceView extends Component {
 
     if (!item._value) return null;
 
-    const content = item._value || "";
+    let val = item._value || "";
     const newLineReplacement = "<br/>";
+    const settings = this.props.store.settings;
 
-    const val = item.type === 'text'
-      ? htmlEscape(content).replace(/\n|\r/g, newLineReplacement)
-      : content;
+    if (item.type === 'text') {
+      val = htmlEscape(val)
+        .split(/\n|\r/g)
+        .map(s => `<span class="line">${s}</span>`)
+        .join(newLineReplacement);
+    }
 
     if (item.inline) {
       const eventHandlers = {
@@ -419,6 +423,7 @@ class RichTextPieceView extends Component {
               this.setReady(false);
               this.rootNodeRef.current = el;
             }}
+            data-linenumbers={settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
