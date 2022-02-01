@@ -60,7 +60,7 @@ const Model = types
       const name = (event.target || event.srcElement).name;
       // fired on a wrong element
 
-      if (textarea.name !== name) return;
+      if (textarea.name !== name && (!isFF(FF_DEV_1566) || !name.startsWith(`${textarea.name}:`))) return;
       if (isFF(FF_DEV_1564_DEV_1565)) {
         event.preventDefault();
       }

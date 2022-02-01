@@ -84,10 +84,11 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", rows = 1, onlyEdit, onFocus, ...props } = this.props;
+    const { className = "", rows = 1, onlyEdit, name, onFocus, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
+      name,
       className: "ant-input " + styles.input,
       style: height ? { height } : null,
       autoFocus: true,

@@ -105,11 +105,14 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
     };
   }
 
+  const name = `${parent?.name?? ""}:${item.id}`;
+
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
       <HtxTextBox
         onlyEdit={parent.transcription}
         id={`TextAreaRegion-${item.id}`}
+        name={name}
         className={classes.join(" ")}
         rows={parent.rows}
         text={item._value}
