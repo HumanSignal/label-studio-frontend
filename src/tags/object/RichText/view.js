@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { htmlEscape, matchesSelector } from "../../../utils/html";
+import { htmlEscape, matchesSelector, moveStylesBetweenHeadTags } from "../../../utils/html";
 import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
@@ -121,26 +121,6 @@ class RichTextPieceView extends Component {
     item.setHighlight(region);
   };
 
-  _applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
-    for (let i = 0; i < destDoc.styleSheets.length; i++) {
-      const styleSheet = destDoc.styleSheets[i];
-      const style = styleSheet.ownerNode;
-
-      if (!style.id) continue;
-      // Sometimes rules are not accessible
-      try {
-        const rules = rulesByStyleId[style.id];
-
-        if (!rules) continue;
-        for (let k = 0;k < rules.length; k++) {
-          style.sheet.insertRule(rules[k]);
-        }
-      } catch {
-        continue;
-      }
-    }
-  }
-
   _removeChildrenFrom(el) {
     while (el.lastChild) {
       el.removeChild(el.lastChild);
@@ -165,36 +145,7 @@ class RichTextPieceView extends Component {
     dest.appendChild(fragment);
   }
 
-  _moveStyles(workingHead, rootHead) {
-    const rulesByStyleId = {};
-    const fragment = document.createDocumentFragment();
-
-    for (let i = 0; i < workingHead.children.length; ) {
-      const style = workingHead.children[i];
-
-      if (style?.tagName !== "STYLE") {
-        i++;
-        continue;
-      }
-
-      const styleSheet = style.sheet;
-
-      // Sometimes rules are not accessible
-      try {
-        const rules = styleSheet.rules;
-
-        const cssTexts = rulesByStyleId[style.id] = [];
-
-        for (let k = 0;k < rules.length; k++) {
-          cssTexts.push(rules[k].cssText);
-        }
-      } finally {
-        fragment.appendChild(style);
-      }
-    }
-    rootHead.appendChild(fragment);
-    this._applyHighlightStylesToDoc(rootHead.ownerDocument,rulesByStyleId);
-  }
+  _moveStyles = moveStylesBetweenHeadTags;
 
   _moveElementsToWorkingNode = () => {
     const { item } = this.props;
@@ -290,7 +241,7 @@ class RichTextPieceView extends Component {
     if (item.inline) {
       this._handleUpdate(true);
     } else {
-      this.dispose = observe(item, "isReady", this.updateLoadingVisibility, true);
+      this.dispose = observe(item, "_isReady", this.updateLoadingVisibility, true);
     }
   }
 
@@ -300,6 +251,7 @@ class RichTextPieceView extends Component {
 
   componentWillUnmount() {
     this.dispose?.();
+    this.setLoaded(false);
     this.setReady(false);
   }
 
@@ -323,7 +275,7 @@ class RichTextPieceView extends Component {
     const loadingEl = this.loadingRef.current;
 
     if(!loadingEl) return;
-    if (item && isAlive(item) && item.isLoaded && item.isReady) {
+    if (item && isAlive(item) && item.isLoaded && item._isReady) {
       loadingEl.setAttribute("style", "display: none");
     } else {
       loadingEl.removeAttribute("style");
@@ -423,7 +375,7 @@ class RichTextPieceView extends Component {
             name="container"
             ref={el => {
               this.setLoaded(true);
-              this.setReady(false);
+              this.setReady(true);
               this.rootNodeRef.current = el;
             }}
             data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
