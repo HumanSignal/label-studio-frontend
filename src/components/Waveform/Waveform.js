@@ -412,6 +412,10 @@ export default class Waveform extends React.Component {
       this.wavesurfer.container.onwheel = throttle(this.onWheel, 100);
     });
 
+    this.wavesurfer.on("waveform-ready", () => {
+      this.props.onReady?.(this.wavesurfer);
+    });
+
     /**
      * Pause trigger of audio
      */

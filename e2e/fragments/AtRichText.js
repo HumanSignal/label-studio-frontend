@@ -30,6 +30,6 @@ module.exports = {
     return locate(this._rootSelector);
   },
   locateText(locator) {
-    return locate(this.locate(locator).toXPath() + "/text()");
+    return locate(this.locate(locator).toXPath() + "//text()");
   },
 };

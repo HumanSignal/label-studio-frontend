@@ -1011,6 +1011,11 @@ const Annotation = types
     rejectSuggestion(id) {
       self.suggestions.delete(id);
     },
+
+    resetReady() {
+      self.objects.forEach(object => object.setReady && object.setReady(false));
+      self.areas.forEach(area => area.setReady && area.setReady(false));
+    },
   }));
 
 export default types
@@ -1336,7 +1341,7 @@ export default types
       });
 
       selectAnnotation(c.id);
-      c.deserializeResults(s);
+      c.deserializeAnnotation(s);
       // reinit will trigger `updateObjects()` so we omit it here
       c.reinitHistory();
 
