@@ -283,12 +283,13 @@ export default class Waveform extends React.Component {
       height: this.props.height,
       backend: "MediaElement",
       progressColor: this.state.colors.progressColor,
-
       splitChannels: true,
       cursorWidth: this.props.cursorWidth,
       cursorColor: this.props.cursorColor,
       barHeight: 1,
+      scrollParent: this.props.scrollParent,
     };
+
 
     if (this.props.regions) {
       wavesurferConfigure = {
@@ -454,7 +455,6 @@ export default class Waveform extends React.Component {
         <div id="wave" ref={this.setWaveformRef} className={styles.wave} />
 
         <div id="timeline" />
-
         {this.props.zoom && (
           <Row gutter={16} style={{ marginTop: "1em" }}>
             <Col flex={8} style={{ textAlign: "right", marginTop: "6px" }}>

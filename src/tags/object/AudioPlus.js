@@ -15,8 +15,6 @@ import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { SyncMixin } from "../../mixins/SyncMixin";
 import { customTypes } from "../../core/CustomTypes";
-import { useRef } from "react";
-import { useEffect } from "react";
 import { isDefined } from "../../utils/utilities";
 import IsReadyMixin from "../../mixins/IsReadyMixin";
 
@@ -42,6 +40,7 @@ import IsReadyMixin from "../../mixins/IsReadyMixin";
  * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
  * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
  * @param {boolean} [zoom=true] - Whether to show the zoom slider
+ * @param {boolean} [scrollParent=false] - Whether to enable scrolling on the waveform
  * @param {string} [hotkey] - Hotkey used to play or pause audio
  * @param {string} [sync] object name to sync with
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
@@ -53,6 +52,7 @@ const TagAttrs = types.model({
   zoom: types.optional(types.boolean, true),
   volume: types.optional(types.boolean, true),
   speed: types.optional(types.boolean, true),
+  scrollParent: types.optional(types.boolean, false),
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
@@ -329,6 +329,7 @@ const HtxAudioView = ({ store, item }) => {
           onError={item.onError}
           speed={item.speed}
           zoom={item.zoom}
+          scrollParent={item.scrollParent}
           volume={item.volume}
           regions={true}
           height={item.height}
