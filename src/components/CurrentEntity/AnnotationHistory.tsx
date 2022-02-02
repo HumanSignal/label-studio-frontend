@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
-import { FC, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -56,7 +56,7 @@ const AnnotationHistoryComponent: FC<any> = ({
                 comment={item.comment}
                 acceptedState={item.acceptedState}
                 selected={selectedHistory?.id === item.id}
-                selectable={item.results.length}
+                disabled={item.results.length === 0}
                 onClick={() => annotationStore.selectHistory(item)}
               />
             );
@@ -75,7 +75,7 @@ const HistoryItemComponent: FC<any> = ({
   comment,
   acceptedState,
   selected = false,
-  selectable = true,
+  disabled = false,
   inline = false,
   onClick,
 }) => {
@@ -90,8 +90,14 @@ const HistoryItemComponent: FC<any> = ({
     }
   }, []);
 
+  const handleClick = useCallback((e) => {
+    if (disabled) return;
+
+    onClick(e);
+  }, [onClick, disabled]);
+
   return (
-    <Block name="history-item" mod={{ inline, selected, disabled: !selectable }} onClick={onClick}>
+    <Block name="history-item" mod={{ inline, selected, disabled }} onClick={handleClick}>
       <Space spread>
         <Space size="small">
           <Elem
