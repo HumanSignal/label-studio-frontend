@@ -19,6 +19,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   tag?: CNTagName;
   look?: "primary" | "danger" | "destructive" | "alt";
   primary?: boolean;
+  danger?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
 }
@@ -43,6 +44,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   tag,
   look,
   primary,
+  danger,
   hotkey,
   ...rest
 }, ref) => {
@@ -52,6 +54,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
     size,
     waiting,
     type,
+    danger,
     look: look ?? [],
     withIcon: !!icon,
     withExtra: !!extra,

@@ -2,30 +2,28 @@
  * Class for register View
  */
 class _Registry {
-  constructor() {
-    this.tags = [];
-    this.models = {};
-    this.views = {};
-    this.regions = [];
-    this.objects = [];
-    // list of available areas per object type
-    this.areas = new Map();
+  tags: any[] = [];
+  models: Record<string, any> = {};
+  views: Record<string, any> = {};
+  regions: any[] = [];
+  objects: any[] = [];
+  // list of available areas per object type
+  areas = new Map();
 
-    this.views_models = {};
+  views_models: Record<string, any> = {};
 
-    this.tools = {};
+  tools: Record<string, any> = {};
 
-    this.perRegionViews = {};
-  }
+  perRegionViews: Record<string, any> = {};
 
-  addTag(tag, model, view) {
+  addTag(tag: string | number, model: { name: string | number }, view: any) {
     this.tags.push(tag);
     this.models[tag] = model;
     this.views[tag] = view;
     this.views_models[model.name] = view;
   }
 
-  addRegionType(type, object, detector) {
+  addRegionType(type: { detectByValue: any }, object: any, detector: any) {
     this.regions.push(type);
     if (detector) type.detectByValue = detector;
     const areas = this.areas.get(object);
@@ -38,7 +36,7 @@ class _Registry {
     return this.regions;
   }
 
-  addObjectType(type) {
+  addObjectType(type: any) {
     this.objects.push(type);
   }
 
@@ -50,7 +48,7 @@ class _Registry {
     return Object.values(this.models);
   }
 
-  getViewByModel(modelName) {
+  getViewByModel(modelName: string) {
     const view = this.views_models[modelName];
 
     if (!view) throw new Error("No view for model: " + modelName);
@@ -58,11 +56,11 @@ class _Registry {
     return view;
   }
 
-  getViewByTag(tag) {
+  getViewByTag(tag: string | number) {
     return this.views[tag];
   }
 
-  getAvailableAreas(object, value) {
+  getAvailableAreas(object: any, value: any) {
     const available = this.areas.get(object);
 
     if (!available) return [];
@@ -71,10 +69,10 @@ class _Registry {
         if (model.detectByValue && model.detectByValue(value)) return [model];
       }
     }
-    return available.filter(a => !a.detectByValue);
+    return available.filter((a: { detectByValue: any }) => !a.detectByValue);
   }
 
-  getTool(name) {
+  getTool(name: string) {
     const model = this.tools[name];
 
     if (!model) {
@@ -91,7 +89,7 @@ class _Registry {
    * @param {string} tag
    * @return {import("mobx-state-tree").IModelType}
    */
-  getModelByTag(tag) {
+  getModelByTag(tag: string) {
     const model = this.models[tag];
 
     if (!model) {
@@ -103,14 +101,14 @@ class _Registry {
     return model;
   }
 
-  addPerRegionView(tag, mode, view) {
+  addPerRegionView(tag: string | number, mode: string | number, view: any) {
     const tagViews = this.perRegionViews[tag] || {};
 
     tagViews[mode] = view;
     this.perRegionViews[tag] = tagViews;
   }
 
-  getPerRegionView(tag, mode) {
+  getPerRegionView(tag: string | number, mode: string | number) {
     return this.perRegionViews[tag]?.[mode];
   }
 }

@@ -1,4 +1,4 @@
-import { getEnv, getParent, onPatch, types } from "mobx-state-tree";
+import { destroy, detach, getEnv, getParent, onPatch, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 import { isDefined } from "../utils/utilities";
@@ -331,20 +331,16 @@ export default types.model("RegionStore", {
    * @param {obj} region
    */
   deleteRegion(region) {
-    const arr = self.regions;
+    detach(region);
 
     // find regions that have that region as a parent
     const children = self.filterByParentID(region.id);
 
     children && children.forEach(r => r.setParentID(region.parentID));
 
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] === region) {
-        arr.splice(i, 1);
-      }
-    }
-
     getEnv(self).events.invoke("entityDelete", region);
+
+    destroy(region);
     self.initHotkeys();
   },
 

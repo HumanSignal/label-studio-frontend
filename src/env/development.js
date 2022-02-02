@@ -35,6 +35,7 @@ import { ImageEllipselabels } from "../examples/image_ellipses";
 import { ImagePolygons } from "../examples/image_polygons";
 import { ImageSegmentation } from "../examples/image_segmentation";
 import { ImageTools } from "../examples/image_tools";
+import { ImageOCR } from "../examples/image_ocr";
 
 /**
  * HTML
@@ -64,7 +65,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageTools;
+const data = Taxonomy;
 
 function getData(task) {
   if (task && task.data) {

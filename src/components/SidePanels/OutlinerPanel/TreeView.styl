@@ -3,7 +3,7 @@
     display block
 
   &-treenode
-    height 32px
+    min-height 32px
     display flex
     padding 0 4px
     align-items center
@@ -41,8 +41,10 @@
     height 24px
     display flex
     flex none
+    height: 32px;
     align-items center
     justify-content center
+    align-self: flex-start;
     color var(--icon-color)
 
   &-indent
@@ -61,11 +63,13 @@
     &_hidden
       opacity 0.4
 
-.region-item
-  display flex
-  height 32px
-  align-items center
-  justify-content space-between
+.outliner-item
+  min-height 32px
+
+  &__content
+    display flex
+    align-items center
+    justify-content space-between
 
   &__title
     flex 1
@@ -77,6 +81,9 @@
     align-items center
     justify-content center
     grid-template-columns repeat(5, 32px)
+
+    &_withControls
+      grid-template-columns repeat(6, 32px)
 
   &__control
     width 32px
@@ -91,3 +98,27 @@
 
       &_predict
         color $magic_color
+
+.ocr
+  background none
+  position relative
+  padding 0 0 8px 0
+
+  ~/_hidden &
+    background: #fff
+
+  &_empty
+    display none
+
+  &_collapsed
+    height: 36px
+    overflow-y hidden
+
+  &__collapse
+    position absolute
+    width: 24px
+    height: 24px
+    top: 6px
+    right: 8px
+    opacity 0.25
+    padding: 0

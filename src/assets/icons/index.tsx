@@ -54,3 +54,9 @@ export { ReactComponent as IconViewAll } from './view_all.svg';
 export { ReactComponent as IconLink } from "./link.svg";
 export { ReactComponent as IconPlusAlt } from "./plus-alt.svg";
 export { ReactComponent as IconTrash } from "./trash.svg";
+export { ReactComponent as IconMenu } from "./menu.svg";
+
+// Relations
+export { ReactComponent as IconRelationRight } from "./relations/right.svg";
+export { ReactComponent as IconRelationLeft } from "./relations/left.svg";
+export { ReactComponent as IconRelationBi } from "./relations/bi.svg";

@@ -31,11 +31,15 @@
       color #000
 
       &:before
-        content "ID: "
+        opacity 0.6
+        content "ID "
 
   &__title
     display flex
     align-items center
+
+  &_compact &__head
+    margin -5px 0
 
 .region-actions
   margin 8px

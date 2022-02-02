@@ -53,6 +53,7 @@ const AnnotationHistoryComponent: FC<any> = ({
                 inline={inline}
                 user={user ?? { email: item?.createdBy }}
                 date={createdDate}
+                comment={item.comment}
                 acceptedState={item.acceptedState}
                 selected={selectedHistory?.id === item.id}
                 selectable={item.results.length}
@@ -71,6 +72,7 @@ const HistoryItemComponent: FC<any> = ({
   user,
   date,
   extra,
+  comment,
   acceptedState,
   selected = false,
   selectable = true,
@@ -114,6 +116,9 @@ const HistoryItemComponent: FC<any> = ({
           ) : null}
         </Space>
       </Space>
+      {comment && (
+        <div>{comment}</div>
+      )}
     </Block>
   );
 };
