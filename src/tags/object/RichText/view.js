@@ -8,7 +8,7 @@ import { fixCodePointsInRange } from "../../../utils/selection-tools";
 import "./RichText.styl";
 import { isAlive } from "mobx-state-tree";
 import { LoadingOutlined } from "@ant-design/icons";
-import { Block, Elem } from "../../../utils/bem";
+import { Block, cn, Elem } from "../../../utils/bem";
 import { observe } from "mobx";
 
 class RichTextPieceView extends Component {
@@ -394,11 +394,14 @@ class RichTextPieceView extends Component {
     let val = item._value || "";
     const newLineReplacement = "<br/>";
     const settings = this.props.store.settings;
+    const isText = item.type === 'text';
 
-    if (item.type === 'text') {
+    if (isText) {
+      const cnLine = cn("richtext", { elem: "line" });
+
       val = htmlEscape(val)
         .split(/\n|\r/g)
-        .map(s => `<span class="line">${s}</span>`)
+        .map(s => `<span class="${cnLine}">${s}</span>`)
         .join(newLineReplacement);
     }
 
@@ -423,7 +426,7 @@ class RichTextPieceView extends Component {
               this.setReady(false);
               this.rootNodeRef.current = el;
             }}
-            data-linenumbers={settings.showLineNumbers ? "enabled" : "disabled"}
+            data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
