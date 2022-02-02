@@ -11,6 +11,7 @@ import { Col, Row, Select, Slider } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
 const MIN_ZOOM_Y = 1;
 const MAX_ZOOM_Y = 50;
@@ -284,6 +285,8 @@ export default class Waveform extends React.Component {
       progressColor: this.state.colors.progressColor,
 
       splitChannels: true,
+      cursorWidth: this.props.cursorWidth,
+      cursorColor: this.props.cursorColor,
       barHeight: 1,
     };
 
@@ -452,7 +455,9 @@ export default class Waveform extends React.Component {
             <Col flex={8} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
-                  <ZoomOutOutlined onClick={this.onZoomMinus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Horizontal zoom out">
+                    <ZoomOutOutlined onClick={this.onZoomMinus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
@@ -466,14 +471,18 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <ZoomInOutlined onClick={this.onZoomPlus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Horizontal zoom in">
+                    <ZoomInOutlined onClick={this.onZoomPlus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
               </div>
             </Col>
             <Col flex={4} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
-                  <ZoomOutOutlined onClick={this.onZoomYMinus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Vertical zoom out">
+                    <ZoomOutOutlined onClick={this.onZoomYMinus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
@@ -487,7 +496,9 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <ZoomInOutlined onClick={this.onZoomYPlus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Vertical zoom in">
+                    <ZoomInOutlined onClick={this.onZoomYPlus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
               </div>
             </Col>
