@@ -48,5 +48,13 @@
       background-color #E9DDF8
       box-shadow inset 0px 0px 0px 1px rgba(148, 75, 255, 0.15)
 
+  &__comment
+    padding-left 36px
+    white-space pre-wrap
+
+    &::before
+      font-weight bold
+      content attr(data-reason)
+
   &:not(&_inline)
     margin 0 -10px

@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -81,6 +81,15 @@ const HistoryItemComponent: FC<any> = ({
 }) => {
   const isPrediction = entity?.type === 'prediction';
 
+  const reason = useMemo(() => {
+    switch(acceptedState) {
+      case "accepted": return "Accepted";
+      case "rejected": return "Rejected";
+      case "fixed": return "Fixed";
+      default: return null;
+    }
+  }, []);
+
   return (
     <Block name="history-item" mod={{ inline, selected, disabled: !selectable }} onClick={onClick}>
       <Space spread>
@@ -117,7 +126,9 @@ const HistoryItemComponent: FC<any> = ({
         </Space>
       </Space>
       {comment && (
-        <div>{comment}</div>
+        <Elem name="comment" data-reason={`${reason}: `}>
+          {comment}
+        </Elem>
       )}
     </Block>
   );
