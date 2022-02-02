@@ -8,7 +8,7 @@ import { fixCodePointsInRange } from "../../../utils/selection-tools";
 import "./RichText.styl";
 import { isAlive } from "mobx-state-tree";
 import { LoadingOutlined } from "@ant-design/icons";
-import { Block, Elem } from "../../../utils/bem";
+import { Block, cn, Elem } from "../../../utils/bem";
 import { observe } from "mobx";
 
 class RichTextPieceView extends Component {
@@ -391,12 +391,19 @@ class RichTextPieceView extends Component {
 
     if (!item._value) return null;
 
-    const content = item._value || "";
+    let val = item._value || "";
     const newLineReplacement = "<br/>";
+    const settings = this.props.store.settings;
+    const isText = item.type === 'text';
 
-    const val = item.type === 'text'
-      ? htmlEscape(content).replace(/\n|\r/g, newLineReplacement)
-      : content;
+    if (isText) {
+      const cnLine = cn("richtext", { elem: "line" });
+
+      val = htmlEscape(val)
+        .split(/\n|\r/g)
+        .map(s => `<span class="${cnLine}">${s}</span>`)
+        .join(newLineReplacement);
+    }
 
     if (item.inline) {
       const eventHandlers = {
@@ -419,6 +426,7 @@ class RichTextPieceView extends Component {
               this.setReady(false);
               this.rootNodeRef.current = el;
             }}
+            data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
