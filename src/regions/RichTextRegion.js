@@ -11,7 +11,7 @@ import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Utils from "../utils";
 import { isDefined } from "../utils/utilities";
-import { findRangeNative } from "../utils/selection-tools";
+import { findRangeNative, rangeToGlobalOffset } from "../utils/selection-tools";
 
 const GlobalOffsets = types.model("GlobalOffset", {
   start: types.number,
@@ -112,14 +112,49 @@ const Model = types
       });
     },
 
-    rangeFromGlobalOffset() {
+    /**
+     * @todo just use offsets here
+     * Main method to get HTML range for LSF region
+     * globalOffsets are only for end users convenience and for emergencies (xpath invalid)
+     * @param {boolean} useOriginalContent
+     */
+    getRange() {
       const root = self._getRootNode();
+      let range;
 
+      // 0. Text regions are simple — just get range by offsets
+      if (self.isText) {
+        return findRangeNative(self.startOffset, self.endOffset, root);
+      }
+
+      // 1. first try to find range by xpath in original document
+      range = self._getRange({ useOriginalContent: true });
+
+      if (range) {
+        // we need this range in the visible document, so find it by global offsets
+        const originalRoot = self._getRootNode(true);
+        const [soff, eoff] = rangeToGlobalOffset(range, originalRoot);
+
+        return findRangeNative(soff, eoff, root);
+      }
+
+      // 2. then try to find range on visible document
+      // that's for old buggy annotations created over dirty document state
+      range = self._getRange({ useOriginalContent: false });
+
+      if (range) {
+        // @todo is it good to fix xpath here?
+        // self._fixXPaths(range, root);
+        return range;
+      }
+
+      // 3. if xpaths are broken use globalOffsets if given
       if (self.globalOffsets && isDefined(root)) {
         return findRangeNative(self.globalOffsets.start, self.globalOffsets.end, root);
       }
 
-      return self._getRange();
+      // 4. out of options — region is broken
+      return undefined;
     },
 
     // For external XPath updates
@@ -182,24 +217,6 @@ const Model = types
       if (rootNode === undefined) return undefined;
 
       const { start, startOffset, end, endOffset } = self;
-
-      try {
-        if (self.isText) {
-          const { startContainer, endContainer } = Utils.Selection.findRange(startOffset, endOffset, rootNode);
-          const range = document.createRange();
-
-          if (!startContainer || !endContainer) return;
-
-          range.setStart(startContainer.node, startContainer.position);
-          range.setEnd(endContainer.node, endContainer.position);
-
-          self.text = range.toString();
-
-          return range;
-        }
-      } catch (err) {
-        console.log("can't find range", err);
-      }
 
       try {
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);

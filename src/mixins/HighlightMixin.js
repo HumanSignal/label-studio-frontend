@@ -26,15 +26,17 @@ export const HighlightMixin = types
      */
     applyHighlight() {
       if (self.parent.isLoaded === false) return;
-      // Avoid calling this method twice
+
       // spans in iframe disappear on every annotation switch, so check for it
       // in iframe spans still isConnected, but window is missing
-      if (self._hasSpans && self._spans[0]?.ownerDocument?.defaultView) {
-        console.warn("Spans already created");
+      const isReallyConnected = Boolean(self._spans[0]?.ownerDocument?.defaultView);
+
+      // Avoid calling this method twice
+      if (self._hasSpans && isReallyConnected) {
         return;
       }
 
-      const range = self.rangeFromGlobalOffset();
+      const range = self.getRange();
       const root = self._getRootNode();
 
       // Avoid rendering before view is ready
@@ -47,6 +49,7 @@ export const HighlightMixin = types
 
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
+      // @todo use label-based stylesheets created only once
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
       const classNames = ["htx-highlight", stylesheet.className];
 
@@ -70,8 +73,8 @@ export const HighlightMixin = types
 
     updateHighlightedText() {
       if (!self.text) {
-        // Concatinating of spans' innerText is up to 10 times faster, but loses "\n"
-        const range = self.rangeFromGlobalOffset();
+        // Concatenating of spans' innerText is up to 10 times faster, but loses "\n"
+        const range = self.getRange();
         const root = self._getRootNode();
 
         if (!range || !root) {

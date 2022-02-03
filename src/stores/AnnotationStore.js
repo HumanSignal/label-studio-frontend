@@ -954,6 +954,7 @@ const Annotation = types
           const hasStartEnd = isDefined(value.start) && isDefined(value.end);
           const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
 
+          // @todo move this Text regions offsets transform to RichTextRegion
           if (hasStartEnd && lacksOffsets) {
             return Object.assign({}, value, {
               start: "",

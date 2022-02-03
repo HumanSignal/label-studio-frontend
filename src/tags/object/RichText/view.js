@@ -313,6 +313,7 @@ class RichTextPieceView extends Component {
       body.addEventListener(event, ...eventHandlers[event]);
     }
 
+    // @todo remove this, project-specific
     // fix unselectable links
     const style = doc.createElement("style");
 
