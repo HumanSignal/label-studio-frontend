@@ -55,6 +55,8 @@ export { ReactComponent as IconLink } from "./link.svg";
 export { ReactComponent as IconPlusAlt } from "./plus-alt.svg";
 export { ReactComponent as IconTrash } from "./trash.svg";
 export { ReactComponent as IconMenu } from "./menu.svg";
+export { ReactComponent as IconHamburger } from "./hamburger.svg";
+export { ReactComponent as IconDetails } from "./details.svg";
 
 // Relations
 export { ReactComponent as IconRelationRight } from "./relations/right.svg";

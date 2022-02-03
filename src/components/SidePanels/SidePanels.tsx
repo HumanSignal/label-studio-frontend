@@ -5,6 +5,7 @@ import { OutlinerPanel } from "./OutlinerPanel/OutlinerPanel";
 import { observer } from "mobx-react";
 
 import "./SidePanels.styl";
+import { IconDetails, IconHamburger } from "../../assets/icons";
 
 interface SidePanelsProps {
   panelsHidden: boolean;
@@ -55,8 +56,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }, panelSizes);
   }, [
     panelsHidden,
-    ...Object.values(panelSizes),
-    ...Object.values(panelsVisibility),
+    panelSizes,
+    panelsVisibility,
   ]);
 
   return (
@@ -77,6 +78,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
             onVisibilityChange={onPanelVisibilityChange}
             regions={regions}
             currentEntity={currentEntity}
+            icon={<IconHamburger/>}
           />
           <DetailsPanel
             width={panelSizes.details}
@@ -87,6 +89,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
             regions={regions}
             selection={regions.selection}
             currentEntity={currentEntity}
+            icon={<IconDetails/>}
           />
         </>
       )}
