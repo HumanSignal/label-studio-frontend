@@ -12,7 +12,6 @@ import { SoundOutlined } from "@ant-design/icons";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { FF_DEV_1633, isFF } from "../../utils/feature-flags";
 
 const MIN_ZOOM_Y = 1;
 const MAX_ZOOM_Y = 50;
@@ -438,9 +437,7 @@ export default class Waveform extends React.Component {
 
   componentWillUnmount() {
     this.hotkeys.unbindAll();
-    if (isFF(FF_DEV_1633)) {
-      this.wavesurfer.unAll();
-    }
+    this.wavesurfer.unAll();
   }
 
   setWaveformRef = node => {
