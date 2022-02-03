@@ -12,7 +12,6 @@ export const Actions = ({ store }) => {
   const entity = annotationStore.selected;
   const saved = !entity.userGenerate || entity.sentUserGenerate;
   const isPrediction = entity?.type === 'prediction';
-  const history = entity.history;
   const isViewAll = annotationStore.viewingAll;
 
   const onToggleVisibility = useCallback(() => {

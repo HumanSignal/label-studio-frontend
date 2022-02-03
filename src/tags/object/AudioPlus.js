@@ -14,8 +14,6 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { SyncMixin } from "../../mixins/SyncMixin";
-import { useRef } from "react";
-import { useEffect } from "react";
 import { isDefined } from "../../utils/utilities";
 
 /**

@@ -1,6 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { Button, Form, Input } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react";
 import { destroy, isAlive, types } from "mobx-state-tree";
 

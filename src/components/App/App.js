@@ -42,7 +42,7 @@ import './App.styl';
 import { Space } from "../../common/Space/Space";
 import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 import { isDefined } from "../../utils/utilities";
-import { FF_DEV_1544, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
 
 /**
  * App
@@ -200,7 +200,7 @@ class App extends Component {
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel }}>
-            {isFF(FF_DEV_1544) ? (
+            {isFF(FF_DEV_1170) ? (
               <SidePanels
                 currentEntity={as.selected}
                 regions={as.selected.regionStore}
