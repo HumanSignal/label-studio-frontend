@@ -48,7 +48,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       ...panelsVisibility,
       [name]: visible,
     });
-  }, [panelSizes]);
+  }, [panelsVisibility]);
 
   const padding = useMemo(() => {
     return Object.entries(panelsVisibility).reduce<PanelSize>((res, [key, visible]) => {

@@ -60,6 +60,15 @@
           }
       })(window, document);
     </script>
+    <style>
+      body {
+        height: 100vh;
+      }
+
+      #label-studio {
+        height: calc(100vh - 88px);
+      }
+    </style>
     <script>
       domReady(function () {
         var ls = new LabelStudio("label-studio", {

@@ -65,7 +65,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageTools;
+const data = RichTextHtml;
 
 function getData(task) {
   if (task && task.data) {
