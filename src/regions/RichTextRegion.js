@@ -41,6 +41,9 @@ const Model = types
     getRegionElement() {
       return self._spans?.[0];
     },
+    get displayValue() {
+      return self.text;
+    },
   }))
   .actions(self => ({
     beforeDestroy() {

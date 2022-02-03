@@ -2,13 +2,14 @@ import { FC, useMemo } from "react";
 import { Block, Elem } from "../../utils/bem";
 
 import "./PanelBase.styl";
+import { PanelType } from "./SidePanels";
 
 export type PanelBaseExclusiveProps = "name" | "title"
 
-type ResizeHandler = (name: string, size: number) => void;
+type ResizeHandler = (name: PanelType, size: number) => void;
 
 interface PanelBaseProps {
-  name: string;
+  name: PanelType;
   title: string;
   width?: number;
   visible?: boolean;
@@ -16,7 +17,7 @@ interface PanelBaseProps {
   position?: "left" | "right";
   currentEntity?: any;
   onResize?: ResizeHandler;
-  onVisibilityChange?: (name: string, visible: boolean) => void;
+  onVisibilityChange?: (name: PanelType, visible: boolean) => void;
 }
 
 export type PanelProps = Omit<PanelBaseProps, PanelBaseExclusiveProps>

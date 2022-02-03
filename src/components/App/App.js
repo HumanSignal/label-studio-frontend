@@ -30,7 +30,6 @@ import "../../tags/visual";
 /**
  * Styles
  */
-import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
@@ -178,7 +177,6 @@ class App extends Component {
     if (!root) return this.renderNoAnnotation();
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
-    const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
     const mainContent = (
       <Block name="main-content">
@@ -187,6 +185,8 @@ class App extends Component {
           : this.renderConfigValidationException(store)}
       </Block>
     );
+
+    const newUIEnabled = isFF(FF_DEV_1170);
 
     return (
       <Block name="editor" mod={{ fullscreen: settings.fullscreen }}>
@@ -199,33 +199,39 @@ class App extends Component {
           )}
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel }}>
-            {isFF(FF_DEV_1170) ? (
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel || newUIEnabled }}>
+            {newUIEnabled ? (
               <SidePanels
+                panelsHidden={viewingAll}
                 currentEntity={as.selected}
                 regions={as.selected.regionStore}
               >
                 {mainContent}
               </SidePanels>
-            ) : mainContent}
+            ) : (
+              <>
+                {mainContent}
 
-            {(viewingAll === false) && (
-              <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("side-column") && (
-                  <SidebarTabs active="annotation">
-                    <SidebarPage name="annotation" title="Annotation">
-                      <AnnotationTab store={store}/>
-                    </SidebarPage>
+                {(viewingAll === false) && (
+                  <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
+                    {store.hasInterface("side-column") && (
+                      <SidebarTabs active="annotation">
+                        <SidebarPage name="annotation" title="Annotation">
+                          <AnnotationTab store={store}/>
+                        </SidebarPage>
 
-                    {this.props.panels.map(({ name, title, Component }) => (
-                      <SidebarPage key={name} name={name} title={title}>
-                        <Component/>
-                      </SidebarPage>
-                    ))}
-                  </SidebarTabs>
+                        {this.props.panels.map(({ name, title, Component }) => (
+                          <SidebarPage key={name} name={name} title={title}>
+                            <Component/>
+                          </SidebarPage>
+                        ))}
+                      </SidebarTabs>
+                    )}
+                  </Block>
                 )}
-              </div>
+              </>
             )}
+
           </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
