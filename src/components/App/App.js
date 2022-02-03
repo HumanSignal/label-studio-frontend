@@ -42,6 +42,7 @@ import './App.styl';
 import { Space } from "../../common/Space/Space";
 import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 import { isDefined } from "../../utils/utilities";
+import { FF_DEV_1544, isFF } from "../../utils/feature-flags";
 
 /**
  * App
@@ -179,6 +180,14 @@ class App extends Component {
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
     const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
+    const mainContent = (
+      <Block name="main-content">
+        {as.validation === null
+          ? this._renderUI(as.selectedHistory?.root ?? root, as)
+          : this.renderConfigValidationException(store)}
+      </Block>
+    );
+
     return (
       <Block name="editor" mod={{ fullscreen: settings.fullscreen }}>
         <Settings store={store} />
@@ -191,16 +200,14 @@ class App extends Component {
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel }}>
-            <SidePanels
-              currentEntity={as.selected}
-              regions={as.selected.regionStore}
-            >
-              <Block name="main-content">
-                {as.validation === null
-                  ? this._renderUI(as.selectedHistory?.root ?? root, as)
-                  : this.renderConfigValidationException(store)}
-              </Block>
-            </SidePanels>
+            {isFF(FF_DEV_1544) ? (
+              <SidePanels
+                currentEntity={as.selected}
+                regions={as.selected.regionStore}
+              >
+                {mainContent}
+              </SidePanels>
+            ) : mainContent}
 
             {(viewingAll === false) && (
               <div className={stMenu + " ls-menu"}>
