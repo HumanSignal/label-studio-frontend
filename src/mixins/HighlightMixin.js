@@ -12,6 +12,7 @@ export const HighlightMixin = types
   }))
   .views(self => ({
     get _hasSpans() {
+      // @todo is it possible that only some spans are connected?
       return self._spans ? (
         self._spans.every(span => span.isConnected)
       ) : false;
