@@ -30,6 +30,7 @@ const TimeTraveller = types
     // A way to handle multiple simultaneous freezes from different places
     const freezingLockSet = new Set();
     let changesDuringFreeze = false;
+    let replaceNextUndoState = false;
 
     function triggerHandlers() {
       updateHandlers.forEach(handler => handler());
@@ -54,6 +55,10 @@ const TimeTraveller = types
         if (!self.isFrozen && changesDuringFreeze) {
           self.recordNow();
         }
+      },
+
+      setReplaceNextUndoState(value = true) {
+        replaceNextUndoState = value;
       },
 
       recordNow() {
@@ -81,9 +86,10 @@ const TimeTraveller = types
           return;
         }
 
-        self.history.splice(self.undoIdx + 1);
+        self.history.splice(self.undoIdx + !replaceNextUndoState, self.history.length);
         self.history.push(recorder);
         self.undoIdx = self.history.length - 1;
+        replaceNextUndoState = false;
         changesDuringFreeze = false;
       },
 
