@@ -22,6 +22,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   danger?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
+  disabled?: boolean;
 }
 
 export interface ButtonGroupProps {

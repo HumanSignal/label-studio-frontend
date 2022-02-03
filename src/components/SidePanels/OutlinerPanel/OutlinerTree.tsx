@@ -2,7 +2,7 @@ import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import Tree from 'rc-tree';
 import { FC, useCallback, useMemo, useState } from "react";
-import { LsCollapse, LsExpand, LsSparks } from "../../../assets/icons";
+import { IconLockLocked, IconLockUnlocked, LsCollapse, LsExpand, LsSparks } from "../../../assets/icons";
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { IconArrow } from "../../../assets/icons/tree";
 import { Button, ButtonProps } from "../../../common/Button/Button";
@@ -299,7 +299,12 @@ const RegionControls: FC<RegionControlsProps> = observer(({
         )}
       </Elem>
       <Elem name="control" mod={{ type: "lock" }}>
-        {/* locking is not implemented yet */}
+        {/* TODO: implement manual region locking */}
+        {(hovered || !item.editable) && (
+          <RegionControlButton disabled={item.readonly} onClick={() => item.setLocked(!item.locked)}>
+            {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
+          </RegionControlButton>
+        )}
       </Elem>
       <Elem name="control" mod={{ type: "visibility" }}>
         {(hovered || item.hidden) && (

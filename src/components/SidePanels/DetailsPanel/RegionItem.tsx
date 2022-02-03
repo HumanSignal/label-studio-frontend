@@ -21,7 +21,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
   withIds = true,
 }) => {
   const { annotation } = region;
-  const { highlightedNode: node, selectedRegions: nodes, selectionSize } = annotation;
+  const { selectedRegions: nodes, selectionSize } = annotation;
   const [editMode, setEditMode] = useState(false);
 
   const hasEditableNodes = useMemo(() => {
@@ -53,8 +53,6 @@ export const RegionItem: FC<RegionItemProps> = observer(({
         <RegionAction
           region={region}
           annotation={annotation}
-          node={node}
-          nodes={nodes}
           hasEditableRegions={hasEditableRegions}
         />
       )}
@@ -63,8 +61,8 @@ export const RegionItem: FC<RegionItemProps> = observer(({
 });
 
 const RegionAction: FC<any> = observer(({
+  region,
   annotation,
-  node,
   hasEditableRegions,
 }) => {
   const entityButtons: JSX.Element[] = [];
@@ -74,7 +72,7 @@ const RegionAction: FC<any> = observer(({
       <RegionActionButton
         key="relation"
         icon={<IconLink/>}
-        onClick={() => annotation.startRelationMode(node)}
+        onClick={() => annotation.startRelationMode(region)}
       />
     ));
 
@@ -93,13 +91,13 @@ const RegionAction: FC<any> = observer(({
       </Elem>
       <Elem name="group" mod={{ align: "right" }}>
         <RegionActionButton
-          icon={node.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
-          onClick={node.toggleHidden}
+          icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+          onClick={region.toggleHidden}
         />
         <RegionActionButton
           danger
           icon={<IconTrash/>}
-          onClick={() => annotation.deleteRegion(node)}
+          onClick={() => annotation.deleteRegion(region)}
         />
       </Elem>
     </Block>
