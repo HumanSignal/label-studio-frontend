@@ -3,6 +3,7 @@ import { Tooltip, Typography } from "antd";
 import { DeleteOutlined, EditOutlined, EnterOutlined } from "@ant-design/icons";
 import styles from "./HtxTextBox.module.scss";
 import throttle from "lodash.throttle";
+import { FF_DEV_1566, isFF } from "../../utils/feature-flags";
 
 const { Paragraph } = Typography;
 
@@ -15,6 +16,38 @@ export class HtxTextBox extends React.Component {
 
   textRef = React.createRef();
   inputRef = React.createRef();
+
+  static getDerivedStateFromProps(props, state) {
+    if (isFF(FF_DEV_1566) && props.text !== state.prevPropsText) {
+      return {
+        value: props.text,
+        prevPropsText: props.text,
+      };
+    }
+    return null;
+  }
+
+  componentDidMount() {
+    if (isFF(FF_DEV_1566)) {
+      window.addEventListener("click", this.handleGlobalClick, { capture: true });
+    }
+  }
+
+  componentWillUnmount() {
+    if (isFF(FF_DEV_1566)) {
+      window.removeEventListener("click", this.handleGlobalClick, { capture: true });
+    }
+  }
+
+  handleGlobalClick = (e) => {
+    const el = e?.target;
+    const isShortcut = el?.dataset?.shortcut;
+    const shouldSkip = !this.state.editing || this.props.ignoreShortcuts && isShortcut || el === this.inputRef.current;
+
+    if (!shouldSkip) {
+      this.setEditing(false);
+    }
+  }
 
   startEditing = () => {
     const height = this.textRef.current?.parentNode.offsetHeight || 0;
@@ -61,16 +94,20 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", rows = 1, onlyEdit, ...props } = this.props;
+    const { className = "", rows = 1, onlyEdit, name, onFocus, onChange, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
+      name,
       className: "ant-input " + styles.input,
       style: height ? { height } : null,
       autoFocus: true,
       ref: this.inputRef,
       value,
-      onBlur: this.save,
+      onBlur: isFF(FF_DEV_1566) ? ()=>{
+        this.props.onChange(this.state.value);
+      } : this.save,
+      onFocus,
       onChange: e => {
         this.setValue(e.target.value);
         this.updateHeight();
@@ -87,6 +124,8 @@ export class HtxTextBox extends React.Component {
           }
         } else if (key === "Escape") {
           this.cancel();
+        } else if (isFF(FF_DEV_1566) && key === "Tab") {
+          this.setEditing(false);
         }
       },
     };
@@ -106,7 +145,7 @@ export class HtxTextBox extends React.Component {
   }
 
   renderView() {
-    const { onChange, onDelete, text, ...props } = this.props;
+    const { onChange, onDelete, text, onFocus, ...props } = this.props;
 
     return (
       <>
