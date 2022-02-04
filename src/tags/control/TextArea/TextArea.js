@@ -226,6 +226,9 @@ const Model = types.model({
     onShortcut(value) {
       if (isFF(FF_DEV_1564_DEV_1565)) {
         if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
+        // Do nothing if active element is disappeared
+        if (self === lastActiveElementModel && !self.showSubmit) return;
+        if (!lastActiveElement.parentElement) return;
 
         lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, "end");
         lastActiveElementModel.setValue(lastActiveElement.value);
