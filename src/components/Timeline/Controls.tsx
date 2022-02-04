@@ -206,9 +206,11 @@ export const Controls: FC<ControlsProps> = ({
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           {!disableFrames && (
-            <ControlButton onClick={() => onToggleCollapsed?.(!collapsed)}>{collapsed ? <IconExpand/> : <IconCollapse/>}</ControlButton>
+            <ControlButton tooltip="Toggle Timeline" onClick={() => onToggleCollapsed?.(!collapsed)}>
+              {collapsed ? <IconExpand/> : <IconCollapse/>}
+            </ControlButton>
           )}
-          <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+          <ControlButton  tooltip="Fullscreen" onClick={() => onFullScreenToggle?.(false)}>
             {fullscreen ? (
               <IconFullscreenExit/>
             ) : (
