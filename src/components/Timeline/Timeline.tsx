@@ -5,7 +5,7 @@ import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from "react
 import { default as Views, ViewTypes } from "./Views";
 
 import "./Timeline.styl";
-import { clamp } from "../../utils/utilities";
+import { clamp, isDefined } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
 import { TimelineContextValue, TimelineStepFunction } from "./Types";
 
@@ -108,8 +108,8 @@ export const Timeline: FC<TimelineProps> = ({
             onFullScreenToggle={() => onFullscreenToggle?.()}
             onStepBackward={decreasePosition}
             onStepForward={increasePosition}
-            onRewind={() => setInternalPosition(0)}
-            onForward={() => setInternalPosition(length)}
+            onRewind={(steps) => setInternalPosition(isDefined(steps) ? currentPosition - steps : 0)}
+            onForward={(steps) => setInternalPosition(isDefined(steps) ? currentPosition + steps : length)}
             onPositionChange={setInternalPosition}
             onToggleCollapsed={setViewCollapsed}
             extraControls={View.Controls && !disableFrames ? (

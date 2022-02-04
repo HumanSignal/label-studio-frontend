@@ -30,8 +30,8 @@ export interface ControlsProps {
   fullscreen: boolean;
   disableFrames?: boolean;
   extraControls?: JSX.Element | null;
-  onRewind: () => void;
-  onForward: () => void;
+  onRewind: (steps?: number) => void;
+  onForward: (steps?: number) => void;
   onPlayToggle: (playing: boolean) => void;
   onFullScreenToggle: (fullscreen: boolean) => void;
   onStepBackward: ControlsStepHandler;
@@ -149,12 +149,14 @@ export const Controls: FC<ControlsProps> = ({
                 <ControlButton
                   onClick={() => onRewind?.()}
                   disabled={startReached}
+                  hotkey={settings?.skipToBeginning}
                 >
                   <IconRewind/>
                 </ControlButton>
                 <ControlButton
-                  onClick={() => onRewind?.()}
+                  onClick={() => onRewind?.(10)}
                   disabled={startReached}
+                  hotkey={settings?.hopBackward}
                 >
                   <IconBackward/>
                 </ControlButton>
@@ -189,14 +191,16 @@ export const Controls: FC<ControlsProps> = ({
             alt={(
               <>
                 <ControlButton
-                  onClick={() => onForward?.()}
+                  onClick={() => onForward?.(10)}
                   disabled={endReached}
+                  hotkey={settings?.hopForward}
                 >
                   <IconForward/>
                 </ControlButton>
                 <ControlButton
                   onClick={() => onForward?.()}
                   disabled={endReached}
+                  hotkey={settings?.skipToEnd}
                 >
                   <IconFastForward/>
                 </ControlButton>
