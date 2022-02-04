@@ -4,9 +4,9 @@ import { Elem } from "../../../utils/bem";
 import { AnnotationHistory } from "../../CurrentEntity/AnnotationHistory";
 import { PanelBase, PanelProps } from "../PanelBase";
 import "./DetailsPanel.styl";
+import { RegionDetailsMain, RegionDetailsMeta } from "./RegionDetails";
 import { RegionItem } from "./RegionItem";
 import { Relations } from "./Relations";
-
 interface DetailsPanelProps extends PanelProps {
   regions: any;
   selection: any;
@@ -76,10 +76,22 @@ const RegionsPanel: FC<{regions:  any}> = observer(({
     <div>
       {regions.list.map((reg: any) => {
         return (
-          <RegionItem key={reg.id} region={reg}/>
+          <SelectedRegion key={reg.id} region={reg}/>
         );
       })}
     </div>
+  );
+});
+
+const SelectedRegion: FC<{region: any}> = observer(({
+  region,
+}) => {
+  return (
+    <RegionItem
+      region={region}
+      mainDetails={<RegionDetailsMain region={region}/>}
+      metaDetails={<RegionDetailsMeta region={region}/>}
+    />
   );
 });
 

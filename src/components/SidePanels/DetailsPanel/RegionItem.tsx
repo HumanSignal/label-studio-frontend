@@ -12,6 +12,8 @@ interface RegionItemProps {
   withActions?: boolean;
   compact?: boolean;
   withIds?: boolean;
+  mainDetails?: JSX.Element;
+  metaDetails?: JSX.Element;
 }
 
 export const RegionItem: FC<RegionItemProps> = observer(({
@@ -19,6 +21,8 @@ export const RegionItem: FC<RegionItemProps> = observer(({
   compact = false,
   withActions = true,
   withIds = true,
+  mainDetails,
+  metaDetails,
 }) => {
   const { annotation } = region;
   const { selectedRegions: nodes, selectionSize } = annotation;
@@ -49,6 +53,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
         </Elem>
         {withIds && <span>{region.cleanId}</span>}
       </Elem>
+      {mainDetails && <Elem name="content">{mainDetails}</Elem>}
       {withActions && (
         <RegionAction
           region={region}
@@ -56,6 +61,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
           hasEditableRegions={hasEditableRegions}
         />
       )}
+      {metaDetails && <Elem name="content">{metaDetails}</Elem>}
     </Block>
   );
 });
@@ -72,6 +78,7 @@ const RegionAction: FC<any> = observer(({
       <RegionActionButton
         key="relation"
         icon={<IconLink/>}
+        primary={annotation.relationMode}
         onClick={() => annotation.startRelationMode(region)}
       />
     ));

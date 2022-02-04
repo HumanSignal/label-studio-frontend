@@ -1,9 +1,12 @@
 import color from "chroma-js";
+import { CSSProperties, FC } from "react";
 import { Block } from "../../utils/bem";
 import { colors } from "../../utils/namedColors";
 import "./Tag.styl";
 
-const prepareColor = (colorString, solid) => {
+type ColorName = keyof typeof colors;
+
+const prepareColor = (colorString: string, solid: boolean) => {
   const baseColor = color(colorString);
 
   return solid ? {
@@ -17,16 +20,26 @@ const prepareColor = (colorString, solid) => {
   };
 };
 
-const getColor = colorString => {
+const getColor = (colorString: string | ColorName) => {
   if (colorString) {
-    return colors[colorString] ?? colorString;
+    return colors[colorString as ColorName] ?? colorString;
   } else {
     return colors.blue;
   }
 };
 
-export const Tag = ({ className, style, size, color, solid = false, children }) => {
-  const finalColor = Object.entries(prepareColor(getColor(color), solid)).reduce(
+interface TagProps {
+  color: string | ColorName;
+  className?: string;
+  style?: CSSProperties;
+  size?: 'small' | 'compact';
+  solid?: boolean;
+}
+
+export const Tag: FC<TagProps> = ({ className, style, size, color, solid = false, children }) => {
+  const preparedColor = prepareColor(getColor(color), solid);
+
+  const finalColor = Object.entries(preparedColor).reduce(
     (res, [key, color]) => ({ ...res, [`--${key}`]: color }),
     {},
   );
