@@ -63,6 +63,7 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onCancelSkippingTask: params.onCancelSkippingTask ? params.onCancelSkippingTask : External.onCancelSkippingTask,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
@@ -75,6 +76,10 @@ function configureApplication(params) {
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
     onNextTask: params.onNextTask || External.onNextTask,
     onPrevTask: params.onPrevTask || External.onPrevTask,
+
+    // other settings aka flags
+    forceAutoAnnotation: params.forceAutoAnnotation ?? false,
+    forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions ?? false,
   };
 
   return options;

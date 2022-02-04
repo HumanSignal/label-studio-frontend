@@ -96,10 +96,34 @@
   },
   "video:frame-backward": {
     "key": "alt+left",
-    "description": "Go back for one frame"
+    "description": "Go one frame back"
+  },
+  "video:keyframe-backward": {
+    "key": "ctrl+alt+left",
+    "description": "Go to previous keyframe"
   },
   "video:frame-forward": {
     "key": "alt+right",
-    "description": "Go forward for one frame"
+    "description": "Go one frame forward"
+  },
+  "video:keyframe-forward": {
+    "key": "ctrl+alt+right",
+    "description": "Go to next keyframe"
+  },
+  "video:backward": {
+    "key": "alt+left",
+    "description": "Go back"
+  },
+  "video:rewind": {
+    "key": "shift+ctrl+alt+left",
+    "description": "Go to first frame"
+  },
+  "video:forward": {
+    "key": "shift+alt+right",
+    "description": "Go forward"
+  },
+  "video:fastforward": {
+    "key": "shift+ctrl+alt+right",
+    "description": "Go to last frame"
   }
 }

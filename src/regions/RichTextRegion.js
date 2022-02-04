@@ -198,15 +198,14 @@ const Model = types
           return range;
         }
       } catch (err) {
-        // should never happen
-        // doesn't break anything if happens
+        console.log("can't find range", err);
       }
 
       try {
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
-        // should never happen
-        // doesn't break anything if happens
+        // actually this happens when regions cannot be located by xpath for some reason
+        console.log("can't locate xpath", err);
       }
 
       return undefined;

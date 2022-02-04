@@ -16,12 +16,13 @@ import { Nested } from "../examples/nested_choices/complicated";
 import { Dialogue } from "../examples/phrases";
 
 /**
- * Audio
+ * Audio/Video
  */
 import { AudioClassification } from "../examples/audio_classification";
 import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
-import { VideoRegions } from "../examples/video";
+import { VideoRectangles } from "../examples/video_bboxes";
+import { VideoClassification } from "../examples/video";
 
 /**
  * Image
@@ -63,7 +64,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageBbox;
+const data = ImageTools;
 
 function getData(task) {
   if (task && task.data) {
@@ -137,6 +138,7 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onCancelSkippingTask: params.onCancelSkippingTask ? params.onCancelSkippingTask : External.onCancelSkippingTask,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,
@@ -149,6 +151,9 @@ function configureApplication(params) {
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
     onNextTask: params.onNextTask || External.onNextTask,
     onPrevTask: params.onPrevTask || External.onPrevTask,
+    // other settings aka flags
+    forceAutoAnnotation: params.forceAutoAnnotation ?? false,
+    forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions ?? false,
   };
 
   return options;

@@ -4,12 +4,16 @@ const { I } = inject();
 const Helpers = require("../tests/helpers");
 
 module.exports = {
-  init (params) {
+  init(params) {
     I.executeAsyncScript(Helpers.initLabelStudio, params);
   },
-  async serialize () {
+  async serialize() {
     const result = await I.executeScript(Helpers.serialize);
 
     return result;
+  },
+
+  setFeatureFlags(featureFlags) {
+    I.executeAsyncScript(Helpers.setFeatureFlags, featureFlags);
   },
 };

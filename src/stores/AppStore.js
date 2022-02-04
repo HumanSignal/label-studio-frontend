@@ -117,12 +117,12 @@ export default types
     /**
      * Dynamic preannotations
      */
-    autoAnnotation: false,
+    _autoAnnotation: false,
 
     /**
      * Auto accept suggested annotations
      */
-    autoAcceptSuggestions: false,
+    _autoAcceptSuggestions: false,
 
     /**
      * Indicator for suggestions awaiting
@@ -134,8 +134,8 @@ export default types
   .preProcessSnapshot((sn) => {
     return {
       ...sn,
-      autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
-      autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
+      _autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
+      _autoAcceptSuggestions: localStorage.getItem("autoAcceptSuggestions") === "true",
     };
   })
   .volatile(() => ({
@@ -152,9 +152,10 @@ export default types
     },
 
     get hasSegmentation() {
-      const match = Array.from(self.annotationStore.names.values()).map(({ type }) => !!type.match(/labels/));
+      // not an object and not a classification
+      const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;
 
-      return match.find(v => v === true) ?? false;
+      return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
     get canGoNextTask() {
       if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
@@ -167,6 +168,18 @@ export default types
         return true;
       }
       return false;
+    },
+    get forceAutoAnnotation() {
+      return getEnv(self).forceAutoAnnotation;
+    },
+    get forceAutoAcceptSuggestions() {
+      return getEnv(self).forceAutoAcceptSuggestions;
+    },
+    get autoAnnotation() {
+      return self.forceAutoAnnotation || self._autoAnnotation;
+    },
+    get autoAcceptSuggestions() {
+      return self.forceAutoAcceptSuggestions || self._autoAcceptSuggestions;
     },
   }))
   .actions(self => {
@@ -319,15 +332,15 @@ export default types
       });
 
       hotkeys.addNamed("annotation:undo", function() {
-        const { history } = self.annotationStore.selected;
+        const annotation = self.annotationStore.selected;
 
-        history && history.canUndo && history.undo();
+        annotation.undo();
       });
 
       hotkeys.addNamed("annotation:redo", function() {
-        const { history } = self.annotationStore.selected;
+        const annotation = self.annotationStore.selected;
 
-        history && history.canRedo && history.redo();
+        annotation.redo();
       });
 
       hotkeys.addNamed("region:exit", () => {
@@ -420,9 +433,9 @@ export default types
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
-      // but block for at least 0.5s to prevent from double clicking.
+      // but block for at least 0.2s to prevent from double clicking.
 
-      Promise.race([Promise.all([res, delay(500)]), delay(5000)])
+      Promise.race([Promise.all([res, delay(200)]), delay(5000)])
         .catch(err => showModal(err?.message || err || defaultMessage))
         .then(() => self.setFlags({ isSubmitting: false }));
     }
@@ -438,20 +451,24 @@ export default types
       if (!entity.validate()) return;
 
       entity.sendUserGenerate();
-      handleSubmittingFlag(() => {
-        getEnv(self).events.invoke(event, self, entity);
+      handleSubmittingFlag(async () => {
+        await getEnv(self).events.invoke(event, self, entity);
       });
       entity.dropDraft();
     }
 
     function updateAnnotation() {
+      if (self.isSubmitting) return;
+
       const entity = self.annotationStore.selected;
 
       entity.beforeSend();
 
       if (!entity.validate()) return;
 
-      getEnv(self).events.invoke('updateAnnotation', self, entity);
+      handleSubmittingFlag(async () => {
+        await getEnv(self).events.invoke('updateAnnotation', self, entity);
+      });
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
@@ -462,7 +479,15 @@ export default types
       }, "Error during skip, try again");
     }
 
+    function cancelSkippingTask() {
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke('cancelSkippingTask', self);
+      }, "Error during cancel skipping task, try again");
+    }
+
     function acceptAnnotation() {
+      if (self.isSubmitting) return;
+
       handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
@@ -477,6 +502,8 @@ export default types
     }
 
     function rejectAnnotation() {
+      if (self.isSubmitting) return;
+
       handleSubmittingFlag(async () => {
         const entity = self.annotationStore.selected;
 
@@ -503,6 +530,7 @@ export default types
       self.attachHotkeys();
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
+      self.initialized = false;
 
       // const c = self.annotationStore.addInitialAnnotation();
 
@@ -577,12 +605,12 @@ export default types
     }
 
     const setAutoAnnotation = (value) => {
-      self.autoAnnotation = value;
+      self._autoAnnotation = value;
       localStorage.setItem("autoAnnotation", value);
     };
 
     const setAutoAcceptSuggestions = (value) => {
-      self.autoAcceptSuggestions = value;
+      self._autoAcceptSuggestions = value;
       localStorage.setItem("autoAcceptSuggestions", value);
     };
 
@@ -638,6 +666,7 @@ export default types
       attachHotkeys,
 
       skipTask,
+      cancelSkippingTask,
       submitDraft,
       submitAnnotation,
       updateAnnotation,
@@ -656,5 +685,8 @@ export default types
       addAnnotationToTaskHistory,
       nextTask,
       prevTask,
+      beforeDestroy() {
+        ToolsManager.removeAllTools();
+      },
     };
   });

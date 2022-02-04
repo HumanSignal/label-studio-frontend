@@ -19,6 +19,7 @@ import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react-lite";
 import ResizeObserver from "../../utils/resize-observer";
+import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -266,6 +267,11 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
   const [visible, setVisible] = useState(false);
   const strokeWidth = 1;
   const dashStyle = [3,3];
+  let enableStrokeScale = true;
+
+  if (isFF(FF_DEV_1285)) {
+    enableStrokeScale = false;
+  }
 
   if (ref) {
     ref.current = {
@@ -298,6 +304,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           points={pointsH}
           stroke="#fff"
           strokeWidth={strokeWidth}
+          strokeScaleEnabled={enableStrokeScale}
         />
         <Line
           name="v-black"
@@ -305,6 +312,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           stroke="#000"
           strokeWidth={strokeWidth}
           dash={dashStyle}
+          strokeScaleEnabled={enableStrokeScale}
         />
       </Group>
       <Group>
@@ -313,6 +321,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           points={pointsV}
           stroke="#fff"
           strokeWidth={strokeWidth}
+          strokeScaleEnabled={enableStrokeScale}
         />
         <Line
           name="h-black"
@@ -320,6 +329,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
           stroke="#000"
           strokeWidth={strokeWidth}
           dash={dashStyle}
+          strokeScaleEnabled={enableStrokeScale}
         />
       </Group>
     </Layer>
@@ -449,7 +459,11 @@ export default observer(
       if (this.crosshairRef.current) {
         const { x, y } = e.currentTarget.getPointerPosition();
 
-        this.crosshairRef.current.updatePointer(x, y);
+        if (isFF(FF_DEV_1285)) {
+          this.crosshairRef.current.updatePointer(...this.props.item.fixZoomedCoords([x, y]));
+        } else {
+          this.crosshairRef.current.updatePointer(x, y);
+        }
       }
     }
 
@@ -539,8 +553,7 @@ export default observer(
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
-      this.resizeObserver = new ResizeObserver(this.onResize);
-      this.resizeObserver.observe(this.container);
+      this.attachObserver(this.container);
 
       if (this.props.item && isAlive(this.props.item)) {
         this.updateImageTransform();
@@ -552,8 +565,24 @@ export default observer(
       hotkeys.addDescription("shift", "Pan image");
     }
 
+    attachObserver = (node) => {
+      if (this.resizeObserver) this.detachObserver();
+
+      if (node) {
+        this.resizeObserver = new ResizeObserver(this.onResize);
+        this.resizeObserver.observe(this.container);
+      }
+    }
+
+    detachObserver = () => {
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
+        this.resizeObserver = null;
+      }
+    }
+
     componentWillUnmount() {
-      this.resizeObserver.disconnect();
+      this.detachObserver();
       window.removeEventListener("resize", this.onResize);
       this.propsObserverDispose.forEach(dispose => dispose());
 
@@ -716,6 +745,7 @@ export default observer(
           <div
             ref={node => {
               this.container = node;
+              this.attachObserver(node);
             }}
             className={containerClassName}
             style={containerStyle}
@@ -800,8 +830,8 @@ export default observer(
               {item.crosshair && (
                 <Crosshair
                   ref={this.crosshairRef}
-                  width={item.stageComponentSize.width}
-                  height={item.stageComponentSize.height}
+                  width={isFF(FF_DEV_1285) ? item.stageWidth : item.stageComponentSize.width}
+                  height={isFF(FF_DEV_1285) ? item.stageHeight : item.stageComponentSize.height}
                 />
               )}
             </Stage>

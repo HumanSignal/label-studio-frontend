@@ -19,6 +19,7 @@ import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { RegionWrapper } from "./RegionWrapper";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import IsReadyMixin from "../mixins/IsReadyMixin";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -348,7 +349,8 @@ const Model = types
        */
 
       /**
-       * @param {{ fast?: boolean }} options `fast` is for saving only touches, without RLE
+       * @param {object} options
+       * @param {boolean} [options.fast] saving only touches, without RLE
        * @return {BrushRegionResult}
        */
       serialize(options) {
@@ -387,6 +389,7 @@ const BrushRegionModel = types.compose(
   NormalizationMixin,
   AreaMixin,
   KonvaRegionMixin,
+  IsReadyMixin,
   Model,
 );
 
@@ -447,7 +450,10 @@ const HtxBrushView = ({ item }) => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
 
-    img.onload = () => setImage(img);
+    img.onload = () => {
+      setImage(img);
+      item.setReady(true);
+    };
   }, [
     item.rle,
     item.parent,
@@ -584,7 +590,7 @@ const HtxBrushView = ({ item }) => {
             item.setHighlight(false);
             item.onClickRegion(e);
           }}
-          listening={!suggestion}
+          listening={!suggestion && item.editable}
         >
           {/* RLE */}
           <Image

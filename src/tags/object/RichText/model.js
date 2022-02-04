@@ -14,6 +14,8 @@ import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 import * as xpath from "xpath-range";
+import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
+import IsReadyMixin from "../../../mixins/IsReadyMixin";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -25,6 +27,8 @@ const WARNING_MESSAGES = {
 };
 
 /**
+ * WARNING: this is not a real doc, that's just a main reference; real docs are in their stub files: HyperText and Text
+ *
  * RichText tag shows text or HTML and allows labeling
  * @example
  * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
@@ -99,7 +103,15 @@ const Model = types
     },
 
     get isLoaded() {
-      return self._isLoaded &&  self._loadedForAnnotation === self.annotation?.id;
+      return self._isLoaded && self._loadedForAnnotation === self.annotation?.id;
+    },
+
+    get isRootRendered() {
+      return self.rootNodeRef === self.visibleNodeRef;
+    },
+
+    get isReady() {
+      return self.isLoaded  && self._isReady;
     },
   }))
   .volatile(() => ({
@@ -107,7 +119,6 @@ const Model = types
     originalContentRef: React.createRef(),
     visibleNodeRef: React.createRef(),
     regsObserverDisposer: null,
-    isReady: false,
     _isLoaded: false,
     _loadedForAnnotation: null,
   }))
@@ -127,7 +138,8 @@ const Model = types
       },
 
       updateValue: flow(function * (store) {
-        const value = parseValue(self.value, store.task.dataObj);
+        const valueFromTask = parseValue(self.value, store.task.dataObj);
+        const value = yield self.resolveValue(valueFromTask);
 
         if (self.valuetype === "url") {
           const url = value;
@@ -314,4 +326,4 @@ const Model = types
     };
   });
 
-export const RichTextModel = types.compose("RichTextModel", ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);
+export const RichTextModel = types.compose("RichTextModel", ProcessAttrsMixin, ObjectBase, RegionsMixin, AnnotationMixin, IsReadyMixin, TagAttrs, Model);

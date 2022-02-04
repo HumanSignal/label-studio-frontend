@@ -17,6 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
+import { FF_DEV_1555, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -431,6 +432,28 @@ const Annotation = types
       destroy(area);
     },
 
+    undo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canUndo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.undo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
+    redo() {
+      const { history, regionStore } = self;
+
+      if (history && history.canRedo) {
+        const selectedIds = regionStore.selectedIds;
+
+        history.redo();
+        regionStore.selectRegionsByIds(selectedIds);
+      }
+    },
+
     // update some fragile parts after snapshot manipulations (undo/redo)
     updateObjects() {
       self.unselectAll();
@@ -818,7 +841,11 @@ const Annotation = types
         });
       }
 
-      self.objects.forEach(obj => obj.needsUpdate?.());
+      if (isFF(FF_DEV_1555)) {
+        self.updateObjects();
+      } else {
+        self.objects.forEach(obj => obj.needsUpdate?.());
+      }
     },
 
     /**
@@ -883,7 +910,8 @@ const Annotation = types
       if (obj["type"] !== "relation") {
         const { id, value: rawValue, type, ...data } = obj;
 
-        const { type: tagType } = self.names.get(obj.to_name) ?? {};
+        const object = self.names.get(obj.to_name) ?? {};
+        const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
         const areaId = `${id || guidGenerator()}#${self.id}`;
@@ -905,6 +933,16 @@ const Annotation = types
         }
 
         area.addResult({ ...data, id: resultId, type, value });
+
+        // if there is merged result with region data and type and also with the labels
+        // and object allows such merge — create new result with these labels
+        if (!type.endsWith("labels") && value.labels && object.mergeLabelsAndResults) {
+          const labels = value.labels;
+          const labelControl = object.states()?.find(control => control?.findLabel(labels[0]));
+
+          area.setValue(labelControl);
+          area.results.find(r => r.type.endsWith("labels"))?.setValue(labels);
+        }
       }
     },
 
@@ -938,11 +976,19 @@ const Annotation = types
       Array.from(self.suggestions.keys()).forEach((id) => {
         self.acceptSuggestion(id);
       });
+      self.deleteAllDynamicregions();
     },
 
     rejectAllSuggestions() {
       Array.from(self.suggestions.keys).forEach((id) => {
         self.suggestions.delete(id);
+      });
+      self.deleteAllDynamicregions();
+    },
+
+    deleteAllDynamicregions() {
+      self.regions.forEach(r => {
+        r.dynamic && r.deleteRegion();
       });
     },
 
@@ -953,11 +999,22 @@ const Annotation = types
         ...item.toJSON(),
         fromSuggestion: true,
       });
+      const area = self.areas.get(id);
+      const activeStates = area.object.activeStates();
+
+      activeStates.forEach(state => {
+        area.setValue(state);
+      });
       self.suggestions.delete(id);
     },
 
     rejectSuggestion(id) {
       self.suggestions.delete(id);
+    },
+
+    resetReady() {
+      self.objects.forEach(object => object.setReady && object.setReady(false));
+      self.areas.forEach(area => area.setReady && area.setReady(false));
     },
   }));
 
@@ -1177,6 +1234,7 @@ export default types
       //
       const node = {
         userGenerate: false,
+        createdDate: Utils.UDate.currentISODate(),
 
         ...options,
 
@@ -1283,8 +1341,9 @@ export default types
       });
 
       selectAnnotation(c.id);
-      c.deserializeResults(s);
-      c.updateObjects();
+      c.deserializeAnnotation(s);
+      // reinit will trigger `updateObjects()` so we omit it here
+      c.reinitHistory();
 
       // parent link for the new annotations
       if (entity.pk) {
