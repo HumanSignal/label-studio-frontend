@@ -52,6 +52,10 @@ export type TimelineSettings = {
   playpauseHotkey?: string,
   stepAltBack?: string,
   stepAltForward?: string,
+  skipToBeginning?: string,
+  skipToEnd?: string,
+  hopBackward?: string,
+  hopForward?: string,
   fastTravelSize?: TimelineStepFunction,
   stepSize?: TimelineStepFunction,
 }
