@@ -285,6 +285,8 @@ export default class Waveform extends React.Component {
       progressColor: this.state.colors.progressColor,
 
       splitChannels: true,
+      cursorWidth: this.props.cursorWidth,
+      cursorColor: this.props.cursorColor,
       barHeight: 1,
     };
 
@@ -408,6 +410,10 @@ export default class Waveform extends React.Component {
       self.props.onCreate(this.wavesurfer);
 
       this.wavesurfer.container.onwheel = throttle(this.onWheel, 100);
+    });
+
+    this.wavesurfer.on("waveform-ready", () => {
+      this.props.onReady?.(this.wavesurfer);
     });
 
     /**

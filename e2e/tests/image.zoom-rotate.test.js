@@ -302,8 +302,6 @@ Data(layoutVariations).Scenario("Rotation in the two columns template", async fu
     }],
   };
 
-  console.log(resultConfig);
-
   I.say(`Two columns [config: ${twoColumnsConfigs.indexOf(config)}] [${direction}]`);
 
   LabelStudio.init(params);

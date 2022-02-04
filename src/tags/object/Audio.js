@@ -10,6 +10,7 @@ import Registry from "../../core/Registry";
 import Waveform from "../../components/Waveform/Waveform";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { customTypes } from "../../core/CustomTypes";
 
 /**
  * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
@@ -42,6 +43,8 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {string} name Name of the element
  * @param {string} value Data field containing path or a URL to the audio
  * @param {string} hotkey Hotkey used to play or pause audio
+ * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
+ * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
  */
 
 const TagAttrs = types.model({
@@ -51,6 +54,8 @@ const TagAttrs = types.model({
   volume: types.optional(types.boolean, false),
   speed: types.optional(types.boolean, false),
   hotkey: types.maybeNull(types.string),
+  cursorwidth: types.optional(types.string, "1"),
+  cursorcolor: types.optional(customTypes.color, "#333"),
 });
 
 const Model = types
@@ -118,6 +123,8 @@ const HtxAudioView = ({ store, item }) => {
         volume={item.volume}
         regions={false}
         height={item.height}
+        cursorColor={item.cursorcolor}
+        cursorWidth={item.cursorwidth}
       />
       <AudioControls item={item} store={store} />
     </ObjectTag>
