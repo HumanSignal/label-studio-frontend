@@ -4,6 +4,7 @@ import { Hotkey } from "../../core/Hotkey";
 import { useHotkey } from "../../hooks/useHotkey";
 import { Block, CNTagName, Elem } from "../../utils/bem";
 import { isDefined } from "../../utils/utilities";
+import { Tooltip } from "../Tooltip/Tooltip";
 import "./Button.styl";
 
 const hotkeys = Hotkey();
@@ -21,6 +22,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   primary?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
+  tooltip?: string;
 }
 
 export interface ButtonGroupProps {
@@ -44,6 +46,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   look,
   primary,
   hotkey,
+  tooltip,
   ...rest
 }, ref) => {
   const finalTag = tag ?? (rest.href ? "a" : "button");
@@ -101,9 +104,17 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
 
   if (hotkey && isDefined(Hotkey.keymap[hotkey])) {
     return (
-      <Hotkey.Tooltip name={hotkey}>
+      <Hotkey.Tooltip name={hotkey} title={tooltip}>
         {buttonBody}
       </Hotkey.Tooltip>
+    );
+  }
+
+  if (tooltip) {
+    return (
+      <Tooltip title={tooltip} theme="light">
+        {buttonBody}
+      </Tooltip>
     );
   }
 
