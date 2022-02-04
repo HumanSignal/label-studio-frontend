@@ -1,6 +1,7 @@
 import chroma from "chroma-js";
 import { FC, memo, MouseEvent, useCallback, useContext, useMemo } from "react";
 import { Block, Elem } from "../../../../utils/bem";
+import { clamp } from "../../../../utils/utilities";
 import { TimelineContext } from "../../Context";
 import { TimelineRegion } from "../../Types";
 import "./Keypoints.styl";
@@ -17,8 +18,18 @@ export const Keypoints: FC<KeypointsProps> = ({
   startOffset,
   onSelectRegion,
 }) => {
-  const { step } = useContext(TimelineContext);
+  const { step, seekOffset, visibleWidth, length } = useContext(TimelineContext);
   const { label, color, visible, sequence, selected } = region;
+
+  const extraSteps = Math.round(visibleWidth / 2);
+
+  const minVisibleKeypointPosition = useMemo(() => {
+    return clamp(seekOffset - extraSteps, 0, length);
+  }, [seekOffset, extraSteps, length]);
+
+  const maxVisibleKeypointPosition = useMemo(() => {
+    return clamp(seekOffset + visibleWidth + extraSteps, 0, length);
+  }, [seekOffset, visibleWidth, extraSteps, length]);
 
   const firtsPoint = sequence[0];
   const start = firtsPoint.frame - 1;
@@ -32,8 +43,10 @@ export const Keypoints: FC<KeypointsProps> = ({
   };
 
   const lifespans = useMemo(() => {
-    return visualizeLifespans(sequence, step);
-  }, [sequence, start, step]);
+    return visualizeLifespans(sequence.filter(({ frame }) => {
+      return frame >= minVisibleKeypointPosition && frame <= maxVisibleKeypointPosition;
+    }), step);
+  }, [sequence, start, step, minVisibleKeypointPosition, maxVisibleKeypointPosition]);
 
   const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>, select?: boolean) => {
     e.stopPropagation();
@@ -54,7 +67,7 @@ export const Keypoints: FC<KeypointsProps> = ({
           {region.id}
         </Elem> */}
       </Elem>
-      <Elem name="keypoints" onClick={(e) => onSelectRegionHandler(e, true)}>
+      <Elem name="keypoints" onClick={(e: any) => onSelectRegionHandler(e, true)}>
         {lifespans.map((lifespan, i) => {
           const isLast = i + 1 === lifespans.length;
           const { points, ...data } = lifespan;

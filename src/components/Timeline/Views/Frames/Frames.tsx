@@ -26,8 +26,6 @@ export const Frames: FC<TimelineViewProps> = ({
   onScroll,
   onChange,
   onResize,
-  onToggleVisibility,
-  onDeleteRegion,
   onSelectRegion,
 }) => {
   const scrollMultiplier = 1.25;
@@ -89,8 +87,6 @@ export const Frames: FC<TimelineViewProps> = ({
     }
 
   }, [scrollable, offsetX, offsetY, setScroll]);
-
-  const timelineOffsetSteps = roundToStep(timelineStartOffset, step);
 
   const currentOffsetX = useMemo(() => {
     const value = roundToStep(offsetX, step);
