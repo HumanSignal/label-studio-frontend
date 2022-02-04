@@ -6,6 +6,9 @@ import { isDefined } from "../../utils/utilities";
 import { IconBan } from "../../assets/icons";
 
 import "./Controls.styl";
+import { useCallback, useMemo, useState } from "react";
+import { Dropdown } from "../../common/Dropdown/DropdownComponent";
+import { FF_DEV_1593, isFF } from "../../utils/feature-flags";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -28,6 +31,65 @@ const controlsInjector = inject(({ store }) => {
   };
 });
 
+const RejectDialog = ({ disabled, store }) => {
+  const [show, setShow] = useState(false);
+  const [comment, setComment] = useState('');
+  const onReject = useCallback(() => {
+    store.rejectAnnotation({ comment });
+    setShow(false);
+    setComment('');
+  });
+
+  return (
+    <Dropdown.Trigger
+      visible={show}
+      toggle={() => { }}
+      onToggle={(visible) => {
+        setShow(visible);
+      }}
+      content={(
+        <div
+          style={{
+            height: 278,
+            width: 480,
+            padding: '12px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <p
+            style={{ marginBottom: '4px' }}
+          >Reason of Rejection</p>
+          <textarea
+            value={comment}
+            onChange={(event) => { setComment(event.target.value); }}
+            type="text"
+            style={{
+              resize: 'none',
+              flex: '1 1 auto',
+              marginBottom: '16px',
+              backgroundColor: '#FAFAFA',
+              fontSize: '16px',
+            }}
+          />
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'end',
+          }}>
+            <Button onClick={() => setShow(false)}>Cancel</Button>
+            <Button style={{ marginLeft: 8 }} look="danger" onClick={onReject}>Reject</Button>
+          </div >
+        </div >
+      )}
+    >
+      <Button aria-label="reject-annotation" disabled={disabled} look="danger">
+        Reject
+      </Button>
+    </Dropdown.Trigger >
+  );
+};
+
 export const Controls = controlsInjector(observer(({ store, history, annotation }) => {
   const isReview = store.hasInterface("review");
   const historySelected = isDefined(store.annotationStore.selectedHistory);
@@ -37,14 +99,22 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const disabled = store.isSubmitting || historySelected;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
 
-  if (isReview) {
-    buttons.push(
-      <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
+  const RejectButton = useMemo(() => {
+    if (isFF(FF_DEV_1593)) {
+      return <RejectDialog disabled={disabled} store={store} />;
+    } else {
+      return (
+        <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
+          <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
           Reject
-        </Button>
-      </ButtonTooltip>,
-    );
+          </Button>
+        </ButtonTooltip>
+      );
+    }
+  }, [disabled, store]);
+
+  if (isReview) {
+    buttons.push(RejectButton);
 
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">

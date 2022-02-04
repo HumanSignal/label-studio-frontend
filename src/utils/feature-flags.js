@@ -14,6 +14,9 @@ export const FF_DEV_1564_DEV_1565 = "ff_front_dev_1564_dev_1565_shortcuts_focus_
 // @requires FF_DEV_1564_DEV_1565
 export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short";
 
+// Show or not dialog for rejection
+export const FF_DEV_1593 = "ff_front_1593_rejection_comment_040222_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }
@@ -22,7 +25,7 @@ export function isFF(id) {
   const featureFlags = getFeatureFlags();
 
   if (id in featureFlags) {
-    return featureFlags[id] === true; 
+    return featureFlags[id] === true;
   }
   else {
     return window.APP_SETTINGS?.feature_flags_default_value === true;
