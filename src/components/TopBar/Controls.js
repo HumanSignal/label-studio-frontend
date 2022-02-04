@@ -35,7 +35,7 @@ const RejectDialog = ({ disabled, store }) => {
   const [show, setShow] = useState(false);
   const [comment, setComment] = useState('');
   const onReject = useCallback(() => {
-    store.rejectAnnotation({ comment });
+    store.rejectAnnotation({ comment: comment.length ? comment : null });
     setShow(false);
     setComment('');
   });
@@ -106,7 +106,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       return (
         <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
           <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
-          Reject
+            Reject
           </Button>
         </ButtonTooltip>
       );
