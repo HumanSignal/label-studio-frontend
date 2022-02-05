@@ -100,7 +100,6 @@
     "react-rating": "^1.6.2",
     "react-sortable-hoc": "^1.11.0",
     "react-test-renderer": "^16.13.1",
-    "react-virtualized-auto-sizer": "^1.0.3",
     "sass": "^1.32.12",
     "sass-loader": "^11.0.1",
     "size-limit": "^4.6.0",
@@ -176,20 +175,29 @@
     "env": {
       "test": {
         "presets": [
-          ["@babel/preset-env", {
-            "targets": {
-              "node": "current"
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
             }
-          }],
-          ["@babel/preset-react", {
-            "runtime": "automatic"
-          }],
+          ],
+          [
+            "@babel/preset-react",
+            {
+              "runtime": "automatic"
+            }
+          ],
           "@babel/preset-typescript"
         ],
         "plugins": [
-          ["@babel/plugin-transform-react-jsx", {
-            "runtime": "automatic"
-          }]
+          [
+            "@babel/plugin-transform-react-jsx",
+            {
+              "runtime": "automatic"
+            }
+          ]
         ]
       }
     }
@@ -212,7 +220,9 @@
     "d3": "^5.16.0",
     "magic-wand-js": "^1.0.0",
     "papaparse": "^5.3.1",
-    "react-konva-utils": "^0.2.0"
+    "react-konva-utils": "^0.2.0",
+    "react-vtree": "^2.0.4",
+    "react-window": "^1.8.6"
   },
   "nohoist": [
     "**/babel-preset-react-app/@babel/runtime"
