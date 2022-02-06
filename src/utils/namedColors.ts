@@ -11,4 +11,5 @@ export const colors = {
   geekBlue: "#2F54EB",
   purple: "#722ED1",
   magenta: "#EB2F96",
+  accent: '#0099FF',
 };

@@ -1,87 +1,95 @@
 import { Typography } from "antd";
 import { observer } from "mobx-react";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { IconTrash } from "../../../assets/icons";
 import { Tag } from "../../../common/Tag/Tag";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
 import { Block, Elem } from "../../../utils/bem";
+import "./RegionDetails.styl";
 
 const { Text, Paragraph } = Typography;
 
-const RegionLabels: FC<{result: any}> = (result: any) => {
+const RegionLabels: FC<{result: any}> = ({ result }) => {
   const labels: any[] = result.selectedLabels;
-  const showLabels = true; //labels.length > 1;
+  const showLabels = labels.length > 1;
 
   return (
-    <Text key={result.pid}>
-      {showLabels && labels.map(label => {
-        const bgColor = label.background || "#000000";
+    <Elem name="item" key={result.pid}>
+      {showLabels && (
+        <Elem name="content">
+          {labels.map(label => {
+            const bgColor = label.background || "#000000";
 
-        return (
-          <Tag key={label.id} color={bgColor}>
-            {label.value}
-          </Tag>
-        );
-      })}
+            return (
+              <Tag key={label.id} color={bgColor} solid>
+                {label.value}
+              </Tag>
+            );
+          })}
+        </Elem>
+      )}
 
       {result.value.text ? (
-        <div>
-          <pre
-            style={{ margin: 0 }}
-            dangerouslySetInnerHTML={{
-              __html: result.value.text.replace(/\\n/g, '\n'),
-            }}
-          />
-        </div>
+        <Elem
+          name="content"
+          mod={{ type: "text" }}
+          dangerouslySetInnerHTML={{
+            __html: result.value.text.replace(/\\n/g, '\n'),
+          }}
+        />
       ) : null}
-    </Text>
+    </Elem>
   );
 };
 
-const renderResult = (result: any) => {
+const ResultItem: FC<{result: any}> = observer(({ result }) => {
   const { type, from_name, mainValue } = result;
   const isRegionList = from_name.displaMode === PER_REGION_MODES.REGION_LIST;
 
-  if (type.endsWith("labels")) {
-    return (
-      <Block name="region-meta">
+  const content = useMemo(() => {
+    if (type.endsWith("labels")) {
+      return (
         <RegionLabels result={result}/>
-      </Block>
-    );
-  } else if (type === "rating") {
-    return (
-      <Block name="region-meta">
-        <Text>Rating: </Text>
-        {mainValue}
-      </Block>
-    );
-  } else if (type === "textarea" && !(from_name.perregion && isRegionList)) {
-    return (
-      <Block name="region-meta">
-        <Text>Text: </Text>
-        <Text mark >
-          {mainValue.join("\n")}
-        </Text>
-      </Block>
-    );
-  } else if (type === "choices") {
-    return (
-      <Block name="region-meta">
-        <Text>Choices: </Text>
-        {mainValue.join(", ")}
-      </Block>
-    );
-  }
+      );
+    } else if (type === "rating") {
+      return (
+        <>
+          <Text>Rating: </Text>
+          {mainValue}
+        </>
+      );
+    } else if (type === "textarea" && !(from_name.perregion && isRegionList)) {
+      return (
+        <>
+          <Text>Text: </Text>
+          <Text mark >
+            {mainValue.join("\n")}
+          </Text>
+        </>
+      );
+    } else if (type === "choices") {
+      return (
+        <>
+          <Text>Choices: </Text>
+          {mainValue.join(", ")}
+        </>
+      );
+    }
+  }, [type, from_name, mainValue]);
 
-  return null;
-};
+  return content ? (
+    <Block name="region-meta">
+      {content}
+    </Block>
+  ) : null;
+});
 
 export const RegionDetailsMain: FC<{region: any}> = observer(({
   region,
 }) => {
   return (
     <Elem name="result">
-      {region?.results.map(renderResult)}
+      {(region?.results as any[]).map((res) => <ResultItem key={res.pid} result={res}/>)}
     </Elem>
   );
 });

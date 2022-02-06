@@ -1,70 +1,108 @@
-import { FC, useMemo } from "react";
-import { Block, Elem } from "../../../utils/bem";
+import { FC, useCallback, useMemo } from "react";
+import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from "../../../assets/icons";
+import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown.js";
 import { Menu } from "../../../common/Menu/Menu.js";
+import { BemWithSpecifiContext } from "../../../utils/bem";
+import { colors } from "../../../utils/namedColors";
 import "./ViewControls.styl";
-import { Button } from "../../../common/Button/Button";
 
-export type GroupingOptions = "tool" | "label" | "manual";
+const { Block, Elem } = BemWithSpecifiContext();
 
-export type OrderingOptions = "score"
+export type GroupingOptions = "manual" | "label" | "type";
+
+export type OrderingOptions = "score" | "date"
+
+export type OrderingDirection = "asc" | "desc"
 
 interface ViewControlsProps {
-  grouping: GroupingOptions | null;
-  ordering: OrderingOptions | null;
-  onOrderingChange: (ordering: OrderingOptions | null) => void;
-  onGroupingChange: (grouping: GroupingOptions | null) => void;
+  grouping: GroupingOptions;
+  ordering: OrderingOptions;
+  orderingDirection?: OrderingDirection;
+  onOrderingChange: (ordering: OrderingOptions) => void;
+  onGroupingChange: (grouping: GroupingOptions) => void;
 }
 
 export const ViewControls: FC<ViewControlsProps> = ({
   grouping,
   ordering,
+  orderingDirection,
   onOrderingChange,
   onGroupingChange,
 }) => {
+  const getGrouppingLabels = useCallback((value: GroupingOptions): LabelInfo => {
+    switch(value) {
+      case "manual": return {
+        label: "Group Manually",
+        selectedLabel: "Manual Grouping",
+        icon: <IconList/>,
+      };
+      case "label": return {
+        label: "Group by Label",
+        selectedLabel: "Grouped by Label",
+        icon: <IconTagAlt/>,
+      };
+      case "type": return {
+        label: "Group by Tool",
+        selectedLabel: "Grouped by Tool",
+        icon: <IconCursor/>,
+      };
+    }
+  }, []);
+
+  const getOrderingLabels = useCallback((value: OrderingOptions): LabelInfo => {
+    switch(value) {
+      case "date": return {
+        label: "Order by Time",
+        selectedLabel: "Ordered by Time",
+        icon: <IconDetails/>,
+      };
+      case "score": return {
+        label: "Order by Score",
+        selectedLabel: "Ordered by Score",
+        icon: <IconSpeed/>,
+      };
+    }
+  }, []);
+
   return (
     <Block name="view-controls">
       <Grouping
         value={grouping}
-        options={["tool", "label", "manual"] as GroupingOptions[]}
+        options={["type", "label", "manual"]}
         onChange={value => onGroupingChange(value)}
-        readableValueForKey={(value: any) => {
-          switch(value) {
-            case null: return "Plain Regions";
-            case "label": return "Grouped by Label";
-            case "tool": return "Grouped by Tool";
-            case "manual": return "Manual Grouping";
-          }
-          return "Unknown value";
-        }}
+        readableValueForKey={getGrouppingLabels}
       />
       <Grouping
         value={ordering}
-        options={["score"] as OrderingOptions[] }
+        direction={orderingDirection}
+        options={["score", "date"]}
         onChange={value => onOrderingChange(value)}
-        readableValueForKey={(value: any) => {
-          switch(value) {
-            case null: return "Ordered by Time";
-            case "score": return "Ordered by Score";
-          }
-          return "Unknown value";
-        }}
+        readableValueForKey={getOrderingLabels}
       />
     </Block>
   );
 };
 
+interface LabelInfo {
+  label: string;
+  selectedLabel: string;
+  icon: JSX.Element;
+}
+
 interface GroupingProps<T extends string> {
-  value: T | null;
+  value: T;
   options: T[];
-  onChange: (value: T | null) => void;
-  readableValueForKey: (value: T | null) => string;
+  direction?: OrderingDirection;
+  onChange: (value: T) => void;
+  readableValueForKey: (value: T) => LabelInfo;
 }
 
 const Grouping = <T extends string>({
   value,
-  onChange,
   options,
+  direction,
+  onChange,
   readableValueForKey,
 }: GroupingProps<T>) => {
 
@@ -72,44 +110,69 @@ const Grouping = <T extends string>({
     return readableValueForKey(value);
   }, [value]);
 
-  const optionsList: [T, string][] = useMemo(() => {
+  const optionsList: [T, LabelInfo][] = useMemo(() => {
     return options.map((key) => [key, readableValueForKey(key)]);
   }, []);
 
-  return (
-    <Dropdown.Trigger
-      content={(
-        <Menu size="medium" selectedKeys={[value]}>
-          <Menu.Item
-            name={null}
-            onClick={() => onChange(null)}
-          >
-            {readableValueForKey(null)}
-          </Menu.Item>
+  const dropdownContent = useMemo(() => {
+    return (
+      <Menu
+        size="medium"
+        style={{ width: 200, minWidth: 200 }}
+        selectedKeys={[value]}
+        allowClickSelected
+      >
+        {optionsList.map(([key, label]) => (
+          <GroupingMenuItem
+            key={key}
+            name={key}
+            value={value}
+            direction={direction}
+            label={label}
+            onChange={(value) => onChange(value)}
+          />
+        ))}
+      </Menu>
+    );
+  }, [value, optionsList, readableValue, direction]);
 
-          {optionsList.map(([key, label]) => {
-            return (
-              <Menu.Item
-                key={key}
-                name={key}
-                onClick={() => onChange(key)}
-              >
-                {label}
-              </Menu.Item>
-            );
-          })}
-        </Menu>
-      )}
-    >
-      <Button type="text" style={{
-        fontSize: 14,
-        height: 24,
-        width: 135,
-        fontWeight: 400,
-      }}>
-        <Elem name="icon"/>
-        {readableValue}
+  return (
+    <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
+      <Button type="text" icon={readableValue.icon} style={{ padding: 0 }}>
+        {readableValue.selectedLabel}
       </Button>
     </Dropdown.Trigger>
+  );
+};
+
+interface GroupingMenuItemProps<T extends string> {
+  name: T;
+  label: LabelInfo;
+  value: T;
+  direction?: OrderingDirection;
+  onChange: (key: T) => void;
+}
+
+const GroupingMenuItem = <T extends string>({
+  value,
+  name,
+  label,
+  direction,
+  onChange,
+}: GroupingMenuItemProps<T>) => {
+  return (
+    <Menu.Item
+      name={name}
+      onClick={() => onChange(name)}
+    >
+      <Elem name="label">
+        {label.label}
+        {direction && value === name ? (
+          <span>
+            {direction === 'asc' ? <IconSortUp/> : <IconSortDown/>}
+          </span>
+        ) : null}
+      </Elem>
+    </Menu.Item>
   );
 };

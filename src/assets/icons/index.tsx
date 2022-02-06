@@ -59,6 +59,13 @@ export { ReactComponent as IconHamburger } from "./hamburger.svg";
 export { ReactComponent as IconDetails } from "./details.svg";
 export { ReactComponent as IconLockLocked } from "./locked.svg";
 export { ReactComponent as IconLockUnlocked } from "./unlocked.svg";
+export { ReactComponent as IconCursor } from "./cursor.svg";
+export { ReactComponent as IconList } from "./list.svg";
+export { ReactComponent as IconSpeed } from "./speed.svg";
+export { ReactComponent as IconTagAlt } from "./tag-alt.svg";
+export { ReactComponent as IconSortUp } from "./sort-up.svg";
+export { ReactComponent as IconSortDown } from "./sort-down.svg";
+
 
 // Relations
 export { ReactComponent as IconRelationRight } from "./relations/right.svg";

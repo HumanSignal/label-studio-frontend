@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { PanelBase, PanelProps } from "../PanelBase";
 import { OutlinerTree } from "./OutlinerTree";
 import { GroupingOptions, OrderingOptions, ViewControls } from "./ViewControls";
@@ -9,21 +9,27 @@ interface OutlinerPanelProps extends PanelProps {
 }
 
 const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
-  const [grouping, setGrouping] = useState<GroupingOptions | null>(null);
-  const [ordering, setOrdering] = useState<OrderingOptions | null>(null);
+  const onOrderingChange = useCallback((value) => {
+    console.log("onOrderingChange", { value });
+    regions.setSort(value);
+  }, []);
+
+  const onGroupingChange = useCallback((value) => {
+    console.log("onGroupingChange", { value });
+    regions.setGrouping(value);
+  }, []);
 
   return (
     <PanelBase {...props} name="outliner" title="Outliner">
       <ViewControls
-        grouping={grouping}
-        ordering={ordering}
-        onOrderingChange={value => setOrdering(value)}
-        onGroupingChange={value => setGrouping(value)}
+        grouping={regions.group}
+        ordering={regions.sort}
+        orderingDirection={regions.sortOrder}
+        onOrderingChange={onOrderingChange}
+        onGroupingChange={onGroupingChange}
       />
       <OutlinerTree
         regions={regions}
-        grouping={grouping}
-        ordering={ordering}
         selectedKeys={regions.selection.keys}
       />
     </PanelBase>

@@ -1,0 +1,43 @@
+.detailed-region
+  &__icon
+    width 24px
+    height 24px
+    margin-right 8px
+
+  &__head
+    height 32px
+    display flex
+    margin 8px 0
+    padding 0 8px
+    align-items center
+    justify-content space-between
+
+    span
+      color #000
+
+      &:before
+        opacity 0.6
+        content "ID "
+
+  &__title
+    display flex
+    align-items center
+
+  &__result
+    padding 0 8px
+
+  &_compact &__head
+    margin -5px 0
+
+.region-meta
+  &__content
+    margin 8px 0
+
+    &_type
+      &_text
+        padding 3px 6px
+        border-radius 4px
+        background-color rgba(#000, 0.06)
+        white-space pre-wrap
+        line-break loose
+        word-break break-all

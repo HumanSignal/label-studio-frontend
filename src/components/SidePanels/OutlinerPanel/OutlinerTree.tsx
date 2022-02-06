@@ -2,7 +2,7 @@ import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import Tree from 'rc-tree';
 import { FC, useCallback, useMemo, useState } from "react";
-import { IconLockLocked, IconLockUnlocked, LsCollapse, LsExpand, LsSparks } from "../../../assets/icons";
+import { IconLockLocked, IconLockUnlocked, LsSparks } from "../../../assets/icons";
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { IconArrow } from "../../../assets/icons/tree";
 import { Button, ButtonProps } from "../../../common/Button/Button";
@@ -12,19 +12,14 @@ import { Block, CN, cn, Elem } from "../../../utils/bem";
 import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
 import { NodeIcon } from "../../Node/Node";
 import "./TreeView.styl";
-import { GroupingOptions, OrderingOptions } from "./ViewControls";
 
 interface OutlinerTreeProps {
   regions: any;
-  grouping: GroupingOptions | null;
-  ordering: OrderingOptions | null;
   selectedKeys: string[];
 }
 
 const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   regions,
-  grouping,
-  ordering,
   selectedKeys,
 }) => {
   const rootClass = cn('tree');

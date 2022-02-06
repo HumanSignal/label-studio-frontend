@@ -71,7 +71,6 @@ const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
 const RegionsPanel: FC<{regions:  any}> = observer(({
   regions,
 }) => {
-  console.log({ regions });
   return (
     <div>
       {regions.list.map((reg: any) => {

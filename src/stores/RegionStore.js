@@ -108,7 +108,7 @@ export default types.model("RegionStore", {
   sort: types.optional(types.enumeration(["date", "score"]), "date"),
   sortOrder: types.optional(types.enumeration(["asc", "desc"]), "asc"),
 
-  group: types.optional(types.enumeration(["type", "label"]), "type"),
+  group: types.optional(types.enumeration(["type", "label", "manual"]), "manual"),
 
   view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   selection: types.optional(SelectionMap, {}),
@@ -316,13 +316,13 @@ export default types.model("RegionStore", {
     if (self.sort === sort) {
       self.toggleSortOrder();
     } else {
-      self.sortOrder = "desc";
+      self.sortOrder = "asc";
       self.sort = sort;
     }
     self.initHotkeys();
   },
 
-  setGroup(group) {
+  setGrouping(group) {
     self.group = group;
   },
 
