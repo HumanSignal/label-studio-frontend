@@ -137,7 +137,6 @@ const Item: React.FC<any> = (props: RowProps) => {
     }
   };
   const onChangeGroupingVisibility = () => {
-    console.log(toggle);
     toggle().then(()=> 
       updateHeight(),
     );
@@ -290,6 +289,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
 
   return (
     <div className={styles.taxonomy__dropdown} ref={dropdownRef} style={{ display: show ? "block" : "none" }}>
+<<<<<<< HEAD
       <input
         autoComplete="off"
         className={styles.taxonomy__search}
@@ -304,6 +304,18 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           ? <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
           : <div className={styles.taxonomy__add}><button onClick={addInside}>Add</button></div>
       )}
+=======
+      <div className={styles.taxonomy__input_padding}>
+        <input
+          autoComplete="off"
+          className={styles.taxonomy__search}
+          name="taxonomy__search"
+          placeholder="Search..."
+          onInput={onInput}
+          ref={inputRef}
+        />
+      </div>
+>>>>>>> 6314a39d (imput and scrollbar padding adjustment, fix height on search and browser percentage calcualtion)
       <TreeStructure 
         items={list} 
         rowComponent={Item} 

@@ -33,9 +33,6 @@ type transformationCallback = (
   { node, nestingLevel }:
   {node: RowItem, nestingLevel:number}) => ExtendedData
 
-
-  
-
 const TreeStructure =  (
   { items, rowComponent, flatten, rowHeight, maxHeightPersentage, transformationCallback }: 
   { items:any[], 
@@ -54,14 +51,14 @@ const TreeStructure =  (
 
   const calcHeight = () => {
     const visibleHeight = containerRef.current.state.order.length * rowHeight;
-    const maxHeight = (browserHeight / maxHeightPersentage ) * 100;
+    const maxHeight = maxHeightPersentage * .01 * browserHeight;
 
-    return visibleHeight > maxHeight ?  maxHeight: visibleHeight;
+    return visibleHeight > maxHeight ?  maxHeight : visibleHeight;
   };
 
   const updateHeight = () => setHeight(calcHeight());
 
-  useLayoutEffect(()=> updateHeight(), []);
+  useLayoutEffect(()=> updateHeight(), [items]);
 
   function* treeWalker(refresh: boolean):  
   Generator<ExtendedDataWithRefresh | string | symbol, void, boolean> {
