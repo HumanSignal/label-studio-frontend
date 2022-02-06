@@ -1,9 +1,10 @@
 import React, { FormEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Dropdown, Menu } from "antd";
 
-import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
 import { LsChevron } from "../../assets/icons";
+import TreeStructure, { RowItem, RowProps } from "../TreeStructure/TreeStructure";
+import { useToggle } from "../../hooks/useToggle";
 
 import styles from "./Taxonomy.module.scss";
 
@@ -112,33 +113,16 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-// @todo change `flat` into `alwaysOpen` and move it to context
-const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean }) => {
+const Item: React.FC<any> = (props: RowProps) => {
+  const { data: { isLeaf, name, padding, path, updateHeight }, isOpen, style, toggle  } = props;
+
+
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
-  const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel, onDeleteLabel } = useContext(TaxonomyOptionsContext);
+  const isChildSelected = selected.some(current => isSubArray(current, path));
+  const checked = selected.some(current => isArraysEqual(current, path));
 
-  const checked = selected.some(current => isArraysEqual(current, item.path));
-  const isChildSelected = selected.some(current => isSubArray(current, item.path));
-  const hasChilds = Boolean(item.children?.length);
-  const onlyLeafsAllowed = leafsOnly && hasChilds;
-  const limitReached = maxUsagesReached && !checked;
-  const disabled = onlyLeafsAllowed || limitReached;
-
-  const [isOpen, open, , toggle] = useToggle(isChildSelected || isFiltering);
-  const onClick = () => leafsOnly && toggle();
-  const arrowStyle = item.children?.length
-    ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" }
-    : { display: "none" };
-
-  const [isAdding, addInside, closeForm] = useToggle(false);
-
-  useEffect(() => {
-    if (isFiltering || isAdding || isChildSelected) open();
-  }, [isFiltering, isAdding, isChildSelected]);
-
-  const title = onlyLeafsAllowed
-    ? "Only leaf nodes allowed"
-    : (limitReached ? `Maximum ${maxUsages} items already selected` : undefined);
+  const { leafsOnly } = useContext(TaxonomyOptionsContext);
+  const prefix = !isLeaf ? (isOpen ? "-" : "+") : " ";
 
   const setIndeterminate = useCallback(el => {
     if (!el) return;
@@ -146,46 +130,38 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
     else el.indeterminate = isChildSelected;
   }, [checked, isChildSelected]);
 
-  const onDelete = useCallback(
-    () => onDeleteLabel?.(item.path),
-    [item, onDeleteLabel],
-  );
-
-  const customClassname = item.origin === "session"
-    ? styles.taxonomy__item_session
-    : (item.origin === "user" ? styles.taxonomy__item_user : "");
-
-  let childs = null;
-
-  if (isAdding || (item.children && isOpen)) {
-    childs = item.children?.map(
-      child => <Item key={child.label} item={child} isFiltering={isFiltering}/>,
-    ) ?? [];
-    if (onAddLabel && isAdding && !isFiltering) {
-      // key is required, but should be unique - empty string can't be in child items
-      childs.push(<UserLabelForm key="" onAddLabel={onAddLabel} onFinish={closeForm} path={item.path} />);
+  const onClick = () => {
+    if(leafsOnly) {
+      toggle();
+      updateHeight();
     }
-  }
+  };
+  const onChangeGroupingVisibility = () => {
+    console.log(toggle);
+    toggle().then(()=> 
+      updateHeight(),
+    );
+  };
 
   return (
-    <div>
-      <div className={[styles.taxonomy__item, customClassname].join(" ")}>
-        <div className={styles.taxonomy__grouping} onClick={toggle}>
-          <LsChevron stroke="#09f" style={arrowStyle} />
-        </div>
+    <div className="item-tracker">
+      <div className={styles.taxonomy__item} style={{
+        ...style,
+        paddingLeft: padding,
+      }}>
+        <div className={styles.taxonomy__grouping} onClick={onChangeGroupingVisibility}>{prefix}</div>
         <label
           onClick={onClick}
-          title={title}
-          className={disabled ? styles.taxonomy__collapsable : undefined}
+          title={name}
+          className={styles.taxonomy__collapsable}
         >
           <input
             type="checkbox"
-            disabled={disabled}
             checked={checked}
             ref={setIndeterminate}
-            onChange={e => setSelected(item.path, e.currentTarget.checked)}
+            onChange={e => setSelected(path, e.currentTarget.checked)}
           />
-          {item.label}
+          {name}
         </label>
         {!isFiltering && (
           <div className={styles.taxonomy__extra}>
@@ -224,7 +200,6 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
           </div>
         )}
       </div>
-      {childs}
     </div>
   );
 };
@@ -277,7 +252,23 @@ const filterTreeByPredicate = (
   return roots;
 };
 
+const itemDataReformater = (
+  { node: { children, label, depth, path }, nestingLevel } :
+  { node: RowItem, nestingLevel: number}) => (
+  {
+    id: `${label}-${depth}`,
+    isLeaf: !children?.length,
+    isOpenByDefault: true,
+    name: label,
+    nestingLevel: depth,
+    padding: nestingLevel * 20,
+    path,
+  }
+);
+
+
 const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdownProps) => {
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
@@ -313,6 +304,14 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           ? <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
           : <div className={styles.taxonomy__add}><button onClick={addInside}>Add</button></div>
       )}
+      <TreeStructure 
+        items={list} 
+        rowComponent={Item} 
+        flatten={search !== ""} 
+        rowHeight={30}
+        maxHeightPersentage={60}
+        transformationCallback={itemDataReformater}
+      />
     </div>
   );
 };
@@ -400,3 +399,4 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, onD
 };
 
 export { Taxonomy };
+
