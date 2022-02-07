@@ -8,6 +8,12 @@ import Tree, { TRAVERSE_STOP } from "../core/Tree";
 
 const hotkeys = Hotkey("RegionStore");
 
+const localStorageKeys = {
+  sort: "outliner:sort",
+  sortDirection: "outliner:sort-direction",
+  group: "outliner:group",
+};
+
 const groupRegionsById = (regions, enrich, onClickEnhancer) => {
   const tree = [];
   const lookup = new Map();
@@ -135,10 +141,19 @@ const SelectionMap = types.model(
 });
 
 export default types.model("RegionStore", {
-  sort: types.optional(types.enumeration(["date", "score"]), "date"),
-  sortOrder: types.optional(types.enumeration(["asc", "desc"]), "asc"),
+  sort: types.optional(
+    types.enumeration(["date", "score"]),
+    window.localStorage.getItem(localStorageKeys.sort) ?? "date",
+  ),
+  sortOrder: types.optional(
+    types.enumeration(["asc", "desc"]),
+    window.localStorage.getItem(localStorageKeys.sortDirection) ?? "asc",
+  ),
 
-  group: types.optional(types.enumeration(["type", "label", "manual"]), "manual"),
+  group: types.optional(
+    types.enumeration(["type", "label", "manual"]),
+    window.localStorage.getItem(localStorageKeys.group) ?? "manual",
+  ),
 
   view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
   selection: types.optional(SelectionMap, {}),
@@ -322,11 +337,16 @@ export default types.model("RegionStore", {
       self.sortOrder = "asc";
       self.sort = sort;
     }
+
+    window.localStorage.setItem(localStorageKeys.sort, self.sort);
+    window.localStorage.setItem(localStorageKeys.sortDirection, self.sortOrder);
+
     self.initHotkeys();
   },
 
   setGrouping(group) {
     self.group = group;
+    window.localStorage.setItem(localStorageKeys.group, self.group);
   },
 
   /**

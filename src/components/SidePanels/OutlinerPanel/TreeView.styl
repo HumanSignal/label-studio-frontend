@@ -1,4 +1,6 @@
 .tree
+  user-select none
+
   &-list
     display block
 
@@ -37,15 +39,20 @@
       max-width 100%
 
   &-iconEle
-    width 24px
     height 24px
     display flex
     flex none
     height: 32px;
+    max-width 24px
+    width min-content
     align-items center
     justify-content center
     align-self: flex-start;
     color var(--icon-color)
+
+    svg
+      width 24px
+      height 24px
 
   &-indent
     display inline-block
@@ -68,6 +75,7 @@
 
   &__content
     display flex
+    min-height 32px
     align-items center
     justify-content space-between
 

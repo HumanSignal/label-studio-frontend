@@ -1,7 +1,7 @@
 import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import Tree from 'rc-tree';
-import { FC, useCallback, useMemo, useState } from "react";
+import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
 import { IconLockLocked, IconLockUnlocked, LsSparks } from "../../../assets/icons";
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { IconArrow } from "../../../assets/icons/tree";
@@ -12,6 +12,14 @@ import { Block, CN, cn, Elem } from "../../../utils/bem";
 import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
 import { NodeIcon } from "../../Node/Node";
 import "./TreeView.styl";
+
+interface OutlinerContextProps {
+  regions: any;
+}
+
+const OutlinerContext = createContext<OutlinerContextProps>({
+  regions: null,
+});
 
 interface OutlinerTreeProps {
   regions: any;
@@ -30,22 +38,25 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
   return (
-    <Block name="outliner-tree">
-      <Tree
-        draggable
-        multiple
-        defaultExpandAll
-        defaultExpandParent
-        checkable={false}
-        prefixCls="lsf-tree"
-        className={rootClass.toClassName()}
-        treeData={regionsTree}
-        selectedKeys={selectedKeys}
-        icon={({ item }: any) => <NodeIconComponent node={item}/>}
-        switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
-        {...eventHandlers}
-      />
-    </Block>
+    <OutlinerContext.Provider value={{ regions }}>
+      <Block name="outliner-tree">
+        <Tree
+          draggable={regions.group === 'manual'}
+          multiple
+          defaultExpandAll
+          defaultExpandParent
+          autoExpandParent
+          checkable={false}
+          prefixCls="lsf-tree"
+          className={rootClass.toClassName()}
+          treeData={regionsTree}
+          selectedKeys={selectedKeys}
+          icon={({ item, isArea }: any) => isArea ? <NodeIconComponent node={item}/> : false}
+          switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+          {...eventHandlers}
+        />
+      </Block>
+    </OutlinerContext.Provider>
   );
 };
 
@@ -55,43 +66,34 @@ const useDataTree = ({
   rootClass,
   selectedKeys,
 }: any) => {
-
-  const createResult = useCallback((item) => {
-    return {
-      key: item.id,
-      hovered: item.id === hovered,
-      selected: selectedKeys.includes(item.id),
-      label: (item?.labels ?? []).join(", ") || "No label",
-      title: (data: any) => {
-        console.log({ data });
-        return <RootTitle {...data}/>;
-      },
-    };
-  }, [hovered]);
-
-  const processor = useCallback((item: any) => {
-    console.log({ item });
-    const result: any = createResult(item);
-
+  const processor = useCallback((item: any, idx) => {
+    const { id, type, hidden } = item;
     const style = item.background ?? item.getOneColor();
     const color = chroma(style).alpha(1);
-    const mods: Record<string, any> = {};
+    const mods: Record<string, any> = { hidden, type };
+    const label = type.match('label')
+      ? item.value
+      : (item?.labels ?? []).join(", ") || "No label";
 
-    mods.type = item.type;
-    if (item.hidden) mods.hidden = true;
-
-    const classNames = rootClass.elem('node').mod(mods);
-
-    result.color = color.css();
-    result.style = {
-      '--icon-color': color.css(),
-      '--text-color': color.css(),
-      '--selection-color': color.alpha(0.1).css(),
+    return {
+      idx,
+      key: id,
+      type,
+      label,
+      hidden,
+      entity: item,
+      hovered: id === hovered,
+      selected: selectedKeys.includes(id),
+      color: color.css(),
+      style: {
+        '--icon-color': color.css(),
+        '--text-color': color.css(),
+        '--selection-color': color.alpha(0.1).css(),
+      },
+      className: rootClass.elem('node').mod(mods).toClassName(),
+      title: (data: any) => <RootTitle {...data}/>,
     };
-    result.className = classNames.toClassName();
-
-    return result;
-  }, [createResult]);
+  }, [hovered]);
 
   return regions.asTree(processor);
 };
@@ -107,6 +109,8 @@ const useEventHandlers = ({
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node, selected } = evt;
 
+    if (!node.type.match('region')) return;
+
     if (!multi) regions.selection.clear();
 
     if (selected) regions.selection.select(node.item);
@@ -114,15 +118,13 @@ const useEventHandlers = ({
   }, []);
 
   const onMouseEnter = useCallback(({ node }: any) => {
-    if (!node.item) return;
     onHover(true, node.key);
-    node.item.setHighlight(true);
+    node.item?.setHighlight(true);
   }, []);
 
   const onMouseLeave = useCallback(({ node }: any) => {
-    if (!node.item) return;
     onHover(false, node.key);
-    node.item.setHighlight(false);
+    node.item?.setHighlight(false);
   }, []);
 
 
@@ -237,15 +239,16 @@ const RootTitle: FC<any> = observer(({
     <Block name="outliner-item">
       <Elem name="content">
         <Elem name="title">{label}</Elem>
-        {isArea && (
-          <RegionControls
-            hovered={hovered}
-            item={item}
-            collapsed={collapsed}
-            hasControls={hasControls && isArea}
-            toggleCollapsed={toggleCollapsed}
-          />
-        )}
+        <RegionControls
+          hovered={hovered}
+          item={item}
+          entity={props.entity}
+          regions={props.children}
+          type={props.type}
+          collapsed={collapsed}
+          hasControls={hasControls && isArea}
+          toggleCollapsed={toggleCollapsed}
+        />
       </Elem>
       {(hasControls && isArea) && (
         <Elem name="ocr">
@@ -264,44 +267,71 @@ const RootTitle: FC<any> = observer(({
 
 interface RegionControlsProps {
   item: any;
+  entity?: any;
+  type: string;
   hovered: boolean;
   hasControls: boolean;
   collapsed: boolean;
+  regions?: Record<string, any>;
   toggleCollapsed: (e: any) => void;
 }
 
 const RegionControls: FC<RegionControlsProps> = observer(({
   hovered,
   item,
+  entity,
   collapsed,
+  regions,
   hasControls,
+  type,
   toggleCollapsed,
 }) => {
+  const { regions: regionStore } = useContext(OutlinerContext);
+
+  const hidden = useMemo(() => {
+    if (type.match('region')) {
+      return entity.hidden;
+    } else if(type.match('label') && regions) {
+      return Object
+        .values(regions)
+        .reduce((acc, { hidden }) => acc && hidden, true);
+    }
+    return false;
+  }, [entity, type, regions]);
+
+  const onToggleHidden = useCallback(() => {
+    if (type.match('region')) {
+      entity.toggleHidden();
+    } else if(type.match('label')) {
+      regionStore.setHiddenByLabel(!hidden, entity);
+    }
+  }, [item, item?.toggleHidden, hidden]);
+
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
       <Elem name="control" mod={{ type: "score" }}>
-        {isDefined(item.score) && item.score.toFixed(2)}
+        {isDefined(item?.score) && item.score.toFixed(2)}
       </Elem>
       <Elem name="control" mod={{ type: "dirty" }}>
         {/* dirtyness is not implemented yet */}
       </Elem>
       <Elem name="control" mod={{ type: "predict" }}>
-        {item.origin === 'prediction' && (
+        {item?.origin === 'prediction' && (
           <LsSparks style={{ width: 18, height: 18 }}/>
         )}
       </Elem>
       <Elem name="control" mod={{ type: "lock" }}>
         {/* TODO: implement manual region locking */}
-        {(hovered || !item.editable) && (
+        {item && (hovered || !item.editable) && (
           <RegionControlButton disabled={item.readonly} onClick={() => item.setLocked(!item.locked)}>
             {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
           </RegionControlButton>
         )}
       </Elem>
       <Elem name="control" mod={{ type: "visibility" }}>
-        {(hovered || item.hidden) && (
-          <RegionControlButton onClick={item.toggleHidden}>
-            {item.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+        {(hovered || hidden) && (
+          <RegionControlButton onClick={onToggleHidden}>
+            {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
           </RegionControlButton>
         )}
       </Elem>
@@ -355,10 +385,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
   const onClick = useCallback((e) => {
     e.stopPropagation();
 
-    console.log({ selected, collapsed });
-
     if (!selected) {
-      console.log('123');
       item.annotation.selectArea(item);
     }
   }, [item, selected, collapsed]);
