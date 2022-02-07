@@ -437,6 +437,7 @@ export default class Waveform extends React.Component {
 
   componentWillUnmount() {
     this.hotkeys.unbindAll();
+    this.wavesurfer.unAll();
   }
 
   setWaveformRef = node => {
