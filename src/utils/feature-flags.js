@@ -19,5 +19,5 @@ function getFeatureFlags() {
 }
 
 export function isFF(id) {
-  return getFeatureFlags()[id] === true;
+  return getFeatureFlags()[id] === window.APP_SETTINGS?.feature_flags_default_value;
 }
