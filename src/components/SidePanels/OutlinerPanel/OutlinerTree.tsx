@@ -55,27 +55,29 @@ const useDataTree = ({
   rootClass,
   selectedKeys,
 }: any) => {
+
   const createResult = useCallback((item) => {
     return {
       key: item.id,
       hovered: item.id === hovered,
       selected: selectedKeys.includes(item.id),
+      label: (item?.labels ?? []).join(", ") || "No label",
       title: (data: any) => {
+        console.log({ data });
         return <RootTitle {...data}/>;
       },
     };
   }, [hovered]);
 
   const processor = useCallback((item: any) => {
+    console.log({ item });
     const result: any = createResult(item);
 
-    const toName = item.labeling?.to_name;
-    const groupType = toName?.type;
-    const groupLabel = toName?.parsedValue ?? toName?.value;
-
-    const color = chroma(item.getOneColor()).alpha(1);
+    const style = item.background ?? item.getOneColor();
+    const color = chroma(style).alpha(1);
     const mods: Record<string, any> = {};
 
+    mods.type = item.type;
     if (item.hidden) mods.hidden = true;
 
     const classNames = rootClass.elem('node').mod(mods);
@@ -87,14 +89,6 @@ const useDataTree = ({
       '--selection-color': color.alpha(0.1).css(),
     };
     result.className = classNames.toClassName();
-
-
-    if (groupType && groupLabel) {
-      result.group = {
-        title: groupLabel,
-        type: groupType,
-      };
-    }
 
     return result;
   }, [createResult]);
@@ -120,11 +114,13 @@ const useEventHandlers = ({
   }, []);
 
   const onMouseEnter = useCallback(({ node }: any) => {
+    if (!node.item) return;
     onHover(true, node.key);
     node.item.setHighlight(true);
   }, []);
 
   const onMouseLeave = useCallback(({ node }: any) => {
+    if (!node.item) return;
     onHover(false, node.key);
     node.item.setHighlight(false);
   }, []);
@@ -216,17 +212,16 @@ const NodeIconComponent: FC<any> = observer(({ node }) => {
 const RootTitle: FC<any> = observer(({
   item,
   hovered,
+  label,
+  isArea,
   ...props
 }) => {
   const [collapsed, setCollapsed] = useState(false);
 
-  const title = useMemo(() => {
-    return item.labels.join(", ") || "No label";
-  }, [item.labels]);
-
   const controls = useMemo(() => {
+    if (!isArea) return [];
     return item.perRegionDescControls ?? [];
-  }, [item.perRegionDescControls]);
+  }, [item?.perRegionDescControls, isArea]);
 
   const hasControls = useMemo(() => {
     return controls.length > 0;
@@ -241,16 +236,18 @@ const RootTitle: FC<any> = observer(({
   return (
     <Block name="outliner-item">
       <Elem name="content">
-        <Elem name="title">{title}</Elem>
-        <RegionControls
-          hovered={hovered}
-          item={item}
-          collapsed={collapsed}
-          hasControls={hasControls}
-          toggleCollapsed={toggleCollapsed}
-        />
+        <Elem name="title">{label}</Elem>
+        {isArea && (
+          <RegionControls
+            hovered={hovered}
+            item={item}
+            collapsed={collapsed}
+            hasControls={hasControls && isArea}
+            toggleCollapsed={toggleCollapsed}
+          />
+        )}
       </Elem>
-      {hasControls && (
+      {(hasControls && isArea) && (
         <Elem name="ocr">
           <RegionItemDesc
             item={item}

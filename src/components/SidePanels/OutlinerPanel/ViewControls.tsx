@@ -69,7 +69,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
     <Block name="view-controls">
       <Grouping
         value={grouping}
-        options={["type", "label", "manual"]}
+        options={["manual", "type", "label"]}
         onChange={value => onGroupingChange(value)}
         readableValueForKey={getGrouppingLabels}
       />
@@ -79,6 +79,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
         options={["score", "date"]}
         onChange={value => onOrderingChange(value)}
         readableValueForKey={getOrderingLabels}
+        allowClickSelected
       />
     </Block>
   );
@@ -94,6 +95,7 @@ interface GroupingProps<T extends string> {
   value: T;
   options: T[];
   direction?: OrderingDirection;
+  allowClickSelected?: boolean;
   onChange: (value: T) => void;
   readableValueForKey: (value: T) => LabelInfo;
 }
@@ -102,6 +104,7 @@ const Grouping = <T extends string>({
   value,
   options,
   direction,
+  allowClickSelected,
   onChange,
   readableValueForKey,
 }: GroupingProps<T>) => {
@@ -120,7 +123,7 @@ const Grouping = <T extends string>({
         size="medium"
         style={{ width: 200, minWidth: 200 }}
         selectedKeys={[value]}
-        allowClickSelected
+        allowClickSelected={allowClickSelected}
       >
         {optionsList.map(([key, label]) => (
           <GroupingMenuItem
@@ -138,7 +141,14 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={{ padding: 0 }}>
+      <Button type="text" icon={readableValue.icon} style={{ padding: 0, whiteSpace: 'nowrap' }} extra={(
+        <DirectionIndicator
+          direction={direction}
+          name={value}
+          value={value}
+          wrap={false}
+        />
+      )}>
         {readableValue.selectedLabel}
       </Button>
     </Dropdown.Trigger>
@@ -167,12 +177,33 @@ const GroupingMenuItem = <T extends string>({
     >
       <Elem name="label">
         {label.label}
-        {direction && value === name ? (
-          <span>
-            {direction === 'asc' ? <IconSortUp/> : <IconSortDown/>}
-          </span>
-        ) : null}
+        <DirectionIndicator
+          direction={direction}
+          name={name}
+          value={value}
+        />
       </Elem>
     </Menu.Item>
   );
+};
+
+interface DirectionIndicator {
+  direction?: OrderingDirection;
+  value: string;
+  name: string;
+  wrap?: boolean;
+}
+
+const DirectionIndicator: FC<DirectionIndicator> = ({
+  direction,
+  value,
+  name,
+  wrap = true,
+}) => {
+  const content = direction === 'asc' ? <IconSortUp/> : <IconSortDown/>;
+
+  if (!direction || value !== name) return null;
+  if (!wrap) return content;
+
+  return (<span>{content}</span>);
 };

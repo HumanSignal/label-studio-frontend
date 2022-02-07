@@ -8,6 +8,36 @@ import Tree, { TRAVERSE_STOP } from "../core/Tree";
 
 const hotkeys = Hotkey("RegionStore");
 
+const groupRegionsById = (regions, enrich, onClickEnhancer) => {
+  const tree = [];
+  const lookup = new Map();
+
+  const onClick = onClickEnhancer(tree);
+
+  regions.forEach((el, idx) => {
+    const result = enrich(el, idx, onClick);
+
+    Object.assign(result, {
+      item: el,
+      children: [],
+      isArea: true,
+    });
+
+    lookup.set(el.cleanId, result);
+  });
+
+  lookup.forEach((el => {
+    const pid = el.item.parentID;
+    const parent = pid ? (lookup.get(pid) ?? lookup.get(pid.replace(/#(.+)/i, ''))) : null;
+
+    if (parent) return parent.children.push(el);
+
+    tree.push(el);
+  }));
+
+  return tree;
+};
+
 const SelectionMap = types.model(
   {
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
@@ -194,49 +224,22 @@ export default types.model("RegionStore", {
       return sorted;
     },
 
-    asTree(enrich, {
-      groupBy = null,
-    } = {}) {
-      // every region has a parentID
-      // parentID is an empty string - "" if it's top level
-      // or it can contain a string key to the parent region
-      // [ { id: "1", parentID: "" }, { id: "2", parentID: "1" } ]
-      // would create a tree of two elements
+    asTree(enrich) {
 
       const arr = self.sortedRegions;
-      const tree = [];
-      const lookup = new Map();
 
-      const onClick = createClickRegionInTreeHandler(tree);
-
-      arr.forEach((el, idx) => {
-        const result = enrich(el, idx, onClick);
-
-        Object.assign(result, {
-          item: el,
-          children: [],
-          isArea: true,
-        });
-
-        lookup.set(el.cleanId, result);
-      });
-
-      const groupingFunction = (() => {
-        switch(groupBy) {
-          default: return (el => {
-            const pid = el.item.parentID;
-            const parent = pid ? (lookup.get(pid) ?? lookup.get(pid.replace(/#(.+)/i, ''))) : null;
-
-            if (parent) return parent.children.push(el);
-
-            tree.push(el);
-          });
-        }
-      })();
-
-      lookup.forEach(groupingFunction);
-
-      return tree;
+      if (self.group === null || self.group === "manual") {
+        // every region has a parentID
+        // parentID is an empty string - "" if it's top level
+        // or it can contain a string key to the parent region
+        // [ { id: "1", parentID: "" }, { id: "2", parentID: "1" } ]
+        // would create a tree of two elements
+        return groupRegionsById(arr, enrich, createClickRegionInTreeHandler);
+      } else if (self.group === 'label') {
+        return self.asLabelsTree(enrich);
+      } else {
+        console.error(`Grouping by ${self.group} is not implemented`);
+      }
     },
 
     asLabelsTree(enrich) {
