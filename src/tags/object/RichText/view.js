@@ -14,23 +14,11 @@ import { observe } from "mobx";
 class RichTextPieceView extends Component {
   _regionSpanSelector = ".htx-highlight";
 
-  constructor(props) {
-    super(props);
-
-    this.rootNodeRef = React.createRef();
-
-    this.originalContentRef = React.createRef();
-
-    this.workingNodeRef = React.createRef();
-
-    this.loadingRef = React.createRef();
-
-    this.rootRef = props.item.rootNodeRef;
-  }
+  loadingRef = React.createRef();
 
   _selectRegions = (additionalMode) => {
     const { item } = this.props;
-    const root = item.rootNodeRef.current;
+    const root = item.visibleNodeRef.current;
     const selection = window.getSelection();
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
     const regions = [];
@@ -58,7 +46,7 @@ class RichTextPieceView extends Component {
   _onMouseUp = (ev) => {
     const { item } = this.props;
     const states = item.activeStates();
-    const rootEl = item.rootNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
@@ -149,8 +137,8 @@ class RichTextPieceView extends Component {
 
   _moveElementsToWorkingNode = () => {
     const { item } = this.props;
-    const rootEl = this.rootNodeRef.current;
-    const workingEl = this.workingNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
+    const workingEl = item.workingNodeRef.current;
 
     if (item.inline) {
       this._moveElements(rootEl, workingEl, true);
@@ -165,16 +153,13 @@ class RichTextPieceView extends Component {
       this._removeChildrenFrom(workingHead);
       this._moveElements(rootBody, workingBody, true);
     }
-    item.setRef(
-      this.workingNodeRef,
-      this.originalContentRef,
-    );
+    item.setWorkingMode(true);
   }
 
   _returnElementsFromWorkingNode = () => {
     const { item } = this.props;
-    const rootEl = this.rootNodeRef.current;
-    const workingEl = this.workingNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
+    const workingEl = item.workingNodeRef.current;
 
     if (item.inline) {
       this._moveElements(workingEl, rootEl);
@@ -190,10 +175,7 @@ class RichTextPieceView extends Component {
       this._moveStyles(workingHead, rootHead);
       this._moveElements(workingBody, rootBody);
     }
-    item.setRef(
-      this.rootNodeRef,
-      this.originalContentRef,
-    );
+    item.setWorkingMode(false);
   }
 
   /**
@@ -201,20 +183,16 @@ class RichTextPieceView extends Component {
    */
   _handleUpdate(initial = false) {
     const { item } = this.props;
-    const rootEl = this.rootNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!item.inline) {
       if (!root || root.tagName === "IFRAME" || !root.childNodes.length || item.isLoaded === false) return;
     }
 
-    // @todo both loops should be merged to fix old broken xpath using "dirty" html
-    if (initial) {
-      item.initGlobalOffsets(root);
-    }
-
     // Apply highlight to ranges of a current tag
-    item.needsUpdate();
+    // Also init regions' offsets and html range on initial load
+    item.needsUpdate(initial);
     this.setReady(true);
   }
 
@@ -294,7 +272,8 @@ class RichTextPieceView extends Component {
   }
 
   onIFrameLoad = () => {
-    const iframe = this.rootNodeRef.current;
+    const { item } = this.props;
+    const iframe = item.visibleNodeRef.current;
     const doc = iframe?.contentDocument;
     const body = doc?.body;
     const htmlEl = body?.parentElement;
@@ -377,7 +356,7 @@ class RichTextPieceView extends Component {
             ref={el => {
               this.setLoaded(true);
               this.setReady(true);
-              this.rootNodeRef.current = el;
+              item.visibleNodeRef.current = el;
             }}
             data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
@@ -387,14 +366,14 @@ class RichTextPieceView extends Component {
           <Elem
             key="orig"
             name="orig-container"
-            ref={this.originalContentRef}
+            ref={item.originalContentRef}
             className="htx-richtext-orig"
             dangerouslySetInnerHTML={{ __html: val }}
           />
           <Elem
             key="work"
             name="work-container"
-            ref={this.workingNodeRef}
+            ref={item.workingNodeRef}
             className="htx-richtext-work"
           />
         </Block>
@@ -418,7 +397,7 @@ class RichTextPieceView extends Component {
             sandbox="allow-same-origin allow-scripts"
             ref={el => {
               this.setReady(false);
-              this.rootNodeRef.current = el;
+              item.visibleNodeRef.current = el;
             }}
             className="htx-richtext"
             srcDoc={val}
@@ -430,7 +409,7 @@ class RichTextPieceView extends Component {
             tag="iframe"
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
-            ref={this.originalContentRef}
+            ref={item.originalContentRef}
             className="htx-richtext-orig"
             srcDoc={val}
           />
@@ -440,7 +419,7 @@ class RichTextPieceView extends Component {
             tag="iframe"
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
-            ref={this.workingNodeRef}
+            ref={item.workingNodeRef}
             className="htx-richtext-work"
           />
         </Block>

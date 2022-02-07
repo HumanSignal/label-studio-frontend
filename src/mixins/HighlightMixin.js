@@ -30,14 +30,14 @@ export const HighlightMixin = types
 
       // spans in iframe disappear on every annotation switch, so check for it
       // in iframe spans still isConnected, but window is missing
-      const isReallyConnected = Boolean(self._spans[0]?.ownerDocument?.defaultView);
+      const isReallyConnected = Boolean(self._spans?.[0]?.ownerDocument?.defaultView);
 
       // Avoid calling this method twice
       if (self._hasSpans && isReallyConnected) {
         return;
       }
 
-      const range = self.getRange();
+      const range = self.getRangeToHighlight();
       const root = self._getRootNode();
 
       // Avoid rendering before view is ready
@@ -75,7 +75,7 @@ export const HighlightMixin = types
     updateHighlightedText() {
       if (!self.text) {
         // Concatenating of spans' innerText is up to 10 times faster, but loses "\n"
-        const range = self.getRange();
+        const range = self.getRangeToHighlight();
         const root = self._getRootNode();
 
         if (!range || !root) {

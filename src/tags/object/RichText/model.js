@@ -106,18 +106,16 @@ const Model = types
       return self._isLoaded && self._loadedForAnnotation === self.annotation?.id;
     },
 
-    get isRootRendered() {
-      return self.rootNodeRef === self.visibleNodeRef;
-    },
-
     get isReady() {
       return self.isLoaded  && self._isReady;
     },
   }))
   .volatile(() => ({
-    rootNodeRef: React.createRef(),
-    originalContentRef: React.createRef(),
+    rootNodeRef: React.createRef(), // outdated
     visibleNodeRef: React.createRef(),
+    workingNodeRef: React.createRef(),
+    originalContentRef: React.createRef(),
+    useWorkingNode: false,
     regsObserverDisposer: null,
     _isLoaded: false,
     _loadedForAnnotation: null,
@@ -126,10 +124,8 @@ const Model = types
     let beforeNeedsUpdateCalback, afterNeedsUpdateCalback;
 
     return {
-      setRef(rootNodeRef, originalContentRef, visibleNodeRef = rootNodeRef) {
-        self.rootNodeRef = rootNodeRef;
-        self.originalContentRef = originalContentRef;
-        self.visibleNodeRef = visibleNodeRef;
+      setWorkingMode(mode) {
+        self.useWorkingNode = mode;
       },
 
       setLoaded(value = true) {
@@ -221,38 +217,37 @@ const Model = types
         afterNeedsUpdateCalback = afterCalback;
       },
 
-      needsUpdate() {
+      needsUpdate(initial = false) {
+        const { history } = self.annotation;
+
+        if (initial) {
+          history.freeze("richtext:init");
+        }
+
         if (self.isLoaded === false) return;
         self.setReady(false);
         beforeNeedsUpdateCalback?.();
         self.regs.forEach(region => {
           try {
+            if (initial) {
+              region.initRangeAndOffsets();
+              region.updateHighlightedText();
+            }
             region.applyHighlight();
-          } catch {
-            // that's not a problem
+          } catch (err) {
+            console.error(err);
           }
         });
         afterNeedsUpdateCalback?.();
-        for (const region of self.regs) {
-          region.updateHighlightedText();
+
+        if (initial) {
+          history.setReplaceNextUndoState(true);
+          history.unfreeze("richtext:init");
+          // in case there are no new changes
+          history.setReplaceNextUndoState(false);
         }
 
         self.setReady(true);
-      },
-
-      initGlobalOffsets(rootElement) {
-        self.regs.forEach((richTextRegion) => {
-          try {
-            const { start, startOffset, end, endOffset } = richTextRegion;
-            const range = xpath.toRange(start, startOffset, end, endOffset, rootElement);
-            const [soff, eoff] = rangeToGlobalOffset(range, rootElement);
-
-            richTextRegion.updateGlobalOffsets(soff, eoff);
-          } catch (e) {
-          // should never happen
-          // doesn't break anything if happens
-          }
-        });
       },
 
       setHighlight(region) {
@@ -293,7 +288,7 @@ const Model = types
         const control = states[0];
         const labels = { [control.valueType]: control.selectedValues() };
         const area = self.annotation.createResult(range, labels, control, self);
-        const rootEl = self.rootNodeRef.current;
+        const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
 
         area._range = range._range;
@@ -301,7 +296,7 @@ const Model = types
         const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
         if (range.isText) {
-          area.updateOffsets(soff, eoff);
+          area.updateTextOffsets(soff, eoff);
         }
 
         area.updateGlobalOffsets(soff, eoff);

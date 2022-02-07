@@ -33,6 +33,7 @@ const Model = types
   })
   .volatile(() => ({
     hideable: true,
+    cachedRange: null,
   }))
   .views(self => ({
     get parent() {
@@ -101,7 +102,8 @@ const Model = types
       return res;
     },
 
-    updateOffsets(startOffset, endOffset) {
+    // text regions have only start/end, so we should update start/endOffsets with these values
+    updateTextOffsets(startOffset, endOffset) {
       Object.assign(self, { startOffset, endOffset });
     },
 
@@ -112,19 +114,37 @@ const Model = types
       });
     },
 
+    getRangeToHighlight() {
+      if (!self.globalOffsets) return undefined;
+
+      if (!self.cachedRange || self.cachedRange.collapsed) {
+        const root = self._getRootNode();
+        const { start, end } = self.globalOffsets;
+
+        self.cachedRange = findRangeNative(start, end, root);
+      }
+
+      return self.cachedRange;
+    },
+
     /**
-     * @todo just use offsets here
-     * Main method to get HTML range for LSF region
-     * globalOffsets are only for end users convenience and for emergencies (xpath invalid)
-     * @param {boolean} useOriginalContent
+     * Main method to detect HTML range and its offsets for LSF region
+     * globalOffsets are used for:
+     * - internal use (get ranges to highlight quickly)
+     * - end users convenience
+     * - for emergencies (xpath invalid)
      */
-    getRange() {
+    initRangeAndOffsets() {
       const root = self._getRootNode();
       let range;
 
       // 0. Text regions are simple — just get range by offsets
       if (self.isText) {
-        return findRangeNative(self.startOffset, self.endOffset, root);
+        const { startOffset: start, endOffset: end } = self;
+
+        self.globalOffsets = { start, end };
+        self.cachedRange = findRangeNative(start, end, root);
+        return;
       }
 
       // 1. first try to find range by xpath in original document
@@ -133,9 +153,12 @@ const Model = types
       if (range) {
         // we need this range in the visible document, so find it by global offsets
         const originalRoot = self._getRootNode(true);
-        const [soff, eoff] = rangeToGlobalOffset(range, originalRoot);
+        const [start, end] = rangeToGlobalOffset(range, originalRoot);
 
-        return findRangeNative(soff, eoff, root);
+        self.globalOffsets = { start, end };
+        self.cachedRange = findRangeNative(start, end, root);
+
+        return;
       }
 
       // 2. then try to find range on visible document
@@ -143,17 +166,26 @@ const Model = types
       range = self._getRange({ useOriginalContent: false });
 
       if (range) {
-        // @todo is it good to fix xpath here?
-        // self._fixXPaths(range, root);
-        return range;
+        const [start, end] = rangeToGlobalOffset(range, root);
+
+        self.globalOffsets = { start, end };
+        self.cachedRange = range;
+
+        return;
       }
 
       // 3. if xpaths are broken use globalOffsets if given
       if (self.globalOffsets && isDefined(root)) {
-        return findRangeNative(self.globalOffsets.start, self.globalOffsets.end, root);
+        const { start, end } = self.globalOffsets;
+
+        self.globalOffsets = { start, end };
+        self.cachedRange = findRangeNative(start, end, root);
+
+        return;
       }
 
       // 4. out of options — region is broken
+      // @todo show error in console and regions list
       return undefined;
     },
 
@@ -203,9 +235,13 @@ const Model = types
     },
 
     _getRootNode(originalContent = false) {
-      const ref = originalContent
-        ? self.parent.originalContentRef
-        : self.parent.rootNodeRef;
+      const parent = self.parent;
+      let ref;
+
+      if (originalContent) ref = parent.originalContentRef;
+      else if (parent.useWorkingNode) ref = parent.workingNodeRef;
+      else ref = parent.visibleNodeRef;
+
       const node = ref.current;
 
       return node?.contentDocument?.body ?? node;
@@ -222,7 +258,7 @@ const Model = types
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
         // actually this happens when regions cannot be located by xpath for some reason
-        console.log("can't locate xpath", err);
+        console.warn("can't locate xpath", { start, end }, err);
       }
 
       return undefined;
