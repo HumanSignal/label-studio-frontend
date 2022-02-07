@@ -48,39 +48,22 @@ const RejectDialog = ({ disabled, store }) => {
         setShow(visible);
       }}
       content={(
-        <div
-          style={{
-            height: 278,
-            width: 480,
-            padding: '12px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <p
-            style={{ marginBottom: '4px' }}
-          >Reason of Rejection</p>
-          <textarea
+        <Block name="reject-dialog">
+          <Elem name="input-title">
+            Reason of Rejection
+          </Elem>
+          <Elem
+            name='input'
+            tag={'textarea'}
+            type="text"
             value={comment}
             onChange={(event) => { setComment(event.target.value); }}
-            type="text"
-            style={{
-              resize: 'none',
-              flex: '1 1 auto',
-              marginBottom: '16px',
-              backgroundColor: '#FAFAFA',
-              fontSize: '16px',
-            }}
           />
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'end',
-          }}>
+          <Elem name='footer' >
             <Button onClick={() => setShow(false)}>Cancel</Button>
             <Button style={{ marginLeft: 8 }} look="danger" onClick={onReject}>Reject</Button>
-          </div >
-        </div >
+          </Elem >
+        </Block >
       )}
     >
       <Button aria-label="reject-annotation" disabled={disabled} look="danger">
