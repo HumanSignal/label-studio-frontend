@@ -67,13 +67,20 @@ const useDataTree = ({
   selectedKeys,
 }: any) => {
   const processor = useCallback((item: any, idx) => {
+    console.log(item);
     const { id, type, hidden } = item;
     const style = item.background ?? item.getOneColor();
     const color = chroma(style).alpha(1);
     const mods: Record<string, any> = { hidden, type };
-    const label = type.match('label')
-      ? item.value
-      : (item?.labels ?? []).join(", ") || "No label";
+    const label = (() => {
+      if (type.match('label')) {
+        return item.value;
+      } else if(type.match("region")) {
+        return (item?.labels ?? []).join(", ") || "No label";
+      } else if(type.match('tool')) {
+        return item.value;
+      }
+    })();
 
     return {
       idx,
@@ -95,7 +102,7 @@ const useDataTree = ({
     };
   }, [hovered]);
 
-  return regions.asTree(processor);
+  return regions.getRegionsTree(processor);
 };
 
 const useEventHandlers = ({

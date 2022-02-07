@@ -73,14 +73,16 @@ export const ViewControls: FC<ViewControlsProps> = ({
         onChange={value => onGroupingChange(value)}
         readableValueForKey={getGrouppingLabels}
       />
-      <Grouping
-        value={ordering}
-        direction={orderingDirection}
-        options={["score", "date"]}
-        onChange={value => onOrderingChange(value)}
-        readableValueForKey={getOrderingLabels}
-        allowClickSelected
-      />
+      {grouping === 'manual' && (
+        <Grouping
+          value={ordering}
+          direction={orderingDirection}
+          options={["score", "date"]}
+          onChange={value => onOrderingChange(value)}
+          readableValueForKey={getOrderingLabels}
+          allowClickSelected
+        />
+      )}
     </Block>
   );
 };

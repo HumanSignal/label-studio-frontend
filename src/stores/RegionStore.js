@@ -14,36 +14,6 @@ const localStorageKeys = {
   group: "outliner:group",
 };
 
-const groupRegionsById = (regions, enrich, onClickEnhancer) => {
-  const tree = [];
-  const lookup = new Map();
-
-  const onClick = onClickEnhancer(tree);
-
-  regions.forEach((el, idx) => {
-    const result = enrich(el, idx, onClick);
-
-    Object.assign(result, {
-      item: el,
-      children: [],
-      isArea: true,
-    });
-
-    lookup.set(el.cleanId, result);
-  });
-
-  lookup.forEach((el => {
-    const pid = el.item.parentID;
-    const parent = pid ? (lookup.get(pid) ?? lookup.get(pid.replace(/#(.+)/i, ''))) : null;
-
-    if (parent) return parent.children.push(el);
-
-    tree.push(el);
-  }));
-
-  return tree;
-};
-
 const SelectionMap = types.model(
   {
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
@@ -145,6 +115,7 @@ export default types.model("RegionStore", {
     types.enumeration(["date", "score"]),
     window.localStorage.getItem(localStorageKeys.sort) ?? "date",
   ),
+
   sortOrder: types.optional(
     types.enumeration(["asc", "desc"]),
     window.localStorage.getItem(localStorageKeys.sortDirection) ?? "asc",
@@ -241,17 +212,49 @@ export default types.model("RegionStore", {
 
     asTree(enrich) {
 
-      const arr = self.sortedRegions;
+      const regions = self.sortedRegions;
+      const tree = [];
+      const lookup = new Map();
+      const onClick = createClickRegionInTreeHandler(tree);
+      const groups = {};
 
+      // every region has a parentID
+      // parentID is an empty string - "" if it's top level
+      // or it can contain a string key to the parent region
+      // [ { id: "1", parentID: "" }, { id: "2", parentID: "1" } ]
+      // would create a tree of two elements
+
+      regions.forEach((el, idx) => {
+        const result = enrich(el, idx, onClick);
+
+        Object.assign(result, {
+          item: el,
+          children: [],
+          isArea: true,
+        });
+
+        lookup.set(el.cleanId, result);
+      });
+
+      lookup.forEach((el => {
+        const pid = el.item.parentID;
+        const parent = pid ? (lookup.get(pid) ?? lookup.get(pid.replace(/#(.+)/i, ''))) : null;
+
+        if (parent) return parent.children.push(el);
+
+        tree.push(el);
+      }));
+
+      return tree;
+    },
+
+    getRegionsTree(enrich) {
       if (self.group === null || self.group === "manual") {
-        // every region has a parentID
-        // parentID is an empty string - "" if it's top level
-        // or it can contain a string key to the parent region
-        // [ { id: "1", parentID: "" }, { id: "2", parentID: "1" } ]
-        // would create a tree of two elements
-        return groupRegionsById(arr, enrich, createClickRegionInTreeHandler);
+        return self.asTree(enrich);
       } else if (self.group === 'label') {
         return self.asLabelsTree(enrich);
+      } else if (self.group === 'type') {
+        return self.asTypeTree(enrich);
       } else {
         console.error(`Grouping by ${self.group} is not implemented`);
       }
@@ -259,49 +262,103 @@ export default types.model("RegionStore", {
 
     asLabelsTree(enrich) {
       // collect all label states into two maps
-      let labels = {};
-      const map = {};
+      const groups = {};
+      const result = [];
+      const onClick = createClickRegionInTreeHandler(result);
 
-      self.regions.forEach(r => {
-        const selectedLabels = r.labeling?.selectedLabels || r.emptyLabel && [r.emptyLabel];
+      let index = 0;
 
-        if (selectedLabels) {
-          selectedLabels.forEach(s => {
-            const key = `${s.value}#${s.id}`;
+      const getLabelGroup = (label, key) => {
+        const labelGroup = groups[key];
 
-            labels[key] = s;
-            if (key in map) map[key].push(r);
-            else map[key] = [r];
+        if (labelGroup) return labelGroup;
+
+        return groups[key] = {
+          ...enrich(label, index, true),
+          id: key,
+          isNotLabel: true,
+          children: [],
+        };
+      };
+
+      const addToLabelGroup = (labels, region) => {
+        for(const label of labels) {
+          const key = `${label.value}#${label.id}`;
+          const group = getLabelGroup(label, key);
+
+          group.children.push({
+            ...enrich(region, index, false, null, onClick),
+            item: region,
+            isArea: true,
           });
-        } else {
-          const key = `_empty`;
-
-          labels = { [key]: { id: key, isNotLabel: true }, ...labels };
-          if (key in map) map[key].push(r);
-          else map[key] = [r];
         }
-      });
+      };
 
-      // create the tree
-      let idx = 0;
-      const tree = [];
-      const onClick = createClickRegionInTreeHandler(tree);
+      for (const region of self.regions) {
+        const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
 
-      Object.keys(labels).forEach(key => {
-        const el = enrich(labels[key], idx, true, map[key]);
+        addToLabelGroup(labelsForRegion, region);
 
-        el["children"] = map[key].map(r => {
-          const child = enrich(r, idx++, false, null, onClick);
+        index++;
+      }
 
-          child.item = r;
-          child.isArea = true;
-          return child;
+      result.push(...Object.values(groups));
+
+      return result;
+    },
+
+    asTypeTree(enrich) {
+      // collect all label states into two maps
+      const groups = {};
+      const result = [];
+      const onClick = createClickRegionInTreeHandler(result);
+
+      let index = 0;
+
+      const getTypeGroup = (region, key) => {
+        const group = groups[key];
+
+        if (group) return group;
+
+        const groupingEntity = {
+          type: "tool",
+          value: key.replace('region', ''),
+          background: region.getOneColor(),
+        };
+
+        return groups[key] = {
+          ...(enrich?.(groupingEntity, index, true) ?? {}),
+          id: key,
+          key,
+          isArea: false,
+          children: [],
+          type: region.type,
+        };
+      };
+
+      const addToLabelGroup = (region) => {
+        console.log({ region });
+        const key = region.type;
+        const group = getTypeGroup(region, key);
+
+        group.children.push({
+          ...(enrich?.(region, index, false, null, onClick) ?? {}),
+          item: region,
+          isArea: true,
         });
+      };
 
-        tree.push(el);
-      });
+      for (const region of self.regions) {
+        addToLabelGroup(region);
 
-      return tree;
+        index++;
+      }
+
+      result.push(...Object.values(groups));
+
+      console.log({ result, groups });
+
+      return result;
     },
 
     get hasSelection() {
