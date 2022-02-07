@@ -15,6 +15,7 @@ import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 import * as xpath from "xpath-range";
 import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
+import IsReadyMixin from "../../../mixins/IsReadyMixin";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -102,7 +103,15 @@ const Model = types
     },
 
     get isLoaded() {
-      return self._isLoaded &&  self._loadedForAnnotation === self.annotation?.id;
+      return self._isLoaded && self._loadedForAnnotation === self.annotation?.id;
+    },
+
+    get isRootRendered() {
+      return self.rootNodeRef === self.visibleNodeRef;
+    },
+
+    get isReady() {
+      return self.isLoaded  && self._isReady;
     },
   }))
   .volatile(() => ({
@@ -110,7 +119,6 @@ const Model = types
     originalContentRef: React.createRef(),
     visibleNodeRef: React.createRef(),
     regsObserverDisposer: null,
-    isReady: false,
     _isLoaded: false,
     _loadedForAnnotation: null,
   }))
@@ -318,4 +326,4 @@ const Model = types
     };
   });
 
-export const RichTextModel = types.compose("RichTextModel", ProcessAttrsMixin, ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);
+export const RichTextModel = types.compose("RichTextModel", ProcessAttrsMixin, ObjectBase, RegionsMixin, AnnotationMixin, IsReadyMixin, TagAttrs, Model);

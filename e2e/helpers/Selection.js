@@ -6,7 +6,7 @@ class Selection extends Helper {
     const { Puppeteer } = this.helpers;
     const { page } = Puppeteer;
     const { mouse } = page;
-    const xpath = [locate(parent).toXPath(),`/text()[contains(., '${text}')]`,"[last()]"].join("");
+    const xpath = [locate(parent).toXPath(),`//text()[contains(., '${text}')]`,"[last()]"].join("");
     const textEls = await page.$x(xpath);
     const point = await page.evaluate((textEl, text)=>{
       const pos = textEl.wholeText.search(text);
