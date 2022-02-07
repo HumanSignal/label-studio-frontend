@@ -259,27 +259,6 @@ const Model = types
         }
       },
 
-      createRegion(regionData) {
-        const region = RichTextRegionModel.create({
-          ...regionData,
-          isText: self.type === "text",
-        });
-
-
-        if (self.valuetype === "url" && self.loaded === false) {
-          self._regionsCache.push({ region, annotation: self.annotation });
-          return;
-        }
-
-        self.regions.push(region);
-        self.annotation.addRegion(region);
-        region.notifyDrawingFinished();
-
-        region.applyHighlight();
-
-        return region;
-      },
-
       addRegion(range) {
         const states = self.getAvailableStates();
 

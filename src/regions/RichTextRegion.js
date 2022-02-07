@@ -181,6 +181,8 @@ const Model = types
         self.globalOffsets = { start, end };
         self.cachedRange = findRangeNative(start, end, root);
 
+        if (self.cachedRange) self._fixXPaths();
+
         return;
       }
 
@@ -189,32 +191,16 @@ const Model = types
       return undefined;
     },
 
-    // For external XPath updates
-    _fixXPaths() {
-      if (self.isText) return;
+    // fix XPaths when we found region by globalOffsets
+    _fixXPaths(range, root) {
+      const normedRange = xpath.fromRange(range, root);
 
-      const range = self._getRange(true);
+      if (!isDefined(normedRange)) return;
 
-      if (range && self.globalOffsets) {
-        const root = self._getRootNode(true);
-
-        const rangeFromGlobal = findRangeNative(
-          self.globalOffsets.start,
-          self.globalOffsets.end,
-          root,
-        );
-
-        if (!rangeFromGlobal) return;
-
-        const normedRange = xpath.fromRange(rangeFromGlobal, root);
-
-        if (!isDefined(normedRange)) return;
-
-        self.start = normedRange.start ?? self.start;
-        self.end = normedRange.end ?? self.end;
-        self.startOffset = normedRange.startOffset ?? self.startOffset;
-        self.endOffset = normedRange.endOffset ?? self.endOffset;
-      }
+      self.start = normedRange.start ?? self.start;
+      self.end = normedRange.end ?? self.end;
+      self.startOffset = normedRange.startOffset ?? self.startOffset;
+      self.endOffset = normedRange.endOffset ?? self.endOffset;
     },
 
     _getRange({ useOriginalContent = false, useCache = true } = {}) {

@@ -85,9 +85,8 @@ export const HighlightMixin = types
 
         selection.removeAllRanges();
         selection.addRange(range);
-        self._highlightedText = String(selection);
+        self.text = String(selection);
         selection.removeAllRanges();
-
       }
     },
 
