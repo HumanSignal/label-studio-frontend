@@ -19,5 +19,12 @@ function getFeatureFlags() {
 }
 
 export function isFF(id) {
-  return getFeatureFlags()[id] === window.APP_SETTINGS?.feature_flags_default_value;
+  const featureFlags = getFeatureFlags();
+
+  if (id in featureFlags) {
+    return featureFlags[id] === true; 
+  }
+  else {
+    return window.APP_SETTINGS?.feature_flags_default_value === true;
+  }
 }
