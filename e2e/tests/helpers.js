@@ -56,7 +56,17 @@ const createAddEventListenerScript = (eventName, callback) => {
     }
     window.labelStudio.on("${eventName}",${eventName});
     done();
-`);
+  `);
+};
+
+const setFeatureFlags = (featureFlags, done) => {
+  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+  if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
+  window.APP_SETTINGS.feature_flags = {
+    ...window.APP_SETTINGS.feature_flags,
+    ...featureFlags,
+  };
+  done();
 };
 
 /**
@@ -508,6 +518,7 @@ function hasSelectedRegion(done) {
 module.exports = {
   initLabelStudio,
   createAddEventListenerScript,
+  setFeatureFlags,
   waitForImage,
   waitForAudio,
   delay,

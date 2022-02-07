@@ -18,4 +18,8 @@ module.exports = {
 
     return result;
   },
+
+  setFeatureFlags(featureFlags) {
+    I.executeAsyncScript(Helpers.setFeatureFlags, featureFlags);
+  },
 };
