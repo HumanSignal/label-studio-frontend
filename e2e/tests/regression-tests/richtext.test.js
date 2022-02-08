@@ -110,6 +110,7 @@ Scenario("Trim spaces around the word", async ({ I, LabelStudio, AtSidebar, AtRi
     assert.fail(`Got an error: ${errors[0]}`);
   }
 });
+
 Scenario("Trim spaces with BRs", async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
   I.amOnPage("/");
   await ErrorsCollector.run();
@@ -152,7 +153,7 @@ Scenario("Overlap checks", async ({ I, LabelStudio, AtSidebar, AtRichText, Error
   AtSidebar.see("Half");
   I.pressKey("1");
   AtRichText.selectTextByGlobalOffset(4,8);
-  I.seeNumberOfElements(AtRichText.locate("span"), 2);
+  I.seeNumberOfElements(AtRichText.locate("span.htx-highlight"), 2);
   const errors = await ErrorsCollector.grabErrors();
 
   if (errors.length) {

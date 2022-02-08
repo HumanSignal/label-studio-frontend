@@ -18,6 +18,7 @@ import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
 import { Block, Elem } from "../../../utils/bem";
 import "./TextArea.styl";
 import { IconTrash } from "../../../assets/icons";
+import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 
 const { TextArea } = Input;
 
@@ -125,128 +126,152 @@ const Model = types.model({
   get result() {
     return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
   },
-})).actions(self => ({
-  getSerializableValue() {
-    const texts = self.regions.map(s => s._value);
+})).actions(self => {
+  let lastActiveElement = null;
+  let lastActiveElementModel = null;
 
-    if (texts.length === 0) return;
+  return {
+    getSerializableValue() {
+      const texts = self.regions.map(s => s._value);
 
-    return { text: texts };
-  },
+      if (texts.length === 0) return;
 
-  needsUpdate() {
-    self.updateFromResult(self.result?.mainValue);
-  },
+      return { text: texts };
+    },
 
-  requiredModal() {
-    InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
-  },
+    needsUpdate() {
+      self.updateFromResult(self.result?.mainValue);
+    },
 
-  setResult(value) {
-    const values = Array.isArray(value) ? value : [value];
+    requiredModal() {
+      InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
 
-    values.forEach(v => self.createRegion(v));
-  },
+    setResult(value) {
+      const values = Array.isArray(value) ? value : [value];
 
-  updateFromResult(value) {
-    self.regions = [];
-    value && self.setResult(value);
-  },
+      values.forEach(v => self.createRegion(v));
+    },
 
-  setValue(value) {
-    self._value = value;
-  },
+    updateFromResult(value) {
+      self.regions = [];
+      value && self.setResult(value);
+    },
 
-  remove(region) {
-    const index = self.regions.indexOf(region);
+    setValue(value) {
+      self._value = value;
+    },
 
-    if (index < 0) return;
-    self.regions.splice(index, 1);
-    destroy(region);
-    self.onChange();
-  },
+    remove(region) {
+      const index = self.regions.indexOf(region);
 
-  copyState(obj) {
-    self.regions = obj.regions.map(r => cloneNode(r));
-  },
+      if (index < 0) return;
+      self.regions.splice(index, 1);
+      destroy(region);
+      self.onChange();
+    },
 
-  perRegionCleanup() {
-    self.regions = [];
-  },
+    copyState(obj) {
+      self.regions = obj.regions.map(r => cloneNode(r));
+    },
 
-  createRegion(text, pid) {
-    const r = TextAreaRegionModel.create({ pid, _value: text });
+    perRegionCleanup() {
+      self.regions = [];
+    },
 
-    self.regions.push(r);
+    createRegion(text, pid) {
+      const r = TextAreaRegionModel.create({ pid, _value: text });
 
-    return r;
-  },
+      self.regions.push(r);
 
-  onChange() {
-    if (self.result) {
-      self.result.area.setValue(self);
-    } else {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
+      return r;
+    },
 
-        if (!area) return null;
-        area.setValue(self);
+    onChange() {
+      if (self.result) {
+        self.result.area.setValue(self);
       } else {
-        self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+        if (self.perregion) {
+          const area = self.annotation.highlightedNode;
+
+          if (!area) return null;
+          area.setValue(self);
+        } else {
+          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+        }
       }
-    }
-  },
+    },
 
-  addText(text, pid) {
-    self.createRegion(text, pid);
-    self.onChange();
-  },
+    addText(text, pid) {
+      self.createRegion(text, pid);
+      self.onChange();
+    },
 
-  beforeSend() {
-    if (self._value && self._value.length) {
-      self.addText(self._value);
-      self._value = "";
-    }
-  },
+    beforeSend() {
+      if (self._value && self._value.length) {
+        self.addText(self._value);
+        self._value = "";
+      }
+    },
 
-  // add unsubmitted text when user switches region
-  submitChanges() {
-    self.beforeSend();
-  },
+    // add unsubmitted text when user switches region
+    submitChanges() {
+      self.beforeSend();
+    },
 
-  deleteText(text) {
-    destroy(text);
-  },
+    deleteText(text) {
+      destroy(text);
+    },
 
-  onShortcut(value) {
-    self.setValue(self._value + value);
-  },
+    onShortcut(value) {
+      if (isFF(FF_DEV_1564_DEV_1565)) {
+        if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
+        // Do nothing if active element is disappeared
+        if (self === lastActiveElementModel && !self.showSubmit) return;
+        if (!lastActiveElement.parentElement) return;
 
-  toStateJSON() {
-    if (!self.regions.length) return;
+        lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, "end");
+        lastActiveElementModel.setValue(lastActiveElement.value);
+      } else {
+        self.setValue(self._value + value);
+      }
+    },
 
-    const toname = self.toname || self.name;
-    const tree = {
-      id: self.pid,
-      from_name: self.name,
-      to_name: toname,
-      type: "textarea",
-      value: {
-        text: self.regions.map(r => r._value),
-      },
-    };
+    toStateJSON() {
+      if (!self.regions.length) return;
 
-    return tree;
-  },
+      const toname = self.toname || self.name;
+      const tree = {
+        id: self.pid,
+        from_name: self.name,
+        to_name: toname,
+        type: "textarea",
+        value: {
+          text: self.regions.map(r => r._value),
+        },
+      };
 
-  fromStateJSON(obj) {
-    let { text } = obj.value;
+      return tree;
+    },
 
-    if (!Array.isArray(text)) text = [text];
+    fromStateJSON(obj) {
+      let { text } = obj.value;
 
-    text.forEach(t => self.addText(t, obj.id));
-  },
-}));
+      if (!Array.isArray(text)) text = [text];
+
+      text.forEach(t => self.addText(t, obj.id));
+    },
+
+    setLastFocusedElement(element, model = self) {
+      lastActiveElement = element;
+      lastActiveElementModel = model;
+    },
+
+    returnFocus() {
+      lastActiveElement?.focus?.();
+    },
+  };
+});
 
 const TextAreaModel = types.compose(
   "TextAreaModel",
@@ -261,6 +286,11 @@ const TextAreaModel = types.compose(
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
+  const onFocus = useCallback((ev, model) => {
+    if (isFF(FF_DEV_1564_DEV_1565)) {
+      item.setLastFocusedElement(ev.target, model);
+    }
+  }, [item]);
 
   const props = {
     name: item.name,
@@ -274,6 +304,7 @@ const HtxTextArea = observer(({ item }) => {
 
       item.setValue(value);
     },
+    onFocus,
   };
 
   if (rows > 1) {
@@ -330,7 +361,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.regions.length > 0 && (
         <div style={{ marginBottom: "1em" }}>
           {item.regions.map(t => (
-            <HtxTextAreaRegion key={t.id} item={t}/>
+            <HtxTextAreaRegion key={t.id} item={t} onFocus={onFocus}/>
           ))}
         </div>
       )}

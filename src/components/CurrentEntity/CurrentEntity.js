@@ -56,8 +56,6 @@ export const CurrentEntity = injector(observer(({
 
       copyToClipboard(ev);
       entity.deleteSelectedRegions();
-
-      console.log("Window event: cutHandler", ev);
     };
 
     window.addEventListener("copy", copyHandler);
