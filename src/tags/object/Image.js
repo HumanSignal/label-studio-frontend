@@ -607,10 +607,20 @@ const Model = types.model({
      * Set zoom
      */
     setZoom(scale, x, y) {
-      self.resize = scale;
+      const { stageWidth, stageHeight } = self;
+      
       self.zoomScale = scale;
       self.setZoomPosition(x, y);
       self._recalculateImageParams();
+
+      if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
+        self._updateRegionsSizes({
+          width: self.stageWidth,
+          height: self.stageHeight,
+          naturalWidth: self.naturalWidth,
+          naturalHeight: self.naturalHeight,
+        });
+      }
     },
 
     setZoomPosition(x, y) {
