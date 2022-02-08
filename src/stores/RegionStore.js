@@ -323,26 +323,26 @@ export default types.model("RegionStore", {
         const groupingEntity = {
           type: "tool",
           value: key.replace('region', ''),
-          background: region.getOneColor(),
+          background: '#000',
         };
 
         return groups[key] = {
-          ...(enrich?.(groupingEntity, index, true) ?? {}),
+          ...enrich(groupingEntity, index, true),
           id: key,
           key,
           isArea: false,
           children: [],
           type: region.type,
+          entity: region,
         };
       };
 
       const addToLabelGroup = (region) => {
-        console.log({ region });
         const key = region.type;
         const group = getTypeGroup(region, key);
 
         group.children.push({
-          ...(enrich?.(region, index, false, null, onClick) ?? {}),
+          ...enrich(region, index, false, null, onClick),
           item: region,
           isArea: true,
         });
@@ -355,8 +355,6 @@ export default types.model("RegionStore", {
       }
 
       result.push(...Object.values(groups));
-
-      console.log({ result, groups });
 
       return result;
     },

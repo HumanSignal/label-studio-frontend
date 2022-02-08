@@ -51,7 +51,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
           className={rootClass.toClassName()}
           treeData={regionsTree}
           selectedKeys={selectedKeys}
-          icon={({ item, isArea }: any) => isArea ? <NodeIconComponent node={item}/> : false}
+          icon={({ entity, isArea }: any) => <NodeIconComponent node={entity}/>}
           switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
           {...eventHandlers}
         />
@@ -67,7 +67,6 @@ const useDataTree = ({
   selectedKeys,
 }: any) => {
   const processor = useCallback((item: any, idx) => {
-    console.log(item);
     const { id, type, hidden } = item;
     const style = item.background ?? item.getOneColor();
     const color = chroma(style).alpha(1);

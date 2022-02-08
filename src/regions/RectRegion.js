@@ -19,6 +19,7 @@ import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import { RegionWrapper } from "./RegionWrapper";
 import { rotateBboxCoords } from "../utils/bboxCoords";
+import { EditableRegion, setupEditableFields } from "./EditableRegion";
 
 /**
  * Rectangle object for Bounding Box
@@ -41,7 +42,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile(() => ({
+  .volatile((self) => ({
     relativeX: 0,
     relativeY: 0,
 
@@ -67,6 +68,14 @@ const Model = types
     _supportsTransform: true,
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
+
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+      { property: "width", label: "W" },
+      { property: "height", label: "H" },
+      { property: "rotation", label: "H" },
+    ],
   }))
   .volatile(() => {
     return {
@@ -247,6 +256,7 @@ const RectRegionModel = types.compose(
   AreaMixin,
   KonvaRegionMixin,
   Model,
+  EditableRegion,
 );
 
 const HtxRectangleView = ({ item }) => {

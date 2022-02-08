@@ -94,7 +94,10 @@ const NodeViews = {
 const Node: FC<any> = observer(({ className, node }) => {
   const name = useNodeName(node);
 
-  if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
+  if (!(name in NodeViews)) {
+    console.error(`No ${name} in NodeView`);
+    return null;
+  }
 
   const { getContent } = NodeViews[name];
   const labelName = node.labelName;
@@ -111,7 +114,10 @@ const Node: FC<any> = observer(({ className, node }) => {
 const NodeIcon: FC<any> = observer(({ node, ...props }) => {
   const name = useNodeName(node);
 
-  if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
+  if (!(name in NodeViews)) {
+    console.error(`No ${name} in NodeView`);
+    return null;
+  }
 
   const { icon: Icon } = NodeViews[name];
 
@@ -123,7 +129,10 @@ const NodeMinimal: FC<any> = observer(({ node }) => {
   const index = regions.indexOf(node);
   const name = useNodeName(node);
 
-  if (!(name in NodeViews)) return null;
+  if (!(name in NodeViews)) {
+    console.error(`No ${name} in NodeView`);
+    return null;
+  }
 
   const { name: text, icon } = NodeViews[name];
 

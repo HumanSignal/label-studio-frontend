@@ -46,8 +46,7 @@ const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
     <>
       <Elem name="section">
         <Elem name="section-head">
-            Annotation History
-
+          Annotation History
           <span>#{currentEntity.pk ?? currentEntity.id}</span>
         </Elem>
         <Elem name="section-content">

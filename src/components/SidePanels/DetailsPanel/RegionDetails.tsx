@@ -5,6 +5,7 @@ import { IconTrash } from "../../../assets/icons";
 import { Tag } from "../../../common/Tag/Tag";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
 import { Block, Elem } from "../../../utils/bem";
+import { RegionEditor } from "./RegionEditor";
 import "./RegionDetails.styl";
 
 const { Text, Paragraph } = Typography;
@@ -88,12 +89,14 @@ export const RegionDetailsMain: FC<{region: any}> = observer(({
   region,
 }) => {
   return (
-    <Elem name="result">
-      {(region?.results as any[]).map((res) => <ResultItem key={res.pid} result={res}/>)}
-    </Elem>
+    <>
+      <Elem name="result">
+        {(region?.results as any[]).map((res) => <ResultItem key={res.pid} result={res}/>)}
+      </Elem>
+      <RegionEditor region={region}/>
+    </>
   );
 });
-
 
 export const RegionDetailsMeta: FC<{region: any}> = observer(({
   region,
