@@ -40,6 +40,10 @@ const Model = types
 
     rotation: 0,
 
+    testprop: types.optional(types.enumeration(["one", "two", "three"]), "two"),
+
+    boolprop: false,
+
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile((self) => ({
@@ -75,6 +79,8 @@ const Model = types
       { property: "width", label: "W" },
       { property: "height", label: "H" },
       { property: "rotation", label: "H" },
+      { property: "testprop", label: "T" },
+      { property: "boolprop", label: "B" },
     ],
   }))
   .volatile(() => {

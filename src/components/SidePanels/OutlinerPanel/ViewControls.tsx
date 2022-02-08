@@ -4,7 +4,6 @@ import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown.js";
 import { Menu } from "../../../common/Menu/Menu.js";
 import { BemWithSpecifiContext } from "../../../utils/bem";
-import { colors } from "../../../utils/namedColors";
 import "./ViewControls.styl";
 
 const { Block, Elem } = BemWithSpecifiContext();

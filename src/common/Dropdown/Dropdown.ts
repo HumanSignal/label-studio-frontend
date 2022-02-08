@@ -1,6 +1,6 @@
 import { Dropdown } from "./DropdownComponent";
 import { DropdownTrigger } from "./DropdownTrigger";
 
-Dropdown.Trigger = DropdownTrigger;
+const DD = Object.assign(Dropdown, { Trigger: DropdownTrigger });
 
-export { Dropdown };
+export { DD as Dropdown };
