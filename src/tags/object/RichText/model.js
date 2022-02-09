@@ -221,19 +221,20 @@ const Model = types
         afterNeedsUpdateCallback = afterCalback;
       },
 
-      needsUpdate(initial = false) {
+      needsUpdate({ initial = false, suggestions = false } = {}) {
+        if (self.isLoaded === false) return;
+
         const { history } = self.annotation;
 
-        if (initial) {
+        if (initial || suggestions) {
           history.freeze("richtext:init");
         }
 
-        if (self.isLoaded === false) return;
         self.setReady(false);
         beforeNeedsUpdateCallback?.();
         self.regs.forEach(region => {
           try {
-            if (initial) {
+            if (initial || (suggestions && region.fromSuggestion)) {
               region.initRangeAndOffsets();
               region.updateHighlightedText();
             }
@@ -244,7 +245,7 @@ const Model = types
         });
         afterNeedsUpdateCallback?.();
 
-        if (initial) {
+        if (initial || suggestions) {
           history.setReplaceNextUndoState(true);
           history.unfreeze("richtext:init");
         }

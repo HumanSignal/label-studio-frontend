@@ -841,11 +841,7 @@ const Annotation = types
         });
       }
 
-      if (isFF(FF_DEV_1555)) {
-        self.updateObjects();
-      } else {
-        self.objects.forEach(obj => obj.needsUpdate?.());
-      }
+      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
     },
 
     /**

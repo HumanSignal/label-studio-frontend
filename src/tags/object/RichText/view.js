@@ -192,7 +192,7 @@ class RichTextPieceView extends Component {
 
     // Apply highlight to ranges of a current tag
     // Also init regions' offsets and html range on initial load
-    item.needsUpdate(initial);
+    item.needsUpdate({ initial });
     this.setReady(true);
   }
 
@@ -217,7 +217,11 @@ class RichTextPieceView extends Component {
       this._returnElementsFromWorkingNode,
     );
     if (item.inline) {
-      this._handleUpdate(true);
+      if (item.isLoaded) {
+        this._handleUpdate(true);
+      } else {
+        this.dispose = observe(item, "isLoaded", () => this._handleUpdate(true), false);
+      }
     } else {
       this.dispose = observe(item, "_isReady", this.updateLoadingVisibility, true);
     }
@@ -354,9 +358,9 @@ class RichTextPieceView extends Component {
             key="root"
             name="container"
             ref={el => {
+              item.visibleNodeRef.current = el;
               this.setLoaded(true);
               this.setReady(true);
-              item.visibleNodeRef.current = el;
             }}
             data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
