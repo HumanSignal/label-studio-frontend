@@ -16,8 +16,8 @@ export {
   AudioPlusModel,
   ImageModel,
   ParagraphsModel,
+  RichTextModel,
   TableModel,
   TimeSeriesModel,
-  RichTextModel,
   VideoModel
 };

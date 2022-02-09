@@ -4,10 +4,13 @@ import { inject, observer } from "mobx-react";
 import { flow, types } from "mobx-state-tree";
 import Papa from "papaparse";
 
+import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Registry from "../../core/Registry";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Base from "./Base";
-import { parseValue } from "../../utils/data";
+import { parseValue, parseValueType } from "../../utils/data";
+import messages from "../../utils/messages";
 
 /**
  * Use the Table tag to display object keys and values in a table.
@@ -22,84 +25,84 @@ import { parseValue } from "../../utils/data";
  * @param {string} valuetype Value to define the data type in Table
  * @param {string} value Data field value containing JSON type for Table
  */
-const Model = types.model({
-  name: types.identifier,
-  type: "table",
-  value: types.maybeNull(types.string),
-  _value: types.frozen([]),
-  valuetype: types.optional(types.string, "json"),
-}).views(self => ({
-  get dataSource() {
-    if(self.valuetype === 'json') {
-      return Object.keys(self._value).map(k => {
-        let val = self._value[k];
+const Model = types
+  .model({
+    name: types.identifier,
+    type: "table",
+    value: types.maybeNull(types.string),
+    _value: types.frozen([]),
+    valuetype: types.optional(types.string, "json"),
+  })
+  .views(self => ({
+    get dataSource() {
+      const { type } = parseValueType(self.valuetype);
+      
+      if (type === "json") {
+        return Object.keys(self._value).map(k => {
+          let val = self._value[k];
 
-        if (typeof val === "object") val = JSON.stringify(val);
-        return { type: k, value: val };
-      });
-    } else {
-      return self._value;
-    }
-  },
-  get columns() {
-    if(self.valuetype === 'json' || !self._value[0]) {
-      return [
-        { title: "Name", dataIndex: "type" },
-        { title: "Value", dataIndex: "value" },
-      ];
-    } else {
-      return Object.keys(self._value[0]).map(value => ({ title: value, dataIndex: value }));
-    }
-  },
-})).actions(self => ({
-  updateValue: flow(function * (store) {
-    // const options = ("csv|url|seperator=;").match(/^(\w+)(.)?/) ?? [];
-    // const options = sep.s
-    const [, type, sep] = self.valuetype.match(/^(\w+)(.)?/) ?? [];
-    const options = {};
+          if (typeof val === "object") val = JSON.stringify(val);
+          return { type: k, value: val };
+        });
+      } else {
+        return self._value;
+      }
+    },
+    get columns() {
+      if (self.valuetype === "json" || !self._value[0]) {
+        return [
+          { title: "Name", dataIndex: "type" },
+          { title: "Value", dataIndex: "value" },
+        ];
+      } else {
+        return Object.keys(self._value[0]).map(value => ({ title: value, dataIndex: value }));
+      }
+    },
+  }))
+  .actions(self => ({
+    updateValue: flow(function*(store) {
+      const { type, options } = parseValueType(self.valuetype);
+      let originData = parseValue(self.value, store.task.dataObj);
 
-    if (sep) {
-      const pairs = self.valuetype.split(sep).slice(1);
+      console.log(originData);
 
-      pairs.forEach(pair => {
-        const [k, v] = pair.split("=", 2);
+      if (options.url) {
+        try {
+          const response = yield fetch(originData);
+          const { ok, status, statusText } = response;
 
-        options[k] = v ?? true; // options without values are `true`
-      });
-    }
+          if (!ok) throw new Error(`${status} ${statusText}`);
 
-    switch (type) {
-      case "csv":
-        {
-          let csvData = parseValue(self.value, store.task.dataObj);
+          originData = yield response.text();
+        } catch (error) {
+          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url: originData });
 
-          if (options.url) {
-            const response = yield fetch(csvData);
+          self.annotationStore.addErrors([errorBuilder.generalError(message)]);
+        }
+      }
 
-            csvData = yield response.text();
-          }
-          
-          Papa.parse(
-            csvData,
-            {
+      switch (type) {
+        case "csv":
+          {
+            Papa.parse(originData, {
               delimiter: options.separator,
               header: !options.headless,
               download: false,
               complete: ({ data }) => {
                 self._value = data;
               },
-            },
-          );
-        }
-        break;
-      default:
-        self._value = parseValue(self.value, store.task.dataObj);
-        break;
-    }
-  }),
-}));
+            });
+          }
+          break;
+        default:
+          self._value = typeof originData === "string" ? JSON.parse(originData) : originData;
+          console.log("####", self._value);
+          break;
+      }
+    }),
+  }));
 
-const TableModel = types.compose("TableModel", Base, ProcessAttrsMixin, Model);
+const TableModel = types.compose("TableModel", Base, ProcessAttrsMixin, AnnotationMixin, Model);
 
 const HtxTable = inject("store")(
   observer(({ _, item }) => {
