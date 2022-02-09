@@ -7,18 +7,12 @@ import { isDefined } from "../utils/utilities";
 
 export const HighlightMixin = types
   .model()
-  .volatile(()  =>({
-    _highlightedText: "",
-  }))
   .views(self => ({
     get _hasSpans() {
       // @todo is it possible that only some spans are connected?
       return self._spans ? (
         self._spans.every(span => span.isConnected)
       ) : false;
-    },
-    get highlightedText() {
-      return self.text || self._highlightedText;
     },
   }))
   .actions(self => ({
