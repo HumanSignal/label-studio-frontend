@@ -26,6 +26,8 @@ class RichTextPieceView extends Component {
     this.loadingRef = React.createRef();
 
     this.rootRef = props.item.rootNodeRef;
+
+    this.doubleClickSelection = undefined;
   }
 
   _selectRegions = (additionalMode) => {
@@ -63,8 +65,7 @@ class RichTextPieceView extends Component {
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
-
-    const label = states[0]?.selectedLabels?.[0];
+    const label = this.previousSelection ||  states[0]?.selectedLabels?.[0];
 
     Utils.Selection.captureSelection(({ selectionText, range }) => {
       if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -76,18 +77,21 @@ class RichTextPieceView extends Component {
       const normedRange = xpath.fromRange(range, root);
 
       if (!normedRange) return;
-
+     
       normedRange._range = range;
       normedRange.text = selectionText;
       normedRange.isText = item.type === "text";
       normedRange.dynamic = this.props.store.autoAnnotation;
-
-      item.addRegion(normedRange);
+      item.addRegion(normedRange, this.doubleClickSelection);
     }, {
       window: rootEl?.contentWindow ?? window,
       granularity: label?.granularity ?? item.granularity,
-      beforeCleanup: () => (this._selectionMode = true),
+      beforeCleanup: () => {
+        this.doubleClickSelection = undefined;
+        this._selectionMode = true;
+      },
     });
+    this.doubleClickSelection = states[0]?.selectedLabels?.[0];
   };
 
   /**
@@ -98,7 +102,6 @@ class RichTextPieceView extends Component {
       this._selectionMode = false;
       return;
     }
-
     if (!this.props.item.clickablelinks && matchesSelector(event.target, "a")) {
       event.preventDefault();
       return;
