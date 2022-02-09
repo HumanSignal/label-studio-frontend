@@ -1,4 +1,4 @@
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && !window.APP_SETTINGS) {
   const flags = (() => {
     try {
       return require("./flags.json");
