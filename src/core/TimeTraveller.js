@@ -52,8 +52,9 @@ const TimeTraveller = types
 
       unfreeze(key) {
         self.safeUnfreeze(key);
-        if (!self.isFrozen && changesDuringFreeze) {
-          self.recordNow();
+        if (!self.isFrozen) {
+          if (changesDuringFreeze) self.recordNow();
+          self.setReplaceNextUndoState(false);
         }
       },
 
