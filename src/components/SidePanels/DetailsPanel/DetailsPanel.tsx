@@ -87,8 +87,8 @@ const SelectedRegion: FC<{region: any}> = observer(({
   return (
     <RegionItem
       region={region}
-      mainDetails={<RegionDetailsMain region={region}/>}
-      metaDetails={<RegionDetailsMeta region={region}/>}
+      mainDetails={RegionDetailsMain}
+      metaDetails={RegionDetailsMeta}
     />
   );
 });

@@ -69,6 +69,14 @@
     "key": "alt+h",
     "description": "Toggle selected region visibility"
   },
+  "region:lock": {
+    "key": "alt+l",
+    "description": "Lock selected region"
+  },
+  "region:meta": {
+    "key": "alt+m",
+    "description": "Edit selected region meta"
+  },
   "region:unselect": {
     "key": "u",
     "description": "Unselect region"

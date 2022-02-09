@@ -1,6 +1,8 @@
 import { observe } from "mobx";
+import { observer } from "mobx-react";
 import { getType, IAnyType, isLiteralType, isOptionalType, isPrimitiveType, isUnionType, types } from "mobx-state-tree";
 import { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { IconPropertyAngle } from "../../../assets/icons";
 import { Block, Elem, useBEM } from "../../../utils/bem";
 import "./RegionEditor.styl";
 
@@ -28,23 +30,29 @@ const getInputType = (type: any) => {
   }
 };
 
-export const RegionEditor: FC<RegionEditorProps> = ({
+const IconMapping = {
+  angle: IconPropertyAngle,
+};
+
+const RegionEditorComponent: FC<RegionEditorProps> = ({
   region,
 }) => {
   const fields: any[] = region.editableFields ?? [];
 
   return (
-    <Block name="region-editor">
-      {region.editorEnabled && fields.map((field: any, i) => {
-        return (
-          <RegionProperty
-            key={`${field.property}-${i}`}
-            property={field.property}
-            label={field.label}
-            region={region}
-          />
-        );
-      })}
+    <Block name="region-editor" mod={{ disabled: !region.editable }}>
+      <Elem name="wrapper">
+        {region.editorEnabled && fields.map((field: any, i) => {
+          return (
+            <RegionProperty
+              key={`${field.property}-${i}`}
+              property={field.property}
+              label={field.label}
+              region={region}
+            />
+          );
+        })}
+      </Elem>
     </Block>
   );
 };
@@ -141,7 +149,7 @@ const RegionProperty: FC<RegionPropertyProps> = ({
           {options.map((value, i) => <option key={`${value}-${i}`} value={value}>{value}</option>)}
         </select>
       ) : null}
-      <Elem name="text" tag="span">{label}</Elem>
+      <PropertyLabel label={label}/>
     </Elem>
   );
 };
@@ -158,7 +166,7 @@ const RegionInput: FC<RegionInputProps> = ({
   ...props
 }) => {
   const normalizeValue = (value: any, type: HTMLInputTypeAttribute) =>{
-    if (type === "number") return Number((value ?? 0).toFixed(2));
+    if (type === "number") return Number(Number(value ?? 0).toFixed(2));
     return value;
   };
 
@@ -211,3 +219,21 @@ const RegionInput: FC<RegionInputProps> = ({
     />
   );
 };
+
+const PropertyLabel: FC<{label: string}> = ({ label }) => {
+  const IconComponent = useMemo(() => {
+    if (label.startsWith('icon:')) {
+      const iconName = label.split(":")[1] as keyof typeof IconMapping;
+
+      return IconMapping[iconName] ?? null;
+    }
+
+    return null;
+  }, [label]);
+
+  return (
+    <Elem name="text" tag="span">{IconComponent ? <IconComponent/> : label}</Elem>
+  );
+};
+
+export const RegionEditor = observer(RegionEditorComponent);

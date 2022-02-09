@@ -71,3 +71,6 @@ export { ReactComponent as IconSortDown } from "./sort-down.svg";
 export { ReactComponent as IconRelationRight } from "./relations/right.svg";
 export { ReactComponent as IconRelationLeft } from "./relations/left.svg";
 export { ReactComponent as IconRelationBi } from "./relations/bi.svg";
+
+// Properties
+export { ReactComponent as IconPropertyAngle } from "./properties/angle.svg";

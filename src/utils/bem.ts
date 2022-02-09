@@ -245,6 +245,6 @@ export const BemWithSpecifiContext = (context?: Context<CN | null>) => {
 export const { Block, Elem } = BemWithSpecifiContext(BlockContext);
 
 export const useBEM = () => {
-  return useContext(BlockContext);
+  return useContext(BlockContext)!;
 };
 

@@ -26,6 +26,32 @@
   &__result
     padding 0 8px
 
+  &__meta-text
+    width calc(100% - 16px)
+    border 1px solid transparent
+    margin 0 8px
+    padding 4px 8px
+    min-height 64px
+    border-radius 4px
+    outline none
+    background-color rgba(#000, 0.05)
+    transition-property background-color, border-color
+    transition-duration 80ms
+    transition-timing-function ease
+
+    textarea&:hover
+      border-color #E5E5E5
+      background-color #fff
+
+    textarea&:focus
+      background-color #fff
+      border-color $accent_color
+      box-shadow 0 0 0 1px $accent_color
+
+    &:not(textarea)
+      white-space pre-wrap
+      word-break break-all
+
   &_compact &__head
     margin -5px 0
 

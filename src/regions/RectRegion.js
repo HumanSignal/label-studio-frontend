@@ -78,7 +78,7 @@ const Model = types
       { property: "y", label: "Y" },
       { property: "width", label: "W" },
       { property: "height", label: "H" },
-      { property: "rotation", label: "H" },
+      { property: "rotation", label: "icon:angle" },
     ],
   }))
   .volatile(() => {

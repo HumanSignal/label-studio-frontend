@@ -4,7 +4,7 @@ import { FC, useMemo } from "react";
 import { IconTrash } from "../../../assets/icons";
 import { Tag } from "../../../common/Tag/Tag";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
-import { Block, Elem } from "../../../utils/bem";
+import { Block, Elem, useBEM } from "../../../utils/bem";
 import { RegionEditor } from "./RegionEditor";
 import "./RegionDetails.styl";
 
@@ -98,25 +98,61 @@ export const RegionDetailsMain: FC<{region: any}> = observer(({
   );
 });
 
-export const RegionDetailsMeta: FC<{region: any}> = observer(({
+type RegionDetailsMetaProps = {region: any, editMode?: boolean, cancelEditMode?: () => void}
+
+export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
   region,
+  editMode,
+  cancelEditMode,
 }) => {
+  const bem = useBEM();
+
   return (
     <>
-
-      {region?.meta?.text && (
-        <Elem name="text">
-            Meta: <span>{region.meta.text}</span>
-            &nbsp;
-          <IconTrash
-            type="delete"
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              region.deleteMetaInfo();
-            }}
-          />
+      {editMode ? (
+        <textarea
+          placeholder="Meta"
+          className={bem.elem("meta-text").toClassName()}
+          value={region.normInput}
+          onChange={(e) => region.setNormInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              region.setMetaInfo(region.normInput);
+              cancelEditMode?.();
+            }
+          }}
+        />
+      ) : region.meta?.text && (
+        <Elem name="meta-text">
+          {region.meta?.text}
         </Elem>
       )}
+      {/* <Elem name="section">
+        <Elem name="section-head">
+          Data Display
+        </Elem>
+        <Elem name="section-content">
+          content
+        </Elem>
+      </Elem> */}
     </>
   );
+  // return (
+  //   <>
+  //     {region?.meta?.text && (
+  //       <Elem name="text">
+  //           Meta: <span>{region.meta.text}</span>
+  //           &nbsp;
+  //         <IconTrash
+  //           type="delete"
+  //           style={{ cursor: "pointer" }}
+  //           onClick={() => {
+  //             region.deleteMetaInfo();
+  //           }}
+  //         />
+  //       </Elem>
+  //     )}
+  //   </>
+  // );
 });

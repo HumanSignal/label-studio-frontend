@@ -1,7 +1,7 @@
 import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import { FC, useMemo, useState } from "react";
-import { IconLink, IconPlusAlt, IconTrash } from "../../../assets/icons";
+import { IconLink, IconLockLocked, IconLockUnlocked, IconPlusAlt, IconTrash } from "../../../assets/icons";
 import { IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../../common/Button/Button";
 import { Block, Elem } from "../../../utils/bem";
@@ -12,8 +12,8 @@ interface RegionItemProps {
   withActions?: boolean;
   compact?: boolean;
   withIds?: boolean;
-  mainDetails?: JSX.Element;
-  metaDetails?: JSX.Element;
+  mainDetails?: FC<{region: any}>;
+  metaDetails?: FC<{region: any, editMode?: boolean, cancelEditMode?: () => void}>;
 }
 
 export const RegionItem: FC<RegionItemProps> = observer(({
@@ -21,16 +21,12 @@ export const RegionItem: FC<RegionItemProps> = observer(({
   compact = false,
   withActions = true,
   withIds = true,
-  mainDetails,
-  metaDetails,
+  mainDetails: MainDetails,
+  metaDetails: MetaDetails,
 }) => {
   const { annotation } = region;
-  const { selectedRegions: nodes, selectionSize } = annotation;
+  const { selectedRegions: nodes } = annotation;
   const [editMode, setEditMode] = useState(false);
-
-  const hasEditableNodes = useMemo(() => {
-    return !!nodes.find((node: any) => node.editable);
-  }, [nodes]);
 
   const hasEditableRegions = useMemo(() => {
     return !!nodes.find((node: any) => node.editable && !node.classification);
@@ -53,15 +49,25 @@ export const RegionItem: FC<RegionItemProps> = observer(({
         </Elem>
         {withIds && <span>{region.cleanId}</span>}
       </Elem>
-      {mainDetails && <Elem name="content">{mainDetails}</Elem>}
+      {MainDetails && <Elem name="content"><MainDetails region={region}/></Elem>}
       {withActions && (
         <RegionAction
           region={region}
+          editMode={editMode}
           annotation={annotation}
           hasEditableRegions={hasEditableRegions}
+          onEditModeChange={setEditMode}
         />
       )}
-      {metaDetails && <Elem name="content">{metaDetails}</Elem>}
+      {MetaDetails && (
+        <Elem name="content">
+          <MetaDetails
+            region={region}
+            editMode={editMode}
+            cancelEditMode={() => setEditMode(false)}
+          />
+        </Elem>
+      )}
     </Block>
   );
 });
@@ -69,7 +75,9 @@ export const RegionItem: FC<RegionItemProps> = observer(({
 const RegionAction: FC<any> = observer(({
   region,
   annotation,
+  editMode,
   hasEditableRegions,
+  onEditModeChange,
 }) => {
   const entityButtons: JSX.Element[] = [];
 
@@ -79,7 +87,14 @@ const RegionAction: FC<any> = observer(({
         key="relation"
         icon={<IconLink/>}
         primary={annotation.relationMode}
-        onClick={() => annotation.startRelationMode(region)}
+        onClick={() => {
+          if (annotation.relationMode) {
+            annotation.stopRelationMode();
+          } else {
+            annotation.startRelationMode(region);
+          }
+        }}
+        hotkey="region:relation"
       />
     ));
 
@@ -87,6 +102,9 @@ const RegionAction: FC<any> = observer(({
       <RegionActionButton
         key="meta"
         icon={<IconPlusAlt/>}
+        primary={editMode}
+        onClick={() => onEditModeChange(!editMode)}
+        hotkey="region:meta"
       />
     ));
   }
@@ -98,8 +116,15 @@ const RegionAction: FC<any> = observer(({
       </Elem>
       <Elem name="group" mod={{ align: "right" }}>
         <RegionActionButton
+          icon={region.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
+          disabled={region.readonly}
+          onClick={() => region.setLocked(!region.locked)}
+          hotkey="region:lock"
+        />
+        <RegionActionButton
           icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
           onClick={region.toggleHidden}
+          hotkey="region:visibility"
         />
         <RegionActionButton
           danger

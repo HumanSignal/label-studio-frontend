@@ -1,20 +1,27 @@
 .region-editor
-  --col-count 2
+  --col-count 5
   --col-width calc((100% - 16px) / var(--col-count))
-  margin 0 8px
-  display grid
-  grid-gap 8px
+  width 100%
+  padding 0 8px
   grid-auto-flow row
   box-sizing border-box
-  width calc(100% - 16px)
-  grid-template-columns repeat(var(--col-count), var(--col-width))
+
+  &_disabled
+    pointer-events none
+    opacity 0.4
+
+  &__wrapper
+    display grid
+    width 100%
+    grid-gap 4px
+    grid-template-columns repeat(var(--col-count), minmax(0, 1fr))
 
   &__property
-    display flex
-    width 100%
     height 32px
-    align-items center
+    display flex
     position relative
+    align-items center
+    justify-self: stretch;
 
   &__text
     top 0
@@ -27,20 +34,26 @@
     position absolute
     text-align center
     opacity 0.3
+    font-size 12px
     pointer-events none
 
   &__input
     margin 0
+    flex 1
+    font-size 12px
 
     &:not([type=checkbox]):not([type=radio])
       flex 1
       outline none
+      width 100%
       border 1px solid transparent
       height 32px
       border-radius 4px
       box-sizing border-box
-      padding 4px 8px 4px 28px
-      max-width calc(100% - 15px)
+      padding 4px 4px 4px 24px
+      transition-property background-color, border-color
+      transition-duration 80ms
+      transition-timing-function ease
 
       &:hover
         border-color #E5E5E5
