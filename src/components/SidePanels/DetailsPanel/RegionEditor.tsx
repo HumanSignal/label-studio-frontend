@@ -1,13 +1,32 @@
-import { isLiteral } from "@babel/types";
 import { observe } from "mobx";
-import { getType, isLiteralType, isOptionalType, isPrimitiveType, isType, isUnionType, types } from "mobx-state-tree";
-import { ChangeEvent, FC, useCallback, useEffect, useMemo, useState } from "react";
+import { getType, IAnyType, isLiteralType, isOptionalType, isPrimitiveType, isUnionType, types } from "mobx-state-tree";
+import { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Block, Elem, useBEM } from "../../../utils/bem";
 import "./RegionEditor.styl";
 
 interface RegionEditorProps {
   region: any;
 }
+
+const getPrimitiveType = (type: IAnyType) => {
+  if (isOptionalType(type)) {
+    const subtype = (type as any).getSubTypes();
+
+    return isPrimitiveType(subtype) ? subtype.name : null;
+  }
+
+  return isPrimitiveType(type) ? (type as any).name : null;
+};
+
+const getInputType = (type: any) => {
+  const primitive = getPrimitiveType(type);
+
+  switch (primitive) {
+    case "number": return "number";
+    case "string": return "text";
+    default: return "text";
+  }
+};
 
 export const RegionEditor: FC<RegionEditorProps> = ({
   region,
@@ -81,15 +100,9 @@ const RegionProperty: FC<RegionPropertyProps> = ({
     return coreType === types.boolean;
   }, [propertyType, isPrimitive]);
 
-  const onChangeHandler = useCallback((e: ChangeEvent) => {
-    const target = e.target as any;
-
+  const onChangeHandler = useCallback((value) => {
     try {
-      const newValue = isBoolean
-        ? target.checked
-        : convertValue((target as any).value, propertyType);
-
-      region.setProperty(property, newValue);
+      region.setProperty(property, value);
     } catch (err) {
       console.error(err);
     }
@@ -110,19 +123,19 @@ const RegionProperty: FC<RegionPropertyProps> = ({
           className={block?.elem("input").toClassName()}
           type="checkbox"
           checked={value}
-          onChange={onChangeHandler}
+          onChange={(e) => onChangeHandler(e.target.checked)}
         />
       ) : isPrimitive ? (
-        <input
-          className={block?.elem("input").toClassName()}
-          type="text"
+        <RegionInput
+          type={getInputType(propertyType)}
+          step="0.01"
           value={value}
-          onChange={onChangeHandler}
+          onChange={(v) => onChangeHandler(v)}
         />
       ) : options ? (
         <select
           value={value}
-          onChange={onChangeHandler}
+          onChange={(e) => onChangeHandler(e.target.value)}
           className={block?.elem("select").toClassName()}
         >
           {options.map((value, i) => <option key={`${value}-${i}`} value={value}>{value}</option>)}
@@ -133,18 +146,68 @@ const RegionProperty: FC<RegionPropertyProps> = ({
   );
 };
 
-const convertValue = (value: any, type: any) => {
-  let result: any;
+interface RegionInputProps extends InputHTMLAttributes<HTMLInputElement>  {
+  type: HTMLInputTypeAttribute;
+  onChange?: (newValue: any) => void;
+}
 
-  switch(type.name) {
-    case "number":
-      result = Number(value);
-      if (isNaN(result)) throw new Error("Type mistmatch");
-      break;
-    default:
-      result = value;
-      break;
-  }
+const RegionInput: FC<RegionInputProps> = ({
+  onChange,
+  type,
+  value,
+  ...props
+}) => {
+  const normalizeValue = (value: any, type: HTMLInputTypeAttribute) =>{
+    if (type === "number") return Number((value ?? 0).toFixed(2));
+    return value;
+  };
 
-  return result;
+  const block = useBEM();
+  const [currentValue, setValue] = useState(normalizeValue(value, type));
+
+  const updateValue = useCallback((value) => {
+    const newValue = normalizeValue(value, type);
+
+    setValue(newValue);
+    onChange?.(newValue);
+  }, [onChange, type]);
+
+  const onChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    updateValue(e.target.value);
+  }, [updateValue]);
+
+  const onKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    if (type !== 'number') return;
+    if (e.key === "ArrowUp" || e.key === 'ArrowDown') {
+      e.preventDefault();
+      console.log('arrow');
+
+      const step = (e.altKey && e.shiftKey) ? 0.01 : e.shiftKey ? 10 : e.altKey ? 0.1 : 1;
+      let newValue = Number(currentValue);
+
+      if (e.key === 'ArrowUp') {
+        newValue += step;
+      } else {
+        newValue -= step;
+      }
+
+      updateValue(parseFloat(newValue.toFixed(2)));
+    }
+  }, [currentValue, type, props.step]);
+
+  useEffect(() => {
+    updateValue(value);
+  }, [value]);
+
+  return (
+    <input
+      {...props}
+      className={block?.elem("input").toClassName()}
+      type="text"
+      step="0.01"
+      onChange={onChangeHandler}
+      onKeyDown={onKeyDown}
+      value={currentValue}
+    />
+  );
 };

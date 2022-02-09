@@ -79,8 +79,6 @@ const Model = types
       { property: "width", label: "W" },
       { property: "height", label: "H" },
       { property: "rotation", label: "H" },
-      { property: "testprop", label: "T" },
-      { property: "boolprop", label: "B" },
     ],
   }))
   .volatile(() => {

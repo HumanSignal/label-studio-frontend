@@ -1,8 +1,8 @@
 import { FC, useCallback, useMemo } from "react";
 import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from "../../../assets/icons";
 import { Button } from "../../../common/Button/Button";
-import { Dropdown } from "../../../common/Dropdown/Dropdown.js";
-import { Menu } from "../../../common/Menu/Menu.js";
+import { Dropdown } from "../../../common/Dropdown/Dropdown";
+import { Menu } from "../../../common/Menu/Menu";
 import { BemWithSpecifiContext } from "../../../utils/bem";
 import "./ViewControls.styl";
 
