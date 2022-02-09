@@ -115,10 +115,11 @@ const Model = types
     },
 
     getRangeToHighlight() {
-      if (!self.globalOffsets) return undefined;
+      const root = self._getRootNode();
+
+      if (!root || !self.globalOffsets) return undefined;
 
       if (!self.cachedRange || self.cachedRange.collapsed) {
-        const root = self._getRootNode();
         const { start, end } = self.globalOffsets;
 
         self.cachedRange = findRangeNative(start, end, root);
@@ -178,10 +179,9 @@ const Model = types
       if (self.globalOffsets && isDefined(root)) {
         const { start, end } = self.globalOffsets;
 
-        self.globalOffsets = { start, end };
         self.cachedRange = findRangeNative(start, end, root);
 
-        if (self.cachedRange) self._fixXPaths();
+        if (self.cachedRange) self._fixXPaths(self.cachedRange, root);
 
         return;
       }
@@ -197,10 +197,10 @@ const Model = types
 
       if (!isDefined(normedRange)) return;
 
-      self.start = normedRange.start ?? self.start;
-      self.end = normedRange.end ?? self.end;
-      self.startOffset = normedRange.startOffset ?? self.startOffset;
-      self.endOffset = normedRange.endOffset ?? self.endOffset;
+      self.start = normedRange.start;
+      self.end = normedRange.end;
+      self.startOffset = normedRange.startOffset;
+      self.endOffset = normedRange.endOffset;
     },
 
     _getRange({ useOriginalContent = false, useCache = true } = {}) {

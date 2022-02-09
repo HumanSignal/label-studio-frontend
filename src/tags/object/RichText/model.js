@@ -111,17 +111,21 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    rootNodeRef: React.createRef(), // outdated
+    // the only visible iframe/div
     visibleNodeRef: React.createRef(),
+    // regions highlighting is much faster in a hidden iframe/div; applyHighlights() works here
     workingNodeRef: React.createRef(),
+    // xpaths should be calculated over original document without regions' spans
     originalContentRef: React.createRef(),
+    // toggle showing which node to modify — visible or working
     useWorkingNode: false,
+
     regsObserverDisposer: null,
     _isLoaded: false,
     _loadedForAnnotation: null,
   }))
   .actions(self => {
-    let beforeNeedsUpdateCalback, afterNeedsUpdateCalback;
+    let beforeNeedsUpdateCallback, afterNeedsUpdateCallback;
 
     return {
       setWorkingMode(mode) {
@@ -213,8 +217,8 @@ const Model = types
       },
 
       setNeedsUpdateCallbacks(beforeCalback, afterCalback) {
-        beforeNeedsUpdateCalback = beforeCalback;
-        afterNeedsUpdateCalback = afterCalback;
+        beforeNeedsUpdateCallback = beforeCalback;
+        afterNeedsUpdateCallback = afterCalback;
       },
 
       needsUpdate(initial = false) {
@@ -226,7 +230,7 @@ const Model = types
 
         if (self.isLoaded === false) return;
         self.setReady(false);
-        beforeNeedsUpdateCalback?.();
+        beforeNeedsUpdateCallback?.();
         self.regs.forEach(region => {
           try {
             if (initial) {
@@ -238,13 +242,11 @@ const Model = types
             console.error(err);
           }
         });
-        afterNeedsUpdateCalback?.();
+        afterNeedsUpdateCallback?.();
 
         if (initial) {
           history.setReplaceNextUndoState(true);
           history.unfreeze("richtext:init");
-          // in case there are no new changes
-          history.setReplaceNextUndoState(false);
         }
 
         self.setReady(true);
