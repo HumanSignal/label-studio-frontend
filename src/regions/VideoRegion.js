@@ -128,9 +128,9 @@ const Model = types
 
     closestKeypoint(targetFrame) {
       const seq = self.sequence;
-      let keypoints, result;
+      const keypoints = seq.filter(({ frame }) => frame <= targetFrame);
+      let result;
 
-      keypoints = seq.filter(({ frame }) => frame <= targetFrame);
       result = keypoints[keypoints.length - 1];
 
       if (!result) {
