@@ -104,6 +104,10 @@ const Model = types
     selected: [],
   }))
   .views(self => ({
+    get userLabels() {
+      return self.annotation.store.userLabels;
+    },
+
     get holdsState() {
       return self.selected.length > 0;
     },
@@ -124,7 +128,25 @@ const Model = types
     },
 
     get items() {
-      return traverse(self.children);
+      const fromConfig = traverse(self.children);
+      const fromUsers = self.userLabels.controls[self.name] ?? [];
+
+      for (const path of fromUsers) {
+        let current = { children: fromConfig };
+        const lastIndex = path.length - 1;
+
+        for (let depth = 0; depth < lastIndex; depth++) {
+          current = current.children?.find(item => item.label === path[depth]);
+          if (!current) break;
+        }
+
+        if (current) {
+          if (!current.children) current.children = [];
+          current.children.push({ label: path[lastIndex], path, depth: lastIndex, custom: true });
+        }
+      }
+
+      return fromConfig;
     },
   }))
   .actions(self => ({
@@ -165,7 +187,7 @@ const Model = types
     },
 
     onAddLabel(path) {
-      self.annotation.userLabels.addLabel(self.name, path);
+      self.userLabels.addLabel(self.name, path);
     },
   }));
 

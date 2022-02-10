@@ -2,18 +2,19 @@
 
 import { flow, getEnv, types } from "mobx-state-tree";
 
-import AnnotationStore from "./AnnotationStore";
-import { Hotkey } from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
+import { Hotkey } from "../core/Hotkey";
+import ToolsManager from "../tools/Manager";
+import Utils from "../utils";
+import messages from "../utils/messages";
+import { guidGenerator } from "../utils/unique";
+import { delay, isDefined } from "../utils/utilities";
+import AnnotationStore from "./AnnotationStore";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User, { UserExtended } from "./UserStore";
-import Utils from "../utils";
-import { delay, isDefined } from "../utils/utilities";
-import messages from "../utils/messages";
-import { guidGenerator } from "../utils/unique";
-import ToolsManager from "../tools/Manager";
+import { UserLabels } from "./UserLabels";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -130,6 +131,8 @@ export default types
     awaitingSuggestions: false,
 
     users: types.optional(types.array(UserExtended), []),
+
+    userLabels: types.optional(UserLabels, { controls: {} }),
   })
   .preProcessSnapshot((sn) => {
     return {
