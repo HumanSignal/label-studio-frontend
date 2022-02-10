@@ -193,7 +193,6 @@ class RichTextPieceView extends Component {
     // Apply highlight to ranges of a current tag
     // Also init regions' offsets and html range on initial load
     item.needsUpdate({ initial });
-    this.setReady(true);
   }
 
   /**
@@ -216,13 +215,8 @@ class RichTextPieceView extends Component {
       this._moveElementsToWorkingNode,
       this._returnElementsFromWorkingNode,
     );
-    if (item.inline) {
-      if (item.isLoaded) {
-        this._handleUpdate(true);
-      } else {
-        this.dispose = observe(item, "isLoaded", () => this._handleUpdate(true), false);
-      }
-    } else {
+
+    if (!item.inline) {
       this.dispose = observe(item, "_isReady", this.updateLoadingVisibility, true);
     }
   }
@@ -232,32 +226,34 @@ class RichTextPieceView extends Component {
   }
 
   componentWillUnmount() {
+    const { item } = this.props;
+
+    if (!item || !isAlive(item)) return;
+
     this.dispose?.();
-    this.setLoaded(false);
-    this.setReady(false);
+    item.setLoaded(false);
+    item.setReady(false);
   }
 
-  setLoaded(value) {
+  markObjectAsLoaded() {
     const { item } = this.props;
 
     if (!item || !isAlive(item)) return;
-    item.setLoaded(value);
+
+    item.setLoaded(true);
     this.updateLoadingVisibility();
+
+    // run in the next tick to have all the refs initialized
+    setTimeout(() => this._handleUpdate(true));
   }
 
-  setReady(value) {
-    const { item } = this.props;
-
-    if (!item || !isAlive(item)) return;
-    item.setReady(value);
-  }
-
+  // no isReady observing in render
   updateLoadingVisibility = () => {
     const { item } = this.props;
     const loadingEl = this.loadingRef.current;
 
-    if(!loadingEl) return;
-    if (item && isAlive(item) && item.isLoaded && item._isReady) {
+    if (!loadingEl) return;
+    if (item && isAlive(item) && item.isLoaded && item.isReady) {
       loadingEl.setAttribute("style", "display: none");
     } else {
       loadingEl.removeAttribute("style");
@@ -316,10 +312,7 @@ class RichTextPieceView extends Component {
       iframe.style.height = Math.max(body.scrollHeight, htmlEl.offsetHeight) + "px";
     }
 
-    this.setLoaded(true);
-
-    // @todo for better updates, but may be redundant
-    setTimeout(() => this._handleUpdate(true));
+    this.markObjectAsLoaded();
   }
 
   render() {
@@ -359,8 +352,7 @@ class RichTextPieceView extends Component {
             name="container"
             ref={el => {
               item.visibleNodeRef.current = el;
-              this.setLoaded(true);
-              this.setReady(true);
+              this.markObjectAsLoaded();
             }}
             data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
@@ -400,7 +392,7 @@ class RichTextPieceView extends Component {
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={el => {
-              this.setReady(false);
+              item.setReady(false);
               item.visibleNodeRef.current = el;
             }}
             className="htx-richtext"

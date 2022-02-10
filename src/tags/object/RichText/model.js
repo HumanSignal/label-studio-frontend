@@ -216,6 +216,7 @@ const Model = types
         self.regsObserverDisposer?.();
       },
 
+      // callbacks to switch render to working node for better performance
       setNeedsUpdateCallbacks(beforeCalback, afterCalback) {
         beforeNeedsUpdateCallback = beforeCalback;
         afterNeedsUpdateCallback = afterCalback;
@@ -231,19 +232,27 @@ const Model = types
         }
 
         self.setReady(false);
-        beforeNeedsUpdateCallback?.();
-        self.regs.forEach(region => {
-          try {
+
+        try {
+          // init and render regions into working node, then move them to visible one
+          beforeNeedsUpdateCallback?.();
+          self.regs.forEach(region => {
             if (initial || (suggestions && region.fromSuggestion)) {
               region.initRangeAndOffsets();
-              region.updateHighlightedText();
             }
             region.applyHighlight();
-          } catch (err) {
-            console.error(err);
-          }
-        });
-        afterNeedsUpdateCallback?.();
+          });
+          afterNeedsUpdateCallback?.();
+
+          // node texts can be only retrieved from the visible node
+          self.regs.forEach(region => {
+            if (initial || (suggestions && region.fromSuggestion)) {
+              region.updateHighlightedText();
+            }
+          });
+        } catch (err) {
+          console.error(err);
+        }
 
         if (initial || suggestions) {
           history.setReplaceNextUndoState(true);
