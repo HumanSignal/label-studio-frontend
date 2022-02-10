@@ -2,6 +2,7 @@ import React, { FormEvent, useCallback, useContext, useEffect, useMemo, useRef, 
 
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
+import { LsChevron } from "../../assets/icons";
 
 import styles from "./Taxonomy.module.scss";
 
@@ -23,7 +24,7 @@ type TaxonomyOptions = {
 }
 
 type TaxonomyOptionsContextValue = TaxonomyOptions & {
-  maxUsagesReached?: boolean
+  maxUsagesReached?: boolean,
 }
 
 type TaxonomyProps = {
@@ -74,13 +75,19 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
   const limitReached = maxUsagesReached && !checked;
   const disabled = onlyLeafsAllowed || limitReached;
 
-  const [isOpen, open, , toggle] = useToggle(isChildSelected);
-  const prefix = item.children?.length && !flat ? (isOpen ? "-" : "+") : " ";
+  const [isOpen, open, , toggle] = useToggle(isChildSelected || flat === false);
   const onClick = () => leafsOnly && toggle();
+  const arrowStyle = item.children?.length && flat !== true
+    ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" }
+    : { display: "none" };
 
   useEffect(() => {
     if (isChildSelected) open();
   }, [isChildSelected]);
+
+  useEffect(() => {
+    if (flat === false) open();
+  }, [flat]);
 
   const title = onlyLeafsAllowed
     ? "Only leaf nodes allowed"
@@ -95,7 +102,9 @@ const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) =>
   return (
     <div>
       <div className={styles.taxonomy__item}>
-        <div className={styles.taxonomy__grouping} onClick={toggle}>{prefix}</div>
+        <div className={styles.taxonomy__grouping} onClick={toggle}>
+          <LsChevron stroke="#09f" style={arrowStyle} />
+        </div>
         <label
           onClick={onClick}
           title={title}
@@ -222,10 +231,11 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }:
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
+        <SelectedList />
         <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
-          <SelectedList />
           <span onClick={() => setOpen(val => !val)}>
             {options.placeholder || "Click to add..."}
+            <LsChevron stroke="#09f" />
           </span>
           <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
         </div>

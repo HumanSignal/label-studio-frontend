@@ -7,26 +7,21 @@
   position: relative;
 
   & > span {
-    display: inline-block;
-    line-height: 32px;
-    padding: 0 5px; // 4px padding + 1px border to stay on the same indent as selected
+    display: flex;
+    align-items: center;
+    line-height: 30px;
+    padding: 0 4px; // 4px padding to stay on the same indent as selected
     margin-bottom: 4px; // also replaces padding to be consistent with selected divs
     white-space: nowrap;
     cursor: pointer;
-
-    &::after {
-      content: "";
-      display: inline-block;
-      margin-left: 6px;
-      border-width: 9px 5px 0;
-      border-color: #444 transparent transparent;
-      border-style: solid;
-    }
   }
 }
 
-.taxonomy_open > span::after {
+.taxonomy > span > svg {
   transform: rotate(-180deg);
+}
+.taxonomy_open > span > svg {
+  transform: none;
 }
 
 .taxonomy__selected {
@@ -34,18 +29,23 @@
   flex-wrap: wrap;
 
   div {
-    margin: 0 4px 4px 0;
-    background: #f4f4f4;
-    padding: 2px 4px;
-    border: 1px solid #d9d9d9;
+    margin: 0 2px 4px 0;
+    background: hsl(0, 0%, 95%);
+    padding: 0; // all the right space should be a clickable button, so no padding
+    padding-left: 8px;
     border-radius: 4px;
+    display: flex;
   }
 
   input[type=button] {
     border: none;
     background: none;
     cursor: pointer;
-    padding: 6px 0 6px 12px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font-size: 20px;
+    color: #09f;
 
     &:hover {
       color: red;
@@ -58,15 +58,14 @@
   z-index: 10;
   background: white;
   border-radius: 6px;
-  padding: 8px;
   max-height: 60vh;
   overflow-y: auto;
   left: -1px;
   width: max-content;
   min-width: 100%;
   max-width: 50vw; // 100% is not enough
-  margin-top: 9px; // 4px padding + 1px border + 4px gap
-  box-shadow: 0 0 4px #d9d9d9;
+  border: 1px solid #e2e2e2;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
 
   input[type=checkbox] {
     margin-right: 4px;
@@ -85,14 +84,21 @@
 
 .taxonomy__search {
   width: 100%;
-  border: 1px solid #d9d9d9;
-  border-radius: 3px;
+  border: none;
+  border-bottom: 1px solid #e2e2e2;
+  border-radius: 3px 3px 0 0;
   padding: 6px 16px;
   margin-bottom: 4px;
   box-shadow: 0 -2px 0 6px white; // white background over scrolled items
   position: sticky;
   top: 0;
   z-index: 1;
+
+  &:focus,
+  &:focus-visible {
+    outline: 1px solid #09f;
+    border-bottom-color: #09f;
+  }
 }
 
 .taxonomy__item ~ div {
@@ -118,11 +124,16 @@
   font-family: monospace;
   font-size: 16px;
   display: inline-block;
-  width: 20px;
-  margin-left: -2px;
+  width: 24px;
+  height: 24px;
+  margin-left: 3px;
   text-align: center;
   user-select: none;
   flex-shrink: 0;
+
+  svg {
+    transition: transform 0.1s; // visible rotation of arrow
+  }
 
   &:not(:empty) {
     cursor: pointer;
