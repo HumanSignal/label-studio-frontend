@@ -16,6 +16,7 @@ import { parseValue } from "../../utils/data";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
+import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -804,7 +805,7 @@ const Model = types.model({
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ObjectBase, AnnotationMixin);
+const ImageModel = types.compose("ImageModel", TagAttrs, ObjectBase, AnnotationMixin, IsReadyWithDepsMixin, Model);
 
 const HtxImage = inject("store")(ImageView);
 

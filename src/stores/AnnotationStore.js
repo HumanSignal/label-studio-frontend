@@ -17,6 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
+import { FF_DEV_1555, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -840,7 +841,11 @@ const Annotation = types
         });
       }
 
-      self.objects.forEach(obj => obj.needsUpdate?.());
+      if (isFF(FF_DEV_1555)) {
+        self.updateObjects();
+      } else {
+        self.objects.forEach(obj => obj.needsUpdate?.());
+      }
     },
 
     /**
@@ -1005,6 +1010,11 @@ const Annotation = types
 
     rejectSuggestion(id) {
       self.suggestions.delete(id);
+    },
+
+    resetReady() {
+      self.objects.forEach(object => object.setReady && object.setReady(false));
+      self.areas.forEach(area => area.setReady && area.setReady(false));
     },
   }));
 
@@ -1331,8 +1341,9 @@ export default types
       });
 
       selectAnnotation(c.id);
-      c.deserializeResults(s);
-      c.updateObjects();
+      c.deserializeAnnotation(s);
+      // reinit will trigger `updateObjects()` so we omit it here
+      c.reinitHistory();
 
       // parent link for the new annotations
       if (entity.pk) {

@@ -11,6 +11,7 @@ import { guidGenerator } from "../core/Helpers";
 
 import styles from "./TextAreaRegion/TextAreaRegion.module.scss";
 import { HtxTextBox } from "../components/HtxTextBox/HtxTextBox";
+import { FF_DEV_1566, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model("TextAreaRegionModel", {
@@ -62,9 +63,9 @@ const TextAreaRegionModel = types.compose(
   Model,
 );
 
-const HtxTextAreaRegionView = ({ item }) => {
+const HtxTextAreaRegionView = ({ item, onFocus }) => {
   const classes = [styles.mark];
-  const params = {};
+  const params = { onFocus: e => onFocus(e, item) };
   const { parent } = item;
   const { relationMode } = item.annotation;
 
@@ -104,15 +105,19 @@ const HtxTextAreaRegionView = ({ item }) => {
     };
   }
 
+  const name = `${parent?.name?? ""}:${item.id}`;
+
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
       <HtxTextBox
         onlyEdit={parent.transcription}
         id={`TextAreaRegion-${item.id}`}
+        name={name}
         className={classes.join(" ")}
         rows={parent.rows}
         text={item._value}
         {...params}
+        ignoreShortcuts={isFF(FF_DEV_1566)}
       />
     </div>
   );
