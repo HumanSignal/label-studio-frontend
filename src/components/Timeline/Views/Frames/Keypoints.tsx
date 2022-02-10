@@ -43,9 +43,13 @@ export const Keypoints: FC<KeypointsProps> = ({
   };
 
   const lifespans = useMemo(() => {
-    return visualizeLifespans(sequence.filter(({ frame }) => {
-      return frame >= minVisibleKeypointPosition && frame <= maxVisibleKeypointPosition;
-    }), step);
+    return visualizeLifespans(sequence, step).map((span) => {
+      span.points = span.points.filter(({ frame }) => {
+        return frame >= minVisibleKeypointPosition && frame <= maxVisibleKeypointPosition;
+      });
+
+      return span;
+    });
   }, [sequence, start, step, minVisibleKeypointPosition, maxVisibleKeypointPosition]);
 
   const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>, select?: boolean) => {
@@ -112,12 +116,24 @@ const Lifespan: FC<LifespanProps> = memo(({
   isLast,
   points,
 }) => {
-  const left = mainOffset + offset + (step / 2);
-  const right = (isLast && enabled) ? 0 : 'auto';
-  const finalWidth = (isLast && enabled) ? 'auto' : width;
+  const left = useMemo(() => {
+    return mainOffset + offset + (step / 2);
+  }, [mainOffset, offset, step]);
+
+  const right = useMemo(() => {
+    return (isLast && enabled) ? 0 : 'auto';
+  }, [isLast, enabled]);
+
+  const finalWidth = useMemo(() => {
+    return (isLast && enabled) ? 'auto' : width;
+  }, [isLast, enabled]);
+
+  const style = useMemo(() => {
+    return { left, width: finalWidth, right };
+  }, [left, right, finalWidth]);
 
   return (
-    <Elem name="lifespan" mod={{ hidden: !visible }} style={{ left, width: finalWidth, right }}>
+    <Elem name="lifespan" mod={{ hidden: !visible }} style={style}>
       {points.map((frame, i) => {
         const left = (frame - start) * step;
 
