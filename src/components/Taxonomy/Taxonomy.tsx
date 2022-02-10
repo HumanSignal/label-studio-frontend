@@ -64,7 +64,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item = ({ item, flat = false }: { item: TaxonomyItem, flat?: boolean }) => {
+const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { leafsOnly, maxUsages, maxUsagesReached } = useContext(TaxonomyOptionsContext);
 
@@ -134,12 +134,53 @@ type DropdownProps = {
   show: boolean,
 }
 
+const filterTreeByPredicate = (
+  flatten: TaxonomyItem[],
+  predicate: (item: TaxonomyItem) => boolean,
+) => {
+  const roots: TaxonomyItem[] = [];
+  const childs: TaxonomyItem[][] = [];
+  let d = -1;
+
+  for (let i = flatten.length; i--; ) {
+    const item = flatten[i];
+
+    if (item.depth === d) {
+      const adjusted: TaxonomyItem = { ...item, children: childs[d] ?? [] };
+
+      childs[d] = [];
+      if (d) {
+        childs[d - 1].unshift(adjusted);
+      } else {
+        roots.unshift(adjusted);
+      }
+      d--;
+      continue;
+    }
+
+    if (predicate(item)) {
+      const adjusted = { ...item, children: [] };
+
+      if (item.depth === 0) {
+        roots.unshift(adjusted);
+      } else {
+        d = item.depth - 1;
+        if (!childs[d]) childs[d] = [];
+        childs[d].unshift(adjusted);
+      }
+    }
+  }
+
+  return roots;
+};
+
 const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
-  const list = search ? flatten.filter(predicate) : items;
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
+
+  const list = search ? filterTreeByPredicate(flatten, predicate) : items;
 
   useEffect(() => {
     const input = inputRef.current;
@@ -161,7 +202,7 @@ const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
         onInput={onInput}
         ref={inputRef}
       />
-      {list.map(item => <Item key={search ? item.path.join("#") : item.label} item={item} flat={search !== ""} />)}
+      {list.map(item => <Item key={item.label} item={item} flat={search === "" ? undefined : false} />)}
     </div>
   );
 };

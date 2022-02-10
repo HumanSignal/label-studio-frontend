@@ -77,7 +77,8 @@ function traverse(root) {
   const visitNode = function(node, parents = []) {
     const label = node.value;
     const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
-    const obj = { label, path, depth: parents.length };
+    const depth = parents.length;
+    const obj = { label, path, depth };
 
     if (node.children) {
       obj.children = uniq(node.children).map(child => visitNode(child, path));
