@@ -3,9 +3,10 @@ import { observe } from "mobx";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import Constants, { defaultStyle } from "../core/Constants";
+import { isDefined } from "../utils/utilities";
 
 const defaultStyles = {
-  defaultFillOpacity: defaultStyle.fillopacity,
+  defaultOpacity: defaultStyle.opacity,
   defaultFillColor: defaultStyle.fillcolor,
   defaultStrokeColor: defaultStyle.strokecolor,
   defaultStrokeColorHighlighted: Constants.HIGHLIGHTED_STROKE_COLOR,
@@ -17,7 +18,7 @@ const defaultStyles = {
 export const useRegionStyles = (region, {
   includeFill = false,
   useStrokeAsFill = false,
-  defaultFillOpacity = defaultStyle.fillopacity,
+  defaultOpacity = defaultStyle.opacity,
   defaultFillColor = defaultStyle.fillcolor,
   defaultStrokeColor = defaultStyle.strokecolor,
   defaultStrokeColorHighlighted = Constants.HIGHLIGHTED_STROKE_COLOR,
@@ -35,13 +36,17 @@ export const useRegionStyles = (region, {
   }, [region.inSelection, highlighted]);
 
   const fillColor = useMemo(() => {
+    // @todo fillopacity should be deprecated and will be removed in future
+    const fillopacity = style?.fillopacity;
+    const opacity = isDefined(fillopacity) ? fillopacity : style?.opacity;
+
     return shouldFill ? (
       chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
         .darken(0.3)
-        .alpha(+(style?.fillopacity ?? defaultFillOpacity ?? 0.5))
+        .alpha(+(opacity ?? defaultOpacity ?? 0.5))
         .css()
     ) : null;
-  }, [shouldFill, style, defaultFillColor, defaultFillOpacity]);
+  }, [shouldFill, style, defaultFillColor, defaultOpacity]);
 
   const strokeColor = useMemo(() => {
     if (selected) {
