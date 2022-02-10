@@ -14,6 +14,7 @@ type TaxonomyItem = {
   path: TaxonomyPath,
   depth: number,
   children?: TaxonomyItem[],
+  custom?: boolean,
 }
 
 type TaxonomyOptions = {
@@ -101,9 +102,11 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
     else el.indeterminate = isChildSelected;
   }, [checked, isChildSelected]);
 
+  const customClassname = item.custom ? styles.taxonomy__item_custom : "";
+
   return (
     <div>
-      <div className={styles.taxonomy__item}>
+      <div className={[styles.taxonomy__item, customClassname].join(" ")}>
         <div className={styles.taxonomy__grouping} onClick={toggle}>
           <LsChevron stroke="#09f" style={arrowStyle} />
         </div>

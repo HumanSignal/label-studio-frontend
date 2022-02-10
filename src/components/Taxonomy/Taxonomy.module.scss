@@ -112,6 +112,10 @@
   &:focus-within {
     background: #eee;
   }
+
+  &_custom {
+    font-style: italic;
+  }
 }
 
 .taxonomy__item label {
