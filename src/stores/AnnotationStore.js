@@ -18,6 +18,7 @@ import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
 import { FF_DEV_1555, isFF } from "../utils/feature-flags";
+import { UserLabels } from "./UserLabels";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -76,6 +77,8 @@ const Annotation = types
     areas: types.map(Area),
 
     suggestions: types.map(Area),
+
+    userLabels: types.optional(UserLabels, { controls: {} }),
 
     regionStore: types.optional(RegionStore, {
       regions: [],

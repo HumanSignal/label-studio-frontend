@@ -7,6 +7,7 @@ import { LsChevron } from "../../assets/icons";
 import styles from "./Taxonomy.module.scss";
 
 type TaxonomyPath = string[]
+type onAddLabelCallback = (label: string[]) => any
 
 type TaxonomyItem = {
   label: string,
@@ -31,6 +32,7 @@ type TaxonomyProps = {
   items: TaxonomyItem[],
   selected: TaxonomyPath[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
+  onAddLabel: onAddLabelCallback,
   options?: TaxonomyOptions,
 }
 
@@ -132,6 +134,7 @@ type DropdownProps = {
   flatten: TaxonomyItem[],
   items: TaxonomyItem[],
   show: boolean,
+  onAddLabel: onAddLabelCallback,
 }
 
 const filterTreeByPredicate = (
@@ -174,13 +177,25 @@ const filterTreeByPredicate = (
   return roots;
 };
 
-const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
+const Dropdown = ({ show, flatten, items, dropdownRef, onAddLabel }: DropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
 
   const list = search ? filterTreeByPredicate(flatten, predicate) : items;
+
+  const addRef = useRef<HTMLInputElement>(null);
+  const onAdd = e => {
+    if (!addRef.current) return;
+
+    const value = addRef.current.value;
+
+    if (e.target.type === "button" || e.key === "Enter") {
+      onAddLabel([value]);
+      addRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     const input = inputRef.current;
@@ -202,12 +217,16 @@ const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
         onInput={onInput}
         ref={inputRef}
       />
+      {/* <div style={{ display: "flex" }}>
+        <input name="taxonomy__add" onKeyPress={onAdd} ref={addRef} />
+        <button onClick={onAdd} type="button">Add</button>
+      </div> */}
       {list.map(item => <Item key={item.label} item={item} flat={search === "" ? undefined : false} />)}
     </div>
   );
 };
 
-const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }: TaxonomyProps) => {
+const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, options = {} }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const taxonomyRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
@@ -278,7 +297,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, options = {} }:
             {options.placeholder || "Click to add..."}
             <LsChevron stroke="#09f" />
           </span>
-          <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
+          <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} onAddLabel={onAddLabel} />
         </div>
       </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>

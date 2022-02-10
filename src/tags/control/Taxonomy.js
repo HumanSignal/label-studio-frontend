@@ -163,6 +163,10 @@ const Model = types
         }
       }
     },
+
+    onAddLabel(path) {
+      self.annotation.userLabels.addLabel(self.name, path);
+    },
   }));
 
 const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, VisibilityMixin, AnnotationMixin);
@@ -184,6 +188,7 @@ const HtxTaxonomy = observer(({ item }) => {
         items={item.items}
         selected={item.selected}
         onChange={item.onChange}
+        onAddLabel={item.onAddLabel}
         options={options}
       />
     </div>
