@@ -9,7 +9,7 @@ import Registry from "../../core/Registry";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Base from "./Base";
-import { parseValue, parseValueType } from "../../utils/data";
+import { parseTypeAndOption, parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 
 /**
@@ -35,8 +35,8 @@ const Model = types
   })
   .views(self => ({
     get dataSource() {
-      const { type } = parseValueType(self.valuetype);
-      
+      const { type } = parseTypeAndOption(self.valuetype);
+
       if (type === "json") {
         return Object.keys(self._value).map(k => {
           let val = self._value[k];
@@ -61,7 +61,7 @@ const Model = types
   }))
   .actions(self => ({
     updateValue: flow(function*(store) {
-      const { type, options } = parseValueType(self.valuetype);
+      const { type, options } = parseTypeAndOption(self.valuetype);
       let originData = parseValue(self.value, store.task.dataObj);
 
       console.log(originData);
@@ -96,7 +96,6 @@ const Model = types
           break;
         default:
           self._value = typeof originData === "string" ? JSON.parse(originData) : originData;
-          console.log("####", self._value);
           break;
       }
     }),

@@ -149,7 +149,7 @@ export const tryToParseJSON = value => {
  * Accept value type as a parameter
  * Returns type, seperator and options object by analyzing valueType
  */
-export const parseValueType = valueType => {
+export const parseTypeAndOption = valueType => {
   const [, type, sep] = valueType.match(/^(\w+)(.)?/) ?? [];
   const options = {};
 
