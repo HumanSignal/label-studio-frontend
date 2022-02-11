@@ -23,6 +23,7 @@ type TaxonomyOptions = {
   pathSeparator?: string,
   maxUsages?: number,
   placeholder?: string,
+  onAddLabel?: onAddLabelCallback,
 }
 
 type TaxonomyOptionsContextValue = TaxonomyOptions & {
@@ -33,7 +34,7 @@ type TaxonomyProps = {
   items: TaxonomyItem[],
   selected: TaxonomyPath[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
-  onAddLabel: onAddLabelCallback,
+  onAddLabel?: onAddLabelCallback,
   options?: TaxonomyOptions,
 }
 
@@ -44,6 +45,33 @@ type TaxonomySelectedContextValue = [
 
 const TaxonomySelectedContext = React.createContext<TaxonomySelectedContextValue>([[], () => undefined]);
 const TaxonomyOptionsContext = React.createContext<TaxonomyOptionsContextValue>({});
+
+type UserLabelFormProps = {
+  onAddLabel: (path: string[]) => any,
+  path: string[],
+}
+
+const UserLabelForm = ({ onAddLabel, path }: UserLabelFormProps) => {
+  const addRef = useRef<HTMLInputElement>(null);
+  const onAdd = (e: React.KeyboardEvent<HTMLInputElement> | React.FocusEvent) => {
+    if (!addRef.current) return;
+
+    const value = addRef.current.value;
+
+    if (!value) return;
+
+    if (e.type === "blur" || e.key === "Enter") {
+      onAddLabel([...path, value]);
+      addRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className={styles.taxonomy__newitem}>
+      <input name="taxonomy__add" onKeyPress={onAdd} onBlur={onAdd} ref={addRef} />
+    </div>
+  );
+};
 
 const SelectedList = () => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
@@ -69,7 +97,7 @@ function isSubArray(item: string[], parent: string[]) {
 
 const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
-  const { leafsOnly, maxUsages, maxUsagesReached } = useContext(TaxonomyOptionsContext);
+  const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel } = useContext(TaxonomyOptionsContext);
 
   const checked = selected.some(current => isArraysEqual(current, item.path));
   const isChildSelected = selected.some(current => isSubArray(current, item.path));
@@ -104,6 +132,18 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
 
   const customClassname = item.custom ? styles.taxonomy__item_custom : "";
 
+  let childs = null;
+
+
+  if (item.children && !flat && isOpen) {
+    childs = item.children.map(
+      child => <Item key={child.label} item={child}/>,
+    );
+    if (onAddLabel) {
+      childs.push(<UserLabelForm onAddLabel={onAddLabel} path={item.path} />);
+    }
+  }
+
   return (
     <div>
       <div className={[styles.taxonomy__item, customClassname].join(" ")}>
@@ -125,9 +165,7 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
           {item.label}
         </label>
       </div>
-      {item.children && !flat && isOpen && item.children.map(
-        child => <Item key={child.label} item={child}/>,
-      )}
+      {childs}
     </div>
   );
 };
@@ -137,7 +175,6 @@ type DropdownProps = {
   flatten: TaxonomyItem[],
   items: TaxonomyItem[],
   show: boolean,
-  onAddLabel: onAddLabelCallback,
 }
 
 const filterTreeByPredicate = (
@@ -180,25 +217,14 @@ const filterTreeByPredicate = (
   return roots;
 };
 
-const Dropdown = ({ show, flatten, items, dropdownRef, onAddLabel }: DropdownProps) => {
+const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
+  const { onAddLabel } = useContext(TaxonomyOptionsContext);
 
   const list = search ? filterTreeByPredicate(flatten, predicate) : items;
-
-  const addRef = useRef<HTMLInputElement>(null);
-  const onAdd = e => {
-    if (!addRef.current) return;
-
-    const value = addRef.current.value;
-
-    if (e.target.type === "button" || e.key === "Enter") {
-      onAddLabel([value]);
-      addRef.current.value = "";
-    }
-  };
 
   useEffect(() => {
     const input = inputRef.current;
@@ -220,11 +246,8 @@ const Dropdown = ({ show, flatten, items, dropdownRef, onAddLabel }: DropdownPro
         onInput={onInput}
         ref={inputRef}
       />
-      {/* <div style={{ display: "flex" }}>
-        <input name="taxonomy__add" onKeyPress={onAdd} ref={addRef} />
-        <button onClick={onAdd} type="button">Add</button>
-      </div> */}
       {list.map(item => <Item key={item.label} item={item} flat={search === "" ? undefined : false} />)}
+      {onAddLabel && <UserLabelForm path={[]} onAddLabel={onAddLabel} />}
     </div>
   );
 };
@@ -274,7 +297,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
   const optionsWithMaxUsages = useMemo(() => {
     const maxUsagesReached = options.maxUsages ? selected.length >= options.maxUsages : false;
 
-    return { ...options, maxUsagesReached };
+    return { ...options, maxUsagesReached, onAddLabel };
   }, [options, options.maxUsages, options.maxUsages ? selected : 0]);
 
   useEffect(() => {
@@ -300,7 +323,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
             {options.placeholder || "Click to add..."}
             <LsChevron stroke="#09f" />
           </span>
-          <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} onAddLabel={onAddLabel} />
+          <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
         </div>
       </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>

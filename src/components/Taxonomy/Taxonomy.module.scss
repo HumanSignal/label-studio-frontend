@@ -144,6 +144,33 @@
   }
 }
 
+.taxonomy__newitem {
+  display: flex;
+
+  &::before {
+    transition: opacity 0.2s;
+    content: "+";
+    position: absolute;
+    left: 31px;
+    opacity: 0;
+  }
+
+  &:hover::before {
+    opacity: 0.2;
+  }
+
+  [name=taxonomy__add] {
+    padding: 1px 2px;
+    border: none;
+    flex-grow: 1;
+    margin-left: 45px;
+    margin-right: 8px;
+    font: inherit;
+    font-style: italic;
+    background: rgba(0,0,0,0.03);
+  }
+}
+
 .taxonomy__collapsable {
   cursor: pointer;
 }
