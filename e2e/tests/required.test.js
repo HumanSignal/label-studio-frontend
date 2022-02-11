@@ -4,7 +4,8 @@ const { initLabelStudio } = require("./helpers");
 
 Feature("Test required param");
 
-const config = `
+const createConfig = ({ visibleWhen = "choice-selected" }) => {
+  return `
   <View>
     <Text name="text" value="$text"></Text>
     <Choices name="validation-label" required="true" toName="text">
@@ -16,7 +17,7 @@ const config = `
       <Choice value="Me neither" alias="neither"></Choice>
     </Choices>
     <Choices name="easter-egg" required="true" toName="text"
-      visibleWhen="choice-selected"
+      visibleWhen="${visibleWhen}"
       whenTagName="second"
       whenChoiceValue="Me neither"
     >
@@ -25,6 +26,8 @@ const config = `
     </Choices>
   </View>
 `;
+};
+
 
 const complex = `
   <View>
@@ -85,7 +88,7 @@ const result = {
 const annotations = [{ id: "1", result: [result] }];
 
 Scenario("Check required param", async function({ I }) {
-  const params = { config, data: { text } };
+  const params = { config: createConfig(), data: { text } };
 
   const waitForError = name => {
     I.waitForText("OK");
@@ -201,6 +204,60 @@ Scenario("Check required param in complex config", async function({ I }) {
   waitForError("common-description");
   I.fillField("common-description", "some text");
   I.click("Submit");
+  I.dontSee("Submit");
+  I.see("Update");
+});
+
+Scenario("Check required param with visibleWhen='choice-unselected'", async function({ I, LabelStudio }) {
+  const params = { config: createConfig({ visibleWhen: 'choice-unselected' }), data: { text } };
+  const waitForError = name => {
+    I.waitForText("OK");
+    I.see("Warning");
+    I.see('Checkbox "' + name + '" is required');
+    I.seeElement(".ant-modal");
+    I.click("OK");
+    I.waitToHide(".ant-modal");
+  };
+
+  I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_1372_visible_when_choice_unselected_11022022_short: true,
+  });
+  LabelStudio.init(params);
+
+  // Add new Annotation to be able to submit it
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
+
+  // Select one from each choices groups, except the one with visibleWhen condition
+  I.click("Valid");
+  I.click("Don't select me");
+
+  // We should get error, cause "easter-egg" is visible and required
+  I.click("Submit");
+  waitForError("easter-egg");
+
+  // Select the "Me neither" option to make the "easter-egg" block not required
+  I.click("Me neither");
+  I.click("Submit");
+  // Annotation is submitted, so now we can only update it
+  I.dontSee("Submit");
+  I.see("Update");
+
+  // Reset to check another scenario
+  LabelStudio.init(params);
+  // LabelStudio is reloaded, there are no new annotation from prev steps
+  I.dontSee("New annotation");
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
+
+  // Select all required options we have
+  I.click("Valid");
+  I.click("Don't select me");
+  I.click("Secret level");
+
+  I.click("Submit");
+  // Annotation is submitted, so now we can only update it
   I.dontSee("Submit");
   I.see("Update");
 });
