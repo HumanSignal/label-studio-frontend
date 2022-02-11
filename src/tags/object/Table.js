@@ -64,8 +64,6 @@ const Model = types
       const { type, options } = parseTypeAndOption(self.valuetype);
       let originData = parseValue(self.value, store.task.dataObj);
 
-      console.log(originData);
-
       if (options.url) {
         try {
           const response = yield fetch(originData);
@@ -104,7 +102,7 @@ const Model = types
 const TableModel = types.compose("TableModel", Base, ProcessAttrsMixin, AnnotationMixin, Model);
 
 const HtxTable = inject("store")(
-  observer(({ _, item }) => {
+  observer(({ item }) => {
     return <Table bordered dataSource={item.dataSource} columns={item.columns} pagination={{ hideOnSinglePage: true }} />;
   }),
 );
