@@ -17,9 +17,6 @@ export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short"
 // Show or not dialog for rejection
 export const FF_DEV_1593 = "ff_front_1593_rejection_comment_040222_short";
 
-// Add visibleWhen="choice-unselected" option
-export const FF_DEV_1372 = "ff_front_dev_1372_visible_when_choice_unselected_11022022_short";
-
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }

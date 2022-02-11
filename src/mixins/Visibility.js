@@ -1,5 +1,4 @@
 import { getParent, types } from "mobx-state-tree";
-import { FF_DEV_1372, isFF } from "../utils/feature-flags";
 
 /*
  * Per Region Mixin
@@ -60,9 +59,7 @@ const VisibilityMixin = types
           "no-region-selected": () => !self.annotation.highlightedNode,
         };
 
-        if (isFF(FF_DEV_1372)) {
-          fns["choice-unselected"] = params => !fns["choice-selected"](params);
-        }
+        fns["choice-unselected"] = params => !fns["choice-selected"](params);
         
         if (Object.keys(fns).includes(self.visiblewhen)) {
           const res = fns[self.visiblewhen]({

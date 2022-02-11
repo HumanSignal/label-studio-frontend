@@ -220,9 +220,6 @@ Scenario("Check required param with visibleWhen='choice-unselected'", async func
   };
 
   I.amOnPage("/");
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_1372_visible_when_choice_unselected_11022022_short: true,
-  });
   LabelStudio.init(params);
 
   // Add new Annotation to be able to submit it
