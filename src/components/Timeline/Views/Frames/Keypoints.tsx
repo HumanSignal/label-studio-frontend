@@ -1,21 +1,25 @@
 import chroma from "chroma-js";
-import { FC, memo, MouseEvent, useCallback, useContext, useMemo } from "react";
+import { CSSProperties, FC, memo, MouseEvent, useCallback, useContext, useMemo } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { clamp } from "../../../../utils/utilities";
 import { TimelineContext } from "../../Context";
 import { TimelineRegion } from "../../Types";
 import "./Keypoints.styl";
-import { visualizeLifespans } from "./Utils";
+import { Lifespan, visualizeLifespans } from "./Utils";
 
 export interface KeypointsProps {
+  idx: number;
   region: TimelineRegion;
   startOffset: number;
+  renderable: boolean;
   onSelectRegion?: (e: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
 }
 
 export const Keypoints: FC<KeypointsProps> = ({
+  idx,
   region,
   startOffset,
+  renderable,
   onSelectRegion,
 }) => {
   const { step, seekOffset, visibleWidth, length } = useContext(TimelineContext);
@@ -35,14 +39,16 @@ export const Keypoints: FC<KeypointsProps> = ({
   const start = firtsPoint.frame - 1;
   const offset = start * step;
 
-  const styles = {
+  const styles = useMemo((): CSSProperties => ({
     '--offset': `${startOffset}px`,
     '--color': color,
     '--point-color': chroma(color).alpha(1).css(),
     '--lifespan-color': chroma(color).alpha(visible ? 0.4 : 1).css(),
-  };
+  }), [startOffset, color, visible]);
 
   const lifespans = useMemo(() => {
+    if (!renderable) return [];
+
     return visualizeLifespans(sequence, step).map((span) => {
       span.points = span.points.filter(({ frame }) => {
         return frame >= minVisibleKeypointPosition && frame <= maxVisibleKeypointPosition;
@@ -50,7 +56,7 @@ export const Keypoints: FC<KeypointsProps> = ({
 
       return span;
     });
-  }, [sequence, start, step, minVisibleKeypointPosition, maxVisibleKeypointPosition]);
+  }, [sequence, start, step, renderable, minVisibleKeypointPosition, maxVisibleKeypointPosition]);
 
   const onSelectRegionHandler = useCallback((e: MouseEvent<HTMLDivElement>, select?: boolean) => {
     e.stopPropagation();
@@ -67,33 +73,58 @@ export const Keypoints: FC<KeypointsProps> = ({
         <Elem name="name">
           {label}
         </Elem>
-        {/* <Elem name="data">
-          {region.id}
-        </Elem> */}
+        <Elem name="data">
+          <Elem name="data-item" mod={{ faded: true }}>{idx}</Elem>
+        </Elem>
       </Elem>
       <Elem name="keypoints" onClick={(e: any) => onSelectRegionHandler(e, true)}>
-        {lifespans.map((lifespan, i) => {
-          const isLast = i + 1 === lifespans.length;
-          const { points, ...data } = lifespan;
-
-          return (
-            <Lifespan
-              key={i}
-              mainOffset={offset}
-              step={step}
-              isLast={isLast}
-              visible={visible}
-              points={points.map(({ frame }) => frame)}
-              {...data}
-            />
-          );
-        })}
+        <LifespansList
+          lifespans={lifespans}
+          step={step}
+          visible={visible}
+          offset={offset}
+        />
       </Elem>
     </Block>
   );
 };
 
-interface LifespanProps {
+interface LifespansListProps {
+  lifespans: Lifespan[];
+  step: number;
+  offset: number;
+  visible: boolean;
+}
+
+const LifespansList: FC<LifespansListProps> = ({
+  lifespans,
+  step,
+  offset,
+  visible,
+}) => {
+  return (
+    <>
+      {lifespans.map((lifespan, i) => {
+        const isLast = i + 1 === lifespans.length;
+        const { points, ...data } = lifespan;
+
+        return (
+          <LifespanItem
+            key={i}
+            mainOffset={offset}
+            step={step}
+            isLast={isLast}
+            visible={visible}
+            points={points.map(({ frame }) => frame)}
+            {...data}
+          />
+        );
+      })}
+    </>
+  );
+};
+
+interface LifespanItemProps {
   mainOffset: number;
   width: string | number;
   step: number;
@@ -105,7 +136,7 @@ interface LifespanProps {
   points: number[];
 }
 
-const Lifespan: FC<LifespanProps> = memo(({
+const LifespanItem: FC<LifespanItemProps> = memo(({
   mainOffset,
   width,
   start,
