@@ -121,6 +121,7 @@ const Model = types
     },
   }))
   .volatile(() => ({
+    dateInputValue: undefined,
     day: undefined,
     month: undefined,
     year: undefined,
@@ -135,7 +136,7 @@ const Model = types
     else if (self.format) format = self.format;
     else if (!self.showTime) format = FORMAT_DATE;
     else format = FORMAT_FULL;
-
+    
     return {
       formatDateTime: d3.timeFormat(format),
       parseDateTime: d3.timeParse(format),
@@ -236,12 +237,15 @@ const Model = types
     },
 
     onDateChange(e) {
-      const date = new Date(e.target.value);
+      self.dateInputValue = e.target.value;
 
+      const date = new Date(e.target.value);
+      const year = date.getFullYear();
+      
       if (date && !isNaN(date)) {
         self.day = date.getDate();
         self.month = date.getMonth() + 1;
-        self.year = date.getFullYear();
+        self.year = year > 1000 ? year : undefined;
       } else {
         self.resetDate();
       }
@@ -272,7 +276,7 @@ const HtxDateTime = inject("store")(
       className: "ant-input",
     };
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
-
+    
     return (
       <div style={visibleStyle}>
         {item.showMonth && (
@@ -310,10 +314,9 @@ const HtxDateTime = inject("store")(
             {...visual}
             type="date"
             name={item.name + "-date"}
-            value={item.date ?? ""}
+            value={item.inputValue ?? ""}
             min={item.min}
             max={item.max}
-            // defaultValue={Number(item.defaultvalue)}
             onChange={item.onDateChange}
           />
         )}
