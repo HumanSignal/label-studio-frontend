@@ -173,7 +173,7 @@ const HtxKeyPointView = ({ item }) => {
     includeFill: true,
     defaultFillColor: "#000",
     defaultStrokeColor: "#fff",
-    defaultFillOpacity: (item.style ?? item.tag) ? 0.6 : 1,
+    defaultOpacity: (item.style ?? item.tag) ? 0.6 : 1,
     defaultStrokeWidth: 2,
   });
 

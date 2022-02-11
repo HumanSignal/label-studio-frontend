@@ -3,9 +3,10 @@ import { observe } from "mobx";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
 import Constants, { defaultStyle } from "../core/Constants";
+import { isDefined } from "../utils/utilities";
 
 const defaultStyles = {
-  defaultFillOpacity: defaultStyle.fillopacity,
+  defaultOpacity: defaultStyle.opacity,
   defaultFillColor: defaultStyle.fillcolor,
   defaultStrokeColor: defaultStyle.strokecolor,
   defaultStrokeColorHighlighted: Constants.HIGHLIGHTED_STROKE_COLOR,
@@ -29,7 +30,7 @@ export const getRegionStyles = ({
   shouldFill = false,
   useStrokeAsFill = false,
   suggestion = false,
-  defaultFillOpacity = defaultStyle.fillopacity,
+  defaultOpacity = defaultStyle.opacity,
   defaultFillColor = defaultStyle.fillcolor,
   defaultStrokeColor = defaultStyle.strokecolor,
   defaultStrokeColorHighlighted = Constants.HIGHLIGHTED_STROKE_COLOR,
@@ -41,10 +42,13 @@ export const getRegionStyles = ({
 
   const selected = region.inSelection || highlighted;
 
+  const fillopacity = style?.fillopacity;
+  const opacity = isDefined(fillopacity) ? fillopacity : style?.opacity;
+
   const fillColor = shouldFill ? (
     chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
       .darken(0.3)
-      .alpha(+(style?.fillopacity ?? defaultFillOpacity ?? 0.5))
+      .alpha(+(opacity ?? defaultOpacity ?? 0.5))
       .css()
   ) : null;
 
