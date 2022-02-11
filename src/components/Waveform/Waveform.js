@@ -288,6 +288,7 @@ export default class Waveform extends React.Component {
       cursorColor: this.props.cursorColor,
       barHeight: 1,
       scrollParent: this.props.scrollParent,
+      autoCenter: this.props.autoCenter,
     };
 
 

@@ -53,6 +53,7 @@ const TagAttrs = types.model({
   volume: types.optional(types.boolean, true),
   speed: types.optional(types.boolean, true),
   scrollParent: types.optional(types.boolean, false),
+  autoCenter: types.optional(types.boolean, false),
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
@@ -330,6 +331,7 @@ const HtxAudioView = ({ store, item }) => {
           speed={item.speed}
           zoom={item.zoom}
           scrollParent={item.scrollParent}
+          autoCenter={item.autoCenter}
           volume={item.volume}
           regions={true}
           height={item.height}
