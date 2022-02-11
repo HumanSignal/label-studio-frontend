@@ -4,7 +4,7 @@ const { initLabelStudio } = require("./helpers");
 
 Feature("Test required param");
 
-const createConfig = ({ visibleWhen = "choice-selected" }) => {
+const createConfig = ({ visibleWhen = "choice-selected" } = {}) => {
   return `
   <View>
     <Text name="text" value="$text"></Text>
