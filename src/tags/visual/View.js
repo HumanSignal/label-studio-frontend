@@ -48,6 +48,7 @@ const Model = types
       "header",
       "labels",
       "label",
+      "layout",
       "table",
       "taxonomy",
       "choices",
