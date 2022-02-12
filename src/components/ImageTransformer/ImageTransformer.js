@@ -194,11 +194,11 @@ export default class TransformerComponent extends Component {
 
   get draggableBackground() {
     const { draggableBackgroundAt, item } = this.props;
-    const { selectedRegionsBBox } = item;
+    const { selectedRegionsBBox, selectedRegions } = item;
 
     return draggableBackgroundAt ? (
       <Portal selector={draggableBackgroundAt}>
-        {selectedRegionsBBox && (
+        {selectedRegionsBBox && selectedRegions?.length>1 && (
           <Rect
             ref={this.backgroundRef}
             x={selectedRegionsBBox.left}
@@ -207,7 +207,20 @@ export default class TransformerComponent extends Component {
             height={selectedRegionsBBox.bottom-selectedRegionsBBox.top}
             fill="rgba(0,0,0,0)"
             draggable
-            onClick={()=>{
+            dragBoundFunc={this.dragBoundFunc}
+            onDragStart={(e)=>{
+
+              const { item  } = this.props;
+
+              if (item.getSkipInteractions()) {
+                e.currentTarget.stopDrag(e.evt);
+                return;
+              }
+            }}
+            onClick={(e)=>{
+              const { item  } = this.props;
+
+              if (item.getSkipInteractions() || e.evt && (e.evt.metaKey || e.evt.ctrlKey) && item.useTransformer && item.selectedRegions.length) return false;
               item.annotation.unselectAreas();
             }}
             onMouseOver={() => {
@@ -243,7 +256,14 @@ export default class TransformerComponent extends Component {
           anchorSize={8}
           flipEnabled={false}
           onDragStart={e => {
-            const { item: { selectedRegionsBBox } } = this.props;
+            const { item  } = this.props;
+
+            if (item.getSkipInteractions()) {
+              e.currentTarget.stopDrag(e.evt);
+              return;
+            }
+
+            const { selectedRegionsBBox } = item;
 
             this.freeze();
 

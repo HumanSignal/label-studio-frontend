@@ -152,6 +152,7 @@ const SelectionBorders = observer(({ item }) => {
 });
 
 const SelectionRect = observer(({ item }) => {
+  if (!item.isActive) return null;
   const { x, y, width, height } = item;
 
   const positionProps = {
@@ -169,12 +170,14 @@ const SelectionRect = observer(({ item }) => {
         {...positionProps}
         stroke={SELECTION_COLOR}
         dash={SELECTION_DASH}
+        listening={false}
       />
       <Rect
         {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
+        listening={false}
       />
     </>
   );
@@ -187,7 +190,6 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 
   return (
     <>
-      <Layer id={TRANSFORMER_BACK_NAME} />
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -361,6 +363,8 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
+
+      window.getSelection().removeAllRanges();
 
       item.updateSkipInteractions(e);
 
@@ -765,6 +769,7 @@ export default observer(
               onLoad={item.updateImageSize}
               onError={this.handleError}
               alt="LS"
+              onDragStart={e=>e.preventDefault()}
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
@@ -807,6 +812,8 @@ export default observer(
                   <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
                 </Layer>
               )}
+              <Layer id={TRANSFORMER_BACK_NAME} />
+
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
               {renderableRegions.map(([groupName, list]) => {
