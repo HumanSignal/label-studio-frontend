@@ -34,12 +34,12 @@ const TagAttrs = types.model({
   name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "1"),
+  opacity: types.optional(customTypes.range(), "0.2"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
-  fillopacity: types.optional(customTypes.range(), "0.2"),
+  fillopacity: types.maybeNull(customTypes.range()),
 
   canrotate: types.optional(types.boolean, true),
 });

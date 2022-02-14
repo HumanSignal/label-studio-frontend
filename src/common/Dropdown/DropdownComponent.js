@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { Block, cn } from "../../utils/bem";
 import { alignElements } from "../../utils/dom";
@@ -90,6 +90,14 @@ export const Dropdown = React.forwardRef(
         close();
       }
     }, [close, currentVisible, open]);
+
+    useEffect(() => {
+      if (visible) {
+        open();
+      } else {
+        close();
+      }
+    }, [visible]);
 
     React.useEffect(() => {
       if (!ref) return;

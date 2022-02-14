@@ -276,7 +276,7 @@ export default types
         hotkeys.addNamed("annotation:skip", () => {
           if (self.annotationStore.viewingAll) return;
 
-          if (self.hasInterface("review")){
+          if (self.hasInterface("review")) {
             self.rejectAnnotation();
           } else {
             self.skipTask();
@@ -393,7 +393,8 @@ export default types
       }
       self.task = Task.create(taskObject);
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
-        self.taskHistory.push({ taskId: self.task.id,
+        self.taskHistory.push({
+          taskId: self.task.id,
           annotationId: null,
         });
       }
@@ -501,7 +502,7 @@ export default types
       }, "Error during accept, try again");
     }
 
-    function rejectAnnotation() {
+    function rejectAnnotation({ comment = null }) {
       if (self.isSubmitting) return;
 
       handleSubmittingFlag(async () => {
@@ -513,7 +514,7 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
+        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity, comment });
       }, "Error during reject, try again");
     }
 
