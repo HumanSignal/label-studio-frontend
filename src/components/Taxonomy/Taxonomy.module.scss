@@ -172,6 +172,30 @@
   zoom: 1; // something to apply this class
 }
 
+.taxonomy__add {
+  margin-left: 27px; // chevron 24px + 3px margin
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+
+  &::before {
+    content: "+";
+    width: 16px; // as checkbox
+    padding: 4px 0;
+    text-align: center;
+    font-size: 18px;
+    line-height: 0;
+  }
+
+  button {
+    flex-grow: 1;
+    border: none;
+    padding: 1px 4px;
+    font-weight: normal;
+    text-align: left;
+  }
+}
+
 .taxonomy__newitem {
   display: flex;
 

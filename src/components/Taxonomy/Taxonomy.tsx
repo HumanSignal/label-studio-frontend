@@ -264,6 +264,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
   const { onAddLabel } = useContext(TaxonomyOptionsContext);
+  const [isAdding, addInside, closeForm] = useToggle(false);
 
   const list = search ? filterTreeByPredicate(flatten, predicate) : items;
 
@@ -288,7 +289,11 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         ref={inputRef}
       />
       {list.map(item => <Item key={item.label} item={item} flat={search === "" ? undefined : false} />)}
-      {onAddLabel && <UserLabelForm path={[]} onAddLabel={onAddLabel} />}
+      {onAddLabel && (
+        isAdding
+          ? <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
+          : <div className={styles.taxonomy__add}><button onClick={addInside}>Add</button></div>
+      )}
     </div>
   );
 };
