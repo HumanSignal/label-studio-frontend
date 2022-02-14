@@ -87,6 +87,7 @@ function traverse(root) {
     return obj;
   };
 
+  // @todo check childrens with only one child
   return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : visitNode(root);
 }
 

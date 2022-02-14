@@ -65,16 +65,19 @@ const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
 
     if (isEscape) e.stopPropagation();
 
+    // just do nothing, maybe misclick
     if (isEnter && !value) return;
 
     if ((isBlur || isEnter) && value) onAddLabel([...path, value]);
 
+    // event fires on every key, so important to check
     if (isBlur || isEnter || isEscape) {
       addRef.current.value = "";
       onFinish?.();
     }
   };
 
+  // autofocus; this also allows to close form on every action, because of blur event
   useEffect(() => addRef.current?.focus(), []);
 
   return (
@@ -152,6 +155,7 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
       child => <Item key={child.label} item={child}/>,
     ) ?? [];
     if (onAddLabel && isAdding) {
+      // key is required, but should be unique - empty string can't be in child items
       childs.push(<UserLabelForm key="" onAddLabel={onAddLabel} onFinish={closeForm} path={item.path} />);
     }
   }
@@ -183,7 +187,7 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
           </span>
           <div className={styles.taxonomy__extra_actions}>
             <Dropdown
-              destroyPopupOnHide
+              destroyPopupOnHide // important for long interactions with huge taxonomy
               trigger={["click"]}
               overlay={(
                 <Menu>
@@ -295,8 +299,10 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
   const [isOpen, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const onClickOutside = useCallback(e => {
-    if (e.target.classList?.contains(styles.taxonomy__action)) return;
-    if (e.target.parentNode?.classList?.contains(styles.taxonomy__action)) return;
+    const cn = styles.taxonomy__action;
+
+    // don't close dropdown if user clicks on action from context menu
+    if ([e.target, e.target.parentNode].some(n => n?.classList?.contains(cn))) return;
     if (!taxonomyRef.current?.contains(e.target)) close();
   }, []);
   const onEsc = useCallback(e => {
