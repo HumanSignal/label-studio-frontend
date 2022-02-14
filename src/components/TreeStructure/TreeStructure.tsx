@@ -1,56 +1,58 @@
-import React, { RefObject, useLayoutEffect, useRef, useState } from 'react';
-import { FixedSizeNodeData, FixedSizeTree  } from 'react-vtree';
+import React, { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { FixedSizeList } from 'react-window';
 
-type ExtendedData = FixedSizeNodeData &
-Readonly<{
+type ExtendedData = Readonly<{
   id:string,
   isLeaf: boolean,
   name: string,
   nestingLevel: number,
   padding: number,
   path: string[],
+  isOpen: boolean,
 }>;
 
-export interface ExtendedDataWithRefresh extends ExtendedData {
-  updateHeight: () => void;
+export interface ExtendedDataWithToggle extends ExtendedData {
+  toggle: (index: number) => void;
 }
 
 export interface RowProps  { 
-  data: ExtendedDataWithRefresh;
-  isOpen: boolean;
+  data: ExtendedData;
   style: any; 
-  toggle: () => Promise<boolean>;
+  toggle: (index: number) => Promise<boolean>;
 }
 
 export interface RowItem { 
-  children?:RowItem[];
-  label:string;
-  depth:number; 
+  children?: RowItem[];
+  label: string;
+  depth: number; 
   path: string[];
+  isOpen: boolean;
 }
 
 type transformationCallback = (
   { node, nestingLevel }:
-  {node: RowItem, nestingLevel:number}) => ExtendedData
+  {node: RowItem, nestingLevel:number, isOpen: boolean}) => ExtendedData
 
 const TreeStructure =  (
-  { items, rowComponent, flatten, rowHeight, maxHeightPersentage, transformationCallback }: 
+  { items, rowComponent, flatten, rowHeight, maxHeightPersentage, transformationCallback, defaultExpanded }: 
   { items:any[], 
     rowComponent: React.FC, 
     flatten:boolean, 
     rowHeight: number, 
     maxHeightPersentage: number,
+    defaultExpanded:boolean,
     transformationCallback:transformationCallback,
   })=> {
   
   const browserHeight = document.body.clientHeight;
 
-   
+  const [data, setData] = useState<ExtendedData[]>();   
+  const [openNodes, setOpenNodes]= useState<{[key: string]: number }>({});
   const [height, setHeight] = useState(0);
   const containerRef = useRef<RefObject<HTMLDivElement> | any>();
 
   const calcHeight = () => {
-    const visibleHeight = containerRef.current.state.order.length * rowHeight;
+    const visibleHeight = (data?.length || 0) * rowHeight;
     const maxHeight = maxHeightPersentage * .01 * browserHeight;
 
     return visibleHeight > maxHeight ?  maxHeight : visibleHeight;
@@ -58,45 +60,50 @@ const TreeStructure =  (
 
   const updateHeight = () => setHeight(calcHeight());
 
-  useLayoutEffect(()=> updateHeight(), [items]);
+  const toggle = (index: number) => {
+    const toggledInsance = { [index]: openNodes[index] !== 2 ? 2 : 1 };
 
-  function* treeWalker(refresh: boolean):  
-  Generator<ExtendedDataWithRefresh | string | symbol, void, boolean> {
-    const stack: any[] = [];
-    
-    for (let i = items.length -1; i >= 0; i--) {
-      stack.push({
+    setOpenNodes({ ...openNodes, ...toggledInsance });
+    setData(recursiveTreeWalker(items, toggledInsance));
+    updateHeight();
+  };
+
+  const recursiveTreeWalker = (items: RowItem[], toggleItem?: {[key: string]: number})=> {
+    const stack: ExtendedData[] = [];
+
+    for (let i = 0; i <= items.length -1; i++) {
+      const children = items[i].children;
+      const isOpen = toggleItem && toggleItem[i] || openNodes[i] || (defaultExpanded ? 1 : 2);
+
+      const transformedData: ExtendedData = transformationCallback({ 
+        node: items[i], 
         nestingLevel: flatten ? 0 : items[i].depth,
-        node: items[i],
+        isOpen: isOpen === 1,
       });
+
+      if(children && isOpen === 1) {
+        stack.push({ ...transformedData }, ...recursiveTreeWalker(children));
+      } else stack.push({ ...transformedData });
     }
+    return stack; 
+  };
 
-    while (stack.length !== 0) {
-      const { node, nestingLevel } = stack.pop();
-      const flatLevil: number = flatten ? 0 : nestingLevel;
+  useEffect(() => {setData(recursiveTreeWalker(items));}, [items]);
+  useEffect(()=> updateHeight(), [data]);
 
-      const transformedData: ExtendedData = transformationCallback({ node, nestingLevel: flatLevil });
-      const refreshAddedData: ExtendedDataWithRefresh = { ...transformedData, updateHeight };
-
-      const isOpened = yield refresh
-        ? refreshAddedData
-        : transformedData.id;
-
-      if (node.children?.length !== 0 && isOpened) {
-        for (let i = node.children?.length - 1; i >= 0; i--) {
-          stack.push({
-            nestingLevel: nestingLevel + 1,
-            node: node.children[i],
-          });
-        }
-      }
-    }
-  }
-  
   return (
-    <FixedSizeTree ref={containerRef} treeWalker={treeWalker} itemSize={rowHeight} height={height}>
-      {rowComponent}
-    </FixedSizeTree>        
+    <div ref={containerRef}>
+      <FixedSizeList
+        height={height}
+        itemCount={data?.length || 0}
+        itemSize={rowHeight}
+        width={containerRef?.current?.offsetWidth || 200}
+        itemData={{ ...data, toggle }}
+      >
+        {rowComponent}
+      </FixedSizeList>     
+    </div>       
+
   );
 };
 

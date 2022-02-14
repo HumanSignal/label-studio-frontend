@@ -42,6 +42,7 @@
     "@types/jest": "^27.0.1",
     "@types/keymaster": "^1.6.30",
     "@types/react-dom": "^17.0.11",
+    "@types/react-window": "^1.8.5",
     "@types/strman": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
@@ -221,7 +222,7 @@
     "magic-wand-js": "^1.0.0",
     "papaparse": "^5.3.1",
     "react-konva-utils": "^0.2.0",
-    "react-vtree": "^2.0.4",
+    "react-virtualized-auto-sizer": "^1.0.6",
     "react-window": "^1.8.6"
   },
   "nohoist": [
