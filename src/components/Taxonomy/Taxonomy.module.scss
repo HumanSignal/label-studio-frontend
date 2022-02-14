@@ -153,11 +153,14 @@
   margin-left: auto;
   opacity: 0.6;
   padding: 0 12px;
+  min-width: 40px; // 24px padding + 16px width for count/dots
+  text-align: right;
 
   &_actions {
     display: none;
     font-weight: bold;
     cursor: pointer;
+    text-align: center;
   }
 
   .taxonomy__item:hover &_count {

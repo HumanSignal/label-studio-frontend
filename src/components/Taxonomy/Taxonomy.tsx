@@ -8,7 +8,8 @@ import { LsChevron } from "../../assets/icons";
 import styles from "./Taxonomy.module.scss";
 
 type TaxonomyPath = string[]
-type onAddLabelCallback = (label: string[]) => any
+type onAddLabelCallback = (path: string[]) => any
+type onDeleteLabelCallback = (path: string[]) => any
 
 type TaxonomyItem = {
   label: string,
@@ -24,10 +25,11 @@ type TaxonomyOptions = {
   pathSeparator?: string,
   maxUsages?: number,
   placeholder?: string,
-  onAddLabel?: onAddLabelCallback,
 }
 
 type TaxonomyOptionsContextValue = TaxonomyOptions & {
+  onAddLabel?: onAddLabelCallback,
+  onDeleteLabel?: onDeleteLabelCallback,
   maxUsagesReached?: boolean,
 }
 
@@ -36,6 +38,7 @@ type TaxonomyProps = {
   selected: TaxonomyPath[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
   onAddLabel?: onAddLabelCallback,
+  onDeleteLabel?: onDeleteLabelCallback,
   options?: TaxonomyOptions,
 }
 
@@ -112,7 +115,7 @@ function isSubArray(item: string[], parent: string[]) {
 // @todo change `flat` into `alwaysOpen` and move it to context
 const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
-  const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel } = useContext(TaxonomyOptionsContext);
+  const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel, onDeleteLabel } = useContext(TaxonomyOptionsContext);
 
   const checked = selected.some(current => isArraysEqual(current, item.path));
   const isChildSelected = selected.some(current => isSubArray(current, item.path));
@@ -143,12 +146,16 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
     else el.indeterminate = isChildSelected;
   }, [checked, isChildSelected]);
 
+  const onDelete = useCallback(
+    () => onDeleteLabel?.(item.path),
+    [item, onDeleteLabel],
+  );
+
   const customClassname = item.origin === "session"
     ? styles.taxonomy__item_session
     : (item.origin === "user" ? styles.taxonomy__item_user : "");
 
   let childs = null;
-
 
   if (isAdding || (item.children && !flat && isOpen)) {
     childs = item.children?.map(
@@ -196,6 +203,13 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
                     className={styles.taxonomy__action}
                     onClick={addInside}
                   >Add Inside</Menu.Item>
+                  {item.origin === "session" && (
+                    <Menu.Item
+                      key="delete"
+                      className={styles.taxonomy__action}
+                      onClick={onDelete}
+                    >Delete</Menu.Item>
+                  )}
                 </Menu>
               )}
             >
@@ -298,7 +312,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   );
 };
 
-const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, options = {} }: TaxonomyProps) => {
+const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, onDeleteLabel, options = {} }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const taxonomyRef = useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = useState(false);
@@ -347,7 +361,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
   const optionsWithMaxUsages = useMemo(() => {
     const maxUsagesReached = options.maxUsages ? selected.length >= options.maxUsages : false;
 
-    return { ...options, maxUsagesReached, onAddLabel };
+    return { ...options, maxUsagesReached, onAddLabel, onDeleteLabel };
   }, [options, options.maxUsages, options.maxUsages ? selected : 0]);
 
   useEffect(() => {

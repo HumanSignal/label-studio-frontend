@@ -22,6 +22,16 @@ const UserLabels = types
       self.controls = { ...self.controls, [control]: labels };
     },
 
+    deleteLabel(control: string, path: string[]) {
+      if (!self.controls[control]) return;
+
+      const labels = self.controls[control].filter(existed =>
+        existed.path.length !== path.length
+        || !existed.path.every((item, index) => item === path[index]));
+
+      self.controls = { ...self.controls, [control]: labels };
+    },
+
     init(controls: ControlsWithPaths) {
       const adjusted: ControlsWithLabels = {};
 

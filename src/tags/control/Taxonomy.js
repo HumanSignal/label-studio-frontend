@@ -191,6 +191,10 @@ const Model = types
     onAddLabel(path) {
       self.userLabels.addLabel(self.name, path);
     },
+
+    onDeleteLabel(path) {
+      self.userLabels.deleteLabel(self.name, path);
+    },
   }));
 
 const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, VisibilityMixin, AnnotationMixin);
@@ -213,6 +217,7 @@ const HtxTaxonomy = observer(({ item }) => {
         selected={item.selected}
         onChange={item.onChange}
         onAddLabel={item.onAddLabel}
+        onDeleteLabel={item.onDeleteLabel}
         options={options}
       />
     </div>
