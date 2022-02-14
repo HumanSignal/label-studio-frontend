@@ -113,8 +113,13 @@
     background: #eee;
   }
 
-  &_custom {
+  &_user,
+  &_session {
     font-style: italic;
+  }
+
+  &_session {
+    color: #09f;
   }
 }
 
@@ -144,6 +149,12 @@
   }
 }
 
+.taxonomy__extra {
+  margin-left: auto;
+  opacity: 0.6;
+  padding: 0 12px;
+}
+
 .taxonomy__newitem {
   display: flex;
 
@@ -167,6 +178,7 @@
     margin-right: 8px;
     font: inherit;
     font-style: italic;
+    color: #09f;
     background: rgba(0,0,0,0.03);
   }
 }

@@ -14,7 +14,7 @@ type TaxonomyItem = {
   path: TaxonomyPath,
   depth: number,
   children?: TaxonomyItem[],
-  custom?: boolean,
+  origin?: "config" | "user" | "session",
 }
 
 type TaxonomyOptions = {
@@ -130,7 +130,9 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
     else el.indeterminate = isChildSelected;
   }, [checked, isChildSelected]);
 
-  const customClassname = item.custom ? styles.taxonomy__item_custom : "";
+  const customClassname = item.origin === "session"
+    ? styles.taxonomy__item_session
+    : (item.origin === "user" ? styles.taxonomy__item_user : "");
 
   let childs = null;
 
@@ -164,6 +166,11 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
           />
           {item.label}
         </label>
+        <span className={styles.taxonomy__extra}>
+          {/* @todo should count all the nested children */}
+          {item.children?.length}
+
+        </span>
       </div>
       {childs}
     </div>

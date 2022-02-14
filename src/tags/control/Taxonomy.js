@@ -131,8 +131,9 @@ const Model = types
       const fromConfig = traverse(self.children);
       const fromUsers = self.userLabels.controls[self.name] ?? [];
 
-      for (const path of fromUsers) {
+      for (const label of fromUsers) {
         let current = { children: fromConfig };
+        const { origin, path } = label;
         const lastIndex = path.length - 1;
 
         for (let depth = 0; depth < lastIndex; depth++) {
@@ -142,7 +143,7 @@ const Model = types
 
         if (current) {
           if (!current.children) current.children = [];
-          current.children.push({ label: path[lastIndex], path, depth: lastIndex, custom: true });
+          current.children.push({ label: path[lastIndex], path, depth: lastIndex, origin });
         }
       }
 

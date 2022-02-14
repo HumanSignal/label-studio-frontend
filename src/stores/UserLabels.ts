@@ -1,7 +1,12 @@
 import { types } from "mobx-state-tree";
 
-// interface ControlsWithLabels extends Map<string, string[][]> {}
-type ControlsWithLabels = Record<string, string[][]>;
+type UserLabel = {
+  path: string[],
+  origin: "user" | "session",
+}
+
+type ControlsWithLabels = Record<string, UserLabel[]>;
+type ControlsWithPaths = Record<string, string[][]>;
 
 // Subset of user generated labels per control tag, currently only for taxonomy
 const UserLabels = types
@@ -10,14 +15,24 @@ const UserLabels = types
     controls: types.frozen<ControlsWithLabels>({}),
   })
   .actions(self => ({
-    addLabel(control: string, label: string[]) {
+    addLabel(control: string, path: string[]) {
+      const label: UserLabel = { path, origin: "session" };
       const labels = [...(self.controls[control] ?? []), label];
 
       self.controls = { ...self.controls, [control]: labels };
     },
 
-    init(controls: ControlsWithLabels) {
-      self.controls = controls;
+    init(controls: ControlsWithPaths) {
+      const adjusted: ControlsWithLabels = {};
+
+      for (const control in controls) {
+        adjusted[control] = controls[control].map(path => ({
+          origin: "user",
+          path,
+        }));
+      }
+
+      self.controls = adjusted;
     },
   }));
 
