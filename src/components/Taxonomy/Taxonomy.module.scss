@@ -153,22 +153,27 @@
   margin-left: auto;
   opacity: 0.6;
   padding: 0 12px;
+
+  &_actions {
+    display: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .taxonomy__item:hover &_count {
+    display: none;
+  }
+  .taxonomy__item:hover &_actions {
+    display: block;
+  }
+}
+
+.taxonomy__action {
+  zoom: 1; // something to apply this class
 }
 
 .taxonomy__newitem {
   display: flex;
-
-  &::before {
-    transition: opacity 0.2s;
-    content: "+";
-    position: absolute;
-    left: 31px;
-    opacity: 0;
-  }
-
-  &:hover::before {
-    opacity: 0.2;
-  }
 
   [name=taxonomy__add] {
     padding: 1px 2px;

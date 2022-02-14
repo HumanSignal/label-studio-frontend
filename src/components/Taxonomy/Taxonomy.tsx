@@ -1,4 +1,5 @@
 import React, { FormEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Dropdown, Menu } from "antd";
 
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
@@ -48,27 +49,37 @@ const TaxonomyOptionsContext = React.createContext<TaxonomyOptionsContextValue>(
 
 type UserLabelFormProps = {
   onAddLabel: (path: string[]) => any,
+  onFinish?: () => any,
   path: string[],
 }
 
-const UserLabelForm = ({ onAddLabel, path }: UserLabelFormProps) => {
+const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
   const addRef = useRef<HTMLInputElement>(null);
   const onAdd = (e: React.KeyboardEvent<HTMLInputElement> | React.FocusEvent) => {
     if (!addRef.current) return;
 
     const value = addRef.current.value;
+    const isEscape = "key" in e && e.key === "Escape";
+    const isEnter = "key" in e && e.key === "Enter";
+    const isBlur = e.type === "blur";
 
-    if (!value) return;
+    if (isEscape) e.stopPropagation();
 
-    if (e.type === "blur" || e.key === "Enter") {
-      onAddLabel([...path, value]);
+    if (isEnter && !value) return;
+
+    if ((isBlur || isEnter) && value) onAddLabel([...path, value]);
+
+    if (isBlur || isEnter || isEscape) {
       addRef.current.value = "";
+      onFinish?.();
     }
   };
 
+  useEffect(() => addRef.current?.focus(), []);
+
   return (
     <div className={styles.taxonomy__newitem}>
-      <input name="taxonomy__add" onKeyPress={onAdd} onBlur={onAdd} ref={addRef} />
+      <input name="taxonomy__add" onKeyDownCapture={onAdd} onBlur={onAdd} ref={addRef} />
     </div>
   );
 };
@@ -95,6 +106,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
+// @todo change `flat` into `alwaysOpen` and move it to context
 const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel } = useContext(TaxonomyOptionsContext);
@@ -112,13 +124,11 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
     ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" }
     : { display: "none" };
 
-  useEffect(() => {
-    if (isChildSelected) open();
-  }, [isChildSelected]);
+  const [isAdding, addInside, closeForm] = useToggle(false);
 
   useEffect(() => {
-    if (flat === false) open();
-  }, [flat]);
+    if (flat === false || isAdding || isChildSelected) open();
+  }, [flat, isAdding, isChildSelected]);
 
   const title = onlyLeafsAllowed
     ? "Only leaf nodes allowed"
@@ -137,12 +147,12 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
   let childs = null;
 
 
-  if (item.children && !flat && isOpen) {
-    childs = item.children.map(
+  if (isAdding || (item.children && !flat && isOpen)) {
+    childs = item.children?.map(
       child => <Item key={child.label} item={child}/>,
-    );
-    if (onAddLabel) {
-      childs.push(<UserLabelForm onAddLabel={onAddLabel} path={item.path} />);
+    ) ?? [];
+    if (onAddLabel && isAdding) {
+      childs.push(<UserLabelForm key="" onAddLabel={onAddLabel} onFinish={closeForm} path={item.path} />);
     }
   }
 
@@ -166,18 +176,38 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
           />
           {item.label}
         </label>
-        <span className={styles.taxonomy__extra}>
+        <div className={styles.taxonomy__extra}>
           {/* @todo should count all the nested children */}
-          {item.children?.length}
-
-        </span>
+          <span className={styles.taxonomy__extra_count}>
+            {item.children?.length}
+          </span>
+          <div className={styles.taxonomy__extra_actions}>
+            <Dropdown
+              destroyPopupOnHide
+              trigger={["click"]}
+              overlay={(
+                <Menu>
+                  <Menu.Item
+                    key="add-inside"
+                    className={styles.taxonomy__action}
+                    onClick={addInside}
+                  >Add Inside</Menu.Item>
+                </Menu>
+              )}
+            >
+              <div>
+                ...
+              </div>
+            </Dropdown>
+          </div>
+        </div>
       </div>
       {childs}
     </div>
   );
 };
 
-type DropdownProps = {
+type TaxonomyDropdownProps = {
   dropdownRef: React.Ref<HTMLDivElement>,
   flatten: TaxonomyItem[],
   items: TaxonomyItem[],
@@ -224,7 +254,7 @@ const filterTreeByPredicate = (
   return roots;
 };
 
-const Dropdown = ({ show, flatten, items, dropdownRef }: DropdownProps) => {
+const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
@@ -265,6 +295,8 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
   const [isOpen, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const onClickOutside = useCallback(e => {
+    if (e.target.classList?.contains(styles.taxonomy__action)) return;
+    if (e.target.parentNode?.classList?.contains(styles.taxonomy__action)) return;
     if (!taxonomyRef.current?.contains(e.target)) close();
   }, []);
   const onEsc = useCallback(e => {
@@ -314,7 +346,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
   useEffect(() => {
     if (isOpen) {
       document.body.addEventListener("click", onClickOutside, true);
-      document.body.addEventListener("keydown", onEsc, true);
+      document.body.addEventListener("keydown", onEsc);
     } else {
       document.body.removeEventListener("click", onClickOutside);
       document.body.removeEventListener("keydown", onEsc);
@@ -330,7 +362,7 @@ const Taxonomy = ({ items, selected: externalSelected, onChange, onAddLabel, opt
             {options.placeholder || "Click to add..."}
             <LsChevron stroke="#09f" />
           </span>
-          <Dropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
+          <TaxonomyDropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
         </div>
       </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>
