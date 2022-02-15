@@ -192,32 +192,34 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
           <span className={styles.taxonomy__extra_count}>
             {item.children?.length}
           </span>
-          <div className={styles.taxonomy__extra_actions}>
-            <Dropdown
-              destroyPopupOnHide // important for long interactions with huge taxonomy
-              trigger={["click"]}
-              overlay={(
-                <Menu>
-                  <Menu.Item
-                    key="add-inside"
-                    className={styles.taxonomy__action}
-                    onClick={addInside}
-                  >Add Inside</Menu.Item>
-                  {item.origin === "session" && (
+          {onAddLabel && (
+            <div className={styles.taxonomy__extra_actions}>
+              <Dropdown
+                destroyPopupOnHide // important for long interactions with huge taxonomy
+                trigger={["click"]}
+                overlay={(
+                  <Menu>
                     <Menu.Item
-                      key="delete"
+                      key="add-inside"
                       className={styles.taxonomy__action}
-                      onClick={onDelete}
-                    >Delete</Menu.Item>
-                  )}
-                </Menu>
-              )}
-            >
-              <div>
-                ...
-              </div>
-            </Dropdown>
-          </div>
+                      onClick={addInside}
+                    >Add Inside</Menu.Item>
+                    {item.origin === "session" && (
+                      <Menu.Item
+                        key="delete"
+                        className={styles.taxonomy__action}
+                        onClick={onDelete}
+                      >Delete</Menu.Item>
+                    )}
+                  </Menu>
+                )}
+              >
+                <div>
+                  ...
+                </div>
+              </Dropdown>
+            </div>
+          )}
         </div>
       </div>
       {childs}

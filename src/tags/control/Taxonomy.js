@@ -130,7 +130,7 @@ const Model = types
 
     get items() {
       const fromConfig = traverse(self.children);
-      const fromUsers = self.userLabels.controls[self.name] ?? [];
+      const fromUsers = self.userLabels?.controls[self.name] ?? [];
 
       for (const label of fromUsers) {
         let current = { children: fromConfig };
@@ -189,11 +189,11 @@ const Model = types
     },
 
     onAddLabel(path) {
-      self.userLabels.addLabel(self.name, path);
+      self.userLabels?.addLabel(self.name, path);
     },
 
     onDeleteLabel(path) {
-      self.userLabels.deleteLabel(self.name, path);
+      self.userLabels?.deleteLabel(self.name, path);
     },
   }));
 
@@ -216,8 +216,8 @@ const HtxTaxonomy = observer(({ item }) => {
         items={item.items}
         selected={item.selected}
         onChange={item.onChange}
-        onAddLabel={item.onAddLabel}
-        onDeleteLabel={item.onDeleteLabel}
+        onAddLabel={item.userLabels && item.onAddLabel}
+        onDeleteLabel={item.userLabels && item.onDeleteLabel}
         options={options}
       />
     </div>

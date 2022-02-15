@@ -14,6 +14,9 @@ export const FF_DEV_1564_DEV_1565 = "ff_front_dev_1564_dev_1565_shortcuts_focus_
 // @requires FF_DEV_1564_DEV_1565
 export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short";
 
+// User labels for Taxonomy
+export const FF_DEV_1536 = "ff_front_dev_1536_taxonomy_user_labels_150222_long";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }
@@ -23,8 +26,7 @@ export function isFF(id) {
 
   if (id in featureFlags) {
     return featureFlags[id] === true; 
-  }
-  else {
+  } else {
     return window.APP_SETTINGS?.feature_flags_default_value === true;
   }
 }

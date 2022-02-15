@@ -15,6 +15,7 @@ import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User, { UserExtended } from "./UserStore";
 import { UserLabels } from "./UserLabels";
+import { FF_DEV_1536, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -132,7 +133,7 @@ export default types
 
     users: types.optional(types.array(UserExtended), []),
 
-    userLabels: types.optional(UserLabels, { controls: {} }),
+    userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
     return {

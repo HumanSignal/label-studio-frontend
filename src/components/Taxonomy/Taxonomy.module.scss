@@ -163,7 +163,7 @@
     text-align: center;
   }
 
-  .taxonomy__item:hover &_count {
+  .taxonomy__item:hover &_count:not(:last-child) {
     display: none;
   }
   .taxonomy__item:hover &_actions {
