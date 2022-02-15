@@ -16,7 +16,7 @@ const DetailsPanelComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, 
   const selectedRegions = regions.selection;
 
   return (
-    <PanelBase {...props} name="details" title="Details">
+    <PanelBase {...props} currentEntity={currentEntity} name="details" title="Details">
       <Content selection={selectedRegions} currentEntity={currentEntity} />
     </PanelBase>
   );
@@ -26,8 +26,6 @@ const Content: FC<any> = observer(({
   selection,
   currentEntity,
 }) => {
-  console.log({ selection, currentEntity });
-
   return (
     <>
       {selection.size ? (

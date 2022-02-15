@@ -1,6 +1,7 @@
 import { observe } from "mobx";
 import { observer } from "mobx-react";
 import { getType, IAnyType, isLiteralType, isOptionalType, isPrimitiveType, isUnionType, types } from "mobx-state-tree";
+import { number } from "mobx-state-tree/dist/internal";
 import { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { IconPropertyAngle } from "../../../assets/icons";
 import { Block, Elem, useBEM } from "../../../utils/bem";
@@ -173,19 +174,32 @@ const RegionInput: FC<RegionInputProps> = ({
   const block = useBEM();
   const [currentValue, setValue] = useState(normalizeValue(value, type));
 
-  const updateValue = useCallback((value) => {
-    const newValue = normalizeValue(value, type);
+  const updateValue = useCallback((value, safeValue = true) => {
+    const newValue = safeValue ? normalizeValue(value, type) : value;
 
     setValue(newValue);
-    onChange?.(newValue);
+    if (safeValue) onChange?.(newValue);
   }, [onChange, type]);
 
   const onChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    updateValue(e.target.value);
-  }, [updateValue]);
+    let value = e.target.value;
+    let safeValue = true;
+
+    if (type === "number" && !value.match(/^([0-9,.]*)$/ig)) {
+      safeValue = false;
+    }
+
+    if (type === "number" && value.match(/(,|\.)$/)){
+      value = value.replace(/,/, '.');
+      safeValue = false;
+    }
+
+    updateValue(value, safeValue);
+  }, [updateValue, type]);
 
   const onKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
     if (type !== 'number') return;
+
     if (e.key === "ArrowUp" || e.key === 'ArrowDown') {
       e.preventDefault();
       console.log('arrow');
