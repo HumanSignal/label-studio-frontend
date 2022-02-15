@@ -113,7 +113,7 @@ function isSubArray(item: string[], parent: string[]) {
 }
 
 // @todo change `flat` into `alwaysOpen` and move it to context
-const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
+const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel, onDeleteLabel } = useContext(TaxonomyOptionsContext);
 
@@ -124,17 +124,17 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
   const limitReached = maxUsagesReached && !checked;
   const disabled = onlyLeafsAllowed || limitReached;
 
-  const [isOpen, open, , toggle] = useToggle(isChildSelected || flat === false);
+  const [isOpen, open, , toggle] = useToggle(isChildSelected || isFiltering);
   const onClick = () => leafsOnly && toggle();
-  const arrowStyle = item.children?.length && flat !== true
+  const arrowStyle = item.children?.length
     ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" }
     : { display: "none" };
 
   const [isAdding, addInside, closeForm] = useToggle(false);
 
   useEffect(() => {
-    if (flat === false || isAdding || isChildSelected) open();
-  }, [flat, isAdding, isChildSelected]);
+    if (isFiltering || isAdding || isChildSelected) open();
+  }, [isFiltering, isAdding, isChildSelected]);
 
   const title = onlyLeafsAllowed
     ? "Only leaf nodes allowed"
@@ -157,11 +157,11 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
 
   let childs = null;
 
-  if (isAdding || (item.children && !flat && isOpen)) {
+  if (isAdding || (item.children && isOpen)) {
     childs = item.children?.map(
-      child => <Item key={child.label} item={child}/>,
+      child => <Item key={child.label} item={child} isFiltering={isFiltering}/>,
     ) ?? [];
-    if (onAddLabel && isAdding) {
+    if (onAddLabel && isAdding && !isFiltering) {
       // key is required, but should be unique - empty string can't be in child items
       childs.push(<UserLabelForm key="" onAddLabel={onAddLabel} onFinish={closeForm} path={item.path} />);
     }
@@ -187,40 +187,42 @@ const Item = ({ item, flat }: { item: TaxonomyItem, flat?: boolean }) => {
           />
           {item.label}
         </label>
-        <div className={styles.taxonomy__extra}>
-          {/* @todo should count all the nested children */}
-          <span className={styles.taxonomy__extra_count}>
-            {item.children?.length}
-          </span>
-          {onAddLabel && (
-            <div className={styles.taxonomy__extra_actions}>
-              <Dropdown
-                destroyPopupOnHide // important for long interactions with huge taxonomy
-                trigger={["click"]}
-                overlay={(
-                  <Menu>
-                    <Menu.Item
-                      key="add-inside"
-                      className={styles.taxonomy__action}
-                      onClick={addInside}
-                    >Add Inside</Menu.Item>
-                    {item.origin === "session" && (
+        {!isFiltering && (
+          <div className={styles.taxonomy__extra}>
+            {/* @todo should count all the nested children */}
+            <span className={styles.taxonomy__extra_count}>
+              {item.children?.length}
+            </span>
+            {onAddLabel && (
+              <div className={styles.taxonomy__extra_actions}>
+                <Dropdown
+                  destroyPopupOnHide // important for long interactions with huge taxonomy
+                  trigger={["click"]}
+                  overlay={(
+                    <Menu>
                       <Menu.Item
-                        key="delete"
+                        key="add-inside"
                         className={styles.taxonomy__action}
-                        onClick={onDelete}
-                      >Delete</Menu.Item>
-                    )}
-                  </Menu>
-                )}
-              >
-                <div>
-                  ...
-                </div>
-              </Dropdown>
-            </div>
-          )}
-        </div>
+                        onClick={addInside}
+                      >Add Inside</Menu.Item>
+                      {item.origin === "session" && (
+                        <Menu.Item
+                          key="delete"
+                          className={styles.taxonomy__action}
+                          onClick={onDelete}
+                        >Delete</Menu.Item>
+                      )}
+                    </Menu>
+                  )}
+                >
+                  <div>
+                    ...
+                  </div>
+                </Dropdown>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {childs}
     </div>
@@ -305,8 +307,8 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         onInput={onInput}
         ref={inputRef}
       />
-      {list.map(item => <Item key={item.label} item={item} flat={search === "" ? undefined : false} />)}
-      {onAddLabel && (
+      {list.map(item => <Item key={item.label} item={item} isFiltering={search !== ""} />)}
+      {onAddLabel && search === "" && (
         isAdding
           ? <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
           : <div className={styles.taxonomy__add}><button onClick={addInside}>Add</button></div>
