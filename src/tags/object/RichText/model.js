@@ -227,26 +227,30 @@ const Model = types
 
         self.setReady(false);
 
-        try {
-          // init and render regions into working node, then move them to visible one
-          beforeNeedsUpdateCallback?.();
-          self.regs.forEach(region => {
+        // init and render regions into working node, then move them to visible one
+        beforeNeedsUpdateCallback?.();
+        self.regs.forEach(region => {
+          try {
             if (initial || (suggestions && region.fromSuggestion)) {
               region.initRangeAndOffsets();
             }
             region.applyHighlight();
-          });
-          afterNeedsUpdateCallback?.();
+          } catch (err) {
+            console.error(err);
+          }
+        });
+        afterNeedsUpdateCallback?.();
 
-          // node texts can be only retrieved from the visible node
-          self.regs.forEach(region => {
+        // node texts can be only retrieved from the visible node
+        self.regs.forEach(region => {
+          try {
             if (initial || (suggestions && region.fromSuggestion)) {
               region.updateHighlightedText();
             }
-          });
-        } catch (err) {
-          console.error(err);
-        }
+          } catch (err) {
+            console.error(err);
+          }
+        });
 
         self.setReady(true);
       },
