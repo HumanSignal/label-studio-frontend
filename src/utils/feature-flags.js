@@ -17,6 +17,9 @@ export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short"
 // User labels for Taxonomy
 export const FF_DEV_1536 = "ff_front_dev_1536_taxonomy_user_labels_150222_long";
 
+// Show or not dialog for rejection
+export const FF_DEV_1593 = "ff_front_1593_rejection_comment_040222_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }
