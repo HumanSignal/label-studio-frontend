@@ -225,12 +225,6 @@ const Model = types
       needsUpdate({ initial = false, suggestions = false } = {}) {
         if (self.isLoaded === false) return;
 
-        const { history } = self.annotation;
-
-        if (initial || suggestions) {
-          history.freeze("richtext:init");
-        }
-
         self.setReady(false);
 
         try {
@@ -252,11 +246,6 @@ const Model = types
           });
         } catch (err) {
           console.error(err);
-        }
-
-        if (initial || suggestions) {
-          history.setReplaceNextUndoState(true);
-          history.unfreeze("richtext:init");
         }
 
         self.setReady(true);

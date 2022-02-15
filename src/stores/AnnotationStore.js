@@ -841,7 +841,12 @@ const Annotation = types
         });
       }
 
+      const { history } = self;
+
+      history.freeze("richtext:suggestions");
       self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      history.setReplaceNextUndoState(true);
+      history.unfreeze("richtext:suggestions");
     },
 
     /**
