@@ -65,6 +65,7 @@ export { ReactComponent as IconSpeed } from "./speed.svg";
 export { ReactComponent as IconTagAlt } from "./tag-alt.svg";
 export { ReactComponent as IconSortUp } from "./sort-up.svg";
 export { ReactComponent as IconSortDown } from "./sort-down.svg";
+export { ReactComponent as IconCollapseLeft } from "./collapse-left.svg";
 
 
 // Relations

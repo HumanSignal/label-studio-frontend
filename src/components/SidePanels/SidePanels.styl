@@ -1,6 +1,7 @@
 .sidepanels
-  position relative
   height 100%
+  overflow hidden
+  position relative
 
   &__content
     height 100%
@@ -8,3 +9,32 @@
     z-index 1
     overflow auto
     styled-scrollbars()
+
+  &__wrapper
+    --snap-rotation 90deg
+    top 0
+    z-index 10
+    height 100%
+    min-width 10px
+    position absolute
+
+    &_snap::before
+      top 0
+      left 0
+      z-index 10
+      width 10px
+      height 100%
+      content ""
+      display block
+      position absolute
+      background linear-gradient(var(--snap-rotation), transparent, $accent_color)
+
+    &_align
+      &_left
+        left 0
+        --snap-rotation -90deg
+
+      &_right
+        top 0
+        right 0
+        --snap-rotation 90deg

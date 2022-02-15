@@ -145,6 +145,14 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
     if (props.enabled === false) performAnimation(false);
   }, [props.enabled]);
 
+  useEffect(() => {
+    if (visible) {
+      open();
+    } else {
+      close();
+    }
+  }, [visible]);
+
   const content = useMemo(() => {
     const ch = children as any;
 

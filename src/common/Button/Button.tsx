@@ -1,5 +1,5 @@
 import Keymaster from "keymaster";
-import React, { CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent, useEffect, useRef, useState } from "react";
+import { cloneElement, CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent, useMemo } from "react";
 import { Hotkey } from "../../core/Hotkey";
 import { useHotkey } from "../../hooks/useHotkey";
 import { Block, CNTagName, Elem } from "../../utils/bem";
@@ -65,15 +65,15 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
     mods.look = 'primary';
   }
 
-  const iconElem = React.useMemo(() => {
+  const iconElem = useMemo(() => {
     if (!icon) return null;
     if (isDefined(icon.props.size)) return icon;
 
     switch (size) {
       case "small":
-        return React.cloneElement(icon, { ...icon.props, size: 12, width: 12, height: 12 });
+        return cloneElement(icon, { ...icon.props, size: 12, width: 12, height: 12 });
       case "compact":
-        return React.cloneElement(icon, { ...icon.props, size: 14, width: 14, height: 14 });
+        return cloneElement(icon, { ...icon.props, size: 14, width: 14, height: 14 });
       default:
         return icon;
     }

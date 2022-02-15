@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback } from "react";
 import { PanelBase, PanelProps } from "../PanelBase";
 import { OutlinerTree } from "./OutlinerTree";
-import { GroupingOptions, OrderingOptions, ViewControls } from "./ViewControls";
+import { ViewControls } from "./ViewControls";
 
 interface OutlinerPanelProps extends PanelProps {
   regions: any;
