@@ -17,7 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
-import { FF_DEV_1555, FF_DEV_1621, isFF } from "../utils/feature-flags";
+import { FF_DEV_1555, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -1295,7 +1295,7 @@ export default types
     }
 
     function createAnnotation(options = { userGenerate: true }) {
-      const result = isFF(FF_DEV_1621) ? findNonInteractivePredictionResults() : [];
+      const result = findNonInteractivePredictionResults();
       const c = self.addAnnotation({ ...options, result });
 
       if (result && result.length) {
