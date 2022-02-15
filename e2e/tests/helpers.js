@@ -36,6 +36,16 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
   done();
 };
 
+const setFeatureFlags = (featureFlags, done) => {
+  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+  if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
+  window.APP_SETTINGS.feature_flags = {
+    ...window.APP_SETTINGS.feature_flags,
+    ...featureFlags,
+  };
+  done();
+};
+
 /**
  * Wait for the main Image object to be loaded
  * @param {function} done codecept async success handler
@@ -476,6 +486,7 @@ function hasSelectedRegion(done) {
 
 module.exports = {
   initLabelStudio,
+  setFeatureFlags,
   waitForImage,
   waitForAudio,
   delay,
