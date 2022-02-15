@@ -70,7 +70,7 @@ const Model = types
     },
 
     get holdsState() {
-      return (isDefined(self.month) && isDefined(self.year)) || isDefined(self.time);
+      return (isDefined(self.month) || isDefined(self.year)) || isDefined(self.time);
     },
 
     get showDate() {
@@ -94,6 +94,7 @@ const Model = types
     },
 
     get date() {
+      if (self.only?.includes("year")) return self.year;
       if (!self.month || !self.year) return undefined;
       return [self.year, zero(self.month), zero(self.day)].join("-");
     },
@@ -102,7 +103,10 @@ const Model = types
       const timeStr = self.time || "00:00";
 
       if (self.onlyTime) return timeStr;
-      if (!self.date) return undefined;
+      if (!self.date) {
+        if (self.year) return self.year;
+        return undefined;
+      }
 
       const date = new Date(self.date + ISO_DATE_SEPARATOR + timeStr);
 
@@ -121,7 +125,7 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    dateInputValue: undefined,
+    temporaryDateInputValue: undefined,
     day: undefined,
     month: undefined,
     year: undefined,
@@ -212,14 +216,12 @@ const Model = types
     },
 
     updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
+      if (self.result) self.result.area.setValue(self);
+      else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
 
           if (!area) return null;
-          area.setValue(self);
         } else {
           self.annotation.createResult({}, { datetime: self.datetime }, self, self.toname);
         }
@@ -237,8 +239,7 @@ const Model = types
     },
 
     onDateChange(e) {
-      self.dateInputValue = e.target.value;
-
+      self.temporaryDateInputValue = e.target.value;
       const date = new Date(e.target.value);
       const year = date.getFullYear();
       
@@ -298,7 +299,7 @@ const HtxDateTime = inject("store")(
           <select
             {...visual}
             name={item.name + "-year"}
-            value={item.year}
+            value={item.year || ""}
             onChange={item.onYearChange}
           >
             <option value="">Year...</option>
@@ -314,7 +315,7 @@ const HtxDateTime = inject("store")(
             {...visual}
             type="date"
             name={item.name + "-date"}
-            value={item.inputValue ?? ""}
+            value={item.date || item.temporaryDateInputValue || ""}
             min={item.min}
             max={item.max}
             onChange={item.onDateChange}
