@@ -25,8 +25,9 @@
 }
 
 .taxonomy__selected {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
+  min-height: 28px; // 24px button + 4px margin
 
   div {
     margin: 0 2px 4px 0;
@@ -130,6 +131,7 @@
   flex-grow: 1;
   flex-shrink: 0;
   line-height: 2em;
+  padding-right: 8px;
 }
 
 .taxonomy__grouping {
