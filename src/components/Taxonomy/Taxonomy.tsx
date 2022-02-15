@@ -250,6 +250,7 @@ const filterTreeByPredicate = (
 
       childs[d] = [];
       if (d) {
+        if (!childs[d - 1]) childs[d - 1] = [];
         childs[d - 1].unshift(adjusted);
       } else {
         roots.unshift(adjusted);
