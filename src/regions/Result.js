@@ -75,7 +75,6 @@ const Result = types
       taxonomy: types.frozen(), // array of arrays of strings
       sequence: types.frozen(),
     }),
-    interactive_mode: true,
     // info about object and region
     // meta: types.frozen(),
   })
@@ -238,7 +237,7 @@ const Result = types
     updateAppearenceFromState() {},
 
     serialize(options) {
-      const { from_name, to_name, type, score, value, interactive_mode } = getSnapshot(self);
+      const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
 
@@ -264,10 +263,6 @@ const Result = types
 
       if (self.area.parentID) {
         data.parentID = self.area.parentID.replace(/#.*/, "");
-      }
-
-      if (interactive_mode === false) {
-        data.interactive_mode = interactive_mode;
       }
 
       Object.assign(data, { id, from_name, to_name, type, origin: self.area.origin });

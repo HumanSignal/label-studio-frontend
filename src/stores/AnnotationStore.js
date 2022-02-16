@@ -1228,7 +1228,7 @@ export default types
       return self.predictions.reduce((results, prediction) => {
         return [
           ...results,
-          ...prediction.serializeAnnotation().filter(result => result.interactive_mode === false),
+          ...prediction._initialAnnotationObj.filter(result => result.interactive_mode === false).map(r => ({ ...r })),
         ];
       }, []);
     }
