@@ -25,8 +25,9 @@
 }
 
 .taxonomy__selected {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
+  min-height: 28px; // 24px button + 4px margin
 
   div {
     margin: 0 2px 4px 0;
@@ -35,6 +36,7 @@
     padding-left: 8px;
     border-radius: 4px;
     display: flex;
+    align-items: center;
   }
 
   input[type=button] {
@@ -44,6 +46,8 @@
     width: 24px;
     height: 24px;
     padding: 0;
+    line-height: 1;
+    font-weight: 500;
     font-size: 20px;
     color: #09f;
 
@@ -112,12 +116,22 @@
   &:focus-within {
     background: #eee;
   }
+
+  &_user,
+  &_session {
+    font-style: italic;
+  }
+
+  &_session {
+    color: #09f;
+  }
 }
 
 .taxonomy__item label {
   flex-grow: 1;
   flex-shrink: 0;
   line-height: 2em;
+  padding-right: 8px;
 }
 
 .taxonomy__grouping {
@@ -137,6 +151,72 @@
 
   &:not(:empty) {
     cursor: pointer;
+  }
+}
+
+.taxonomy__extra {
+  margin-left: auto;
+  opacity: 0.6;
+  padding: 0 12px;
+  min-width: 40px; // 24px padding + 16px width for count/dots
+  text-align: right;
+
+  &_actions {
+    display: none;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .taxonomy__item:hover &_count:not(:last-child) {
+    display: none;
+  }
+  .taxonomy__item:hover &_actions {
+    display: block;
+  }
+}
+
+.taxonomy__action {
+  zoom: 1; // something to apply this class
+}
+
+.taxonomy__add {
+  margin-left: 27px; // chevron 24px + 3px margin
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+
+  &::before {
+    content: "+";
+    width: 16px; // as checkbox
+    padding: 4px 0;
+    text-align: center;
+    font-size: 18px;
+    line-height: 0;
+  }
+
+  button {
+    flex-grow: 1;
+    border: none;
+    padding: 1px 4px;
+    font-weight: normal;
+    text-align: left;
+  }
+}
+
+.taxonomy__newitem {
+  display: flex;
+
+  [name=taxonomy__add] {
+    padding: 1px 2px;
+    border: none;
+    flex-grow: 1;
+    margin-left: 45px;
+    margin-right: 8px;
+    font: inherit;
+    font-style: italic;
+    color: #09f;
+    background: rgba(0,0,0,0.03);
   }
 }
 

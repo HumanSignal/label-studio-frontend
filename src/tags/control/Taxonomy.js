@@ -87,6 +87,7 @@ function traverse(root) {
     return obj;
   };
 
+  // @todo check childrens with only one child
   return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : visitNode(root);
 }
 
@@ -104,6 +105,10 @@ const Model = types
     selected: [],
   }))
   .views(self => ({
+    get userLabels() {
+      return self.annotation.store.userLabels;
+    },
+
     get holdsState() {
       return self.selected.length > 0;
     },
@@ -124,7 +129,26 @@ const Model = types
     },
 
     get items() {
-      return traverse(self.children);
+      const fromConfig = traverse(self.children);
+      const fromUsers = self.userLabels?.controls[self.name] ?? [];
+
+      for (const label of fromUsers) {
+        let current = { children: fromConfig };
+        const { origin, path } = label;
+        const lastIndex = path.length - 1;
+
+        for (let depth = 0; depth < lastIndex; depth++) {
+          current = current.children?.find(item => item.label === path[depth]);
+          if (!current) break;
+        }
+
+        if (current) {
+          if (!current.children) current.children = [];
+          current.children.push({ label: path[lastIndex], path, depth: lastIndex, origin });
+        }
+      }
+
+      return fromConfig;
     },
   }))
   .actions(self => ({
@@ -163,6 +187,14 @@ const Model = types
         }
       }
     },
+
+    onAddLabel(path) {
+      self.userLabels?.addLabel(self.name, path);
+    },
+
+    onDeleteLabel(path) {
+      self.userLabels?.deleteLabel(self.name, path);
+    },
   }));
 
 const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, VisibilityMixin, AnnotationMixin);
@@ -184,6 +216,8 @@ const HtxTaxonomy = observer(({ item }) => {
         items={item.items}
         selected={item.selected}
         onChange={item.onChange}
+        onAddLabel={item.userLabels && item.onAddLabel}
+        onDeleteLabel={item.userLabels && item.onDeleteLabel}
         options={options}
       />
     </div>

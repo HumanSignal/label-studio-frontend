@@ -198,6 +198,14 @@ const Result = types
 
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
+
+    get controlStyle() {
+      if (!self.from_name) return null;
+
+      const { fillcolor, strokecolor, strokewidth, fillopacity, opacity } = self.from_name;
+
+      return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
   }))
   .volatile(() => ({
     pid: "",
