@@ -17,7 +17,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
-import { useObserver } from "mobx-react-lite";
+import { useObserver } from "mobx-react";
 import ResizeObserver from "../../utils/resize-observer";
 import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
 

@@ -17,6 +17,9 @@ export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short"
 // Show or not dialog for rejection
 export const FF_DEV_1593 = "ff_front_1593_rejection_comment_040222_short";
 
+// New Audio 2.0 UI
+export const FF_DEV_1713 = "ff_front_DEV_1713_audio_ui_150222_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }

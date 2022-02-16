@@ -1,5 +1,4 @@
-import { AudioModel } from "./Audio";
-import { AudioPlusModel } from "./AudioPlus";
+import { AudioModel } from "./AudioNext";
 import { ImageModel } from "./Image";
 import { RichTextModel } from "./RichText";
 import { TimeSeriesModel } from "./TimeSeries";
@@ -10,4 +9,4 @@ import { VideoModel } from "./Video";
 import "./HyperText";
 import "./Text";
 
-export { AudioModel, AudioPlusModel, ImageModel, ParagraphsModel, TimeSeriesModel, RichTextModel, VideoModel };
+export { AudioModel, ImageModel, ParagraphsModel, TimeSeriesModel, RichTextModel, VideoModel };

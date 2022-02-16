@@ -36,6 +36,7 @@ export interface TimelineContextValue {
   step: number;
   playing: boolean;
   settings?: TimelineSettings;
+  data?: any;
 }
 
 export interface TimelineMinimapProps {

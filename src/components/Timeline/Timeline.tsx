@@ -1,13 +1,13 @@
+import { FC, MouseEvent, useEffect, useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
-import { Controls, ControlsStepHandler } from "./Controls";
-import { Seeker } from "./Seeker";
-import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { default as Views, ViewTypes } from "./Views";
-
-import "./Timeline.styl";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
-import { TimelineContextValue, TimelineStepFunction } from "./Types";
+import { Controls, ControlsStepHandler } from "./Controls";
+import { Seeker } from "./Seeker";
+import { TimelineContextValue } from "./Types";
+import { default as Views, ViewTypes } from "./Views";
+import "./Timeline.styl";
+import { observer } from "mobx-react";
 
 export interface TimelineProps<D extends ViewTypes = "frames"> {
   regions: any[];
@@ -18,9 +18,13 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   playing: boolean;
   zoom?: number;
   fullscreen?: boolean;
-  disableFrames?: boolean;
+  disableView?: boolean;
   className?: string;
   defaultStepSize?: number;
+  allowFullscreen?: boolean;
+  displaySeeker?: boolean;
+  hopSize?: number;
+  data?: any;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility?: (id: string, visibility: boolean) => void;
@@ -30,17 +34,21 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   onFullscreenToggle?: () => void;
 }
 
-export const Timeline: FC<TimelineProps> = ({
+const TimelineComponent: FC<TimelineProps> = ({
   regions,
   zoom = 1,
   mode = "frames",
   length = 1024,
   position = 1,
   framerate = 24,
+  hopSize = 1,
   playing = false,
   fullscreen = false,
-  disableFrames = false,
+  disableView = false,
   defaultStepSize = 10,
+  displaySeeker = true,
+  allowFullscreen = true,
+  data,
   className,
   onPlayToggle,
   onPositionChange,
@@ -68,25 +76,26 @@ export const Timeline: FC<TimelineProps> = ({
   };
 
   const increasePosition: ControlsStepHandler = (_, stepSize) => {
-    const nextPosition = stepSize?.(length, currentPosition, regions, 1) ?? currentPosition + 1;
+    const nextPosition = stepSize?.(length, currentPosition, regions, 1) ?? currentPosition + hopSize;
 
     setInternalPosition(nextPosition);
   };
 
   const decreasePosition: ControlsStepHandler = (_, stepSize) => {
-    const nextPosition = stepSize?.(length, currentPosition, regions, -1) ?? currentPosition - 1;
+    const nextPosition = stepSize?.(length, currentPosition, regions, -1) ?? currentPosition - hopSize;
 
     setInternalPosition(nextPosition);
   };
 
-  const contextValue: TimelineContextValue = {
+  const contextValue = useMemo<TimelineContextValue>(() => ({
     position,
     length,
     regions,
     step,
+    data,
     playing,
     settings: View.settings,
-  };
+  }), [position, length, regions, step, playing, View.settings, data]);
 
   useEffect(() => {
     setCurrentPosition(clamp(position, 1, length));
@@ -104,7 +113,8 @@ export const Timeline: FC<TimelineProps> = ({
             collapsed={viewCollapsed}
             onPlayToggle={onPlayToggle}
             fullscreen={fullscreen}
-            disableFrames={disableFrames}
+            disableFrames={disableView}
+            allowFullscreen={allowFullscreen}
             onFullScreenToggle={() => onFullscreenToggle?.()}
             onStepBackward={decreasePosition}
             onStepForward={increasePosition}
@@ -112,7 +122,7 @@ export const Timeline: FC<TimelineProps> = ({
             onForward={() => setInternalPosition(length)}
             onPositionChange={setInternalPosition}
             onToggleCollapsed={setViewCollapsed}
-            extraControls={View.Controls && !disableFrames ? (
+            extraControls={View.Controls && !disableView ? (
               <View.Controls
                 onAction={(e, action, data) => {
                   onAction?.(e, action, data);
@@ -121,20 +131,22 @@ export const Timeline: FC<TimelineProps> = ({
             ) : null}
           />
 
-          <Seeker
-            length={length}
-            position={currentPosition}
-            seekOffset={seekOffset}
-            seekVisible={seekVisibleWidth}
-            onIndicatorMove={setSeekOffset}
-            onSeek={setInternalPosition}
-            minimap={View.Minimap ? (
-              <View.Minimap/>
-            ): null}
-          />
+          {displaySeeker && (
+            <Seeker
+              length={length}
+              position={currentPosition}
+              seekOffset={seekOffset}
+              seekVisible={seekVisibleWidth}
+              onIndicatorMove={setSeekOffset}
+              onSeek={setInternalPosition}
+              minimap={View.Minimap ? (
+                <View.Minimap/>
+              ): null}
+            />
+          )}
         </Elem>
 
-        {!viewCollapsed && !disableFrames && (
+        {!viewCollapsed && !disableView && (
           <Elem name="view">
             <View.View
               step={step}
@@ -156,3 +168,5 @@ export const Timeline: FC<TimelineProps> = ({
     </TimelineContextProvider>
   );
 };
+
+export const Timeline = observer(TimelineComponent);
