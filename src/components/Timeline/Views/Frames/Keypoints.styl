@@ -15,8 +15,20 @@
     align-items center
     position sticky
     display flex
+    padding 0 8px
+    justify-content space-between
     background linear-gradient(0deg, var(--hover), var(--hover) 100%), linear-gradient(0deg, #FAFAFA, #FAFAFA 100%)
     box-shadow 1px 0px 0px rgba(0, 0, 0, 0.05)
+
+  &__data
+    display grid
+    text-align right
+    grid-auto-flow column
+    grid-auto-columns minmax(24px, 1fr)
+
+  &__data-item
+    &_faded
+      opacity 0.4
 
   &__name
     font-size 14px

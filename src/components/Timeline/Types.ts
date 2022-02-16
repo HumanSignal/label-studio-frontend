@@ -35,6 +35,8 @@ export interface TimelineContextValue {
   regions: TimelineRegion[];
   step: number;
   playing: boolean;
+  visibleWidth: number;
+  seekOffset: number;
   settings?: TimelineSettings;
 }
 

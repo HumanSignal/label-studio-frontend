@@ -26,8 +26,6 @@ export const Frames: FC<TimelineViewProps> = ({
   onScroll,
   onChange,
   onResize,
-  onToggleVisibility,
-  onDeleteRegion,
   onSelectRegion,
 }) => {
   const scrollMultiplier = 1.25;
@@ -89,8 +87,6 @@ export const Frames: FC<TimelineViewProps> = ({
     }
 
   }, [scrollable, offsetX, offsetY, setScroll]);
-
-  const timelineOffsetSteps = roundToStep(timelineStartOffset, step);
 
   const currentOffsetX = useMemo(() => {
     const value = roundToStep(offsetX, step);
@@ -249,20 +245,59 @@ export const Frames: FC<TimelineViewProps> = ({
         onClickCapture={scrollClickHandler}
       >
         <Elem name="filler">
-          <Elem name="keypoints">
-            {regions.map(region => region.sequence.length > 0 ? (
-              <Keypoints
-                key={region.id}
-                region={region}
-                startOffset={timelineStartOffset}
-                onSelectRegion={onSelectRegion}
-              />
-            ) : null)}
-          </Elem>
+          <KeypointsVirtual
+            regions={regions}
+            scrollTop={currentOffsetY}
+            startOffset={timelineStartOffset}
+            onSelectRegion={onSelectRegion}
+          />
         </Elem>
       </Elem>
 
       <Elem name="background" style={{ backgroundImage: background }}/>
     </Block>
+  );
+};
+
+interface KeypointsVirtualProps {
+  regions: any[];
+  startOffset: number;
+  scrollTop: number;
+  onSelectRegion: TimelineViewProps["onSelectRegion"];
+}
+
+const KeypointsVirtual: FC<KeypointsVirtualProps> = ({
+  regions,
+  startOffset,
+  scrollTop,
+  onSelectRegion,
+}) => {
+  const extra = 5;
+  const height = 24;
+  const bounds = useMemo(() => {
+    const sIdx = clamp(Math.ceil(scrollTop / height) - 1, 0, regions.length);
+    const eIdx = clamp(sIdx + (Math.ceil(165 / height) - 1), 0, regions.length);
+
+    return [
+      clamp(sIdx - extra, 0, regions.length),
+      clamp(eIdx + extra, 0, regions.length),
+    ];
+  }, [scrollTop, regions.length]);
+
+  return (
+    <Elem name="keypoints" style={{ height: regions.length * height }}>
+      {regions.map((region, i) => {
+        return region.sequence.length > 0 ? (
+          <Keypoints
+            key={region.id}
+            idx={i + 1}
+            region={region}
+            startOffset={startOffset}
+            onSelectRegion={onSelectRegion}
+            renderable={bounds[0] <= i && i <= bounds[1]}
+          />
+        ) : null;
+      })}
+    </Elem>
   );
 };
