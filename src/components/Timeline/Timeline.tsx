@@ -86,8 +86,8 @@ export const Timeline: FC<TimelineProps> = ({
     step,
     playing,
     seekOffset,
-    visibleWidth: seekVisibleWidth,
     settings: View.settings,
+    visibleWidth: seekVisibleWidth,
   };
 
   useEffect(() => {
