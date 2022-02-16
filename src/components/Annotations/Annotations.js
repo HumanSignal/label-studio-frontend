@@ -223,7 +223,7 @@ class Annotations extends Component {
                 size="small"
                 onClick={ev => {
                   ev.preventDefault();
-                  const c = store.annotationStore.addAnnotation({ userGenerate: true });
+                  const c = store.annotationStore.createAnnotation();
 
                   store.annotationStore.selectAnnotation(c.id);
                   // c.list.selectAnnotation(c);
