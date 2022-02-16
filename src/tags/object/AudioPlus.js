@@ -14,9 +14,11 @@ import { guidGenerator, restoreNewsnapshot } from "../../core/Helpers";
 import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { SyncMixin } from "../../mixins/SyncMixin";
+import { customTypes } from "../../core/CustomTypes";
 import { useRef } from "react";
 import { useEffect } from "react";
 import { isDefined } from "../../utils/utilities";
+import IsReadyMixin from "../../mixins/IsReadyMixin";
 
 /**
  * The AudioPlus tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -42,6 +44,8 @@ import { isDefined } from "../../utils/utilities";
  * @param {boolean} [zoom=true] - Whether to show the zoom slider
  * @param {string} [hotkey] - Hotkey used to play or pause audio
  * @param {string} [sync] object name to sync with
+ * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
+ * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -53,6 +57,8 @@ const TagAttrs = types.model({
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
   height: types.optional(types.string, "128"),
+  cursorwidth: types.optional(types.string, "1"),
+  cursorcolor: types.optional(customTypes.color, "#333"),
 });
 
 const Model = types
@@ -96,6 +102,10 @@ const Model = types
       self.handleNewRegions();
 
       if (self.sync) self.initSync();
+    },
+
+    onReady() {
+      self.setReady(true);
     },
 
     handleSyncPlay() {
@@ -295,7 +305,7 @@ const Model = types
     },
   }));
 
-const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, Model);
+const AudioPlusModel = types.compose("AudioPlusModel", TagAttrs, SyncMixin, ProcessAttrsMixin, ObjectBase, AnnotationMixin, IsReadyMixin, Model);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
@@ -315,12 +325,15 @@ const HtxAudioView = ({ store, item }) => {
           onCreate={item.wsCreated}
           addRegion={item.addRegion}
           onLoad={item.onLoad}
+          onReady={item.onReady}
           onError={item.onError}
           speed={item.speed}
           zoom={item.zoom}
           volume={item.volume}
           regions={true}
           height={item.height}
+          cursorColor={item.cursorcolor}
+          cursorWidth={item.cursorwidth}
         />
 
         <AudioControls item={item} store={store} />

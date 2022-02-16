@@ -66,6 +66,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {string} [timeDisplayFormat] Format used to display temporal value. Can be a number or a date. If a temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
  * @param {string} [sep=,] Separator for your CSV file.
  * @param {string} [overviewChannels] Comma-separated list of channel names or indexes displayed in overview.
+ * @param {string} [overviewWidth=25%] Default width of overview window in percents
  * @param {boolean} [fixedScale=false] Whether to scale y-axis to the maximum to fit all the values. If false, current view scales to fit only the displayed values.
  */
 const TagAttrs = types.model({
@@ -78,6 +79,7 @@ const TagAttrs = types.model({
   timeformat: "",
   timedisplayformat: "",
   overviewchannels: "", // comma-separated list of channels to show
+  overviewwidth: "25%",
 
   fixedscale: false,
 
@@ -110,6 +112,15 @@ const Model = types
       return self.regs.map(r => {
         return [r.start, r.end];
       });
+    },
+
+    get defaultOverviewWidth() {
+      const defaultWidth = 25;
+      const defaultStart = 0;
+      // overviewwidth in percents, default 25, 100% max
+      const width = Math.min(self.overviewwidth.match(/(\d+)%$/)?.[1] ?? defaultWidth, 100) / 100;
+
+      return [defaultStart, width];
     },
 
     get store() {
@@ -484,7 +495,11 @@ const Model = types
       }
       // if current view already restored by PersistentState
       if (self.brushRange.length) return;
-      self.updateTR([times[0], times[times.length >> 2]]);
+
+      const percentToLength = percent => times[Math.round((times.length - 1) * percent)];
+      const boundaries = self.defaultOverviewWidth.map(percentToLength);
+
+      self.updateTR(boundaries);
     },
 
     onHotKey() {},
