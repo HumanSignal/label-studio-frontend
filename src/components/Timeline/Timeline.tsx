@@ -1,13 +1,13 @@
 import { Block, Elem } from "../../utils/bem";
 import { Controls, ControlsStepHandler } from "./Controls";
 import { Seeker } from "./Seeker";
-import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, MouseEvent, useEffect, useMemo, useState } from "react";
 import { default as Views, ViewTypes } from "./Views";
 
 import "./Timeline.styl";
 import { clamp, isDefined } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
-import { TimelineContextValue, TimelineStepFunction } from "./Types";
+import { TimelineContextValue } from "./Types";
 
 export interface TimelineProps<D extends ViewTypes = "frames"> {
   regions: any[];
