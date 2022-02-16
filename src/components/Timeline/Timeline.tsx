@@ -22,6 +22,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   className?: string;
   defaultStepSize?: number;
   allowFullscreen?: boolean;
+  allowViewCollapse?: boolean;
   displaySeeker?: boolean;
   hopSize?: number;
   data?: any;
@@ -48,6 +49,7 @@ const TimelineComponent: FC<TimelineProps> = ({
   defaultStepSize = 10,
   displaySeeker = true,
   allowFullscreen = true,
+  allowViewCollapse = true,
   data,
   className,
   onPlayToggle,
@@ -115,6 +117,7 @@ const TimelineComponent: FC<TimelineProps> = ({
             fullscreen={fullscreen}
             disableFrames={disableView}
             allowFullscreen={allowFullscreen}
+            allowViewCollapse={allowViewCollapse}
             onFullScreenToggle={() => onFullscreenToggle?.()}
             onStepBackward={decreasePosition}
             onStepForward={increasePosition}

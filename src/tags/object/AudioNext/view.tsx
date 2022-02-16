@@ -28,11 +28,13 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       hopSize={1000}
       playing={playing}
       regions={regions}
+      data={item}
       defaultStepSize={16}
       length={audioLength}
       position={position}
       allowFullscreen={false}
       displaySeeker={false}
+      allowViewCollapse={false}
       onPositionChange={(frame: number) => {
         setPosition(frame);
       }}

@@ -1528,6 +1528,11 @@
   dependencies:
     postcss "5 - 7"
 
+"@types/debounce@*":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@types/debounce/-/debounce-1.2.1.tgz#79b65710bc8b6d44094d286aecf38e44f9627852"
+  integrity sha512-epMsEE85fi4lfmJUH/89/iV/LI+F5CvNIvmgs5g5jYFPfhO2S/ae8WSsLOKWdwtoaZw9Q2IhJ4tQ5tFCcS/4HA==
+
 "@types/eslint-scope@^3.7.0":
   version "3.7.2"
   resolved "https://registry.npmjs.org/@types/eslint-scope/-/eslint-scope-3.7.2.tgz"
@@ -1694,6 +1699,13 @@
 "@types/strman@^2.0.0":
   version "2.0.0"
   resolved "https://registry.npmjs.org/@types/strman/-/strman-2.0.0.tgz"
+
+"@types/wavesurfer.js@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@types/wavesurfer.js/-/wavesurfer.js-6.0.0.tgz#aa7813402b4cda3abe80a257ae8d0470ece37af4"
+  integrity sha512-w5yP3KLMhbBC4JvjWD5Yf9pUNLqZvuT4o/RIFJc0XQ8flbxdg+VOZ558PBQpczBsDAqUlfPkPfkBAUE4uItU3Q==
+  dependencies:
+    "@types/debounce" "*"
 
 "@types/yargs-parser@*":
   version "20.2.1"
@@ -10292,9 +10304,10 @@ watchpack@^2.3.1:
     glob-to-regexp "^0.4.1"
     graceful-fs "^4.1.2"
 
-wavesurfer.js@^3.3.3:
-  version "3.3.3"
-  resolved "https://registry.npmjs.org/wavesurfer.js/-/wavesurfer.js-3.3.3.tgz"
+wavesurfer.js@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/wavesurfer.js/-/wavesurfer.js-6.0.1.tgz#a511611b2f4d04d098da8166f1fd2a818db20a82"
+  integrity sha512-igFjn9Zuo/vqcKdNKP90GZnKMGgder3Xz1cCR1UBw6ifdXTrfQDHpIte7GuddupQIEGoLajhvIgv1OJRXeU0XQ==
 
 wbuf@^1.1.0, wbuf@^1.7.3:
   version "1.7.3"

@@ -31,6 +31,7 @@ export interface ControlsProps {
   disableFrames?: boolean;
   extraControls?: JSX.Element | null;
   allowFullscreen?: boolean;
+  allowViewCollapse?: boolean;
   onRewind: () => void;
   onForward: () => void;
   onPlayToggle: (playing: boolean) => void;
@@ -51,6 +52,7 @@ export const Controls: FC<ControlsProps> = ({
   fullscreen,
   disableFrames,
   allowFullscreen,
+  allowViewCollapse,
   onRewind,
   onForward,
   onPlayToggle,
@@ -207,8 +209,12 @@ export const Controls: FC<ControlsProps> = ({
           />
         </Elem>
         <Elem name="group" tag={Space} collapsed>
-          {!disableFrames && (
-            <ControlButton onClick={() => onToggleCollapsed?.(!collapsed)}>{collapsed ? <IconExpand/> : <IconCollapse/>}</ControlButton>
+          {!disableFrames && allowViewCollapse && (
+            <ControlButton
+              onClick={() => onToggleCollapsed?.(!collapsed)}
+            >
+              {collapsed ? <IconExpand/> : <IconCollapse/>}
+            </ControlButton>
           )}
           {allowFullscreen && (
             <ControlButton onClick={() => onFullScreenToggle?.(false)}>
