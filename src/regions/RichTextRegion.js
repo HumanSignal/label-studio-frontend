@@ -16,7 +16,16 @@ import { findRangeNative, rangeToGlobalOffset } from "../utils/selection-tools";
 const GlobalOffsets = types.model("GlobalOffset", {
   start: types.number,
   end: types.number,
-});
+  // distinguish loaded globalOffsets from user's annotation and internally calculated one;
+  // we should rely only on calculated offsets to find ranges, see initRangeAndOffsets();
+  // it should be in the model to avoid reinit on undo/redo.
+  calculated: false,
+}).views(self => ({
+  get serialized() {
+    // should never get to serialized result
+    return { start: self.start, end: self.end };
+  },
+}));
 
 const Model = types
   .model("RichTextRegionModel", {
@@ -78,7 +87,7 @@ const Model = types
 
           Object.assign(res.value, {
             ...xpathRange,
-            globalOffsets: self.globalOffsets?.toJSON(),
+            globalOffsets: self.globalOffsets.serialized,
           });
         } catch(e) {
           // regions may be broken, so they don't have globalOffsets
@@ -89,7 +98,7 @@ const Model = types
 
           if (self.globalOffsets) {
             Object.assign(res.value, {
-              globalOffsets: self.globalOffsets?.toJSON(),
+              globalOffsets: self.globalOffsets.serialized,
             });
           }
         }
@@ -136,6 +145,8 @@ const Model = types
      * - for emergencies (xpath invalid)
      */
     initRangeAndOffsets() {
+      if (self.globalOffsets?.calculated) return;
+
       const root = self._getRootNode();
       let range;
 
@@ -143,7 +154,7 @@ const Model = types
       if (self.isText) {
         const { startOffset: start, endOffset: end } = self;
 
-        self.globalOffsets = { start, end };
+        self.globalOffsets = { start, end, calculated: true };
         self.cachedRange = findRangeNative(start, end, root);
         return;
       }
@@ -156,7 +167,7 @@ const Model = types
         const originalRoot = self._getRootNode(true);
         const [start, end] = rangeToGlobalOffset(range, originalRoot);
 
-        self.globalOffsets = { start, end };
+        self.globalOffsets = { start, end, calculated: true };
         self.cachedRange = findRangeNative(start, end, root);
 
         return;
@@ -169,7 +180,7 @@ const Model = types
       if (range) {
         const [start, end] = rangeToGlobalOffset(range, root);
 
-        self.globalOffsets = { start, end };
+        self.globalOffsets = { start, end, calculated: true };
         self.cachedRange = range;
 
         return;
@@ -181,7 +192,10 @@ const Model = types
 
         self.cachedRange = findRangeNative(start, end, root);
 
-        if (self.cachedRange) self._fixXPaths(self.cachedRange, root);
+        if (self.cachedRange) {
+          self._fixXPaths(self.cachedRange, root);
+          self.globalOffsets.calculated = true;
+        }
 
         return;
       }

@@ -197,7 +197,7 @@ class RichTextPieceView extends Component {
       const { history } = item.annotation;
 
       history.freeze("richtext:init");
-      item.needsUpdate({ initial });
+      item.needsUpdate();
       history.setReplaceNextUndoState(true);
       history.unfreeze("richtext:init");
     } else {
@@ -229,10 +229,6 @@ class RichTextPieceView extends Component {
     if (!item.inline) {
       this.dispose = observe(item, "_isReady", this.updateLoadingVisibility, true);
     }
-  }
-
-  componentDidUpdate() {
-    this._handleUpdate();
   }
 
   componentWillUnmount() {

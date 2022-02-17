@@ -120,6 +120,8 @@ const Model = types
     // toggle showing which node to modify — visible or working
     useWorkingNode: false,
 
+    _isReady: false,
+
     regsObserverDisposer: null,
     _isLoaded: false,
     _loadedForAnnotation: null,
@@ -222,7 +224,7 @@ const Model = types
         afterNeedsUpdateCallback = afterCalback;
       },
 
-      needsUpdate({ initial = false, suggestions = false } = {}) {
+      needsUpdate() {
         if (self.isLoaded === false) return;
 
         self.setReady(false);
@@ -231,9 +233,8 @@ const Model = types
         beforeNeedsUpdateCallback?.();
         self.regs.forEach(region => {
           try {
-            if (initial || (suggestions && region.fromSuggestion)) {
-              region.initRangeAndOffsets();
-            }
+            // will be initialized only once
+            region.initRangeAndOffsets();
             region.applyHighlight();
           } catch (err) {
             console.error(err);
@@ -244,9 +245,7 @@ const Model = types
         // node texts can be only retrieved from the visible node
         self.regs.forEach(region => {
           try {
-            if (initial || (suggestions && region.fromSuggestion)) {
-              region.updateHighlightedText();
-            }
+            region.updateHighlightedText();
           } catch (err) {
             console.error(err);
           }
