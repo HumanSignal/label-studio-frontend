@@ -105,7 +105,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
 const CreateAnnotation = observer(({ annotationStore, onClick }) => {
   const onCreateAnnotation = useCallback(() => {
-    const c = annotationStore.addAnnotation({ userGenerate: true });
+    const c = annotationStore.createAnnotation();
 
     annotationStore.selectAnnotation(c.id);
     onClick();
