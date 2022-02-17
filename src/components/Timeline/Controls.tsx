@@ -1,4 +1,5 @@
 import React, { FC, MouseEvent, MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { frame } from "wavesurfer.js/src/util";
 import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
@@ -67,7 +68,7 @@ export const Controls: FC<ControlsProps> = ({
   const [inputMode, setInputMode] = useState(false);
   const [startReached, endReached] = [position === 1, position === length];
 
-  const time = useMemo(() => {
+  const duration = useMemo(() => {
     return length / frameRate;
   }, [length, frameRate]);
 
@@ -116,7 +117,7 @@ export const Controls: FC<ControlsProps> = ({
               }}
             />
           ) : (
-            <>{position} <span>of {length}</span></>
+            <>{Math.round(position)} <span>of {Math.round(length)}</span></>
           )}
         </Elem>
       </Elem>
@@ -229,16 +230,13 @@ export const Controls: FC<ControlsProps> = ({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
-
-        <Elem name="time">
-          <Time
-            time={currentTime}
-            position={relativePosition(position, frameRate)}
-          />/<Time
-            time={time}
-            position={relativePosition(length, frameRate)}
-          />
-        </Elem>
+        <TimeDisplay
+          currentTime={currentTime}
+          duration={duration}
+          length={length}
+          position={position}
+          framerate={frameRate}
+        />
       </Elem>
     </Block>
   );
@@ -253,6 +251,34 @@ export const ControlButton: FC<ButtonProps & {disabled?: boolean}> = ({ children
     >
       {children}
     </Button>
+  );
+};
+
+interface TimeDisplay {
+  currentTime: number;
+  position: number;
+  duration: number;
+  framerate: number;
+  length: number;
+}
+
+const TimeDisplay: FC<TimeDisplay> = ({
+  currentTime,
+  position,
+  duration,
+  framerate,
+  length,
+}) => {
+  return (
+    <Elem name="time">
+      <Time
+        time={currentTime}
+        position={relativePosition(position, framerate)}
+      />/<Time
+        time={duration}
+        position={relativePosition(length, framerate)}
+      />
+    </Elem>
   );
 };
 

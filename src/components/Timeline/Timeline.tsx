@@ -1,39 +1,13 @@
-import { FC, MouseEvent, useEffect, useMemo, useState } from "react";
+import { observer } from "mobx-react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
 import { Controls, ControlsStepHandler } from "./Controls";
 import { Seeker } from "./Seeker";
-import { TimelineContextValue } from "./Types";
-import { default as Views, ViewTypes } from "./Views";
 import "./Timeline.styl";
-import { observer } from "mobx-react";
-
-export interface TimelineProps<D extends ViewTypes = "frames"> {
-  regions: any[];
-  length: number;
-  position: number;
-  mode: D;
-  framerate: number;
-  playing: boolean;
-  zoom?: number;
-  fullscreen?: boolean;
-  disableView?: boolean;
-  className?: string;
-  defaultStepSize?: number;
-  allowFullscreen?: boolean;
-  allowViewCollapse?: boolean;
-  displaySeeker?: boolean;
-  hopSize?: number;
-  data?: any;
-  onPlayToggle: (playing: boolean) => void;
-  onPositionChange: (value: number) => void;
-  onToggleVisibility?: (id: string, visibility: boolean) => void;
-  onDeleteRegion?: (id: string) => void;
-  onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
-  onAction?: (event: MouseEvent, action: string, data?: any) => void;
-  onFullscreenToggle?: () => void;
-}
+import { TimelineContextValue, TimelineProps } from "./Types";
+import { default as Views } from "./Views";
 
 const TimelineComponent: FC<TimelineProps> = ({
   regions,
@@ -52,6 +26,7 @@ const TimelineComponent: FC<TimelineProps> = ({
   allowViewCollapse = true,
   data,
   className,
+  onReady,
   onPlayToggle,
   onPositionChange,
   onToggleVisibility,
@@ -158,6 +133,7 @@ const TimelineComponent: FC<TimelineProps> = ({
               playing={playing}
               position={currentPosition}
               offset={seekOffset}
+              onReady={onReady}
               onScroll={setSeekOffset}
               onResize={setSeekVisibleWidth}
               onChange={setInternalPosition}

@@ -1,4 +1,32 @@
 import { FC, MouseEvent } from "react";
+import { ViewTypes } from "./Views";
+
+export interface TimelineProps<D extends ViewTypes = "frames"> {
+  regions: any[];
+  length: number;
+  position: number;
+  mode: D;
+  framerate: number;
+  playing: boolean;
+  zoom?: number;
+  fullscreen?: boolean;
+  disableView?: boolean;
+  className?: string;
+  defaultStepSize?: number;
+  allowFullscreen?: boolean;
+  allowViewCollapse?: boolean;
+  displaySeeker?: boolean;
+  hopSize?: number;
+  data?: any;
+  onReady?: (data: Record<string, any>) => void;
+  onPlayToggle: (playing: boolean) => void;
+  onPositionChange: (value: number) => void;
+  onToggleVisibility?: (id: string, visibility: boolean) => void;
+  onDeleteRegion?: (id: string) => void;
+  onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
+  onAction?: (event: MouseEvent, action: string, data?: any) => void;
+  onFullscreenToggle?: () => void;
+}
 
 export interface TimelineViewProps {
   step: number;
@@ -7,6 +35,7 @@ export interface TimelineViewProps {
   length: number;
   playing: boolean;
   regions: TimelineRegion[];
+  onReady?: TimelineProps["onReady"];
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;

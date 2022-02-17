@@ -8,30 +8,74 @@ import "./Wave.styl";
 export const Wave: FC<TimelineViewProps> = ({
   position,
   length,
+  playing,
+  onReady,
+  onChange,
 }) => {
   const { data } = useContext(TimelineContext);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const tracker = useRef<NodeJS.Timeout>();
   const waveRef = useRef<HTMLElement>();
   const ws = useRef<WaveSurfer>();
 
   useEffect(() => {
-    ws.current = WaveSurfer.create({
+    const wsi = WaveSurfer.create({
       container: waveRef.current!,
       height: 88,
     });
 
-    ws.current.on("ready", () => {
+    wsi.on("ready", () => {
       setLoading(false);
+
+      onReady?.({
+        duration: wsi.getDuration(),
+      });
     });
 
-    ws.current.load(data._value);
+    wsi.on("seek", (progress) => {
+      onChange?.((wsi.getDuration() * progress) * 1000);
+    });
+
+    wsi.on("loading", (progress) => {
+      setProgress(progress);
+    });
+
+    wsi.load(data._value);
+
+    ws.current = wsi;
 
     return () => ws.current?.destroy();
   }, []);
 
   useEffect(() => {
-    ws.current?.seekTo(position / length);
-  }, [position, length]);
+    const wsi = ws.current;
+
+    if (wsi && !playing) {
+      wsi.seekTo(position / length);
+    }
+  }, [position, playing, length]);
+
+  useEffect(() => {
+    const wsi = ws.current;
+
+    if (wsi) {
+      if (playing) {
+        wsi.play();
+
+        const trackProgress = () => {
+          onChange?.(wsi.getCurrentTime() * 1000);
+
+          tracker.current = setTimeout(trackProgress);
+        };
+
+        tracker.current = setTimeout(trackProgress);
+      } else {
+        wsi.pause();
+        clearTimeout(tracker.current!);
+      }
+    }
+  }, [playing]);
 
   return (
     <Block name="wave">

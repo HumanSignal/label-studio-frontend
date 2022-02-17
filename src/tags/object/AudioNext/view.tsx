@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Elem } from "../../../utils/bem";
 
@@ -14,8 +14,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const regions: any[] = [];
 
-  const handlePlayToggle = () => {};
-  const handleFullscreenToggle = () => {};
+  const handleReady = useCallback((data: any) => setAudioLength(data.duration * 1000), []);
+  const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
+  const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
   const handleSelectRegion = () => {};
   const handleAction = () => {};
 
@@ -24,7 +25,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       mode="wave"
       name="timeline"
       tag={Timeline}
-      framerate={1000}
+      framerate={999}
       hopSize={1000}
       playing={playing}
       regions={regions}
@@ -35,11 +36,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       allowFullscreen={false}
       displaySeeker={false}
       allowViewCollapse={false}
-      onPositionChange={(frame: number) => {
-        setPosition(frame);
-      }}
+      onReady={handleReady}
+      onPositionChange={handlePositionChange}
       onPlayToggle={handlePlayToggle}
-      onFullscreenToggle={handleFullscreenToggle}
       onSelectRegion={handleSelectRegion}
       onAction={handleAction}
     />
