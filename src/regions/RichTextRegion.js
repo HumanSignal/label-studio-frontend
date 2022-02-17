@@ -128,7 +128,12 @@ const Model = types
 
       if (!root || !self.globalOffsets) return undefined;
 
-      if (!self.cachedRange || self.cachedRange.collapsed) {
+      const rangeIsMissing = !self.cachedRange
+        || self.cachedRange.collapsed
+        // if this range is in detached iframe it'll look like a good one, check this
+        || !self.cachedRange.startContainer?.ownerDocument?.defaultView;
+
+      if (rangeIsMissing) {
         const { start, end } = self.globalOffsets;
 
         self.cachedRange = findRangeNative(start, end, root);
