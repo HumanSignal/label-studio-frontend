@@ -14,7 +14,10 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const regions: any[] = [];
 
-  const handleReady = useCallback((data: any) => setAudioLength(data.duration * 1000), []);
+  const handleReady = useCallback((data: any) => {
+    setAudioLength(data.duration * 1000);
+    item.onLoad(data.surfer);
+  }, []);
   const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
   const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
   const handleSelectRegion = () => {};
@@ -28,7 +31,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       framerate={999}
       hopSize={1000}
       playing={playing}
-      regions={regions}
+      regions={item.regions}
       data={item}
       defaultStepSize={16}
       length={audioLength}
@@ -36,10 +39,12 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       allowFullscreen={false}
       displaySeeker={false}
       allowViewCollapse={false}
+      controlsOnTop={false}
       onReady={handleReady}
+      onAddRegion={item.addRegion}
+      onSelectRegion={item.selectRegion}
       onPositionChange={handlePositionChange}
       onPlayToggle={handlePlayToggle}
-      onSelectRegion={handleSelectRegion}
       onAction={handleAction}
     />
   );

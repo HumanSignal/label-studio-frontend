@@ -24,12 +24,14 @@ const TimelineComponent: FC<TimelineProps> = ({
   displaySeeker = true,
   allowFullscreen = true,
   allowViewCollapse = true,
+  controlsOnTop = true,
   data,
   className,
   onReady,
   onPlayToggle,
   onPositionChange,
   onToggleVisibility,
+  onAddRegion,
   onDeleteRegion,
   onSelectRegion,
   onAction,
@@ -78,70 +80,85 @@ const TimelineComponent: FC<TimelineProps> = ({
     setCurrentPosition(clamp(position, 1, length));
   }, [position, length]);
 
+  const controls = (
+    <Elem name="topbar">
+      <Controls
+        length={length}
+        position={currentPosition}
+        frameRate={framerate}
+        playing={playing}
+        collapsed={viewCollapsed}
+        onPlayToggle={onPlayToggle}
+        fullscreen={fullscreen}
+        disableFrames={disableView}
+        allowFullscreen={allowFullscreen}
+        allowViewCollapse={allowViewCollapse}
+        onFullScreenToggle={() => onFullscreenToggle?.()}
+        onStepBackward={decreasePosition}
+        onStepForward={increasePosition}
+        onRewind={() => setInternalPosition(0)}
+        onForward={() => setInternalPosition(length)}
+        onPositionChange={setInternalPosition}
+        onToggleCollapsed={setViewCollapsed}
+        extraControls={View.Controls && !disableView ? (
+          <View.Controls
+            onAction={(e, action, data) => {
+              onAction?.(e, action, data);
+            }}
+          />
+        ) : null}
+      />
+
+      {displaySeeker && (
+        <Seeker
+          length={length}
+          position={currentPosition}
+          seekOffset={seekOffset}
+          seekVisible={seekVisibleWidth}
+          onIndicatorMove={setSeekOffset}
+          onSeek={setInternalPosition}
+          minimap={View.Minimap ? (
+            <View.Minimap/>
+          ): null}
+        />
+      )}
+    </Elem>
+  );
+
+  const view = !viewCollapsed && !disableView && (
+    <Elem name="view">
+      <View.View
+        step={step}
+        length={length}
+        regions={regions}
+        playing={playing}
+        position={currentPosition}
+        offset={seekOffset}
+        onReady={onReady}
+        onScroll={setSeekOffset}
+        onResize={setSeekVisibleWidth}
+        onChange={setInternalPosition}
+        onToggleVisibility={onToggleVisibility}
+        onAddRegion={onAddRegion}
+        onDeleteRegion={onDeleteRegion}
+        onSelectRegion={onSelectRegion}
+      />
+    </Elem>
+  );
+
   return (
     <TimelineContextProvider value={contextValue}>
       <Block name="timeline" className={className}>
-        <Elem name="topbar">
-          <Controls
-            length={length}
-            position={currentPosition}
-            frameRate={framerate}
-            playing={playing}
-            collapsed={viewCollapsed}
-            onPlayToggle={onPlayToggle}
-            fullscreen={fullscreen}
-            disableFrames={disableView}
-            allowFullscreen={allowFullscreen}
-            allowViewCollapse={allowViewCollapse}
-            onFullScreenToggle={() => onFullscreenToggle?.()}
-            onStepBackward={decreasePosition}
-            onStepForward={increasePosition}
-            onRewind={() => setInternalPosition(0)}
-            onForward={() => setInternalPosition(length)}
-            onPositionChange={setInternalPosition}
-            onToggleCollapsed={setViewCollapsed}
-            extraControls={View.Controls && !disableView ? (
-              <View.Controls
-                onAction={(e, action, data) => {
-                  onAction?.(e, action, data);
-                }}
-              />
-            ) : null}
-          />
-
-          {displaySeeker && (
-            <Seeker
-              length={length}
-              position={currentPosition}
-              seekOffset={seekOffset}
-              seekVisible={seekVisibleWidth}
-              onIndicatorMove={setSeekOffset}
-              onSeek={setInternalPosition}
-              minimap={View.Minimap ? (
-                <View.Minimap/>
-              ): null}
-            />
-          )}
-        </Elem>
-
-        {!viewCollapsed && !disableView && (
-          <Elem name="view">
-            <View.View
-              step={step}
-              length={length}
-              regions={regions}
-              playing={playing}
-              position={currentPosition}
-              offset={seekOffset}
-              onReady={onReady}
-              onScroll={setSeekOffset}
-              onResize={setSeekVisibleWidth}
-              onChange={setInternalPosition}
-              onToggleVisibility={onToggleVisibility}
-              onDeleteRegion={onDeleteRegion}
-              onSelectRegion={onSelectRegion}
-            />
-          </Elem>
+        {controlsOnTop ? (
+          <>
+            {controls}
+            {view}
+          </>
+        ) : (
+          <>
+            {view}
+            {controls}
+          </>
         )}
       </Block>
     </TimelineContextProvider>

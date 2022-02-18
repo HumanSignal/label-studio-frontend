@@ -18,10 +18,12 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   displaySeeker?: boolean;
   hopSize?: number;
   data?: any;
+  controlsOnTop?: boolean;
   onReady?: (data: Record<string, any>) => void;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility?: (id: string, visibility: boolean) => void;
+  onAddRegion?: (region: Record<string, any>) => any;
   onDeleteRegion?: (id: string) => void;
   onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
   onAction?: (event: MouseEvent, action: string, data?: any) => void;
@@ -40,8 +42,9 @@ export interface TimelineViewProps {
   onChange: (position: number) => void;
   onResize: (position: number) => void;
   onToggleVisibility?: (id: string, visible: boolean) => void;
-  onDeleteRegion?: (id: string) => void;
-  onSelectRegion?: (e: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
+  onAddRegion?: TimelineProps["onAddRegion"];
+  onDeleteRegion?: TimelineProps["onDeleteRegion"];
+  onSelectRegion?: TimelineProps["onSelectRegion"];
 }
 
 export interface TimelineRegion {

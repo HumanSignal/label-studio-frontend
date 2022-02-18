@@ -104,22 +104,11 @@ export const Controls: FC<ControlsProps> = ({
   return (
     <Block name="timeline-controls" tag={Space} spread>
       <Elem name="group" tag={Space} size="small">
-        <Elem name="counter" onClick={() => setInputMode(true)}>
-          {inputMode ? (
-            <FrameInput
-              length={length}
-              position={position}
-              onChange={(value) => {
-                onPositionChange?.(value);
-              }}
-              onFinishEditing={() => {
-                setInputMode(false);
-              }}
-            />
-          ) : (
-            <>{Math.round(position)} <span>of {Math.round(length)}</span></>
-          )}
-        </Elem>
+        <FramesControl
+          length={length}
+          position={position}
+          onPositionChange={onPositionChange}
+        />
       </Elem>
 
       <Elem name="main-controls">
@@ -251,6 +240,39 @@ export const ControlButton: FC<ButtonProps & {disabled?: boolean}> = ({ children
     >
       {children}
     </Button>
+  );
+};
+
+interface FramesControlProps {
+  position: number;
+  length: number;
+  onPositionChange: ControlsProps["onPositionChange"];
+}
+
+const FramesControl: FC<FramesControlProps> = ({
+  position,
+  length,
+  onPositionChange,
+}) => {
+  const [inputMode, setInputMode] = useState(false);
+
+  return (
+    <Elem name="counter" onClick={() => setInputMode(true)}>
+      {inputMode ? (
+        <FrameInput
+          length={length}
+          position={position}
+          onChange={(value) => {
+            onPositionChange?.(value);
+          }}
+          onFinishEditing={() => {
+            setInputMode(false);
+          }}
+        />
+      ) : (
+        <>{Math.round(position)} <span>of {Math.round(length)}</span></>
+      )}
+    </Elem>
   );
 };
 

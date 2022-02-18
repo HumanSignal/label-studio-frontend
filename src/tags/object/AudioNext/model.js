@@ -233,29 +233,29 @@ export const AudioModel = types.compose(
         self.annotation.selectAreas(selectedRegions);
       },
 
-      addRegion(ws_region) {
-      // area id is assigned to WS region during deserealization
-        const find_r = self.annotation.areas.get(ws_region.id);
+      addRegion(wsRegion) {
+        // area id is assigned to WS region during deserealization
+        const find_r = self.annotation.areas.get(wsRegion.id);
 
         if (find_r) {
-          find_r.applyCSSClass(ws_region);
+          find_r.applyCSSClass(wsRegion);
 
-          find_r._ws_region = ws_region;
+          find_r._ws_region = wsRegion;
           return find_r;
         }
 
         const states = self.getAvailableStates();
 
         if (states.length === 0) {
-          ws_region.on("update-end", ev=>self.selectRange(ev,ws_region));
+          wsRegion.on("update-end", ev=>self.selectRange(ev,wsRegion));
           return;
         }
 
         const control = self.activeStates()[0];
         const labels = { [control.valueType]: control.selectedValues() };
-        const r = self.annotation.createResult(ws_region, labels, control, self);
+        const r = self.annotation.createResult(wsRegion, labels, control, self);
 
-        r._ws_region = ws_region;
+        r._ws_region = wsRegion;
         r.updateAppearenceFromState();
         return r;
       },
