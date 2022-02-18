@@ -96,7 +96,6 @@ export const Wave: FC<TimelineViewProps> = ({
           showTime: true,
           followCursorY: true,
           opacity: 1,
-          hideOnBlur: false,
         }),
       ],
     });
