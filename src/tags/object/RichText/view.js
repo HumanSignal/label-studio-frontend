@@ -11,6 +11,8 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { Block, cn, Elem } from "../../../utils/bem";
 import { observe } from "mobx";
 
+const DBLCLICK_TIMEOUT = 450;
+
 class RichTextPieceView extends Component {
   _regionSpanSelector = ".htx-highlight";
 
@@ -67,6 +69,7 @@ class RichTextPieceView extends Component {
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
     const label = states[0]?.selectedLabels?.[0];
+    const value = states[0]?.selectedValues?.();
 
     Utils.Selection.captureSelection(({ selectionText, range }) => {
       if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -79,7 +82,7 @@ class RichTextPieceView extends Component {
 
       if (!normedRange) return;
 
-      if (this.doubleClickSelection && new Date().valueOf() - this.doubleClickSelection.time.valueOf() > 450)
+      if (this.doubleClickSelection && new Date().valueOf() - this.doubleClickSelection.time.valueOf() > DBLCLICK_TIMEOUT)
         this.doubleClickSelection = undefined;
 
       normedRange._range = range;
@@ -95,7 +98,7 @@ class RichTextPieceView extends Component {
         this._selectionMode = true;
       },
     });
-    this.doubleClickSelection = { value: states[0]?.selectedValues?.(), time: new Date() };
+    this.doubleClickSelection = { value: value?.length ? value : undefined, time: new Date() };
   };
 
   /**
