@@ -11,7 +11,8 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { Block, cn, Elem } from "../../../utils/bem";
 import { observe } from "mobx";
 
-const DBLCLICK_TIMEOUT = 450;
+const DBLCLICK_TIMEOUT = 450; // ms
+const DBLCLICK_RANGE = 5; // px
 
 class RichTextPieceView extends Component {
   _regionSpanSelector = ".htx-highlight";
@@ -82,8 +83,13 @@ class RichTextPieceView extends Component {
 
       if (!normedRange) return;
 
-      if (this.doubleClickSelection && new Date().valueOf() - this.doubleClickSelection.time.valueOf() > DBLCLICK_TIMEOUT)
+      if (this.doubleClickSelection && (
+        Date.now() - this.doubleClickSelection.time > DBLCLICK_TIMEOUT
+        || Math.abs(ev.pageX - this.doubleClickSelection.x) > DBLCLICK_RANGE
+        || Math.abs(ev.pageY - this.doubleClickSelection.y) > DBLCLICK_RANGE
+      )) {
         this.doubleClickSelection = undefined;
+      }
 
       normedRange._range = range;
       normedRange.text = selectionText;
@@ -98,7 +104,12 @@ class RichTextPieceView extends Component {
         this._selectionMode = true;
       },
     });
-    this.doubleClickSelection = { value: value?.length ? value : undefined, time: new Date() };
+    this.doubleClickSelection = {
+      time: Date.now(),
+      value: value?.length ? value : undefined,
+      x: ev.pageX,
+      y: ev.pageY,
+    };
   };
 
   /**
