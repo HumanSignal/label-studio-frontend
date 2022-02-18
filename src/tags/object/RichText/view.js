@@ -27,6 +27,7 @@ class RichTextPieceView extends Component {
 
     this.rootRef = props.item.rootNodeRef;
 
+    // store value of first selected label during double click to apply it later
     this.doubleClickSelection = undefined;
   }
 
@@ -94,7 +95,7 @@ class RichTextPieceView extends Component {
         this._selectionMode = true;
       },
     });
-    this.doubleClickSelection = { value: states[0]?.selectedValues(), time: new Date() };
+    this.doubleClickSelection = { value: states[0]?.selectedValues?.(), time: new Date() };
   };
 
   /**
