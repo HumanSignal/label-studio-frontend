@@ -1,7 +1,7 @@
 import { flow, types } from "mobx-state-tree";
 import Papa from "papaparse";
 
-import { parseValue } from "../utils/data";
+import { parseTypeAndOption, parseValue } from "../utils/data";
 
 const resolvers = {
   // @todo comments/types
@@ -42,23 +42,11 @@ const ProcessAttrsMixin = types
     resolveValue: flow(function * (value) {
       if (!self.resolver) return value;
 
-      const [, type, sep] = self.resolver.match(/^(\w+)(.)?/) ?? [];
+      const { type, options } = parseTypeAndOption(self.resolver);
 
       if (!Object.prototype.hasOwnProperty.call(resolvers, type)) {
         console.error(`Resolver "${type ?? self.resolver}" looks unfamiliar`);
         return value;
-      }
-
-      const options = {};
-
-      if (sep) {
-        const pairs = self.resolver.split(sep).slice(1);
-
-        pairs.forEach(pair => {
-          const [k, v] = pair.split("=", 2);
-
-          options[k] = v ?? true; // options without values are `true`
-        });
       }
 
       // @todo checks for url
