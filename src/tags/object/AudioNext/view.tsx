@@ -11,8 +11,8 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [playing, setPlaying] = useState(false);
   const [audioLength, setAudioLength] = useState(1000 * 120);
   const [position, setPosition] = useState(0);
-
-  const regions: any[] = [];
+  const [zoom, setZoom] = useState(1);
+  const [volume, setVolume] = useState(1);
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
@@ -20,7 +20,6 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   }, []);
   const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
   const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
-  const handleSelectRegion = () => {};
   const handleAction = () => {};
 
   return (
@@ -28,11 +27,14 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       mode="wave"
       name="timeline"
       tag={Timeline}
-      framerate={999}
+      framerate={1000}
       hopSize={1000}
       playing={playing}
       regions={item.regions}
       data={item}
+      zoom={zoom}
+      volume={volume}
+      controls={{ VolumeControl: true }}
       defaultStepSize={16}
       length={audioLength}
       position={position}
@@ -46,6 +48,8 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       onPositionChange={handlePositionChange}
       onPlayToggle={handlePlayToggle}
       onAction={handleAction}
+      onZoom={setZoom}
+      onVolumeChange={setVolume}
     />
   );
 };

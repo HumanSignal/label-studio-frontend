@@ -1,5 +1,8 @@
 import { FC, MouseEvent } from "react";
 import { ViewTypes } from "./Views";
+import * as Controls from "./SideControls";
+
+export type TimelineControls = Partial<Record<keyof typeof Controls, boolean>>
 
 export interface TimelineProps<D extends ViewTypes = "frames"> {
   regions: any[];
@@ -9,6 +12,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   framerate: number;
   playing: boolean;
   zoom?: number;
+  volume?: number;
   fullscreen?: boolean;
   disableView?: boolean;
   className?: string;
@@ -19,15 +23,18 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   hopSize?: number;
   data?: any;
   controlsOnTop?: boolean;
+  controls?: TimelineControls;
   onReady?: (data: Record<string, any>) => void;
   onPlayToggle: (playing: boolean) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility?: (id: string, visibility: boolean) => void;
   onAddRegion?: (region: Record<string, any>) => any;
   onDeleteRegion?: (id: string) => void;
+  onZoom?: (zoom: number) => void;
   onSelectRegion?: (event: MouseEvent<HTMLDivElement>, id: string, select?: boolean) => void;
   onAction?: (event: MouseEvent, action: string, data?: any) => void;
-  onFullscreenToggle?: () => void;
+  onVolumeChange?: (volume: number) => void;
+  onFullscreenToggle?: (fullscreen: boolean) => void;
 }
 
 export interface TimelineViewProps {
@@ -36,15 +43,19 @@ export interface TimelineViewProps {
   position: number;
   length: number;
   playing: boolean;
+  zoom?: number;
+  volume?: number;
   regions: TimelineRegion[];
-  onReady?: TimelineProps["onReady"];
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;
-  onToggleVisibility?: (id: string, visible: boolean) => void;
+  onToggleVisibility?: TimelineProps["onToggleVisibility"];
+  onReady?: TimelineProps["onReady"];
+  onZoom?: TimelineProps["onZoom"];
   onAddRegion?: TimelineProps["onAddRegion"];
   onDeleteRegion?: TimelineProps["onDeleteRegion"];
   onSelectRegion?: TimelineProps["onSelectRegion"];
+  onVolumeChange?: TimelineProps["onVolumeChange"];
 }
 
 export interface TimelineRegion {
@@ -98,4 +109,41 @@ export type TimelineView<D extends FC<TimelineExtraControls<any, any>> = any> = 
   Minimap?: FC<any>,
   Controls?: D,
   settings?: TimelineSettings,
+}
+
+export type TimelineControlsStepHandler = (
+  e?: MouseEvent<HTMLButtonElement>,
+  stepSize?: TimelineStepFunction
+) => void;
+
+export interface TimelineControlsProps {
+  length: number;
+  position: number;
+  frameRate: number;
+  playing: boolean;
+  collapsed: boolean;
+  fullscreen: boolean;
+  volume?: number;
+  disableFrames?: boolean;
+  extraControls?: JSX.Element | null;
+  allowFullscreen?: boolean;
+  allowViewCollapse?: boolean;
+  controls?: TimelineProps["controls"];
+  onRewind: () => void;
+  onForward: () => void;
+  onPlayToggle: TimelineProps["onPlayToggle"];
+  onFullScreenToggle: TimelineProps["onFullscreenToggle"];
+  onPositionChange: (position: number) => void;
+  onToggleCollapsed: (collapsed: boolean) => void;
+  onVolumeChange: TimelineProps["onVolumeChange"];
+  onStepBackward: TimelineControlsStepHandler;
+  onStepForward: TimelineControlsStepHandler;
+}
+
+export interface TimelineSideControlProps {
+  position?: number;
+  length?: number;
+  volume?: number;
+  onPositionChange?: TimelineControlsProps["onPositionChange"];
+  onVolumeChange?: TimelineProps["onVolumeChange"];
 }

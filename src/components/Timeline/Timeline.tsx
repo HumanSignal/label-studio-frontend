@@ -3,10 +3,10 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
-import { Controls, ControlsStepHandler } from "./Controls";
+import { Controls } from "./Controls";
 import { Seeker } from "./Seeker";
 import "./Timeline.styl";
-import { TimelineContextValue, TimelineProps } from "./Types";
+import { TimelineContextValue, TimelineControlsStepHandler, TimelineProps } from "./Types";
 import { default as Views } from "./Views";
 
 const TimelineComponent: FC<TimelineProps> = ({
@@ -36,6 +36,7 @@ const TimelineComponent: FC<TimelineProps> = ({
   onSelectRegion,
   onAction,
   onFullscreenToggle,
+  ...props
 }) => {
   const View = Views[mode];
 
@@ -54,13 +55,13 @@ const TimelineComponent: FC<TimelineProps> = ({
     }
   };
 
-  const increasePosition: ControlsStepHandler = (_, stepSize) => {
+  const increasePosition: TimelineControlsStepHandler = (_, stepSize) => {
     const nextPosition = stepSize?.(length, currentPosition, regions, 1) ?? currentPosition + hopSize;
 
     setInternalPosition(nextPosition);
   };
 
-  const decreasePosition: ControlsStepHandler = (_, stepSize) => {
+  const decreasePosition: TimelineControlsStepHandler = (_, stepSize) => {
     const nextPosition = stepSize?.(length, currentPosition, regions, -1) ?? currentPosition - hopSize;
 
     setInternalPosition(nextPosition);
@@ -87,13 +88,16 @@ const TimelineComponent: FC<TimelineProps> = ({
         position={currentPosition}
         frameRate={framerate}
         playing={playing}
+        volume={props.volume}
+        controls={props.controls}
         collapsed={viewCollapsed}
         onPlayToggle={onPlayToggle}
         fullscreen={fullscreen}
         disableFrames={disableView}
         allowFullscreen={allowFullscreen}
         allowViewCollapse={allowViewCollapse}
-        onFullScreenToggle={() => onFullscreenToggle?.()}
+        onFullScreenToggle={onFullscreenToggle}
+        onVolumeChange={props.onVolumeChange}
         onStepBackward={decreasePosition}
         onStepForward={increasePosition}
         onRewind={() => setInternalPosition(0)}
@@ -132,6 +136,8 @@ const TimelineComponent: FC<TimelineProps> = ({
         length={length}
         regions={regions}
         playing={playing}
+        zoom={zoom}
+        volume={props.volume}
         position={currentPosition}
         offset={seekOffset}
         onReady={onReady}
@@ -142,6 +148,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         onAddRegion={onAddRegion}
         onDeleteRegion={onDeleteRegion}
         onSelectRegion={onSelectRegion}
+        onZoom={props.onZoom}
       />
     </Elem>
   );

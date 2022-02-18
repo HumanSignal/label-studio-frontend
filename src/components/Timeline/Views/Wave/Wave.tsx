@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { TimelineContext } from "../../Context";
 import { TimelineViewProps } from "../../Types";
@@ -6,21 +6,43 @@ import WaveSurfer from "wavesurfer.js";
 import "./Wave.styl";
 import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
 import TimelinePlugin from "wavesurfer.js/src/plugin/timeline";
-import { formatTimeCallback, primaryLabelInterval, secondaryLabelInterval, timeInterval } from "./Utils";
+import { formatTimeCallback, secondaryLabelInterval, timeInterval } from "./Utils";
 import { clamp } from "lodash";
 import { isMacOS } from "../../../../utils/utilities";
+import { Range } from "../../../../common/Range/Range";
+import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from "../../../../assets/icons";
+import { Space } from "../../../../common/Space/Space";
+import CursorPlugin from "wavesurfer.js/src/plugin/cursor";
+
+const ZOOM_X = {
+  min: 1,
+  max: 500,
+  step: 10,
+  default: 1,
+};
+
+const SPEED = {
+  min: 0.1,
+  max: 10,
+  step: 0.1,
+  default: 1,
+};
 
 export const Wave: FC<TimelineViewProps> = ({
   position,
   length,
   playing,
   regions,
+  zoom = ZOOM_X.default,
+  volume = 1,
   onReady,
   onChange,
   onAddRegion,
+  onZoom,
 }) => {
   const { data } = useContext(TimelineContext);
-  const [zoom, setZoom] = useState(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState(SPEED.default);
+
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -28,6 +50,10 @@ export const Wave: FC<TimelineViewProps> = ({
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
   const ws = useRef<WaveSurfer>();
+
+  const setZoom = (value: number) => {
+    onZoom?.(clamp(value, ZOOM_X.min, ZOOM_X.max));
+  };
 
   const setScroll = useCallback((scrollRatio: number) => {
     const surfer = waveRef.current?.querySelector("wave");
@@ -40,10 +66,11 @@ export const Wave: FC<TimelineViewProps> = ({
       container: waveRef.current!,
       height: 88,
       hideScrollbar: true,
-      // partialRender: true,
       normalize: true,
-      // maxCanvasWidth: 8000,
-      // pixelRatio: 1,
+      maxCanvasWidth: 8000,
+      waveColor: "#D5D5D5",
+      progressColor: "#656F83",
+      autoCenter: true,
       plugins: [
         RegionsPlugin.create({
           slop: 5,
@@ -64,11 +91,19 @@ export const Wave: FC<TimelineViewProps> = ({
           unlabeledNotchColor: "#ccc",
           notchPercentHeight: 50,
         }),
+        CursorPlugin.create({
+          color: "#000",
+          showTime: true,
+          followCursorY: true,
+          opacity: 1,
+          hideOnBlur: false,
+        }),
       ],
     });
 
     wsi.on("ready", () => {
       setLoading(false);
+
       wsi.initPlugin("regions");
       wsi.initPlugin("timeline");
 
@@ -127,6 +162,8 @@ export const Wave: FC<TimelineViewProps> = ({
 
     wsi.load(data._value);
 
+    wsi.setPlaybackRate(playbackSpeed);
+
     ws.current = wsi;
 
     Object.assign(window, { surfer: wsi });
@@ -176,15 +213,23 @@ export const Wave: FC<TimelineViewProps> = ({
   }, [zoom, scrollOffset]);
 
   useEffect(() => {
+    ws.current?.setPlaybackRate(playbackSpeed);
+  }, [playbackSpeed]);
+
+  useEffect(() => {
     setScroll(scrollOffset);
   }, [scrollOffset]);
+
+  useEffect(() => {
+    ws.current?.setVolume(volume);
+  }, [volume]);
 
   useEffect(() => {
     const elem = waveRef.current!;
     const wave = elem.querySelector("wave")!;
 
     const onWheel = (e: WheelEvent) => {
-      if ((e.ctrlKey || isMacOS()) && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      if ((e.ctrlKey || isMacOS()) && Math.abs(e.deltaY) > Math.abs(e.deltaX) && e.deltaX === 0) {
         e.preventDefault();
         setZoom(Math.round(zoom + (-e.deltaY * 1.2)));
         return;
@@ -203,13 +248,38 @@ export const Wave: FC<TimelineViewProps> = ({
 
   return (
     <Block name="wave">
-      <input data-action="zoom" type="range" min="1" max="1500" step={1} value={zoom} onChange={(e) => {
+      <Elem name="controls">
+        <Space spread>
+          <Range
+            continuous
+            value={playbackSpeed}
+            {...SPEED}
+            resetValue={SPEED.default}
+            minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
+            maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
+            onChange={(value) => setPlaybackSpeed(Number(value))}
+          />
 
-        setZoom(Number(e.target.value));
-      }}/>
-      {loading && <Elem name="loader" mod={{ animated: true }}/>}
-      <Elem name="surfer" ref={waveRef} />
-      <Elem name="timeline" ref={timelineRef}/>
+          <Range
+            continuous
+            value={zoom}
+            {...ZOOM_X}
+            resetValue={ZOOM_X.default}
+            minIcon={<IconZoomOut />}
+            maxIcon={<IconZoomIn />}
+            onChange={(value) => setZoom(Number(value))}
+          />
+        </Space>
+      </Elem>
+      <Elem name="body">
+        <Elem name="surfer" ref={waveRef} />
+        <Elem name="timeline" ref={timelineRef}/>
+        {loading && (
+          <Elem name="loader" mod={{ animated: true }}>
+            <span>{progress}%</span>
+          </Elem>
+        )}
+      </Elem>
     </Block>
   );
 };
