@@ -302,7 +302,7 @@ const Model = types
         if (states.length === 0) return;
 
         const control = states[0];
-        const values = doubleClickLabel ? [`${doubleClickLabel.value}`] : control.selectedValues();
+        const values = doubleClickLabel?.value ?? control.selectedValues();
         const labels = { [control.valueType]: values };
 
         const area = self.annotation.createResult(range, labels, control, self);

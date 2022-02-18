@@ -94,7 +94,7 @@ class RichTextPieceView extends Component {
         this._selectionMode = true;
       },
     });
-    this.doubleClickSelection = { ...label, time: new Date() };
+    this.doubleClickSelection = { value: states[0]?.selectedValues(), time: new Date() };
   };
 
   /**
