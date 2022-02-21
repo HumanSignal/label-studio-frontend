@@ -1,7 +1,7 @@
-import { FC, MouseEvent as RMouseEvent, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { TimelineContext } from "../../Context";
-import { TimelineViewProps } from "../../Types";
+import { TimelineContextValue, TimelineViewProps } from "../../Types";
 import WaveSurfer from "wavesurfer.js";
 import "./Wave.styl";
 import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
@@ -54,7 +54,19 @@ export const Wave: FC<TimelineViewProps> = ({
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [progress, setProgress] = useState(0);
-  const ws = useRef<WaveSurfer>();
+  const ws = useWaveSurfer({
+    containter: waveRef,
+    timelineContainer: timelineRef,
+    speed,
+    regions,
+    data,
+    onLoaded: setLoading,
+    onProgress: setProgress,
+    onSeek: (p) => handlers.onChange(p),
+    onPlayToggle,
+    onAddRegion,
+    onReady,
+  });
 
   const setZoom = (value: number) => {
     onZoom?.(clamp(value, ZOOM_X.min, ZOOM_X.max));
@@ -71,133 +83,11 @@ export const Wave: FC<TimelineViewProps> = ({
   }, [zoom, position, scrollOffset]);
 
   useEffect(() => {
-    const wsi = WaveSurfer.create({
-      container: waveRef.current!,
-      height: 88,
-      hideScrollbar: true,
-      normalize: true,
-      maxCanvasWidth: 8000,
-      waveColor: "#D5D5D5",
-      progressColor: "#656F83",
-      autoCenter: true,
-      autoCenterImmediately: true,
-      plugins: [
-        RegionsPlugin.create({
-          slop: 5,
-          deferInit: true,
-          dragSelection: true,
-        }),
-        TimelinePlugin.create({
-          deferInit: true,
-          container: timelineRef.current!,
-          formatTimeCallback,
-          timeInterval,
-          secondaryLabelInterval,
-          primaryColor: "rgba(0,0,0,0.1)",
-          secondaryColor: "rgba(0,0,0,0.1)",
-          primaryFontColor: "rgba(0,0,0,0.4)",
-          secondaryFontColor: "#000",
-          labelPadding: 5,
-          unlabeledNotchColor: "#ccc",
-          notchPercentHeight: 50,
-        }),
-        CursorPlugin.create({
-          color: "#000",
-          showTime: true,
-          followCursorY: true,
-          opacity: 1,
-        }),
-      ],
-    });
-
-    wsi.on("ready", () => {
-      setLoading(false);
-
-      wsi.initPlugin("regions");
-      wsi.initPlugin("timeline");
-
-      if (regions) {
-        /**
-         * Mouse enter on region
-         */
-        wsi.on("region-mouseenter", reg => {
-          reg._region?.onMouseOver();
-        });
-
-        /**
-         * Mouse leave on region
-         */
-        wsi.on("region-mouseleave", reg => {
-          reg._region?.onMouseLeave();
-        });
-
-        /**
-         * Add region to wave
-         */
-        wsi.on("region-created", (reg) => {
-          const region = onAddRegion?.(reg);
-
-          if (!region) return;
-
-          reg._region = region;
-          reg.color = region.selectedregionbg;
-
-          reg.on("click", (ev: any) => region.onClick(wsi, ev));
-          reg.on("update-end", () => region.onUpdateEnd(wsi));
-
-          reg.on("dblclick", () => {
-            window.setTimeout(function() {
-              reg.playLoop();
-            }, 0);
-          });
-
-          reg.on("out", () => {});
-        });
-      }
-
-      onReady?.({
-        duration: wsi.getDuration(),
-        surfer: wsi,
-      });
-    });
-
-    wsi.on("play", () => onPlayToggle?.(true));
-
-    wsi.on("pause", () => onPlayToggle?.(false));
-
-    wsi.on("finish", () => onPlayToggle?.(false));
-
-    wsi.on("seek", (progress) => {
-      handlers.onChange?.((wsi.getDuration() * progress) * 1000);
-    });
-
-    wsi.on("loading", (progress) => {
-      setProgress(progress);
-    });
-
-    wsi.load(data._value);
-
-    wsi.setPlaybackRate(speed);
-
-    ws.current = wsi;
-
-    Object.assign(window, { surfer: wsi });
-
-    return () => {
-      Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
-        if (active) wsi.destroyPlugin(name);
-      });
-      wsi.destroy();
-    };
-  }, []);
-
-  useEffect(() => {
     const wsi = ws.current;
 
     if (wsi && !playing) {
       const pos = clamp(position / length, 0, 1);
 
-      console.log(pos, position);
       if (!isNaN(pos)) wsi.seekTo(pos);
     }
   }, [position, playing, length]);
@@ -311,4 +201,157 @@ export const Wave: FC<TimelineViewProps> = ({
       </Elem>
     </Block>
   );
+};
+
+interface WavesurferProps {
+  containter: MutableRefObject<HTMLElement | undefined>;
+  timelineContainer: MutableRefObject<HTMLElement | undefined>;
+  regions: any[];
+  speed: number;
+  data: TimelineContextValue["data"];
+  onProgress: (progress: number) => void;
+  onSeek: (progress: number) => void;
+  onLoaded: (loaded: boolean) => void;
+  onPlayToggle?: TimelineViewProps["onPlayToggle"];
+  onReady?: TimelineViewProps["onReady"];
+  onAddRegion?: TimelineViewProps["onAddRegion"];
+}
+
+const useWaveSurfer = ({
+  containter,
+  timelineContainer,
+  regions,
+  speed,
+  data,
+  onLoaded,
+  onProgress,
+  onSeek,
+  onPlayToggle,
+  onAddRegion,
+  onReady,
+}: WavesurferProps) => {
+  const ws = useRef<WaveSurfer>();
+
+  useEffect(() => {
+    const wsi = WaveSurfer.create({
+      container: containter.current!,
+      height: 88,
+      hideScrollbar: true,
+      normalize: true,
+      maxCanvasWidth: 8000,
+      waveColor: "#D5D5D5",
+      progressColor: "#656F83",
+      autoCenter: true,
+      autoCenterImmediately: true,
+      plugins: [
+        RegionsPlugin.create({
+          slop: 5,
+          deferInit: true,
+          dragSelection: true,
+        }),
+        TimelinePlugin.create({
+          deferInit: true,
+          container: timelineContainer.current!,
+          formatTimeCallback,
+          timeInterval,
+          secondaryLabelInterval,
+          primaryColor: "rgba(0,0,0,0.1)",
+          secondaryColor: "rgba(0,0,0,0.1)",
+          primaryFontColor: "rgba(0,0,0,0.4)",
+          secondaryFontColor: "#000",
+          labelPadding: 5,
+          unlabeledNotchColor: "#ccc",
+          notchPercentHeight: 50,
+        }),
+        CursorPlugin.create({
+          color: "#000",
+          showTime: true,
+          followCursorY: true,
+          opacity: 1,
+        }),
+      ],
+    });
+
+    wsi.on("ready", () => {
+      onLoaded(false);
+
+      wsi.initPlugin("regions");
+      wsi.initPlugin("timeline");
+
+      if (regions) {
+        /**
+         * Mouse enter on region
+         */
+        wsi.on("region-mouseenter", reg => {
+          reg._region?.onMouseOver();
+        });
+
+        /**
+         * Mouse leave on region
+         */
+        wsi.on("region-mouseleave", reg => {
+          reg._region?.onMouseLeave();
+        });
+
+        /**
+         * Add region to wave
+         */
+        wsi.on("region-created", (reg) => {
+          const region = onAddRegion?.(reg);
+
+          if (!region) return;
+
+          reg._region = region;
+          reg.color = region.selectedregionbg;
+
+          reg.on("click", (ev: any) => region.onClick(wsi, ev));
+          reg.on("update-end", () => region.onUpdateEnd(wsi));
+
+          reg.on("dblclick", () => {
+            window.setTimeout(function() {
+              reg.playLoop();
+            }, 0);
+          });
+
+          reg.on("out", () => {});
+        });
+      }
+
+      onReady?.({
+        duration: wsi.getDuration(),
+        surfer: wsi,
+      });
+    });
+
+    wsi.on("play", () => onPlayToggle?.(true));
+
+    wsi.on("pause", () => onPlayToggle?.(false));
+
+    wsi.on("finish", () => onPlayToggle?.(false));
+
+    wsi.on("seek", (progress) => {
+      onSeek((wsi.getDuration() * progress) * 1000);
+    });
+
+    wsi.on("loading", (progress) => {
+      onProgress(progress);
+    });
+
+    wsi.load(data._value);
+
+    wsi.setPlaybackRate(speed);
+
+    ws.current = wsi;
+
+    Object.assign(window, { surfer: wsi });
+
+    return () => {
+      Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
+        if (active) wsi.destroyPlugin(name);
+      });
+      wsi.destroy();
+    };
+  }, []);
+
+  return ws;
 };

@@ -4,7 +4,6 @@ export const useMemoizedHandlers = <T extends Record<string, any>>(handlers: T):
   const handlersRef = useRef(handlers);
 
   useEffect(() => {
-    console.log("handlers updated");
     Object.assign(handlersRef.current, handlers);
   }, [handlers]);
 

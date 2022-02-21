@@ -1,5 +1,6 @@
 import { observer } from "mobx-react";
 import { FC, useCallback, useState } from "react";
+import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Elem } from "../../../utils/bem";
 
@@ -38,36 +39,38 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   }, []);
 
   return (
-    <Elem
-      mode="wave"
-      name="timeline"
-      tag={Timeline}
-      framerate={1000}
-      hopSize={1000}
-      playing={playing}
-      regions={item.regions}
-      data={item}
-      zoom={zoom}
-      speed={speed}
-      volume={volume}
-      controls={{ VolumeControl: true }}
-      defaultStepSize={16}
-      length={audioLength}
-      position={position}
-      allowSeek={false}
-      allowFullscreen={false}
-      allowViewCollapse={false}
-      controlsOnTop={false}
-      onReady={handleReady}
-      onAddRegion={item.addRegion}
-      onSelectRegion={item.selectRegion}
-      onPositionChange={handlePositionChange}
-      onPlayToggle={handlePlayToggle}
-      onZoom={setZoom}
-      onVolumeChange={setVolume}
-      onSpeedChange={setSpeed}
-      formatPosition={formatPosition}
-    />
+    <ObjectTag item={item}>
+      <Elem
+        mode="wave"
+        name="timeline"
+        tag={Timeline}
+        framerate={1000}
+        hopSize={1000}
+        playing={playing}
+        regions={item.regions}
+        data={item}
+        zoom={zoom}
+        speed={speed}
+        volume={volume}
+        controls={{ VolumeControl: true }}
+        defaultStepSize={16}
+        length={audioLength}
+        position={position}
+        allowSeek={false}
+        allowFullscreen={false}
+        allowViewCollapse={false}
+        controlsOnTop={false}
+        onReady={handleReady}
+        onAddRegion={item.addRegion}
+        onSelectRegion={item.selectRegion}
+        onPositionChange={handlePositionChange}
+        onPlayToggle={handlePlayToggle}
+        onZoom={setZoom}
+        onVolumeChange={setVolume}
+        onSpeedChange={setSpeed}
+        formatPosition={formatPosition}
+      />
+    </ObjectTag>
   );
 };
 
