@@ -1,5 +1,5 @@
 import { types } from "mobx-state-tree";
-import { camelizeKeys } from "../utils/utilities";
+import { camelizeKeys, userDisplayName } from "../utils/utilities";
 
 export const UserExtended = types
   .model("UserExtended", {
@@ -42,9 +42,7 @@ const UserStore = types
   })
   .views(self => ({
     get displayName() {
-      if (self.firstName || self.lastName) return `${self.firstName} ${self.lastName}`;
-
-      return "";
+      return userDisplayName(self);
     },
   }));
 

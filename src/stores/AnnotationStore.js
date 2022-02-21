@@ -1244,6 +1244,7 @@ export default types
       const node = {
         userGenerate: false,
         createdDate: Utils.UDate.currentISODate(),
+        user,
 
         ...options,
 
@@ -1254,8 +1255,7 @@ export default types
         root: self.root,
       };
 
-      if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
-      if (options.user) node.user = options.user;
+      if (node.user && !("createdBy" in node)) node["createdBy"] = node.user.displayName;
 
       return node;
     }
