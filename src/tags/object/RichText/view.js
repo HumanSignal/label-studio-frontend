@@ -11,6 +11,9 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { Block, cn, Elem } from "../../../utils/bem";
 import { observe } from "mobx";
 
+const DBLCLICK_TIMEOUT = 450; // ms
+const DBLCLICK_RANGE = 5; // px
+
 class RichTextPieceView extends Component {
   _regionSpanSelector = ".htx-highlight";
 
@@ -26,6 +29,9 @@ class RichTextPieceView extends Component {
     this.loadingRef = React.createRef();
 
     this.rootRef = props.item.rootNodeRef;
+
+    // store value of first selected label during double click to apply it later
+    this.doubleClickSelection = undefined;
   }
 
   _selectRegions = (additionalMode) => {
@@ -63,8 +69,8 @@ class RichTextPieceView extends Component {
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
-
     const label = states[0]?.selectedLabels?.[0];
+    const value = states[0]?.selectedValues?.();
 
     Utils.Selection.captureSelection(({ selectionText, range }) => {
       if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -77,17 +83,33 @@ class RichTextPieceView extends Component {
 
       if (!normedRange) return;
 
+      if (this.doubleClickSelection && (
+        Date.now() - this.doubleClickSelection.time > DBLCLICK_TIMEOUT
+        || Math.abs(ev.pageX - this.doubleClickSelection.x) > DBLCLICK_RANGE
+        || Math.abs(ev.pageY - this.doubleClickSelection.y) > DBLCLICK_RANGE
+      )) {
+        this.doubleClickSelection = undefined;
+      }
+
       normedRange._range = range;
       normedRange.text = selectionText;
       normedRange.isText = item.type === "text";
       normedRange.dynamic = this.props.store.autoAnnotation;
-
-      item.addRegion(normedRange);
+      item.addRegion(normedRange, this.doubleClickSelection);
     }, {
       window: rootEl?.contentWindow ?? window,
       granularity: label?.granularity ?? item.granularity,
-      beforeCleanup: () => (this._selectionMode = true),
+      beforeCleanup: () => {
+        this.doubleClickSelection = undefined;
+        this._selectionMode = true;
+      },
     });
+    this.doubleClickSelection = {
+      time: Date.now(),
+      value: value?.length ? value : undefined,
+      x: ev.pageX,
+      y: ev.pageY,
+    };
   };
 
   /**
@@ -98,7 +120,6 @@ class RichTextPieceView extends Component {
       this._selectionMode = false;
       return;
     }
-
     if (!this.props.item.clickablelinks && matchesSelector(event.target, "a")) {
       event.preventDefault();
       return;

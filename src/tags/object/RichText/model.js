@@ -296,13 +296,15 @@ const Model = types
         return region;
       },
 
-      addRegion(range) {
+      addRegion(range, doubleClickLabel) {
         const states = self.getAvailableStates();
 
         if (states.length === 0) return;
 
         const control = states[0];
-        const labels = { [control.valueType]: control.selectedValues() };
+        const values = doubleClickLabel?.value ?? control.selectedValues();
+        const labels = { [control.valueType]: values };
+
         const area = self.annotation.createResult(range, labels, control, self);
         const rootEl = self.rootNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
