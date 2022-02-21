@@ -1,4 +1,4 @@
-import { CSSProperties, FC, useCallback } from "react";
+import { CSSProperties, FC, MouseEvent as RMouseEvent, useCallback } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import { useValueTracker } from "../Utils/useValueTracker";
@@ -102,6 +102,33 @@ export const Range: FC<RangeProps> = ({
     updateValue(currentValue as number - step);
   }, [step, multi, currentValue]);
 
+  const onClick = useCallback((e: RMouseEvent<HTMLElement>) => {
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const isHorizontal = align === 'horizontal';
+
+    // Extract all the values regarding current orientation
+    const directionDimension = isHorizontal ? rect.width : rect.height;
+    const parentOffset = isHorizontal ? rect.left : rect.top;
+    const mousePosition = isHorizontal ? e.clientX : e.clientY;
+
+    // Calculate relative offset
+    const offset = clamp(mousePosition - parentOffset, 0, directionDimension);
+    const position = offset / directionDimension;
+    const newValue = ((max - min) * position) + min;
+
+    if (multi && Array.isArray(currentValue)) {
+      const valueIndex = position > 0.5 ? 1 : 0;
+      const patch = [...currentValue];
+
+      patch[valueIndex] = newValue;
+
+      updateValue(patch, true, false);
+    } else {
+      updateValue(newValue, true, false);
+    }
+  }, [align, min, max, currentValue]);
+
   const sizeProperty = align === 'horizontal' ? 'minWidth' : 'minHeight';
 
   return (
@@ -111,8 +138,8 @@ export const Range: FC<RangeProps> = ({
       ) : (
         minIcon && <Elem name="icon" onMouseDown={decrease}>{minIcon}</Elem>
       )}
-      <Elem name="body">
-        <Elem name="line"></Elem>
+      <Elem name="body" onClick={onClick}>
+        <Elem name="line"/>
         <RangeIndicator
           align={align}
           reverse={reverse}
@@ -203,6 +230,8 @@ const RangeHandle: FC<RangeHandleProps> = ({
   const mouseProperty = align === 'horizontal' ? 'pageX' : 'pageY';
 
   const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation();
+
     const initialOffset = e[mouseProperty];
     let newValue: number;
 
