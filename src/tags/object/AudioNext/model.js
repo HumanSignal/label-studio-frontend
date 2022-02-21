@@ -37,6 +37,8 @@ import ObjectBase from "../Base";
  * @param {string} [sync] object name to sync with
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
  * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
+ * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
+ * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -48,8 +50,10 @@ const TagAttrs = types.model({
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
   height: types.optional(types.string, "128"),
-  cursorwidth: types.optional(types.string, "1"),
+  cursorwidth: types.optional(types.string, "10"),
   cursorcolor: types.optional(customTypes.color, "#333"),
+  autocenter: types.optional(types.boolean, true),
+  scrollparent: types.optional(types.boolean,true),
 });
 
 export const AudioModel = types.compose(

@@ -28,7 +28,19 @@
   &__body
     padding 24px 0
     position relative
+    overflow hidden
     background-color #FAFAFA
+
+  &__cursor
+    top 0
+    left 150px
+    width 2px
+    height 100%
+    z-index 10
+    border-radius 2px
+    position absolute
+    background-color #000
+    transform translate3d(-50%, 0, 0)
 
   &__controls
     height 48px

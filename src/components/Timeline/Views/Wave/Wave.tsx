@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { CSSProperties, FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Block, Elem } from "../../../../utils/bem";
 import { TimelineContext } from "../../Context";
 import { TimelineContextValue, TimelineViewProps } from "../../Types";
@@ -13,12 +13,14 @@ import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from "../../../../assets/
 import { Space } from "../../../../common/Space/Space";
 import CursorPlugin from "wavesurfer.js/src/plugin/cursor";
 import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
+import { useMemo } from "react";
+import { WaveSurferParams } from "wavesurfer.js/types/params";
 
 const ZOOM_X = {
-  min: 1,
+  min: 10,
   max: 500,
   step: 10,
-  default: 1,
+  default: 10,
 };
 
 const SPEED = {
@@ -49,19 +51,30 @@ export const Wave: FC<TimelineViewProps> = ({
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
   const bodyRef = useRef<HTMLElement>();
-  const handlers = useMemoizedHandlers({ onChange });
 
+  const [currentZoom, setCurrentZoom] = useState(zoom);
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(0);
+
+  const handlers = useMemoizedHandlers({
+    onChange,
+  });
+
   const ws = useWaveSurfer({
     containter: waveRef,
     timelineContainer: timelineRef,
     speed,
     regions,
     data,
+    params: {
+      autoCenter: data.autocenter,
+      scrollParent: data.scrollparent,
+    },
     onLoaded: setLoading,
     onProgress: setProgress,
+    onScroll: (p) => setScrollOffset(p),
     onSeek: (p) => handlers.onChange(p),
     onPlayToggle,
     onAddRegion,
@@ -69,7 +82,10 @@ export const Wave: FC<TimelineViewProps> = ({
   });
 
   const setZoom = (value: number) => {
-    onZoom?.(clamp(value, ZOOM_X.min, ZOOM_X.max));
+    const newValue = clamp(value, ZOOM_X.min, ZOOM_X.max);
+
+    setCurrentZoom(newValue);
+    onZoom?.(newValue);
   };
 
   const onTimelineClick = useCallback((e: RMouseEvent<HTMLDivElement>) => {
@@ -80,7 +96,21 @@ export const Wave: FC<TimelineViewProps> = ({
     const time = relativeOffset * (duration ?? 0);
 
     ws.current?.setCurrentTime(time);
-  }, [zoom, position, scrollOffset]);
+  }, []);
+
+  useEffect(() => {
+    let pos = 0;
+    const surfer = waveRef.current?.querySelector?.("wave");
+
+    if (surfer && length > 0) {
+      const relativePosition = position / length;
+      const offset = (surfer.scrollWidth * relativePosition) - surfer.scrollLeft;
+
+      pos = offset;
+    }
+
+    setCursorPosition(pos);
+  }, [position, length, currentZoom, scrollOffset, loading]);
 
   useEffect(() => {
     const wsi = ws.current;
@@ -117,9 +147,9 @@ export const Wave: FC<TimelineViewProps> = ({
     requestAnimationFrame(() => {
       const wsi = ws.current;
 
-      if (wsi && wsi.params.minPxPerSec !== zoom) ws.current?.zoom(zoom);
+      if (wsi && wsi.params.minPxPerSec !== currentZoom) ws.current?.zoom(currentZoom);
     });
-  }, [zoom, scrollOffset]);
+  }, [currentZoom, scrollOffset]);
 
   useEffect(() => {
     ws.current?.setPlaybackRate(speed);
@@ -148,7 +178,7 @@ export const Wave: FC<TimelineViewProps> = ({
       if (e.ctrlKey && isVertical) {
         e.preventDefault();
         requestAnimationFrame(() => {
-          setZoom(Math.round(zoom + (-e.deltaY * 1.2)));
+          setZoom(Math.round(currentZoom + (-e.deltaY * 1.2)));
         });
         return;
       }
@@ -163,7 +193,15 @@ export const Wave: FC<TimelineViewProps> = ({
     elem.addEventListener('wheel', onWheel);
 
     return () => elem.removeEventListener('wheel', onWheel);
-  }, [zoom]);
+  }, [currentZoom]);
+
+  const cursorStyle = useMemo<CSSProperties>(() => {
+    return {
+      left: cursorPosition,
+      width: Number(data.cursorwidth ?? 2),
+      background: data.cursorcolor,
+    };
+  }, [cursorPosition]);
 
   return (
     <Block name="wave">
@@ -181,16 +219,17 @@ export const Wave: FC<TimelineViewProps> = ({
 
           <Range
             continuous
-            value={zoom}
+            value={currentZoom}
             {...ZOOM_X}
             resetValue={ZOOM_X.default}
             minIcon={<IconZoomOut />}
             maxIcon={<IconZoomIn />}
-            onChange={(value) => setZoom(Number(value))}
+            onChange={value => setZoom(Number(value))}
           />
         </Space>
       </Elem>
       <Elem name="body" ref={bodyRef}>
+        <Elem name="cursor" style={cursorStyle}/>
         <Elem name="surfer" ref={waveRef} />
         <Elem name="timeline" ref={timelineRef} onClick={onTimelineClick}/>
         {loading && (
@@ -209,9 +248,11 @@ interface WavesurferProps {
   regions: any[];
   speed: number;
   data: TimelineContextValue["data"];
+  params: Partial<WaveSurferParams>;
   onProgress: (progress: number) => void;
   onSeek: (progress: number) => void;
   onLoaded: (loaded: boolean) => void;
+  onScroll: (position: number) => void;
   onPlayToggle?: TimelineViewProps["onPlayToggle"];
   onReady?: TimelineViewProps["onReady"];
   onAddRegion?: TimelineViewProps["onAddRegion"];
@@ -223,26 +264,30 @@ const useWaveSurfer = ({
   regions,
   speed,
   data,
+  params,
   onLoaded,
   onProgress,
   onSeek,
   onPlayToggle,
   onAddRegion,
   onReady,
+  onScroll,
 }: WavesurferProps) => {
   const ws = useRef<WaveSurfer>();
 
   useEffect(() => {
     const wsi = WaveSurfer.create({
+      autoCenter: true,
+      scrollParent: true,
+      ...params,
       container: containter.current!,
       height: 88,
-      hideScrollbar: true,
       normalize: true,
+      hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
       progressColor: "#656F83",
-      autoCenter: true,
-      autoCenterImmediately: true,
+      hideCursor: true,
       plugins: [
         RegionsPlugin.create({
           slop: 5,
@@ -340,6 +385,10 @@ const useWaveSurfer = ({
     wsi.load(data._value);
 
     wsi.setPlaybackRate(speed);
+
+    wsi.zoom(ZOOM_X.default);
+
+    wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
 
     ws.current = wsi;
 
