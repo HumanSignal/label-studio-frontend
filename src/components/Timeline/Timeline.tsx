@@ -21,11 +21,12 @@ const TimelineComponent: FC<TimelineProps> = ({
   fullscreen = false,
   disableView = false,
   defaultStepSize = 10,
-  displaySeeker = true,
+  allowSeek = true,
   allowFullscreen = true,
   allowViewCollapse = true,
   controlsOnTop = true,
   data,
+  speed,
   className,
   onReady,
   onPlayToggle,
@@ -36,6 +37,8 @@ const TimelineComponent: FC<TimelineProps> = ({
   onSelectRegion,
   onAction,
   onFullscreenToggle,
+  onSpeedChange,
+  formatPosition,
   ...props
 }) => {
   const View = Views[mode];
@@ -104,6 +107,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         onForward={() => setInternalPosition(length)}
         onPositionChange={setInternalPosition}
         onToggleCollapsed={setViewCollapsed}
+        formatPosition={formatPosition}
         extraControls={View.Controls && !disableView ? (
           <View.Controls
             onAction={(e, action, data) => {
@@ -113,7 +117,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         ) : null}
       />
 
-      {displaySeeker && (
+      {allowSeek && (
         <Seeker
           length={length}
           position={currentPosition}
@@ -137,6 +141,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         regions={regions}
         playing={playing}
         zoom={zoom}
+        speed={speed}
         volume={props.volume}
         position={currentPosition}
         offset={seekOffset}
@@ -144,10 +149,12 @@ const TimelineComponent: FC<TimelineProps> = ({
         onScroll={setSeekOffset}
         onResize={setSeekVisibleWidth}
         onChange={setInternalPosition}
+        onPlayToggle={onPlayToggle}
         onToggleVisibility={onToggleVisibility}
         onAddRegion={onAddRegion}
         onDeleteRegion={onDeleteRegion}
         onSelectRegion={onSelectRegion}
+        onSpeedChange={onSpeedChange}
         onZoom={props.onZoom}
       />
     </Elem>

@@ -13,13 +13,14 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   playing: boolean;
   zoom?: number;
   volume?: number;
+  speed?: number;
   fullscreen?: boolean;
   disableView?: boolean;
   className?: string;
   defaultStepSize?: number;
   allowFullscreen?: boolean;
   allowViewCollapse?: boolean;
-  displaySeeker?: boolean;
+  allowSeek?: boolean;
   hopSize?: number;
   data?: any;
   controlsOnTop?: boolean;
@@ -35,6 +36,8 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   onAction?: (event: MouseEvent, action: string, data?: any) => void;
   onVolumeChange?: (volume: number) => void;
   onFullscreenToggle?: (fullscreen: boolean) => void;
+  onSpeedChange?: (speed: number) => void;
+  formatPosition?: (position: number, fps: number) => string;
 }
 
 export interface TimelineViewProps {
@@ -44,11 +47,13 @@ export interface TimelineViewProps {
   length: number;
   playing: boolean;
   zoom?: number;
+  speed?: number;
   volume?: number;
   regions: TimelineRegion[];
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;
+  onPlayToggle?: TimelineProps["onPlayToggle"];
   onToggleVisibility?: TimelineProps["onToggleVisibility"];
   onReady?: TimelineProps["onReady"];
   onZoom?: TimelineProps["onZoom"];
@@ -56,6 +61,7 @@ export interface TimelineViewProps {
   onDeleteRegion?: TimelineProps["onDeleteRegion"];
   onSelectRegion?: TimelineProps["onSelectRegion"];
   onVolumeChange?: TimelineProps["onVolumeChange"];
+  onSpeedChange?: TimelineProps["onSpeedChange"];
 }
 
 export interface TimelineRegion {
@@ -131,13 +137,14 @@ export interface TimelineControlsProps {
   controls?: TimelineProps["controls"];
   onRewind: () => void;
   onForward: () => void;
-  onPlayToggle: TimelineProps["onPlayToggle"];
-  onFullScreenToggle: TimelineProps["onFullscreenToggle"];
   onPositionChange: (position: number) => void;
   onToggleCollapsed: (collapsed: boolean) => void;
-  onVolumeChange: TimelineProps["onVolumeChange"];
   onStepBackward: TimelineControlsStepHandler;
   onStepForward: TimelineControlsStepHandler;
+  formatPosition?: TimelineProps["formatPosition"];
+  onPlayToggle: TimelineProps["onPlayToggle"];
+  onFullScreenToggle: TimelineProps["onFullscreenToggle"];
+  onVolumeChange: TimelineProps["onVolumeChange"];
 }
 
 export interface TimelineSideControlProps {

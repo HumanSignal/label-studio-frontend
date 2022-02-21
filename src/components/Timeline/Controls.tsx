@@ -6,7 +6,7 @@ import { Block, Elem } from "../../utils/bem";
 import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
-import { TimelineControlsProps, TimelineControlsStepHandler, TimelineStepFunction } from "./Types";
+import { TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
 
 const relativePosition = (pos: number, fps: number) => {
   const roundedFps = Math.floor(fps);
@@ -35,6 +35,7 @@ export const Controls: FC<TimelineControlsProps> = ({
   onPositionChange,
   onStepForward,
   onToggleCollapsed,
+  formatPosition,
   ...props
 }) => {
   const { settings } = useContext(TimelineContext);
@@ -209,6 +210,7 @@ export const Controls: FC<TimelineControlsProps> = ({
           length={length}
           position={position}
           framerate={frameRate}
+          formatPosition={formatPosition}
         />
       </Elem>
     </Block>
@@ -233,6 +235,7 @@ interface TimeDisplay {
   duration: number;
   framerate: number;
   length: number;
+  formatPosition?: TimelineProps["formatPosition"];
 }
 
 const TimeDisplay: FC<TimeDisplay> = ({
@@ -241,19 +244,22 @@ const TimeDisplay: FC<TimeDisplay> = ({
   duration,
   framerate,
   length,
+  formatPosition,
 }) => {
+  const formatter = formatPosition ?? relativePosition;
+
   return (
     <Elem name="time">
       <Elem name="time-section">
         <Time
           time={currentTime}
-          position={relativePosition(position, framerate)}
+          position={formatter(position, framerate)}
         />
       </Elem>
       <Elem name="time-section">
         <Time
           time={duration}
-          position={relativePosition(length, framerate)}
+          position={formatter(length, framerate)}
         />
       </Elem>
     </Elem>
