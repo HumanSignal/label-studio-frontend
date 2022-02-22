@@ -215,12 +215,14 @@ class RichTextPieceView extends Component {
     // Also init regions' offsets and html range on initial load
 
     if (initial) {
-      const { history } = item.annotation;
+      const { history, pauseAutosave, startAutosave } = item.annotation;
 
+      pauseAutosave();
       history.freeze("richtext:init");
       item.needsUpdate();
       history.setReplaceNextUndoState(true);
       history.unfreeze("richtext:init");
+      startAutosave();
     } else {
       item.needsUpdate();
     }
@@ -379,7 +381,7 @@ class RichTextPieceView extends Component {
             name="container"
             ref={el => {
               item.visibleNodeRef.current = el;
-              this.markObjectAsLoaded();
+              el && this.markObjectAsLoaded();
             }}
             data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
