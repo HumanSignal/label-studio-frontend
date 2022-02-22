@@ -300,9 +300,14 @@ export const AudioModel = types.compose(
       },
 
       beforeDestroy() {
-        if (isDefined(self._ws)) {
-          self._ws.destroy();
+        try {
+          if (isDefined(self._ws)) {
+            self._ws.destroy();
+            self._ws = null;
+          }
+        } catch (err) {
           self._ws = null;
+          console.warn("Already destroyed");
         }
       },
     })),
