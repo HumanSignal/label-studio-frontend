@@ -346,16 +346,18 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         onInput={onInput}
         ref={inputRef}
       />
-      <TreeStructure 
-        items={list} 
-        rowComponent={Item} 
-        flatten={search !== ""} 
-        rowHeight={30}
-        defaultExpanded={true}
-        maxHeightPersentage={50}
-        minWidth={300}
-        transformationCallback={itemDataReformater}
-      />
+      {show && (
+        <TreeStructure 
+          items={list} 
+          rowComponent={Item} 
+          flatten={search !== ""} 
+          rowHeight={30}
+          defaultExpanded={true}
+          maxHeightPersentage={50}
+          minWidth={300}
+          transformationCallback={itemDataReformater}
+        />
+      )}
       {onAddLabel && search === "" && (
         isAdding
           ? <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
