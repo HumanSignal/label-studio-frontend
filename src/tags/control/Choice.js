@@ -74,10 +74,11 @@ const Model = types
   .actions(self => ({
     toggleSelected() {
       const choices = self.parent;
+      const selected = self.sel;
 
       choices.shouldBeUnselected && choices.resetSelected?.();
 
-      self.setSelected(!self.sel);
+      self.setSelected(!selected);
 
       choices.updateResult?.();
     },

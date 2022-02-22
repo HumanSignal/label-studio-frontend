@@ -137,6 +137,10 @@ describe("parseValue", () => {
     expect(parseValue("$num2str", data)).toEqual("123");
   });
 
+  test("Text with one variable", () => {
+    expect(parseValue("URL: $url", data)).toEqual("URL: https://labelstud.io");
+  });
+
   test("Text with variables", () => {
     expect(parseValue("URL of $name is $url", data)).toEqual("URL of Label Studio is https://labelstud.io");
   });

@@ -14,6 +14,8 @@ import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 import * as xpath from "xpath-range";
+import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
+import IsReadyMixin from "../../../mixins/IsReadyMixin";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -25,6 +27,8 @@ const WARNING_MESSAGES = {
 };
 
 /**
+ * WARNING: this is not a real doc, that's just a main reference; real docs are in their stub files: HyperText and Text
+ *
  * RichText tag shows text or HTML and allows labeling
  * @example
  * <RichText name="text-1" value="$text" granularity="symbol" highlightColor="#ff0000" />
@@ -99,26 +103,35 @@ const Model = types
     },
 
     get isLoaded() {
-      return self._isLoaded &&  self._loadedForAnnotation === self.annotation?.id;
+      return self._isLoaded && self._loadedForAnnotation === self.annotation?.id;
+    },
+
+    get isReady() {
+      return self.isLoaded  && self._isReady;
     },
   }))
   .volatile(() => ({
-    rootNodeRef: React.createRef(),
-    originalContentRef: React.createRef(),
+    // the only visible iframe/div
     visibleNodeRef: React.createRef(),
+    // regions highlighting is much faster in a hidden iframe/div; applyHighlights() works here
+    workingNodeRef: React.createRef(),
+    // xpaths should be calculated over original document without regions' spans
+    originalContentRef: React.createRef(),
+    // toggle showing which node to modify — visible or working
+    useWorkingNode: false,
+
+    _isReady: false,
+
     regsObserverDisposer: null,
-    isReady: false,
     _isLoaded: false,
     _loadedForAnnotation: null,
   }))
   .actions(self => {
-    let beforeNeedsUpdateCalback, afterNeedsUpdateCalback;
+    let beforeNeedsUpdateCallback, afterNeedsUpdateCallback;
 
     return {
-      setRef(rootNodeRef, originalContentRef, visibleNodeRef = rootNodeRef) {
-        self.rootNodeRef = rootNodeRef;
-        self.originalContentRef = originalContentRef;
-        self.visibleNodeRef = visibleNodeRef;
+      setWorkingMode(mode) {
+        self.useWorkingNode = mode;
       },
 
       setLoaded(value = true) {
@@ -127,7 +140,8 @@ const Model = types
       },
 
       updateValue: flow(function * (store) {
-        const value = parseValue(self.value, store.task.dataObj);
+        const valueFromTask = parseValue(self.value, store.task.dataObj);
+        const value = yield self.resolveValue(valueFromTask);
 
         if (self.valuetype === "url") {
           const url = value;
@@ -198,60 +212,46 @@ const Model = types
           if (self.valuetype === "url") self.savetextresult = "no";
           else if (self.valuetype === "text") self.savetextresult = "yes";
         }
-
-        // Watch all the changes to the regions list to properly update the text
-        // their XPaths relatively to each other
-        self.regsObserverDisposer = observe(self, 'regs', () => {
-          self.regs.forEach(reg => self.fixRegionsXPath(reg));
-        });
-      },
-
-      fixRegionsXPath(region) {
-      // Text regions don't use XPath
-        region._fixXPaths();
       },
 
       beforeDestroy() {
         self.regsObserverDisposer?.();
       },
 
+      // callbacks to switch render to working node for better performance
       setNeedsUpdateCallbacks(beforeCalback, afterCalback) {
-        beforeNeedsUpdateCalback = beforeCalback;
-        afterNeedsUpdateCalback = afterCalback;
+        beforeNeedsUpdateCallback = beforeCalback;
+        afterNeedsUpdateCallback = afterCalback;
       },
 
       needsUpdate() {
         if (self.isLoaded === false) return;
+
         self.setReady(false);
-        beforeNeedsUpdateCalback?.();
+
+        // init and render regions into working node, then move them to visible one
+        beforeNeedsUpdateCallback?.();
         self.regs.forEach(region => {
           try {
+            // will be initialized only once
+            region.initRangeAndOffsets();
             region.applyHighlight();
-          } catch {
-            // that's not a problem
+          } catch (err) {
+            console.error(err);
           }
         });
-        afterNeedsUpdateCalback?.();
-        for (const region of self.regs) {
-          region.updateHighlightedText();
-        }
+        afterNeedsUpdateCallback?.();
+
+        // node texts can be only retrieved from the visible node
+        self.regs.forEach(region => {
+          try {
+            region.updateHighlightedText();
+          } catch (err) {
+            console.error(err);
+          }
+        });
 
         self.setReady(true);
-      },
-
-      initGlobalOffsets(rootElement) {
-        self.regs.forEach((richTextRegion) => {
-          try {
-            const { start, startOffset, end, endOffset } = richTextRegion;
-            const range = xpath.toRange(start, startOffset, end, endOffset, rootElement);
-            const [soff, eoff] = rangeToGlobalOffset(range, rootElement);
-
-            richTextRegion.updateGlobalOffsets(soff, eoff);
-          } catch (e) {
-          // should never happen
-          // doesn't break anything if happens
-          }
-        });
       },
 
       setHighlight(region) {
@@ -263,36 +263,17 @@ const Model = types
         }
       },
 
-      createRegion(regionData) {
-        const region = RichTextRegionModel.create({
-          ...regionData,
-          isText: self.type === "text",
-        });
-
-
-        if (self.valuetype === "url" && self.loaded === false) {
-          self._regionsCache.push({ region, annotation: self.annotation });
-          return;
-        }
-
-        self.regions.push(region);
-        self.annotation.addRegion(region);
-        region.notifyDrawingFinished();
-
-        region.applyHighlight();
-
-        return region;
-      },
-
-      addRegion(range) {
+      addRegion(range, doubleClickLabel) {
         const states = self.getAvailableStates();
 
         if (states.length === 0) return;
 
         const control = states[0];
-        const labels = { [control.valueType]: control.selectedValues() };
+        const values = doubleClickLabel?.value ?? control.selectedValues();
+        const labels = { [control.valueType]: values };
+
         const area = self.annotation.createResult(range, labels, control, self);
-        const rootEl = self.rootNodeRef.current;
+        const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
 
         area._range = range._range;
@@ -300,7 +281,7 @@ const Model = types
         const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
         if (range.isText) {
-          area.updateOffsets(soff, eoff);
+          area.updateTextOffsets(soff, eoff);
         }
 
         area.updateGlobalOffsets(soff, eoff);
@@ -314,4 +295,4 @@ const Model = types
     };
   });
 
-export const RichTextModel = types.compose("RichTextModel", ObjectBase, RegionsMixin, TagAttrs, Model, AnnotationMixin);
+export const RichTextModel = types.compose("RichTextModel", ProcessAttrsMixin, ObjectBase, RegionsMixin, AnnotationMixin, IsReadyMixin, TagAttrs, Model);

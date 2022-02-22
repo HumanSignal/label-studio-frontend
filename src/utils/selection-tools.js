@@ -1,4 +1,4 @@
-import { clamp } from "./utilities";
+import { clamp, isDefined } from "./utilities";
 
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
@@ -337,7 +337,7 @@ export const highlightRange = (range, { label, classNames }) => {
    * Wrapper with predefined classNames and cssStyles
    * @param  {[Node, number, number]} args
    */
-  const applyStyledHighlight = (...args) => highlightRangePart(...[...args, classNames]);
+  const applyStyledHighlight = (...args) => highlightRangePart(...args, classNames);
 
   // If start and end nodes are equal, we don't need
   // to perform any additional work, just highlighting as is
@@ -685,7 +685,7 @@ const findGlobalOffset = (node, position, root) => {
     }
 
     if (isText || isBR) {
-      let length = currentNode.length ?? 1;
+      let length = isDefined(currentNode.length) ? [...currentNode.textContent].length : 1;
 
       if (atTargetNode) {
         length = Math.min(position, length);

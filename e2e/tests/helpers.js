@@ -9,7 +9,13 @@
  * @param {object[]} params.predictions
  * @param {function} done
  */
-const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], predictions = [] }, done) => {
+const initLabelStudio = async ({ 
+  config, 
+  data, 
+  annotations = [{ result: [] }], 
+  predictions = [],
+  settings = {},
+},  done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -32,7 +38,17 @@ const initLabelStudio = async ({ config, data, annotations = [{ result: [] }], p
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  new window.LabelStudio("label-studio", { interfaces, config, task });
+  new window.LabelStudio("label-studio", { interfaces, config, task, settings });
+  done();
+};
+
+const setFeatureFlags = (featureFlags, done) => {
+  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+  if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
+  window.APP_SETTINGS.feature_flags = {
+    ...window.APP_SETTINGS.feature_flags,
+    ...featureFlags,
+  };
   done();
 };
 
@@ -44,7 +60,10 @@ const waitForImage = async done => {
   const img = document.querySelector("[alt=LS]");
 
   if (!img || img.complete) return done();
-  img.onload = done;
+  // this should be rewritten to isReady when it is ready
+  img.onload = ()=>{
+    setTimeout(done, 100);
+  };
 };
 
 /**
@@ -72,20 +91,20 @@ const waitForAudio = async done => {
  * to same structures but with rounded numbers (int for ints, fixed(2) for floats)
  * @param {*} data
  */
-const convertToFixed = data => {
+const convertToFixed = (data, fractionDigits = 2) => {
   if (["string", "number"].includes(typeof data)) {
     const n = Number(data);
 
-    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(2);
+    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(fractionDigits);
   }
   if (Array.isArray(data)) {
-    return data.map(n => convertToFixed(n));
+    return data.map(n => convertToFixed(n, fractionDigits));
   }
   if (typeof data === "object") {
     const result = {};
 
     for (const key in data) {
-      result[key] = convertToFixed(data[key]);
+      result[key] = convertToFixed(data[key], fractionDigits);
     }
     return result;
   }
@@ -476,6 +495,7 @@ function hasSelectedRegion(done) {
 
 module.exports = {
   initLabelStudio,
+  setFeatureFlags,
   waitForImage,
   waitForAudio,
   delay,

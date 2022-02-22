@@ -27,7 +27,14 @@ const H3_POINTS = [[1.25, 50.887573964497044], [21.875, 50.69033530571992], [22.
 
 Scenario("Basic scenario", async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
-  LabelStudio.init({ config: createConfig({ shapes: ["Polygon"] }), data });
+
+  LabelStudio.init({
+    config: createConfig({ shapes: ["Polygon"] }),
+    data,
+    settings: {
+      preserveSelectedTool: false,
+    },
+  });
   AtImageView.waitForImage();
   AtSettings.open();
   AtSettings.setGeneralSettings({

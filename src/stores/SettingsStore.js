@@ -55,6 +55,8 @@ const SettingsModel = types
 
     showPredictionsPanel: types.optional(types.boolean, true),
     // showScore: types.optional(types.boolean, false),
+
+    preserveSelectedTool: types.optional(types.boolean, true),
   })
   .views(self => ({
     get annotation() {
@@ -114,10 +116,6 @@ const SettingsModel = types
 
     toggleShowLineNumbers() {
       self.showLineNumbers = !self.showLineNumbers;
-
-      // hack to enable it from outside, because Text spawns spans on every rerender
-      // @todo it should be enabled inside Text
-      document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
     },
 
     toggleContinuousLabeling() {
@@ -137,6 +135,10 @@ const SettingsModel = types
 
     toggleAutoSave() {
       self.enableAutoSave = !self.enableAutoSave;
+    },
+
+    togglepreserveSelectedTool() {
+      self.preserveSelectedTool = !self.preserveSelectedTool;
     },
 
     toggleHotkeys() {
