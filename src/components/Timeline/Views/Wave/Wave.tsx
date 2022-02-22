@@ -181,11 +181,8 @@ export const Wave: FC<TimelineViewProps> = ({
     const wsi = ws.current;
 
     if (wsi) {
-      console.log(scale);
       wsi.params.barHeight = scale;
       wsi.drawBuffer();
-
-      console.log(wsi.params);
     }
   }, [scale]);
 
@@ -437,7 +434,6 @@ const useWaveSurfer = ({
           });
 
           reg.on("update-end", () => {
-            console.log('update');
             region.onUpdateEnd(wsi);
           });
 
