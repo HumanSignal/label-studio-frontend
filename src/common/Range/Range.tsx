@@ -115,7 +115,9 @@ export const Range: FC<RangeProps> = ({
     // Calculate relative offset
     const offset = clamp(mousePosition - parentOffset, 0, directionDimension);
     const position = offset / directionDimension;
-    const newValue = ((max - min) * position) + min;
+    let newValue = ((max - min) * position) + min;
+
+    if (reverse) newValue = max - newValue;
 
     if (multi && Array.isArray(currentValue)) {
       const valueIndex = position > 0.5 ? 1 : 0;
@@ -127,7 +129,7 @@ export const Range: FC<RangeProps> = ({
     } else {
       updateValue(newValue, true, false);
     }
-  }, [align, min, max, currentValue]);
+  }, [align, min, max, reverse, currentValue]);
 
   const sizeProperty = align === 'horizontal' ? 'minWidth' : 'minHeight';
 
@@ -248,7 +250,9 @@ const RangeHandle: FC<RangeHandleProps> = ({
       });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      e.stopPropagation();
+
       if (isDefined(newValue)) onChange?.(newValue);
 
       document.removeEventListener('mousemove', handleMouseMove);

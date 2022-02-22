@@ -18,7 +18,7 @@ import { WaveSurferParams } from "wavesurfer.js/types/params";
 
 const ZOOM_X = {
   min: 10,
-  max: 500,
+  max: 1500,
   step: 10,
   default: 10,
 };
@@ -57,6 +57,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [scale, setScale] = useState(1);
 
   const handlers = useMemoizedHandlers({
     onChange,
@@ -175,6 +176,19 @@ export const Wave: FC<TimelineViewProps> = ({
     ws.current?.setVolume(volume);
   }, [volume]);
 
+  // Handle Y scaling
+  useEffect(() => {
+    const wsi = ws.current;
+
+    if (wsi) {
+      console.log(scale);
+      wsi.params.barHeight = scale;
+      wsi.drawBuffer();
+
+      console.log(wsi.params);
+    }
+  }, [scale]);
+
   // Handle wheel events for scrolling and pinch-to-zoom
   useEffect(() => {
     const elem = bodyRef.current!;
@@ -240,19 +254,34 @@ export const Wave: FC<TimelineViewProps> = ({
           />
         </Space>
       </Elem>
-      <Elem
-        name="body"
-        ref={bodyRef}
-        onClick={onTimelineClick}
-      >
-        <Elem name="cursor" style={cursorStyle}/>
-        <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
-        <Elem name="timeline" ref={timelineRef} />
-        {loading && (
-          <Elem name="loader" mod={{ animated: true }}>
-            <span>{progress}%</span>
-          </Elem>
-        )}
+      <Elem name="wrapper">
+        <Elem
+          name="body"
+          ref={bodyRef}
+          onClick={onTimelineClick}
+        >
+          <Elem name="cursor" style={cursorStyle}/>
+          <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
+          <Elem name="timeline" ref={timelineRef} />
+          {loading && (
+            <Elem name="loader" mod={{ animated: true }}>
+              <span>{progress}%</span>
+            </Elem>
+          )}
+        </Elem>
+        <Elem name="scale">
+          <Range
+            min={1}
+            max={50}
+            step={0.1}
+            reverse
+            continuous
+            value={scale}
+            resetValue={1}
+            align="vertical"
+            onChange={(value) => setScale(Number(value))}
+          />
+        </Elem>
       </Elem>
     </Block>
   );
@@ -298,9 +327,9 @@ const useWaveSurfer = ({
       autoCenter: true,
       scrollParent: true,
       ...params,
+      barHeight: 1,
       container: containter.current!,
       height: Number(data.height ?? 88),
-      normalize: true,
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
