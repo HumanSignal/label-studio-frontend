@@ -352,7 +352,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         flatten={search !== ""} 
         rowHeight={30}
         defaultExpanded={true}
-        maxHeightPersentage={60}
+        maxHeightPersentage={50}
         minWidth={300}
         transformationCallback={itemDataReformater}
       />
