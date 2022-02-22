@@ -7,7 +7,7 @@ import "./Wave.styl";
 import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
 import TimelinePlugin from "wavesurfer.js/src/plugin/timeline";
 import { formatTimeCallback, secondaryLabelInterval, timeInterval } from "./Utils";
-import { clamp, isMacOS } from "../../../../utils/utilities";
+import { clamp, isDefined } from "../../../../utils/utilities";
 import { Range } from "../../../../common/Range/Range";
 import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from "../../../../assets/icons";
 import { Space } from "../../../../common/Space/Space";
@@ -60,7 +60,14 @@ export const Wave: FC<TimelineViewProps> = ({
 
   const handlers = useMemoizedHandlers({
     onChange,
+    onZoom,
   });
+
+  const setZoom = useCallback((value: number) => {
+    const newValue = clamp(value, ZOOM_X.min, ZOOM_X.max);
+
+    setCurrentZoom(newValue);
+  }, []);
 
   const ws = useWaveSurfer({
     containter: waveRef,
@@ -71,23 +78,19 @@ export const Wave: FC<TimelineViewProps> = ({
     params: {
       autoCenter: data.autocenter,
       scrollParent: data.scrollparent,
+      autoCenterImmediately: true,
     },
     onLoaded: setLoading,
     onProgress: setProgress,
-    onScroll: (p) => setScrollOffset(p),
-    onSeek: (p) => handlers.onChange(p),
     onPlayToggle,
     onAddRegion,
     onReady,
+    onScroll: (p) => setScrollOffset(p),
+    onSeek: (p) => handlers.onChange?.(p),
+    onZoom: (zoom) => handlers.onZoom?.(zoom),
   });
 
-  const setZoom = (value: number) => {
-    const newValue = clamp(value, ZOOM_X.min, ZOOM_X.max);
-
-    setCurrentZoom(newValue);
-    onZoom?.(newValue);
-  };
-
+  // Handle timeline navigation clicks
   const onTimelineClick = useCallback((e: RMouseEvent<HTMLDivElement>) => {
     const surfer = waveRef.current!.querySelector("wave")!;
     const offset = surfer.getBoundingClientRect().left;
@@ -98,6 +101,7 @@ export const Wave: FC<TimelineViewProps> = ({
     ws.current?.setCurrentTime(time);
   }, []);
 
+  // Handle current cursor position
   useEffect(() => {
     let pos = 0;
     const surfer = waveRef.current?.querySelector?.("wave");
@@ -110,8 +114,9 @@ export const Wave: FC<TimelineViewProps> = ({
     }
 
     setCursorPosition(pos);
-  }, [position, length, currentZoom, scrollOffset, loading]);
+  }, [position, length, zoom, currentZoom, scrollOffset, loading]);
 
+  // Handle seeking
   useEffect(() => {
     const wsi = ws.current;
 
@@ -122,6 +127,7 @@ export const Wave: FC<TimelineViewProps> = ({
     }
   }, [position, playing, length]);
 
+  // Handle playback updates
   useEffect(() => {
     const wsi = ws.current;
 
@@ -143,6 +149,7 @@ export const Wave: FC<TimelineViewProps> = ({
     }
   }, [playing]);
 
+  // Handle zoom changes
   useEffect(() => {
     requestAnimationFrame(() => {
       const wsi = ws.current;
@@ -151,20 +158,24 @@ export const Wave: FC<TimelineViewProps> = ({
     });
   }, [currentZoom, scrollOffset]);
 
+  // Handle playback speed changes
   useEffect(() => {
     ws.current?.setPlaybackRate(speed);
   }, [speed]);
 
+  // Handle waveform scrolling position change
   useEffect(() => {
     const surfer = waveRef.current?.querySelector("wave");
 
     if (surfer)  surfer.scrollLeft = scrollOffset;
   }, [scrollOffset]);
 
+  // Handle volume change
   useEffect(() => {
     ws.current?.setVolume(volume);
   }, [volume]);
 
+  // Handle wheel events for scrolling and pinch-to-zoom
   useEffect(() => {
     const elem = bodyRef.current!;
     const wave = elem.querySelector("wave")!;
@@ -174,7 +185,7 @@ export const Wave: FC<TimelineViewProps> = ({
       const isHorizontal = Math.abs(e.deltaY) < Math.abs(e.deltaX);
 
       // on macOS trackpad triggers ctrlKey automatically
-      // on other platforms you must hold ctrl manually
+      // on other platforms you must physically hold ctrl
       if (e.ctrlKey && isVertical) {
         e.preventDefault();
         requestAnimationFrame(() => {
@@ -195,6 +206,7 @@ export const Wave: FC<TimelineViewProps> = ({
     return () => elem.removeEventListener('wheel', onWheel);
   }, [currentZoom]);
 
+  // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
     return {
       left: cursorPosition,
@@ -228,10 +240,14 @@ export const Wave: FC<TimelineViewProps> = ({
           />
         </Space>
       </Elem>
-      <Elem name="body" ref={bodyRef}>
+      <Elem
+        name="body"
+        ref={bodyRef}
+        onClick={onTimelineClick}
+      >
         <Elem name="cursor" style={cursorStyle}/>
-        <Elem name="surfer" ref={waveRef} />
-        <Elem name="timeline" ref={timelineRef} onClick={onTimelineClick}/>
+        <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
+        <Elem name="timeline" ref={timelineRef} />
         {loading && (
           <Elem name="loader" mod={{ animated: true }}>
             <span>{progress}%</span>
@@ -253,6 +269,7 @@ interface WavesurferProps {
   onSeek: (progress: number) => void;
   onLoaded: (loaded: boolean) => void;
   onScroll: (position: number) => void;
+  onZoom?: (zoom: number) => void;
   onPlayToggle?: TimelineViewProps["onPlayToggle"];
   onReady?: TimelineViewProps["onReady"];
   onAddRegion?: TimelineViewProps["onAddRegion"];
@@ -272,6 +289,7 @@ const useWaveSurfer = ({
   onAddRegion,
   onReady,
   onScroll,
+  onZoom,
 }: WavesurferProps) => {
   const ws = useRef<WaveSurfer>();
 
@@ -281,13 +299,16 @@ const useWaveSurfer = ({
       scrollParent: true,
       ...params,
       container: containter.current!,
-      height: 88,
+      height: Number(data.height ?? 88),
       normalize: true,
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
       progressColor: "#656F83",
-      hideCursor: true,
+      cursorWidth: 0,
+      loopSelection: true,
+      audioRate: speed,
+      pixelRatio: 1,
       plugins: [
         RegionsPlugin.create({
           slop: 5,
@@ -311,11 +332,20 @@ const useWaveSurfer = ({
         CursorPlugin.create({
           color: "#000",
           showTime: true,
-          followCursorY: true,
-          opacity: 1,
+          followCursorY: 'true',
+          opacity: '1',
         }),
       ],
     });
+
+    const removeDetachedRegions = () => {
+      const unbound = Object.values(wsi.regions.list).filter((reg: any) => {
+        return !isDefined(reg._region);
+      });
+
+      unbound.forEach(reg => reg.remove());
+
+    };
 
     wsi.on("ready", () => {
       onLoaded(false);
@@ -344,18 +374,42 @@ const useWaveSurfer = ({
         wsi.on("region-created", (reg) => {
           const region = onAddRegion?.(reg);
 
-          if (!region) return;
+          if (!region) {
+            removeDetachedRegions();
+
+            reg.on('update-end', () => {
+              const newReg = wsi.addRegion({
+                start: reg.start,
+                end: reg.end,
+                resize: false,
+              });
+
+              newReg.on("click", () => newReg.remove());
+
+              newReg.playLoop();
+            });
+            return;
+          }
 
           reg._region = region;
           reg.color = region.selectedregionbg;
 
-          reg.on("click", (ev: any) => region.onClick(wsi, ev));
-          reg.on("update-end", () => region.onUpdateEnd(wsi));
+          reg.on("click", (e: MouseEvent) => {
+            region.onClick(wsi, e);
+          });
 
-          reg.on("dblclick", () => {
+          reg.on("dblclick", (e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+
             window.setTimeout(function() {
               reg.playLoop();
             }, 0);
+          });
+
+          reg.on("update-end", () => {
+            console.log('update');
+            region.onUpdateEnd(wsi);
           });
 
           reg.on("out", () => {});
@@ -368,13 +422,22 @@ const useWaveSurfer = ({
       });
     });
 
+    wsi.setPlaybackRate(speed);
+
+    wsi.zoom(ZOOM_X.default);
+
+    wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
+
     wsi.on("play", () => onPlayToggle?.(true));
 
     wsi.on("pause", () => onPlayToggle?.(false));
 
     wsi.on("finish", () => onPlayToggle?.(false));
 
+    wsi.on('zoom', (minPxPerMinute) => onZoom?.(minPxPerMinute));
+
     wsi.on("seek", (progress) => {
+      removeDetachedRegions();
       onSeek((wsi.getDuration() * progress) * 1000);
     });
 
@@ -383,12 +446,6 @@ const useWaveSurfer = ({
     });
 
     wsi.load(data._value);
-
-    wsi.setPlaybackRate(speed);
-
-    wsi.zoom(ZOOM_X.default);
-
-    wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
 
     ws.current = wsi;
 

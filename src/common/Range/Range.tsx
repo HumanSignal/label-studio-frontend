@@ -249,7 +249,7 @@ const RangeHandle: FC<RangeHandleProps> = ({
     };
 
     const handleMouseUp = () => {
-      if (newValue) onChange?.(newValue);
+      if (isDefined(newValue)) onChange?.(newValue);
 
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
