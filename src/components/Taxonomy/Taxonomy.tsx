@@ -4,6 +4,7 @@ import { Dropdown, Menu } from "antd";
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
 import { LsChevron } from "../../assets/icons";
+import TreeStructure, { RowItem } from "../TreeStructure/TreeStructure";
 
 import styles from "./Taxonomy.module.scss";
 
@@ -54,6 +55,28 @@ type UserLabelFormProps = {
   onAddLabel: (path: string[]) => any,
   onFinish?: () => any,
   path: string[],
+  
+}
+
+interface RowProps {
+  style: any;
+  index: number;
+  data: (index: number) => { 
+    row: { 
+      id: string,
+      isOpen: boolean, 
+      path: string[], 
+      childCount: number, 
+      isFiltering: boolean, 
+      name: string, 
+      padding: number, 
+      isLeaf: boolean,
+    },
+    origin?: any,
+    children?: any,
+    toggle: (id: string) => void,
+    addInside: (id?: string) => void,
+  };
 }
 
 const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
@@ -112,21 +135,27 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
+
 // @todo change `flat` into `alwaysOpen` and move it to context
-const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean }) => {
+const Item: React.FC<any> = (props: RowProps) => {
+  const { style, data, index } = props; 
+  const item = data(index);
+  const { row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf }, toggle, addInside: addChild } = item;
+  
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel, onDeleteLabel } = useContext(TaxonomyOptionsContext);
-
-  const checked = selected.some(current => isArraysEqual(current, item.path));
-  const isChildSelected = selected.some(current => isSubArray(current, item.path));
-  const hasChilds = Boolean(item.children?.length);
+  
+  const checked = selected.some(current => isArraysEqual(current, path));
+  const isChildSelected = selected.some(current => isSubArray(current, path));
+  const hasChilds = !isLeaf;
   const onlyLeafsAllowed = leafsOnly && hasChilds;
   const limitReached = maxUsagesReached && !checked;
   const disabled = onlyLeafsAllowed || limitReached;
 
-  const [isOpen, open, , toggle] = useToggle(isChildSelected || isFiltering);
-  const onClick = () => leafsOnly && toggle();
-  const arrowStyle = item.children?.length
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, open] = useToggle(isChildSelected || isFiltering);
+  const onClick = () => leafsOnly && toggle(id);
+  const arrowStyle = !isLeaf
     ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" }
     : { display: "none" };
 
@@ -147,7 +176,7 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
   }, [checked, isChildSelected]);
 
   const onDelete = useCallback(
-    () => onDeleteLabel?.(item.path),
+    () => onDeleteLabel?.(path),
     [item, onDeleteLabel],
   );
 
@@ -155,24 +184,15 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
     ? styles.taxonomy__item_session
     : (item.origin === "user" ? styles.taxonomy__item_user : "");
 
-  let childs = null;
-
-  if (isAdding || (item.children && isOpen)) {
-    childs = item.children?.map(
-      child => <Item key={child.label} item={child} isFiltering={isFiltering}/>,
-    ) ?? [];
-    if (onAddLabel && isAdding && !isFiltering) {
-      // key is required, but should be unique - empty string can't be in child items
-      childs.push(<UserLabelForm key="" onAddLabel={onAddLabel} onFinish={closeForm} path={item.path} />);
-    }
-  }
 
   return (
-    <div>
+    <div style={{ paddingLeft: padding, ...style }}>
       <div className={[styles.taxonomy__item, customClassname].join(" ")}>
-        <div className={styles.taxonomy__grouping} onClick={toggle}>
-          <LsChevron stroke="#09f" style={arrowStyle} />
-        </div>
+        { !isFiltering && (
+          <div className={styles.taxonomy__grouping} onClick={()=> toggle(id)}>
+            <LsChevron stroke="#09f" style={arrowStyle} />
+          </div>
+        )}
         <label
           onClick={onClick}
           title={title}
@@ -183,15 +203,14 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
             disabled={disabled}
             checked={checked}
             ref={setIndeterminate}
-            onChange={e => setSelected(item.path, e.currentTarget.checked)}
+            onChange={e => setSelected(path, e.currentTarget.checked)}
           />
-          {item.label}
+          {name}
         </label>
         {!isFiltering && (
           <div className={styles.taxonomy__extra}>
-            {/* @todo should count all the nested children */}
             <span className={styles.taxonomy__extra_count}>
-              {item.children?.length}
+              {childCount}
             </span>
             {onAddLabel && (
               <div className={styles.taxonomy__extra_actions}>
@@ -203,13 +222,13 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
                       <Menu.Item
                         key="add-inside"
                         className={styles.taxonomy__action}
-                        onClick={addInside}
+                        onClick={()=> { addChild(id); addInside();}}
                       >Add Inside</Menu.Item>
                       {item.origin === "session" && (
                         <Menu.Item
                           key="delete"
                           className={styles.taxonomy__action}
-                          onClick={onDelete}
+                          onClick={()=> { addChild(); onDelete();}}
                         >Delete</Menu.Item>
                       )}
                     </Menu>
@@ -224,7 +243,9 @@ const Item = ({ item, isFiltering }: { item: TaxonomyItem, isFiltering?: boolean
           </div>
         )}
       </div>
-      {childs}
+      {isAdding && onAddLabel && 
+        <UserLabelForm key="" onAddLabel={onAddLabel} onFinish={closeForm} path={path} />
+      }
     </div>
   );
 };
@@ -297,6 +318,24 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
     }
   }, [show]);
 
+  const itemDataReformater = (
+    { node: { children, label, depth, path }, nestingLevel, isFiltering, isOpen, childCount } :
+    { node: RowItem, nestingLevel: number, isFiltering: boolean, isOpen: boolean, childCount: number | undefined,
+    }) => (
+    {
+      id: `${label}-${depth}`,
+      isLeaf: !children?.length,
+      isOpenByDefault: true,
+      name: label,
+      childCount,
+      nestingLevel,
+      padding: nestingLevel * 10 + 10,
+      isFiltering,
+      isOpen,
+      path,
+    }
+  );
+
   return (
     <div className={styles.taxonomy__dropdown} ref={dropdownRef} style={{ display: show ? "block" : "none" }}>
       <input
@@ -307,7 +346,16 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         onInput={onInput}
         ref={inputRef}
       />
-      {list.map(item => <Item key={item.label} item={item} isFiltering={search !== ""} />)}
+      <TreeStructure 
+        items={list} 
+        rowComponent={Item} 
+        flatten={search !== ""} 
+        rowHeight={30}
+        defaultExpanded={true}
+        maxHeightPersentage={60}
+        minWidth={300}
+        transformationCallback={itemDataReformater}
+      />
       {onAddLabel && search === "" && (
         isAdding
           ? <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
