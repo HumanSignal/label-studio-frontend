@@ -276,16 +276,40 @@ Data(layoutVariations).Scenario("Rotation in the two columns template", async fu
   const params = {
     config: resultConfig,
     data: { image: IMAGE },
+    annotations: [{
+      id: "rotations",
+      result: [
+        // The region just for canvas size visually indication
+        {
+          from_name: "label",
+          id: "EUsEHxTyrv",
+          image_rotation: 0,
+          origin: "manual",
+          original_height: 2802,
+          original_width: 2242,
+          to_name: "image",
+          type: "rectanglelabels",
+          value: {
+            height: 100,
+            labels: ["Label 2"],
+            rotation: 0,
+            width: 100,
+            x: 0,
+            y: 0,
+          },
+        },
+      ],
+    }],
   };
 
   I.say(`Two columns [config: ${twoColumnsConfigs.indexOf(config)}] [${direction}]`);
 
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(1);
 
   I.click(locate(`[aria-label='rotate-right']`));
-  I.wait(0.5);
+  AtSidebar.seeRegions(1);
 
   await compareSize(I, AtImageView, "Dimensions must be equal in landscape", "landscape, rotated");
 
@@ -297,11 +321,11 @@ Data(layoutVariations).Scenario("Rotation in the two columns template", async fu
   });
   AtSettings.close();
 
-  I.wait(0.5);
+  AtSidebar.seeRegions(1);
   await compareSize(I, AtImageView, "Dimensions must be equal in portrait", "portrait");
 
   I.click(locate(`[aria-label='rotate-right']`));
 
-  I.wait(0.5);
+  AtSidebar.seeRegions(1);
   await compareSize(I, AtImageView, "Dimensions must be equal after rotation in portrain", "portrait, rotated");
 });
