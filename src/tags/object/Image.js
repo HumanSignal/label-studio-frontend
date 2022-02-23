@@ -266,6 +266,9 @@ const Model = types.model({
   // Container's sizes causing limits to calculate a scale factor
   containerWidth: 1,
   containerHeight: 1,
+
+  stageZoom: 1,
+  currentZoom: 1,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -600,11 +603,36 @@ const Model = types.model({
     /**
      * Set zoom
      */
-    setZoom(scale, x, y) {
+    setZoom(scale) {
+      self.currentZoom = scale;
+
+      // cool comment about all this stuff
+      const maxScale = (self.rotation + 360) % 180 === 90
+        ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+        : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+
+      if (maxScale > 1) { // image < container
+        if (scale < maxScale) { // scale = 1 or before stage size is max
+          self.stageZoom = scale; // scale stage
+          self.zoomScale = 1; // don't scale image
+        } else {
+          self.stageZoom = maxScale; // scale stage to max
+          self.zoomScale = scale / maxScale; // scale image for the rest scale
+        }
+      } else { // image > container
+        if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
+          self.stageZoom = maxScale; // stage squizzed
+          self.zoomScale = scale; // scale image usually
+        } else { // negative zoom bigger than image negative scale
+          self.stageZoom = scale; // squize stage more
+          self.zoomScale = 1; // don't scale image
+        }
+      }
+    },
+
+    updateImageAfterZoom() {
       const { stageWidth, stageHeight } = self;
-      
-      self.zoomScale = scale;
-      self.setZoomPosition(x, y);
+
       self._recalculateImageParams();
 
       if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
@@ -632,32 +660,41 @@ const Model = types.model({
 
     handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
       if (val) {
-        self.freezeHistory();
-        let stageScale = self.stageScale;
-        let zoomScale = self.zoomScale;
+        let zoomScale = self.currentZoom;
+
+        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
+        if (self.negativezoom !== true && zoomScale <= 1) {
+          self.setZoom(1);
+          self.setZoomPosition(0, 0);
+          self.updateImageAfterZoom();
+          return;
+        }
+        if (zoomScale <= 1) {
+          self.setZoom(zoomScale);
+          self.setZoomPosition(0, 0);
+          self.updateImageAfterZoom();
+          return;
+        }
+
+        // DON'T TOUCH THIS
+        let stageScale = self.zoomScale;
 
         const mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
           y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
         };
 
-        stageScale = val > 0 ? stageScale * self.zoomBy : stageScale / self.zoomBy;
-        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
-
+        self.setZoom(zoomScale);
+        
+        stageScale = self.zoomScale;
+        
         const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,
         };
 
-        if (self.negativezoom !== true && zoomScale <= 1) {
-          self.setZoom(1, 0, 0);
-          return;
-        }
-        if (zoomScale <= 1) {
-          self.setZoom(zoomScale, 0, 0);
-          return;
-        }
-        self.setZoom(zoomScale, zoomingPosition.x, zoomingPosition.y);
+        self.setZoomPosition(zoomingPosition.x, zoomingPosition.y);
+        self.updateImageAfterZoom();
       }
     },
 
@@ -719,17 +756,8 @@ const Model = types.model({
     },
 
     _recalculateImageParams() {
-      let k;
-
-      if ((self.rotation + 360) % 180 === 90) {
-        k = Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth, self.zoomScale);
-      } else {
-        k = Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight, self.zoomScale);
-      }
-
-      self.stageWidth = Math.round(self.naturalWidth * k);
-      self.stageHeight = Math.round(self.naturalHeight * k);
-      self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+      self.stageWidth = Math.round(self.naturalWidth * self.stageZoom);
+      self.stageHeight = Math.round(self.naturalHeight * self.stageZoom);
     },
 
     _updateImageSize({ width, height, userResize }) {
