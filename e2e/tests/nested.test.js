@@ -146,3 +146,54 @@ Scenario("Check good nested Choice for Text", async function({ I, AtLabels, AtSi
   assert.deepEqual(result[2].value.labels, ["Person"]);
   assert.deepEqual(result[3].value.choices, ["Female"]);
 });
+
+Scenario("Check removing unexpected results based on visibleWhen parameter", async function({ I, LabelStudio }) {
+  const params = {
+    config: `<View>
+  <Text name="text" value="$reviewText" valueType="text" />
+  <Choices name="sentiment" toName="text" showInLine="true">
+    <Choice value="Positive" />
+    <Choice value="Negative" />
+    <Choice value="Neutral" />
+  </Choices>
+  <Choices
+    name="rate" toName="text" choice="single" showInLine="true"
+    visibleWhen="choice-unselected"
+    whenTagName="sentiment"
+    whenChoiceValue="Neutral"
+  >
+    <Choice value="One" />
+    <Choice value="Two" />
+    <Choice value="Three" />
+    <Choice value="Four" />
+    <Choice value="Five" />
+  </Choices>
+</View>`,
+    data: { reviewText },
+  };
+
+  I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_1372_visible_when_choice_unselected_11022022_short: true,
+  });
+  LabelStudio.init(params);
+
+  I.see("Neutral");
+  I.see("Five");
+  // Choose rate
+  I.click("Five");
+  // Then hide it by choosing value from the visibleWhen="choice-unselected" dependency
+  I.click("Neutral");
+  let result = await I.executeScript(serialize);
+
+  // The hidden choose should not make a result
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0].value, { choices: ["Neutral"] });
+
+  // Check that it still works in case of no hidding
+  I.click("Positive");
+  result = await I.executeScript(serialize);
+  assert.equal(result.length, 2);
+  assert.deepEqual(result[0].value, { choices: ["Five"] });
+  assert.deepEqual(result[1].value, { choices: ["Positive"] });
+});
