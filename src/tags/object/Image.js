@@ -214,12 +214,6 @@ const Model = types.model({
   naturalWidth: types.optional(types.integer, 1),
   naturalHeight: types.optional(types.integer, 1),
 
-  /**
-   * Initial width and height of the image
-   */
-  initialWidth: types.optional(types.integer, 1),
-  initialHeight: types.optional(types.integer, 1),
-
   stageWidth: types.optional(types.integer, 1),
   stageHeight: types.optional(types.integer, 1),
 
@@ -689,11 +683,6 @@ const Model = types.model({
       const currentTool = self.getToolsManager().findSelectedTool();
 
       currentTool?.updateCursor?.();
-
-      // Konva updates ref repeatedly and this breaks brush scaling
-      if (self.initialWidth > 1) return;
-      self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;
-      self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },
 
     // @todo remove

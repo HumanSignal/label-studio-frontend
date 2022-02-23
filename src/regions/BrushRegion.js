@@ -304,7 +304,7 @@ const Model = types
       },
 
       updateImageSize(wp, hp, sw, sh) {
-        if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
+        if (self.parent.stageWidth > 1 && self.parent.stageHeight > 1) {
           self.touches.forEach(stroke => stroke.updateImageSize(wp, hp, sw, sh));
 
           self.needsUpdate = self.needsUpdate + 1;
