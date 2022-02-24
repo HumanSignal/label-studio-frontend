@@ -41,7 +41,7 @@ const initLabelStudio = async ({
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  new window.LabelStudio("label-studio", { interfaces, config, task, settings, ...params });
+  window.labelStudio = new window.LabelStudio("label-studio", { interfaces, config, task, settings, ...params });
   done();
 };
 
