@@ -26,6 +26,9 @@ export const FF_DEV_1372 = "ff_front_dev_1372_visible_when_choice_unselected_110
 // Add an interactivity flag to the results to make some predictions' results be able to be automatically added to newly created annotations.
 export const FF_DEV_1621 = "ff_front_dev_1621_interactive_mode_150222_short";
 
+// Allow control tags to have empty toname parameter as long as it is allowed by validation and in models
+export const FF_DEV_1598 = "ff_front_dev_1598_empty_toname_240222_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }

@@ -17,7 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
-import { FF_DEV_1555, FF_DEV_1621, isFF } from "../utils/feature-flags";
+import { FF_DEV_1555, FF_DEV_1598, FF_DEV_1621, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -120,7 +120,12 @@ const Annotation = types
     },
 
     get objects() {
-      return Array.from(self.names.values()).filter(tag => !tag.toname);
+      // Without correct validation toname may be null for control tags so we need to check strict equality to undefined
+      return Array.from(self.names.values()).filter(
+        isFF(FF_DEV_1598)
+          ? tag => tag.toname === undefined
+          : tag => !tag.toname,
+      );
     },
 
     get regions() {
