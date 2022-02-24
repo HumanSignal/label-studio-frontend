@@ -26,9 +26,6 @@ export const FF_DEV_1372 = "ff_front_dev_1372_visible_when_choice_unselected_110
 // Add an interactivity flag to the results to make some predictions' results be able to be automatically added to newly created annotations.
 export const FF_DEV_1621 = "ff_front_dev_1621_interactive_mode_150222_short";
 
-// Add "editable" and "readonly" ability to making effect on per-regions with region-list display mode
-export const FF_DEV_1731 = "ff_front_dev_1731_ocr_editable_and_readonly_230222_short";
-
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }

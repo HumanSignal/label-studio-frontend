@@ -18,7 +18,7 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
 import { Block, Elem } from "../../../utils/bem";
 import "./TextArea.styl";
-import { FF_DEV_1564_DEV_1565, FF_DEV_1731, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 
 const { TextArea } = Input;
 
@@ -383,7 +383,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = tr
     onChange: e => {
       onChange(idx, e.target.value);
     },
-    readOnly: isFF(FF_DEV_1731) && readOnly,
+    readOnly,
     onFocus,
   };
 
@@ -399,7 +399,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = tr
   return (
     <Elem name="item">
       <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      { (!isFF(FF_DEV_1731) || canDelete) && <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/> }
+      { canDelete && <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/> }
     </Elem>
   );
 });
@@ -525,10 +525,10 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
   const showSubmit = (!result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions)))
-  && (!isFF(FF_DEV_1731) || !area.readonly);
+  && !area.readonly;
 
   if (!isAlive(item) || !isAlive(area)) return null;
-  return (!isFF(FF_DEV_1731) || result || showSubmit) && (
+  return (result || showSubmit) && (
     <Block name="textarea-tag" mod={{ mode: item.mode }}>
       {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
 
