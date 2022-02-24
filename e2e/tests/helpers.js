@@ -14,9 +14,10 @@ const initLabelStudio = async ({
   data,
   annotations = [{ result: [] }],
   predictions = [],
+  settings = {},
   additionalInterfaces = [],
   params = {},
-}, done) => {
+},  done) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -40,8 +41,7 @@ const initLabelStudio = async ({
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  window.labelStudio = new window.LabelStudio("label-studio", { interfaces, config, task, ...params });
-
+  new window.LabelStudio("label-studio", { interfaces, config, task, settings, ...params });
   done();
 };
 
@@ -77,7 +77,10 @@ const waitForImage = async done => {
   const img = document.querySelector("[alt=LS]");
 
   if (!img || img.complete) return done();
-  img.onload = done;
+  // this should be rewritten to isReady when it is ready
+  img.onload = ()=>{
+    setTimeout(done, 100);
+  };
 };
 
 /**
@@ -105,20 +108,20 @@ const waitForAudio = async done => {
  * to same structures but with rounded numbers (int for ints, fixed(2) for floats)
  * @param {*} data
  */
-const convertToFixed = data => {
+const convertToFixed = (data, fractionDigits = 2) => {
   if (["string", "number"].includes(typeof data)) {
     const n = Number(data);
 
-    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(2);
+    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(fractionDigits);
   }
   if (Array.isArray(data)) {
-    return data.map(n => convertToFixed(n));
+    return data.map(n => convertToFixed(n, fractionDigits));
   }
   if (typeof data === "object") {
     const result = {};
 
     for (const key in data) {
-      result[key] = convertToFixed(data[key]);
+      result[key] = convertToFixed(data[key], fractionDigits);
     }
     return result;
   }
@@ -229,8 +232,7 @@ const polygonKonva = async (points, done) => {
     for (const point of points) {
       stage.fire("click", {
         evt: {
-          offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {
-          },
+          offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {},
         },
       });
       await delay(50);
@@ -249,8 +251,7 @@ const polygonKonva = async (points, done) => {
     // and only after that we can click on it
     firstPoint.fire("click", {
       evt: {
-        preventDefault: () => {
-        },
+        preventDefault: () => {},
       },
     });
     done();

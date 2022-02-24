@@ -148,13 +148,12 @@ class ToolsManager {
     this.removeAllTools();
 
     this.name = name;
-    this.tools = {};
-    this._default_tool = null;
   }
 
   removeAllTools() {
     Object.values(this.tools).forEach(t => destroy(t));
     this.tools = {};
+    this._default_tool = null;
   }
 
   get hasSelected() {
