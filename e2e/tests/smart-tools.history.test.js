@@ -500,16 +500,23 @@ Scenario("Undo regions auto-annotated from predictions", async function({ I, Lab
   await AtImageView.lookForStage();
   // Select magic tool
   I.pressKey("M");
+  I.seeElement("[disabled][aria-label=\"Undo\"]");
   // Draw region over 5 potential suggestion area
   AtImageView.drawByDrag(19,192,140,140);
   // Get that suggestions as result instead of drawn region
   AtSidebar.seeRegions(5);
+  I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
+  I.seeElement("[disabled][aria-label=\"Redo\"]");
   // Go back through history
   I.pressKey(["ctrl", "z"]);
   // Should see nothing
   AtSidebar.seeRegions(0);
+  I.seeElement("[disabled][aria-label=\"Undo\"]");
+  I.seeElement(":not([disabled])[aria-label=\"Redo\"]");
   // Go forward through history
   I.pressKey(["ctrl","shift", "z"]);
   // Regions must be restored
   AtSidebar.seeRegions(5);
+  I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
+  I.seeElement("[disabled][aria-label=\"Redo\"]");
 });

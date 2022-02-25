@@ -840,16 +840,15 @@ const Annotation = types
         self.suggestions.forEach((suggestion) => {
           if (['richtextregion', 'text'].includes(suggestion.type)) {
             self.acceptSuggestion(suggestion.id);
+            // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
+            history.setReplaceNextUndoState(true);
           }
         });
       }
 
       const { history } = self;
 
-      history.freeze("richtext:suggestions");
       self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
-      history.setReplaceNextUndoState(true);
-      history.unfreeze("richtext:suggestions");
     },
 
     /**
