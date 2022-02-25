@@ -1,18 +1,7 @@
 <View>
-  <Image name="image" value="$image"/>
-  <Labels name="label" toName="image">
-    <Label value="Text" background="green"/>
-    <Label value="Handwriting" background="blue"/>
-  </Labels>
-  <Rectangle name="bbox" toName="image" strokeWidth="3"/>
-  <Polygon name="poly" toName="image" strokeWidth="3"/>
-  <TextArea name="transcription" toName="image"
-    editable="true"
-    perRegion="true"
-    required="true"
-    maxSubmissions="1"
-    rows="5"
-    placeholder="Recognized Text"
-    displayMode="region-list"
-  />
+  <Image name="img" value="$image"></Image>
+  <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
+    <Label value="Planet"></Label>
+    <Label value="Moonwalker" background="blue"></Label>
+  </RectangleLabels>
 </View>
