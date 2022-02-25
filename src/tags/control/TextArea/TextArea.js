@@ -483,7 +483,9 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
 
       item.setValue(value);
     },
-    onFocus: () => {
+    onFocus: (ev) => {
+      ev.stopPropagation();
+      ev.preventDefault();
       if (!area.isSelected) {
         area.annotation.selectArea(area);
       }
@@ -529,7 +531,9 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
             return false;
           }}
         >
-          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} />
+          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} onClick={(e) => {
+            e.stopPropagation();
+          }} />
         </Elem>
       )}
     </Block>
