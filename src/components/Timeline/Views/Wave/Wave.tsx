@@ -24,9 +24,9 @@ const ZOOM_X = {
 };
 
 const SPEED = {
-  min: -3,
-  max: 5,
-  step: 0.1,
+  min: 0.5,
+  max: 2,
+  step: 0.01,
   default: 1,
 };
 
