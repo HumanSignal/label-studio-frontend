@@ -1,5 +1,5 @@
-import React, { RefObject, useEffect,  useRef, useState } from 'react';
-import { FixedSizeList } from 'react-window';
+import React, { RefObject, useEffect, useRef, useState } from "react";
+import { FixedSizeList } from "react-window";
 
 type ExtendedData = Readonly<{
   id: string,
@@ -10,48 +10,44 @@ type ExtendedData = Readonly<{
   path: string[],
 }>;
 
-
 export interface ExtendedDataWithToggle extends ExtendedData {
   toggle: (id: string) => void;
 }
 
-export interface RowProps  { 
+export interface RowProps {
   data: ExtendedData;
-  style: any; 
+  style: any;
 }
 
-export interface RowItem { 
+export interface RowItem {
   children?: RowItem[];
   label: string;
-  depth: number; 
+  depth: number;
   path: string[];
   isOpen: boolean;
 }
 
-type transformationCallback = (
-  { node,
-    nestingLevel,
-    isFiltering,
-    isLeaf,
-    childCount,
-    isOpen,
-  }:
-  {
-    node: RowItem, 
-    nestingLevel: number, 
-    isOpen: boolean, 
-    isFiltering: boolean, 
-    isLeaf: boolean,
-    childCount: number | undefined,
-  }) => ExtendedData
+type transformationCallback = ({
+  node,
+  nestingLevel,
+  isFiltering,
+  isLeaf,
+  childCount,
+  isOpen,
+}: {
+  node: RowItem,
+  nestingLevel: number,
+  isOpen: boolean,
+  isFiltering: boolean,
+  isLeaf: boolean,
+  childCount: number | undefined,
+}) => ExtendedData;
 
-const countChildNodes = (item: RowItem[]) => 
-{
+const countChildNodes = (item: RowItem[]) => {
   let counter = 0;
   let index = item.length;
 
-  while (index--)
-  {
+  while (index--) {
     counter++;
     const children = item[index].children;
 
@@ -60,40 +56,52 @@ const countChildNodes = (item: RowItem[]) =>
   return counter;
 };
 
-const blankItem: RowItem = ({ label: '', depth: 0, path: [], isOpen: true });
+const blankItem = (path: string[], depth: number): RowItem => ({ label: "", depth, path, isOpen: true });
 
-
-const TreeStructure =  (
-  { items, rowComponent, flatten, rowHeight, maxHeightPersentage, minWidth, transformationCallback, defaultExpanded }: 
-  { items: any[], 
-    rowComponent: React.FC, 
-    flatten: boolean, 
-    rowHeight: number, 
-    maxHeightPersentage: number,
-    minWidth: number,
-    defaultExpanded: boolean,
-    transformationCallback: transformationCallback,
-  })=> {
-  
+const TreeStructure = ({
+  items,
+  rowComponent,
+  flatten,
+  rowHeight,
+  maxHeightPercentage,
+  minWidth,
+  transformationCallback,
+  defaultExpanded,
+}: {
+  items: any[],
+  rowComponent: React.FC,
+  flatten: boolean,
+  rowHeight: number,
+  maxHeightPercentage: number,
+  minWidth: number,
+  defaultExpanded: boolean,
+  transformationCallback: transformationCallback,
+}) => {
   const browserHeight = document.body.clientHeight;
 
-  const [data, setData] = useState<ExtendedData[]>();   
-  const [openNodes, setOpenNodes]= useState<{[key: string]: number }>({});
+  const [data, setData] = useState<ExtendedData[]>();
+  const [openNodes, setOpenNodes] = useState<{ [key: string]: number }>({});
   const [height, setHeight] = useState(0);
   const containerRef = useRef<RefObject<HTMLDivElement> | any>();
 
   const calcHeight = () => {
     const visibleHeight = (data?.length || 0) * rowHeight;
-    const maxHeight = maxHeightPersentage * .01 * browserHeight;
+    const maxHeight = maxHeightPercentage * 0.01 * browserHeight;
 
-    return visibleHeight > maxHeight ?  maxHeight : visibleHeight;
+    return visibleHeight > maxHeight ? maxHeight : visibleHeight;
   };
 
   const updateHeight = () => setHeight(calcHeight());
 
   const toggle = (id: string) => {
-    const toggleItem = { [id]: openNodes[id] !== 2 ? 2 : 1 };
-    
+    const toggleItem = defaultExpanded
+      ? {
+        [id]: openNodes[id] !== 2 ? 2 : 1,
+      }
+      : {
+        [id]: openNodes[id] !== 1 ? 1 : 2,
+      };
+
     setOpenNodes({ ...openNodes, ...toggleItem });
     setData(recursiveTreeWalker({ items, toggleItem }));
     updateHeight();
@@ -105,55 +113,54 @@ const TreeStructure =  (
     updateHeight();
   };
 
-  const recursiveTreeWalker = (
-    {
-      items,
-      depth,
-      toggleItem,
-      addInsideId,
-    }:
-    {
-      items: RowItem[], 
-      depth?: number,
-      toggleItem?: {[key: string]: number},
-      addInsideId?: string,
-    }, 
-  ) => {
+  const recursiveTreeWalker = ({
+    items,
+    depth,
+    toggleItem,
+    addInsideId,
+  }: {
+    items: RowItem[],
+    depth?: number,
+    toggleItem?: { [key: string]: number },
+    addInsideId?: string,
+  }) => {
     const stack: ExtendedData[] = [];
 
     for (let i = 0; i < items.length; i++) {
       const { children, label } = items[i];
-      const definedDepth = depth || 0;  
+      const definedDepth = depth || 0;
       const id = `${label}-${definedDepth}`;
-      const isOpen = toggleItem && toggleItem[id] || 
-        openNodes[id] || 
-        (defaultExpanded ? 1 : 2);
-      
-      const transformedData: ExtendedData = transformationCallback({ 
-        node: items[i], 
-        nestingLevel: flatten ? 0 : definedDepth,
+      const addInside = addInsideId === id;
+      const isOpen = (toggleItem && toggleItem[id]) || openNodes[id] || addInside || (defaultExpanded ? 1 : 2);
+
+      const transformedData: ExtendedData = transformationCallback({
+        node: items[i],
+        nestingLevel: definedDepth,
         isFiltering: flatten,
         isLeaf: !children,
         childCount: children && countChildNodes(children),
         isOpen: isOpen === 1,
       });
 
-      if( children && (isOpen === 1 || flatten)) {
-        stack.push(
-          { ...transformedData }, 
-          ...recursiveTreeWalker({ items: children, depth: definedDepth + 1 , toggleItem, addInsideId }));
-      } 
-      else stack.push({ ...transformedData } );
-      if (addInsideId === id){
-        stack.push(...recursiveTreeWalker({ items: [blankItem], depth: definedDepth + 1 }));
+      addInside && setOpenNodes({ ...openNodes, [id]: 1 });
 
-      }
+      if ((children && isOpen === 1) || addInside || flatten) {
+        stack.push({ ...transformedData });
+        addInside &&
+          stack.push(
+            ...recursiveTreeWalker({ items: [blankItem(items[i].path, definedDepth + 1)], depth: definedDepth + 1 }),
+          );
+        children &&
+          stack.push(...recursiveTreeWalker({ items: children, depth: definedDepth + 1, toggleItem, addInsideId }));
+      } else stack.push({ ...transformedData });
     }
     return stack;
   };
 
-  useEffect(() => {setData(recursiveTreeWalker({ items }));}, [items]);
-  useEffect(()=> updateHeight(), [data]);
+  useEffect(() => {
+    setData(recursiveTreeWalker({ items }));
+  }, [items]);
+  useEffect(() => updateHeight(), [data]);
 
   return (
     <div ref={containerRef}>
@@ -162,14 +169,12 @@ const TreeStructure =  (
         itemCount={data?.length || 0}
         itemSize={rowHeight}
         width={containerRef?.current?.offsetWidth || minWidth}
-        itemData={(index:number)=> ({ row: data && data[index], toggle, addInside }) }
+        itemData={(index: number) => ({ row: data && data[index], toggle, addInside })}
       >
         {rowComponent}
-      </FixedSizeList>     
-    </div>       
-
+      </FixedSizeList>
+    </div>
   );
 };
-
 
 export default TreeStructure;
