@@ -26,7 +26,8 @@ const ObjectTagView: FC<ObjectTagViewProps> = ({
       name="object"
       className={className}
       dataneedsupdate={item._needsUpdate}
-      style={style} {...moreProps}
+      style={style}
+      {...moreProps}
     >
       {children}
     </Block>

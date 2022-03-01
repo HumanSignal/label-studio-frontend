@@ -655,6 +655,7 @@ export default observer(
           item={item}
           className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
           style={{
+            flex: 1,
             position: "relative",
             display: "flex",
             alignItems: "flex-start",
