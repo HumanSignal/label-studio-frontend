@@ -58,6 +58,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [scale, setScale] = useState(1);
+  const [startOver, setStartOver] = useState(false);
 
   const handlers = useMemoizedHandlers({
     onChange,
@@ -89,6 +90,10 @@ export const Wave: FC<TimelineViewProps> = ({
     onScroll: (p) => setScrollOffset(p),
     onSeek: (p) => handlers.onChange?.(p),
     onZoom: (zoom) => handlers.onZoom?.(zoom),
+    onPlayFinished: () => {
+      setStartOver(true);
+      onPlayToggle?.(false);
+    },
   });
 
   // Handle timeline navigation clicks
@@ -134,7 +139,8 @@ export const Wave: FC<TimelineViewProps> = ({
 
     if (wsi) {
       if (playing) {
-        wsi.play();
+        setStartOver(false);
+        wsi.play(startOver ? 0 : undefined);
 
         const trackProgress = () => {
           onChange?.(wsi.getCurrentTime() * 1000);
@@ -304,6 +310,7 @@ interface WavesurferProps {
   onPlayToggle?: TimelineViewProps["onPlayToggle"];
   onReady?: TimelineViewProps["onReady"];
   onAddRegion?: TimelineViewProps["onAddRegion"];
+  onPlayFinished: () => void;
 }
 
 const useWaveSurfer = ({
@@ -317,6 +324,7 @@ const useWaveSurfer = ({
   onProgress,
   onSeek,
   onPlayToggle,
+  onPlayFinished,
   onAddRegion,
   onReady,
   onScroll,
@@ -462,7 +470,7 @@ const useWaveSurfer = ({
 
     wsi.on("pause", () => onPlayToggle?.(false));
 
-    wsi.on("finish", () => onPlayToggle?.(false));
+    wsi.on("finish", () => onPlayFinished?.());
 
     wsi.on('zoom', (minPxPerMinute) => onZoom?.(minPxPerMinute));
 
