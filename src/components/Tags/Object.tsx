@@ -1,7 +1,5 @@
 import React, { CSSProperties, FC } from "react";
-import { PropTypes } from "prop-types";
 import { observer } from "mobx-react";
-import { Block } from "../../utils/bem";
 
 interface ObjectTagViewProps {
   item: any;
@@ -22,15 +20,14 @@ const ObjectTagView: FC<ObjectTagViewProps> = ({
   const moreProps = item.getProps && item.getProps();
 
   return (
-    <Block
-      name="object"
-      className={className}
+    <div
+      className={["lsf-object", className].join(" ")}
       dataneedsupdate={item._needsUpdate}
       style={style}
       {...moreProps}
     >
       {children}
-    </Block>
+    </div>
   );
 };
 
