@@ -660,6 +660,7 @@ export default observer(
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
+            alignSelf: "stretch",
           }}
         >
           <div
