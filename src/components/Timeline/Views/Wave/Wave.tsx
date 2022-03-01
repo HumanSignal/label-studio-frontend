@@ -7,7 +7,7 @@ import "./Wave.styl";
 import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
 import TimelinePlugin from "wavesurfer.js/src/plugin/timeline";
 import { formatTimeCallback, secondaryLabelInterval, timeInterval } from "./Utils";
-import { clamp, isDefined } from "../../../../utils/utilities";
+import { clamp, isDefined, isMacOS } from "../../../../utils/utilities";
 import { Range } from "../../../../common/Range/Range";
 import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from "../../../../assets/icons";
 import { Space } from "../../../../common/Space/Space";
@@ -190,6 +190,7 @@ export const Wave: FC<TimelineViewProps> = ({
   useEffect(() => {
     const elem = bodyRef.current!;
     const wave = elem.querySelector("wave")!;
+    const isMac = isMacOS();
 
     const onWheel = (e: WheelEvent) => {
       const isVertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
@@ -205,11 +206,15 @@ export const Wave: FC<TimelineViewProps> = ({
         return;
       }
 
-      if (isHorizontal) e.preventDefault();
+      if ((isHorizontal && isMac) || (isVertical || e.shiftKey)) e.preventDefault();
 
-      const newScroll = clamp(wave.scrollLeft + (e.deltaX * 1.25), 0, wave.scrollWidth);
+      const newScroll = () => {
+        const delta = (!isMac || e.shiftKey) ? e.deltaY : e.deltaX;
 
-      setScrollOffset(newScroll);
+        return clamp(wave.scrollLeft + (delta * 1.25), 0, wave.scrollWidth);
+      };
+
+      setScrollOffset(newScroll());
     };
 
     elem.addEventListener('wheel', onWheel);
