@@ -20,6 +20,12 @@ export const FF_DEV_1536 = "ff_front_dev_1536_taxonomy_user_labels_150222_long";
 // Show or not dialog for rejection
 export const FF_DEV_1593 = "ff_front_1593_rejection_comment_040222_short";
 
+// New Audio 2.0 UI
+export const FF_DEV_1713 = "ff_front_DEV_1713_audio_ui_150222_short";
+
+// Add visibleWhen="choice-unselected" option
+export const FF_DEV_1372 = "ff_front_dev_1372_visible_when_choice_unselected_11022022_short";
+
 // Add an interactivity flag to the results to make some predictions' results be able to be automatically added to newly created annotations.
 export const FF_DEV_1621 = "ff_front_dev_1621_interactive_mode_150222_short";
 
