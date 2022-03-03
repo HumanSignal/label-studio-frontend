@@ -530,6 +530,9 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
             }
             return false;
           }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
           <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} onClick={(e) => {
             e.stopPropagation();
