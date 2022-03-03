@@ -69,7 +69,7 @@ const TreeStructure = ({
   defaultExpanded,
 }: {
   items: any[],
-  rowComponent: React.FC,
+  rowComponent: React.FC<any>,
   flatten: boolean,
   rowHeight: number,
   maxHeightPercentage: number,

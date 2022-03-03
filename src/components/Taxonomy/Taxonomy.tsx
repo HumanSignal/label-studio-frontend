@@ -133,8 +133,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-// @todo change `flat` into `alwaysOpen` and move it to context
-const Item: React.FC<any> = (props: RowProps) => {
+const Item: React.FC<RowProps> = (props: RowProps) => {
   const { style, data, index } = props;
   const item = data(index);
   const {
@@ -148,21 +147,12 @@ const Item: React.FC<any> = (props: RowProps) => {
 
   const checked = selected.some(current => isArraysEqual(current, path));
   const isChildSelected = selected.some(current => isSubArray(current, path));
-  const hasChilds = !isLeaf;
-  const onlyLeafsAllowed = leafsOnly && hasChilds;
+  const onlyLeafsAllowed = leafsOnly && !isLeaf;
   const limitReached = maxUsagesReached && !checked;
   const disabled = onlyLeafsAllowed || limitReached;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, open] = useToggle(isChildSelected || isFiltering);
   const onClick = () => leafsOnly && toggle(id);
   const arrowStyle = !isLeaf ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" } : { display: "none" };
-
-  const [isAdding] = useToggle(false);
-
-  useEffect(() => {
-    if (isFiltering || isAdding || isChildSelected) open();
-  }, [isFiltering, isAdding, isChildSelected]);
 
   const title = onlyLeafsAllowed
     ? "Only leaf nodes allowed"
