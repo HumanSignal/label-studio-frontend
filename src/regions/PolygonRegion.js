@@ -550,6 +550,9 @@ const HtxPolygonView = ({ item }) => {
   }, []);
 
   if (!item.parent) return null;
+  if (!item.parent.getToolsManager().tools["polygon#PolygonTool"].selected && !item.closed) {
+    item.closePoly();
+  }
 
   const stage = item.parent.stageRef;
 
