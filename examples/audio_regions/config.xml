@@ -1,7 +1,7 @@
 <View>
   <Header value="Select regions:"></Header>
   <Labels name="label" toName="audio" choice="multiple">
-    <Label value="Beat" background="yellow"></Label>
+    <Label value="Beat" background="#98C84E"></Label>
     <Label value="Voice" background="red"></Label>
     <Label value="Guitar" background="blue"></Label>
     <Label value="Other"></Label>

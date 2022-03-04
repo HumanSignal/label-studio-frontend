@@ -200,5 +200,5 @@ Data(configParams).Scenario("Should work with existent regions.", async ({ I, La
   // If we got an expected result then we didn't lost focus.
   AtSidebar.seeRegions(1);
   AtSidebar.see("-A + B!");
-}).tag("@this");
+});
 
