@@ -4,16 +4,16 @@ import { isAlive } from "mobx-state-tree";
 import { IReactComponent } from "mobx-react/dist/types/IReactComponent";
 
 type Region = {
-  hidden: boolean;
+  hidden: boolean,
   // ...
 }
 
 type RegionComponentProps = {
-  item: Region;
+  item: Region,
 }
 
 type Options = {
-  renderHidden?: boolean;
+  renderHidden?: boolean,
 }
 
 export const AliveRegion = (

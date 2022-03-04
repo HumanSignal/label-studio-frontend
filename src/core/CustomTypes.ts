@@ -1,4 +1,4 @@
-const { types } = require("mobx-state-tree");
+import { types } from "mobx-state-tree";
 
 /**
  * Validates the value against the given range.
@@ -7,7 +7,7 @@ const { types } = require("mobx-state-tree");
  * @param {Number} max Maximal value
  */
 const Range = (min = 0, max = 1) =>
-  types.custom({
+  types.custom<any, number>({
     name: `Range(${min}..${max})`,
     fromSnapshot(snapshot) {
       return parseFloat(snapshot);
@@ -30,7 +30,7 @@ const Range = (min = 0, max = 1) =>
  * Validates any string value againts CSS color rules.
  * Color value might be named, HEX, HSL(A), RGB(A).
  */
-const CSSColor = types.custom({
+const CSSColor = types.custom<any, string>({
   name: "CSSColor",
   fromSnapshot(value) {
     return String(value);
