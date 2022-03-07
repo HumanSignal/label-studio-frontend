@@ -83,9 +83,15 @@ const _Tool = types
     let closed;
 
     return {
+      handleToolSwitch() {
+        if (self.getCurrentArea().isDrawing) {
+          self.deleteRegion();
+        }
+      },
       listenForClose() {
         closed = false;
-        disposer = observe(self.getCurrentArea(), "closed", ()=>{
+        disposer = observe(self.getCurrentArea(), "closed", () => {
+          console.log('disposer');
           if (self.getCurrentArea().closed && !closed) {
             self.finishDrawing();
           }
