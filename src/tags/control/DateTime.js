@@ -70,7 +70,7 @@ const Model = types
     },
 
     get holdsState() {
-      return (isDefined(self.month) || isDefined(self.year)) || isDefined(self.time);
+      return isDefined(self.month) || isDefined(self.year) || isDefined(self.time);
     },
 
     get showDate() {
@@ -90,7 +90,7 @@ const Model = types
     },
 
     get showYear() {
-      return self.only?.includes("year") && !self.only?.includes("date");
+      return self.only?.includes("year");
     },
 
     get date() {
@@ -136,11 +136,12 @@ const Model = types
   .volatile(self => {
     let format;
 
-    if (self.onlyTime) format = String; // don't format only=time
+    if (self.onlyTime) format = String;
+    // don't format only=time
     else if (self.format) format = self.format;
     else if (!self.showTime) format = FORMAT_DATE;
     else format = FORMAT_FULL;
-    
+
     return {
       formatDateTime: d3.timeFormat(format),
       parseDateTime: d3.timeParse(format),
@@ -150,7 +151,7 @@ const Model = types
     const years = [];
     const months = [];
     const monthName = d3.timeFormat("%B");
-    const date = new Date;
+    const date = new Date();
     const getYear = minmax => {
       if (minmax === "current") return date.getFullYear();
       if (minmax.length === 4) return minmax;
@@ -216,12 +217,14 @@ const Model = types
     },
 
     updateResult() {
-      if (self.result) self.result.area.setValue(self);
-      else {
+      if (self.result) {
+        self.result.area.setValue(self);
+      } else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
 
           if (!area) return null;
+          area.setValue(self);
         } else {
           self.annotation.createResult({}, { datetime: self.datetime }, self, self.toname);
         }
@@ -242,7 +245,7 @@ const Model = types
       self.temporaryDateInputValue = e.target.value;
       const date = new Date(e.target.value);
       const year = date.getFullYear();
-      
+
       if (date && !isNaN(date)) {
         self.day = date.getDate();
         self.month = date.getMonth() + 1;
@@ -250,9 +253,8 @@ const Model = types
       } else {
         self.resetDate();
       }
-      self.updateResult();
     },
-    
+
     onTimeChange(e) {
       self.time = e.target.value || undefined;
       self.updateResult();
@@ -267,7 +269,15 @@ const Model = types
     },
   }));
 
-const DateTimeModel = types.compose("DateTimeModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
+const DateTimeModel = types.compose(
+  "DateTimeModel",
+  ControlBase,
+  TagAttrs,
+  Model,
+  RequiredMixin,
+  PerRegionMixin,
+  AnnotationMixin,
+);
 
 const HtxDateTime = inject("store")(
   observer(({ item }) => {
@@ -277,16 +287,11 @@ const HtxDateTime = inject("store")(
       className: "ant-input",
     };
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
-    
+
     return (
       <div style={visibleStyle}>
         {item.showMonth && (
-          <select
-            {...visual}
-            name={item.name + "-date"}
-            value={item.month}
-            onChange={item.onMonthChange}
-          >
+          <select {...visual} name={item.name + "-date"} value={item.month} onChange={item.onMonthChange}>
             <option value="">Month...</option>
             {item.months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -296,12 +301,7 @@ const HtxDateTime = inject("store")(
           </select>
         )}
         {item.showYear && (
-          <select
-            {...visual}
-            name={item.name + "-year"}
-            value={item.year || ""}
-            onChange={item.onYearChange}
-          >
+          <select {...visual} name={item.name + "-year"} value={item.year || ""} onChange={item.onYearChange}>
             <option value="">Year...</option>
             {item.years.map(year => (
               <option key={year} value={year}>
