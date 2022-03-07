@@ -143,3 +143,25 @@ export const tryToParseJSON = value => {
 
   return false;
 };
+
+/**
+ * Parse value type
+ * Accept value type as a parameter
+ * Returns type, seperator and options object by analyzing valueType
+ */
+export const parseTypeAndOption = valueType => {
+  const [, type, sep] = valueType.match(/^(\w+)(.)?/) ?? [];
+  const options = {};
+
+  if (sep) {
+    const pairs = valueType.split(sep).slice(1);
+
+    pairs.forEach(pair => {
+      const [k, v] = pair.split("=", 2);
+
+      options[k] = v ?? true; // options without values are `true`
+    });
+  }
+
+  return { type, sep, options };
+};

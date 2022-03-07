@@ -1,6 +1,6 @@
 import keymaster from "keymaster";
 import { inject } from "mobx-react";
-import { observer } from "mobx-react-lite";
+import { observer } from "mobx-react";
 import { createElement, Fragment } from "react";
 import { Tooltip } from "../common/Tooltip/Tooltip";
 import Hint from "../components/Hint/Hint";

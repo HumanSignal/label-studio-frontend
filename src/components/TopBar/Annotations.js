@@ -1,4 +1,4 @@
-import { observer } from "mobx-react-lite";
+import { observer } from "mobx-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IconPlusCircle, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
@@ -105,7 +105,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
 const CreateAnnotation = observer(({ annotationStore, onClick }) => {
   const onCreateAnnotation = useCallback(() => {
-    const c = annotationStore.addAnnotation({ userGenerate: true });
+    const c = annotationStore.createAnnotation();
 
     annotationStore.selectAnnotation(c.id);
     onClick();
