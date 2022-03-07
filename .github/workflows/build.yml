@@ -65,14 +65,14 @@ jobs:
       timeout-minutes: 15
       if: github.event_name == 'push'
 
-    - uses: actions/upload-artifact@v2.3.1
+    - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:
         name: e2e output
         path: e2e/output/
 
     # upload this build as artifact to current Action
-    - uses: actions/upload-artifact@v2.3.1
+    - uses: actions/upload-artifact@v3
       with:
         name: build ${{ github.event.pull_request.head.sha || github.sha }}
         path: build/
