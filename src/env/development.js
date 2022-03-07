@@ -41,6 +41,7 @@ import { ImageTools } from "../examples/image_tools";
  */
 import { HTMLDocument } from "../examples/html_document";
 import { Taxonomy } from "../examples/taxonomy";
+import { TextAreaTaxonomy } from "../examples/textarea_taxonomy";
 
 /**
  * RichText (HTML or plain text)
@@ -65,7 +66,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = AudioRegions;
+const data = TextAreaTaxonomy;
 
 function getData(task) {
   if (task && task.data) {

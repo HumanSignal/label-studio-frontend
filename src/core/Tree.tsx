@@ -236,7 +236,10 @@ function renderItem(el: IAnyStateTreeNode, includeKey = true) {
  */
 function renderChildren(item: IAnyStateTreeNode) {
   if (item && item.children && item.children.length) {
+    const defaultToName = item.children[0].isObject ? item.children[0].name : item.toname;
+
     return item.children.map((el: IAnyStateTreeNode) => {
+      el.fixMissedToName && el.fixMissedToName(defaultToName);
       return renderItem(el);
     });
   } else {

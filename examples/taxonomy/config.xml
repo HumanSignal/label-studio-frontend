@@ -1,24 +1,7 @@
 <View>
-  <Text name="text" value="$reviewText" valueType="text" />
-  <Taxonomy name="tax" toName="text">
-    <Choice value="One" />
-    <Choice value="Two" />
-    <Choice value="Three">
-      <Choice value="Sub" />
-      <Choice value="With" />
-      <Choice value="Tuna" />
-    </Choice>
-  </Taxonomy>
-  <Choices name="sentiment" toName="text" showInLine="true">
-    <Choice value="Positive" />
-    <Choice value="Negative" />
-    <Choice value="Neutral" />
-  </Choices>
-  <Choices name="ch" toName="text"
-    choice="single" showInLine="true"
-    visibleWhen="choice-selected"
-  >
-    <Choice value="Descriptive" />
-    <Choice value="Emotional" />
-  </Choices>
+
+<Text name="text" value="$text"/><Taxonomy name="taxonomy" toName="text"><Choice value="Agriculteurs exploitants"/><Choice value="Artisans"/><Choice value="Commerçants et assimilés"/><Choice value="Chefs d'entreprise de 10 salariés ou plus"/><Choice value="Professions libérales et assimilés"/><Choice value="Cadres de la fonction publique, professions intellectuelles et Artistiques"/><Choice value="Cadres d'entreprise"/><Choice value="Professions intermédiaires de l'enseignement, de la santé, de la fonction publique et assimilés"/><Choice value="Professions intermédiaires administratives et commerciales des entreprises"/><Choice value="Techniciens"/><Choice value="Contremaîtres, agents de maîtrise"/><Choice value="Employés de la fonction publique"/><Choice value="Employés administratifs d'entreprise"/><Choice value="Employés de commerce"/><Choice value="Personnels des services directs aux particuliers"/><Choice value="Ouvriers qualifiés"/><Choice value="Ouvriers non qualifiées"/><Choice value="Ouvriers agricoles"/></Taxonomy>
+
+<TextArea name="cpa_mean" rows="2" editable="true"/>
+
 </View>
