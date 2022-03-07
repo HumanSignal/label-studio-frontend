@@ -17,7 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
-import { FF_DEV_1555, isFF } from "../utils/feature-flags";
+import { FF_DEV_1555, FF_DEV_1621, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -841,11 +841,12 @@ const Annotation = types
         });
       }
 
-      if (isFF(FF_DEV_1555)) {
-        self.updateObjects();
-      } else {
-        self.objects.forEach(obj => obj.needsUpdate?.());
-      }
+      const { history } = self;
+
+      history.freeze("richtext:suggestions");
+      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      history.setReplaceNextUndoState(true);
+      history.unfreeze("richtext:suggestions");
     },
 
     /**
@@ -954,6 +955,7 @@ const Annotation = types
           const hasStartEnd = isDefined(value.start) && isDefined(value.end);
           const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
 
+          // @todo move this Text regions offsets transform to RichTextRegion
           if (hasStartEnd && lacksOffsets) {
             return Object.assign({}, value, {
               start: "",
@@ -1224,6 +1226,15 @@ export default types
       return self.root;
     }
 
+    function findNonInteractivePredictionResults() {
+      return self.predictions.reduce((results, prediction) => {
+        return [
+          ...results,
+          ...prediction._initialAnnotationObj.filter(result => result.interactive_mode === false).map(r => ({ ...r })),
+        ];
+      }, []);
+    }
+
     function createItem(options) {
       const { user, config } = self.store;
 
@@ -1283,6 +1294,39 @@ export default types
       });
 
       return record;
+    }
+
+    function createAnnotation(options = { userGenerate: true }) {
+      const result = isFF(FF_DEV_1621) ? findNonInteractivePredictionResults() : [];
+      const c = self.addAnnotation({ ...options, result });
+
+      if (result && result.length) {
+        const ids = {};
+
+        // Area id is <uniq-id>#<annotation-id> to be uniq across all tree
+        result.forEach(r => {
+          if ("id" in r) {
+            const id = r.id.replace(/#.*$/, `#${c.id}`);
+
+            ids[r.id] = id;
+            r.id = id;
+          }
+        });
+
+        result.forEach(r => {
+          if (r.parent_id) {
+            if (ids[r.parent_id]) r.parent_id = ids[r.parent_id];
+            // impossible case but to not break the app better to reset it
+            else r.parent_id = null;
+          }
+        });
+
+        selectAnnotation(c.id);
+        c.deserializeAnnotation(result);
+        // reinit will trigger `updateObjects()` so we omit it here
+        c.reinitHistory();
+      }
+      return c;
     }
 
 
@@ -1404,6 +1448,7 @@ export default types
 
       addPrediction,
       addAnnotation,
+      createAnnotation,
       addAnnotationFromPrediction,
       addHistory,
       clearHistory,
