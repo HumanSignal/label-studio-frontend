@@ -141,8 +141,8 @@ export interface TimelineControlsProps {
   allowFullscreen?: boolean;
   allowViewCollapse?: boolean;
   controls?: TimelineProps["controls"];
-  onRewind: () => void;
-  onForward: () => void;
+  onRewind: (steps?: number) => void;
+  onForward: (steps?: number) => void;
   onPositionChange: (position: number) => void;
   onToggleCollapsed: (collapsed: boolean) => void;
   onStepBackward: TimelineControlsStepHandler;
