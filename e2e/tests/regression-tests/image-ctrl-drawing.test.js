@@ -14,7 +14,7 @@ const BLUEVIOLET = {
 };
 const getConfigWithShapes = (shapes, props = "") => `
    <View>
-    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
+    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true" maxWidth="750px" maxHeight="auto"/>
     ${shapes
     .map(
       shape => `
@@ -172,6 +172,9 @@ Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
+    settings: {
+      preserveSelectedTool: false,
+    },
   };
 
   I.amOnPage("/");

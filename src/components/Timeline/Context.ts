@@ -8,6 +8,9 @@ export const TimelineContext = createContext<TimelineContextValue>({
   step: 10,
   playing: false,
   settings: {},
+  visibleWidth: 0,
+  seekOffset: 0,
+  data: undefined,
 });
 
 export const TimelineContextProvider = TimelineContext.Provider;

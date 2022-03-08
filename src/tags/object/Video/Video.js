@@ -39,6 +39,7 @@ import Types from "../../../core/Types";
  * @param {number} [frameRate=0.04] frame rate in seconds; default 1/25s
  * @param {string} [sync] object name to sync with
  * @param {boolean} [muted=false] muted video
+ * @param {number} [heihght=600] heihght of the video
  */
 
 const TagAttrs = types.model({
@@ -46,6 +47,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   framerate: types.optional(types.string, "24"),
+  height: types.optional(types.string, "600"),
   muted: false,
 });
 

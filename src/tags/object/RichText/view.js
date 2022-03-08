@@ -11,26 +11,20 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { Block, cn, Elem } from "../../../utils/bem";
 import { observe } from "mobx";
 
+const DBLCLICK_TIMEOUT = 450; // ms
+const DBLCLICK_RANGE = 5; // px
+
 class RichTextPieceView extends Component {
   _regionSpanSelector = ".htx-highlight";
 
-  constructor(props) {
-    super(props);
+  loadingRef = React.createRef();
 
-    this.rootNodeRef = React.createRef();
-
-    this.originalContentRef = React.createRef();
-
-    this.workingNodeRef = React.createRef();
-
-    this.loadingRef = React.createRef();
-
-    this.rootRef = props.item.rootNodeRef;
-  }
+  // store value of first selected label during double click to apply it later
+  doubleClickSelection;
 
   _selectRegions = (additionalMode) => {
     const { item } = this.props;
-    const root = item.rootNodeRef.current;
+    const root = item.visibleNodeRef.current;
     const selection = window.getSelection();
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
     const regions = [];
@@ -58,13 +52,13 @@ class RichTextPieceView extends Component {
   _onMouseUp = (ev) => {
     const { item } = this.props;
     const states = item.activeStates();
-    const rootEl = item.rootNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
-
     const label = states[0]?.selectedLabels?.[0];
+    const value = states[0]?.selectedValues?.();
 
     Utils.Selection.captureSelection(({ selectionText, range }) => {
       if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -77,17 +71,33 @@ class RichTextPieceView extends Component {
 
       if (!normedRange) return;
 
+      if (this.doubleClickSelection && (
+        Date.now() - this.doubleClickSelection.time > DBLCLICK_TIMEOUT
+        || Math.abs(ev.pageX - this.doubleClickSelection.x) > DBLCLICK_RANGE
+        || Math.abs(ev.pageY - this.doubleClickSelection.y) > DBLCLICK_RANGE
+      )) {
+        this.doubleClickSelection = undefined;
+      }
+
       normedRange._range = range;
       normedRange.text = selectionText;
       normedRange.isText = item.type === "text";
       normedRange.dynamic = this.props.store.autoAnnotation;
-
-      item.addRegion(normedRange);
+      item.addRegion(normedRange, this.doubleClickSelection);
     }, {
       window: rootEl?.contentWindow ?? window,
       granularity: label?.granularity ?? item.granularity,
-      beforeCleanup: () => (this._selectionMode = true),
+      beforeCleanup: () => {
+        this.doubleClickSelection = undefined;
+        this._selectionMode = true;
+      },
     });
+    this.doubleClickSelection = {
+      time: Date.now(),
+      value: value?.length ? value : undefined,
+      x: ev.pageX,
+      y: ev.pageY,
+    };
   };
 
   /**
@@ -98,7 +108,6 @@ class RichTextPieceView extends Component {
       this._selectionMode = false;
       return;
     }
-
     if (!this.props.item.clickablelinks && matchesSelector(event.target, "a")) {
       event.preventDefault();
       return;
@@ -149,8 +158,8 @@ class RichTextPieceView extends Component {
 
   _moveElementsToWorkingNode = () => {
     const { item } = this.props;
-    const rootEl = this.rootNodeRef.current;
-    const workingEl = this.workingNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
+    const workingEl = item.workingNodeRef.current;
 
     if (item.inline) {
       this._moveElements(rootEl, workingEl, true);
@@ -165,16 +174,13 @@ class RichTextPieceView extends Component {
       this._removeChildrenFrom(workingHead);
       this._moveElements(rootBody, workingBody, true);
     }
-    item.setRef(
-      this.workingNodeRef,
-      this.originalContentRef,
-    );
+    item.setWorkingMode(true);
   }
 
   _returnElementsFromWorkingNode = () => {
     const { item } = this.props;
-    const rootEl = this.rootNodeRef.current;
-    const workingEl = this.workingNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
+    const workingEl = item.workingNodeRef.current;
 
     if (item.inline) {
       this._moveElements(workingEl, rootEl);
@@ -190,10 +196,7 @@ class RichTextPieceView extends Component {
       this._moveStyles(workingHead, rootHead);
       this._moveElements(workingBody, rootBody);
     }
-    item.setRef(
-      this.rootNodeRef,
-      this.originalContentRef,
-    );
+    item.setWorkingMode(false);
   }
 
   /**
@@ -201,21 +204,28 @@ class RichTextPieceView extends Component {
    */
   _handleUpdate(initial = false) {
     const { item } = this.props;
-    const rootEl = this.rootNodeRef.current;
+    const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!item.inline) {
       if (!root || root.tagName === "IFRAME" || !root.childNodes.length || item.isLoaded === false) return;
     }
 
-    // @todo both loops should be merged to fix old broken xpath using "dirty" html
-    if (initial) {
-      item.initGlobalOffsets(root);
-    }
-
     // Apply highlight to ranges of a current tag
-    item.needsUpdate();
-    this.setReady(true);
+    // Also init regions' offsets and html range on initial load
+
+    if (initial) {
+      const { history, pauseAutosave, startAutosave } = item.annotation;
+
+      pauseAutosave();
+      history.freeze("richtext:init");
+      item.needsUpdate();
+      history.setReplaceNextUndoState(true);
+      history.unfreeze("richtext:init");
+      startAutosave();
+    } else {
+      item.needsUpdate();
+    }
   }
 
   /**
@@ -238,44 +248,41 @@ class RichTextPieceView extends Component {
       this._moveElementsToWorkingNode,
       this._returnElementsFromWorkingNode,
     );
-    if (item.inline) {
-      this._handleUpdate(true);
-    } else {
+
+    if (!item.inline) {
       this.dispose = observe(item, "_isReady", this.updateLoadingVisibility, true);
     }
   }
 
-  componentDidUpdate() {
-    this._handleUpdate();
-  }
-
   componentWillUnmount() {
+    const { item } = this.props;
+
+    if (!item || !isAlive(item)) return;
+
     this.dispose?.();
-    this.setLoaded(false);
-    this.setReady(false);
+    item.setLoaded(false);
+    item.setReady(false);
   }
 
-  setLoaded(value) {
+  markObjectAsLoaded() {
     const { item } = this.props;
 
     if (!item || !isAlive(item)) return;
-    item.setLoaded(value);
+
+    item.setLoaded(true);
     this.updateLoadingVisibility();
+
+    // run in the next tick to have all the refs initialized
+    setTimeout(() => this._handleUpdate(true));
   }
 
-  setReady(value) {
-    const { item } = this.props;
-
-    if (!item || !isAlive(item)) return;
-    item.setReady(value);
-  }
-
+  // no isReady observing in render
   updateLoadingVisibility = () => {
     const { item } = this.props;
     const loadingEl = this.loadingRef.current;
 
-    if(!loadingEl) return;
-    if (item && isAlive(item) && item.isLoaded && item._isReady) {
+    if (!loadingEl) return;
+    if (item && isAlive(item) && item.isLoaded && item.isReady) {
       loadingEl.setAttribute("style", "display: none");
     } else {
       loadingEl.removeAttribute("style");
@@ -294,7 +301,8 @@ class RichTextPieceView extends Component {
   }
 
   onIFrameLoad = () => {
-    const iframe = this.rootNodeRef.current;
+    const { item } = this.props;
+    const iframe = item.visibleNodeRef.current;
     const doc = iframe?.contentDocument;
     const body = doc?.body;
     const htmlEl = body?.parentElement;
@@ -313,6 +321,7 @@ class RichTextPieceView extends Component {
       body.addEventListener(event, ...eventHandlers[event]);
     }
 
+    // @todo remove this, project-specific
     // fix unselectable links
     const style = doc.createElement("style");
 
@@ -332,10 +341,7 @@ class RichTextPieceView extends Component {
       iframe.style.height = Math.max(body.scrollHeight, htmlEl.offsetHeight) + "px";
     }
 
-    this.setLoaded(true);
-
-    // @todo for better updates, but may be redundant
-    setTimeout(() => this._handleUpdate(true));
+    this.markObjectAsLoaded();
   }
 
   render() {
@@ -374,9 +380,8 @@ class RichTextPieceView extends Component {
             key="root"
             name="container"
             ref={el => {
-              this.setLoaded(true);
-              this.setReady(true);
-              this.rootNodeRef.current = el;
+              item.visibleNodeRef.current = el;
+              el && this.markObjectAsLoaded();
             }}
             data-linenumbers={isText && settings.showLineNumbers ? "enabled" : "disabled"}
             className="htx-richtext"
@@ -386,14 +391,14 @@ class RichTextPieceView extends Component {
           <Elem
             key="orig"
             name="orig-container"
-            ref={this.originalContentRef}
+            ref={item.originalContentRef}
             className="htx-richtext-orig"
             dangerouslySetInnerHTML={{ __html: val }}
           />
           <Elem
             key="work"
             name="work-container"
-            ref={this.workingNodeRef}
+            ref={item.workingNodeRef}
             className="htx-richtext-work"
           />
         </Block>
@@ -416,8 +421,8 @@ class RichTextPieceView extends Component {
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
             ref={el => {
-              this.setReady(false);
-              this.rootNodeRef.current = el;
+              item.setReady(false);
+              item.visibleNodeRef.current = el;
             }}
             className="htx-richtext"
             srcDoc={val}
@@ -429,7 +434,7 @@ class RichTextPieceView extends Component {
             tag="iframe"
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
-            ref={this.originalContentRef}
+            ref={item.originalContentRef}
             className="htx-richtext-orig"
             srcDoc={val}
           />
@@ -439,7 +444,7 @@ class RichTextPieceView extends Component {
             tag="iframe"
             referrerPolicy="no-referrer"
             sandbox="allow-same-origin allow-scripts"
-            ref={this.workingNodeRef}
+            ref={item.workingNodeRef}
             className="htx-richtext-work"
           />
         </Block>
