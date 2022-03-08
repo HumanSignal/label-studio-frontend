@@ -32,6 +32,7 @@ import { ImageBboxLarge } from "../examples/image_bbox_large";
 import { ImageKeyPoint } from "../examples/image_keypoints";
 import { ImageMultilabel } from "../examples/image_multilabel";
 import { ImageEllipselabels } from "../examples/image_ellipses";
+import { ImageOCR } from "../examples/image_ocr";
 import { ImagePolygons } from "../examples/image_polygons";
 import { ImageSegmentation } from "../examples/image_segmentation";
 import { ImageTools } from "../examples/image_tools";
