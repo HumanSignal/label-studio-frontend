@@ -2,18 +2,20 @@
 
 import { flow, getEnv, types } from "mobx-state-tree";
 
-import AnnotationStore from "./AnnotationStore";
-import { Hotkey } from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
+import { Hotkey } from "../core/Hotkey";
+import ToolsManager from "../tools/Manager";
+import Utils from "../utils";
+import messages from "../utils/messages";
+import { guidGenerator } from "../utils/unique";
+import { delay, isDefined } from "../utils/utilities";
+import AnnotationStore from "./AnnotationStore";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User, { UserExtended } from "./UserStore";
-import Utils from "../utils";
-import { delay, isDefined } from "../utils/utilities";
-import messages from "../utils/messages";
-import { guidGenerator } from "../utils/unique";
-import ToolsManager from "../tools/Manager";
+import { UserLabels } from "./UserLabels";
+import { FF_DEV_1536, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -130,6 +132,8 @@ export default types
     awaitingSuggestions: false,
 
     users: types.optional(types.array(UserExtended), []),
+
+    userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
     return {
@@ -276,7 +280,7 @@ export default types
         hotkeys.addNamed("annotation:skip", () => {
           if (self.annotationStore.viewingAll) return;
 
-          if (self.hasInterface("review")){
+          if (self.hasInterface("review")) {
             self.rejectAnnotation();
           } else {
             self.skipTask();
@@ -393,7 +397,8 @@ export default types
       }
       self.task = Task.create(taskObject);
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
-        self.taskHistory.push({ taskId: self.task.id,
+        self.taskHistory.push({
+          taskId: self.task.id,
           annotationId: null,
         });
       }
@@ -479,6 +484,12 @@ export default types
       }, "Error during skip, try again");
     }
 
+    function cancelSkippingTask() {
+      handleSubmittingFlag(() => {
+        getEnv(self).events.invoke('cancelSkippingTask', self);
+      }, "Error during cancel skipping task, try again");
+    }
+
     function acceptAnnotation() {
       if (self.isSubmitting) return;
 
@@ -495,7 +506,7 @@ export default types
       }, "Error during accept, try again");
     }
 
-    function rejectAnnotation() {
+    function rejectAnnotation({ comment = null }) {
       if (self.isSubmitting) return;
 
       handleSubmittingFlag(async () => {
@@ -507,7 +518,7 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
+        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity, comment });
       }, "Error during reject, try again");
     }
 
@@ -660,6 +671,7 @@ export default types
       attachHotkeys,
 
       skipTask,
+      cancelSkippingTask,
       submitDraft,
       submitAnnotation,
       updateAnnotation,

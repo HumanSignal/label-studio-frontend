@@ -147,12 +147,18 @@ const HtxVideoView = ({ item }) => {
       }
     };
 
-    window.addEventListener('resize', onResize);
+    // window.addEventListener('resize', onResize);
     document.addEventListener('keydown', onKeyDown);
 
+    const observer = new ResizeObserver(() => onResize());
+
+    observer.observe(videoContainerRef.current);
+
     return () => {
-      window.removeEventListener('resize', onResize);
+      // window.removeEventListener('resize', onResize);
       document.removeEventListener('keydown', onKeyDown);
+      observer.unobserve();
+      observer.disconnect();
     };
   }, []);
 
@@ -350,7 +356,7 @@ const HtxVideoView = ({ item }) => {
           <Elem
             name="main"
             ref={videoContainerRef}
-            style={{ minHeight: 600 }}
+            style={{ height: Number(item.height) }}
             onWheel={handleZoom}
             onMouseDown={handlePan}
           >
@@ -404,6 +410,7 @@ const HtxVideoView = ({ item }) => {
               item.setFrame(frame);
               setPosition(frame);
             }}
+            controls={{ FramesControl: true }}
             onPlayToggle={handlePlayToggle}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}

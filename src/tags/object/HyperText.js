@@ -15,7 +15,11 @@
  *   </Labels>
  * </View>
  * @example
- * <HyperText name="p1" value="<p>Some explanations <em>with style</em></p>" />
+ * <View>
+ *   <HyperText name="p1">
+ *     <p>Some explanations <em>with style</em></p>
+ *   </HyperText>
+ * </View>
  * @name HyperText
  * @regions HyperTextRegion
  * @meta_title Hypertext Tags for Hypertext Markup (HTML)
