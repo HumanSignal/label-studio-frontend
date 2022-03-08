@@ -87,9 +87,11 @@ class ToolsManager {
   }
 
   selectTool(tool, selected) {
-    const prevTool = this.findSelectedTool();
+    const currentTool = this.findSelectedTool();
 
-    prevTool && prevTool.handleToolSwitch && prevTool?.handleToolSwitch();
+    if (currentTool && currentTool.handleToolSwitch) {
+      currentTool.handleToolSwitch();
+    }
 
     if (selected) {
       this.unselectAll();

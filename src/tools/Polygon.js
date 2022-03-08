@@ -84,7 +84,7 @@ const _Tool = types
 
     return {
       handleToolSwitch() {
-        if (self.getCurrentArea().isDrawing) {
+        if (self.getCurrentArea()?.isDrawing) {
           self.deleteRegion();
         }
       },
