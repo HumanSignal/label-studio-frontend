@@ -69,6 +69,7 @@ export class LabelStudio {
     ), rootElement);
 
     const destructor = () => {
+      this.constructor.instances.delete(this);
       unmountComponentAtNode(rootElement);
       destroy(this.store);
     };
