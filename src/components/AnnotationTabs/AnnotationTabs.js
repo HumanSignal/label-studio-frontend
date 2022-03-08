@@ -77,7 +77,7 @@ export const AnnotationTabs = observer(({
   }, [as]);
 
   const onCreateAnnotation = useCallback(() => {
-    const c = as.addAnnotation({ userGenerate: true });
+    const c = as.createAnnotation();
 
     as.selectAnnotation(c.id);
   }, [as]);

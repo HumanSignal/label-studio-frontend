@@ -90,13 +90,12 @@ const Model = types
       const sequence = Array.from(self.sequence);
       const closestKeypoint = self.closestKeypoint(frame);
       const newKeypoint = {
-        ...(closestKeypoint ?? {
+        ...(self.getShape(frame) ?? closestKeypoint ?? {
           x: 0,
           y: 0,
-          enabled: true,
         }),
+        enabled: closestKeypoint?.enabled ?? true,
         frame,
-        rotation: 0,
       };
 
       sequence.push(newKeypoint);
@@ -128,9 +127,10 @@ const Model = types
 
     closestKeypoint(targetFrame) {
       const seq = self.sequence;
-      let keypoints, result;
+      let result;
 
-      keypoints = seq.filter(({ frame }) => frame <= targetFrame);
+      const keypoints = seq.filter(({ frame }) => frame <= targetFrame);
+
       result = keypoints[keypoints.length - 1];
 
       if (!result) {

@@ -226,6 +226,9 @@ const Model = types.model({
     onShortcut(value) {
       if (isFF(FF_DEV_1564_DEV_1565)) {
         if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
+        // Do nothing if active element is disappeared
+        if (self === lastActiveElementModel && !self.showSubmit) return;
+        if (!lastActiveElement.parentElement) return;
 
         lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, "end");
         lastActiveElementModel.setValue(lastActiveElement.value);
@@ -480,7 +483,9 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
 
       item.setValue(value);
     },
-    onFocus: () => {
+    onFocus: (ev) => {
+      ev.stopPropagation();
+      ev.preventDefault();
       if (!area.isSelected) {
         area.annotation.selectArea(area);
       }
@@ -525,8 +530,13 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
             }
             return false;
           }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
-          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} />
+          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} onClick={(e) => {
+            e.stopPropagation();
+          }} />
         </Elem>
       )}
     </Block>

@@ -1,4 +1,4 @@
-import { Children, cloneElement, CSSProperties, forwardRef, MouseEvent, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Children, cloneElement, CSSProperties, forwardRef, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Block, Elem } from "../../utils/bem";
 import { aroundTransition } from "../../utils/transition";
@@ -47,26 +47,23 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     setAlign(resultAlign);
   }, [triggerElement.current, tooltipElement.current]);
 
-  const performAnimation = useCallback(
-    visible => {
-      if (tooltipElement.current) {
-        aroundTransition(tooltipElement.current, {
-          beforeTransition() {
-            setVisibility(visible ? "before-appear" : "before-disappear");
-          },
-          transition() {
-            if (visible) calculatePosition();
-            setVisibility(visible ? "appear" : "disappear");
-          },
-          afterTransition() {
-            setVisibility(visible ? "visible" : null);
-            if (visible === false) setInjected(false);
-          },
-        });
-      }
-    },
-    [injected, calculatePosition, tooltipElement],
-  );
+  const performAnimation = useCallback(visible => {
+    if (tooltipElement.current) {
+      aroundTransition(tooltipElement.current, {
+        beforeTransition() {
+          setVisibility(visible ? "before-appear" : "before-disappear");
+        },
+        transition() {
+          if (visible) calculatePosition();
+          setVisibility(visible ? "appear" : "disappear");
+        },
+        afterTransition() {
+          setVisibility(visible ? "visible" : null);
+          if (visible === false) setInjected(false);
+        },
+      });
+    }
+  }, [calculatePosition, tooltipElement]);
 
   const visibilityClasses = useMemo(() => {
     switch (visibility) {
@@ -85,45 +82,61 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     }
   }, [visibility]);
 
-  const tooltip = useMemo(
-    () =>
-      injected ? (
-        <Block
-          ref={tooltipElement}
-          name="tooltip"
-          mod={{ align, theme }}
-          mix={visibilityClasses}
-          style={{ ...offset, ...(style ?? {}) }}
-        >
-          <Elem name="body">{title}</Elem>
-        </Block>
-      ) : null,
-    [injected, offset, title, visibilityClasses, tooltipElement],
-  );
+  const tooltip = useMemo(() => {
+    return injected ? (
+      <Block
+        ref={tooltipElement}
+        name="tooltip"
+        mod={{ align, theme }}
+        mix={visibilityClasses}
+        style={{ ...offset, ...(style ?? {}) }}
+      >
+        <Elem name="body">{title}</Elem>
+      </Block>
+    ) : null;
+  }, [injected, offset, title, visibilityClasses, tooltipElement]);
 
   const child = Children.only(children);
   const clone = cloneElement(child, {
     ...child.props,
     ref: triggerElement,
-    onMouseEnter(e: MouseEvent<HTMLElement>) {
-      if (enabled === false) return;
-
-      setTimeout(() => {
-        setInjected(true);
-        child.props.onMouseEnter?.(e);
-      }, mouseEnterDelay);
-    },
-    onMouseLeave(e: MouseEvent<HTMLElement>) {
-      if (enabled === false) return;
-
-      performAnimation(false);
-      child.props.onMouseLeave?.(e);
-    },
   });
 
   useEffect(() => {
     if (injected) performAnimation(true);
   }, [injected]);
+
+  useEffect(() => {
+    const el = triggerElement.current;
+
+    const handleTooltipAppear = () => {
+      if (enabled === false) return;
+
+      setTimeout(() => {
+        setInjected(true);
+      }, mouseEnterDelay);
+    };
+
+    const handleTooltipHiding = () => {
+      if (enabled === false) return;
+
+      performAnimation(false);
+    };
+
+    if (el) {
+      el.addEventListener("mouseenter", handleTooltipAppear);
+      el.addEventListener("mouseleave", handleTooltipHiding);
+      window.addEventListener('scroll', handleTooltipHiding);
+    }
+
+    return () => {
+      if (el) {
+        el.removeEventListener("mouseenter", handleTooltipAppear);
+        el.removeEventListener("mouseleave", handleTooltipHiding);
+        window.removeEventListener('scroll', handleTooltipHiding);
+      }
+    };
+  }, [enabled, mouseEnterDelay]);
 
   return (
     <>
@@ -132,4 +145,5 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     </>
   );
 });
+
 Tooltip.displayName = "Tooltip";

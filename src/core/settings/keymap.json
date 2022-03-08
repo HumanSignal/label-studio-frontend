@@ -4,6 +4,9 @@
     "mac": "command+b",
     "description": "Back for one second"
   },
+  "audio:playpause": {
+
+  },
   "ts:grow-left":{
     "key": "left",
     "description": "Increase region to the left"
@@ -90,21 +93,21 @@
     "mac": "command+d",
     "description": "Duplicate selected region"
   },
-  "video:playpause": {
+  "media:playpause": {
     "key": "alt+space",
-    "description": "Play/pause video"
+    "description": "Play/pause"
   },
-  "video:frame-backward": {
+  "media:step-backward": {
     "key": "alt+left",
-    "description": "Go one frame back"
+    "description": "Go one step back"
+  },
+  "media:step-forward": {
+    "key": "alt+right",
+    "description": "Go one step forward"
   },
   "video:keyframe-backward": {
     "key": "ctrl+alt+left",
     "description": "Go to previous keyframe"
-  },
-  "video:frame-forward": {
-    "key": "alt+right",
-    "description": "Go one frame forward"
   },
   "video:keyframe-forward": {
     "key": "ctrl+alt+right",
@@ -125,5 +128,13 @@
   "video:fastforward": {
     "key": "shift+ctrl+alt+right",
     "description": "Go to last frame"
+  },
+  "video:hop-backward": {
+    "key": "shift+alt+left",
+    "description": "Hop Backward"
+  },
+  "video:hop-forward": {
+    "key": "shift+alt+right",
+    "description": "Hop Forward"
   }
 }
