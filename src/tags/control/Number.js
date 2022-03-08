@@ -36,6 +36,7 @@ import ControlBase from "./Base";
  * @param {boolean} [required=false]          - Whether to require number validation
  * @param {string} [requiredMessage]          - Message to show if validation fails
  * @param {boolean} [perRegion]               - Use this tag to classify specific regions instead of the whole object
+ * @param {boolean} [slider]
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -54,6 +55,7 @@ const Model = types
     pid: types.optional(types.string, guidGenerator),
     type: "number",
     number: types.maybeNull(types.number),
+    slider: types.optional(types.boolean, false),
   })
   .views(self => ({
     selectedValues() {
@@ -155,7 +157,7 @@ const HtxNumber = inject("store")(
     return (
       <div style={visibleStyle}>
         <input
-          type="number"
+          type={item.slider ? "range" : "number"}
           name={item.name}
           value={item.number ?? item.defaultvalue ?? 0}
           step={item.step ?? 1}
