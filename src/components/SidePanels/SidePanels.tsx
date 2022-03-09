@@ -250,6 +250,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
         draggable: !sidepanelsCollapsed,
         resizable: !sidepanelsCollapsed,
+        collapsable: !sidepanelsCollapsed,
       };
       const panel = {
         props,

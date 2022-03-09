@@ -46,6 +46,7 @@ interface PanelBaseProps {
   expanded: boolean;
   draggable: boolean;
   resizable: boolean;
+  collapsable: boolean;
   onResize: ResizeHandler;
   onSnap: SnapHandler;
   onDetach: DetachHandler;
@@ -74,8 +75,9 @@ export const PanelBase: FC<PanelBaseProps> = ({
   expanded,
   top,
   left,
-  draggable,
-  resizable,
+  draggable = true,
+  resizable = true,
+  collapsable = true,
   onSnap,
   onDetach,
   onResize,
@@ -261,10 +263,10 @@ export const PanelBase: FC<PanelBaseProps> = ({
         <Elem
           ref={headerRef}
           name="header"
-          onClick={handleExpand}
+          onClick={collapsable && handleExpand}
         >
           {visible ? (
-            <>{title} <IconCollapseLeft onClick={handleCollapse}/></>
+            <>{title} {collapsable && <IconCollapseLeft onClick={handleCollapse}/>}</>
           ) : icon}
         </Elem>
         {visible && (
