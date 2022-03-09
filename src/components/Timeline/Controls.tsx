@@ -128,12 +128,14 @@ export const Controls: FC<TimelineControlsProps> = ({
                 <ControlButton
                   onClick={() => onRewind?.()}
                   disabled={startReached}
+                  hotkey={settings?.skipToBeginning}
                 >
                   <IconRewind/>
                 </ControlButton>
                 <ControlButton
-                  onClick={() => onRewind?.()}
+                  onClick={() => onRewind?.(10)}
                   disabled={startReached}
+                  hotkey={settings?.hopBackward}
                 >
                   <IconBackward/>
                 </ControlButton>
@@ -168,14 +170,16 @@ export const Controls: FC<TimelineControlsProps> = ({
             alt={(
               <>
                 <ControlButton
-                  onClick={() => onForward?.()}
+                  onClick={() => onForward?.(10)}
                   disabled={endReached}
+                  hotkey={settings?.hopForward}
                 >
                   <IconForward/>
                 </ControlButton>
                 <ControlButton
                   onClick={() => onForward?.()}
                   disabled={endReached}
+                  hotkey={settings?.skipToEnd}
                 >
                   <IconFastForward/>
                 </ControlButton>
@@ -186,13 +190,17 @@ export const Controls: FC<TimelineControlsProps> = ({
         <Elem name="group" tag={Space} collapsed>
           {!disableFrames && allowViewCollapse && (
             <ControlButton
+              tooltip="Toggle Timeline"
               onClick={() => onToggleCollapsed?.(!collapsed)}
             >
               {collapsed ? <IconExpand/> : <IconCollapse/>}
             </ControlButton>
           )}
           {allowFullscreen && (
-            <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+            <ControlButton
+              tooltip="Fullscreen"
+              onClick={() => onFullScreenToggle?.(false)}
+            >
               {fullscreen ? (
                 <IconFullscreenExit/>
               ) : (

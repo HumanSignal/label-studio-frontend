@@ -50,6 +50,7 @@ export interface TimelineViewProps {
   speed?: number;
   volume?: number;
   regions: TimelineRegion[];
+  leftOffset?: number;
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;
@@ -84,6 +85,8 @@ export interface TimelineContextValue {
   regions: TimelineRegion[];
   step: number;
   playing: boolean;
+  visibleWidth: number;
+  seekOffset: number;
   settings?: TimelineSettings;
   data?: any;
 }
@@ -100,8 +103,13 @@ export type TimelineSettings = {
   playpauseHotkey?: string,
   stepAltBack?: string,
   stepAltForward?: string,
+  skipToBeginning?: string,
+  skipToEnd?: string,
+  hopBackward?: string,
+  hopForward?: string,
   fastTravelSize?: TimelineStepFunction,
   stepSize?: TimelineStepFunction,
+  leftOffset?: number,
 }
 
 export type TimelineStepFunction = (length: number, position: number, regions: TimelineRegion[], direction: -1 | 1) => number;
@@ -135,8 +143,8 @@ export interface TimelineControlsProps {
   allowFullscreen?: boolean;
   allowViewCollapse?: boolean;
   controls?: TimelineProps["controls"];
-  onRewind: () => void;
-  onForward: () => void;
+  onRewind: (steps?: number) => void;
+  onForward: (steps?: number) => void;
   onPositionChange: (position: number) => void;
   onToggleCollapsed: (collapsed: boolean) => void;
   onStepBackward: TimelineControlsStepHandler;

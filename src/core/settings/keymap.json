@@ -136,5 +136,13 @@
   "video:fastforward": {
     "key": "shift+ctrl+alt+right",
     "description": "Go to last frame"
+  },
+  "video:hop-backward": {
+    "key": "shift+alt+left",
+    "description": "Hop Backward"
+  },
+  "video:hop-forward": {
+    "key": "shift+alt+right",
+    "description": "Hop Forward"
   }
 }

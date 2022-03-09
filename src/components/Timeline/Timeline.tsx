@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { FC, useEffect, useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
-import { clamp } from "../../utils/utilities";
+import { clamp, isDefined } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
 import { Controls } from "./Controls";
 import { Seeker } from "./Seeker";
@@ -77,7 +77,9 @@ const TimelineComponent: FC<TimelineProps> = ({
     step,
     data,
     playing,
+    seekOffset,
     settings: View.settings,
+    visibleWidth: seekVisibleWidth,
   }), [position, length, regions, step, playing, View.settings, data]);
 
   useEffect(() => {
@@ -103,8 +105,8 @@ const TimelineComponent: FC<TimelineProps> = ({
         onVolumeChange={props.onVolumeChange}
         onStepBackward={decreasePosition}
         onStepForward={increasePosition}
-        onRewind={() => setInternalPosition(0)}
-        onForward={() => setInternalPosition(length)}
+        onRewind={(steps) => setInternalPosition(isDefined(steps) ? currentPosition - steps : 0)}
+        onForward={(steps) => setInternalPosition(isDefined(steps) ? currentPosition + steps : length)}
         onPositionChange={setInternalPosition}
         onToggleCollapsed={setViewCollapsed}
         formatPosition={formatPosition}
@@ -120,6 +122,8 @@ const TimelineComponent: FC<TimelineProps> = ({
       {allowSeek && (
         <Seeker
           length={length}
+          step={step}
+          leftOffset={View.settings?.leftOffset}
           position={currentPosition}
           seekOffset={seekOffset}
           seekVisible={seekVisibleWidth}
@@ -145,6 +149,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         volume={props.volume}
         position={currentPosition}
         offset={seekOffset}
+        leftOffset={View.settings?.leftOffset}
         onReady={onReady}
         onScroll={setSeekOffset}
         onResize={setSeekVisibleWidth}
