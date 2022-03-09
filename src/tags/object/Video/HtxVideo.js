@@ -16,7 +16,6 @@ import { clamp, isDefined } from "../../../utils/utilities";
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 import ResizeObserver from "../../../utils/resize-observer";
-import { FF_DEV_1270, isFF } from "../../../utils/feature-flags";
 
 const hotkeys = Hotkey("Video", "Video Annotation");
 
@@ -156,9 +155,7 @@ const HtxVideoView = ({ item }) => {
     const observer = new ResizeObserver(() => onResize());
 
     observer.observe(videoContainerRef.current);
-    if (isFF(FF_DEV_1270)) {
-      observer.observe(videoBlockRef.current);
-    }
+    observer.observe(videoBlockRef.current);
 
     return () => {
       // window.removeEventListener('resize', onResize);
@@ -342,7 +339,7 @@ const HtxVideoView = ({ item }) => {
           <ErrorMessage key={`err-${i}`} error={error} />
         ))}
 
-        <Block name="video" mod={{ fullscreen, "ff-dev-1270": isFF(FF_DEV_1270) }} ref={videoBlockRef}>
+        <Block name="video" mod={{ fullscreen }} ref={videoBlockRef}>
           <Elem tag={Space} name="controls" align="end" size="small">
             <Dropdown.Trigger
               content={(
