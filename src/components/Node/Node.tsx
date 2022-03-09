@@ -17,7 +17,7 @@ const NodeViews = {
   RichTextRegionModel: NodeView({
     name: "HTML",
     icon: IconText,
-    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.highlightedText}</span>,
+    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
   }),
 
   ParagraphsRegionModel: NodeView({

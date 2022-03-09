@@ -404,6 +404,7 @@ const HtxVideoView = ({ item }) => {
               item.setFrame(frame);
               setPosition(frame);
             }}
+            controls={{ FramesControl: true }}
             onPlayToggle={handlePlayToggle}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}

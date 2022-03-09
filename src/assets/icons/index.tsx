@@ -19,6 +19,8 @@ export { ReactComponent as LsExpand } from "./expand.svg";
 export { ReactComponent as LsCollapse } from "./collapse.svg";
 export { ReactComponent as LsDate } from "./date.svg";
 export { ReactComponent as IconPlusCircle } from "./plus_circle.svg";
+export { ReactComponent as IconSlow } from "./slow.svg";
+export { ReactComponent as IconFast } from "./fast.svg";
 
 export { ReactComponent as IconCheck } from "./check.svg";
 export { ReactComponent as IconCross } from "./cross.svg";
@@ -27,6 +29,11 @@ export { ReactComponent as IconPlayerPause } from "./player/pause.svg";
 export { ReactComponent as IconPlayerPlay } from "./player/play.svg";
 export { ReactComponent as IconPlayerStep } from "./player/step.svg";
 
+export { ReactComponent as IconVolumeMute } from "./volume-mute.svg";
+export { ReactComponent as IconVolumeHalf } from "./volume-half.svg";
+export { ReactComponent as IconVolumeFull } from "./volume-full.svg";
+
+// Tools
 export { ReactComponent as IconBrushTool } from './tools/brush-tool.svg';
 export { ReactComponent as IconBrushToolSmart } from './tools/brush-tool-smart.svg';
 export { ReactComponent as IconCircleTool } from './tools/circle-tool.svg';
@@ -42,8 +49,8 @@ export { ReactComponent as IconHandTool } from './tools/hand-tool.svg';
 export { ReactComponent as IconBrightnessTool } from "./tools/brightness-tool.svg";
 export { ReactComponent as IconContrastTool } from "./tools/contrast-tool.svg";
 
-export { ReactComponent as IconMagnifyTool } from './tools/magnify-tool.svg';
-export { ReactComponent as IconMinifyTool } from './tools/minify-tool.svg';
+export { ReactComponent as IconZoomIn } from './tools/magnify-tool.svg';
+export { ReactComponent as IconZoomOut } from './tools/minify-tool.svg';
 export { ReactComponent as IconMoveTool } from './tools/move-tool.svg';
 export { ReactComponent as IconRotateLeftTool } from './tools/rotate-left-tool.svg';
 export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool.svg';

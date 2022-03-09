@@ -5,14 +5,14 @@ import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
-import { AudioPlusModel } from "../tags/object/AudioPlus";
+import { AudioModel } from "../tags/object/AudioNext";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
 
 const Model = types
   .model("AudioRegionModel", {
     type: "audioregion",
-    object: types.late(() => types.reference(AudioPlusModel)),
+    object: types.late(() => types.reference(AudioModel)),
 
     start: types.number,
     end: types.number,
@@ -211,5 +211,6 @@ const AudioRegionModel = types.compose(
 );
 
 Registry.addRegionType(AudioRegionModel, "audioplus");
+Registry.addRegionType(AudioRegionModel, "audio");
 
 export { AudioRegionModel };

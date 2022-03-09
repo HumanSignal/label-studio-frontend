@@ -54,7 +54,9 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
-  maxwidth: types.optional(types.string, "750px"),
+  height: types.maybeNull(types.string),
+  maxwidth: types.optional(types.string, "100%"),
+  maxheight: types.optional(types.string, "calc(100vh - 194px)"),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
@@ -230,8 +232,8 @@ const Model = types.model({
    * Coordinates of left top corner
    * Default: { x: 0, y: 0 }
    */
-  zoomingPositionX: types.maybeNull(types.number),
-  zoomingPositionY: types.maybeNull(types.number),
+  zoomingPositionX: types.optional(types.number, 0),
+  zoomingPositionY: types.optional(types.number, 0),
 
   /**
    * Brightness of Canvas
@@ -267,6 +269,9 @@ const Model = types.model({
 }).volatile(() => ({
   currentImage: 0,
   stageRatio: 1,
+  // Container's sizes causing limits to calculate a scale factor
+  containerWidth: 1,
+  containerHeight: 1,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -353,11 +358,19 @@ const Model = types.model({
   },
 
   get stageScale() {
-    return self.zoomScale * self.stageRatio;
+    return self.zoomScale;
   },
 
   get hasTools() {
     return !!self.getToolsManager().allTools()?.length;
+  },
+
+  get fillerHeight() {
+    if ((self.rotation + 360) % 180 === 90) {
+      return `${self.naturalWidth / self.naturalHeight * 100}%`;
+    } else {
+      return `${self.naturalHeight / self.naturalWidth * 100}%`;
+    }
   },
 
   /**
@@ -402,13 +415,13 @@ const Model = types.model({
   get stageComponentSize() {
     if ((self.rotation + 360) % 180 === 90) {
       return {
-        width: self.stageHeight * self.stageRatio,
-        height: self.stageWidth * self.stageRatio,
+        width: self.stageHeight,
+        height: self.stageWidth,
       };
     }
     return {
-      width: self.stageWidth * self.stageRatio,
-      height: self.stageHeight * self.stageRatio,
+      width: self.stageWidth ,
+      height: self.stageHeight,
     };
   },
 
@@ -417,6 +430,42 @@ const Model = types.model({
   },
   get isDrawing() {
     return !!self.drawingRegion;
+  },
+
+  get imageTransform() {
+    const imgStyle = {
+      width: `${self.stageWidth}px`,
+      height: `${self.stageHeight}px`,
+      transformOrigin: "left top",
+      transform: "none",
+      filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
+    };
+    const imgTransform = [];
+
+    if (self.zoomScale !== 1) {
+      const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
+
+      imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
+      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
+    }
+
+    if (self.rotation) {
+      const translate = {
+        90: `0, -100%`,
+        180: `-100%, -100%`,
+        270: `-100%, 0`,
+      };
+
+      // there is a top left origin already set for zoom; so translate+rotate
+      imgTransform.push(`rotate(${self.rotation}deg)`);
+      imgTransform.push(`translate(${translate[self.rotation] || "0, 0"})`);
+
+    }
+
+    if (imgTransform?.length > 0) {
+      imgStyle.transform = imgTransform.join(" ");
+    }
+    return imgStyle;
   },
 }))
 
@@ -558,10 +607,20 @@ const Model = types.model({
      * Set zoom
      */
     setZoom(scale, x, y) {
-      self.resize = scale;
+      const { stageWidth, stageHeight } = self;
+      
       self.zoomScale = scale;
-      self.zoomingPositionX = x;
-      self.zoomingPositionY = y;
+      self.setZoomPosition(x, y);
+      self._recalculateImageParams();
+
+      if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
+        self._updateRegionsSizes({
+          width: self.stageWidth,
+          height: self.stageHeight,
+          naturalWidth: self.naturalWidth,
+          naturalHeight: self.naturalHeight,
+        });
+      }
     },
 
     setZoomPosition(x, y) {
@@ -620,6 +679,10 @@ const Model = types.model({
       self.imageRef = ref;
     },
 
+    setContainerRef(ref) {
+      self.containerRef = ref;
+    },
+
     setStageRef(ref) {
       self.stageRef = ref;
 
@@ -643,7 +706,7 @@ const Model = types.model({
       let ratioK = 1 / self.stageRatio;
 
       if ((self.rotation + 360) % 180 === 90) {
-        self.stageRatio = self.initialWidth / self.initialHeight;
+        self.stageRatio = self.naturalWidth / self.naturalHeight;
       } else {
         self.stageRatio = 1;
       }
@@ -666,25 +729,36 @@ const Model = types.model({
       }
     },
 
-    _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
-      if (naturalWidth !== undefined) {
-        self.naturalWidth = naturalWidth;
-        self.naturalHeight = naturalHeight;
-      }
+    _recalculateImageParams() {
+      let k;
+
       if ((self.rotation + 360) % 180 === 90) {
-        self.stageWidth = width;
-        self.stageHeight = Math.round((width / self.initialWidth) * self.initialHeight);
+        k = Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth, self.zoomScale);
       } else {
-        self.stageWidth = width;
-        self.stageHeight = height;
+        k = Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight, self.zoomScale);
+      }
+
+      self.stageWidth = Math.round(self.naturalWidth * k);
+      self.stageHeight = Math.round(self.naturalHeight * k);
+      self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+    },
+
+    _updateImageSize({ width, height, userResize }) {
+      if (self.naturalWidth === undefined) {
+        return;
+      }
+      if (width > 1 && height > 1) {
+        self.containerWidth = width;
+        self.containerHeight = height;
+        self._recalculateImageParams();
       }
 
       self.sizeUpdated = true;
       self._updateRegionsSizes({
         width: self.stageWidth,
         height: self.stageHeight,
-        naturalWidth,
-        naturalHeight,
+        naturalWidth: self.naturalWidth,
+        naturalHeight: self.naturalHeight,
         userResize,
       });
     },
@@ -699,11 +773,12 @@ const Model = types.model({
     },
 
     updateImageSize(ev) {
-      const { width, height, naturalWidth, naturalHeight } = ev.target;
+      const { naturalWidth, naturalHeight } = ev.target;
+      const { offsetWidth, offsetHeight } = self.containerRef;
 
-      self.initialWidth = width;
-      self.initialHeight = height;
-      self._updateImageSize({ width, height, naturalWidth, naturalHeight });
+      self.naturalWidth = naturalWidth;
+      self.naturalHeight = naturalHeight;
+      self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe

@@ -842,11 +842,12 @@ const Annotation = types
         });
       }
 
-      if (isFF(FF_DEV_1555)) {
-        self.updateObjects();
-      } else {
-        self.objects.forEach(obj => obj.needsUpdate?.());
-      }
+      const { history } = self;
+
+      history.freeze("richtext:suggestions");
+      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      history.setReplaceNextUndoState(true);
+      history.unfreeze("richtext:suggestions");
     },
 
     /**
@@ -955,6 +956,7 @@ const Annotation = types
           const hasStartEnd = isDefined(value.start) && isDefined(value.end);
           const lacksOffsets = !isDefined(value.startOffset) && !isDefined(value.endOffset);
 
+          // @todo move this Text regions offsets transform to RichTextRegion
           if (hasStartEnd && lacksOffsets) {
             return Object.assign({}, value, {
               start: "",
