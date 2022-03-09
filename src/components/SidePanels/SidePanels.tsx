@@ -9,6 +9,7 @@ import { IconDetails, IconHamburger } from "../../assets/icons";
 import { clamp } from "../../utils/utilities";
 import { PanelProps } from "./PanelBase";
 import { useEffect } from "react";
+import { useMedia } from "../../hooks/useMedia";
 
 interface SidePanelsProps {
   panelsHidden: boolean;
@@ -66,6 +67,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   panelsHidden,
   children,
 }) => {
+  const screenSizeMatch = useMedia("screen and (max-width: 980px)");
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<"left" | "right" | undefined>();
   const localSnap = useRef(snap);
@@ -198,6 +200,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       paddingRight: 0,
     };
 
+    if (screenSizeMatch.matches) {
+      return result;
+    }
+
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
       const visible = !panelsHidden && !data.detached && data.visible;
 
@@ -209,6 +215,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [
     panelsHidden,
     panelData,
+    screenSizeMatch,
   ]);
 
   const panels = useMemo(() => {
@@ -227,7 +234,15 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       const view = panelView[name as PanelType];
       const Component = view.component;
       const Icon = view.icon;
-      const props = { ...panelData, ...commonProps, icon: <Icon/> };
+      const props = {
+        ...panelData,
+        ...commonProps,
+        icon: <Icon/>,
+        expanded: screenSizeMatch.matches,
+        alignment: screenSizeMatch.matches ? "left" : panelData.alignment,
+        draggable: !screenSizeMatch.matches,
+        resizable: !screenSizeMatch.matches,
+      };
       const panel = {
         props,
         Component,
@@ -239,16 +254,23 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return result;
-  }, [panelData, commonProps, panelsHidden]);
+  }, [panelData, commonProps, panelsHidden, screenSizeMatch.matches]);
 
   useEffect(() => {
     localSnap.current = snap;
   }, [snap]);
 
+  console.log({ screenSizeMatch });
+
   return (
-    <Block ref={rootRef} name="sidepanels" style={{
-      ...padding,
-    }}>
+    <Block
+      ref={rootRef}
+      name="sidepanels"
+      style={{
+        ...padding,
+      }}
+      mod={{ collapsed: screenSizeMatch.matches }}
+    >
       <Elem name="content">
         {children}
       </Elem>

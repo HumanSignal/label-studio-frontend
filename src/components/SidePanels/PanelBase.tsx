@@ -43,6 +43,9 @@ interface PanelBaseProps {
   currentEntity: any;
   icon: JSX.Element;
   detached: boolean;
+  expanded: boolean;
+  draggable: boolean;
+  resizable: boolean;
   onResize: ResizeHandler;
   onSnap: SnapHandler;
   onDetach: DetachHandler;
@@ -68,8 +71,11 @@ export const PanelBase: FC<PanelBaseProps> = ({
   icon,
   detached,
   alignment,
+  expanded,
   top,
   left,
+  draggable,
+  resizable,
   onSnap,
   onDetach,
   onResize,
@@ -100,25 +106,25 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const style = useMemo(() => {
     return visible ? {
       height: detached ? height ?? '100%' : '100%',
-      width: width ?? 320,
+      width: expanded ? "100%" : width ?? 320,
     } : {};
-  }, [width, height, visible, detached]);
+  }, [width, height, visible, detached, expanded]);
 
   const coordinates = useMemo(() => {
-    return detached ? {
+    return detached && draggable !== false ? {
       transform: `translate3d(${left}px, ${top}px, 0)`,
     } : {};
-  }, [detached, left, top]);
+  }, [detached, left, top, draggable]);
 
   const mods = useMemo(() => {
 
     return {
-      detached,
+      detached: draggable === false ? false : detached,
       resizing: isDefined(resizing),
       hidden: !visible,
       alignment: alignment ?? "left",
     };
-  }, [alignment, visible, detached, resizing]);
+  }, [alignment, visible, detached, resizing, draggable]);
 
   useEffect(() => {
     Object.assign(handlers.current, { onDetach, onResize, onPositionChange, onVisibilityChange, onSnap });
@@ -127,8 +133,11 @@ export const PanelBase: FC<PanelBaseProps> = ({
   // Panel positioning
   useDrag({
     elementRef: headerRef,
+    disabled: !draggable,
 
     onMouseDown(e) {
+      if (!draggable) return;
+
       const allowDrag = detached;
       const panel = panelRef.current!;
       const parentBBox = root.current!.getBoundingClientRect();
@@ -162,11 +171,12 @@ export const PanelBase: FC<PanelBaseProps> = ({
       setTimeout(() => setLocked(false), 50);
       handlers.current.onSnap?.(name);
     },
-  }, [headerRef, detached, locked]);
+  }, [headerRef, detached, locked, draggable]);
 
   // Panel resizing
   useDrag({
     elementRef: resizerRef,
+    disabled: !resizable,
 
     onMouseDown(e) {
       const target = e.target as HTMLElement;
@@ -237,7 +247,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
     onMouseUp() {
       setResizing(undefined);
     },
-  }, [handlers, width, height, top, left, visible, locked]);
+  }, [handlers, width, height, top, left, visible, locked, resizable]);
 
   return (
     <Block
@@ -266,7 +276,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         )}
       </Elem>
 
-      {visible && !locked && (
+      {visible && !locked && resizable !== false && (
         <Elem name="resizers" ref={resizerRef}>
           {resizers.map((res) => {
             const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;

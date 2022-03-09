@@ -2,6 +2,7 @@ import { MutableRefObject, useEffect } from "react";
 
 interface Handlers<T extends HTMLElement = HTMLElement, D = any> {
   elementRef: MutableRefObject<T | undefined>;
+  disabled?: boolean;
   onMouseDown?: (e: MouseEvent) => D;
   onMouseMove?: (e: MouseEvent, data?: D) => void;
   onMouseUp?: (e: MouseEvent, data?: D) => void;
@@ -12,6 +13,8 @@ export const useDrag = <EL extends HTMLElement = HTMLElement, D = any>(options: 
     const element = options.elementRef.current;
 
     const onMouseDown = (e: MouseEvent) => {
+      if (options.disabled) return;
+
       const result = options.onMouseDown?.(e);
 
       const onMouseMove = (e: MouseEvent) => {
