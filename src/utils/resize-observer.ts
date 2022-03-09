@@ -2,9 +2,14 @@ class ResizeObserverFallback {
   observe() {
 
   }
+  unobserve() {
+
+  }
   disconnect() {
 
   }
 }
 
-export default window.ResizeObserver ?? ResizeObserverFallback;
+const ResizeObserver =  window.ResizeObserver ?? ResizeObserverFallback;
+
+export default ResizeObserver;
