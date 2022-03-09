@@ -275,7 +275,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         )}
       </Elem>
 
-      {visible && !dragLocked && locked !== false && (
+      {visible && !dragLocked && !locked && (
         <Elem name="resizers" ref={resizerRef}>
           {resizers.map((res) => {
             const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;
