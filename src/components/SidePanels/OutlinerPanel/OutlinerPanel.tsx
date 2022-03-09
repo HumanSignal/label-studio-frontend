@@ -1,8 +1,10 @@
 import { observer } from "mobx-react";
 import { FC, useCallback } from "react";
+import { Elem } from "../../../utils/bem";
 import { PanelBase, PanelProps } from "../PanelBase";
 import { OutlinerTree } from "./OutlinerTree";
 import { ViewControls } from "./ViewControls";
+import "./OutlinerPanel.styl";
 
 interface OutlinerPanelProps extends PanelProps {
   regions: any;
@@ -28,10 +30,16 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}
       />
-      <OutlinerTree
-        regions={regions}
-        selectedKeys={regions.selection.keys}
-      />
+      {regions.length > 0 ? (
+        <OutlinerTree
+          regions={regions}
+          selectedKeys={regions.selection.keys}
+        />
+      ) : (
+        <Elem name="empty">
+          Regions not added
+        </Elem>
+      )}
     </PanelBase>
   );
 };
