@@ -10,6 +10,9 @@ import { clamp } from "../../utils/utilities";
 import { PanelProps } from "./PanelBase";
 import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
+import ResizeObserver from "../../utils/resize-observer";
+
+const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
@@ -67,7 +70,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   panelsHidden,
   children,
 }) => {
-  const screenSizeMatch = useMedia("screen and (max-width: 980px)");
+  const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
+  const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<"left" | "right" | undefined>();
   const localSnap = useRef(snap);
@@ -91,6 +95,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       alignment: "right",
     }),
   });
+
+  const sidepanelsCollapsed = useMemo(() => {
+    return viewportSizeMatch || screenSizeMatch.matches;
+  }, [viewportSizeMatch, screenSizeMatch.matches]);
 
   const updatePanel = useCallback((name: PanelType, patch: Partial<PanelBBox>) => {
     const panel = { ...panelData[name], ...patch };
@@ -200,7 +208,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       paddingRight: 0,
     };
 
-    if (screenSizeMatch.matches) {
+    if (sidepanelsCollapsed) {
       return result;
     }
 
@@ -215,7 +223,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [
     panelsHidden,
     panelData,
-    screenSizeMatch,
+    sidepanelsCollapsed,
   ]);
 
   const panels = useMemo(() => {
@@ -238,10 +246,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         ...panelData,
         ...commonProps,
         icon: <Icon/>,
-        expanded: screenSizeMatch.matches,
-        alignment: screenSizeMatch.matches ? "left" : panelData.alignment,
-        draggable: !screenSizeMatch.matches,
-        resizable: !screenSizeMatch.matches,
+        expanded: sidepanelsCollapsed,
+        alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
+        draggable: !sidepanelsCollapsed,
+        resizable: !sidepanelsCollapsed,
       };
       const panel = {
         props,
@@ -254,17 +262,36 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return result;
-  }, [panelData, commonProps, panelsHidden, screenSizeMatch.matches]);
+  }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed]);
 
   useEffect(() => {
     localSnap.current = snap;
   }, [snap]);
 
-  console.log({ screenSizeMatch });
+  useEffect(() => {
+    const root = rootRef.current!;
+    const observer = new ResizeObserver(() => {
+      const matches = (rootRef.current?.clientWidth ?? 0) < maxWindowWidth;
+
+      setViewportSizeMatch(matches);
+    });
+
+    if (root) observer.observe(root);
+
+    return () => {
+      if (root) observer.unobserve(root);
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <Block
-      ref={rootRef}
+      ref={(el: HTMLDivElement | null) => {
+        if (el) {
+          rootRef.current = el;
+          setViewportSizeMatch(el.clientWidth <= maxWindowWidth);
+        }
+      }}
       name="sidepanels"
       style={{
         ...padding,
