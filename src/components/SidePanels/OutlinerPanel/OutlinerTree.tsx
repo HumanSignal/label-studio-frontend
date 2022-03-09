@@ -51,7 +51,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
           className={rootClass.toClassName()}
           treeData={regionsTree}
           selectedKeys={selectedKeys}
-          icon={({ entity, isArea }: any) => <NodeIconComponent node={entity}/>}
+          icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
           switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
           {...eventHandlers}
         />

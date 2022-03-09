@@ -11,6 +11,7 @@ import { PanelProps } from "./PanelBase";
 import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
+import { SidePanelsContext } from "./SidePanelsContext";
 
 const maxWindowWidth = 980;
 
@@ -248,9 +249,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         icon: <Icon/>,
         expanded: sidepanelsCollapsed,
         alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
-        draggable: !sidepanelsCollapsed,
-        resizable: !sidepanelsCollapsed,
-        collapsable: !sidepanelsCollapsed,
+        locked: sidepanelsCollapsed,
       };
       const panel = {
         props,
@@ -285,41 +284,49 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
+  const contextValue = useMemo(() => {
+    return {
+      locked: sidepanelsCollapsed,
+    };
+  }, [sidepanelsCollapsed]);
+
   return (
-    <Block
-      ref={(el: HTMLDivElement | null) => {
-        if (el) {
-          rootRef.current = el;
-          setViewportSizeMatch(el.clientWidth <= maxWindowWidth);
-        }
-      }}
-      name="sidepanels"
-      style={{
-        ...padding,
-      }}
-      mod={{ collapsed: sidepanelsCollapsed }}
-    >
-      <Elem name="content">
-        {children}
-      </Elem>
-      {panelsHidden !== true && (
-        <>
-          {Object.entries(panels).map(([key, panel]) => {
-            const content = panel.map(({ props, Component }, i) => <Component key={i} {...props} />);
+    <SidePanelsContext.Provider value={contextValue}>
+      <Block
+        ref={(el: HTMLDivElement | null) => {
+          if (el) {
+            rootRef.current = el;
+            setViewportSizeMatch(el.clientWidth <= maxWindowWidth);
+          }
+        }}
+        name="sidepanels"
+        style={{
+          ...padding,
+        }}
+        mod={{ collapsed: sidepanelsCollapsed }}
+      >
+        <Elem name="content">
+          {children}
+        </Elem>
+        {panelsHidden !== true && (
+          <>
+            {Object.entries(panels).map(([key, panel]) => {
+              const content = panel.map(({ props, Component }, i) => <Component key={i} {...props} />);
 
-            if (key === 'detached') {
-              return <Fragment key={key}>{content}</Fragment>;
-            }
+              if (key === 'detached') {
+                return <Fragment key={key}>{content}</Fragment>;
+              }
 
-            return (
-              <Elem key={key} name="wrapper" mod={{ align: key, snap: snap === key }}>
-                {content}
-              </Elem>
-            );
-          })}
-        </>
-      )}
-    </Block>
+              return (
+                <Elem key={key} name="wrapper" mod={{ align: key, snap: snap === key }}>
+                  {content}
+                </Elem>
+              );
+            })}
+          </>
+        )}
+      </Block>
+    </SidePanelsContext.Provider>
   );
 };
 

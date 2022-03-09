@@ -44,9 +44,7 @@ interface PanelBaseProps {
   icon: JSX.Element;
   detached: boolean;
   expanded: boolean;
-  draggable: boolean;
-  resizable: boolean;
-  collapsable: boolean;
+  locked: boolean;
   onResize: ResizeHandler;
   onSnap: SnapHandler;
   onDetach: DetachHandler;
@@ -75,9 +73,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   expanded,
   top,
   left,
-  draggable = true,
-  resizable = true,
-  collapsable = true,
+  locked = false,
   onSnap,
   onDetach,
   onResize,
@@ -89,21 +85,21 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
-  const [locked, setLocked] = useState(false);
+  const [dragLocked, setLocked] = useState(false);
   const handlers = useRef({ onDetach, onResize, onPositionChange, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
 
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
-    if (locked) return;
+    if (dragLocked) return;
     e.stopPropagation();
     e.preventDefault();
     onVisibilityChange?.(name, false);
-  }, [onVisibilityChange, locked]);
+  }, [onVisibilityChange, dragLocked]);
 
   const handleExpand = useCallback(() => {
-    if (locked) return;
+    if (dragLocked) return;
     onVisibilityChange?.(name, true);
-  }, [onVisibilityChange, locked]);
+  }, [onVisibilityChange, dragLocked]);
 
   const style = useMemo(() => {
     return visible ? {
@@ -113,20 +109,21 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [width, height, visible, detached, expanded]);
 
   const coordinates = useMemo(() => {
-    return detached && draggable !== false ? {
+    return detached && !locked ? {
       transform: `translate3d(${left}px, ${top}px, 0)`,
     } : {};
-  }, [detached, left, top, draggable]);
+  }, [detached, left, top, locked]);
 
   const mods = useMemo(() => {
 
     return {
-      detached: draggable === false ? false : detached,
+      detached: locked ? false : detached,
       resizing: isDefined(resizing),
       hidden: !visible,
       alignment: alignment ?? "left",
+      disabled: locked,
     };
-  }, [alignment, visible, detached, resizing, draggable]);
+  }, [alignment, visible, detached, resizing, locked]);
 
   useEffect(() => {
     Object.assign(handlers.current, { onDetach, onResize, onPositionChange, onVisibilityChange, onSnap });
@@ -135,11 +132,9 @@ export const PanelBase: FC<PanelBaseProps> = ({
   // Panel positioning
   useDrag({
     elementRef: headerRef,
-    disabled: !draggable,
+    disabled: locked,
 
     onMouseDown(e) {
-      if (!draggable) return;
-
       const allowDrag = detached;
       const panel = panelRef.current!;
       const parentBBox = root.current!.getBoundingClientRect();
@@ -173,12 +168,12 @@ export const PanelBase: FC<PanelBaseProps> = ({
       setTimeout(() => setLocked(false), 50);
       handlers.current.onSnap?.(name);
     },
-  }, [headerRef, detached, locked, draggable]);
+  }, [headerRef, detached, dragLocked, locked]);
 
   // Panel resizing
   useDrag({
     elementRef: resizerRef,
-    disabled: !resizable,
+    disabled: locked,
 
     onMouseDown(e) {
       const target = e.target as HTMLElement;
@@ -249,7 +244,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
     onMouseUp() {
       setResizing(undefined);
     },
-  }, [handlers, width, height, top, left, visible, locked, resizable]);
+  }, [handlers, width, height, top, left, visible, dragLocked, locked]);
 
   return (
     <Block
@@ -260,15 +255,17 @@ export const PanelBase: FC<PanelBaseProps> = ({
       style={{ ...style, ...coordinates }}
     >
       <Elem name="content">
-        <Elem
-          ref={headerRef}
-          name="header"
-          onClick={collapsable && handleExpand}
-        >
-          {visible ? (
-            <>{title} {collapsable && <IconCollapseLeft onClick={handleCollapse}/>}</>
-          ) : icon}
-        </Elem>
+        {!locked && (
+          <Elem
+            ref={headerRef}
+            name="header"
+            onClick={handleExpand}
+          >
+            {visible ? (
+              <>{title} {<IconCollapseLeft onClick={handleCollapse}/>}</>
+            ) : icon}
+          </Elem>
+        )}
         {visible && (
           <Elem name="body">
             <Block name={name}>
@@ -278,7 +275,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         )}
       </Elem>
 
-      {visible && !locked && resizable !== false && (
+      {visible && !dragLocked && locked !== false && (
         <Elem name="resizers" ref={resizerRef}>
           {resizers.map((res) => {
             const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;

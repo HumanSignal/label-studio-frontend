@@ -1,9 +1,10 @@
-import { FC, useCallback, useMemo } from "react";
+import { FC, useCallback, useContext, useMemo } from "react";
 import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from "../../../assets/icons";
 import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown";
 import { Menu } from "../../../common/Menu/Menu";
 import { BemWithSpecifiContext } from "../../../utils/bem";
+import { SidePanelsContext } from "../SidePanelsContext";
 import "./ViewControls.styl";
 
 const { Block, Elem } = BemWithSpecifiContext();
@@ -29,6 +30,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
   onOrderingChange,
   onGroupingChange,
 }) => {
+  const context = useContext(SidePanelsContext);
   const getGrouppingLabels = useCallback((value: GroupingOptions): LabelInfo => {
     switch(value) {
       case "manual": return {
@@ -65,7 +67,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
   }, []);
 
   return (
-    <Block name="view-controls">
+    <Block name="view-controls" mod={{ collapsed: context.locked }}>
       <Grouping
         value={grouping}
         options={["manual", "type", "label"]}

@@ -1,5 +1,5 @@
 import Keymaster from "keymaster";
-import { cloneElement, CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent, useMemo } from "react";
+import { ButtonHTMLAttributes, cloneElement, CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent, HTMLAttributes, useMemo } from "react";
 import { Hotkey } from "../../core/Hotkey";
 import { useHotkey } from "../../hooks/useHotkey";
 import { Block, CNTagName, Elem } from "../../utils/bem";
@@ -9,7 +9,9 @@ import "./Button.styl";
 
 const hotkeys = Hotkey();
 
-export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
+type HTMLButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type">
+
+export interface ButtonProps extends HTMLButtonProps {
   type?: "text" | "link";
   href?: string;
   extra?: JSX.Element;
