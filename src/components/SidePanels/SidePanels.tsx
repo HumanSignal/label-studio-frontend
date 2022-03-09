@@ -296,7 +296,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       style={{
         ...padding,
       }}
-      mod={{ collapsed: screenSizeMatch.matches }}
+      mod={{ collapsed: sidepanelsCollapsed }}
     >
       <Elem name="content">
         {children}
