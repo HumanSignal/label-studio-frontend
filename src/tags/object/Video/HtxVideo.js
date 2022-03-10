@@ -345,8 +345,9 @@ const HtxVideoView = ({ item }) => {
         <Block name="video" mod={{ fullscreen, "ff-dev-1270": isFF(FF_DEV_1270) }} ref={videoBlockRef}>
           <Elem tag={Space} name="controls" align="end" size="small">
             <Dropdown.Trigger
+              inline={fullscreen}
               content={(
-                <Menu size="medium" closeDropdownOnItemClick={false}>
+                <Menu size="medium" style={{ width: 150 }} closeDropdownOnItemClick={false}>
                   <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
                   <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
                   <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
