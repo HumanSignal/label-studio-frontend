@@ -3,6 +3,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { isDefined } from "../utils/utilities";
+import { FF_DEV_1372, isFF } from "../utils/feature-flags";
 
 const Result = types
   .model("Result", {
@@ -143,7 +144,7 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
-      if (control.visiblewhen === "choice-selected") {
+      const isChoiceSelected = () => {
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
         const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
@@ -162,6 +163,13 @@ const Result = types
           // if no given choice value is selected in any choice result
           if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
         }
+        return true;
+      };
+
+      if (control.visiblewhen === "choice-selected") {
+        return isChoiceSelected();
+      } else if (isFF(FF_DEV_1372) && control.visiblewhen === "choice-unselected") {
+        return !isChoiceSelected();
       }
 
       return true;
