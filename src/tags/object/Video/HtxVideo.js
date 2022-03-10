@@ -411,7 +411,7 @@ const HtxVideoView = ({ item }) => {
             regions={regions}
             fullscreen={fullscreen}
             defaultStepSize={16}
-            disableFrames={!supportsRegions}
+            disableView={!supportsRegions}
             framerate={item.framerate}
             onPositionChange={(frame) => {
               item.setFrame(frame);

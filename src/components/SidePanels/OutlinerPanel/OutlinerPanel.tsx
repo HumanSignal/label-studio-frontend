@@ -30,7 +30,7 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}
       />
-      {regions.length > 0 ? (
+      {regions?.regions?.length > 0 ? (
         <OutlinerTree
           regions={regions}
           selectedKeys={regions.selection.keys}
