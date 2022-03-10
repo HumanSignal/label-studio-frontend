@@ -8,6 +8,8 @@ class LSTransformer extends Konva.Transformer {
     let lastPos;
 
     node.on(`dragstart.${EVENTS_NAME}`, (e) => {
+      if ((e.evt?.buttons === 4 || e.evt?.buttons === 1) && this.attrs.zoomedIn) return; 
+
       lastPos = node.getAbsolutePosition();
       if (!this.isDragging() && node !== this.findOne('.back')) {
         this.startDrag(e, false);
@@ -52,16 +54,19 @@ class LSTransformer extends Konva.Transformer {
     const dragBoundFunc = this.dragBoundFunc();
 
     node.setAttr("transformerDragBoundFunc", (pos)=>{
-      const offset =  node.getAttr("transformerOffset");
-      const newPos = dragBoundFunc.call(node, {
-        x: pos.x - offset.x,
-        y: pos.y - offset.y,
-      });
+      const offset = node.getAttr("transformerOffset");
 
-      return {
-        x: newPos.x + offset.x,
-        y: newPos.y + offset.y,
-      };
+      if (offset){
+        const newPos = dragBoundFunc.call(node, {
+          x: pos.x - offset.x,
+          y: pos.y - offset.y,
+        });
+
+        return {
+          x: newPos.x + offset.x,
+          y: newPos.y + offset.y,
+        };
+      }
     });
   }
   detach(...args) {
