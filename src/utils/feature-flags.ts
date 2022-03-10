@@ -35,6 +35,9 @@ export const FF_DEV_1621 = "ff_front_dev_1621_interactive_mode_150222_short";
 // Keep enabled state of video region on area transformations
 export const FF_DEV_1494 = "ff_front_dev_1494_keep_enabled_on_update_090322_short";
 
+// Fix video timeline expanding and collapsing in full screen mode
+export const FF_DEV_1270 = "ff_front_dev_1270_fullscreen_timeline_expand_090322_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }
