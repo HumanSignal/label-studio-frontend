@@ -1,5 +1,6 @@
 import { observer } from "mobx-react";
 import { FC, useEffect, useMemo, useState } from "react";
+import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { Block, Elem } from "../../utils/bem";
 import { clamp } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
@@ -46,7 +47,10 @@ const TimelineComponent: FC<TimelineProps> = ({
   const [currentPosition, setCurrentPosition] = useState(clamp(position, 1, Infinity));
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
-  const [viewCollapsed, setViewCollapsed] = useState(false);
+  const [viewCollapsed, setViewCollapsed] = useLocalStorageState("video-timeline", false, {
+    fromString(value) { return value === "true" ? true : false; },
+    toString(value) { return String(value); },
+  });
   const step = useMemo(() => defaultStepSize * zoom, [zoom, defaultStepSize]);
 
   const setInternalPosition = (newPosition: number) => {
