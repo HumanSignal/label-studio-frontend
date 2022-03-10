@@ -678,10 +678,7 @@ export default observer(
             />
             <div
               className={styles.frame}
-              style={{
-                width: Math.round(item.naturalWidth * item.stageZoomX),
-                height: Math.round(item.naturalHeight * item.stageZoomY),
-              }}
+              style={item.canvasSize}
             >
               <img
                 ref={ref => {
@@ -704,8 +701,8 @@ export default observer(
               }}
               style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
-              width={Math.round(item.naturalWidth * item.stageZoomX)}
-              height={Math.round(item.naturalHeight * item.stageZoomY)}
+              width={item.canvasSize.width}
+              height={item.canvasSize.height}
               scaleX={item.zoomScale}
               scaleY={item.zoomScale}
               x={item.zoomingPositionX}

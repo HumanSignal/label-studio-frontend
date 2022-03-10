@@ -424,6 +424,14 @@ const Model = types.model({
     };
   },
 
+  get canvasSize() {
+    // @todo rotate?
+    return {
+      width: Math.round(self.naturalWidth * self.stageZoomX),
+      height: Math.round(self.naturalHeight * self.stageZoomY),
+    };
+  },
+
   get zoomBy() {
     return parseFloat(self.zoomby);
   },
@@ -676,7 +684,7 @@ const Model = types.model({
       self.zoomingPositionY = clamp(y, min.y, 0);
     },
 
-    handleZoom(val, mouseRelativePos = { x: Math.round(self.naturalWidth * self.stageZoomX) / 2, y: Math.round(self.naturalHeight * self.stageZoomY) / 2 }) {
+    handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
       if (val) {
         let zoomScale = self.currentZoom;
 
