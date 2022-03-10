@@ -6,6 +6,7 @@ import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { interpolateProp, onlyProps, VideoRegion } from "./VideoRegion";
+import { FF_DEV_1494, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model("VideoRectangleRegionModel", {
@@ -60,7 +61,7 @@ const Model = types
 
         self.sequence = [
           ...self.sequence.slice(0, index),
-          ({ ...keypoint, ...newItem }),
+          ({ ...keypoint, ...(isFF(FF_DEV_1494) ? data : newItem) }),
           ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }
