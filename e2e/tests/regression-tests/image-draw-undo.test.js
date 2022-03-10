@@ -149,7 +149,8 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
     AtImageView[region.action](...region.params);
     AtSidebar.seeRegions(1);
     I.say(`Try to undo ${region.shape}`);
-    I.pressKey(["Control", "z"]);
+    I.wait(0.5);
+    I.pressKey(["ControlOrCommand", "Z"]);
     AtSidebar.seeRegions(0);
   }
 });

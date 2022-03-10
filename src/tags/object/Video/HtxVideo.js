@@ -9,7 +9,7 @@ import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
-import { Hotkey } from "../../../core/Hotkey";
+// import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
 
@@ -18,7 +18,7 @@ import { VideoRegions } from "./VideoRegions";
 import ResizeObserver from "../../../utils/resize-observer";
 import { FF_DEV_1270, isFF } from "../../../utils/feature-flags";
 
-const hotkeys = Hotkey("Video", "Video Annotation");
+// const hotkeys = Hotkey("Video", "Video Annotation");
 
 const enterFullscreen = (el) => {
   if ('webkitRequestFullscreen' in el) {

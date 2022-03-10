@@ -15,6 +15,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { EditableRegion } from "./EditableRegion";
 
 const Model = types
   .model({
@@ -38,6 +39,10 @@ const Model = types
     useTransformer: false,
     supportsRotate: false,
     supportsScale: false,
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+    ],
   }))
   .views(self => ({
     get store() {
@@ -154,6 +159,7 @@ const KeyPointRegionModel = types.compose(
   NormalizationMixin,
   KonvaRegionMixin,
   Model,
+  EditableRegion,
 );
 
 const HtxKeyPointView = ({ item }) => {

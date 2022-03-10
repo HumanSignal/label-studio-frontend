@@ -81,6 +81,7 @@ const Annotation = types
       regions: [],
     }),
 
+    comment: types.optional(types.maybeNull(types.string), null),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);

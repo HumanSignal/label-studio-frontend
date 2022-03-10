@@ -1,6 +1,5 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from "react";
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { Button, Form, Input } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react";
 import { destroy, isAlive, types } from "mobx-state-tree";
 
@@ -18,6 +17,7 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
 import { Block, Elem } from "../../../utils/bem";
 import "./TextArea.styl";
+import { IconTrash } from "../../../assets/icons";
 import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 
 const { TextArea } = Input;
@@ -370,18 +370,26 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFocus, control }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFocus, control, collapsed }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
   const inputRef = useRef();
+  const displayValue = useMemo(() => {
+    if (collapsed) {
+      return (value ?? "").split(/\n/)[0] ?? "";
+    }
+
+    return value;
+  }, [value, collapsed]);
 
   const inputProps = {
     ref: inputRef,
     className: "ant-input " + styles.input,
-    value,
+    value: displayValue,
+    readOnly: collapsed,
     autoSize: isTextarea ? { minRows: 1 } : null,
     onChange: e => {
-      onChange(idx, e.target.value);
+      if (!collapsed) onChange(idx, e.target.value);
     },
     onFocus,
   };
@@ -398,12 +406,27 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
   return (
     <Elem name="item">
       <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/>
+      {!collapsed && (
+        <Elem
+          name="action"
+          tag={Button}
+          icon={<IconTrash />}
+          size="small"
+          type="text"
+          onClick={()=>{onDelete(idx);}}
+        />
+      )}
     </Elem>
   );
 });
 
-const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocus }) => {
+const HtxTextAreaResult = observer(({
+  item,
+  control,
+  firstResultInputRef,
+  onFocus,
+  collapsed,
+}) => {
   const value = item.mainValue;
   const changeHandler = useCallback((idx, val) => {
     const newValue = value.toJSON();
@@ -420,13 +443,22 @@ const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocu
 
   return value.map((line, idx) => {
     return (
-      <HtxTextAreaResultLine key={idx} idx={idx} value={line} onChange={changeHandler} onDelete={deleteHandler} control={control} ref={idx === 0 ? firstResultInputRef : null}
-        onFocus={onFocus}/>
+      <HtxTextAreaResultLine
+        key={idx}
+        idx={idx}
+        value={line}
+        onChange={changeHandler}
+        onDelete={deleteHandler}
+        control={control}
+        ref={idx === 0 ? firstResultInputRef : null}
+        onFocus={onFocus}
+        collapsed={collapsed}
+      />
     );
   });
 });
 
-const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed }) => {
+const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, outliner, color }) => {
   const rows = parseInt(item.rows);
   const isTextArea = rows > 1;
   const isActive = item.area === area;
@@ -437,6 +469,10 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const expand = useCallback(() => {
     if (collapsed) {
       setCollapsed(false);
+
+      if (!area.isSelected) {
+        area.annotation.selectArea(area);
+      }
     }
   }, [collapsed]);
 
@@ -456,6 +492,11 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const mainInputRef = useRef();
   const firstResultInputRef = useRef();
   const lastFocusRequest = useRef(0);
+  const styles = useMemo(() => {
+    return color ? {
+      '--border-color': color,
+    } : {};
+  }, [color]);
 
   useEffect(() => {
     if (isActive && shouldFocus && lastFocusRequest.current < area.perRegionFocusRequest) {
@@ -479,6 +520,8 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
     placeholder: item.placeholder,
     autoSize: isTextArea ? { minRows: 1 } : null,
     onChange: ev => {
+      if (collapsed) return;
+
       const { value } = ev.target;
 
       item.setValue(value);
@@ -518,8 +561,16 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
 
   if (!isAlive(item) || !isAlive(area)) return null;
   return (
-    <Block name="textarea-tag" mod={{ mode: item.mode }}>
-      {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
+    <Block name="textarea-tag" mod={{ mode: item.mode, outliner }} style={styles}>
+      {result ? (
+        <HtxTextAreaResult
+          control={item}
+          item={result}
+          collapsed={collapsed}
+          firstResultInputRef={firstResultInputRef}
+          onFocus={expand}
+        />
+      ) : null}
 
       {showSubmit && (
         <Elem name="form"
