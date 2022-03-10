@@ -1,5 +1,6 @@
 import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
+import { FF_DEV_1265, isFF } from "../../utils/feature-flags";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
 import { VirtualCanvas } from "./VirtualCanvas";
@@ -139,7 +140,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [videoDimensions, zoom, pan, filters, canvasWidth, canvasHeight]);
 
   const updateFrame = useCallback((force = false) => {
-    if (buffering && force !== true) return;
+    if (!isFF(FF_DEV_1265) && buffering && force !== true) return;
     if (!contextRef.current) return;
 
     const currentTime = videoRef.current?.currentTime ?? 0;
