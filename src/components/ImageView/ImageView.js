@@ -679,8 +679,8 @@ export default observer(
             <div
               className={styles.frame}
               style={{
-                width: item.stageComponentSize.width,
-                height: item.stageComponentSize.height,
+                width: Math.round(item.naturalWidth * item.stageZoomX),
+                height: Math.round(item.naturalHeight * item.stageZoomY),
               }}
             >
               <img
@@ -704,10 +704,10 @@ export default observer(
               }}
               style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
-              width={item.stageComponentSize.width}
-              height={item.stageComponentSize.height}
-              scaleX={item.stageScale}
-              scaleY={item.stageScale}
+              width={Math.round(item.naturalWidth * item.stageZoomX)}
+              height={Math.round(item.naturalHeight * item.stageZoomY)}
+              scaleX={item.zoomScale}
+              scaleY={item.zoomScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               offsetX={item.stageTranslate.x}
