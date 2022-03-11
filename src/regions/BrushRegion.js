@@ -525,7 +525,18 @@ const HtxBrushView = ({ item }) => {
       highlightedImageRef.current.src = dataUrl;
       done = true;
     };
-  }, [item.touches.length, item.strokeColor, item.parent.stageScale, store.annotationStore.selected?.id, item.parent?.zoomingPositionX, item.parent?.zoomingPositionY, item.parent?.stageWidth, item.parent?.stageHeight]);
+  }, [
+    item.touches.length,
+    item.strokeColor,
+    item.parent.stageScale,
+    store.annotationStore.selected?.id,
+    item.parent?.zoomingPositionX,
+    item.parent?.zoomingPositionY,
+    item.parent?.stageWidth,
+    item.parent?.stageHeight,
+    item.rle,
+    image,
+  ]);
 
   if (!item.parent) return null;
 
