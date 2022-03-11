@@ -120,10 +120,10 @@ const Annotation = types
     },
 
     get objects() {
-      // Without correct validation toname may be null for control tags so we need to check strict equality to undefined
+      // Without correct validation toname may be null for control tags so we need to check isObjectTag instead of it
       return Array.from(self.names.values()).filter(
         isFF(FF_DEV_1598)
-          ? tag => tag.toname === undefined
+          ? tag => tag.isObjectTag
           : tag => !tag.toname,
       );
     },
