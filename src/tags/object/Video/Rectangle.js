@@ -24,29 +24,13 @@ const getNodeAbsoluteDimensions = (node, workingArea) => {
   };
 };
 
-const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
-  const box = reg.getShape(frame);
-  const style = useRegionStyles(reg, { includeFill: true });
-
-  if (!box) return null;
-
-  const { realWidth: waWidth, realHeight: waHeight } = workingArea;
-  const text = reg.getLabelText(",");
-  const showLabels = reg.store.settings.showLabels;
-  const { score } = reg;
+const RectangleLabel = ({ x, y, text, showLabels, scale, maxWidth, textMaxWidth, scoreSpace, onClickLabel, isTexting, isSticking, style }) => {
+  const [textEl, setTextEl] = useState();
   const fontSize = 20;
   const height = 30;
-  const ss = showLabels && score;
-  const scoreSpace = ss ? 34 : 0;
-  const scale = 1;
-  const [textEl, setTextEl] = useState();
   const paddingLeft = 20;
   const paddingRight = 5;
   const horizontalPaddings = paddingLeft + paddingRight;
-  const maxWidth = box.width * waWidth / 100;
-  const textMaxWidth = Math.max(0, maxWidth - horizontalPaddings - scoreSpace);
-  const isSticking = !!textMaxWidth;
-  const isTexting = true;
 
   const width = useMemo(() => {
     if (!showLabels || !textEl || !maxWidth) return null;
@@ -100,6 +84,65 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
     [isSticking, maxWidth],
   );
 
+  return showLabels ? (
+    <>
+      <Label
+        x={x + paddingLeft * scale + scoreSpace * scale}
+        y={y - height}
+        scaleX={scale}
+        scaleY={scale}
+        onClick={onClickLabel}
+      >
+        <Tag fill={style.fillColor} cornerRadius={4} sceneFunc={tagSceneFunc} offsetX={paddingLeft} />
+        <Text
+          ref={setTextEl}
+          text={text}
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif"
+          fontSize={fontSize}
+          lineHeight={(1 / fontSize) * height}
+          height={height}
+          width={width}
+          wrap="none"
+          ellipsis="true"
+          fill={Constants.SHOW_LABEL_FILL}
+          padding={0}
+        />
+      </Label>
+      <Path
+        x={x + 2 * scale + scoreSpace}
+        y={y + 2 * scale - 25}
+        scaleX={scale}
+        scaleY={scale}
+        fill={Constants.SHOW_LABEL_FILL}
+        data={isTexting ? OCR_PATH : TAG_PATH}
+      />
+    </>
+  ) : null;
+};
+
+const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
+  const box = reg.getShape(frame);
+  const style = useRegionStyles(reg, { includeFill: true });
+
+  if (!box) return null;
+
+  const { realWidth: waWidth, realHeight: waHeight } = workingArea;
+  const text = reg.getLabelText(",");
+  const showLabels = reg.store.settings.showLabels;
+  const { score } = reg;
+  const fontSize = 20;
+  const height = 30;
+  const ss = showLabels && score;
+  const scoreSpace = ss ? 34 : 0;
+  const scale = 1;
+  const paddingLeft = 20;
+  const paddingRight = 5;
+  const horizontalPaddings = paddingLeft + paddingRight;
+  const maxWidth = box.width * waWidth / 100;
+  const textMaxWidth = Math.max(0, maxWidth - horizontalPaddings - scoreSpace);
+  const isSticking = !!textMaxWidth;
+  const isTexting = !!reg.texting;
+
   const groupBox = {
     strokeScaleEnabled: false,
   };
@@ -112,7 +155,7 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
     rotation: box.rotation,
   };
 
-  const onClickLabel = reg.onCLickRegion;
+  const onClickLabel = reg.onClickRegion;
 
   return reg.isInLifespan(frame) ? (
     <Group {...groupBox}>
@@ -136,40 +179,22 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
           />
         </Label>
       )}
-      {showLabels && (
-        <>
-          <Label
-            x={newBox.x + paddingLeft * scale + scoreSpace * scale}
-            y={newBox.y - height}
-            scaleX={scale}
-            scaleY={scale}
-            onClick={onClickLabel}
-          >
-            <Tag fill={style.fillColor} cornerRadius={4} sceneFunc={tagSceneFunc} offsetX={paddingLeft} />
-            <Text
-              ref={setTextEl}
-              text={text}
-              fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif"
-              fontSize={fontSize}
-              lineHeight={(1 / fontSize) * height}
-              height={height}
-              width={width}
-              wrap="none"
-              ellipsis="true"
-              fill={Constants.SHOW_LABEL_FILL}
-              padding={0}
-            />
-          </Label>
-          <Path
-            x={newBox.x + 2 * scale + scoreSpace}
-            y={newBox.y + 2 * scale - 25}
-            scaleX={scale}
-            scaleY={scale}
-            fill={Constants.SHOW_LABEL_FILL}
-            data={isTexting ? OCR_PATH : TAG_PATH}
-          />
-        </>
-      )}
+
+      <RectangleLabel
+        x={newBox.x}
+        y={newBox.y}
+        text={text}
+        showLabels={showLabels}
+        maxWidth={maxWidth}
+        textMaxWidth={textMaxWidth}
+        scoreSpace={scoreSpace}
+        scale={scale}
+        onClickLabel={onClickLabel}
+        isTexting={isTexting}
+        isSticking={isSticking}
+        style={style}
+      />
+
       <Rect
         {...newBox}
         draggable
