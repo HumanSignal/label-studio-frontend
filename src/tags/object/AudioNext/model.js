@@ -273,6 +273,7 @@ export const AudioModel = types.compose(
       },
 
       handleSeek() {
+        console.log("seek");
         self.triggerSyncSeek(self._ws.getCurrentTime());
       },
 

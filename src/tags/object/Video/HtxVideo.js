@@ -73,9 +73,13 @@ const HtxVideoView = ({ item }) => {
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
-      _setPosition(clamp(value, 1, videoLength));
+      const newPosition = clamp(value, 1, videoLength);
+
+      _setPosition(newPosition);
+
+      if (!playing) item.triggerSyncSeek(item.ref.currentTime);
     }
-  }, [position, videoLength]);
+  }, [position, videoLength, playing]);
 
   const setVideoLength = useCallback((value) => {
     if (value !== videoLength) _setVideoLength(value);
@@ -396,6 +400,8 @@ const HtxVideoView = ({ item }) => {
                   onResize={handleVideoResize}
                   onClick={togglePlaying}
                   onEnded={handleVideoEnded}
+                  onPlay={() => _setPlaying(true)}
+                  onPause={() => _setPlaying(false)}
                 />
               </>
             )}

@@ -19,7 +19,7 @@ const SyncMixin = types
   syncedObject: null,
   currentEvent: null,
 }))
-  .actions(self => ({
+  .actions(() => ({
     // *** abstract ***
     handleSyncPlay(time: number) { console.error("handleSyncPlay should be implemented"); },
     handleSyncPause(time: number) { console.error("handleSyncPause should be implemented"); },
@@ -27,6 +27,7 @@ const SyncMixin = types
   }))
   .actions(self => ({
     _handleSyncSeek(time: number) {
+      console.log('seek mixin');
       self.currentEvent = "seek";
       self.handleSyncSeek(time);
     },

@@ -111,6 +111,7 @@ const Model = types
     },
 
     handleSyncSeek(time) {
+      console.log({ time });
       if (self.ref.current) {
         self.ref.current.currentTime = time;
       }

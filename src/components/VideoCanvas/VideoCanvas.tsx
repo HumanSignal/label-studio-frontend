@@ -23,6 +23,8 @@ type VideoProps = {
   brightness?: number,
   saturation?: number,
 
+  onPlay?: () => void,
+  onPause?: () => void,
   onClick?: () => void,
   onLoad?: (data: VideoRef) => void,
   onFrameChange?: (frame: number, length: number) => void,
@@ -140,7 +142,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [videoDimensions, zoom, pan, filters, canvasWidth, canvasHeight]);
 
   const updateFrame = useCallback((force = false) => {
-    if (!isFF(FF_DEV_1265) && buffering && force !== true) return;
+    // if (!isFF(FF_DEV_1265) && buffering && force !== true) return;
     if (!contextRef.current) return;
 
     const currentTime = videoRef.current?.currentTime ?? 0;
