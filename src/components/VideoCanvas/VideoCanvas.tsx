@@ -143,7 +143,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (!contextRef.current) return;
 
     const currentTime = videoRef.current?.currentTime ?? 0;
-    const frameNumber = Math.ceil(currentTime * framerate);
+    const frameNumber = Math.round(currentTime * framerate);
     const frame = clamp(frameNumber, 1, length || 1);
     const onChange = props.onFrameChange ?? (() => {});
 

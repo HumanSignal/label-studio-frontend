@@ -64,6 +64,10 @@ const RegionsMixin = types
       return self.annotation?.regionStore.isSelected(self);
     },
 
+    get isReady() {
+      return true;
+    },
+
     getConnectedDynamicRegions(selfExcluding) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
 
