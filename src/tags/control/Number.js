@@ -152,20 +152,21 @@ const NumberModel = types.compose("NumberModel", ControlBase, TagAttrs, Model, R
 
 const HtxNumber = inject("store")(
   observer(({ item, store }) => {
-    const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+    const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
 
     return (
       <div style={visibleStyle}>
         <input
           type={item.slider ? "range" : "number"}
           name={item.name}
-          value={item.number ?? item.defaultvalue ?? 0}
+          value={item.number ?? item.defaultvalue ?? (isDefined(item.min) ? item.min : 0)}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
           defaultValue={Number(item.defaultvalue)}
           onChange={item.onChange}
         />
+        {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? 0}</output>}
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
           <sup style={{ fontSize: "9px" }}>[{item.hotkey}]</sup>
         )}
