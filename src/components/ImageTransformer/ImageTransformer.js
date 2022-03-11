@@ -175,7 +175,7 @@ export default class TransformerComponent extends Component {
   dragBoundFunc = (pos) => {
     const { item } = this.props;
 
-    return item.fixForZoomWrapper(pos, pos => {
+    return item.fixForZoomWrapper(pos,pos => {
       if (!this.transformer || !item) return;
 
       let { x, y } = pos;
@@ -207,7 +207,7 @@ export default class TransformerComponent extends Component {
             height={selectedRegionsBBox.bottom-selectedRegionsBBox.top}
             fill="rgba(0,0,0,0)"
             draggable
-            onClick={() => {
+            onClick={()=>{
               item.annotation.unselectAreas();
             }}
             onMouseOver={() => {
@@ -228,11 +228,9 @@ export default class TransformerComponent extends Component {
     if (!this.props.supportsTransform) return null;
     const { draggableBackground } = this;
 
-    console.log(this.props);
     return (
       <>
         {this.props.singleNodeMode !== true && draggableBackground}
-
         <LSTransformer
           resizeEnabled={true}
           ignoreStroke={true}
@@ -246,14 +244,11 @@ export default class TransformerComponent extends Component {
           flipEnabled={false}
           zoomedIn={this.props.item.zoomScale > 1}
           onDragStart={e => {
-            const {
-              item: { selectedRegionsBBox },
-            } = this.props;
+            const { item: { selectedRegionsBBox } } = this.props;
 
             this.freeze();
 
-            if (!this.transformer || e.target !== e.currentTarget || !selectedRegionsBBox)
-              return;
+            if (!this.transformer || e.target !== e.currentTarget || !selectedRegionsBBox) return;
 
             this.draggingAreaBBox = {
               x: selectedRegionsBBox.left,
