@@ -534,7 +534,7 @@ const HtxPolygonView = ({ item }) => {
         isDragging = false;
       },
     };
-  }, []);
+  }, [item.bboxCoords.left, item.bboxCoords.top]);
 
   if (!item.parent) return null;
 
