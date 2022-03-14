@@ -164,7 +164,8 @@ const HtxVideoView = ({ item }) => {
     return () => {
       // window.removeEventListener('resize', onResize);
       document.removeEventListener('keydown', onKeyDown);
-      observer.unobserve();
+      observer.unobserve(videoContainerRef.current);
+      observer.unobserve(videoBlockRef.current);
       observer.disconnect();
     };
   }, []);
