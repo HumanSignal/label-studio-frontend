@@ -14,8 +14,6 @@ const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const currentSecond = (time * 1000) % 1000;
   const result = Math.round(currentSecond / fpsMs).toString();
 
-  console.log({ time, fps, result, rawNumber: currentSecond / fpsMs });
-
   return result.padStart(roundedFps.length, '0');
 };
 
