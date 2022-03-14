@@ -85,7 +85,8 @@ const _Tool = types
     return {
       handleToolSwitch() {
         if (self.getCurrentArea()?.isDrawing) {
-          self.deleteRegion();
+          if (self.getCurrentArea().canClose()) self.finishDrawing();
+          else self.cleanupUncloseableShape();
         }
       },
       listenForClose() {
