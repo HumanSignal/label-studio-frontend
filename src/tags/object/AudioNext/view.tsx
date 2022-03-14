@@ -30,9 +30,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
   const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
-  const formatPosition = useCallback((pos: number, fps: number): string => {
+  const formatPosition = useCallback(({ position, fps }): string => {
     const roundedFps = Math.floor(fps);
-    const value = Math.floor(pos % roundedFps);
+    const value = Math.floor(position % roundedFps);
     const result = Math.floor(value > 0 ? value : roundedFps);
 
     return result.toString().padStart(3, '0');

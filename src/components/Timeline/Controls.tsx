@@ -6,14 +6,17 @@ import { Block, Elem } from "../../utils/bem";
 import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
-import { TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
+import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
 
-const relativePosition = (pos: number, fps: number) => {
-  const roundedFps = Math.floor(fps);
-  const value = Math.floor(pos % roundedFps);
-  const result = Math.floor(value > 0 ? value : roundedFps);
+const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
+  const roundedFps = Math.round(fps).toString();
+  const fpsMs = 1000 / fps;
+  const currentSecond = (time * 1000) % 1000;
+  const result = Math.round(currentSecond / fpsMs).toString();
 
-  return result.toString().padStart(roundedFps.toString().length, '0');
+  console.log({ time, fps, result, rawNumber: currentSecond / fpsMs });
+
+  return result.padStart(roundedFps.length, '0');
 };
 
 export const Controls: FC<TimelineControlsProps> = ({
@@ -47,7 +50,7 @@ export const Controls: FC<TimelineControlsProps> = ({
   }, [length, frameRate]);
 
   const currentTime = useMemo(() => {
-    return position / frameRate;
+    return (position - 1) / frameRate;
   }, [position, frameRate]);
 
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
@@ -87,7 +90,7 @@ export const Controls: FC<TimelineControlsProps> = ({
             <Component
               key={name}
               length={length}
-              position={position}
+              position={position - 1}
               volume={props.volume}
               onPositionChange={onPositionChange}
               onVolumeChange={props.onVolumeChange}
@@ -254,21 +257,19 @@ const TimeDisplay: FC<TimeDisplay> = ({
   length,
   formatPosition,
 }) => {
-  const formatter = formatPosition ?? relativePosition;
+  const pos = position - 1;
+  const formatter = formatPosition ?? positionFromTime;
+  const commonOptions = { position: pos, fps: framerate, length };
+  const currentTimeFormatted = formatter({ time: currentTime, ...commonOptions });
+  const totalTimeFormatted = formatter({ time: duration, ...commonOptions });
 
   return (
     <Elem name="time">
       <Elem name="time-section">
-        <Time
-          time={currentTime}
-          position={formatter(position, framerate)}
-        />
+        <Time time={currentTime} position={currentTimeFormatted}/>
       </Elem>
       <Elem name="time-section">
-        <Time
-          time={duration}
-          position={formatter(length, framerate)}
-        />
+        <Time time={duration} position={totalTimeFormatted}/>
       </Elem>
     </Elem>
   );

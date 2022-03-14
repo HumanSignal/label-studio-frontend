@@ -36,7 +36,7 @@ import Types from "../../../core/Types";
  * @meta_description Customize Label Studio with the Video tag for basic video annotation tasks for machine learning and data science projects.
  * @param {string} name Name of the element
  * @param {string} value URL of the video
- * @param {number} [frameRate=0.04] frame rate in seconds; default 1/25s
+ * @param {number} [frameRate=24] videp frame rate per second; default is 24
  * @param {string} [sync] object name to sync with
  * @param {boolean} [muted=false] muted video
  * @param {number} [heihght=600] heihght of the video

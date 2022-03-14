@@ -5,8 +5,8 @@ import { TimelineSideControlProps } from "../Types";
 import "./FramesControl.styl";
 
 export const FramesControl: FC<TimelineSideControlProps> = ({
-  position = 1,
-  length = 1,
+  position = 0,
+  length = 0,
   onPositionChange,
 }) => {
   const [inputMode, setInputMode] = useState(false);
@@ -18,7 +18,7 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
           length={length}
           position={position}
           onChange={(value) => {
-            onPositionChange?.(value);
+            onPositionChange?.(value > 0 ? value + 1 : value);
           }}
           onFinishEditing={() => {
             setInputMode(false);

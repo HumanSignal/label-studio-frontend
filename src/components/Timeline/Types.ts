@@ -37,7 +37,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   onVolumeChange?: (volume: number) => void;
   onFullscreenToggle?: (fullscreen: boolean) => void;
   onSpeedChange?: (speed: number) => void;
-  formatPosition?: (position: number, fps: number) => string;
+  formatPosition?: (options: TimelineControlsFormatterOptions) => string;
 }
 
 export interface TimelineViewProps {
@@ -161,4 +161,11 @@ export interface TimelineSideControlProps {
   volume?: number;
   onPositionChange?: TimelineControlsProps["onPositionChange"];
   onVolumeChange?: TimelineProps["onVolumeChange"];
+}
+
+export type TimelineControlsFormatterOptions = {
+  time: number,
+  position: number,
+  fps: number,
+  length: number,
 }

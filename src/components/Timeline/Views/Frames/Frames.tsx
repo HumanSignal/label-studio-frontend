@@ -230,7 +230,7 @@ export const Frames: FC<TimelineViewProps> = ({
           <Elem
             name="hover"
             style={{ left: roundToStep(hoverOffset, step), marginLeft: timelineStartOffset }}
-            data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
+            data-frame={toSteps(currentOffsetX + hoverOffset, step)}
           />
         )}
       </Elem>
