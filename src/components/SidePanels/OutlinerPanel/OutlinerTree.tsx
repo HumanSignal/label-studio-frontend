@@ -69,7 +69,7 @@ const useDataTree = ({
   const processor = useCallback((item: any, idx) => {
     const { id, type, hidden } = item;
     const style = item.background ?? item.getOneColor();
-    const color = chroma(style).alpha(1);
+    const color = chroma(style ?? "#666").alpha(1);
     const mods: Record<string, any> = { hidden, type };
     const label = (() => {
       if (type.match('label')) {

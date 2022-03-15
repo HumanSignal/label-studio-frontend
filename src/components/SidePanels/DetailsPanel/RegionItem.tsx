@@ -37,7 +37,9 @@ export const RegionItem: FC<RegionItemProps> = observer(({
   }, [region.labels]);
 
   const color = useMemo(() => {
-    return chroma(region.getOneColor()).alpha(1);
+    const bgColor = region.background ?? region.getOneColor() ?? "#666";
+
+    return chroma(bgColor).alpha(1);
   }, [region]);
 
   return (
