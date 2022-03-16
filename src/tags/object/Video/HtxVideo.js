@@ -157,15 +157,16 @@ const HtxVideoView = ({ item }) => {
     document.addEventListener('keydown', onKeyDown);
 
     const observer = new ResizeObserver(() => onResize());
+    const [vContainer, vBlock] = [videoContainerRef.current, videoBlockRef.current];
 
-    observer.observe(videoContainerRef.current);
-    observer.observe(videoBlockRef.current);
+    observer.observe(vContainer);
+    observer.observe(vBlock);
 
     return () => {
       // window.removeEventListener('resize', onResize);
       document.removeEventListener('keydown', onKeyDown);
-      observer.unobserve(videoContainerRef.current);
-      observer.unobserve(videoBlockRef.current);
+      observer.unobserve(vContainer);
+      observer.unobserve(vBlock);
       observer.disconnect();
     };
   }, []);
