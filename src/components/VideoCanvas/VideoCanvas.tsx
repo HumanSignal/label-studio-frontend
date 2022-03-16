@@ -173,12 +173,14 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const handleVideoPlay = useCallback(() => {
     setPlaying(true);
     setBuffering(false);
-  }, []);
+    props.onPlay?.();
+  }, [props.onPlay]);
 
   const handleVideoPause = useCallback(() => {
     setPlaying(false);
     setBuffering(false);
-  }, []);
+    props.onPause?.();
+  }, [props.onPause]);
 
   const handleVideoPlaying = useCallback(() => {
     setBuffering(false);
