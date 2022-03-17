@@ -25,7 +25,9 @@ export const Keypoints: FC<KeypointsProps> = ({
   const { step, seekOffset, visibleWidth, length } = useContext(TimelineContext);
   const { label, color, visible, sequence, selected } = region;
 
-  const extraSteps = Math.round(visibleWidth / 2);
+  const extraSteps = useMemo(() => {
+    return Math.round(visibleWidth / 2);
+  }, [visibleWidth]);
 
   const minVisibleKeypointPosition = useMemo(() => {
     return clamp(seekOffset - extraSteps, 0, length);

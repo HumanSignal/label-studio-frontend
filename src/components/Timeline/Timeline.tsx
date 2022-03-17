@@ -84,7 +84,17 @@ const TimelineComponent: FC<TimelineProps> = ({
     seekOffset,
     settings: View.settings,
     visibleWidth: seekVisibleWidth,
-  }), [position, length, regions, step, playing, View.settings, data]);
+  }), [
+    position,
+    seekOffset,
+    seekVisibleWidth,
+    length,
+    regions,
+    step,
+    playing,
+    View.settings,
+    data,
+  ]);
 
   useEffect(() => {
     setCurrentPosition(clamp(position, 1, length));
