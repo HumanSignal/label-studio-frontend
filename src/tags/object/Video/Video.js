@@ -140,6 +140,7 @@ const Model = types
 
     setOnlyFrame(frame) {
       self.frame = frame;
+      self.triggerSyncSeek(frame / self.framerate);
     },
 
     setFrame(frame) {

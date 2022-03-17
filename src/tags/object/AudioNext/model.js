@@ -119,7 +119,13 @@ export const AudioModel = types.compose(
       },
 
       handleSyncSeek(time) {
-        self._ws && (self._ws.setCurrentTime(time));
+        try {
+          console.log(time);
+          self._ws && (self._ws.setCurrentTime(time));
+        } catch (err) {
+          console.log(err);
+          console.log(time);
+        }
       },
 
       handleNewRegions() {
@@ -273,8 +279,10 @@ export const AudioModel = types.compose(
       },
 
       handleSeek() {
-        console.log("seek");
-        self.triggerSyncSeek(self._ws.getCurrentTime());
+        const time = self._ws.getCurrentTime();
+
+        console.log("seek", time);
+        self.triggerSyncSeek(time);
       },
 
       createWsRegion(region) {

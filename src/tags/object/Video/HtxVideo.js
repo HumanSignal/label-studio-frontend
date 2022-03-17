@@ -72,11 +72,7 @@ const HtxVideoView = ({ item }) => {
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
-      const newPosition = clamp(value, 1, videoLength);
-
-      _setPosition(newPosition);
-
-      if (!playing) item.triggerSyncSeek(item.ref.currentTime);
+      _setPosition(clamp(value, 1, videoLength));
     }
   }, [position, videoLength, playing]);
 
