@@ -365,7 +365,7 @@ const Model = types.model({
   },
 
   get fillerHeight() {
-    if ((self.rotation + 360) % 180 === 90) {
+    if (self.isSideways) {
       return `${self.naturalWidth / self.naturalHeight * 100}%`;
     } else {
       return `${self.naturalHeight / self.naturalWidth * 100}%`;
@@ -411,21 +411,31 @@ const Model = types.model({
     return getType(name).name;
   },
 
+  get isSideways() {
+    return (self.rotation + 360) % 180 === 90;
+  },
+
   get stageComponentSize() {
-    if ((self.rotation + 360) % 180 === 90) {
+    if (self.isSideways) {
       return {
         width: self.stageHeight,
         height: self.stageWidth,
       };
     }
     return {
-      width: self.stageWidth ,
+      width: self.stageWidth,
       height: self.stageHeight,
     };
   },
 
   get canvasSize() {
-    // @todo rotate?
+    if (self.isSideways) {
+      return {
+        width: Math.round(self.naturalHeight * self.stageZoomX),
+        height: Math.round(self.naturalWidth * self.stageZoomY),
+      };
+    }
+
     return {
       width: Math.round(self.naturalWidth * self.stageZoomX),
       height: Math.round(self.naturalHeight * self.stageZoomY),
@@ -617,10 +627,10 @@ const Model = types.model({
       self.currentZoom = scale;
 
       // cool comment about all this stuff
-      const maxScale = (self.rotation + 360) % 180 === 90
+      const maxScale = self.isSideways
         ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
         : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-      const coverScale = (self.rotation + 360) % 180 === 90
+      const coverScale = self.isSideways
         ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
         : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
 
@@ -757,12 +767,15 @@ const Model = types.model({
       self.rotation = (self.rotation + degree + 360) % 360;
       let ratioK = 1 / self.stageRatio;
 
-      if ((self.rotation + 360) % 180 === 90) {
+      if (self.isSideways) {
         self.stageRatio = self.naturalWidth / self.naturalHeight;
       } else {
         self.stageRatio = 1;
       }
       ratioK = ratioK * self.stageRatio;
+
+      self.setZoom(self.currentZoom);
+
       if (degree === -90) {
         this.setZoomPosition(
           self.zoomingPositionY * ratioK,
@@ -779,6 +792,8 @@ const Model = types.model({
           self.zoomingPositionX * ratioK,
         );
       }
+
+      self.updateImageAfterZoom();
     },
 
     _recalculateImageParams() {
