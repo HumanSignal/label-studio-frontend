@@ -3,6 +3,8 @@ import { MIN_SIZE } from "../../tools/Base";
 import { getBoundingBoxAfterChanges } from "../../utils/image";
 import LSTransformer from "./LSTransformer";
 
+const EPSILON = 0.001;
+
 export default class TransformerComponent extends Component {
   componentDidMount() {
     setTimeout(this.checkNode);
@@ -131,11 +133,11 @@ export default class TransformerComponent extends Component {
       const selfRect = { x: 0, y: 0, width, height };
 
       // bounding box, got by applying current shift and rotation to normalized box
-      const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation / Math.PI * 180);
+      const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
       const fixed = this.fitBBoxToScaledStage(clientRect, stageDimensions);
 
       // if bounding box is out of stage — do nothing
-      if (["x", "y", "width", "height"].some(key => fixed[key] !== clientRect[key])) return oldBox;
+      if (["x", "y", "width", "height"].some(key => Math.abs(fixed[key] - clientRect[key]) > EPSILON)) return oldBox;
       return newBox;
     } else {
       return this.fitBBoxToScaledStage(newBox, stageDimensions);

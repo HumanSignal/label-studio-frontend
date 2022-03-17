@@ -96,13 +96,13 @@ export function getBoundingBoxAfterTransform(rect, transform) {
  * Apply changes to rect (shift to (x, y) and rotate) and calc bounding box around it
  * @param {{ x: number, y: number, width: number, height: number }} rect
  * @param {{ x: number, y: number }} shiftPoint
- * @param {number} degRotation
+ * @param {number} radRotation
  */
-export function getBoundingBoxAfterChanges(rect, shiftPoint, degRotation = 0) {
+export function getBoundingBoxAfterChanges(rect, shiftPoint, radRotation = 0) {
   const transform = new Konva.Transform();
 
   transform.translate(shiftPoint.x, shiftPoint.y);
-  transform.rotate((degRotation * Math.PI) / 180);
+  transform.rotate(radRotation);
   return getBoundingBoxAfterTransform(rect, transform);
 }
 
