@@ -161,6 +161,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         zoom={zoom}
         speed={speed}
         volume={props.volume}
+        controls={props.controls}
         position={currentPosition}
         offset={seekOffset}
         leftOffset={View.settings?.leftOffset}

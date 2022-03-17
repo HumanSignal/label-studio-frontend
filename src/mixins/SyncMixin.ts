@@ -27,7 +27,6 @@ const SyncMixin = types
   }))
   .actions(self => ({
     _handleSyncSeek(time: number) {
-      console.log('seek mixin');
       self.currentEvent = "seek";
       self.handleSyncSeek(time);
     },

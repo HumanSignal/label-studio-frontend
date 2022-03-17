@@ -120,11 +120,9 @@ export const AudioModel = types.compose(
 
       handleSyncSeek(time) {
         try {
-          console.log(time);
           self._ws && (self._ws.setCurrentTime(time));
         } catch (err) {
           console.log(err);
-          console.log(time);
         }
       },
 
@@ -281,7 +279,6 @@ export const AudioModel = types.compose(
       handleSeek() {
         const time = self._ws.getCurrentTime();
 
-        console.log("seek", time);
         self.triggerSyncSeek(time);
       },
 

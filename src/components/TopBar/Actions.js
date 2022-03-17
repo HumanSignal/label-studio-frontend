@@ -21,8 +21,6 @@ export const Actions = ({ store }) => {
     annotationStore.toggleViewingAllAnnotations();
   }, [annotationStore]);
 
-  console.log({ hasVideo });
-
   return (
     <Elem name="section">
       {store.hasInterface("annotations:view-all") && !hasVideo && (

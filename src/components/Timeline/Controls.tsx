@@ -3,6 +3,7 @@ import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpa
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
+import { isDefined } from "../../utils/utilities";
 import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
@@ -84,7 +85,7 @@ export const Controls: FC<TimelineControlsProps> = ({
 
           const Component = SideControls[name as keyof typeof SideControls];
 
-          return (
+          return isDefined(Component) && (
             <Component
               key={name}
               length={length}

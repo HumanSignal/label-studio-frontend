@@ -15,7 +15,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const [zoom, setZoom] = useState(Number(item.zoom));
   const [volume, setVolume] = useState(Number(item.volume));
-  const [speed, setSpeed] = useState(Number(item.speed));
+  const [speed, setSpeed] = useState(1);
 
   const setPlaying = useCallback((playing) => {
     _setPlaying(playing);
@@ -28,7 +28,11 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
     item.onLoad(data.surfer);
   }, []);
 
-  const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
+  const handlePositionChange = useCallback((frame: number) => {
+    setPosition(frame);
+    item.triggerSyncSeek(frame / 1000);
+  }, []);
+
   const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
   const formatPosition = useCallback(({ position, fps }): string => {
     const roundedFps = Math.floor(fps);
@@ -52,7 +56,11 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         zoom={zoom}
         speed={speed}
         volume={volume}
-        controls={{ VolumeControl: true }}
+        controls={{
+          VolumeControl: item.volume,
+          SpeedControl: item.speed,
+          ZoomControl: item.zoom,
+        }}
         defaultStepSize={16}
         length={audioLength}
         position={position}

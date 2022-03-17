@@ -2,7 +2,10 @@ import { FC, MouseEvent } from "react";
 import { ViewTypes } from "./Views";
 import * as Controls from "./SideControls";
 
-export type TimelineControls = Partial<Record<keyof typeof Controls, boolean>>
+export type TimelineControls = Partial<Record<keyof typeof Controls, boolean>> & {
+  ZoomControl: boolean,
+  SpeedControl: boolean,
+}
 
 export interface TimelineProps<D extends ViewTypes = "frames"> {
   regions: any[];
@@ -51,6 +54,7 @@ export interface TimelineViewProps {
   volume?: number;
   regions: TimelineRegion[];
   leftOffset?: number;
+  controls?: TimelineControls;
   onScroll: (position: number) => void;
   onChange: (position: number) => void;
   onResize: (position: number) => void;
