@@ -4,6 +4,7 @@ import { Block, Elem } from "../../utils/bem";
 import { aroundTransition } from "../../utils/transition";
 import { alignElements, ElementAlignment } from "../../utils/dom";
 import "./Tooltip.styl";
+import { useFullscreen } from "../../hooks/useFullscreen";
 
 export interface TooltipProps {
   title: string;
@@ -47,8 +48,13 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     setAlign(resultAlign);
   }, [triggerElement.current, tooltipElement.current]);
 
-  const performAnimation = useCallback(visible => {
+  const performAnimation = useCallback((visible: boolean, disableAnimation?: boolean) => {
     if (tooltipElement.current) {
+      if (disableAnimation) {
+        setInjected(false);
+        return;
+      }
+
       aroundTransition(tooltipElement.current, {
         beforeTransition() {
           setVisibility(visible ? "before-appear" : "before-disappear");
@@ -137,6 +143,12 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
       }
     };
   }, [enabled, mouseEnterDelay]);
+
+  useFullscreen({
+    onEnterFullscreen: () => performAnimation(false, true),
+    onExitFullscreen: () => performAnimation(false, true),
+  }, []);
+
 
   return (
     <>

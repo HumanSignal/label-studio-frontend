@@ -1,5 +1,6 @@
 import { cloneElement, CSSProperties, forwardRef, MouseEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useFullscreen } from "../../hooks/useFullscreen";
 import { Block, cn } from "../../utils/bem";
 import { alignElements } from "../../utils/dom";
 import { aroundTransition } from "../../utils/transition";
@@ -34,7 +35,6 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
 }, ref) => {
   const rootName = cn("dropdown");
 
-  /**@type {import('react').RefObject<HTMLElement>} */
   const dropdown = useRef<HTMLElement>();
   const { triggerRef } = useContext(DropdownContext) ?? {};
   const isInline = triggerRef === undefined;
@@ -59,59 +59,62 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
   }, []);
 
   const performAnimation = useCallback(
-    async (visible = false) => {
+    async (visible = false, disableAnimation?: boolean) => {
       if (props.enabled === false && visible === true) return;
 
       return new Promise<void>((resolve) => {
         const menu = dropdown.current!;
 
-        if (animated !== false) {
-          aroundTransition(menu, {
-            transition: () => {
-              setVisibility(visible ? "appear" : "disappear");
-            },
-            beforeTransition: () => {
-              setVisibility(visible ? "before-appear" : "before-disappear");
-            },
-            afterTransition: () => {
-              setVisibility(visible ? "visible" : null);
-              resolve();
-            },
-          });
-        } else {
+        if (animated === false || disableAnimation === true) {
           setVisibility(visible ? "visible" : null);
           resolve();
+          return;
         }
+
+        aroundTransition(menu, {
+          transition: () => {
+            setVisibility(visible ? "appear" : "disappear");
+          },
+          beforeTransition: () => {
+            setVisibility(visible ? "before-appear" : "before-disappear");
+          },
+          afterTransition: () => {
+            setVisibility(visible ? "visible" : null);
+            resolve();
+          },
+        });
       });
     },
     [animated],
   );
 
-  const close = useCallback(async () => {
-    if (currentVisible === false) return;
+  const toggle = useCallback(async (updatedState?: boolean, disableAnimation?: boolean) => {
+    const newState = updatedState ?? !currentVisible;
 
-    props.onToggle?.(false);
-    await performAnimation(false);
-    setVisible(false);
-  }, [currentVisible, performAnimation, props]);
-
-  const open = useCallback(async () => {
-    if (currentVisible === true) return;
-
-    props.onToggle?.(true);
-    await performAnimation(true);
-    setVisible(true);
-  }, [currentVisible, performAnimation, props]);
-
-  const toggle = useCallback(async () => {
-    const newState = !currentVisible;
-
-    if (newState) {
-      open();
-    } else {
-      close();
+    if (currentVisible !== newState) {
+      console.log("dropdown", currentVisible, newState);
+      props.onToggle?.(newState);
+      await performAnimation(newState, disableAnimation);
+      setVisible(newState);
     }
-  }, [close, currentVisible, open]);
+  }, [currentVisible, performAnimation, props.onToggle]);
+
+  const close = useCallback(async (disableAnimation?: boolean) => {
+    await toggle(false, disableAnimation);
+  }, [toggle]);
+
+  const open = useCallback(async (disableAnimation?: boolean) => {
+    await toggle(true, disableAnimation);
+  }, [toggle]);
+
+  useFullscreen({
+    onEnterFullscreen: () => close(true),
+    onExitFullscreen: () => close(true),
+  }, []);
+
+  useEffect(() => {
+    toggle(false);
+  }, [isInline]);
 
   useEffect(() => {
     if (!ref) return;

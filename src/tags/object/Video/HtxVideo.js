@@ -16,28 +16,9 @@ import { clamp, isDefined } from "../../../utils/utilities";
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 import ResizeObserver from "../../../utils/resize-observer";
+import { useFullscreen } from "../../../hooks/useFullscreen";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
-
-const enterFullscreen = (el) => {
-  if ('webkitRequestFullscreen' in el) {
-    el.webkitRequestFullscreen();
-  } else {
-    el.requestFullscreen();
-  }
-};
-
-const cancelFullscreen = () => {
-  if ('webkitCancelFullScreen' in document) {
-    document.webkitCancelFullScreen();
-  } else {
-    document.exitFullscreen();
-  }
-};
-
-const getFullscreenElement = () => {
-  return document.webkitCurrentFullScreenElement ?? document.fullscreenElement;
-};
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
@@ -54,7 +35,11 @@ const HtxVideoView = ({ item }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const fullscreen = useFullscreen({
+    onEnterFullscreen() { setIsFullScreen(true); },
+    onExitFullscreen() { setIsFullScreen(false); },
+  });
 
   const setPlaying = useCallback((playing) => {
     _setPlaying(playing);
@@ -168,28 +153,14 @@ const HtxVideoView = ({ item }) => {
   }, []);
 
   useEffect(() => {
-    const fullscreenElement = getFullscreenElement();
+    const fullscreenElement = fullscreen.getElement();
 
-    if (fullscreen && !fullscreenElement) {
-      enterFullscreen(mainContentRef.current);
-    } else if (!fullscreen && fullscreenElement) {
-      cancelFullscreen();
+    if (isFullScreen && !fullscreenElement) {
+      fullscreen.enter(mainContentRef.current);
+    } else if (!isFullScreen && fullscreenElement) {
+      fullscreen.exit();
     }
-  }, [fullscreen]);
-
-  useEffect(() => {
-    const onChangeFullscreen = () => {
-      const fullscreenElement = getFullscreenElement();
-
-      if (!fullscreenElement) setFullscreen(false);
-    };
-
-    const evt = 'onwebkitfullscreenchange' in document ? 'webkitfullscreenchange' : 'fullscreenchange';
-
-    document.addEventListener(evt, onChangeFullscreen);
-
-    return () => document.removeEventListener(evt, onChangeFullscreen);
-  }, []);
+  }, [isFullScreen]);
 
   const handleZoom = useCallback((e) => {
     if (!e.shiftKey) return;
@@ -279,8 +250,8 @@ const HtxVideoView = ({ item }) => {
   }, [position, videoLength, setPosition]);
 
   const handleFullscreenToggle = useCallback(() => {
-    setFullscreen(!fullscreen);
-  }, [fullscreen]);
+    setIsFullScreen(!isFullScreen);
+  }, [isFullScreen]);
 
   const handleSelectRegion = useCallback((_, id, select) => {
     const region = item.findRegion(id);
@@ -336,15 +307,15 @@ const HtxVideoView = ({ item }) => {
 
   return (
     <ObjectTag item={item}>
-      <Block name="video-segmentation" ref={mainContentRef} mod={{ fullscreen }}>
+      <Block name="video-segmentation" ref={mainContentRef} mod={{ fullscreen: isFullScreen }}>
         {item.errors?.map((error, i) => (
           <ErrorMessage key={`err-${i}`} error={error} />
         ))}
 
-        <Block name="video" mod={{ fullscreen }} ref={videoBlockRef}>
+        <Block name="video" mod={{ fullscreen: isFullScreen }} ref={videoBlockRef}>
           <Elem tag={Space} name="controls" align="end" size="small">
             <Dropdown.Trigger
-              inline={fullscreen}
+              inline={isFullScreen}
               content={(
                 <Menu size="medium" style={{ width: 150 }} closeDropdownOnItemClick={false}>
                   <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
@@ -410,7 +381,7 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
-            fullscreen={fullscreen}
+            fullscreen={isFullScreen}
             defaultStepSize={16}
             disableView={!supportsRegions}
             framerate={item.framerate}
