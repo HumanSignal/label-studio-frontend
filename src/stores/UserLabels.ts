@@ -17,14 +17,13 @@ const UserLabels = types
   .actions(self => ({
     addLabel(control: string, path: string[]) {
       const label: UserLabel = { path, origin: "session" };
-      const labels = [label, ...(self.controls[control] ?? [])];
+      const labels = [...(self.controls[control] ?? []), label];
 
       self.controls = { ...self.controls, [control]: labels };
     },
 
     deleteLabel(control: string, path: string[]) {
       if (!self.controls[control]) return;
-
       const labels = self.controls[control].filter(existed =>
         existed.path.length !== path.length
         || !existed.path.every((item, index) => item === path[index]));
@@ -41,7 +40,6 @@ const UserLabels = types
           path,
         }));
       }
-
       self.controls = adjusted;
     },
   }));

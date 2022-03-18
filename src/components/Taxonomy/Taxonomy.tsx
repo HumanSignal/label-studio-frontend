@@ -353,15 +353,17 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           transformationCallback={dataTransformation}
         />
       )}
-      {onAddLabel &&
-        search === "" &&
-        (isAdding ? (
-          <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
-        ) : (
-          <div className={styles.taxonomy__add}>
-            <button onClick={addInside}>Add</button>
-          </div>
-        ))}
+      {onAddLabel && search === "" && (
+        <div className={styles.taxonomy__add__container}>
+          {isAdding ? (
+            <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
+          ) : (
+            <div className={styles.taxonomy__add}>
+              <button onClick={addInside}>Add</button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
