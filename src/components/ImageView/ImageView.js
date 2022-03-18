@@ -16,7 +16,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
-import { useObserver } from "mobx-react-lite";
+import { useObserver } from "mobx-react";
 import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
@@ -655,10 +655,12 @@ export default observer(
           item={item}
           className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
           style={{
+            flex: 1,
             position: "relative",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
+            alignSelf: "stretch",
           }}
         >
           <div

@@ -27,7 +27,7 @@ const RegionItemDesc = observer(({ item, setDraggable }) => {
   const controls = item.perRegionDescControls || [];
 
   return (
-    <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable(false);}} onMouseLeave={()=>{setDraggable(true);}}>
+    <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable?.(false);}} onMouseLeave={()=>{setDraggable?.(true);}}>
       <Elem name="controls">
         {controls.map((tag, idx) => {
           const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);

@@ -2,27 +2,36 @@ import { types } from "mobx-state-tree";
 
 import { EventInvoker } from "../utils/events";
 
+interface SyncMixinVolatile {
+  events: EventInvoker;
+  synced: boolean;
+  syncedObject: any;
+  currentEvent: any;
+}
+
 const SyncMixin = types
   .model({
     sync: types.maybeNull(types.string),
   })
-  .volatile(() => ({
-    events: new EventInvoker(),
-    synced: false,
-    syncedObject: null,
-    currentEvent: null,
-  }))
+  .volatile<SyncMixinVolatile>(() => ({
+  events: new EventInvoker(),
+  synced: false,
+  syncedObject: null,
+  currentEvent: null,
+}))
   .actions(self => ({
     // *** abstract ***
-    handleSyncPlay() { console.error("handleSyncPlay should be implemented"); },
-    handleSyncPause() { console.error("handleSyncPause should be implemented"); },
-    handleSyncSeek() { console.error("handleSyncSeek should be implemented"); },
-
-    _handleSyncSeek(time) {
+    handleSyncPlay(time: number) { console.error("handleSyncPlay should be implemented"); },
+    handleSyncPause(time: number) { console.error("handleSyncPause should be implemented"); },
+    handleSyncSeek(time: number) { console.error("handleSyncSeek should be implemented"); },
+  }))
+  .actions(self => ({
+    _handleSyncSeek(time: number) {
       self.currentEvent = "seek";
       self.handleSyncSeek(time);
     },
-
+  }))
+  .actions(self => ({
     triggerSyncPlay() {
       self.events.invoke("play");
     },
@@ -31,7 +40,7 @@ const SyncMixin = types
       self.events.invoke("pause");
     },
 
-    triggerSyncSeek(time) {
+    triggerSyncSeek(time: number) {
       if (self.currentEvent) {
         self.currentEvent = null;
         return;

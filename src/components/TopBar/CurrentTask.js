@@ -1,4 +1,4 @@
-import { observer } from "mobx-react-lite";
+import { observer } from "mobx-react";
 import { useMemo } from "react";
 import { Button } from "../../common/Button/Button";
 import { Block, Elem } from "../../utils/bem";

@@ -24,6 +24,12 @@ module.exports = {
       I.dontSee("Regions", this._sideBarLocator);
     }
   },
+  seeRelations(count) {
+    I.see(`Relations (${count})`, this._sideBarLocator);
+  },
+  dontSeeRelations() {
+    I.dontSee(`Relations`, this._sideBarLocator);
+  },
   seeSelectedRegion() {
     I.seeElement(this._selectedRegionsLocator);
   },
