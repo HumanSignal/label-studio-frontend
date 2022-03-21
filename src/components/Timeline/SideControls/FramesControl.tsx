@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, useRef, useState } from "react";
+import { FC, MutableRefObject, useMemo, useRef, useState } from "react";
 import { Block } from "../../../utils/bem";
 import { clamp } from "../../../utils/utilities";
 import { TimelineSideControlProps } from "../Types";
@@ -10,12 +10,15 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
   onPositionChange,
 }) => {
   const [inputMode, setInputMode] = useState(false);
+  const duration = useMemo(() => {
+    return length - 1;
+  }, [length]);
 
   return (
     <Block name="frames-control" onClick={() => setInputMode(true)}>
       {inputMode ? (
         <FrameInput
-          length={length}
+          length={duration}
           position={position}
           onChange={(value) => {
             onPositionChange?.(value > 0 ? value + 1 : value);
@@ -25,7 +28,7 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
           }}
         />
       ) : (
-        <>{Math.round(position)} <span>of {Math.round(length)}</span></>
+        <>{Math.round(position)} <span>of {Math.round(duration)}</span></>
       )}
     </Block>
   );
