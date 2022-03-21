@@ -45,7 +45,7 @@ export const Controls: FC<TimelineControlsProps> = ({
   const [startReached, endReached] = [position === 1, position === length];
 
   const duration = useMemo(() => {
-    return length / frameRate;
+    return (length - 1) / frameRate;
   }, [length, frameRate]);
 
   const currentTime = useMemo(() => {
