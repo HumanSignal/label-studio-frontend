@@ -1,7 +1,28 @@
-import { Children, cloneElement, forwardRef, RefObject, useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import { Children, cloneElement, forwardRef, MutableRefObject, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "../../utils/bem";
 import { Dropdown, DropdownProps, DropdownRef } from "./DropdownComponent";
 import { DropdownContext, DropdownContextValue } from "./DropdownContext";
+
+const getMinIndex = (element?: HTMLElement) => {
+
+  let index = 1000;
+
+  if (element) {
+    let parent = element.parentElement;
+
+    while(parent) {
+      const parentIndex = parseInt(getComputedStyle(parent).zIndex);
+
+      if (!isNaN(parentIndex)) {
+        index = Math.max(index, parentIndex);
+      }
+
+      parent = parent?.parentElement ?? null;
+    }
+  }
+
+  return index;
+};
 
 interface DropdownTriggerProps extends DropdownProps {
   tag?: string;
@@ -25,8 +46,9 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
   const dropdownRef = (ref ?? useRef<DropdownRef>()) as RefObject<DropdownRef>;
   const triggerEL = Children.only(children);
   const childset = useRef(new Set<DropdownContextValue>());
+  const [minIndex, setMinIndex] = useState(1000);
 
-  const triggerRef = (triggerEL as any).props.ref ?? useRef<HTMLElement>();
+  const triggerRef = useRef<HTMLElement>((triggerEL as any)?.props?.ref?.current);
   const parentDropdown = useContext(DropdownContext);
 
   const targetIsInsideDropdown = useCallback((target: HTMLElement) => {
@@ -69,16 +91,26 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
     [dropdownRef, disabled],
   );
 
-  const cloneProps = {
-    ...(triggerEL as any).props,
-    tag,
-    key: "dd-trigger",
-    ref: triggerRef,
-    className: cn("dropdown").elem("trigger").mix(props.className),
-    onClickCapture: handleToggle,
-  };
+  const cloneProps = useMemo(() => {
+    return {
+      ...(triggerEL as any).props,
+      tag,
+      key: "dd-trigger",
+      ref: (el: HTMLElement) => {
+        triggerRef.current = triggerRef.current ?? el;
 
-  const triggerClone = cloneElement(triggerEL as any, cloneProps);
+        if (triggerRef.current) {
+          setMinIndex(Math.max(minIndex, getMinIndex(triggerRef.current)));
+        }
+      },
+      className: cn("dropdown").elem("trigger").mix(props.className),
+      onClickCapture: handleToggle,
+    };
+  }, [triggerEL, triggerRef, props.className, handleToggle]);
+
+  const triggerClone = useMemo(() => {
+    return cloneElement(triggerEL as any, cloneProps);
+  }, [triggerEL, cloneProps]);
 
   const dropdownClone = content ? (
     <Dropdown {...props} ref={dropdownRef}>
@@ -92,15 +124,20 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
       document.removeEventListener("click", handleClick, { capture: true });
   }, [handleClick]);
 
-  const contextValue = useMemo((): DropdownContextValue => ({
-    triggerRef,
-    dropdown: dropdownRef,
-    hasTarget: targetIsInsideDropdown,
-    addChild: (child) => childset.current.add(child),
-    removeChild: (child) => childset.current.delete(child),
-    open: () => dropdownRef?.current?.open?.(),
-    close: () => dropdownRef?.current?.close?.(),
-  }), [triggerRef, dropdownRef]);
+  const contextValue = useMemo((): DropdownContextValue => {
+    console.log({ minIndex });
+
+    return {
+      minIndex,
+      triggerRef,
+      dropdown: dropdownRef,
+      hasTarget: targetIsInsideDropdown,
+      addChild: (child) => childset.current.add(child),
+      removeChild: (child) => childset.current.delete(child),
+      open: () => dropdownRef?.current?.open?.(),
+      close: () => dropdownRef?.current?.close?.(),
+    };
+  }, [triggerRef, dropdownRef, minIndex]);
 
   useEffect(() => {
     if (!parentDropdown) return;

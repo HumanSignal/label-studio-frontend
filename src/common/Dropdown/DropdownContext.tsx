@@ -1,9 +1,10 @@
-import React, { RefObject } from "react";
+import React, { MutableRefObject, RefObject } from "react";
 import { DropdownRef } from "./DropdownComponent";
 
 export interface DropdownContextValue {
-  triggerRef: RefObject<HTMLElement>;
+  triggerRef: MutableRefObject<HTMLElement | undefined>;
   dropdown: RefObject<DropdownRef>;
+  minIndex: number;
   hasTarget(target: HTMLElement): boolean;
   addChild(child: DropdownContextValue): void;
   removeChild(child: DropdownContextValue): void;

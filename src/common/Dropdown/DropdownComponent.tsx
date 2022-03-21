@@ -36,7 +36,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
   const rootName = cn("dropdown");
 
   const dropdown = useRef<HTMLElement>();
-  const { triggerRef } = useContext(DropdownContext) ?? {};
+  const { triggerRef, minIndex } = useContext(DropdownContext) ?? {};
   const isInline = triggerRef === undefined;
 
   const { children } = props;
@@ -47,12 +47,13 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
   );
 
   const calculatePosition = useCallback(() => {
+    console.log({ triggerRef });
     const dropdownEl = dropdown.current!;
     const parent = (triggerRef?.current ?? dropdownEl.parentNode) as HTMLElement;
     const { left, top } = alignElements(parent!, dropdownEl, "bottom-left");
 
     setOffset({ left, top });
-  }, [triggerRef]);
+  }, [triggerRef, minIndex]);
 
   const dropdownIndex = useMemo(() => {
     return lastIndex++;
@@ -185,11 +186,14 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
     }
   }, [visibility, visible]);
 
-  const compositeStyles = {
-    ...(props.style ?? {}),
-    ...(offset ?? {}),
-    zIndex: 1000 + dropdownIndex,
-  };
+  const compositeStyles = useMemo(() => {
+
+    return {
+      ...(props.style ?? {}),
+      ...(offset ?? {}),
+      zIndex: (minIndex ?? 1000) + dropdownIndex,
+    };
+  }, [props.style, dropdownIndex, minIndex, offset]);
 
   const result = (
     <Block
