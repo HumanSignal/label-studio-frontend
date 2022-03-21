@@ -1,4 +1,4 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
+import React, { Component, createRef, forwardRef, Fragment, memo, useRef, useState } from "react";
 import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
@@ -19,6 +19,8 @@ import { Hotkey } from "../../core/Hotkey";
 import { useObserver } from "mobx-react";
 import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
+import Constants from "../../core/Constants";
+import { fixRectToFit } from "../../utils/image";
 import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
@@ -96,8 +98,17 @@ const SELECTION_COLOR = "#40A9FF";
 const SELECTION_SECOND_COLOR = "white";
 const SELECTION_DASH = [3, 3];
 
-const SelectionBorders = observer(({ item }) => {
-  const { selectionBorders: bbox } = item;
+const SelectionBorders = observer(({ item, selectionArea }) => {
+  const { selectionBorders: bbox } = selectionArea;
+  const offset = {
+    x: item.zoomingPositionX || 0,
+    y: item.zoomingPositionY || 0,
+  };
+
+  bbox.left = bbox.left * item.stageScale;
+  bbox.right = bbox.right * item.stageScale;
+  bbox.top = bbox.top * item.stageScale ;
+  bbox.bottom = bbox.bottom * item.stageScale ;
 
   const points = bbox ? [
     {
@@ -180,14 +191,79 @@ const SelectionRect = observer(({ item }) => {
   );
 });
 
-const TRANSFORMER_BACK_NAME = "transformer_back";
-const SelectedRegions = observer(({ selectedRegions }) => {
+const TRANSFORMER_BACK_ID = "transformer_back";
+
+const TransformerBack = observer(({ item }) => {
+  const { selectedRegionsBBox } = item;
+  const singleNodeMode = item.selectedRegions.length === 1;
+  const dragStartPointRef = useRef({ x: 0, y: 0 });
+
+  return (
+    <Layer>
+      {selectedRegionsBBox && !singleNodeMode && (
+        <Rect
+          id={TRANSFORMER_BACK_ID}
+          fill="rgba(0,0,0,0)"
+          draggable
+          onClick={()=>{
+            item.annotation.unselectAreas();
+          }}
+          onMouseOver={(ev) => {
+            if (!item.annotation.relationMode) {
+              ev.target.getStage().container().style.cursor = Constants.POINTER_CURSOR;
+            }
+          }}
+          onMouseOut={(ev) => {
+            ev.target.getStage().container().style.cursor = Constants.DEFAULT_CURSOR;
+          }}
+          onDragStart={e=>{
+            dragStartPointRef.current = {
+              x: e.target.getAttr("x"),
+              y: e.target.getAttr("y"),
+            };
+          }}
+          dragBoundFunc={(pos) => {
+            let { x, y } = pos;
+            const { top, left, right, bottom } =  item.selectedRegionsBBox;
+            const { stageHeight, stageWidth } = item;
+
+            const offset = {
+              x: dragStartPointRef.current.x-left,
+              y: dragStartPointRef.current.y-top,
+            };
+
+            x -=offset.x;
+            y -=offset.y;
+
+            const bbox = { x, y, width: right - left, height: bottom  - top };
+
+            const fixed = fixRectToFit(bbox, stageWidth, stageHeight);
+
+            if (fixed.width !== bbox.width) {
+              x += (fixed.width - bbox.width) * (fixed.x !== bbox.x ? -1 : 1);
+            }
+
+            if (fixed.height !== bbox.height) {
+              y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
+            }
+
+            x +=offset.x;
+            y +=offset.y;
+            return { x, y };
+          }}
+        />
+      )}
+    </Layer>
+  );
+});
+
+const SelectedRegions = observer(({ item, selectedRegions }) => {
   if (!selectedRegions) return null;
   const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
 
   return (
     <>
-      <Layer id={TRANSFORMER_BACK_NAME} />
+      <TransformerBack item={item}/>
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -232,7 +308,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       {selectionArea.isActive ? (
         <SelectionRect item={selectionArea} />
       ) : (!supportsTransform && item.selectedRegions.length > 1 ? (
-        <SelectionBorders item={selectionArea} />
+        <SelectionBorders item={item} selectionArea={selectionArea} />
       ) : null)}
 
       <ImageTransformer
@@ -243,7 +319,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
         selectedShapes={item.selectedRegions}
         singleNodeMode={item.selectedRegions.length === 1}
         useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
-        draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
+        draggableBackgroundSelector={`#${TRANSFORMER_BACK_ID}`}
       />
     </Layer>
   );
@@ -252,7 +328,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 const Selection = observer(({ item, selectionArea }) => {
   return (
     <>
-      <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
+      <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
       <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );

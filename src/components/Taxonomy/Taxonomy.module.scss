@@ -39,7 +39,7 @@
     align-items: center;
   }
 
-  input[type=button] {
+  input[type="button"] {
     border: none;
     background: none;
     cursor: pointer;
@@ -62,8 +62,6 @@
   z-index: 10;
   background: white;
   border-radius: 6px;
-  max-height: 60vh;
-  overflow-y: auto;
   left: -1px;
   width: max-content;
   min-width: 100%;
@@ -71,7 +69,7 @@
   border: 1px solid #e2e2e2;
   box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
 
-  input[type=checkbox] {
+  input[type="checkbox"] {
     margin-right: 4px;
     vertical-align: -3px;
     width: 0.8em;
@@ -180,6 +178,10 @@
   zoom: 1; // something to apply this class
 }
 
+.taxonomy__add__container { 
+  margin-bottom: 8px;
+}
+
 .taxonomy__add {
   margin-left: 27px; // chevron 24px + 3px margin
   display: flex;
@@ -207,7 +209,7 @@
 .taxonomy__newitem {
   display: flex;
 
-  [name=taxonomy__add] {
+  [name="taxonomy__add"] {
     padding: 1px 2px;
     border: none;
     flex-grow: 1;
@@ -216,10 +218,11 @@
     font: inherit;
     font-style: italic;
     color: #09f;
-    background: rgba(0,0,0,0.03);
+    background: rgba(0, 0, 0, 0.03);
   }
 }
 
 .taxonomy__collapsable {
   cursor: pointer;
+  color: grey;
 }
