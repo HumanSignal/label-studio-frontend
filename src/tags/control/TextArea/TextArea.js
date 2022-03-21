@@ -399,7 +399,11 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = tr
   return (
     <Elem name="item">
       <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      { (!isFF(FF_DEV_1731) || canDelete) && <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/> }
+      { (!isFF(FF_DEV_1731) || canDelete) && (
+        <Elem name="action">
+          <Button size="small" type="text" icon={<DeleteOutlined />} onClick={()=>{onDelete(idx);}} />
+        </Elem>
+      ) }
     </Elem>
   );
 });
