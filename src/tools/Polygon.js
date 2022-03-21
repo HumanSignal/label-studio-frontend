@@ -83,9 +83,15 @@ const _Tool = types
     let closed;
 
     return {
+      handleToolSwitch() {
+        if (self.getCurrentArea()?.isDrawing) {
+          if (self.getCurrentArea().canClose()) self.finishDrawing();
+          else self.cleanupUncloseableShape();
+        }
+      },
       listenForClose() {
         closed = false;
-        disposer = observe(self.getCurrentArea(), "closed", ()=>{
+        disposer = observe(self.getCurrentArea(), "closed", () => {
           if (self.getCurrentArea().closed && !closed) {
             self.finishDrawing();
           }
