@@ -119,7 +119,6 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
-  const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
   const regions = [];
 
   // Prepare shapes params
@@ -149,8 +148,7 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
     AtImageView[region.action](...region.params);
     AtSidebar.seeRegions(1);
     I.say(`Try to undo ${region.shape}`);
-    I.wait(0.5);
-    I.pressKey(["ControlOrCommand", "Z"]);
+    I.pressKey(['CommandOrControl', 'Z']);
     AtSidebar.seeRegions(0);
   }
 });

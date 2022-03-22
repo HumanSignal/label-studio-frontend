@@ -515,20 +515,7 @@ const HtxPolygonView = ({ item }) => {
 
         item.annotation.history.freeze(item.id);
       },
-      dragBoundFunc: createDragBoundFunc(item.parent, pos => {
-        if (!isDragging) return pos;
-        let { x, y } = pos;
-
-        const sw = item.parent.stageWidth;
-        const sh = item.parent.stageHeight;
-
-        if (minY + y < 0) y = -1 * minY;
-        if (minX + x < 0) x = -1 * minX;
-        if (maxY + y > sh) y = sh - maxY;
-        if (maxX + x > sw) x = sw - maxX;
-
-        return { x, y };
-      }),
+      dragBoundFunc: createDragBoundFunc(item, { x:-item.bboxCoords.left , y: -item.bboxCoords.top }),
       onDragEnd: e => {
         if (!isDragging) return;
         const t = e.target;
@@ -547,7 +534,7 @@ const HtxPolygonView = ({ item }) => {
         isDragging = false;
       },
     };
-  }, []);
+  }, [item.bboxCoords.left, item.bboxCoords.top]);
 
   if (!item.parent) return null;
 
