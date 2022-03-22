@@ -676,7 +676,7 @@ const Annotation = types
 
     createResult(areaValue, resultValue, control, object) {
       // Without correct validation object may be null, but it it shouldn't be so in results - so we should find any
-      if (isFF(FF_DEV_1598) && !object) {
+      if (isFF(FF_DEV_1598) && !object && control.type === "textarea") {
         object = self.objects[0];
       }
 
