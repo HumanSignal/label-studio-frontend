@@ -121,7 +121,7 @@ const Annotation = types
 
     get objects() {
       // Without correct validation toname may be null for control tags so we need to check strict equality to undefined
-      return Array.from(self.names.values()).filter(tag => tag.toname === undefined);
+      return Array.from(self.names.values()).filter(tag => tag.isObjectTag);
     },
 
     get regions() {
@@ -672,7 +672,7 @@ const Annotation = types
 
     createResult(areaValue, resultValue, control, object) {
       // Without correct validation object may be null, but it it shouldn't be so in results - so we should find any
-      if (!object) {
+      if (!object && control.type === "textarea") {
         object = self.objects[0];
       }
 

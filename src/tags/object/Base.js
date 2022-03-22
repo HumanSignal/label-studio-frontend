@@ -7,6 +7,7 @@ const ObjectBase = types
   .model({
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
+    isObjectTag: true,
   })
   .views(self => ({
     findRegion(params) {

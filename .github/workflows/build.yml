@@ -6,8 +6,8 @@ on:
 
 env:
   # increment it in case if you need to reset cache
-  CACHE_NAME_PREFIX: v2
-  NODE: '12'
+  CACHE_NAME_PREFIX: v3
+  NODE: '14'
 
 jobs:
   build:
@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: actions/setup-node@v2.5.1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
       with:
         node-version: "${{ env.NODE }}"
 
@@ -29,7 +29,7 @@ jobs:
       run: echo "::set-output name=dir::$(yarn cache dir)"
 
     - name: Configure yarn cache
-      uses: actions/cache@v2.1.7
+      uses: actions/cache@v3
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
@@ -65,14 +65,14 @@ jobs:
       timeout-minutes: 15
       if: github.event_name == 'push'
 
-    - uses: actions/upload-artifact@v2.3.1
+    - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:
         name: e2e output
         path: e2e/output/
 
     # upload this build as artifact to current Action
-    - uses: actions/upload-artifact@v2.3.1
+    - uses: actions/upload-artifact@v3
       with:
         name: build ${{ github.event.pull_request.head.sha || github.sha }}
         path: build/

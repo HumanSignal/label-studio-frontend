@@ -7,7 +7,7 @@ const { Block } = BemWithSpecifiContext();
 export interface SpaceProps {
   direction?: 'horizontal' | 'vertical';
   size?: 'small' | 'medium' | 'large' | 'none';
-  style: CSSProperties;
+  style?: CSSProperties;
   spread?: boolean;
   stretch?: boolean;
   align?: 'start' | 'end';
