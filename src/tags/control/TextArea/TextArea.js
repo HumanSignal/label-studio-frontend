@@ -18,7 +18,7 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
 import { Block, Elem } from "../../../utils/bem";
 import "./TextArea.styl";
-import { FF_DEV_1564_DEV_1565, FF_DEV_1731, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 
 const { TextArea } = Input;
 
