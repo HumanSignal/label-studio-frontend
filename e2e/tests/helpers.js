@@ -392,6 +392,20 @@ const countKonvaShapes = async done => {
   done(count);
 };
 
+const isTransformerExist = async done => {
+  const stage = window.Konva.stages[0];
+  const achors = stage.find("._anchor").filter(shape => shape.getAttr("visible") !== false);
+
+  done(!!achors.length);
+};
+
+const isRotaterExist = async done => {
+  const stage = window.Konva.stages[0];
+  const achors = stage.find(".rotater").filter(shape => shape.getAttr("visible") !== false);
+
+  done(!!achors.length);
+};
+
 const switchRegionTreeView = (viewName, done) => {
   Htx.annotationStore.selected.regionStore.setView(viewName);
   done();
@@ -542,6 +556,8 @@ module.exports = {
   setZoom,
   whereIsPixel,
   countKonvaShapes,
+  isTransformerExist,
+  isRotaterExist,
   switchRegionTreeView,
   hasSelectedRegion,
 
