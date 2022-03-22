@@ -370,7 +370,7 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = true, onChange, onDelete, onFocus, control }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
   const inputRef = useRef();
@@ -383,7 +383,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = tr
     onChange: e => {
       onChange(idx, e.target.value);
     },
-    readOnly: isFF(FF_DEV_1731) && readOnly,
+    readOnly,
     onFocus,
   };
 
@@ -396,10 +396,11 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = tr
       }
     };
   }
+
   return (
     <Elem name="item">
       <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      { (!isFF(FF_DEV_1731) || canDelete) && (
+      { (!readOnly) && (
         <Elem name="action">
           <Button size="small" type="text" icon={<DeleteOutlined />} onClick={()=>{onDelete(idx);}} />
         </Elem>
@@ -411,12 +412,14 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, canDelete = tr
 const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocus }) => {
   const value = item.mainValue;
   const editable = item.from_name.editable && !item.area.readonly;
+
   const changeHandler = useCallback((idx, val) => {
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1, val);
     item.setValue(newValue);
   }, [value]);
+
   const deleteHandler = useCallback((idx) => {
     const newValue = value.toJSON();
 
@@ -431,7 +434,6 @@ const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocu
         idx={idx}
         value={line}
         readOnly={!editable}
-        canDelete={!item.area.readonly}
         onChange={changeHandler}
         onDelete={deleteHandler}
         control={control}
@@ -531,10 +533,10 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
   const showSubmit = (!result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions)))
-  && (!isFF(FF_DEV_1731) || !area.readonly);
+  && !area.readonly;
 
   if (!isAlive(item) || !isAlive(area)) return null;
-  return (!isFF(FF_DEV_1731) || result || showSubmit) && (
+  return (result || showSubmit) && (
     <Block name="textarea-tag" mod={{ mode: item.mode }}>
       {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
 
