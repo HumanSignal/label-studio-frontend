@@ -73,7 +73,7 @@ const Model = types
     },
 
     toggleLifespan(frame) {
-      const keypoint = self.closestKeypoint(frame);
+      const keypoint = self.closestKeypoint(frame, true);
 
       if (keypoint) {
         const index = self.sequence.indexOf(keypoint);
@@ -125,7 +125,7 @@ const Model = types
       return false;
     },
 
-    closestKeypoint(targetFrame) {
+    closestKeypoint(targetFrame, onlyPrevious = false) {
       const seq = self.sequence;
       let result;
 
@@ -133,7 +133,7 @@ const Model = types
 
       result = keypoints[keypoints.length - 1];
 
-      if (!result) {
+      if (!result && onlyPrevious !== true) {
         result = seq.find(({ frame }) => frame >= targetFrame);
       }
 

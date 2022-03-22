@@ -1,6 +1,7 @@
 import chroma from "chroma-js";
 import { CSSProperties, FC, memo, MouseEvent, useCallback, useContext, useMemo } from "react";
 import { Block, Elem } from "../../../../utils/bem";
+import { guidGenerator } from "../../../../utils/unique";
 import { clamp } from "../../../../utils/utilities";
 import { TimelineContext } from "../../Context";
 import { TimelineRegion } from "../../Types";
@@ -112,7 +113,7 @@ const LifespansList: FC<LifespansListProps> = ({
 
         return (
           <LifespanItem
-            key={i}
+            key={`${i}-${points.length}-${isLast}-${visible}`}
             mainOffset={offset}
             step={step}
             isLast={isLast}
