@@ -283,6 +283,13 @@ const HtxVideoView = ({ item }) => {
     });
   }, [item.regs]);
 
+  const handleTimelinePositionChange = useCallback((newPosition) => {
+    if (position !== newPosition) {
+      item.setFrame(newPosition);
+      setPosition(newPosition);
+    }
+  }, [item, position]);
+
   useEffect(() => () => {
     item.ref.current = null;
   }, []);
@@ -385,11 +392,8 @@ const HtxVideoView = ({ item }) => {
             defaultStepSize={16}
             disableView={!supportsRegions}
             framerate={item.framerate}
-            onPositionChange={(frame) => {
-              item.setFrame(frame);
-              setPosition(frame);
-            }}
             controls={{ FramesControl: true }}
+            onPositionChange={handleTimelinePositionChange}
             onPlayToggle={handlePlayToggle}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}

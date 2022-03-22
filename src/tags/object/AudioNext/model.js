@@ -271,15 +271,19 @@ export const AudioModel = types.compose(
       /**
      * Play and stop
      */
-      handlePlay() {
-        self.playing = !self.playing;
-        self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+      handlePlay(playing) {
+        if (self._ws) {
+          self.playing = playing ?? !self.playing;
+          self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+        }
       },
 
       handleSeek() {
-        const time = self._ws.getCurrentTime();
+        if (self._ws) {
+          const time = self._ws.getCurrentTime();
 
-        self.triggerSyncSeek(time);
+          self.triggerSyncSeek(time);
+        }
       },
 
       createWsRegion(region) {

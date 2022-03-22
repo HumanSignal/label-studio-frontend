@@ -1,21 +1,18 @@
-import React from "react";
 import { flow, getType, types } from "mobx-state-tree";
-import { observe } from "mobx";
-
+import React from "react";
 import { customTypes } from "../../../core/CustomTypes";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
+import IsReadyMixin from "../../../mixins/IsReadyMixin";
+import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import RegionsMixin from "../../../mixins/Regions";
-import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Utils from "../../../utils";
 import { parseValue } from "../../../utils/data";
 import messages from "../../../utils/messages";
 import { rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
-import * as xpath from "xpath-range";
-import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
-import IsReadyMixin from "../../../mixins/IsReadyMixin";
+
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 

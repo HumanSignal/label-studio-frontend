@@ -1,25 +1,24 @@
+import { getRoot, types } from "mobx-state-tree";
 import React, { useContext } from "react";
 import { Rect } from "react-konva";
-import { getRoot, types } from "mobx-state-tree";
-
-import Constants  from "../core/Constants";
-import DisabledMixin from "../mixins/Normalization";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
+import Constants from "../core/Constants";
+import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { default as DisabledMixin, default as NormalizationMixin } from "../mixins/Normalization";
+import RegionsMixin from "../mixins/Regions";
 import WithStatesMixin from "../mixins/WithStates";
 import { ImageModel } from "../tags/object/Image";
-import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
-import { guidGenerator } from "../core/Helpers";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
-import { useRegionStyles } from "../hooks/useRegionColor";
-import { AliveRegion } from "./AliveRegion";
-import { KonvaRegionMixin } from "../mixins/KonvaRegion";
-import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import { RegionWrapper } from "./RegionWrapper";
 import { rotateBboxCoords } from "../utils/bboxCoords";
-import { EditableRegion, setupEditableFields } from "./EditableRegion";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { AliveRegion } from "./AliveRegion";
+import { EditableRegion } from "./EditableRegion";
+import { RegionWrapper } from "./RegionWrapper";
+
 
 /**
  * Rectangle object for Bounding Box
@@ -46,7 +45,7 @@ const Model = types
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
-  .volatile((self) => ({
+  .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
 

@@ -94,7 +94,7 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", rows = 1, onlyEdit, name, onFocus, onChange, ...props } = this.props;
+    const { className = "", rows = 1, onlyEdit, name, onFocus, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
@@ -145,7 +145,7 @@ export class HtxTextBox extends React.Component {
   }
 
   renderView() {
-    const { onChange, onDelete, text, onFocus, ...props } = this.props;
+    const { onChange, onDelete, text, ...props } = this.props;
 
     return (
       <>

@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Elem } from "../../../utils/bem";
@@ -9,19 +9,13 @@ interface AudioNextProps {
 }
 
 const AudioNextView: FC<AudioNextProps> = ({ item }) => {
-  const [playing, _setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [audioLength, setAudioLength] = useState(0);
 
-  const [zoom, setZoom] = useState(Number(item.zoom));
-  const [volume, setVolume] = useState(Number(item.volume));
+  const [zoom, setZoom] = useState(1);
+  const [volume, setVolume] = useState(1);
   const [speed, setSpeed] = useState(1);
-
-  const setPlaying = useCallback((playing) => {
-    _setPlaying(playing);
-    if (playing) item.triggerSyncPlay();
-    else item.triggerSyncPause();
-  }, [item]);
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
@@ -30,17 +24,24 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const handlePositionChange = useCallback((frame: number) => {
     setPosition(frame);
-    // item.triggerSyncSeek(frame / 1000);
+    item.handleSeek();
   }, []);
 
-  const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
-  const formatPosition = useCallback(({ position, fps }): string => {
+  const handlePlayToggle = useCallback((playing: boolean) => {
+    setPlaying(playing);
+  }, []);
+
+  const formatPosition = useCallback(({ time, fps }): string => {
     const roundedFps = Math.floor(fps);
-    const value = Math.floor(position % roundedFps);
-    const result = Math.floor(value > 0 ? value : roundedFps);
+    const value = Math.floor((time * 1000) % roundedFps);
+    const result = Math.floor(time >= 0 ? value : roundedFps);
 
     return result.toString().padStart(3, '0');
   }, []);
+
+  useEffect(() => {
+    item.handlePlay(playing);
+  }, [playing, item]);
 
   return (
     <ObjectTag item={item}>

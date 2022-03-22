@@ -35,10 +35,9 @@ export const Wave: FC<TimelineViewProps> = ({
   length,
   playing,
   regions,
-  zoom = ZOOM_X.default,
   volume = 1,
+  zoom = ZOOM_X.default,
   speed = SPEED.default,
-  controls,
   onReady,
   onChange,
   onAddRegion,
@@ -56,6 +55,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [scale, setScale] = useState(1);
   const [startOver, setStartOver] = useState(false);
@@ -82,7 +82,8 @@ export const Wave: FC<TimelineViewProps> = ({
       scrollParent: data.scrollparent,
       autoCenterImmediately: true,
     },
-    onLoaded: (value) => setLoading(!value),
+    onLoaded: setLoading,
+    onProgress: setProgress,
     onPlayToggle,
     onAddRegion,
     onReady,
@@ -238,39 +239,29 @@ export const Wave: FC<TimelineViewProps> = ({
 
   return (
     <Block name="wave">
-      {(controls?.SpeedControl || controls?.ZoomControl) && (
-        <Elem name="controls">
-          <Space spread>
-            <div>
-              {controls?.SpeedControl && (
-                <Range
-                  continuous
-                  value={speed}
-                  {...SPEED}
-                  resetValue={SPEED.default}
-                  minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
-                  maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
-                  onChange={(value) => onSpeedChange?.(Number(value))}
-                />
-              )}
-            </div>
+      <Elem name="controls">
+        <Space spread>
+          <Range
+            continuous
+            value={speed}
+            {...SPEED}
+            resetValue={SPEED.default}
+            minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
+            maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
+            onChange={(value) => onSpeedChange?.(Number(value))}
+          />
 
-            <div>
-              {controls?.ZoomControl && (
-                <Range
-                  continuous
-                  value={currentZoom}
-                  {...ZOOM_X}
-                  resetValue={ZOOM_X.default}
-                  minIcon={<IconZoomOut />}
-                  maxIcon={<IconZoomIn />}
-                  onChange={value => setZoom(Number(value))}
-                />
-              )}
-            </div>
-          </Space>
-        </Elem>
-      )}
+          <Range
+            continuous
+            value={currentZoom}
+            {...ZOOM_X}
+            resetValue={ZOOM_X.default}
+            minIcon={<IconZoomOut />}
+            maxIcon={<IconZoomIn />}
+            onChange={value => setZoom(Number(value))}
+          />
+        </Space>
+      </Elem>
       <Elem name="wrapper">
         <Elem
           name="body"
@@ -280,7 +271,11 @@ export const Wave: FC<TimelineViewProps> = ({
           <Elem name="cursor" style={cursorStyle}/>
           <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
           <Elem name="timeline" ref={timelineRef} />
-          {loading && <Elem name="loader" mod={{ animated: true }}/>}
+          {loading && (
+            <Elem name="loader" mod={{ animated: true }}>
+              <span>{progress}%</span>
+            </Elem>
+          )}
         </Elem>
         <Elem name="scale">
           <Range
@@ -307,6 +302,7 @@ interface WavesurferProps {
   speed: number;
   data: TimelineContextValue["data"];
   params: Partial<WaveSurferParams>;
+  onProgress: (progress: number) => void;
   onSeek: (progress: number) => void;
   onLoaded: (loaded: boolean) => void;
   onScroll: (position: number) => void;
@@ -325,6 +321,7 @@ const useWaveSurfer = ({
   data,
   params,
   onLoaded,
+  onProgress,
   onSeek,
   onPlayToggle,
   onPlayFinished,
@@ -341,7 +338,6 @@ const useWaveSurfer = ({
       scrollParent: true,
       ...params,
       barHeight: 1,
-      backend: "MediaElement",
       container: containter.current!,
       height: Number(data.height ?? 88),
       hideScrollbar: true,
@@ -391,6 +387,8 @@ const useWaveSurfer = ({
     };
 
     wsi.on("ready", () => {
+      onLoaded(false);
+
       wsi.initPlugin("regions");
       wsi.initPlugin("timeline");
 
@@ -460,30 +458,32 @@ const useWaveSurfer = ({
         duration: wsi.getDuration(),
         surfer: wsi,
       });
-
-      wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
-
-      wsi.on("play", () => onPlayToggle?.(true));
-
-      wsi.on("pause", () => onPlayToggle?.(false));
-
-      wsi.on("finish", () => onPlayFinished?.());
-
-      wsi.on('zoom', (minPxPerMinute) => onZoom?.(minPxPerMinute));
-
-      wsi.on("seek", (progress) => {
-        removeDetachedRegions();
-        onSeek((wsi.getDuration() * progress) * 1000);
-      });
-
-      wsi.on("loading", (progress) => {
-        if (progress === 100) onLoaded(true);
-      });
     });
 
     wsi.setPlaybackRate(speed);
 
     wsi.zoom(ZOOM_X.default);
+
+    wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
+
+    wsi.on("play", () => onPlayToggle?.(true));
+
+    wsi.on("pause", () => onPlayToggle?.(false));
+
+    wsi.on("finish", () => onPlayFinished?.());
+
+    wsi.on('zoom', (minPxPerMinute) => onZoom?.(minPxPerMinute));
+
+    wsi.on("seek", (progress) => {
+      const currentTime = (wsi.getDuration() * progress) * 1000;
+
+      removeDetachedRegions();
+      onSeek(currentTime);
+    });
+
+    wsi.on("loading", (progress) => {
+      onProgress(progress);
+    });
 
     wsi.load(data._value);
 
@@ -492,10 +492,10 @@ const useWaveSurfer = ({
     Object.assign(window, { surfer: wsi });
 
     return () => {
-      // Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
-      //   if (active) wsi.destroyPlugin(name);
-      // });
-      // wsi.destroy();
+      Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
+        if (active) wsi.destroyPlugin(name);
+      });
+      wsi.destroy();
     };
   }, []);
 

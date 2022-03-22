@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const enterFullscreen = (el: HTMLElement) => {
   if ('webkitRequestFullscreen' in el) {

@@ -1,4 +1,4 @@
-import { Children, cloneElement, forwardRef, MutableRefObject, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Children, cloneElement, forwardRef, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "../../utils/bem";
 import { Dropdown, DropdownProps, DropdownRef } from "./DropdownComponent";
 import { DropdownContext, DropdownContextValue } from "./DropdownContext";
@@ -125,8 +125,6 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
   }, [handleClick]);
 
   const contextValue = useMemo((): DropdownContextValue => {
-    console.log({ minIndex });
-
     return {
       minIndex,
       triggerRef,

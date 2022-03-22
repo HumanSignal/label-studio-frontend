@@ -216,7 +216,6 @@ export default types.model("RegionStore", {
       const tree = [];
       const lookup = new Map();
       const onClick = createClickRegionInTreeHandler(tree);
-      const groups = {};
 
       // every region has a parentID
       // parentID is an empty string - "" if it's top level

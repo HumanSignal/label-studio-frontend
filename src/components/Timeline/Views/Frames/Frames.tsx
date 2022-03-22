@@ -1,5 +1,6 @@
 import { clamp } from "lodash";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
 import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
 import { TimelineViewProps } from "../../Types";
@@ -41,6 +42,10 @@ export const Frames: FC<TimelineViewProps> = ({
     return length * step;
   }, [length, step]);
 
+  const handlers = useMemoizedHandlers({
+    onChange,
+  });
+
   const background = useMemo(() => {
     const bg = [
       `repeating-linear-gradient(90deg, #fff 1px, #fff ${step-1}px, rgba(255,255,255,0) ${step-1}px, rgba(255,255,255,0) ${step+1}px)`,
@@ -69,7 +74,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
 
-    onChange?.(clamp(frame + 1, 1, length));
+    handlers.onChange?.(clamp(frame + 1, 1, length));
   }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {

@@ -138,15 +138,19 @@ const Model = types
     },
 
     setOnlyFrame(frame) {
-      self.frame = frame;
-      self.triggerSyncSeek(frame / self.framerate);
+      if (self.frame !== frame) {
+        self.frame = frame;
+        self.triggerSyncSeek(frame / self.framerate);
+      }
     },
 
     setFrame(frame) {
-      self.frame = frame;
-      self.ref.current.currentTime = frame / self.framerate;
-      // trigger only here, this method already has side effects, so it would be controlled
-      self.triggerSyncSeek(frame / self.framerate);
+      if (self.frame !== frame) {
+        self.frame = frame;
+        self.ref.current.currentTime = frame / self.framerate;
+        // trigger only here, this method already has side effects, so it would be controlled
+        self.triggerSyncSeek(frame / self.framerate);
+      }
     },
 
     addRegion(data) {

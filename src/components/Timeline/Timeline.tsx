@@ -1,6 +1,7 @@
 import { observer } from "mobx-react";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
+import { useMemoizedHandlers } from "../../hooks/useMemoizedHandlers";
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import { TimelineContextProvider } from "./Context";
@@ -29,16 +30,6 @@ const TimelineComponent: FC<TimelineProps> = ({
   data,
   speed,
   className,
-  onReady,
-  onPlayToggle,
-  onPositionChange,
-  onToggleVisibility,
-  onAddRegion,
-  onDeleteRegion,
-  onSelectRegion,
-  onAction,
-  onFullscreenToggle,
-  onSpeedChange,
   formatPosition,
   ...props
 }) => {
@@ -52,13 +43,25 @@ const TimelineComponent: FC<TimelineProps> = ({
     toString(value) { return String(value); },
   });
   const step = useMemo(() => defaultStepSize * zoom, [zoom, defaultStepSize]);
+  const handlers = useMemoizedHandlers({
+    onReady: props.onReady,
+    onPlayToggle: props.onPlayToggle,
+    onPositionChange: props.onPositionChange,
+    onToggleVisibility: props.onToggleVisibility,
+    onAddRegion: props.onAddRegion,
+    onDeleteRegion: props.onDeleteRegion,
+    onSelectRegion: props.onSelectRegion,
+    onAction: props.onAction,
+    onFullscreenToggle: props.onFullscreenToggle,
+    onSpeedChange: props.onSpeedChange,
+  });
 
   const setInternalPosition = (newPosition: number) => {
     const clampedValue = clamp(newPosition, 1, length);
 
     if (clampedValue !== currentPosition) {
       setCurrentPosition(clampedValue);
-      onPositionChange?.(clampedValue);
+      handlers.onPositionChange?.(clampedValue);
     }
   };
 
@@ -97,8 +100,10 @@ const TimelineComponent: FC<TimelineProps> = ({
   ]);
 
   useEffect(() => {
-    setCurrentPosition(clamp(position, 1, length));
-  }, [position, length]);
+    if (position !== currentPosition) {
+      setCurrentPosition(clamp(position, 1, length));
+    }
+  }, [position, length, currentPosition]);
 
   const controls = (
     <Elem name="topbar">
@@ -110,12 +115,12 @@ const TimelineComponent: FC<TimelineProps> = ({
         volume={props.volume}
         controls={props.controls}
         collapsed={viewCollapsed}
-        onPlayToggle={onPlayToggle}
+        onPlayToggle={(playing) => handlers.onPlayToggle(playing)}
         fullscreen={fullscreen}
         disableFrames={disableView}
         allowFullscreen={allowFullscreen}
         allowViewCollapse={allowViewCollapse}
-        onFullScreenToggle={onFullscreenToggle}
+        onFullScreenToggle={(fullscreen) => handlers.onFullscreenToggle?.(fullscreen)}
         onVolumeChange={props.onVolumeChange}
         onStepBackward={decreasePosition}
         onStepForward={increasePosition}
@@ -127,7 +132,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         extraControls={View.Controls && !disableView ? (
           <View.Controls
             onAction={(e, action, data) => {
-              onAction?.(e, action, data);
+              handlers.onAction?.(e, action, data);
             }}
           />
         ) : null}
@@ -165,16 +170,16 @@ const TimelineComponent: FC<TimelineProps> = ({
         position={currentPosition}
         offset={seekOffset}
         leftOffset={View.settings?.leftOffset}
-        onReady={onReady}
+        onReady={(data) => handlers.onReady?.(data)}
         onScroll={setSeekOffset}
         onResize={setSeekVisibleWidth}
         onChange={setInternalPosition}
-        onPlayToggle={onPlayToggle}
-        onToggleVisibility={onToggleVisibility}
-        onAddRegion={onAddRegion}
-        onDeleteRegion={onDeleteRegion}
-        onSelectRegion={onSelectRegion}
-        onSpeedChange={onSpeedChange}
+        onPlayToggle={(playing) => handlers.onPlayToggle(playing)}
+        onToggleVisibility={(id, visible) => handlers.onToggleVisibility?.(id, visible)}
+        onAddRegion={(reg) => handlers.onAddRegion?.(reg)}
+        onDeleteRegion={(id) => handlers.onDeleteRegion?.(id)}
+        onSelectRegion={(e, id, select) => handlers.onSelectRegion?.(e, id, select)}
+        onSpeedChange={(speed) => handlers.onSpeedChange?.(speed)}
         onZoom={props.onZoom}
       />
     </Elem>

@@ -584,7 +584,7 @@ export default observer(
       hotkeys.removeDescription("shift");
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
       this.onResize();
       this.updateReadyStatus();
     }
