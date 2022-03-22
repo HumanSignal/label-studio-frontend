@@ -520,3 +520,49 @@ Scenario("Undo regions auto-annotated from predictions", async function({ I, Lab
   I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
   I.seeElement("[disabled][aria-label=\"Redo\"]");
 });
+
+Scenario("Undo if there are no regions auto-annotated from predictions", async function({ I, LabelStudio, AtImageView, AtSidebar }) {
+  I.amOnPage("/");
+  LabelStudio.init({
+    config: createConfig({
+      smartonly: true,
+    }),
+    data: {
+      image: IMAGE,
+    },
+    additionalInterfaces: [
+      "auto-annotation",
+    ],
+    events: {
+      regionFinishedDrawing: getSuggestions,
+    },
+    params: {
+      forceAutoAnnotation: true,
+      forceAutoAcceptSuggestions: true,
+    },
+  });
+  AtImageView.waitForImage();
+  AtSidebar.seeRegions(0);
+  await AtImageView.lookForStage();
+  // Select magic tool
+  I.pressKey("M");
+  I.seeElement("[disabled][aria-label=\"Undo\"]");
+  // Draw region over area without potential suggestions
+  AtImageView.drawByDrag(500,200,7,7);
+  // Get an empty list of regions as the result instead of drawn region
+  AtSidebar.seeRegions(0);
+  I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
+  I.seeElement("[disabled][aria-label=\"Redo\"]");
+  // Go back through history
+  I.pressKey(["ctrl", "z"]);
+  // Should see nothing
+  AtSidebar.seeRegions(0);
+  I.seeElement("[disabled][aria-label=\"Undo\"]");
+  I.seeElement(":not([disabled])[aria-label=\"Redo\"]");
+  // Go forward through history
+  I.pressKey(["ctrl","shift", "z"]);
+  // And see nothing again
+  AtSidebar.seeRegions(0);
+  I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
+  I.seeElement("[disabled][aria-label=\"Redo\"]");
+});
