@@ -111,17 +111,17 @@ const Model = types
     },
 
     handleSyncSeek(time) {
-      if (self.ref.current) {
+      if (self.ref.current && !self.ref.current.playing) {
         self.ref.current.currentTime = time;
       }
     },
 
     handleSyncPlay() {
-      self.ref.current?.play();
+      if (!self.ref.current?.playing) self.ref.current?.play();
     },
 
     handleSyncPause() {
-      self.ref.current?.pause();
+      if (self.ref.current?.playing) self.ref.current?.pause();
     },
 
     needsUpdate() {
@@ -149,7 +149,7 @@ const Model = types
         self.frame = frame;
         self.ref.current.currentTime = frame / self.framerate;
         // trigger only here, this method already has side effects, so it would be controlled
-        self.triggerSyncSeek(frame / self.framerate);
+        self.triggerSyncSeek(self.ref.current.currentTime);
       }
     },
 

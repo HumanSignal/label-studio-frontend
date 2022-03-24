@@ -153,7 +153,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       drawVideo();
       onChange(frame, length);
     }
-  }, [buffering, framerate, currentFrame, drawVideo, props.onFrameChange, length]);
+  }, [framerate, currentFrame, drawVideo, props.onFrameChange, length]);
 
   const delayedUpdate = useCallback(() => {
     if (!videoRef.current) return;
@@ -161,11 +161,14 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
     const video = videoRef.current;
 
-    if (video && video.networkState === video.NETWORK_IDLE) {
+    if (video) {
       if (!playing) updateFrame(true);
-      setBuffering(false);
-    } else {
-      setBuffering(true);
+
+      if (video.networkState === video.NETWORK_IDLE) {
+        setBuffering(false);
+      } else {
+        setBuffering(true);
+      }
     }
   }, [playing, updateFrame]);
 

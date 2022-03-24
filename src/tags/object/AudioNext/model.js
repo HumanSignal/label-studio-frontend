@@ -280,9 +280,7 @@ export const AudioModel = types.compose(
 
       handleSeek() {
         if (self._ws) {
-          const time = self._ws.getCurrentTime();
-
-          self.triggerSyncSeek(time);
+          self.triggerSyncSeek(self._ws.getCurrentTime());
         }
       },
 

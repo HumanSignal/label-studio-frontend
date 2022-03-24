@@ -24,7 +24,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const handlePositionChange = useCallback((frame: number) => {
     setPosition(frame);
-    item.handleSeek();
+    setTimeout(() => {
+      item.handleSeek();
+    }, 10);
   }, []);
 
   const handlePlayToggle = useCallback((playing: boolean) => {

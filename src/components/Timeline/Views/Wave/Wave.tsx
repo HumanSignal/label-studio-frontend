@@ -55,7 +55,6 @@ export const Wave: FC<TimelineViewProps> = ({
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [scale, setScale] = useState(1);
   const [startOver, setStartOver] = useState(false);
@@ -83,7 +82,6 @@ export const Wave: FC<TimelineViewProps> = ({
       autoCenterImmediately: true,
     },
     onLoaded: setLoading,
-    onProgress: setProgress,
     onPlayToggle,
     onAddRegion,
     onReady,
@@ -271,11 +269,7 @@ export const Wave: FC<TimelineViewProps> = ({
           <Elem name="cursor" style={cursorStyle}/>
           <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
           <Elem name="timeline" ref={timelineRef} />
-          {loading && (
-            <Elem name="loader" mod={{ animated: true }}>
-              <span>{progress}%</span>
-            </Elem>
-          )}
+          {loading && <Elem name="loader" mod={{ animated: true }}/>}
         </Elem>
         <Elem name="scale">
           <Range
@@ -302,7 +296,6 @@ interface WavesurferProps {
   speed: number;
   data: TimelineContextValue["data"];
   params: Partial<WaveSurferParams>;
-  onProgress: (progress: number) => void;
   onSeek: (progress: number) => void;
   onLoaded: (loaded: boolean) => void;
   onScroll: (position: number) => void;
@@ -321,7 +314,6 @@ const useWaveSurfer = ({
   data,
   params,
   onLoaded,
-  onProgress,
   onSeek,
   onPlayToggle,
   onPlayFinished,
@@ -479,10 +471,6 @@ const useWaveSurfer = ({
 
       removeDetachedRegions();
       onSeek(currentTime);
-    });
-
-    wsi.on("loading", (progress) => {
-      onProgress(progress);
     });
 
     wsi.load(data._value);
