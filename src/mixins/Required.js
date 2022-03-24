@@ -16,8 +16,16 @@ const RequiredMixin = types
         for (const reg of objectTag.regs) {
           const s = reg.results.find(s => s.from_name === self);
 
-          if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
-            continue;
+          if (self.visiblewhen === "region-selected") {
+            if (self.whentagname) {
+              const label = reg.labeling?.from_name?.name;
+
+              if (label && label !== self.whentagname) continue;
+            }
+
+            if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
+              continue;
+            }
           }
 
           if (!s?.hasValue) {

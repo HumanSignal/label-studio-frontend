@@ -370,7 +370,7 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFocus, control }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
   const inputRef = useRef();
@@ -383,6 +383,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
     onChange: e => {
       onChange(idx, e.target.value);
     },
+    readOnly,
     onFocus,
   };
 
@@ -395,22 +396,30 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
       }
     };
   }
+
   return (
     <Elem name="item">
       <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/>
+      { (!readOnly) && (
+        <Elem name="action">
+          <Button size="small" type="text" icon={<DeleteOutlined />} onClick={()=>{onDelete(idx);}} />
+        </Elem>
+      ) }
     </Elem>
   );
 });
 
 const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocus }) => {
   const value = item.mainValue;
+  const editable = item.from_name.editable && !item.area.readonly;
+
   const changeHandler = useCallback((idx, val) => {
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1, val);
     item.setValue(newValue);
   }, [value]);
+
   const deleteHandler = useCallback((idx) => {
     const newValue = value.toJSON();
 
@@ -420,8 +429,17 @@ const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocu
 
   return value.map((line, idx) => {
     return (
-      <HtxTextAreaResultLine key={idx} idx={idx} value={line} onChange={changeHandler} onDelete={deleteHandler} control={control} ref={idx === 0 ? firstResultInputRef : null}
-        onFocus={onFocus}/>
+      <HtxTextAreaResultLine
+        key={idx}
+        idx={idx}
+        value={line}
+        readOnly={!editable}
+        onChange={changeHandler}
+        onDelete={deleteHandler}
+        control={control}
+        ref={idx === 0 ? firstResultInputRef : null}
+        onFocus={onFocus}
+      />
     );
   });
 });
@@ -514,10 +532,11 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
 
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
-  const showSubmit = !result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions));
+  const showSubmit = (!result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions)))
+  && !area.readonly;
 
   if (!isAlive(item) || !isAlive(area)) return null;
-  return (
+  return (result || showSubmit) && (
     <Block name="textarea-tag" mod={{ mode: item.mode }}>
       {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
 

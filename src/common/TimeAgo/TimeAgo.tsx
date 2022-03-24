@@ -26,7 +26,7 @@ function getNextTick(passedTime = 0) {
 }
 
 type TimeAgoProps = React.ComponentPropsWithoutRef<"time"> & {
-  date: number | string | Date
+  date: number | string | Date,
 }
 
 export const TimeAgo = ({ date, ...rest }: TimeAgoProps) => {
