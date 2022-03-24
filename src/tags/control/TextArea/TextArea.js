@@ -386,12 +386,11 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDe
     ref: inputRef,
     className: "ant-input " + styles.input,
     value: displayValue,
-    readOnly: collapsed,
     autoSize: isTextarea ? { minRows: 1 } : null,
     onChange: e => {
       if (!collapsed) onChange(idx, e.target.value);
     },
-    readOnly,
+    readOnly: readOnly || collapsed,
     onFocus,
   };
 
