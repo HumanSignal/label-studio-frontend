@@ -96,13 +96,13 @@ export function getBoundingBoxAfterTransform(rect, transform) {
  * Apply changes to rect (shift to (x, y) and rotate) and calc bounding box around it
  * @param {{ x: number, y: number, width: number, height: number }} rect
  * @param {{ x: number, y: number }} shiftPoint
- * @param {number} degRotation
+ * @param {number} radRotation
  */
-export function getBoundingBoxAfterChanges(rect, shiftPoint, degRotation = 0) {
+export function getBoundingBoxAfterChanges(rect, shiftPoint, radRotation = 0) {
   const transform = new Konva.Transform();
 
   transform.translate(shiftPoint.x, shiftPoint.y);
-  transform.rotate((degRotation * Math.PI) / 180);
+  transform.rotate(radRotation);
   return getBoundingBoxAfterTransform(rect, transform);
 }
 
@@ -132,14 +132,34 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
   return { ...rect, x, y, width, height };
 }
 
-export function createDragBoundFunc(image, cb) {
-  return function(pos) {
-    const transformerFunc = this.getAttr("transformerDragBoundFunc");
 
-    if (transformerFunc) {
-      return transformerFunc(pos);
-    } else {
-      return image.fixForZoomWrapper(pos, cb);
-    }
+export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
+  const { parent: imageView } = item;
+
+  return function(pos) {
+    return imageView.fixForZoomWrapper(pos, (pos) => {
+      let { x, y } = pos;
+
+      x -= offset.x;
+      y -= offset.y;
+      const singleRegionDragging = item.selected || !item.inSelection;
+      const { top, left, right, bottom } = item.bboxCoords;
+      const { top: srTop, left: srLeft, right: srRight, bottom: srBottom } = imageView?.selectedRegionsBBox || {};
+      const bbox = singleRegionDragging
+        ? { x, y, width: right - left, height: bottom - top }
+        : { x: srLeft - left + x, y: srTop - top + y, width: srRight - srLeft, height: srBottom - srTop };
+      const fixed = fixRectToFit(bbox, imageView.stageWidth, imageView.stageHeight);
+
+      if (fixed.width !== bbox.width) {
+        x += (fixed.width - bbox.width) * (fixed.x !== bbox.x ? -1 : 1);
+      }
+
+      if (fixed.height !== bbox.height) {
+        y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
+      }
+      x += offset.x;
+      y += offset.y;
+      return { x, y };
+    });
   };
 }
