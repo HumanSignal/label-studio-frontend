@@ -58,6 +58,10 @@ const TimeTraveller = types
         }
       },
 
+      setSkipNextUndoState(value = true) {
+        self.skipNextUndoState = value;
+      },
+
       setReplaceNextUndoState(value = true) {
         replaceNextUndoState = value;
       },
