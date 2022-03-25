@@ -42,6 +42,7 @@ import { Space } from "../../common/Space/Space";
 import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 import { isDefined } from "../../utils/utilities";
 import { Annotation } from "./Annotation";
+import { Button } from "../../common/Button/Button";
 
 /**
  * App
@@ -58,7 +59,18 @@ class App extends Component {
   }
 
   renderNothingToLabel() {
-    return <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />;
+    return (
+      <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+        <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
+        <Block>You have completed all tasks in the queue!</Block>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <Button look="outlined" style={{ margin: "16px 0" }}>
+            Go to labeling queue history
+          </Button>
+          <Button look="outlined">Go to data manager</Button>
+        </div>
+      </div>
+    );
   }
 
   renderNoAccess() {

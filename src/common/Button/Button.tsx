@@ -17,7 +17,7 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   waiting?: boolean;
   icon?: JSX.Element;
   tag?: CNTagName;
-  look?: "primary" | "danger" | "destructive";
+  look?: "primary" | "danger" | "destructive" | "outline";
   primary?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
