@@ -16,6 +16,8 @@ import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 import "./Choice";
+import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
+import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
 
 const { Option } = Select;
 
@@ -58,6 +60,8 @@ const TagAttrs = types.model({
   choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
 
   layout: types.optional(types.enumeration(["select", "inline", "vertical"]), "vertical"),
+
+  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 });
 
 const Model = types
@@ -108,6 +112,10 @@ const Model = types
 
     selectedValues() {
       return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
+    },
+
+    get defaultChildType() {
+      return "choice";
     },
 
     // perChoiceVisible() {
@@ -225,6 +233,7 @@ const ChoicesModel = types.compose(
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
+  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
   AnnotationMixin,
 );
