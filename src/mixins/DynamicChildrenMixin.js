@@ -40,7 +40,7 @@ const DynamicChildrenMixin = types.model({
           self.children.push(...prepareDynamicChildrenData(data));
         }
 
-        postprocessDynamicChildren(self.children.slice(self.children.length - data.length,self.children.length), store);
+        if (self.children) postprocessDynamicChildren(self.children.slice(self.children.length - data.length,self.children.length), store);
       },
     };
   });
