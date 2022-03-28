@@ -59,16 +59,23 @@ class App extends Component {
   }
 
   renderNothingToLabel() {
+    const topWindow = window.top;
+
     return (
-      <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          paddingBottom: "30vh",
+        }}
+      >
         <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
-        <Block>You have completed all tasks in the queue!</Block>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <Button look="outlined" style={{ margin: "16px 0" }}>
-            Go to labeling queue history
-          </Button>
-          <Button look="outlined">Go to data manager</Button>
-        </div>
+        <Block name="sub__result">You have completed all tasks in the queue!</Block>
+        <Button onClick={() => topWindow.LSH.goBack()} look="outlined" style={{ margin: "16px 0" }}>
+          Go to previous
+        </Button>
       </div>
     );
   }
@@ -83,11 +90,7 @@ class App extends Component {
         <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
-        {store.hasInterface('infobar') && (
-          <Elem name="infobar">
-            Task #{store.task.id}
-          </Elem>
-        )}
+        {store.hasInterface("infobar") && <Elem name="infobar">Task #{store.task.id}</Elem>}
       </Block>
     );
   }
@@ -114,19 +117,13 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block
-            key={(as.selectedHistory ?? as.selected)?.id}
-            name="main-view"
-            onScrollCapture={this._notifyScroll}
-          >
+          <Block key={(as.selectedHistory ?? as.selected)?.id} name="main-view" onScrollCapture={this._notifyScroll}>
             <Elem name="annotation">
               {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
-            {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
-            {as.selected.onlyTextObjects === false && (
-              <DynamicPreannotationsControl />
-            )}
+            {getRoot(as).hasInterface("infobar") && this._renderInfobar(as)}
+            {as.selected.onlyTextObjects === false && <DynamicPreannotationsControl />}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}
@@ -211,23 +208,23 @@ class App extends Component {
             </Segment>
           )}
 
-          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
+          {isDefined(store) && store.hasInterface("topbar") && <TopBar store={store} />}
           <div className={stCommon}>
             <div className={mainContainerClass.join(" ")}>
               {as.validation === null
                 ? this._renderUI(as.selectedHistory?.root ?? root, as)
                 : this.renderConfigValidationException(store)}
             </div>
-            {(viewingAll === false) && (
+            {viewingAll === false && (
               <div className={stMenu + " ls-menu"}>
                 {store.hasInterface("side-column") && (
                   <SidebarTabs active="annotation">
                     <SidebarPage name="annotation" title="Annotation">
-                      <AnnotationTab store={store}/>
+                      <AnnotationTab store={store} />
                     </SidebarPage>
                     {this.props.panels.map(({ name, title, Component }) => (
                       <SidebarPage key={name} name={name} title={title}>
-                        <Component/>
+                        <Component />
                       </SidebarPage>
                     ))}
                   </SidebarTabs>
