@@ -58,11 +58,9 @@ class App extends Component {
     return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
   }
 
-  renderNothingToLabel() {
-    const topWindow = window.top;
-
+  renderNothingToLabel(store) {
     return (
-      <div
+      <Block
         style={{
           display: "flex",
           alignItems: "center",
@@ -73,10 +71,12 @@ class App extends Component {
       >
         <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
         <Block name="sub__result">You have completed all tasks in the queue!</Block>
-        <Button onClick={() => topWindow.LSH.goBack()} look="outlined" style={{ margin: "16px 0" }}>
-          Go to previous
-        </Button>
-      </div>
+        {store.canGoPrevTask && (
+          <Button onClick={() => store.prevTask()} look="outlined" style={{ margin: "16px 0" }}>
+            Go to Previous Task
+          </Button>
+        )}
+      </Block>
     );
   }
 
@@ -177,7 +177,7 @@ class App extends Component {
 
     if (store.isLoading) return this.renderLoader();
 
-    if (store.noTask) return this.renderNothingToLabel();
+    if (store.noTask) return this.renderNothingToLabel(store);
 
     if (store.noAccess) return this.renderNoAccess();
 
