@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Elem } from "../../../utils/bem";
@@ -10,7 +10,7 @@ interface AudioNextProps {
 
 const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [playing, setPlaying] = useState(false);
-  const [position, setPosition] = useState(0);
+  const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
 
   const [zoom, setZoom] = useState(1);
@@ -24,13 +24,11 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const handlePositionChange = useCallback((frame: number) => {
     setPosition(frame);
-    setTimeout(() => {
-      item.handleSeek();
-    }, 10);
   }, []);
 
-  const handlePlayToggle = useCallback((playing: boolean) => {
-    setPlaying(playing);
+  const handleSeek = useCallback((frame: number) => {
+    setPosition(frame);
+    item.handleSeek();
   }, []);
 
   const formatPosition = useCallback(({ time, fps }): string => {
@@ -41,9 +39,37 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
     return result.toString().padStart(3, '0');
   }, []);
 
-  useEffect(() => {
-    item.handlePlay(playing);
-  }, [playing, item]);
+  const handlePlay = useCallback(() => {
+    setPlaying((playing) => {
+      if (!item._ws) return false;
+
+      if (item._ws.isPlaying() === false) {
+        item._ws.play();
+      }
+
+      if (playing === false) {
+        item.triggerSyncPlay();
+        return true;
+      }
+      return playing;
+    });
+  }, [item, playing]);
+
+  const handlePause = useCallback(() => {
+    setPlaying((playing) => {
+      if (!item._ws) return false;
+
+      if (item._ws.isPlaying() === true) {
+        item._ws?.pause?.();
+      }
+
+      if (playing === true) {
+        item.triggerSyncPause();
+        return false;
+      }
+      return playing;
+    });
+  }, [item, playing]);
 
   return (
     <ObjectTag item={item}>
@@ -75,7 +101,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         onAddRegion={item.addRegion}
         onSelectRegion={item.selectRegion}
         onPositionChange={handlePositionChange}
-        onPlayToggle={handlePlayToggle}
+        onSeek={handleSeek}
+        onPlay={handlePlay}
+        onPause={handlePause}
         onZoom={setZoom}
         onVolumeChange={setVolume}
         onSpeedChange={setSpeed}

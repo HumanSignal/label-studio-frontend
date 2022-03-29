@@ -25,7 +25,7 @@ export const Frames: FC<TimelineViewProps> = ({
   playing,
   regions,
   onScroll,
-  onChange,
+  onPositionChange,
   onResize,
   onSelectRegion,
   ...props
@@ -43,7 +43,7 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [length, step]);
 
   const handlers = useMemoizedHandlers({
-    onChange,
+    onPositionChange,
   });
 
   const background = useMemo(() => {
@@ -74,7 +74,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
 
-    handlers.onChange?.(clamp(frame + 1, 1, length));
+    handlers.onPositionChange?.(clamp(frame + 1, 1, length));
   }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {

@@ -111,22 +111,27 @@ const Model = types
     },
 
     handleSyncSeek(time) {
-      if (self.ref.current && !self.ref.current.playing) {
+      if (self.ref.current) {
         self.ref.current.currentTime = time;
       }
     },
 
     handleSyncPlay() {
-      if (!self.ref.current?.playing) self.ref.current?.play();
+      self.ref.current?.play();
     },
 
     handleSyncPause() {
-      if (self.ref.current?.playing) self.ref.current?.pause();
+      self.ref.current?.pause();
+    },
+
+    handleSeek() {
+      if (self.ref.current) {
+        self.triggerSyncSeek(self.ref.current.currentTime);
+      }
     },
 
     needsUpdate() {
       if (self.sync) {
-        self.initSync();
         if (self.syncedObject?.type?.startsWith("audio")) {
           self.muted = true;
         }
@@ -140,7 +145,6 @@ const Model = types
     setOnlyFrame(frame) {
       if (self.frame !== frame) {
         self.frame = frame;
-        self.triggerSyncSeek(frame / self.framerate);
       }
     },
 
@@ -148,8 +152,6 @@ const Model = types
       if (self.frame !== frame) {
         self.frame = frame;
         self.ref.current.currentTime = frame / self.framerate;
-        // trigger only here, this method already has side effects, so it would be controlled
-        self.triggerSyncSeek(self.ref.current.currentTime);
       }
     },
 

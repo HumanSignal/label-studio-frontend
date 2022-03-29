@@ -27,7 +27,7 @@ const HtxVideoView = ({ item }) => {
   const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
   const [videoLength, _setVideoLength] = useState(0);
-  const [playing, _setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [position, _setPosition] = useState(1);
 
   const [videoSize, setVideoSize] = useState(null);
@@ -41,19 +41,13 @@ const HtxVideoView = ({ item }) => {
     onExitFullscreen() { setIsFullScreen(false); },
   });
 
-  const setPlaying = useCallback((playing) => {
-    _setPlaying(playing);
-    if (playing) item.triggerSyncPlay();
-    else item.triggerSyncPause();
-  }, [item]);
-
-  const togglePlaying = useCallback(() => {
-    _setPlaying(playing => {
-      if (!playing) item.triggerSyncPlay();
-      else item.triggerSyncPause();
-      return !playing;
-    });
-  }, [item]);
+  // const togglePlaying = useCallback(() => {
+  //   setPlaying(playing => {
+  //     if (!playing) item.triggerSyncPlay();
+  //     else item.triggerSyncPause();
+  //     return !playing;
+  //   });
+  // }, [item]);
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
@@ -81,14 +75,6 @@ const HtxVideoView = ({ item }) => {
       ]);
     }
   }, []);
-
-  useEffect(() => {
-    const video = item.ref.current;
-
-    if (video) {
-      playing ? video.play() : video.pause();
-    }
-  }, [playing]);
 
   useEffect(() => {
     const container = videoContainerRef.current;
@@ -242,12 +228,27 @@ const HtxVideoView = ({ item }) => {
   }, [videoLength, setPosition, setPlaying]);
 
   // TIMELINE EVENT HANDLERS
-  const handlePlayToggle = useCallback((playing) => {
-    if (position === videoLength) {
-      setPosition(1);
-    }
-    setPlaying(playing);
-  }, [position, videoLength, setPosition]);
+  const handlePlay = useCallback(() => {
+    setPlaying((playing) => {
+      if (playing === false) {
+        item.ref.current.play();
+        item.triggerSyncPlay();
+        return true;
+      }
+      return playing;
+    });
+  }, [playing]);
+
+  const handlePause = useCallback(() => {
+    setPlaying((playing) => {
+      if (playing === true) {
+        item.ref.current.pause();
+        item.triggerSyncPause();
+        return false;
+      }
+      return playing;
+    });
+  }, [playing]);
 
   const handleFullscreenToggle = useCallback(() => {
     setIsFullScreen(!isFullScreen);
@@ -371,10 +372,11 @@ const HtxVideoView = ({ item }) => {
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}
-                  onClick={togglePlaying}
+                  // onClick={togglePlaying}
                   onEnded={handleVideoEnded}
-                  onPlay={() => _setPlaying(true)}
-                  onPause={() => _setPlaying(false)}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeeked={item.handleSeek}
                 />
               </>
             )}
@@ -394,7 +396,8 @@ const HtxVideoView = ({ item }) => {
             framerate={item.framerate}
             controls={{ FramesControl: true }}
             onPositionChange={handleTimelinePositionChange}
-            onPlayToggle={handlePlayToggle}
+            onPlay={handlePlay}
+            onPause={handlePause}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}
             onAction={handleAction}

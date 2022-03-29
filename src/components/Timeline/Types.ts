@@ -29,7 +29,9 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   controlsOnTop?: boolean;
   controls?: TimelineControls;
   onReady?: (data: Record<string, any>) => void;
-  onPlayToggle: (playing: boolean) => void;
+  onPlay?: () => void;
+  onPause?: () => void;
+  onSeek?: (position: number) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility?: (id: string, visibility: boolean) => void;
   onAddRegion?: (region: Record<string, any>) => any;
@@ -56,9 +58,11 @@ export interface TimelineViewProps {
   leftOffset?: number;
   controls?: TimelineControls;
   onScroll: (position: number) => void;
-  onChange: (position: number) => void;
+  onPositionChange: (position: number) => void;
   onResize: (position: number) => void;
-  onPlayToggle?: TimelineProps["onPlayToggle"];
+  onPlay?: TimelineProps["onPlay"];
+  onPause?: TimelineProps["onPause"];
+  onSeek?: TimelineProps["onSeek"];
   onToggleVisibility?: TimelineProps["onToggleVisibility"];
   onReady?: TimelineProps["onReady"];
   onZoom?: TimelineProps["onZoom"];
@@ -154,7 +158,8 @@ export interface TimelineControlsProps {
   onStepBackward: TimelineControlsStepHandler;
   onStepForward: TimelineControlsStepHandler;
   formatPosition?: TimelineProps["formatPosition"];
-  onPlayToggle: TimelineProps["onPlayToggle"];
+  onPlay?: TimelineProps["onPlay"];
+  onPause?: TimelineProps["onPause"];
   onFullScreenToggle: TimelineProps["onFullscreenToggle"];
   onVolumeChange: TimelineProps["onVolumeChange"];
 }

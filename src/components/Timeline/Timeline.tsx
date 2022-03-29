@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState";
 import { useMemoizedHandlers } from "../../hooks/useMemoizedHandlers";
 import { Block, Elem } from "../../utils/bem";
@@ -42,10 +42,17 @@ const TimelineComponent: FC<TimelineProps> = ({
     fromString(value) { return value === "true" ? true : false; },
     toString(value) { return String(value); },
   });
+  const getCurrentPosition = useRef(() => {
+    return currentPosition;
+  });
+
   const step = useMemo(() => defaultStepSize * zoom, [zoom, defaultStepSize]);
+
   const handlers = useMemoizedHandlers({
     onReady: props.onReady,
-    onPlayToggle: props.onPlayToggle,
+    onPlay: props.onPlay,
+    onPause: props.onPause,
+    onSeek: props.onSeek,
     onPositionChange: props.onPositionChange,
     onToggleVisibility: props.onToggleVisibility,
     onAddRegion: props.onAddRegion,
@@ -57,6 +64,7 @@ const TimelineComponent: FC<TimelineProps> = ({
   });
 
   const setInternalPosition = (newPosition: number) => {
+    // console.trace(`set position %c ${newPosition}`, "color: red");
     const clampedValue = clamp(newPosition, 1, length);
 
     if (clampedValue !== currentPosition) {
@@ -100,10 +108,14 @@ const TimelineComponent: FC<TimelineProps> = ({
   ]);
 
   useEffect(() => {
+    // Using ref hack to avoid running effect on current position change
+    // when position is updated from props
+    const currentPosition = getCurrentPosition.current();
+
     if (position !== currentPosition) {
       setCurrentPosition(clamp(position, 1, length));
     }
-  }, [position, length, currentPosition]);
+  }, [position, length]);
 
   const controls = (
     <Elem name="topbar">
@@ -115,7 +127,8 @@ const TimelineComponent: FC<TimelineProps> = ({
         volume={props.volume}
         controls={props.controls}
         collapsed={viewCollapsed}
-        onPlayToggle={(playing) => handlers.onPlayToggle(playing)}
+        onPlay={() => handlers.onPlay?.()}
+        onPause={() => handlers.onPause?.()}
         fullscreen={fullscreen}
         disableFrames={disableView}
         allowFullscreen={allowFullscreen}
@@ -173,8 +186,10 @@ const TimelineComponent: FC<TimelineProps> = ({
         onReady={(data) => handlers.onReady?.(data)}
         onScroll={setSeekOffset}
         onResize={setSeekVisibleWidth}
-        onChange={setInternalPosition}
-        onPlayToggle={(playing) => handlers.onPlayToggle(playing)}
+        onPositionChange={setInternalPosition}
+        onPlay={() => handlers.onPlay?.()}
+        onPause={() => handlers.onPause?.()}
+        onSeek={(position) => handlers.onSeek?.(position) }
         onToggleVisibility={(id, visible) => handlers.onToggleVisibility?.(id, visible)}
         onAddRegion={(reg) => handlers.onAddRegion?.(reg)}
         onDeleteRegion={(id) => handlers.onDeleteRegion?.(id)}

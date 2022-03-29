@@ -25,6 +25,8 @@ type VideoProps = {
   onPlay?: () => void,
   onPause?: () => void,
   onClick?: () => void,
+  onSeeked?: (event: any) => void,
+  onTimeUpdate?: (event: any) => void,
   onLoad?: (data: VideoRef) => void,
   onFrameChange?: (frame: number, length: number) => void,
   onEnded?: () => void,
@@ -313,7 +315,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     set currentTime(time: number) {
       const video = videoRef.current;
 
-      if (video) {
+      if (video && time !== this.currentTime) {
         video.currentTime = time;
       }
     },
@@ -355,16 +357,13 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       videoRef.current?.pause();
     },
     seek(time) {
-      const video = videoRef.current!;
-
-      video.currentTime = clamp(time, 0, video.duration);
+      this.currentTime = clamp(time, 0, this.duration);
       requestAnimationFrame(() => drawVideo());
     },
     goToFrame(frame: number) {
-      const video = videoRef.current!;
       const frameClamped = clamp(frame, 1, length);
 
-      video.currentTime = frameClamped / framerate;
+      this.currentTime = frameClamped / framerate;
       requestAnimationFrame(() => drawVideo());
     },
   };
@@ -488,9 +487,15 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         onPause={handleVideoPause}
         onLoadedData={delayedUpdate}
         onCanPlay={delayedUpdate}
-        onSeeked={delayedUpdate}
+        onSeeked={(event) => {
+          delayedUpdate();
+          props.onSeeked?.(event);
+        }}
         onSeeking={delayedUpdate}
-        onTimeUpdate={delayedUpdate}
+        onTimeUpdate={(event) => {
+          delayedUpdate();
+          props.onTimeUpdate?.(event);
+        }}
         onProgress={delayedUpdate}
         onPlaying={handleVideoPlaying}
         onWaiting={handleVideoWaiting}

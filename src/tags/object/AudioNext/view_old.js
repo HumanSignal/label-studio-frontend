@@ -18,6 +18,7 @@ const HtxAudioView = ({ store, item }) => {
         <Waveform
           dataField={item.value}
           src={item._value}
+          muted={item.muted}
           selectRegion={item.selectRegion}
           handlePlay={() => item.handlePlay()}
           handleSeek={item.handleSeek}

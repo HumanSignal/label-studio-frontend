@@ -1,4 +1,4 @@
-import React, { FC, MouseEvent, useContext, useEffect, useMemo, useState } from "react";
+import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
@@ -18,7 +18,7 @@ const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   return result.padStart(roundedFps.length, '0');
 };
 
-export const Controls: FC<TimelineControlsProps> = ({
+export const Controls: FC<TimelineControlsProps> = memo(({
   length,
   position,
   frameRate,
@@ -31,7 +31,8 @@ export const Controls: FC<TimelineControlsProps> = ({
   allowViewCollapse,
   onRewind,
   onForward,
-  onPlayToggle,
+  onPlay,
+  onPause,
   onFullScreenToggle,
   onStepBackward,
   onPositionChange,
@@ -45,7 +46,7 @@ export const Controls: FC<TimelineControlsProps> = ({
   const [startReached, endReached] = [position === 1, position === length];
 
   const duration = useMemo(() => {
-    return (length - 1) / frameRate;
+    return Math.max((length - 1) / frameRate, 0);
   }, [length, frameRate]);
 
   const currentTime = useMemo(() => {
@@ -55,6 +56,10 @@ export const Controls: FC<TimelineControlsProps> = ({
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
     handler(e, stepSize ?? undefined);
   };
+
+  const handlePlay = useCallback(() => {
+    playing ? onPause?.() : onPlay?.();
+  }, [playing, onPlay, onPause]);
 
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
@@ -144,7 +149,7 @@ export const Controls: FC<TimelineControlsProps> = ({
               </>
             )}
           />
-          <ControlButton onClick={() => onPlayToggle?.(!playing)} hotkey={settings?.playpauseHotkey}>
+          <ControlButton onClick={handlePlay} hotkey={settings?.playpauseHotkey}>
             {playing ? <IconPause/> : <IconPlay/>}
           </ControlButton>
           <AltControls
@@ -225,7 +230,7 @@ export const Controls: FC<TimelineControlsProps> = ({
       </Elem>
     </Block>
   );
-};
+});
 
 export const ControlButton: FC<ButtonProps & {disabled?: boolean}> = ({ children, ...props }) => {
   return (
@@ -268,7 +273,7 @@ const TimeDisplay: FC<TimeDisplay> = ({
         <Time time={currentTime} position={currentTimeFormatted}/>
       </Elem>
       <Elem name="time-section">
-        <Time time={duration} position={totalTimeFormatted}/>
+        <Time time={Math.max(duration, 0)} position={totalTimeFormatted}/>
       </Elem>
     </Elem>
   );

@@ -43,6 +43,7 @@ import ObjectBase from "../Base";
 const TagAttrs = types.model({
   name: types.identifier,
   value: types.maybeNull(types.string),
+  muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),
   volume: types.optional(types.boolean, true),
   speed: types.optional(types.boolean, true),
@@ -102,8 +103,6 @@ export const AudioModel = types.compose(
     .actions(self => ({
       needsUpdate() {
         self.handleNewRegions();
-
-        if (self.sync) self.initSync();
       },
 
       onReady() {
@@ -111,16 +110,24 @@ export const AudioModel = types.compose(
       },
 
       handleSyncPlay() {
+        if (!self._ws) return;
+        if (self._ws.isPlaying()) return;
+
         self._ws?.play();
       },
 
       handleSyncPause() {
+        if (!self._ws) return;
+        if (!self._ws.isPlaying()) return;
+
         self._ws?.pause();
       },
 
       handleSyncSeek(time) {
         try {
-          self._ws && (self._ws.setCurrentTime(time));
+          if (self._ws && time !== self._ws.getCurrentTime()) {
+            self._ws.setCurrentTime(time);
+          }
         } catch (err) {
           console.log(err);
         }
@@ -271,9 +278,9 @@ export const AudioModel = types.compose(
       /**
      * Play and stop
      */
-      handlePlay(playing) {
+      handlePlay() {
         if (self._ws) {
-          self.playing = playing ?? !self.playing;
+          self.playing = !self.playing;
           self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
         }
       },
