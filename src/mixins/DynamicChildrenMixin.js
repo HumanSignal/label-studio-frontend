@@ -28,9 +28,12 @@ const DynamicChildrenMixin = types.model({
     return {
       updateValue: flow(function * (store) {
         const valueFromTask = parseValue(self.value, store.task.dataObj);
+
+        if (!valueFromTask) return;
         const value = yield self.resolveValue(valueFromTask);
 
         self.generateDynamicChildren(value, store);
+        self.needsUpdate?.();
       }),
 
       generateDynamicChildren(data, store) {

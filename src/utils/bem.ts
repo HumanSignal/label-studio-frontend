@@ -215,6 +215,7 @@ export const BemWithSpecifiContext = (context?: Context<CN | null>) => {
     name,
     mod,
     mix,
+    __name,
     ...rest
   }: WrappedComponentProps<T, D>, ref: any) => {
     const blockCtx = useContext(Context);
@@ -227,7 +228,7 @@ export const BemWithSpecifiContext = (context?: Context<CN | null>) => {
       .mix(...(finalMix as CNMix[]), rest.className)
       .toClassName();
 
-    const finalProps: any = { ...rest, ref, className };
+    const finalProps: any = { ...rest, name: __name, ref, className };
 
     if (typeof tag !== 'string') finalProps.block = blockCtx;
     if (component) finalProps.tag = tag;

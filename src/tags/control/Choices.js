@@ -14,10 +14,12 @@ import Types from "../../core/Types";
 import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { Block, Elem } from "../../utils/bem";
+import "./Choices/Choises.styl";
 
 import "./Choice";
 import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
-import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
 
 const { Option } = Select;
 
@@ -103,7 +105,7 @@ const Model = types
     },
 
     get preselectedValues() {
-      return self.tiedChildren.filter(c => c.selected === true).map(c => (c.alias ? c.alias : c.value));
+      return self.tiedChildren.filter(c => c.selected === true).map(c => c.resultValue);
     },
 
     get selectedLabels() {
@@ -111,7 +113,7 @@ const Model = types
     },
 
     selectedValues() {
-      return self.selectedLabels.map(c => (c.alias ? c.alias : c.value));
+      return self.selectedLabels.map(c => c.resultValue);
     },
 
     get defaultChildType() {
@@ -169,7 +171,15 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => choice.setSelected(values.includes(choice.alias || choice._value)));
+      self.tiedChildren.forEach(choice => choice.setSelected(
+        values?.some?.((value) => {
+          if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
+            return value.every?.((val, idx) => val === choice.resultValue?.[idx]);
+          } else {
+            return value === choice.resultValue;
+          }
+        }),
+      ));
     },
 
     // update result in the store with current selected choices
@@ -238,45 +248,46 @@ const ChoicesModel = types.compose(
   AnnotationMixin,
 );
 
-const HtxChoices = observer(({ item }) => {
-  const style = { marginTop: "1em", marginBottom: "1em" };
-  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
-
-  if (item.isVisible === false) {
-    visibleStyle["display"] = "none";
-  }
-
+const ChoicesSelectLayout = observer(({ item }) => {
   return (
-    <div style={{ ...style, ...visibleStyle }}>
-      {item.layout === "select" ? (
-        <Select
-          style={{ width: "100%" }}
-          value={item.selectedLabels.map(l => l._value)}
-          mode={item.choice === "multiple" ? "multiple" : ""}
-          onChange={function(val) {
-            if (Array.isArray(val)) {
-              item.resetSelected();
-              val.forEach(v => item.findLabel(v).setSelected(true));
-              item.updateResult();
-            } else {
-              const c = item.findLabel(val);
+    <Select
+      style={{ width: "100%" }}
+      value={item.selectedLabels.map(l => l._value)}
+      mode={item.choice === "multiple" ? "multiple" : ""}
+      onChange={function(val) {
+        if (Array.isArray(val)) {
+          item.resetSelected();
+          val.forEach(v => item.findLabel(v).setSelected(true));
+          item.updateResult();
+        } else {
+          const c = item.findLabel(val);
 
-              if (c) {
-                c.toggleSelected();
-              }
-            }
-          }}
-        >
-          {item.tiedChildren.map(i => (
-            <Option key={i._value} value={i._value}>
-              {i._value}
-            </Option>
-          ))}
-        </Select>
+          if (c) {
+            c.toggleSelected();
+          }
+        }
+      }}
+    >
+      {item.tiedChildren.map(i => (
+        <Option key={i._value} value={i._value}>
+          {i._value}
+        </Option>
+      ))}
+    </Select>
+  );
+});
+
+const HtxChoices = observer(({ item }) => {
+  return (
+    <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
+      {item.layout === "select" ? (
+        <ChoicesSelectLayout item={item} />
       ) : (
-        <Form layout={item.layout}>{Tree.renderChildren(item)}</Form>
+        !isFF(FF_DEV_2007)
+          ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
+          : Tree.renderChildren(item)
       )}
-    </div>
+    </Block>
   );
 });
 

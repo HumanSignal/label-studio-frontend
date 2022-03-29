@@ -32,6 +32,9 @@ export const FF_DEV_1621 = "ff_front_dev_1621_interactive_mode_150222_short";
 // Add ability to generate children tags from task data
 export const FF_DEV_2007_DEV_2008 = "ff_dev_2007_dev_2008_dynamic_tag_children_250322_short";
 
+// Rework of Choices tag
+export const FF_DEV_2007 = "ff_dev_2007_rework_choices_280322_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {};
 }
