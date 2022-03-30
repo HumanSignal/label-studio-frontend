@@ -168,7 +168,14 @@ export class TimeSync {
 
     this.eventsCache.set(target, evts);
 
-    if (onReady) this.events.on(`ready:${target}`, onReady);
+    if (onReady) {
+      const handleReady = () => {
+        this.events.off(`ready:${target}`, handleReady);
+        onReady();
+      };
+
+      this.events.on(`ready:${target}`, handleReady);
+    }
   }
 
   unsubscribe(name: string, target: string) {

@@ -77,6 +77,7 @@ const SyncMixin = types
     beforeDestroy(){
       if (self.timeSync && self.sync) {
         self.timeSync.unsubscribe(self.sync);
+        sync.unregister((self as any).name);
       }
     },
   }));
