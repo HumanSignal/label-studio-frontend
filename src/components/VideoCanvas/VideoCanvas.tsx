@@ -491,7 +491,10 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
           delayedUpdate();
           props.onSeeked?.(event);
         }}
-        onSeeking={delayedUpdate}
+        onSeeking={(event) => {
+          delayedUpdate();
+          props.onSeeked?.(event);
+        }}
         onTimeUpdate={(event) => {
           delayedUpdate();
           props.onTimeUpdate?.(event);
