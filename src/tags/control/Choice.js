@@ -72,25 +72,24 @@ const Model = types
       return true;
     },
     get isLeaf() {
-      let isLeaf = true;
-      const type = self.type;
+      if (!self.nestedResults) return true;
 
-      Tree.traverseTree(self, (node) => {
-        if (node !== self && node.type === type) {
-          isLeaf = false;
-          return TRAVERSE_STOP;
-        }
-      });
-      return isLeaf;
+      return !self.children?.length;
     },
     get parentChoice() {
       return Types.getParentTagOfTypeString(self, "choice");
+    },
+    get isSkipped() {
+      return !self.nestedResults && !!self.parentChoice;
+    },
+    get nestedResults() {
+      return self.parent?.allownested !== false;
     },
     get _resultValue() {
       return self.alias ?? self._value;
     },
     get resultValue() {
-      if (isFF(FF_DEV_2007) && self.parentChoice) {
+      if (isFF(FF_DEV_2007) && self.nestedResults) {
         const value = [];
         let choice = self;
 
@@ -231,7 +230,7 @@ const HtxNewChoiceView = ({ item, store }) => {
         ) : false}
       </Elem>
       {
-        item.children?.length
+        item.nestedResults && item.children?.length
           ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item)}</Elem>
           : null
       }

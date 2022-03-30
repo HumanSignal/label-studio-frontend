@@ -64,6 +64,8 @@ const TagAttrs = types.model({
   layout: types.optional(types.enumeration(["select", "inline", "vertical"]), "vertical"),
 
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
+
+  ...(isFF(FF_DEV_2007) ? { allownested: types.optional(types.boolean, false) } : {}),
 });
 
 const Model = types
@@ -105,11 +107,11 @@ const Model = types
     },
 
     get preselectedValues() {
-      return self.tiedChildren.filter(c => c.selected === true).map(c => c.resultValue);
+      return self.tiedChildren.filter(c => c.selected === true && !c.isSkipped).map(c => c.resultValue);
     },
 
     get selectedLabels() {
-      return self.tiedChildren.filter(c => c.sel === true);
+      return self.tiedChildren.filter(c => c.sel === true && !c.isSkipped);
     },
 
     selectedValues() {
@@ -171,15 +173,15 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => choice.setSelected(
-        values?.some?.((value) => {
+      self.tiedChildren.forEach(choice => (console.log(`choice.isSkipped`, choice.isSkipped), choice.setSelected(
+        !choice.isSkipped && values?.some?.((value) => {
           if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
             return value.every?.((val, idx) => val === choice.resultValue?.[idx]);
           } else {
             return value === choice.resultValue;
           }
         }),
-      ));
+      )));
     },
 
     // update result in the store with current selected choices
