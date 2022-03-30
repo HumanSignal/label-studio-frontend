@@ -120,6 +120,7 @@ const Model = types
       self.globalOffsets = GlobalOffsets.create({
         start,
         end,
+        calculated: true,
       });
     },
 
