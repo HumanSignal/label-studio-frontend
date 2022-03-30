@@ -56,10 +56,7 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
-  index: number;
-  data: (
-    index: number,
-  ) => {
+  item: {
     row: {
       id: string,
       isOpen: boolean,
@@ -133,9 +130,8 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = (props: RowProps) => {
-  const { style, data, index } = props;
-  const item = data(index);
+const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
+
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -349,7 +345,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           rowHeight={30}
           defaultExpanded={false}
           maxHeightPercentage={50}
-          minWidth={300}
+          minWidth={200}
           transformationCallback={dataTransformation}
         />
       )}

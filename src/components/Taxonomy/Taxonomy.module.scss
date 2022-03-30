@@ -63,9 +63,6 @@
   background: white;
   border-radius: 6px;
   left: -1px;
-  width: max-content;
-  min-width: 100%;
-  max-width: 50vw; // 100% is not enough
   border: 1px solid #e2e2e2;
   box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
 
@@ -160,16 +157,22 @@
   text-align: right;
 
   &_actions {
-    display: none;
+    visibility: hidden;
+    display: block;
     font-weight: bold;
     cursor: pointer;
     text-align: center;
   }
-
+  .taxonomy__item &_count:not(:last-child) {
+    position: absolute;
+    right: 12px;
+  }
   .taxonomy__item:hover &_count:not(:last-child) {
+    visibility: hidden;
     display: none;
   }
   .taxonomy__item:hover &_actions {
+    visibility: visible;
     display: block;
   }
 }
