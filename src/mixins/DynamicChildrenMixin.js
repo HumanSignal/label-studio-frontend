@@ -1,4 +1,4 @@
-import { cast, flow, types } from "mobx-state-tree";
+import { flow, types } from "mobx-state-tree";
 import ProcessAttrsMixin from "./ProcessAttrs";
 import { parseValue } from "../utils/data";
 
@@ -38,7 +38,7 @@ const DynamicChildrenMixin = types.model({
 
       generateDynamicChildren(data, store) {
         if (!self.children) {
-          self.children = cast(prepareDynamicChildrenData(data));
+          self.children = prepareDynamicChildrenData(data);
         } else {
           self.children.push(...prepareDynamicChildrenData(data));
         }

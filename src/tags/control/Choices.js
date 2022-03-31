@@ -173,7 +173,7 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => (console.log(`choice.isSkipped`, choice.isSkipped), choice.setSelected(
+      self.tiedChildren.forEach(choice => choice.setSelected(
         !choice.isSkipped && values?.some?.((value) => {
           if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
             return value.length === choice.resultValue.length && value.every?.((val, idx) => val === choice.resultValue?.[idx]);
@@ -181,7 +181,7 @@ const Model = types
             return value === choice.resultValue;
           }
         }),
-      )));
+      ));
     },
 
     // update result in the store with current selected choices
