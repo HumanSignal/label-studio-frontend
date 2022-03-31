@@ -15,11 +15,19 @@ import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart,
 import { NodeView } from "./NodeView";
 
 const NodeViews = {
-  RichTextRegionModel: NodeView({
+  RichTextRegionModel: {
     name: "HTML",
     icon: IconText,
     getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
-  }),
+    fullContent: node => (
+      <div>
+        {/* <div style={{ color: "#5a5a5a" }}>{node.text}</div> */}
+        <div>{node.start}</div>
+        <div>{node.startOffset}</div>
+        <div>{JSON.stringify(node.globalOffsets, null, 2)}</div>
+      </div>
+    ),
+  },
 
   ParagraphsRegionModel: NodeView({
     name: "Paragraphs",
@@ -92,6 +100,24 @@ const NodeViews = {
   }),
 };
 
+const NodeDebug = observer(({ className, node }) => {
+  const name = getType(node).name;
+
+  if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
+
+  const { getContent, fullContent } = NodeViews[name];
+  const labelName = node.labelName;
+
+  return (
+    <div className={[styles.node, className].filter(Boolean).join(" ")}>
+      {labelName}
+      <br/>
+      {getContent(node)}
+      {fullContent && fullContent(node)}
+    </div>
+  );
+});
+
 const Node = observer(({ className, node }) => {
   const name = getType(node).name;
 
@@ -139,4 +165,4 @@ const NodeMinimal = observer(({ node }) => {
   );
 });
 
-export { Node, NodeIcon, NodeMinimal, NodeViews };
+export { Node, NodeDebug, NodeIcon, NodeMinimal, NodeViews };
