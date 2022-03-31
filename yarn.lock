@@ -9610,8 +9610,8 @@ sass-loader@^11.0.1:
     neo-async "^2.6.2"
 
 sass@^1.32.12:
-  version "1.49.9"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.49.9.tgz#b15a189ecb0ca9e24634bae5d1ebc191809712f9"
+  version "1.49.10"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.49.10.tgz#7b83cee0f03bbba443111b3f94944fde2b0c7a6b"
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
