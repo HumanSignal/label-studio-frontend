@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button } from "antd";
+import { Button, Spin } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 import styles from "./App.module.scss";
 import { EntityTab } from "../AnnotationTabs/AnnotationTabs";
@@ -40,6 +40,7 @@ class Item extends Component {
 export default class Grid extends Component {
   state = {
     item: 0,
+    loaded: new Set(),
   };
   container = React.createRef();
 
@@ -101,6 +102,13 @@ export default class Grid extends Component {
       moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
     });
 
+    this.setState((state) => {
+      return {
+        ...state,
+        loaded: new Set([...state.loaded, this.props.store.selected.id]),
+      };
+    });
+
     this.renderNext();
   };
 
@@ -132,6 +140,7 @@ export default class Grid extends Component {
     c.type === "annotation" ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
+
   render() {
     const i = this.state.item;
     const { annotations, store: { selected } } = this.props;
@@ -141,7 +150,7 @@ export default class Grid extends Component {
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
           {annotations.filter(c => !c.hidden).map((c) => (
-            <div id={`c-${c.id}`} key={`anno-${c.id}`}>
+            <div id={`c-${c.id}`} key={`anno-${c.id}`} style={{ position: 'relative' }}>
               <EntityTab
                 entity={c}
                 onClick={() => this.select(c)}
@@ -149,6 +158,20 @@ export default class Grid extends Component {
                 bordered={false}
                 style={{ height: 44 }}
               />
+              {!this.state.loaded.has(c.id) && (
+                <div style={{
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Spin size="large" />
+                </div>
+              )}
             </div>
           ))}
           {isRenderingNext && (

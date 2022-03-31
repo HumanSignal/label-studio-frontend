@@ -5,6 +5,7 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
+import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import Types from "../../../core/Types";
 
 /**
@@ -189,4 +190,5 @@ export const VideoModel = types.compose("VideoModel",
   ObjectBase,
   AnnotationMixin,
   Model,
+  IsReadyMixin,
 );
