@@ -14,11 +14,19 @@ import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart,
 import { NodeView } from "./NodeView";
 
 const NodeViews = {
-  RichTextRegionModel: NodeView({
+  RichTextRegionModel: {
     name: "HTML",
     icon: IconText,
-    getContent: node => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
-  }),
+    getContent: (node: any) => <span style={{ color: "#5a5a5a" }}>{node.text}</span>,
+    fullContent: (node: any) => (
+      <div>
+        {/* <div style={{ color: "#5a5a5a" }}>{node.text}</div> */}
+        <div>{node.start}</div>
+        <div>{node.startOffset}</div>
+        <div>{JSON.stringify(node.globalOffsets, null, 2)}</div>
+      </div>
+    ),
+  },
 
   ParagraphsRegionModel: NodeView({
     name: "Paragraphs",
@@ -91,6 +99,24 @@ const NodeViews = {
   }),
 };
 
+const NodeDebug: FC<any> = observer(({ className, node }) => {
+  const name = useNodeName(node);
+
+  if (!(name in NodeViews)) console.error(`No ${name} in NodeView`);
+
+  const { getContent, fullContent } = NodeViews[name];
+  const labelName = node.labelName;
+
+  return (
+    <Block name="node" className={[className].filter(Boolean).join(" ")}>
+      {labelName}
+      <br/>
+      {getContent(node)}
+      {fullContent && fullContent(node)}
+    </Block>
+  );
+});
+
 const Node: FC<any> = observer(({ className, node }) => {
   const name = useNodeName(node);
 
@@ -157,4 +183,4 @@ const useRegionStore = (node: any) => {
   return (root as any).annotationStore.selected.regionStore;
 };
 
-export { Node, NodeIcon, NodeMinimal, NodeViews };
+export { Node, NodeDebug, NodeIcon, NodeMinimal, NodeViews };
