@@ -67,6 +67,7 @@ const TreeStructure = ({
   rowHeight,
   maxHeightPercentage,
   minWidth,
+  maxWidth,
   transformationCallback,
   defaultExpanded,
 }: {
@@ -74,6 +75,9 @@ const TreeStructure = ({
   rowComponent: React.FC<any>,
   flatten: boolean,
   rowHeight: number,
+  maxHeightPercentage: number,
+  minWidth: number,
+  maxWidth: number,
   defaultExpanded: boolean,
   transformationCallback: transformationCallback,
 }) => {
@@ -155,7 +159,7 @@ const TreeStructure = ({
 
     return (
       <div ref={rowRef}>
-        <RowComponent {...{ item, style }} />
+        <RowComponent {...{ item, style,  atMaxWidth: maxWidth === width }} />
       </div>
     );
   };

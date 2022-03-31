@@ -72,6 +72,7 @@ interface RowProps {
     toggle: (id: string) => void,
     addInside: (id?: string) => void,
   };
+  atMaxWidth: boolean;
 }
 
 const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
@@ -130,8 +131,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
-
+const Item: React.FC<RowProps> = ({ style, item, atMaxWidth }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -186,7 +186,12 @@ const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
           <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
             <LsChevron stroke="#09f" style={arrowStyle} />
           </div>
-          <label onClick={onClick} title={title} className={disabled ? styles.taxonomy__collapsable : undefined}>
+          <label
+            style={atMaxWidth ? { width: "calc(100% - 60px)" } : {}}
+            onClick={onClick}
+            title={title}
+            className={disabled ? styles.taxonomy__collapsable : undefined}
+          >
             <input
               type="checkbox"
               disabled={disabled}
@@ -346,6 +351,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           defaultExpanded={false}
           maxHeightPercentage={50}
           minWidth={200}
+          maxWidth={600}
           transformationCallback={dataTransformation}
         />
       )}

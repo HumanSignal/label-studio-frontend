@@ -123,6 +123,9 @@
 }
 
 .taxonomy__item label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   flex-grow: 1;
   flex-shrink: 0;
   line-height: 2em;
