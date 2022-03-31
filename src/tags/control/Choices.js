@@ -176,7 +176,7 @@ const Model = types
       self.tiedChildren.forEach(choice => (console.log(`choice.isSkipped`, choice.isSkipped), choice.setSelected(
         !choice.isSkipped && values?.some?.((value) => {
           if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
-            return value.every?.((val, idx) => val === choice.resultValue?.[idx]);
+            return value.length === choice.resultValue.length && value.every?.((val, idx) => val === choice.resultValue?.[idx]);
           } else {
             return value === choice.resultValue;
           }
