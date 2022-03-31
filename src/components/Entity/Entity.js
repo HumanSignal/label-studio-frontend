@@ -4,7 +4,7 @@ import { Badge, Form, Input } from "antd";
 import { CompressOutlined, DeleteOutlined, LinkOutlined, PlusOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 
-import { NodeMinimal } from "../Node/Node";
+import { NodeDebug, NodeMinimal } from "../Node/Node";
 import Hint from "../Hint/Hint";
 import styles from "./Entity.module.scss";
 import { Tooltip } from "../../common/Tooltip/Tooltip";
@@ -64,6 +64,8 @@ export default observer(({ store, annotation }) => {
   const hasEditableNodes = !!nodes.find(node => node.editable);
   const hasEditableRegions = !!nodes.find(node => node.editable && !node.classification);
 
+  const Node = window.HTX_DEBUG ? NodeDebug : NodeMinimal;
+
   if (hasEditableRegions) {
     entityButtons.push(
       <Hotkey.Tooltip key="relations" placement="topLeft" name="region:relation">
@@ -118,7 +120,7 @@ export default observer(({ store, annotation }) => {
         <Elem name="node">
           {node ? (
             <>
-              <NodeMinimal node={node} />
+              <Node node={node} />
               {" "}
               (ID: {node.id})
             </>
