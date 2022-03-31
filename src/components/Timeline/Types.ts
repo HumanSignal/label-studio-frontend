@@ -31,6 +31,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   onReady?: (data: Record<string, any>) => void;
   onPlay?: () => void;
   onPause?: () => void;
+  onFinished?: () => void;
   onSeek?: (position: number) => void;
   onPositionChange: (value: number) => void;
   onToggleVisibility?: (id: string, visibility: boolean) => void;
@@ -63,6 +64,7 @@ export interface TimelineViewProps {
   onPlay?: TimelineProps["onPlay"];
   onPause?: TimelineProps["onPause"];
   onSeek?: TimelineProps["onSeek"];
+  onFinished?: TimelineProps["onFinished"];
   onToggleVisibility?: TimelineProps["onToggleVisibility"];
   onReady?: TimelineProps["onReady"];
   onZoom?: TimelineProps["onZoom"];

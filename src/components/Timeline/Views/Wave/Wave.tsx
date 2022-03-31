@@ -58,7 +58,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [scale, setScale] = useState(1);
-  const [startOver, setStartOver] = useState(false);
+  const shouldStartOver = useRef(false);
 
   const setZoom = useCallback((value: number) => {
     const newValue = clamp(value, ZOOM_X.min, ZOOM_X.max);
@@ -66,24 +66,46 @@ export const Wave: FC<TimelineViewProps> = ({
     setCurrentZoom(newValue);
   }, []);
 
+  const startOver = useCallback(() => {
+    if (!shouldStartOver.current) {
+      shouldStartOver.current = true;
+    }
+  }, []);
+
+  const resetStartOver = useCallback(() => {
+    if (shouldStartOver.current) {
+      shouldStartOver.current = false;
+    }
+  }, []);
+
+  const trackProgress = useRef(() => {
+    const wsi = ws.current;
+
+    if (!wsi) return;
+
+    handlers.onPositionChange?.(wsi.getCurrentTime() * 1000);
+
+    if (wsi.getCurrentTime() === wsi.getDuration() && !shouldStartOver) {
+      startOver();
+    }
+
+    tracker.current = setTimeout(trackProgress.current);
+  });
+
   const handlePlay = useCallback(() => {
     const wsi = ws.current;
 
     if (!wsi || tracker.current) return;
 
-    // if (startOver) wsi.setCurrentTime(0);
+    if (shouldStartOver.current) {
+      resetStartOver();
+      wsi.setCurrentTime(0);
+    }
 
     if (wsi.isPlaying() === true) onPlay?.();
 
-    const trackProgress = () => {
-      onPositionChange?.(wsi.getCurrentTime() * 1000);
-
-      tracker.current = setTimeout(trackProgress);
-    };
-
-    clearTimeout(tracker.current!);
-    tracker.current = setTimeout(trackProgress);
-  }, [onPlay, onPositionChange, startOver]);
+    trackProgress.current();
+  }, [onPlay, onPositionChange]);
 
   const handlePause = useCallback(() => {
     const wsi = ws.current;
@@ -96,10 +118,16 @@ export const Wave: FC<TimelineViewProps> = ({
     }
   }, [onPause]);
 
+  const handleFinished = useCallback(() => {
+    startOver();
+    handlePause();
+  }, [handlePause, startOver]);
+
   const handlers = useMemoizedHandlers({
-    onPositionChange,
     onZoom,
     onSeek,
+    onPositionChange,
+    onFinish: handleFinished,
     onPlay: handlePlay,
     onPause: handlePause,
   });
@@ -116,14 +144,17 @@ export const Wave: FC<TimelineViewProps> = ({
       autoCenterImmediately: true,
     },
     onLoaded: setLoading,
-    onPlay: () => handlers.onPlay(),
+    onPlay: () => {
+      resetStartOver();
+      handlers.onPlay();
+    },
     onPause: () => handlers.onPause(),
-    onPlayFinished: () => handlers.onPause(),
+    onPlayFinished: () => handlers.onFinish(),
     onAddRegion,
     onReady,
     onScroll: (p) => setScrollOffset(p),
     onSeek: (p) => {
-      setStartOver(true);
+      resetStartOver();
       handlers.onSeek?.(p);
     },
     onZoom: (zoom) => handlers.onZoom?.(zoom),
@@ -168,7 +199,6 @@ export const Wave: FC<TimelineViewProps> = ({
       if (!duration || isNaN(duration)) return;
       if (pos === currentTime) return;
 
-      console.log("set current time", pos);
       wsi.setCurrentTime(pos);
     };
 
@@ -515,7 +545,9 @@ const useWaveSurfer = ({
 
     wsi.on("pause", () => onPause?.());
 
-    wsi.on("finish", () => onPlayFinished?.());
+    wsi.on("finish", () => {
+      onPlayFinished?.();
+    });
 
     wsi.on('zoom', (minPxPerMinute) => onZoom?.(minPxPerMinute));
 

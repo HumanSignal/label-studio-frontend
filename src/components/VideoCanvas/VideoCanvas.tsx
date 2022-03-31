@@ -25,7 +25,7 @@ type VideoProps = {
   onPlay?: () => void,
   onPause?: () => void,
   onClick?: () => void,
-  onSeeked?: (event: any) => void,
+  onSeeked?: (event?: any) => void,
   onTimeUpdate?: (event: any) => void,
   onLoad?: (data: VideoRef) => void,
   onFrameChange?: (frame: number, length: number) => void,
@@ -199,7 +199,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const handleVideoEnded = useCallback(() => {
     setPlaying(false);
     setBuffering(false);
+    props.onSeeked?.();
     props.onEnded?.();
+    props.onPause?.();
   }, [props.onEnded]);
 
   useEffect(() => {
