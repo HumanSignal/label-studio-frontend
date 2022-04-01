@@ -25,6 +25,8 @@ type TaxonomyOptions = {
   showFullPath?: boolean,
   pathSeparator?: string,
   maxUsages?: number,
+  maxWidth?: number,
+  minWidth?: number,
   placeholder?: string,
 };
 
@@ -292,7 +294,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
-  const { onAddLabel } = useContext(TaxonomyOptionsContext);
+  const { onAddLabel, minWidth, maxWidth } = useContext(TaxonomyOptionsContext);
   const [isAdding, addInside, closeForm] = useToggle(false);
 
   const list = search ? filterTreeByPredicate(flatten, predicate) : items;
@@ -350,8 +352,8 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           rowHeight={30}
           defaultExpanded={false}
           maxHeightPercentage={50}
-          minWidth={200}
-          maxWidth={600}
+          minWidth={minWidth || 200}
+          maxWidth={maxWidth || 600}
           transformationCallback={dataTransformation}
         />
       )}
