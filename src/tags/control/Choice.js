@@ -210,7 +210,7 @@ const HtxNewChoiceView = ({ item, store }) => {
   }, []);
 
   const [collapsed, setCollapsed] = useState(false);
-  const toogleCollapsed = useCallback(()=>setCollapsed((collapsed)=>!collapsed), []);
+  const toogleCollapsed = useCallback(() => setCollapsed(collapsed => !collapsed), []);
 
   return (
     <Block name="choice"
