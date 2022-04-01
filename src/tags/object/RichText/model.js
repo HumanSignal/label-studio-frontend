@@ -1,21 +1,19 @@
 import React from "react";
 import { flow, getType, types } from "mobx-state-tree";
-import { observe } from "mobx";
 
 import { customTypes } from "../../../core/CustomTypes";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import RegionsMixin from "../../../mixins/Regions";
-import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Utils from "../../../utils";
 import { parseValue } from "../../../utils/data";
 import messages from "../../../utils/messages";
-import { rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { findRangeNative, rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
-import * as xpath from "xpath-range";
 import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import IsReadyMixin from "../../../mixins/IsReadyMixin";
+
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -280,11 +278,18 @@ const Model = types
 
         const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
+        area.updateGlobalOffsets(soff, eoff);
+
         if (range.isText) {
           area.updateTextOffsets(soff, eoff);
-        }
+        } else {
+          // reapply globalOffsets to original document to get correct xpaths and offsets
+          const original = area._getRootNode(true);
+          const originalRange = findRangeNative(soff, eoff, original);
 
-        area.updateGlobalOffsets(soff, eoff);
+          // @todo if originalRange is missed we are really fucked up
+          if (originalRange) area._fixXPaths(originalRange, original);
+        }
 
         area.applyHighlight();
 

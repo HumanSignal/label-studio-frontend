@@ -12,6 +12,8 @@ import PerRegionMixin from "../../mixins/PerRegion";
 import RequiredMixin from "../../mixins/Required";
 import VisibilityMixin from "../../mixins/Visibility";
 import ControlBase from "./Base";
+import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
+import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
 
 /**
  * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
@@ -58,6 +60,7 @@ const TagAttrs = types.model({
   minwidth: types.maybeNull(types.string),
   maxwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
+  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 });
 
 /**
@@ -92,7 +95,9 @@ function traverse(root) {
   };
 
   // @todo check childrens with only one child
-  return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : visitNode(root);
+  return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : (
+    isFF(FF_DEV_2007_DEV_2008) && !root ? [] : visitNode(root)
+  );
 }
 
 const Model = types
@@ -154,6 +159,10 @@ const Model = types
 
       return fromConfig;
     },
+
+    get defaultChildType() {
+      return "choice";
+    },
   }))
   .actions(self => ({
     requiredModal() {
@@ -199,9 +208,19 @@ const Model = types
     onDeleteLabel(path) {
       self.userLabels?.deleteLabel(self.name, path);
     },
+
   }));
 
-const TaxonomyModel = types.compose("TaxonomyModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, VisibilityMixin, AnnotationMixin);
+const TaxonomyModel = types.compose("TaxonomyModel",
+  ControlBase,
+  TagAttrs,
+  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
+  Model,
+  RequiredMixin,
+  PerRegionMixin,
+  VisibilityMixin,
+  AnnotationMixin,
+);
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
