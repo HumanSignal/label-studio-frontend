@@ -55,7 +55,7 @@ const TagAttrs = types.model({
   showfullpath: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, " / "),
   placeholder: "",
-  madwidth: types.maybeNull(types.string),
+  minwidth: types.maybeNull(types.string),
   maxwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
 });
