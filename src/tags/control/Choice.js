@@ -188,6 +188,11 @@ class HtxChoiceView extends Component {
   }
 }
 
+// `name` can't be passed into bem components
+const nameWrapper = (Component, name) => {
+  return props => <Component {...props} name={name} />;
+};
+
 const HtxNewChoiceView = ({ item, store }) => {
   let style = {};
 
@@ -213,9 +218,8 @@ const HtxNewChoiceView = ({ item, store }) => {
       <Elem name="item" mod={{ notLeaf: !item.isLeaf }} style={style}>
         <Elem
           name="checkbox"
-          component={item.isCheckbox ? Checkbox : Radio}
+          component={nameWrapper(item.isCheckbox ? Checkbox : Radio, item._value)}
           mod={{ notLeaf: !item.isLeaf }}
-          __name={item._value}
           checked={item.sel}
           disabled={item.parent?.readonly}
           onChange={changeHandler}
