@@ -109,6 +109,18 @@ module.exports = {
     return count;
   },
 
+  async isTransformerExist() {
+    const isTransformerExist = await I.executeAsyncScript(Helpers.isTransformerExist);
+
+    return isTransformerExist;
+  },
+
+  async isRotaterExist() {
+    const isRotaterExist = await I.executeAsyncScript(Helpers.isRotaterExist);
+
+    return isRotaterExist;
+  },
+
   /**
    * Mousedown - mousemove - mouseup drawing on the ImageView. Works in couple of lookForStage.
    * @example
