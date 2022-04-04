@@ -117,13 +117,19 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block key={(as.selectedHistory ?? as.selected)?.id} name="main-view" onScrollCapture={this._notifyScroll}>
+          <Block
+            key={(as.selectedHistory ?? as.selected)?.id}
+            name="main-view"
+            onScrollCapture={this._notifyScroll}
+          >
             <Elem name="annotation">
               {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
             {getRoot(as).hasInterface("infobar") && this._renderInfobar(as)}
-            {as.selected.onlyTextObjects === false && <DynamicPreannotationsControl />}
+            {as.selected.onlyTextObjects === false &&(
+              <DynamicPreannotationsControl />
+            )}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}
@@ -215,7 +221,7 @@ class App extends Component {
                 ? this._renderUI(as.selectedHistory?.root ?? root, as)
                 : this.renderConfigValidationException(store)}
             </div>
-            {viewingAll === false && (
+            {(viewingAll === false) && (
               <div className={stMenu + " ls-menu"}>
                 {store.hasInterface("side-column") && (
                   <SidebarTabs active="annotation">

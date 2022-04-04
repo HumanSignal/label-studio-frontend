@@ -13,11 +13,11 @@ export interface ButtonProps extends DOMAttributes<HTMLButtonElement> {
   href?: string;
   extra?: JSX.Element;
   className?: string;
-  size?: 'small' | 'medium' | "compact" | 'large';
+  size?: "small" | "medium" | "compact" | "large";
   waiting?: boolean;
   icon?: JSX.Element;
   tag?: CNTagName;
-  look?: "primary" | "danger" | "destructive" | "outline";
+  look?: "primary" | "danger" | "destructive" | "outlined";
   primary?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
