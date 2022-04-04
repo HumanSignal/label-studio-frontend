@@ -153,10 +153,12 @@ const NumberModel = types.compose("NumberModel", ControlBase, TagAttrs, Model, R
 const HtxNumber = inject("store")(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
-
+    const sliderStyle = item.slider ? { padding: '9px 0px' } : {};
+      
     return (
       <div style={visibleStyle}>
         <input
+          style={sliderStyle}
           type={item.slider ? "range" : "number"}
           name={item.name}
           value={item.number ?? item.defaultvalue ?? (isDefined(item.min) ? item.min : 0)}
