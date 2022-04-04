@@ -352,8 +352,8 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           rowHeight={30}
           defaultExpanded={false}
           maxHeightPercentage={50}
-          minWidth={minWidth || 200}
-          maxWidth={maxWidth || 600}
+          minWidth={Number(minWidth) || 200}
+          maxWidth={Number(maxWidth) || 600}
           transformationCallback={dataTransformation}
         />
       )}
