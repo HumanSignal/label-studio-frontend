@@ -68,7 +68,7 @@ export default types
     /**
      * Debug for development environment
      */
-    debug: types.optional(types.boolean, true),
+    debug: window.HTX_DEBUG === true,
 
     /**
      * Settings of Label Studio
