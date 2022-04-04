@@ -150,6 +150,7 @@ module.exports = {
     for (const point of points) {
       I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
     }
+    I.wait(0.5);
   },
   /**
    * Mousedown - mousemove - mouseup drawing through the list of points on the ImageView. Works in couple of lookForStage.
