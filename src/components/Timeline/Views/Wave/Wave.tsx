@@ -46,7 +46,6 @@ export const Wave: FC<TimelineViewProps> = ({
   onSpeedChange,
 }) => {
   const { data } = useContext(TimelineContext);
-
   const tracker = useRef<NodeJS.Timeout>();
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
@@ -339,7 +338,7 @@ const useWaveSurfer = ({
       ...params,
       barHeight: 1,
       container: containter.current!,
-      height: Number(data.height ?? 88),
+      height: Number(containter?.current?.parentElement?.offsetHeight ?? 146),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
@@ -369,10 +368,12 @@ const useWaveSurfer = ({
           notchPercentHeight: 50,
         }),
         CursorPlugin.create({
+          wrapper: timelineContainer.current,
           color: "#000",
           showTime: true,
-          followCursorY: 'true',
-          opacity: '1',
+          followCursorY: "true",
+          opacity: "1",
+          padding: "20px",
         }),
       ],
     });
