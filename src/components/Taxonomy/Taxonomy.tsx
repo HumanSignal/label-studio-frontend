@@ -133,7 +133,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = ({ style, item, atMaxWidth }: RowProps) => {
+const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -189,7 +189,6 @@ const Item: React.FC<RowProps> = ({ style, item, atMaxWidth }: RowProps) => {
             <LsChevron stroke="#09f" style={arrowStyle} />
           </div>
           <label
-            style={atMaxWidth ? { width: "calc(100% - 60px)" } : {}}
             onClick={onClick}
             title={title}
             className={disabled ? styles.taxonomy__collapsable : undefined}

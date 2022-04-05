@@ -1,5 +1,5 @@
 import React, { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { VariableSizeList } from "react-window";
+import { FixedSizeList } from "react-window";
 
 type ExtendedData = Readonly<{
   id: string,
@@ -145,7 +145,7 @@ const TreeStructure = ({
   }) => {
     const rowRef = useRef<RefObject<HTMLDivElement> | any>();
 
-    React.useEffect(() => {
+    useEffect(() => {
       const itemWidth = rowRef.current?.firstChild?.scrollWidth;
 
       if (width < itemWidth) {
@@ -154,12 +154,11 @@ const TreeStructure = ({
         } else setWidth(itemWidth);
       }
     }, []);
-
     const item = dataGetter(index);
 
     return (
       <div ref={rowRef}>
-        <RowComponent {...{ item, style,  atMaxWidth: maxWidth === width }} />
+        <RowComponent {...{ item, style }} />
       </div>
     );
   };
@@ -213,23 +212,17 @@ const TreeStructure = ({
   useEffect(() => updateHeight(), [data]);
 
   return (
-    <VariableSizeList
-      style={{ overflowX: 'hidden' }}
+    <FixedSizeList
+      style={{ overflowX: "hidden" }}
       ref={containerRef}
       height={height}
       itemCount={data?.length || 0}
-      itemSize={() => rowHeight}
+      itemSize={rowHeight}
       width={width}
       itemData={(index: number) => ({ row: data && data[index], toggle, addInside })}
     >
-      {({ data, index, style }) => (
-        <Row
-          data={data}
-          rowStyle={style}
-          index={index}
-          rowComponent={rowComponent} />
-      )}
-    </VariableSizeList>
+      {({ data, index, style }) => <Row data={data} rowStyle={style} index={index} rowComponent={rowComponent} />}
+    </FixedSizeList>
   );
 };
 
