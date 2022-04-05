@@ -213,7 +213,6 @@ const TreeStructure = ({
 
   return (
     <FixedSizeList
-      style={{ overflowX: "hidden" }}
       ref={containerRef}
       height={height}
       itemCount={data?.length || 0}
