@@ -56,7 +56,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(parseInt(data.defaultscale, 10) || 1);
   const [startOver, setStartOver] = useState(false);
 
   const handlers = useMemoizedHandlers({
@@ -229,6 +229,8 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
+    console.log(data.cursorcolor, parseInt(data.defaultscale, 10));
+
     return {
       left: cursorPosition,
       width: Number(data.cursorwidth ?? 2),
