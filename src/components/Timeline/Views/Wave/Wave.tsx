@@ -46,7 +46,6 @@ export const Wave: FC<TimelineViewProps> = ({
   onSpeedChange,
 }) => {
   const { data } = useContext(TimelineContext);
-
   const tracker = useRef<NodeJS.Timeout>();
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
@@ -57,7 +56,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(parseInt(data.defaultscale, 10) || 1);
   const [startOver, setStartOver] = useState(false);
 
   const handlers = useMemoizedHandlers({
@@ -230,6 +229,8 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
+    console.log(data.cursorcolor, parseInt(data.defaultscale, 10));
+
     return {
       left: cursorPosition,
       width: Number(data.cursorwidth ?? 2),
@@ -339,7 +340,7 @@ const useWaveSurfer = ({
       ...params,
       barHeight: 1,
       container: containter.current!,
-      height: Number(data.height ?? 88),
+      height: Number(containter?.current?.parentElement?.offsetHeight ?? 146),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
@@ -369,10 +370,12 @@ const useWaveSurfer = ({
           notchPercentHeight: 50,
         }),
         CursorPlugin.create({
+          wrapper: timelineContainer.current,
           color: "#000",
           showTime: true,
-          followCursorY: 'true',
-          opacity: '1',
+          followCursorY: "true",
+          opacity: "1",
+          padding: "20px",
         }),
       ],
     });
