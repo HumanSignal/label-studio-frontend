@@ -248,6 +248,7 @@ const HtxVideoView = ({ item }) => {
     setVideoLength(length);
     item.setOnlyFrame(1);
     item.setLength(length);
+    item.setReady(true);
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
