@@ -63,9 +63,6 @@
   background: white;
   border-radius: 6px;
   left: -1px;
-  width: max-content;
-  min-width: 100%;
-  max-width: 50vw; // 100% is not enough
   border: 1px solid #e2e2e2;
   box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
 
@@ -126,6 +123,9 @@
 }
 
 .taxonomy__item label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   flex-grow: 1;
   flex-shrink: 0;
   line-height: 2em;
@@ -158,18 +158,25 @@
   padding: 0 12px;
   min-width: 40px; // 24px padding + 16px width for count/dots
   text-align: right;
+  position: relative; // important for wide labels to not overlap counts with label
 
   &_actions {
-    display: none;
+    visibility: hidden;
+    display: block;
     font-weight: bold;
     cursor: pointer;
     text-align: center;
   }
-
+  .taxonomy__item &_count:not(:last-child) {
+    position: absolute;
+    right: 12px;
+  }
   .taxonomy__item:hover &_count:not(:last-child) {
+    visibility: hidden;
     display: none;
   }
   .taxonomy__item:hover &_actions {
+    visibility: visible;
     display: block;
   }
 }

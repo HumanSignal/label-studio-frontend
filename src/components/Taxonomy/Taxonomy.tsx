@@ -25,6 +25,8 @@ type TaxonomyOptions = {
   showFullPath?: boolean,
   pathSeparator?: string,
   maxUsages?: number,
+  maxWidth?: number,
+  minWidth?: number,
   placeholder?: string,
 };
 
@@ -56,10 +58,7 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
-  index: number;
-  data: (
-    index: number,
-  ) => {
+  item: {
     row: {
       id: string,
       isOpen: boolean,
@@ -75,6 +74,7 @@ interface RowProps {
     toggle: (id: string) => void,
     addInside: (id?: string) => void,
   };
+  atMaxWidth: boolean;
 }
 
 const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
@@ -133,9 +133,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = (props: RowProps) => {
-  const { style, data, index } = props;
-  const item = data(index);
+const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -190,7 +188,11 @@ const Item: React.FC<RowProps> = (props: RowProps) => {
           <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
             <LsChevron stroke="#09f" style={arrowStyle} />
           </div>
-          <label onClick={onClick} title={title} className={disabled ? styles.taxonomy__collapsable : undefined}>
+          <label
+            onClick={onClick}
+            title={title}
+            className={disabled ? styles.taxonomy__collapsable : undefined}
+          >
             <input
               type="checkbox"
               disabled={disabled}
@@ -291,7 +293,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
-  const { onAddLabel } = useContext(TaxonomyOptionsContext);
+  const { onAddLabel, minWidth, maxWidth } = useContext(TaxonomyOptionsContext);
   const [isAdding, addInside, closeForm] = useToggle(false);
 
   const list = search ? filterTreeByPredicate(flatten, predicate) : items;
@@ -349,7 +351,8 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
           rowHeight={30}
           defaultExpanded={false}
           maxHeightPercentage={50}
-          minWidth={300}
+          minWidth={Number(minWidth) || 200}
+          maxWidth={Number(maxWidth) || 600}
           transformationCallback={dataTransformation}
         />
       )}
