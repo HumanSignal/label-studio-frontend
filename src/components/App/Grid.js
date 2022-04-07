@@ -20,12 +20,14 @@ This triggers next rerender with next annotation until all the annotations are r
 class Item extends Component {
   componentDidMount() {
     Promise.all(this.props.annotation.objects.map(o => {
-      return o.isReady || new Promise(resolve => {
-        const dispose = observe(o, "isReady", ()=>{
-          dispose();
-          resolve();
+      return o.isReady
+        ? Promise.resolve(o.isReady)
+        : new Promise(resolve => {
+          const dispose = observe(o, "isReady", ()=>{
+            dispose();
+            resolve();
+          });
         });
-      });
     })).then(()=>{
       // ~2 ticks for canvas to be rendered and resized completely
       setTimeout(this.props.onFinish, 32);
@@ -84,7 +86,7 @@ export default class Grid extends Component {
     // Force redraw
     Konva.stages.map(stage => stage.draw());
 
-    /* canvas are cloned empty, so clone their content */
+    /* canvases are cloned empty, so clone their content */
     const sourceCanvas = item.querySelectorAll("canvas");
     const clonedCanvas = clone.querySelectorAll("canvas");
 
@@ -92,7 +94,10 @@ export default class Grid extends Component {
       canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
     });
 
-    /* Procedure created style rules are not clonable so for iframe we should take care about them (highlight styles) */
+    /*
+      Procedure created style rules are not clonable so for
+      iframe we should take care about them (highlight styles)
+    */
     const sourceIframe = item.querySelectorAll("iframe");
     const clonedIframe = clone.querySelectorAll("iframe");
 
@@ -175,7 +180,7 @@ export default class Grid extends Component {
             </div>
           ))}
           {isRenderingNext && (
-            <div id={`c-tmp`} key={`anno-tmp`}>
+            <div id={`c-tmp`} key={`anno-tmp`} style={{ opacity: 0, position: 'relative', right: 99999 }}>
               <EntityTab
                 entity={selected}
                 prediction={selected.type === "prediction"}
