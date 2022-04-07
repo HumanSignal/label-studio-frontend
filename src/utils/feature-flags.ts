@@ -41,8 +41,16 @@ export const FF_DEV_1494 = "ff_front_dev_1494_keep_enabled_on_update_090322_shor
 // Fix video timeline expanding and collapsing in full screen mode
 export const FF_DEV_1270 = "ff_front_dev_1270_fullscreen_timeline_expand_090322_short";
 
+// Add ability to generate children tags from task data
+export const FF_DEV_2007_DEV_2008 = "ff_dev_2007_dev_2008_dynamic_tag_children_250322_short";
+
+// Rework of Choices tag
+export const FF_DEV_2007 = "ff_dev_2007_rework_choices_280322_short";
+
 function getFeatureFlags() {
-  return window.APP_SETTINGS?.feature_flags || {};
+  return window.APP_SETTINGS?.feature_flags || {
+    // ff_front_DEV_1713_audio_ui_150222_short: true,
+  };
 }
 
 export function isFF(id: string) {

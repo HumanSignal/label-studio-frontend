@@ -57,7 +57,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(parseInt(data.defaultscale, 10) || 1);
   const shouldStartOver = useRef(false);
 
   const setZoom = useCallback((value: number) => {
@@ -279,6 +279,8 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
+    console.log(data.cursorcolor, parseInt(data.defaultscale, 10));
+
     return {
       left: cursorPosition,
       width: Number(data.cursorwidth ?? 2),
@@ -386,7 +388,7 @@ const useWaveSurfer = ({
       ...params,
       barHeight: 1,
       container: root,
-      height: Number(data.height ?? 88),
+      height: Number(containter?.current?.parentElement?.offsetHeight ?? 146),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
@@ -417,10 +419,12 @@ const useWaveSurfer = ({
           notchPercentHeight: 50,
         }),
         CursorPlugin.create({
+          wrapper: timelineContainer.current,
           color: "#000",
           showTime: true,
-          followCursorY: 'true',
-          opacity: '1',
+          followCursorY: "true",
+          opacity: "1",
+          padding: "20px",
         }),
       ],
     });

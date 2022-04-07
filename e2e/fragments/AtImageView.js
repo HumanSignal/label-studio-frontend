@@ -146,10 +146,19 @@ module.exports = {
    * @param {number[][]} points
    */
   drawByClickingPoints(points) {
+    const lastPoint = points[points.length - 1];
+    const prevPoints = points.slice(0, points.length - 1);
+
     I.scrollPageToTop();
-    for (const point of points) {
-      I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
+
+    if (prevPoints.length) {
+      for (const point of prevPoints) {
+        I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
+      }
+      I.wait(0.5); // wait before last click to fix polygons creation
     }
+
+    I.clickAt(this._stageBBox.x + lastPoint[0], this._stageBBox.y + lastPoint[1]);
   },
   /**
    * Mousedown - mousemove - mouseup drawing through the list of points on the ImageView. Works in couple of lookForStage.
