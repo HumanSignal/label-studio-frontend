@@ -51,7 +51,7 @@ export const Actions = ({ store }) => {
             aria-label="Delete"
             onClick={() => {
               confirm({
-                title: "Delete annotaion",
+                title: "Delete annotation",
                 body: "This action cannot be undone",
                 buttonLook: "destructive",
                 okText: "Proceed",
