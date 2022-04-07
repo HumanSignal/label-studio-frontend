@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
-import { Elem } from "../../../utils/bem";
+import { Block, Elem } from "../../../utils/bem";
 
 interface AudioNextProps {
   item: any;
@@ -26,6 +26,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
     item.onLoad(data.surfer);
+    item.onReady();
   }, []);
 
   const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
@@ -40,9 +41,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   return (
     <ObjectTag item={item}>
-      <Elem
+      <Block
         mode="wave"
-        name="timeline"
+        name="audio"
         tag={Timeline}
         framerate={1000}
         hopSize={1000}
