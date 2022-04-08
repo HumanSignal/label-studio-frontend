@@ -47,7 +47,7 @@ const Annotation = types
     parent_annotation: types.maybeNull(types.integer),
     last_annotation_history: types.maybeNull(types.integer),
 
-    loadedDate: types.optional(types.Date, new Date()),
+    loadedDate: types.optional(types.Date, () => new Date()),
     leadTime: types.maybeNull(types.number),
 
     // @todo use types.Date
