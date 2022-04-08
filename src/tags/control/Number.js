@@ -90,9 +90,29 @@ const Model = types
     },
 
     beforeSend() {
-      // add defaultValue to results for top-level controls
-      if (!isDefined(self.number) && isDefined(self.defaultvalue) && !self.perRegion) {
-        self.setNumber(+self.defaultvalue);
+      if (!isDefined(self.defaultvalue)) return;
+
+      // let's fix only required perRegions
+      if (self.perregion && self.required) {
+        const object = self.annotation.names.get(self.toname);
+
+        for (const reg of object?.regs ?? []) {
+          // add result with default value to every region of related object without number yet
+          if (!reg.results.some(r => r.from_name === self)) {
+            reg.results.push({
+              area: reg,
+              from_name: self,
+              to_name: object,
+              type: self.resultType,
+              value: {
+                [self.valueType]: +self.defaultvalue,
+              },
+            });
+          }
+        }
+      } else {
+        // add defaultValue to results for top-level controls
+        if (!isDefined(self.number)) self.setNumber(+self.defaultvalue);
       }
     },
 
