@@ -190,6 +190,7 @@ const Model = types
     },
 
     canClose(x, y) {
+      console.log('canClose', x, y);
       if (self.points.length < 2) return false;
 
       const p1 = self.points[0];
