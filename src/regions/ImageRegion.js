@@ -35,6 +35,10 @@ const RegionMixin = types
       return getParent(self);
     },
 
+    get editable() {
+      return self.readonly === false && self.annotation.editable === true;
+    },
+
     get labelsState() {
       return self.states.find(s => s.type.indexOf("labels") !== -1);
     },

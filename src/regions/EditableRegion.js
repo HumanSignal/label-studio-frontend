@@ -18,7 +18,11 @@ export const EditableRegion = types
     },
 
     isPropertyEditable(name) {
-      return self.editableFields.find(f => f.property === name);
+      return self.editableFields.some(f => f.property === name);
+    },
+
+    get hasEditableFields() {
+      return self.editableFields.length > 0;
     },
   }))
   .actions((self) => ({

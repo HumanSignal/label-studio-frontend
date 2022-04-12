@@ -267,8 +267,8 @@ const EllipseRegionModel = types.compose(
   NormalizationMixin,
   DisabledMixin,
   KonvaRegionMixin,
-  Model,
   EditableRegion,
+  Model,
 );
 
 const HtxEllipseView = ({ item }) => {

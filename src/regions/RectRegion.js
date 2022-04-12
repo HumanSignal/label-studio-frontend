@@ -253,8 +253,8 @@ const RectRegionModel = types.compose(
   DisabledMixin,
   AreaMixin,
   KonvaRegionMixin,
-  Model,
   EditableRegion,
+  Model,
 );
 
 const HtxRectangleView = ({ item }) => {

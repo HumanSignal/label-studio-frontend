@@ -158,8 +158,8 @@ const KeyPointRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   KonvaRegionMixin,
-  Model,
   EditableRegion,
+  Model,
 );
 
 const HtxKeyPointView = ({ item }) => {
