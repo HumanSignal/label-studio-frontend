@@ -90,7 +90,11 @@ class App extends Component {
         <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
-        {store.hasInterface("infobar") && <Elem name="infobar">Task #{store.task.id}</Elem>}
+        {store.hasInterface('infobar') && (
+          <Elem name="infobar">
+            Task #{store.task.id}
+          </Elem>
+        )}
       </Block>
     );
   }
