@@ -202,8 +202,12 @@ class App extends Component {
 
     const mainContainerClass = [styles["main-content-wrapper"]];
 
-    if (store.hasInterface("side-column")) mainContainerClass.push(styles["with-side-column"]);
-
+       {store.hasInterface('infobar') && (
+          <Elem name="infobar">
+            Task #{store.task.id}
+          </Elem>
+        )}
+        
     return (
       <div className={stEditor + " ls-editor"}>
         <Settings store={store} />
