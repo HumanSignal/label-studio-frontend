@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Button } from "antd";
+import { Button, Spin } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
-import styles from "./App.module.scss";
+import styles from "./Grid.module.scss";
 import { EntityTab } from "../AnnotationTabs/AnnotationTabs";
 import { observe } from "mobx";
 import Konva from "konva";
@@ -20,12 +20,14 @@ This triggers next rerender with next annotation until all the annotations are r
 class Item extends Component {
   componentDidMount() {
     Promise.all(this.props.annotation.objects.map(o => {
-      return o.isReady || new Promise(resolve => {
-        const dispose = observe(o, "isReady", ()=>{
-          dispose();
-          resolve();
+      return o.isReady
+        ? Promise.resolve(o.isReady)
+        : new Promise(resolve => {
+          const dispose = observe(o, "isReady", ()=>{
+            dispose();
+            resolve();
+          });
         });
-      });
     })).then(()=>{
       // ~2 ticks for canvas to be rendered and resized completely
       setTimeout(this.props.onFinish, 32);
@@ -40,6 +42,7 @@ class Item extends Component {
 export default class Grid extends Component {
   state = {
     item: 0,
+    loaded: new Set(),
   };
   container = React.createRef();
 
@@ -83,7 +86,7 @@ export default class Grid extends Component {
     // Force redraw
     Konva.stages.map(stage => stage.draw());
 
-    /* canvas are cloned empty, so clone their content */
+    /* canvases are cloned empty, so clone their content */
     const sourceCanvas = item.querySelectorAll("canvas");
     const clonedCanvas = clone.querySelectorAll("canvas");
 
@@ -91,7 +94,10 @@ export default class Grid extends Component {
       canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
     });
 
-    /* Procedure created style rules are not clonable so for iframe we should take care about them (highlight styles) */
+    /*
+      Procedure created style rules are not clonable so for
+      iframe we should take care about them (highlight styles)
+    */
     const sourceIframe = item.querySelectorAll("iframe");
     const clonedIframe = clone.querySelectorAll("iframe");
 
@@ -99,6 +105,13 @@ export default class Grid extends Component {
       iframe.contentWindow.document.open();
       iframe.contentWindow.document.write(sourceIframe[idx].contentDocument.documentElement.outerHTML);
       moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
+    });
+
+    this.setState((state) => {
+      return {
+        ...state,
+        loaded: new Set([...state.loaded, this.props.store.selected.id]),
+      };
     });
 
     this.renderNext();
@@ -132,6 +145,7 @@ export default class Grid extends Component {
     c.type === "annotation" ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
+
   render() {
     const i = this.state.item;
     const { annotations, store: { selected } } = this.props;
@@ -141,7 +155,7 @@ export default class Grid extends Component {
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
           {annotations.filter(c => !c.hidden).map((c) => (
-            <div id={`c-${c.id}`} key={`anno-${c.id}`}>
+            <div id={`c-${c.id}`} key={`anno-${c.id}`} style={{ position: 'relative' }}>
               <EntityTab
                 entity={c}
                 onClick={() => this.select(c)}
@@ -149,10 +163,24 @@ export default class Grid extends Component {
                 bordered={false}
                 style={{ height: 44 }}
               />
+              {!this.state.loaded.has(c.id) && (
+                <div style={{
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Spin size="large" />
+                </div>
+              )}
             </div>
           ))}
           {isRenderingNext && (
-            <div id={`c-tmp`} key={`anno-tmp`}>
+            <div id={`c-tmp`} key={`anno-tmp`} style={{ opacity: 0, position: 'relative', right: 99999 }}>
               <EntityTab
                 entity={selected}
                 prediction={selected.type === "prediction"}

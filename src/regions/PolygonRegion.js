@@ -49,13 +49,14 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      return self.points.reduce((bboxCoords, point)=>{
-        return {
+      return self.points.reduce((bboxCoords, point) => {
+        if (bboxCoords && point) return {
           left: Math.min(bboxCoords.left, point.x),
           top: Math.min(bboxCoords.top, point.y),
           right: Math.max(bboxCoords.right, point.x),
           bottom: Math.max(bboxCoords.bottom, point.y),
         };
+        else return {};
       }, {
         left: self.points[0].x,
         top: self.points[0].y,

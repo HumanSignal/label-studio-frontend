@@ -3,17 +3,18 @@
   user-select none
 
   &__loader
-    top 50%
-    left 50%
+    top 0
+    left 0
     z-index 10
-    height 20px
-    width 200px
+    height 3px
+    width 100%
     display flex
+    opacity 0.4
+    pointer-events none
     align-items center
     justify-content center
     position absolute
     border-radius 20px
-    transform translate3d(-50%, -50%, 0)
     box-shadow 0 5px 20px rgba($accent_color, 0.2)
 
     waiting($accent_color)
@@ -42,7 +43,6 @@
 
   &__body
     flex 1
-    padding 24px 0
     position relative
     overflow hidden
     background-color #FAFAFA
@@ -84,3 +84,4 @@
     width 100%
     height 24px
     position absolute
+    pointer-events none

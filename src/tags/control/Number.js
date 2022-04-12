@@ -90,9 +90,29 @@ const Model = types
     },
 
     beforeSend() {
-      // add defaultValue to results for top-level controls
-      if (!isDefined(self.number) && isDefined(self.defaultvalue) && !self.perRegion) {
-        self.setNumber(+self.defaultvalue);
+      if (!isDefined(self.defaultvalue)) return;
+
+      // let's fix only required perRegions
+      if (self.perregion && self.required) {
+        const object = self.annotation.names.get(self.toname);
+
+        for (const reg of object?.regs ?? []) {
+          // add result with default value to every region of related object without number yet
+          if (!reg.results.some(r => r.from_name === self)) {
+            reg.results.push({
+              area: reg,
+              from_name: self,
+              to_name: object,
+              type: self.resultType,
+              value: {
+                [self.valueType]: +self.defaultvalue,
+              },
+            });
+          }
+        }
+      } else {
+        // add defaultValue to results for top-level controls
+        if (!isDefined(self.number)) self.setNumber(+self.defaultvalue);
       }
     },
 
@@ -157,11 +177,10 @@ const HtxNumber = inject("store")(
         <input
           type="number"
           name={item.name}
-          value={item.number ?? item.defaultvalue ?? 0}
+          value={item.number ?? item.defaultvalue ?? ""}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
-          defaultValue={Number(item.defaultvalue)}
           onChange={item.onChange}
         />
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
