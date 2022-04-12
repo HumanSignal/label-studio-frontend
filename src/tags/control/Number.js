@@ -177,7 +177,7 @@ const HtxNumber = inject("store")(
         <input
           type="number"
           name={item.name}
-          value={item.number ?? item.defaultvalue}
+          value={item.number ?? item.defaultvalue ?? ""}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
