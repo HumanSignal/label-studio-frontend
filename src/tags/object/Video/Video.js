@@ -37,9 +37,10 @@ import Types from "../../../core/Types";
  * @meta_description Customize Label Studio with the Video tag for basic video annotation tasks for machine learning and data science projects.
  * @param {string} name Name of the element
  * @param {string} value URL of the video
- * @param {number} [frameRate=0.04] frame rate in seconds; default 1/25s
+ * @param {number} [frameRate=24] videp frame rate per second; default is 24
  * @param {string} [sync] object name to sync with
  * @param {boolean} [muted=false] muted video
+ * @param {number} [heihght=600] heihght of the video
  */
 
 const TagAttrs = types.model({
@@ -47,6 +48,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   framerate: types.optional(types.string, "24"),
+  height: types.optional(types.string, "600"),
   muted: false,
 });
 
@@ -123,9 +125,14 @@ const Model = types
       self.ref.current?.pause();
     },
 
+    handleSeek() {
+      if (self.ref.current) {
+        self.triggerSyncSeek(self.ref.current.currentTime);
+      }
+    },
+
     needsUpdate() {
       if (self.sync) {
-        self.initSync();
         if (self.syncedObject?.type?.startsWith("audio")) {
           self.muted = true;
         }
@@ -137,14 +144,16 @@ const Model = types
     },
 
     setOnlyFrame(frame) {
-      self.frame = frame;
+      if (self.frame !== frame) {
+        self.frame = frame;
+      }
     },
 
     setFrame(frame) {
-      self.frame = frame;
-      self.ref.current.currentTime = frame / self.framerate;
-      // trigger only here, this method already has side effects, so it would be controlled
-      self.triggerSyncSeek(frame / self.framerate);
+      if (self.frame !== frame) {
+        self.frame = frame;
+        self.ref.current.currentTime = frame / self.framerate;
+      }
     },
 
     addRegion(data) {

@@ -12,8 +12,10 @@ export const Actions = ({ store }) => {
   const entity = annotationStore.selected;
   const saved = !entity.userGenerate || entity.sentUserGenerate;
   const isPrediction = entity?.type === 'prediction';
-  const history = entity.history;
   const isViewAll = annotationStore.viewingAll;
+  const hasVideo = Array.from(store.annotationStore.names.values()).some((tag) => {
+    return tag.type.match(/video/ig);
+  });
 
   const onToggleVisibility = useCallback(() => {
     annotationStore.toggleViewingAllAnnotations();
@@ -21,7 +23,7 @@ export const Actions = ({ store }) => {
 
   return (
     <Elem name="section">
-      {store.hasInterface("annotations:view-all") && (
+      {store.hasInterface("annotations:view-all") && !hasVideo && (
         <Tooltip title="View all annotations">
           <Button
             icon={<IconViewAll />}

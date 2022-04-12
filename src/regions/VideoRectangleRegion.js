@@ -60,7 +60,7 @@ const Model = types
 
         self.sequence = [
           ...self.sequence.slice(0, index),
-          ({ ...keypoint, ...newItem }),
+          ({ ...keypoint, ...data }),
           ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }

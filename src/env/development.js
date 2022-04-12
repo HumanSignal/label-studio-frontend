@@ -23,6 +23,7 @@ import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
 import { VideoRectangles } from "../examples/video_bboxes";
 import { VideoClassification } from "../examples/video";
+import { VideoAudio } from "../examples/video_audio";
 
 /**
  * Image

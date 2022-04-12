@@ -33,20 +33,22 @@ const SPEED = {
 export const Wave: FC<TimelineViewProps> = ({
   position,
   length,
-  playing,
   regions,
-  zoom = ZOOM_X.default,
   volume = 1,
+  zoom = ZOOM_X.default,
   speed = SPEED.default,
   onReady,
-  onChange,
+  onPositionChange,
+  onSeek,
   onAddRegion,
   onZoom,
-  onPlayToggle,
+  onPlay,
+  onPause,
   onSpeedChange,
 }) => {
   const { data } = useContext(TimelineContext);
-  const tracker = useRef<NodeJS.Timeout>();
+
+  const tracker = useRef<NodeJS.Timeout | null>(null);
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
   const bodyRef = useRef<HTMLElement>();
@@ -54,21 +56,81 @@ export const Wave: FC<TimelineViewProps> = ({
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [loading, setLoading] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [scale, setScale] = useState(parseInt(data.defaultscale, 10) || 1);
-  const [startOver, setStartOver] = useState(false);
-
-  const handlers = useMemoizedHandlers({
-    onChange,
-    onZoom,
-  });
+  const shouldStartOver = useRef(false);
 
   const setZoom = useCallback((value: number) => {
     const newValue = clamp(value, ZOOM_X.min, ZOOM_X.max);
 
     setCurrentZoom(newValue);
   }, []);
+
+  const startOver = useCallback(() => {
+    if (!shouldStartOver.current) {
+      shouldStartOver.current = true;
+    }
+  }, []);
+
+  const resetStartOver = useCallback(() => {
+    if (shouldStartOver.current) {
+      shouldStartOver.current = false;
+    }
+  }, []);
+
+  const trackProgress = useRef(() => {
+    const wsi = ws.current;
+
+    if (!wsi) return;
+
+    handlers.onPositionChange?.(wsi.getCurrentTime() * 1000);
+
+    if (wsi.getCurrentTime() === wsi.getDuration() && !shouldStartOver) {
+      startOver();
+    }
+
+    tracker.current = setTimeout(trackProgress.current);
+  });
+
+  const handlePlay = useCallback(() => {
+    const wsi = ws.current;
+
+    if (!wsi || tracker.current) return;
+
+    if (shouldStartOver.current) {
+      resetStartOver();
+      wsi.setCurrentTime(0);
+    }
+
+    if (wsi.isPlaying() === true) onPlay?.();
+
+    trackProgress.current();
+  }, [onPlay, onPositionChange]);
+
+  const handlePause = useCallback(() => {
+    const wsi = ws.current;
+
+    if (wsi?.isPlaying() === false) onPause?.();
+
+    if (tracker.current) {
+      clearTimeout(tracker.current);
+      tracker.current = null;
+    }
+  }, [onPause]);
+
+  const handleFinished = useCallback(() => {
+    startOver();
+    handlePause();
+  }, [handlePause, startOver]);
+
+  const handlers = useMemoizedHandlers({
+    onZoom,
+    onSeek,
+    onPositionChange,
+    onFinish: handleFinished,
+    onPlay: handlePlay,
+    onPause: handlePause,
+  });
 
   const ws = useWaveSurfer({
     containter: waveRef,
@@ -82,17 +144,20 @@ export const Wave: FC<TimelineViewProps> = ({
       autoCenterImmediately: true,
     },
     onLoaded: setLoading,
-    onProgress: setProgress,
-    onPlayToggle,
+    onPlay: () => {
+      resetStartOver();
+      handlers.onPlay();
+    },
+    onPause: () => handlers.onPause(),
+    onPlayFinished: () => handlers.onFinish(),
     onAddRegion,
     onReady,
     onScroll: (p) => setScrollOffset(p),
-    onSeek: (p) => handlers.onChange?.(p),
-    onZoom: (zoom) => handlers.onZoom?.(zoom),
-    onPlayFinished: () => {
-      setStartOver(true);
-      onPlayToggle?.(false);
+    onSeek: (p) => {
+      resetStartOver();
+      handlers.onSeek?.(p);
     },
+    onZoom: (zoom) => handlers.onZoom?.(zoom),
   });
 
   // Handle timeline navigation clicks
@@ -123,37 +188,22 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Handle seeking
   useEffect(() => {
-    const wsi = ws.current;
+    const updatePosition = () => {
+      const wsi = ws.current;
+      const duration = wsi?.getDuration();
+      const currentTime = wsi?.getCurrentTime();
+      const pos = clamp(position / 1000, 0, duration ?? 0);
 
-    if (wsi && !playing) {
-      const pos = clamp(position / length, 0, 1);
+      if (!wsi) return;
+      if (wsi.isPlaying()) return;
+      if (!duration || isNaN(duration)) return;
+      if (pos === currentTime) return;
 
-      if (!isNaN(pos)) wsi.seekTo(pos);
-    }
-  }, [position, playing, length]);
+      wsi.setCurrentTime(pos);
+    };
 
-  // Handle playback updates
-  useEffect(() => {
-    const wsi = ws.current;
-
-    if (wsi) {
-      if (playing) {
-        setStartOver(false);
-        wsi.play(startOver ? 0 : undefined);
-
-        const trackProgress = () => {
-          onChange?.(wsi.getCurrentTime() * 1000);
-
-          tracker.current = setTimeout(trackProgress);
-        };
-
-        tracker.current = setTimeout(trackProgress);
-      } else {
-        wsi.pause();
-        clearTimeout(tracker.current!);
-      }
-    }
-  }, [playing]);
+    updatePosition();
+  }, [position]);
 
   // Handle zoom changes
   useEffect(() => {
@@ -272,11 +322,7 @@ export const Wave: FC<TimelineViewProps> = ({
           <Elem name="cursor" style={cursorStyle}/>
           <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
           <Elem name="timeline" ref={timelineRef} />
-          {loading && (
-            <Elem name="loader" mod={{ animated: true }}>
-              <span>{progress}%</span>
-            </Elem>
-          )}
+          {loading && <Elem name="loader" mod={{ animated: true }}/>}
         </Elem>
         <Elem name="scale">
           <Range
@@ -303,12 +349,12 @@ interface WavesurferProps {
   speed: number;
   data: TimelineContextValue["data"];
   params: Partial<WaveSurferParams>;
-  onProgress: (progress: number) => void;
   onSeek: (progress: number) => void;
   onLoaded: (loaded: boolean) => void;
   onScroll: (position: number) => void;
   onZoom?: (zoom: number) => void;
-  onPlayToggle?: TimelineViewProps["onPlayToggle"];
+  onPlay?: TimelineViewProps["onPlay"];
+  onPause?: TimelineViewProps["onPause"];
   onReady?: TimelineViewProps["onReady"];
   onAddRegion?: TimelineViewProps["onAddRegion"];
   onPlayFinished: () => void;
@@ -322,9 +368,9 @@ const useWaveSurfer = ({
   data,
   params,
   onLoaded,
-  onProgress,
   onSeek,
-  onPlayToggle,
+  onPlay,
+  onPause,
   onPlayFinished,
   onAddRegion,
   onReady,
@@ -334,18 +380,21 @@ const useWaveSurfer = ({
   const ws = useRef<WaveSurfer>();
 
   useEffect(() => {
+    const root = containter.current!;
+
     const wsi = WaveSurfer.create({
       autoCenter: true,
       scrollParent: true,
       ...params,
       barHeight: 1,
-      container: containter.current!,
+      container: root,
       height: Number(containter?.current?.parentElement?.offsetHeight ?? 146),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: "#D5D5D5",
       progressColor: "#656F83",
       cursorWidth: 0,
+      backend: "MediaElement",
       loopSelection: true,
       audioRate: speed,
       pixelRatio: 1,
@@ -380,13 +429,25 @@ const useWaveSurfer = ({
       ],
     });
 
+    wsi.setCurrentTime = (time: number) => {
+      const duration = wsi.getDuration();
+
+      if (!isNaN(duration) && time !== wsi.getCurrentTime()) {
+        time = clamp(time, 0, duration);
+        wsi.seekTo(time / wsi.getDuration());
+      }
+    };
+
+    const getDetachedRegions = () => {
+      return Object
+        .values(wsi.regions.list)
+        .filter((reg: any) => !isDefined(reg._region));
+    };
+
     const removeDetachedRegions = () => {
-      const unbound = Object.values(wsi.regions.list).filter((reg: any) => {
-        return !isDefined(reg._region);
-      });
+      const detachedRegions = getDetachedRegions();
 
-      unbound.forEach(reg => reg.remove());
-
+      detachedRegions.forEach(reg => reg.remove());
     };
 
     wsi.on("ready", () => {
@@ -435,8 +496,20 @@ const useWaveSurfer = ({
 
               newReg.on("click", () => newReg.remove());
 
-              newReg.playLoop();
+              const playCurrentRegion = () => {
+                wsi.setCurrentTime(reg.start);
+                newReg.play();
+              };
+
+              newReg.on("out", () => {
+                wsi.setCurrentTime(reg.end);
+                playCurrentRegion();
+              });
+
+              playCurrentRegion();
             });
+
+
             return;
           }
 
@@ -451,7 +524,7 @@ const useWaveSurfer = ({
             e.preventDefault();
             e.stopPropagation();
 
-            window.setTimeout(function() {
+            setTimeout(function() {
               reg.playLoop();
             }, 0);
           });
@@ -459,8 +532,6 @@ const useWaveSurfer = ({
           reg.on("update-end", () => {
             region.onUpdateEnd(wsi);
           });
-
-          reg.on("out", () => {});
         });
       }
 
@@ -476,30 +547,40 @@ const useWaveSurfer = ({
 
     wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
 
-    wsi.on("play", () => onPlayToggle?.(true));
+    wsi.on("play", () => {
+      const currentTime = wsi.getCurrentTime();
 
-    wsi.on("pause", () => onPlayToggle?.(false));
+      onSeek(currentTime * 1000);
+      onPlay?.();
+    });
 
-    wsi.on("finish", () => onPlayFinished?.());
+    wsi.on("pause", () => onPause?.());
+
+    wsi.on("finish", () => {
+      onPlayFinished?.();
+    });
 
     wsi.on('zoom', (minPxPerMinute) => onZoom?.(minPxPerMinute));
 
-    wsi.on("seek", (progress) => {
-      removeDetachedRegions();
-      onSeek((wsi.getDuration() * progress) * 1000);
-    });
+    wsi.on("seek", () => {
+      const currentTime = wsi.getCurrentTime();
 
-    wsi.on("loading", (progress) => {
-      onProgress(progress);
+      onSeek(currentTime * 1000);
     });
 
     wsi.load(data._value);
 
     ws.current = wsi;
 
-    Object.assign(window, { surfer: wsi });
+    const handleClick = () => {
+      removeDetachedRegions();
+    };
+
+    root.addEventListener("click", handleClick);
 
     return () => {
+      root.removeEventListener("click", handleClick);
+
       Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
         if (active) wsi.destroyPlugin(name);
       });

@@ -9,19 +9,13 @@ interface AudioNextProps {
 }
 
 const AudioNextView: FC<AudioNextProps> = ({ item }) => {
-  const [playing, _setPlaying] = useState(false);
-  const [position, setPosition] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
 
-  const [zoom, setZoom] = useState(Number(item.zoom));
-  const [volume, setVolume] = useState(Number(item.volume));
-  const [speed, setSpeed] = useState(Number(item.speed));
-
-  const setPlaying = useCallback((playing) => {
-    _setPlaying(playing);
-    if (playing) item.triggerSyncPlay();
-    else item.triggerSyncPause();
-  }, [item]);
+  const [zoom, setZoom] = useState(1);
+  const [volume, setVolume] = useState(1);
+  const [speed, setSpeed] = useState(1);
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
@@ -29,15 +23,54 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
     item.onReady();
   }, []);
 
-  const handlePositionChange = useCallback((frame: number) => setPosition(frame), []);
-  const handlePlayToggle = useCallback((playing: boolean) => setPlaying(playing), []);
-  const formatPosition = useCallback((pos: number, fps: number): string => {
+  const handlePositionChange = useCallback((frame: number) => {
+    setPosition(frame);
+  }, []);
+
+  const handleSeek = useCallback((frame: number) => {
+    setPosition(frame);
+    item.handleSeek();
+  }, []);
+
+  const formatPosition = useCallback(({ time, fps }): string => {
     const roundedFps = Math.floor(fps);
-    const value = Math.floor(pos % roundedFps);
-    const result = Math.floor(value > 0 ? value : roundedFps);
+    const value = Math.floor((time * 1000) % roundedFps);
+    const result = Math.floor(time >= 0 ? value : roundedFps);
 
     return result.toString().padStart(3, '0');
   }, []);
+
+  const handlePlay = useCallback(() => {
+    setPlaying((playing) => {
+      if (!item._ws) return false;
+
+      if (item._ws.isPlaying() === false) {
+        item._ws.play();
+      }
+
+      if (playing === false) {
+        item.triggerSyncPlay();
+        return true;
+      }
+      return playing;
+    });
+  }, [item, playing]);
+
+  const handlePause = useCallback(() => {
+    setPlaying((playing) => {
+      if (!item._ws) return false;
+
+      if (item._ws.isPlaying() === true) {
+        item._ws?.pause?.();
+      }
+
+      if (playing === true) {
+        item.triggerSyncPause();
+        return false;
+      }
+      return playing;
+    });
+  }, [item, playing]);
 
   return (
     <ObjectTag item={item}>
@@ -53,7 +86,11 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         zoom={zoom}
         speed={speed}
         volume={volume}
-        controls={{ VolumeControl: true }}
+        controls={{
+          VolumeControl: item.volume,
+          SpeedControl: item.speed,
+          ZoomControl: item.zoom,
+        }}
         defaultStepSize={16}
         length={audioLength}
         position={position}
@@ -65,7 +102,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         onAddRegion={item.addRegion}
         onSelectRegion={item.selectRegion}
         onPositionChange={handlePositionChange}
-        onPlayToggle={handlePlayToggle}
+        onSeek={handleSeek}
+        onPlay={handlePlay}
+        onPause={handlePause}
         onZoom={setZoom}
         onVolumeChange={setVolume}
         onSpeedChange={setSpeed}

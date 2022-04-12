@@ -58,3 +58,27 @@ export { ReactComponent as IconInfo } from './info.svg';
 export { ReactComponent as IconCopy } from './copy.svg';
 export { ReactComponent as IconText } from './text.svg';
 export { ReactComponent as IconViewAll } from './view_all.svg';
+export { ReactComponent as IconLink } from "./link.svg";
+export { ReactComponent as IconPlusAlt } from "./plus-alt.svg";
+export { ReactComponent as IconTrash } from "./trash.svg";
+export { ReactComponent as IconMenu } from "./menu.svg";
+export { ReactComponent as IconHamburger } from "./hamburger.svg";
+export { ReactComponent as IconDetails } from "./details.svg";
+export { ReactComponent as IconLockLocked } from "./locked.svg";
+export { ReactComponent as IconLockUnlocked } from "./unlocked.svg";
+export { ReactComponent as IconCursor } from "./cursor.svg";
+export { ReactComponent as IconList } from "./list.svg";
+export { ReactComponent as IconSpeed } from "./speed.svg";
+export { ReactComponent as IconTagAlt } from "./tag-alt.svg";
+export { ReactComponent as IconSortUp } from "./sort-up.svg";
+export { ReactComponent as IconSortDown } from "./sort-down.svg";
+export { ReactComponent as IconCollapseLeft } from "./collapse-left.svg";
+
+
+// Relations
+export { ReactComponent as IconRelationRight } from "./relations/right.svg";
+export { ReactComponent as IconRelationLeft } from "./relations/left.svg";
+export { ReactComponent as IconRelationBi } from "./relations/bi.svg";
+
+// Properties
+export { ReactComponent as IconPropertyAngle } from "./properties/angle.svg";

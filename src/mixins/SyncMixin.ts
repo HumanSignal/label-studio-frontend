@@ -1,67 +1,83 @@
+import { observe } from "mobx";
 import { types } from "mobx-state-tree";
 
 import { EventInvoker } from "../utils/events";
+import { TimeSync, TimeSyncSubscriber } from "../utils/TimeSync";
 
-interface SyncMixinVolatile {
+interface SyncMixinProps {
   events: EventInvoker;
   synced: boolean;
+  isCurrentlyPlaying: boolean;
   syncedObject: any;
-  currentEvent: any;
+  currentEvent: Set<string>;
+  currentTime: number;
+  timeSync: TimeSyncSubscriber | null;
 }
+
+const sync = TimeSync.getInstance();
 
 const SyncMixin = types
   .model({
     sync: types.maybeNull(types.string),
   })
-  .volatile<SyncMixinVolatile>(() => ({
+  .volatile<SyncMixinProps>(() => ({
   events: new EventInvoker(),
   synced: false,
+  isCurrentlyPlaying: false,
   syncedObject: null,
-  currentEvent: null,
+  currentEvent: new Set(),
+  currentTime: 0,
+  timeSync: null,
 }))
-  .actions(self => ({
+  .actions((self) => ({
     // *** abstract ***
-    handleSyncPlay(time: number) { console.error("handleSyncPlay should be implemented"); },
-    handleSyncPause(time: number) { console.error("handleSyncPause should be implemented"); },
+    needsUpdate() {},
+    handleSyncPlay() { console.error("handleSyncPlay should be implemented"); },
+    handleSyncPause() { console.error("handleSyncPause should be implemented"); },
     handleSyncSeek(time: number) { console.error("handleSyncSeek should be implemented"); },
-  }))
-  .actions(self => ({
-    _handleSyncSeek(time: number) {
-      self.currentEvent = "seek";
-      self.handleSyncSeek(time);
+    attachObject() {
+      self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },
   }))
   .actions(self => ({
     triggerSyncPlay() {
-      self.events.invoke("play");
+      self.timeSync?.play();
     },
 
     triggerSyncPause() {
-      self.events.invoke("pause");
+      self.timeSync?.pause();
     },
 
     triggerSyncSeek(time: number) {
-      if (self.currentEvent) {
-        self.currentEvent = null;
-        return;
-      }
-
-      self.events.invoke("seek", time);
+      self.timeSync?.seek(time);
     },
 
-    initSync() {
-      if (!self.synced) {
-        self.synced = true;
+    afterAttach() {
+      if (self.sync && self.sync !== (self as any).name) {
+        const syncObject = sync.register((self as any).name);
 
-        const object = self.annotation?.names?.get(self.sync);
+        syncObject.subscribe(self.sync, {
+          play: self.handleSyncPlay,
+          pause: self.handleSyncPause,
+          seek: self.handleSyncSeek,
+        });
 
-        if (!object?.events) return;
+        self.timeSync = syncObject;
+      }
 
-        self.syncedObject = object;
+      const dispose = observe(self as any, 'annotation', () => {
+        if ((self as any).annotation) {
+          self.attachObject();
+          self.needsUpdate?.();
+          dispose();
+        }
+      }, true);
+    },
 
-        object.events.on("play", self.handleSyncPlay);
-        object.events.on("pause", self.handleSyncPause);
-        object.events.on("seek", self._handleSyncSeek);
+    beforeDestroy(){
+      if (self.timeSync && self.sync) {
+        self.timeSync.unsubscribe(self.sync);
+        sync.unregister((self as any).name);
       }
     },
   }));

@@ -110,6 +110,7 @@
     "react-test-renderer": "^16.13.1",
     "sass": "^1.32.12",
     "sass-loader": "^11.0.1",
+    "shallow-equal": "^1.2.1",
     "size-limit": "^4.6.0",
     "source-map-loader": "^2.0.1",
     "speed-measure-webpack-plugin": "^1.5.0",
@@ -228,6 +229,7 @@
     "d3": "^5.16.0",
     "magic-wand-js": "^1.0.0",
     "papaparse": "^5.3.1",
+    "rc-tree": "^5.3.0",
     "react-konva-utils": "^0.2.0",
     "react-virtualized-auto-sizer": "^1.0.6",
     "react-window": "^1.8.6"
