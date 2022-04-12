@@ -12,7 +12,7 @@ import { defaultStyle } from "../../../core/Constants";
 // import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
-import { useToggle } from "../../../utils/useToggle";
+import { useToggle } from "../../../hooks/useToggle";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
