@@ -177,11 +177,10 @@ const HtxNumber = inject("store")(
         <input
           type="number"
           name={item.name}
-          value={item.number ?? item.defaultvalue ?? 0}
+          value={item.number ?? item.defaultvalue ?? ""}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
-          defaultValue={Number(item.defaultvalue)}
           onChange={item.onChange}
         />
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
