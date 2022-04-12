@@ -12,6 +12,7 @@ import { defaultStyle } from "../../../core/Constants";
 // import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
+import { useToggle } from "../../../utils/useToggle";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
@@ -35,19 +36,11 @@ const HtxVideoView = ({ item }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isFullScreen, enterFullscreen, exitFullscren, handleFullscreenToggle] = useToggle(false);
   const fullscreen = useFullscreen({
-    onEnterFullscreen() { setIsFullScreen(true); },
-    onExitFullscreen() { setIsFullScreen(false); },
+    onEnterFullscreen() { enterFullscreen(); },
+    onExitFullscreen() { exitFullscren(); },
   });
-
-  // const togglePlaying = useCallback(() => {
-  //   setPlaying(playing => {
-  //     if (!playing) item.triggerSyncPlay();
-  //     else item.triggerSyncPause();
-  //     return !playing;
-  //   });
-  // }, [item]);
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
@@ -120,7 +113,6 @@ const HtxVideoView = ({ item }) => {
       }
     };
 
-    // window.addEventListener('resize', onResize);
     document.addEventListener('keydown', onKeyDown);
 
     const observer = new ResizeObserver(() => onResize());
@@ -130,7 +122,6 @@ const HtxVideoView = ({ item }) => {
     observer.observe(vBlock);
 
     return () => {
-      // window.removeEventListener('resize', onResize);
       document.removeEventListener('keydown', onKeyDown);
       observer.unobserve(vContainer);
       observer.unobserve(vBlock);
@@ -238,7 +229,7 @@ const HtxVideoView = ({ item }) => {
       }
       return playing;
     });
-  }, [playing]);
+  }, []);
 
   const handlePause = useCallback(() => {
     setPlaying((playing) => {
@@ -249,11 +240,8 @@ const HtxVideoView = ({ item }) => {
       }
       return playing;
     });
-  }, [playing]);
+  }, []);
 
-  const handleFullscreenToggle = useCallback(() => {
-    setIsFullScreen(!isFullScreen);
-  }, [isFullScreen]);
 
   const handleSelectRegion = useCallback((_, id, select) => {
     const region = item.findRegion(id);

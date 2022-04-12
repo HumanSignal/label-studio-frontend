@@ -11,6 +11,8 @@ const RegionMixin = types
 
     score: types.maybeNull(types.number),
 
+    readonly: types.optional(types.boolean, false),
+
     hidden: types.optional(types.boolean, false),
 
     selected: types.optional(types.boolean, false),

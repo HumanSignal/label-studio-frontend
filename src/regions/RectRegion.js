@@ -38,11 +38,6 @@ const Model = types
     height: types.number,
 
     rotation: 0,
-
-    testprop: types.optional(types.enumeration(["one", "two", "three"]), "two"),
-
-    boolprop: false,
-
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(() => ({
