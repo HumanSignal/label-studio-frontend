@@ -31,11 +31,12 @@ import ControlBase from "./Base";
  * @param {number} [min]                      - Minimum number value
  * @param {number} [max]                      - Maximum number value
  * @param {number} [step=1]                   - Step for value increment/decrement
- * @param {number} [defaultValue]             - Default number value
- * @param {string} hotkey                     - Hotkey for increasing number value
+ * @param {number} [defaultValue]             - Default number value; will be added automaticaly to result for required fields
+ * @param {string} [hotkey]                   - Hotkey for increasing number value
  * @param {boolean} [required=false]          - Whether to require number validation
  * @param {string} [requiredMessage]          - Message to show if validation fails
  * @param {boolean} [perRegion]               - Use this tag to classify specific regions instead of the whole object
+ * @param {boolean} [slider=false]            - Use slider look instead of input; use min and max to add your constraints
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -45,6 +46,7 @@ const TagAttrs = types.model({
   max: types.maybeNull(types.string),
   step: types.maybeNull(types.string),
   defaultvalue: types.maybeNull(types.string),
+  slider: types.optional(types.boolean, false),
 
   hotkey: types.maybeNull(types.string),
 });
@@ -170,12 +172,14 @@ const NumberModel = types.compose("NumberModel", ControlBase, TagAttrs, Model, R
 
 const HtxNumber = inject("store")(
   observer(({ item, store }) => {
-    const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
-
+    const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
+    const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
+      
     return (
       <div style={visibleStyle}>
         <input
-          type="number"
+          style={sliderStyle}
+          type={item.slider ? "range" : "number"}
           name={item.name}
           value={item.number ?? item.defaultvalue ?? ""}
           step={item.step ?? 1}
@@ -183,6 +187,7 @@ const HtxNumber = inject("store")(
           max={isDefined(item.max) ? Number(item.max) : undefined}
           onChange={item.onChange}
         />
+        {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? ""}</output>}
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
           <sup style={{ fontSize: "9px" }}>[{item.hotkey}]</sup>
         )}
