@@ -181,13 +181,13 @@ const HtxNumber = inject("store")(
           style={sliderStyle}
           type={item.slider ? "range" : "number"}
           name={item.name}
-          value={item.number ?? item.defaultvalue ?? (item.slider ? item.min ?? 0 : "")}
+          value={item.number ?? item.defaultvalue ?? ""}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
           onChange={item.onChange}
         />
-        {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? 0}</output>}
+        {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? ""}</output>}
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
           <sup style={{ fontSize: "9px" }}>[{item.hotkey}]</sup>
         )}
