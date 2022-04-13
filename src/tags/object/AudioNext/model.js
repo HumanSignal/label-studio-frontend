@@ -37,12 +37,14 @@ import ObjectBase from "../Base";
  * @param {string} [sync] object name to sync with
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
  * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
+ * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform  
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  */
 const TagAttrs = types.model({
   name: types.identifier,
   value: types.maybeNull(types.string),
+  muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),
   volume: types.optional(types.boolean, true),
   speed: types.optional(types.boolean, true),
@@ -52,8 +54,9 @@ const TagAttrs = types.model({
   height: types.optional(types.string, "88"),
   cursorwidth: types.optional(types.string, "2"),
   cursorcolor: types.optional(customTypes.color, "#333"),
+  defaultscale: types.optional(types.string, "1"),
   autocenter: types.optional(types.boolean, true),
-  scrollparent: types.optional(types.boolean,true),
+  scrollparent: types.optional(types.boolean, true),
 });
 
 export const AudioModel = types.compose(
@@ -102,8 +105,6 @@ export const AudioModel = types.compose(
     .actions(self => ({
       needsUpdate() {
         self.handleNewRegions();
-
-        if (self.sync) self.initSync();
       },
 
       onReady() {
@@ -111,15 +112,27 @@ export const AudioModel = types.compose(
       },
 
       handleSyncPlay() {
+        if (!self._ws) return;
+        if (self._ws.isPlaying()) return;
+
         self._ws?.play();
       },
 
       handleSyncPause() {
+        if (!self._ws) return;
+        if (!self._ws.isPlaying()) return;
+
         self._ws?.pause();
       },
 
       handleSyncSeek(time) {
-        self._ws && (self._ws.setCurrentTime(time));
+        try {
+          if (self._ws && time !== self._ws.getCurrentTime()) {
+            self._ws.setCurrentTime(time);
+          }
+        } catch (err) {
+          console.log(err);
+        }
       },
 
       handleNewRegions() {
@@ -268,12 +281,16 @@ export const AudioModel = types.compose(
      * Play and stop
      */
       handlePlay() {
-        self.playing = !self.playing;
-        self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+        if (self._ws) {
+          self.playing = !self.playing;
+          self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+        }
       },
 
       handleSeek() {
-        self.triggerSyncSeek(self._ws.getCurrentTime());
+        if (self._ws) {
+          self.triggerSyncSeek(self._ws.getCurrentTime());
+        }
       },
 
       createWsRegion(region) {

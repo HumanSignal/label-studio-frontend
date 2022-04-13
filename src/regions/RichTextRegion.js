@@ -1,17 +1,14 @@
 import { types } from "mobx-state-tree";
 import * as xpath from "xpath-range";
-
+import Registry from "../core/Registry";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { HighlightMixin } from "../mixins/HighlightMixin";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import WithStatesMixin from "../mixins/WithStates";
 import { RichTextModel } from "../tags/object/RichText/model";
-
-import { HighlightMixin } from "../mixins/HighlightMixin";
-import Registry from "../core/Registry";
-import { AreaMixin } from "../mixins/AreaMixin";
-import Utils from "../utils";
-import { isDefined } from "../utils/utilities";
 import { findRangeNative, rangeToGlobalOffset } from "../utils/selection-tools";
+import { isDefined } from "../utils/utilities";
 
 const GlobalOffsets = types.model("GlobalOffset", {
   start: types.number,
@@ -50,6 +47,9 @@ const Model = types
     },
     getRegionElement() {
       return self._spans?.[0];
+    },
+    get displayValue() {
+      return self.text;
     },
   }))
   .actions(self => ({

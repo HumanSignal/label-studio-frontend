@@ -44,6 +44,8 @@ import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
  * @param {boolean} [showFullPath=false] - Whether to show the full path of selected items
  * @param {string} [pathSeparator= / ] - Separator to show in the full path
  * @param {number} [maxUsages]         - Maximum number of times a choice can be selected per task
+ * @param {number} [maxWidth]         - Maximum width for dropdown
+ * @param {number} [minWidth]         - Minimum width for dropdown
  * @param {boolean} [required=false]   - Whether taxonomy validation is required
  * @param {string} [requiredMessage]   - Message to show if validation fails
  * @param {string} [placeholder=]      - What to display as prompt on the input
@@ -55,6 +57,8 @@ const TagAttrs = types.model({
   showfullpath: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, " / "),
   placeholder: "",
+  minwidth: types.maybeNull(types.string),
+  maxwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 });
@@ -226,6 +230,8 @@ const HtxTaxonomy = observer(({ item }) => {
     leafsOnly: item.leafsonly,
     pathSeparator: item.pathseparator,
     maxUsages: item.maxusages,
+    maxWidth: item.maxwidth,
+    minWidth: item.minwidth,
     placeholder: item.placeholder,
   };
 

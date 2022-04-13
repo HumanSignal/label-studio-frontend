@@ -115,7 +115,7 @@ const Result = types
     get hasValue() {
       const value = self.mainValue;
 
-      if (!value) return false;
+      if (!isDefined(value)) return false;
       if (Array.isArray(value)) return value.length > 0;
       return true;
     },

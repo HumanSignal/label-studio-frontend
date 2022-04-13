@@ -28,6 +28,8 @@ const Model = types
     },
 
     wsRegionElement(wsRegion) {
+      if (!wsRegion) return null;
+
       const elID = wsRegion.id;
       const el = document.querySelector(`[data-id="${elID}"]`);
 
@@ -86,11 +88,20 @@ const Model = types
       const color = Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
       // eslint-disable-next-line no-unused-expressions
 
-      self._ws_region?.update({ color });
+      try {
+        self._ws_region?.update({ color });
+      } catch {
+        /**
+         * Sometimes this method is called too soon in the new UI so it fails.
+         * Will be good on the next execution
+         * */
+      }
     },
 
     updateAppearenceFromState() {
       if (self._ws_region?.update) {
+        self._ws_region.start = self.start;
+        self._ws_region.end = self.end;
         self.applyCSSClass(self._ws_region);
       }
     },

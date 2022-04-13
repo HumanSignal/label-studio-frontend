@@ -92,9 +92,29 @@ const Model = types
     },
 
     beforeSend() {
-      // add defaultValue to results for top-level controls
-      if (!isDefined(self.number) && isDefined(self.defaultvalue) && !self.perRegion) {
-        self.setNumber(+self.defaultvalue);
+      if (!isDefined(self.defaultvalue)) return;
+
+      // let's fix only required perRegions
+      if (self.perregion && self.required) {
+        const object = self.annotation.names.get(self.toname);
+
+        for (const reg of object?.regs ?? []) {
+          // add result with default value to every region of related object without number yet
+          if (!reg.results.some(r => r.from_name === self)) {
+            reg.results.push({
+              area: reg,
+              from_name: self,
+              to_name: object,
+              type: self.resultType,
+              value: {
+                [self.valueType]: +self.defaultvalue,
+              },
+            });
+          }
+        }
+      } else {
+        // add defaultValue to results for top-level controls
+        if (!isDefined(self.number)) self.setNumber(+self.defaultvalue);
       }
     },
 
@@ -153,7 +173,7 @@ const NumberModel = types.compose("NumberModel", ControlBase, TagAttrs, Model, R
 const HtxNumber = inject("store")(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
-    const sliderStyle = item.slider ? { padding: '9px 0px' } : {};
+    const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
       
     return (
       <div style={visibleStyle}>
@@ -161,11 +181,10 @@ const HtxNumber = inject("store")(
           style={sliderStyle}
           type={item.slider ? "range" : "number"}
           name={item.name}
-          value={item.number ?? item.defaultvalue ?? (isDefined(item.min) ? item.min : 0)}
+          value={item.number ?? item.defaultvalue ?? (item.slider ? item.min ?? 0 : "")}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
-          defaultValue={Number(item.defaultvalue)}
           onChange={item.onChange}
         />
         {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? 0}</output>}

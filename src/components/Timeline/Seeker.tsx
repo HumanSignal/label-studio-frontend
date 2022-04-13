@@ -10,6 +10,8 @@ export interface SeekerProps {
   length: number;
   seekOffset: number;
   seekVisible: number;
+  step: number;
+  leftOffset?: number;
   minimap?: ReactElement<TimelineMinimapProps> | null;
   onIndicatorMove: (position: number) => void;
   onSeek: (position: number) => void;
@@ -23,14 +25,17 @@ export const Seeker: FC<SeekerProps> = ({
   onIndicatorMove,
   onSeek,
   minimap,
+  step,
+  ...props
 }) => {
+  const leftOffset = (props.leftOffset ?? 150) / step;
   const rootRef = useRef<HTMLDivElement>();
   const seekerRef = useRef<HTMLDivElement>();
   const viewRef = useRef<HTMLDivElement>();
 
   const showIndicator = seekVisible > 0;
-  const width = `${seekVisible / length * 100}%`;
-  const offsetLimit = length - seekVisible;
+  const width = `${(seekVisible - leftOffset) / length * 100}%`;
+  const offsetLimit = length - (seekVisible - leftOffset);
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
   const seekerOffset = position / length * 100;
 

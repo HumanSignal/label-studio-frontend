@@ -17,7 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
-import { FF_DEV_1555, FF_DEV_1621, isFF } from "../utils/feature-flags";
+import { FF_DEV_1621, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -47,7 +47,7 @@ const Annotation = types
     parent_annotation: types.maybeNull(types.integer),
     last_annotation_history: types.maybeNull(types.integer),
 
-    loadedDate: types.optional(types.Date, new Date()),
+    loadedDate: types.optional(types.Date, () => new Date()),
     leadTime: types.maybeNull(types.number),
 
     // @todo use types.Date
@@ -81,6 +81,7 @@ const Annotation = types
       regions: [],
     }),
 
+    comment: types.optional(types.maybeNull(types.string), null),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
