@@ -1,6 +1,6 @@
 /**
- * Libraries
- */
+* Libraries
+*/
 import React, { Component } from "react";
 import { Result, Spin } from "antd";
 import { getEnv, getRoot } from "mobx-state-tree";
@@ -43,6 +43,7 @@ import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotat
 import { isDefined } from "../../utils/utilities";
 import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
+import { Button } from "../../common/Button/Button";
 
 /**
  * App
@@ -58,9 +59,29 @@ class App extends Component {
     return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
   }
 
-  renderNothingToLabel() {
-    return <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />;
+  renderNothingToLabel(store) {
+    return (
+      <Block
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          paddingBottom: "30vh",
+        }}
+      >
+        <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
+        <Block name="sub__result">You have completed all tasks in the queue!</Block>
+        {store.canGoPrevTask && (
+          <Button onClick={() => store.prevTask()} look="outlined" style={{ margin: "16px 0" }}>
+            Go to Previous Task
+          </Button>
+        )}
+      </Block>
+    );
   }
+
+
 
   renderNoAccess() {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
@@ -169,7 +190,7 @@ class App extends Component {
 
     if (store.isLoading) return this.renderLoader();
 
-    if (store.noTask) return this.renderNothingToLabel();
+    if (store.noTask) return this.renderNothingToLabel(store);
 
     if (store.noAccess) return this.renderNoAccess();
 
@@ -212,7 +233,7 @@ class App extends Component {
             ) : (
               <>
                 {mainContent}
-
+ 
                 {(viewingAll === false) && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface("side-column") && (
@@ -220,7 +241,7 @@ class App extends Component {
                         <SidebarPage name="annotation" title="Annotation">
                           <AnnotationTab store={store}/>
                         </SidebarPage>
-
+ 
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
                             <Component/>
@@ -232,19 +253,19 @@ class App extends Component {
                 )}
               </>
             )}
-
+ 
           </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
       </Block>
     );
   }
-
+ 
   _notifyScroll = () => {
     if (this.relationsRef.current) {
       this.relationsRef.current.onResize();
     }
   };
 }
-
+ 
 export default observer(App);
