@@ -17,7 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
-import { FF_DEV_1621, isFF } from "../utils/feature-flags";
+import { FF_DEV_1621, FF_DEV_2100, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -888,7 +888,7 @@ const Annotation = types
           );
         });
 
-        self.cleanClassificationAreas();
+        if (isFF(FF_DEV_2100)) self.cleanClassificationAreas();
 
         !hidden && self.results
           .filter(r => r.area.classification)

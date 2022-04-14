@@ -34,6 +34,9 @@ Scenario("Make a duplicate of annotation with preselected choices", async ({ I, 
   };
 
   I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_dev_2100_clean_unnecessary_areas_140422_short: true,
+  });
   LabelStudio.init(params);
 
   // Try to create copy of current annotation
