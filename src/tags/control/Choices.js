@@ -101,9 +101,9 @@ const Model = types
 
         if (!area) return null;
 
-        return self.annotation.results.findLast(r => r.from_name === self && r.area === area);
+        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
-      return self.annotation.results.findLast(r => r.from_name === self);
+      return self.annotation.results.find(r => r.from_name === self);
     },
 
     get preselectedValues() {
