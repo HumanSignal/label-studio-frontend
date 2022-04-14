@@ -16,11 +16,11 @@ export interface ButtonProps extends HTMLButtonProps {
   href?: string;
   extra?: JSX.Element;
   className?: string;
-  size?: 'small' | 'medium' | "compact" | 'large';
+  size?: "small" | "medium" | "compact" | "large";
   waiting?: boolean;
   icon?: JSX.Element;
   tag?: CNTagName;
-  look?: "primary" | "danger" | "destructive" | "alt";
+  look?: "primary" | "danger" | "destructive" | "alt" | "outlined";
   primary?: boolean;
   danger?: boolean;
   style?: CSSProperties;
