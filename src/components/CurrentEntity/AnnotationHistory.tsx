@@ -54,7 +54,7 @@ const AnnotationHistoryComponent: FC<any> = ({
                 user={user ?? { email: item?.createdBy }}
                 date={createdDate}
                 comment={item.comment}
-                acceptedState={item.acceptedState}
+                acceptedState={item.actionType}
                 selected={selectedHistory?.id === item.id}
                 disabled={item.results.length === 0}
                 onClick={() => annotationStore.selectHistory(item)}
@@ -83,9 +83,12 @@ const HistoryItemComponent: FC<any> = ({
 
   const reason = useMemo(() => {
     switch(acceptedState) {
-      case "accepted": return "Accepted";
-      case "rejected": return "Rejected";
-      case "fixed": return "Fixed";
+      case "review-accepted": return "Accepted";
+      case "review-rejected": return "Rejected";
+      case "review-fixed": return "Fixed";
+      case "updated": return "Updated";
+      case "created": return "Submitted";
+      case "draft-created": return "Created a draft";
       default: return null;
     }
   }, []);
@@ -108,17 +111,12 @@ const HistoryItemComponent: FC<any> = ({
             username={isPrediction ? entity.createdBy : null}
             mod={{ prediction: isPrediction }}
           >{isPrediction && <LsSparks style={{ width: 16, height: 16 }}/>}</Elem>
-          {isPrediction ? entity.createdBy : userDisplayName(user)}
+          <Elem name="name" tag="span">
+            {isPrediction ? entity.createdBy : userDisplayName(user)}
+          </Elem>
         </Space>
 
         <Space size="small">
-          {(acceptedState === 'accepted') ? (
-            <LsThumbsUp style={{ color: '#2AA000' }}/>
-          ) : acceptedState === 'fixed' ? (
-            <LsThumbsUp style={{ color: '#FA8C16' }}/>
-          ) : acceptedState === 'rejected' ? (
-            <LsThumbsDown style={{ color: "#dd0000" }}/>
-          ) : null}
 
           {date ? (
             <Elem name="date">
@@ -131,12 +129,36 @@ const HistoryItemComponent: FC<any> = ({
           ) : null}
         </Space>
       </Space>
-      {comment && (
-        <Elem name="comment" data-reason={`${reason}: `}>
-          {comment}
+      {reason && (
+        <Elem name="action" tag={Space} size="small">
+          <HistoryIcon type={acceptedState}/>
+          <Elem name="comment" data-reason={`${reason}${comment ? ': ' : ''}`}>
+            {comment}
+          </Elem>
         </Elem>
       )}
     </Block>
+  );
+};
+
+type HistoryItemType =   'created' | 'updated' | 'draft-created' | 'review-fixed' | 'review-accepted' | 'review-rejected';
+
+const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
+
+  const icon = useMemo(() => {
+    switch(type) {
+      case 'created': return <LsSparks style={{ width: 16, height: 16 }}/>;
+      case 'updated': return <LsSparks style={{ width: 16, height: 16 }}/>;
+      case 'draft-created': return <LsSparks style={{ width: 16, height: 16 }}/>;
+      case 'review-fixed': return <LsThumbsUp style={{ color: '#FA8C16' }}/>;
+      case 'review-accepted': return <LsThumbsUp style={{ color: '#2AA000' }}/>;
+      case 'review-rejected': return <LsThumbsDown style={{ color: "#dd0000" }}/>;
+      default: return null;
+    }
+  }, [type]);
+
+  return icon && (
+    <Elem name="history-icon">{icon}</Elem>
   );
 };
 
