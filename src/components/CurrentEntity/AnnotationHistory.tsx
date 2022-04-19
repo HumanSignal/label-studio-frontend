@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { FC, useCallback, useMemo } from "react";
-import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
+import { IconDraftCreated, IconEntityCreated, IconThumbsDown, IconThumbsUp, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
@@ -141,18 +141,17 @@ const HistoryItemComponent: FC<any> = ({
   );
 };
 
-type HistoryItemType =   'created' | 'updated' | 'draft-created' | 'review-fixed' | 'review-accepted' | 'review-rejected';
+type HistoryItemType = 'created' | 'updated' | 'draft-created' | 'review-fixed' | 'review-accepted' | 'review-rejected';
 
 const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
-
   const icon = useMemo(() => {
     switch(type) {
-      case 'created': return <LsSparks style={{ width: 16, height: 16 }}/>;
-      case 'updated': return <LsSparks style={{ width: 16, height: 16 }}/>;
-      case 'draft-created': return <LsSparks style={{ width: 16, height: 16 }}/>;
-      case 'review-fixed': return <LsThumbsUp style={{ color: '#FA8C16' }}/>;
-      case 'review-accepted': return <LsThumbsUp style={{ color: '#2AA000' }}/>;
-      case 'review-rejected': return <LsThumbsDown style={{ color: "#dd0000" }}/>;
+      case 'created': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
+      case 'updated': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
+      case 'draft-created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
+      case 'review-fixed': return <IconThumbsUp style={{ color: '#FA8C16' }}/>;
+      case 'review-accepted': return <IconThumbsUp style={{ color: '#2AA000' }}/>;
+      case 'review-rejected': return <IconThumbsDown style={{ color: "#dd0000" }}/>;
       default: return null;
     }
   }, [type]);

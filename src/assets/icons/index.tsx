@@ -7,8 +7,6 @@ export { ReactComponent as LsSparks } from "./sparks.svg";
 export { ReactComponent as LsParentLink } from "./parent_link.svg";
 export { ReactComponent as LsAnnotation } from "./annotation.svg";
 export { ReactComponent as LsGrid } from "./grid.svg";
-export { ReactComponent as LsThumbsDown } from './thumbs_down.svg';
-export { ReactComponent as LsThumbsUp } from './thumbs_up.svg';
 export { ReactComponent as LsSettings } from './settings.svg';
 export { ReactComponent as LsStar } from "./star.svg";
 export { ReactComponent as IconBan } from "./ban.svg";
@@ -82,3 +80,5 @@ export { ReactComponent as IconRelationBi } from "./relations/bi.svg";
 
 // Properties
 export { ReactComponent as IconPropertyAngle } from "./properties/angle.svg";
+
+export * from "./annotation";
