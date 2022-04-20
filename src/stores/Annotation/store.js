@@ -13,10 +13,12 @@ import { FF_DEV_1621, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
 
+const SelectedItem = types.union(Annotation, HistoryItem);
+
 export default types
   .model("AnnotationStore", {
-    selected: types.maybeNull(types.reference(Annotation)),
-    selectedHistory: types.maybeNull(types.safeReference(Annotation)),
+    selected: types.maybeNull(types.reference(SelectedItem)),
+    selectedHistory: types.maybeNull(types.safeReference(SelectedItem)),
 
     root: Types.allModelsTypes(),
     names: types.map(types.reference(Types.allModelsTypes())),

@@ -8,6 +8,8 @@ import { Block, Elem } from "../../utils/bem";
 import { isDefined, userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
 
+type HistoryItemType =   'import' | 'submit' | 'update' | 'accepted' | 'rejected' | 'fixed_and_accepted';
+
 const injector = inject(({ store }) => {
   const as = store.annotationStore;
   const selected = as?.selected;
@@ -83,11 +85,11 @@ const HistoryItemComponent: FC<any> = ({
 
   const reason = useMemo(() => {
     switch(acceptedState) {
-      case "review-accepted": return "Accepted";
-      case "review-rejected": return "Rejected";
-      case "review-fixed": return "Fixed";
-      case "updated": return "Updated";
-      case "created": return "Submitted";
+      case "accepted": return "Accepted";
+      case "rejected": return "Rejected";
+      case "fixed_and_accepted": return "Fixed";
+      case "update": return "Updated";
+      case "submit": return "Submitted";
       case "draft-created": return "Created a draft";
       default: return null;
     }
@@ -141,17 +143,16 @@ const HistoryItemComponent: FC<any> = ({
   );
 };
 
-type HistoryItemType = 'created' | 'updated' | 'draft-created' | 'review-fixed' | 'review-accepted' | 'review-rejected';
 
 const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
   const icon = useMemo(() => {
     switch(type) {
-      case 'created': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
-      case 'updated': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
-      case 'draft-created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
-      case 'review-fixed': return <IconThumbsUp style={{ color: '#FA8C16' }}/>;
-      case 'review-accepted': return <IconThumbsUp style={{ color: '#2AA000' }}/>;
-      case 'review-rejected': return <IconThumbsDown style={{ color: "#dd0000" }}/>;
+      case 'submit': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
+      case 'update': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
+      // case 'draft-created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
+      case 'accepted': return <IconThumbsUp style={{ color: '#2AA000' }}/>;
+      case 'rejected': return <IconThumbsDown style={{ color: "#dd0000" }}/>;
+      case 'fixed_and_accepted': return <IconThumbsUp style={{ color: '#FA8C16' }}/>;
       default: return null;
     }
   }, [type]);

@@ -593,9 +593,7 @@ export default types
       (history ?? []).forEach(item => {
         const obj = as.addHistory(item);
 
-        const result = item.previous_annotation_history_result ?? [];
-
-        obj.deserializeResults(result, { hidden: true });
+        obj.deserializeResults(item.result ?? [], { hidden: true });
       });
     }
 
