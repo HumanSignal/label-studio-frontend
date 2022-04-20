@@ -26,45 +26,33 @@ const injector = inject(({ store }) => {
 
 const AnnotationHistoryComponent: FC<any> = ({
   annotationStore,
-  selected,
-  createdBy,
   selectedHistory,
   history,
   inline = false,
 }) => {
   return (
     <Block name="annotation-history" mod={{ inline }}>
-      <HistoryItem
-        inline={inline}
-        user={createdBy}
-        extra="final state"
-        entity={selected}
-        onClick={() => annotationStore.selectHistory(null)}
-        selected={!isDefined(selectedHistory)}
-      />
+      {history.length > 0 && history.map((item: any) => {
+        const { id, user, createdDate } = item;
 
-      {history.length > 0 && (
-        <>
-          <Elem name="divider" title="History"/>
-          {history.map((item: any) => {
-            const { id, user, createdDate } = item;
+        const selected = selectedHistory?.id === item.id;
 
-            return (
-              <HistoryItem
-                key={`h-${id}`}
-                inline={inline}
-                user={user ?? { email: item?.createdBy }}
-                date={createdDate}
-                comment={item.comment}
-                acceptedState={item.actionType}
-                selected={selectedHistory?.id === item.id}
-                disabled={item.results.length === 0}
-                onClick={() => annotationStore.selectHistory(item)}
-              />
-            );
-          })}
-        </>
-      )}
+        return (
+          <HistoryItem
+            key={`h-${id}`}
+            inline={inline}
+            user={user ?? { email: item?.createdBy }}
+            date={createdDate}
+            comment={item.comment}
+            acceptedState={item.actionType}
+            selected={selected}
+            disabled={item.results.length === 0}
+            onClick={() => {
+              annotationStore.selectHistory(selected ? null : item);
+            }}
+          />
+        );
+      })}
     </Block>
   );
 };
