@@ -170,7 +170,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       } else {
         button = (
           <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={store.updateAnnotation}>
+            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={() => store.updateAnnotation()}>
               {isUpdate ? "Update" : "Submit"}
             </Button>
           </ButtonTooltip>
