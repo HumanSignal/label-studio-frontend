@@ -12,9 +12,6 @@ import { FF_DEV_1593, isFF } from "../../utils/feature-flags";
 
 const TOOLTIP_DELAY = 0.8;
 
-// @todo add normal condition
-const addComment = true;
-
 const ButtonTooltip = inject("store")(observer(({ store, title, children }) => {
   return (
     <Tooltip
@@ -157,9 +154,10 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       const isUpdate = sentUserGenerate || versions.result;
+      const withComments = store.hasInterface("comments:update");
       let button;
 
-      if (addComment && isUpdate) {
+      if (withComments && isUpdate) {
         button = (
           <ActionDialog
             type="update"
