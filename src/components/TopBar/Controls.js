@@ -12,6 +12,9 @@ import { FF_DEV_1593, isFF } from "../../utils/feature-flags";
 
 const TOOLTIP_DELAY = 0.8;
 
+// @todo add normal condition
+const addComment = true;
+
 const ButtonTooltip = inject("store")(observer(({ store, title, children }) => {
   return (
     <Tooltip
@@ -153,13 +156,30 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     }
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
-      buttons.push(
-        <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={store.updateAnnotation}>
-            {sentUserGenerate || versions.result ? "Update" : "Submit"}
-          </Button>
-        </ButtonTooltip>,
-      );
+      const isUpdate = sentUserGenerate || versions.result;
+      let button;
+
+      if (addComment && isUpdate) {
+        button = (
+          <ActionDialog
+            type="update"
+            onAction={store.updateAnnotation}
+            buttonProps={{ disabled: disabled || submitDisabled, look: "primary" }}
+            prompt="Comment to Reviewer"
+            action="Update"
+          />
+        );
+      } else {
+        button = (
+          <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
+            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={store.updateAnnotation}>
+              {isUpdate ? "Update" : "Submit"}
+            </Button>
+          </ButtonTooltip>
+        );
+      }
+
+      buttons.push(button);
     }
   }
 
