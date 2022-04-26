@@ -13,6 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
+import { FF_DEV_2100, isFF } from "../../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -838,6 +839,23 @@ export const Annotation = types
       history.unfreeze("richtext:suggestions");
     },
 
+    cleanClassificationAreas() {
+      const classificationAreasByControlName = {};
+      const duplicateAreaIds = [];
+
+      self.areas.forEach(a => {
+        const controlName = a.results[0].from_name.name;
+
+        if (a.classification) {
+          if (classificationAreasByControlName[controlName]) {
+            duplicateAreaIds.push(classificationAreasByControlName[controlName]);
+          }
+          classificationAreasByControlName[controlName] = a.id;
+        }
+      });
+      duplicateAreaIds.forEach(id => self.areas.delete(id));
+    },
+
     /**
      * Deserialize results
      * @param {string | Array<any>} json Input results
@@ -858,6 +876,8 @@ export const Annotation = types
             (snapshot) => areas.put(snapshot),
           );
         });
+
+        if (isFF(FF_DEV_2100)) self.cleanClassificationAreas();
 
         !hidden && self.results
           .filter(r => r.area.classification)

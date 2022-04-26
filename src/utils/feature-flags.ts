@@ -47,6 +47,12 @@ export const FF_DEV_2007_DEV_2008 = "ff_dev_2007_dev_2008_dynamic_tag_children_2
 // Rework of Choices tag
 export const FF_DEV_2007 = "ff_dev_2007_rework_choices_280322_short";
 
+// Clean unnecessary classification areas after deserialization
+export const FF_DEV_2100 = "ff_dev_2100_clean_unnecessary_areas_140422_short";
+
+// Allow to use html inside <Label/> tags
+export const FF_DEV_2128 = "ff_dev_2128_html_in_labels_150422_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,

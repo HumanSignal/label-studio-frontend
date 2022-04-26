@@ -26,15 +26,18 @@ const DynamicChildrenMixin = types.model({
     };
 
     return {
-      updateValue: flow(function * (store) {
+      updateValue(store) {
+        // If we want to use resolveValue or another asynchronous method here
+        // we may need to rewrite this, initRoot and the other related methods
+        // (actually a lot of them) to work asynchronously as well
+
         const valueFromTask = parseValue(self.value, store.task.dataObj);
 
         if (!valueFromTask) return;
-        const value = yield self.resolveValue(valueFromTask);
 
-        self.generateDynamicChildren(value, store);
-        self.needsUpdate?.();
-      }),
+        self.generateDynamicChildren(valueFromTask, store);
+        if (self.annotation) self.needsUpdate?.();
+      },
 
       generateDynamicChildren(data, store) {
         if (!self.children) {
