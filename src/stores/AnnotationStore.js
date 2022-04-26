@@ -17,7 +17,7 @@ import Area from "../regions/Area";
 import throttle from "lodash.throttle";
 import { ViewModel } from "../tags/visual";
 import { UserExtended } from "./UserStore";
-import { FF_DEV_1621, FF_DEV_2100, isFF } from "../utils/feature-flags";
+import { FF_DEV_1621, FF_DEV_2100, FF_DEV_2100_A, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -476,6 +476,15 @@ const Annotation = types
       // @todo deal with `defaultValue`s
     },
 
+    setDefaultValues() {
+      self.names.forEach(tag => {
+        if (isFF(FF_DEV_2100_A) && tag?.type === "choices" && tag.preselectedValues?.length) {
+          // <Choice selected="true"/>
+          self.createResult({}, { choices: tag.preselectedValues }, tag, tag.toname);
+        }
+      });
+    },
+
     addVersions(versions) {
       self.versions = { ...self.versions, ...versions };
       if (versions.draft) self.setDraftSelected();
@@ -591,7 +600,7 @@ const Annotation = types
 
         // @todo special place to init such predefined values; `afterAttach` of the tag?
         // preselected choices
-        if (!self.pk && node?.type === "choices" && node.preselectedValues?.length) {
+        if (!isFF(FF_DEV_2100_A) && !self.pk && node?.type === "choices" && node.preselectedValues?.length) {
           self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
         }
       });
@@ -888,6 +897,7 @@ const Annotation = types
           );
         });
 
+        // It's not necessary, but it's calmer with this
         if (isFF(FF_DEV_2100)) self.cleanClassificationAreas();
 
         !hidden && self.results
@@ -1345,6 +1355,8 @@ export default types
         c.deserializeAnnotation(result);
         // reinit will trigger `updateObjects()` so we omit it here
         c.reinitHistory();
+      } else {
+        c.setDefaultValues();
       }
       return c;
     }
