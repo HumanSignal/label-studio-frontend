@@ -9,7 +9,7 @@ import Utils from "../utils";
 import messages from "../utils/messages";
 import { guidGenerator } from "../utils/unique";
 import { delay, isDefined } from "../utils/utilities";
-import AnnotationStore from "./AnnotationStore";
+import AnnotationStore from "./Annotation/store";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
@@ -591,21 +591,9 @@ export default types
       as.clearHistory();
 
       (history ?? []).forEach(item => {
-        const fixed = isDefined(item.fixed_annotation_history_result);
-        const accepted = item.accepted;
+        const obj = as.addHistory(item);
 
-        const obj = as.addHistory({
-          ...item,
-          pk: guidGenerator(),
-          user: item.created_by,
-          createdDate: item.created_at,
-          acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
-          editable: false,
-        });
-
-        const result = item.previous_annotation_history_result ?? [];
-
-        obj.deserializeResults(result, { hidden: true });
+        obj.deserializeResults(item.result ?? [], { hidden: true });
       });
     }
 

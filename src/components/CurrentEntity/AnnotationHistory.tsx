@@ -1,12 +1,14 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { FC, useCallback, useMemo } from "react";
-import { LsSparks, LsThumbsDown, LsThumbsUp } from "../../assets/icons";
+import { IconDraftCreated, IconEntityCreated, IconThumbsDown, IconThumbsUp, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
 import { isDefined, userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
+
+type HistoryItemType =   'import' | 'submit' | 'update' | 'accepted' | 'rejected' | 'fixed_and_accepted';
 
 const injector = inject(({ store }) => {
   const as = store.annotationStore;
@@ -24,45 +26,33 @@ const injector = inject(({ store }) => {
 
 const AnnotationHistoryComponent: FC<any> = ({
   annotationStore,
-  selected,
-  createdBy,
   selectedHistory,
   history,
   inline = false,
 }) => {
   return (
     <Block name="annotation-history" mod={{ inline }}>
-      <HistoryItem
-        inline={inline}
-        user={createdBy}
-        extra="final state"
-        entity={selected}
-        onClick={() => annotationStore.selectHistory(null)}
-        selected={!isDefined(selectedHistory)}
-      />
+      {history.length > 0 && history.map((item: any) => {
+        const { id, user, createdDate } = item;
 
-      {history.length > 0 && (
-        <>
-          <Elem name="divider" title="History"/>
-          {history.map((item: any) => {
-            const { id, user, createdDate } = item;
+        const selected = selectedHistory?.id === item.id;
 
-            return (
-              <HistoryItem
-                key={`h-${id}`}
-                inline={inline}
-                user={user ?? { email: item?.createdBy }}
-                date={createdDate}
-                comment={item.comment}
-                acceptedState={item.acceptedState}
-                selected={selectedHistory?.id === item.id}
-                disabled={item.results.length === 0}
-                onClick={() => annotationStore.selectHistory(item)}
-              />
-            );
-          })}
-        </>
-      )}
+        return (
+          <HistoryItem
+            key={`h-${id}`}
+            inline={inline}
+            user={user ?? { email: item?.createdBy }}
+            date={createdDate}
+            comment={item.comment}
+            acceptedState={item.actionType}
+            selected={selected}
+            disabled={item.results.length === 0}
+            onClick={() => {
+              annotationStore.selectHistory(selected ? null : item);
+            }}
+          />
+        );
+      })}
     </Block>
   );
 };
@@ -85,7 +75,10 @@ const HistoryItemComponent: FC<any> = ({
     switch(acceptedState) {
       case "accepted": return "Accepted";
       case "rejected": return "Rejected";
-      case "fixed": return "Fixed";
+      case "fixed_and_accepted": return "Fixed";
+      case "update": return "Updated";
+      case "submit": return "Submitted";
+      case "draft-created": return "Created a draft";
       default: return null;
     }
   }, []);
@@ -108,17 +101,12 @@ const HistoryItemComponent: FC<any> = ({
             username={isPrediction ? entity.createdBy : null}
             mod={{ prediction: isPrediction }}
           >{isPrediction && <LsSparks style={{ width: 16, height: 16 }}/>}</Elem>
-          {isPrediction ? entity.createdBy : userDisplayName(user)}
+          <Elem name="name" tag="span">
+            {isPrediction ? entity.createdBy : userDisplayName(user)}
+          </Elem>
         </Space>
 
         <Space size="small">
-          {(acceptedState === 'accepted') ? (
-            <LsThumbsUp style={{ color: '#2AA000' }}/>
-          ) : acceptedState === 'fixed' ? (
-            <LsThumbsUp style={{ color: '#FA8C16' }}/>
-          ) : acceptedState === 'rejected' ? (
-            <LsThumbsDown style={{ color: "#dd0000" }}/>
-          ) : null}
 
           {date ? (
             <Elem name="date">
@@ -131,12 +119,34 @@ const HistoryItemComponent: FC<any> = ({
           ) : null}
         </Space>
       </Space>
-      {comment && (
-        <Elem name="comment" data-reason={`${reason}: `}>
-          {comment}
+      {reason && (
+        <Elem name="action" tag={Space} size="small">
+          <HistoryIcon type={acceptedState}/>
+          <Elem name="comment" data-reason={`${reason}${comment ? ': ' : ''}`}>
+            {comment}
+          </Elem>
         </Elem>
       )}
     </Block>
+  );
+};
+
+
+const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
+  const icon = useMemo(() => {
+    switch(type) {
+      case 'submit': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
+      case 'update': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
+      // case 'draft-created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
+      case 'accepted': return <IconThumbsUp style={{ color: '#2AA000' }}/>;
+      case 'rejected': return <IconThumbsDown style={{ color: "#dd0000" }}/>;
+      case 'fixed_and_accepted': return <IconThumbsUp style={{ color: '#FA8C16' }}/>;
+      default: return null;
+    }
+  }, [type]);
+
+  return icon && (
+    <Elem name="history-icon">{icon}</Elem>
   );
 };
 
