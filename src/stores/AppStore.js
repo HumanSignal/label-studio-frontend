@@ -462,7 +462,7 @@ export default types
       entity.dropDraft();
     }
 
-    function updateAnnotation() {
+    function updateAnnotation(extraData) {
       if (self.isSubmitting) return;
 
       const entity = self.annotationStore.selected;
@@ -472,7 +472,7 @@ export default types
       if (!entity.validate()) return;
 
       handleSubmittingFlag(async () => {
-        await getEnv(self).events.invoke('updateAnnotation', self, entity);
+        await getEnv(self).events.invoke('updateAnnotation', self, entity, extraData);
       });
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();

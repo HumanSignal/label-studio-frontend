@@ -31,45 +31,43 @@ const controlsInjector = inject(({ store }) => {
   };
 });
 
-const RejectDialog = ({ disabled, store }) => {
+const ActionDialog = ({ buttonProps, prompt, type, action, onAction }) => {
   const [show, setShow] = useState(false);
-  const [comment, setComment] = useState('');
-  const onReject = useCallback(() => {
-    store.rejectAnnotation({ comment: comment.length ? comment : null });
+  const [comment, setComment] = useState("");
+  const onClick = useCallback(() => {
+    onAction({ comment: comment.length ? comment : null });
     setShow(false);
-    setComment('');
+    setComment("");
   });
 
   return (
     <Dropdown.Trigger
       visible={show}
       toggle={() => { }}
-      onToggle={(visible) => {
-        setShow(visible);
-      }}
+      onToggle={setShow}
       content={(
-        <Block name="reject-dialog">
+        <Block name="action-dialog">
           <Elem name="input-title">
-            Reason of Rejection
+            {prompt}
           </Elem>
           <Elem
-            name='input'
-            tag={'textarea'}
+            name="input"
+            tag="textarea"
             type="text"
             value={comment}
             onChange={(event) => { setComment(event.target.value); }}
           />
-          <Elem name='footer' >
+          <Elem name="footer">
             <Button onClick={() => setShow(false)}>Cancel</Button>
-            <Button style={{ marginLeft: 8 }} look="danger" onClick={onReject}>Reject</Button>
-          </Elem >
-        </Block >
+            <Button style={{ marginLeft: 8 }} onClick={onClick} {...buttonProps}>{action}</Button>
+          </Elem>
+        </Block>
       )}
     >
-      <Button aria-label="reject-annotation" disabled={disabled} look="danger">
-        Reject
+      <Button aria-label={`${type}-annotation`} {...buttonProps}>
+        {action}
       </Button>
-    </Dropdown.Trigger >
+    </Dropdown.Trigger>
   );
 };
 
@@ -84,7 +82,15 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
   const RejectButton = useMemo(() => {
     if (isFF(FF_DEV_1593)) {
-      return <RejectDialog disabled={disabled} store={store} />;
+      return (
+        <ActionDialog
+          type="reject"
+          onAction={store.rejectAnnotation}
+          buttonProps={{ disabled, look: "danger" }}
+          prompt="Reason of Rejection"
+          action="Reject"
+        />
+      );
     } else {
       return (
         <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
@@ -147,13 +153,31 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     }
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
-      buttons.push(
-        <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={store.updateAnnotation}>
-            {sentUserGenerate || versions.result ? "Update" : "Submit"}
-          </Button>
-        </ButtonTooltip>,
-      );
+      const isUpdate = sentUserGenerate || versions.result;
+      const withComments = store.hasInterface("comments:update");
+      let button;
+
+      if (withComments && isUpdate) {
+        button = (
+          <ActionDialog
+            type="update"
+            onAction={store.updateAnnotation}
+            buttonProps={{ disabled: disabled || submitDisabled, look: "primary" }}
+            prompt="Comment to Reviewer"
+            action="Update"
+          />
+        );
+      } else {
+        button = (
+          <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
+            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={() => store.updateAnnotation()}>
+              {isUpdate ? "Update" : "Submit"}
+            </Button>
+          </ButtonTooltip>
+        );
+      }
+
+      buttons.push(button);
     }
   }
 
