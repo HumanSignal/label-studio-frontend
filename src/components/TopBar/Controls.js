@@ -154,10 +154,11 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       const isUpdate = sentUserGenerate || versions.result;
+      const isRejected = store.task.queue === "Rejected queue";
       const withComments = store.hasInterface("comments:update");
       let button;
 
-      if (withComments && isUpdate) {
+      if (withComments && isRejected && isUpdate) {
         button = (
           <ActionDialog
             type="update"
