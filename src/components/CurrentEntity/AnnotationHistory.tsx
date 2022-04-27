@@ -50,6 +50,8 @@ const AnnotationHistoryComponent: FC<any> = ({
 }) => {
   return (
     <Block name="annotation-history" mod={{ inline }}>
+      <Elem name="title">Annotation History</Elem>
+
       {history.length > 0 && history.map((item: any) => {
         const { id, user, createdDate } = item;
 
