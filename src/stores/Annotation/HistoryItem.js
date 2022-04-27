@@ -2,10 +2,12 @@ import { types } from "mobx-state-tree";
 import { guidGenerator } from "../../utils/unique";
 import { Annotation } from "./Annotation";
 
-const HistoryTypes = types.enumeration([
-  'import',
-  'submit',
-  'update',
+const HistoryActionTypes = types.enumeration([
+  'prediction',
+  'imported',
+  'submitted',
+  'updated',
+  'skipped',
   'accepted',
   'rejected',
   'fixed_and_accepted',
@@ -20,7 +22,7 @@ export const HistoryItem = types.compose("HistoryItem", Annotation, types.model(
   /**
    * Action associated with the history item
    */
-  actionType: types.optional(types.maybeNull(HistoryTypes), null),
+  actionType: types.optional(types.maybeNull(HistoryActionTypes), null),
 })).preProcessSnapshot(snapshot => {
   return {
     ...snapshot,

@@ -1,14 +1,32 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { FC, useCallback, useMemo } from "react";
-import { IconDraftCreated, IconEntityCreated, IconThumbsDown, IconThumbsUp, LsSparks } from "../../assets/icons";
+import {
+  IconAnnotaionPrediction,
+  IconAnnotationAccepted,
+  IconAnnotationRejected,
+  IconAnnotationSkipped,
+  IconAnnotationSubmitted,
+  IconDraftCreated,
+  LsSparks
+} from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
-import { isDefined, userDisplayName } from "../../utils/utilities";
+import { userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
 
-type HistoryItemType =   'import' | 'submit' | 'update' | 'accepted' | 'rejected' | 'fixed_and_accepted';
+type HistoryItemType = (
+  'prediction' |
+  'imported' |
+  'submitted' |
+  'updated' |
+  'skipped' |
+  'accepted' |
+  'rejected' |
+  'fixed_and_accepted' |
+  'draft_created'
+);
 
 const injector = inject(({ store }) => {
   const as = store.annotationStore;
@@ -78,6 +96,9 @@ const HistoryItemComponent: FC<any> = ({
       case "fixed_and_accepted": return "Fixed";
       case "update": return "Updated";
       case "submit": return "Submitted";
+      case 'prediction': return "From prediction";
+      case 'imported': return "Imported";
+      case 'skipped': return "Skipped";
       case "draft-created": return "Created a draft";
       default: return null;
     }
@@ -135,12 +156,15 @@ const HistoryItemComponent: FC<any> = ({
 const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
   const icon = useMemo(() => {
     switch(type) {
-      case 'submit': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
-      case 'update': return <IconEntityCreated style={{ color: "#0099FF" }}/>;
-      // case 'draft-created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
-      case 'accepted': return <IconThumbsUp style={{ color: '#2AA000' }}/>;
-      case 'rejected': return <IconThumbsDown style={{ color: "#dd0000" }}/>;
-      case 'fixed_and_accepted': return <IconThumbsUp style={{ color: '#FA8C16' }}/>;
+      case 'submitted': return <IconAnnotationSubmitted style={{ color: "#0099FF" }}/>;
+      case 'updated': return <IconAnnotationSubmitted style={{ color: "#0099FF" }}/>;
+      case 'draft_created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
+      case 'accepted': return <IconAnnotationAccepted style={{ color: '#2AA000' }}/>;
+      case 'rejected': return <IconAnnotationRejected style={{ color: "#dd0000" }}/>;
+      case 'fixed_and_accepted': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
+      case 'prediction': return <IconAnnotaionPrediction style={{ color: '#944BFF' }}/>;
+      case 'imported': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
+      case 'skipped': return <IconAnnotationSkipped style={{ color: '#FA8C16' }}/>;
       default: return null;
     }
   }, [type]);
