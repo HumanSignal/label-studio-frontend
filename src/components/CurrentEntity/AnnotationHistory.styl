@@ -23,12 +23,12 @@
 
 .history-item
   margin 0
-  padding 6px 10px
+  padding 8px
   cursor default
   border-radius 5px
 
   &__date
-    opacity 0.4
+    color rgba(#000, 0.6)
 
   &:not(&_disabled)
     cursor pointer
@@ -37,24 +37,39 @@
   &_selected:not(&_disabled)
     background-color #efefef
 
+  &__name,
+  &__date
+    font-size 15px
+
   &_disabled
     opacity 0.6
     border-radius 5px
     background-color #fcfcfc
 
   &__userpic
+    width 24px
+    height 24px
+
     &_prediction
       color #944BFF
       background-color #E9DDF8
       box-shadow inset 0px 0px 0px 1px rgba(148, 75, 255, 0.15)
 
   &__comment
-    padding-left 36px
+    padding-top 2px
     white-space pre-wrap
 
     &::before
-      font-weight bold
       content attr(data-reason)
+
+  &__history-icon
+    width 24px
+    height 24px
+
+  &__action
+    padding-top 6px
+    align-items flex-start
+    grid-template-columns 24px 1fr
 
   &:not(&_inline)
     margin 0 -10px
