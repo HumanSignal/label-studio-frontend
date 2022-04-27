@@ -47,7 +47,6 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
   );
 
   const calculatePosition = useCallback(() => {
-    console.log({ triggerRef });
     const dropdownEl = dropdown.current!;
     const parent = (triggerRef?.current ?? dropdownEl.parentNode) as HTMLElement;
     const { left, top } = alignElements(parent!, dropdownEl, "bottom-left");
@@ -93,7 +92,6 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
     const newState = updatedState ?? !currentVisible;
 
     if (currentVisible !== newState) {
-      console.log("dropdown", currentVisible, newState);
       props.onToggle?.(newState);
       await performAnimation(newState, disableAnimation);
       setVisible(newState);
