@@ -2,8 +2,8 @@ import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { FC, useCallback, useMemo } from "react";
 import {
-  IconAnnotaionPrediction,
   IconAnnotationAccepted,
+  IconAnnotationPrediction,
   IconAnnotationRejected,
   IconAnnotationSkipped,
   IconAnnotationSubmitted,
@@ -164,7 +164,7 @@ const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
       case 'accepted': return <IconAnnotationAccepted style={{ color: '#2AA000' }}/>;
       case 'rejected': return <IconAnnotationRejected style={{ color: "#dd0000" }}/>;
       case 'fixed_and_accepted': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
-      case 'prediction': return <IconAnnotaionPrediction style={{ color: '#944BFF' }}/>;
+      case 'prediction': return <IconAnnotationPrediction style={{ color: '#944BFF' }}/>;
       case 'imported': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
       case 'skipped': return <IconAnnotationSkipped style={{ color: '#FA8C16' }}/>;
       default: return null;
