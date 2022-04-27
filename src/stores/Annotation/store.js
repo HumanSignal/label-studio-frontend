@@ -320,6 +320,8 @@ export default types
         c.deserializeAnnotation(result);
         // reinit will trigger `updateObjects()` so we omit it here
         c.reinitHistory();
+      } else {
+        c.setDefaultValues();
       }
       return c;
     }
