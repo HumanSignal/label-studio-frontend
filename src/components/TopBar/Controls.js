@@ -81,7 +81,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
 
   const RejectButton = useMemo(() => {
-    if (isFF(FF_DEV_1593)) {
+    if (isFF(FF_DEV_1593) && store.hasInterface("comments:reject")) {
       return (
         <ActionDialog
           type="reject"
