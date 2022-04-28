@@ -3,6 +3,7 @@ import { inject, observer } from "mobx-react";
 import { FC, useCallback, useMemo } from "react";
 import {
   IconAnnotationAccepted,
+  IconAnnotationImported,
   IconAnnotationPrediction,
   IconAnnotationRejected,
   IconAnnotationSkipped,
@@ -176,8 +177,8 @@ const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
       case 'rejected': return <IconAnnotationRejected style={{ color: "#dd0000" }}/>;
       case 'fixed_and_accepted': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
       case 'prediction': return <IconAnnotationPrediction style={{ color: '#944BFF' }}/>;
-      case 'imported': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
-      case 'skipped': return <IconAnnotationSkipped style={{ color: '#FA8C16' }}/>;
+      case 'imported': return <IconAnnotationImported style={{ color: '#2AA000' }}/>;
+      case 'skipped': return <IconAnnotationSkipped style={{ color: '#dd0000' }}/>;
       default: return null;
     }
   }, [type]);

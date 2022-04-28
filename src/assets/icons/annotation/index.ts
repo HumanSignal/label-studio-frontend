@@ -4,3 +4,4 @@ export { ReactComponent as IconAnnotationSubmitted } from './entity_created.svg'
 export { ReactComponent as IconDraftCreated } from './draft_created.svg';
 export { ReactComponent as IconAnnotationPrediction } from "./prediction.svg";
 export { ReactComponent as IconAnnotationSkipped } from "./skipped.svg";
+export { ReactComponent as IconAnnotationImported } from "./imported.svg";
