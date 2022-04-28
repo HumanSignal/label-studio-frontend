@@ -429,7 +429,7 @@ const HtxTextAreaResult = observer(({
   collapsed,
 }) => {
   const value = item.mainValue;
-  const editable = item.from_name.editable && !item.area.readonly;
+  const editable = item.editable && item.from_name.editable && !item.area.readonly;
 
   const changeHandler = useCallback((idx, val) => {
     const newValue = value.toJSON();
