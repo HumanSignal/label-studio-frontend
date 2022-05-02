@@ -1,6 +1,7 @@
 import { getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
+import EditorSettings from "../core/settings/editorsettings.json";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
@@ -90,6 +91,10 @@ const SettingsModel = types
           Object.keys(lsp).forEach(k => {
             if (k in self) self[k] = lsp[k];
           });
+      }else{
+        EditorSettings.data.map((obj, index) => {
+          self[obj.checked] = obj.defaultValue;
+        });
       }
 
       // capture changes and save it
