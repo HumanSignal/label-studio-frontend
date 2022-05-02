@@ -104,7 +104,11 @@ export default types
 
       if (!c) return null;
       c.selected = true;
+
+      self.selectedHistory = null;
+      self.history = [];
       self.selected = c;
+
       c.updateObjects();
       if (c.type === "annotation") c.setInitialValues();
 
@@ -123,8 +127,6 @@ export default types
 
       c.editable = true;
       c.setupHotKeys();
-      self.selectedHistory = null;
-      self.history = [];
 
       getEnv(self).events.invoke('selectAnnotation', c, selected);
       if (c.pk) getParent(self).addAnnotationToTaskHistory(c.pk);
