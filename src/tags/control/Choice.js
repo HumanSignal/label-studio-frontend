@@ -6,7 +6,7 @@ import { types } from "mobx-state-tree";
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
-import Tree, { TRAVERSE_STOP } from "../../core/Tree";
+import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
@@ -138,6 +138,7 @@ const Model = types
 
 const ChoiceModel = types.compose("ChoiceModel", TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
+// TODO: remove unused class
 class HtxChoiceView extends Component {
   render() {
     const { item, store } = this.props;
@@ -220,7 +221,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           name="checkbox"
           component={nameWrapper(item.isCheckbox ? Checkbox : Radio, item._value)}
           mod={{ notLeaf: !item.isLeaf }}
-          checked={item.sel}
+          checked={item.selected}
           disabled={item.parent?.readonly}
           onChange={changeHandler}
         >
