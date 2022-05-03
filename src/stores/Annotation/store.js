@@ -12,6 +12,7 @@ import { ViewModel } from "../../tags/visual";
 import { FF_DEV_1621, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
+import { isDefined } from "../../utils/utilities";
 
 const SelectedItem = types.union(Annotation, HistoryItem);
 
@@ -105,7 +106,7 @@ export default types
       if (!c) return null;
       c.selected = true;
 
-      self.selectedHistory = null;
+      self.selectHistory(null);
       self.history = [];
       self.selected = c;
 
@@ -349,7 +350,15 @@ export default types
     }
 
     function selectHistory(item) {
+      console.log({ item, anno: self.selected });
+      if (item) {
+        self.selected?.pauseAutosave();
+      } else {
+        self.selected?.startAutosave();
+      }
+
       self.selectedHistory = item;
+
       setTimeout(() => {
         // update classifications after render
         const updatedItem = item ?? self.selected;

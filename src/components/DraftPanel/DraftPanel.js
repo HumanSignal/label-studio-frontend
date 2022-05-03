@@ -8,6 +8,8 @@ import "./DraftPanel.styl";
 const panel = cn("draft-panel");
 
 export const DraftPanel = observer(({ item }) => {
+  console.log(item);
+
   if (!item.draftSaved && !item.versions.draft) return null;
   const saved = item.draft && item.draftSaved ? ` saved ${Utils.UDate.prettyDate(item.draftSaved)}` : "";
 

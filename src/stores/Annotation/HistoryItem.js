@@ -10,6 +10,7 @@ const HistoryActionTypes = types.enumeration([
   'skipped',
   'accepted',
   'rejected',
+  'draft_created',
   'fixed_and_accepted',
 ]);
 
