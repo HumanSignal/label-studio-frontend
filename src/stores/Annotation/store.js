@@ -350,7 +350,6 @@ export default types
     }
 
     function selectHistory(item) {
-      console.log({ item, anno: self.selected });
       if (item) {
         self.selected?.pauseAutosave();
       } else {

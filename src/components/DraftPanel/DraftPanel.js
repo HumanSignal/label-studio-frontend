@@ -8,9 +8,9 @@ import "./DraftPanel.styl";
 const panel = cn("draft-panel");
 
 export const DraftPanel = observer(({ item }) => {
-  console.log(item);
-
+  if (item.list.selectedHistory) return null;
   if (!item.draftSaved && !item.versions.draft) return null;
+
   const saved = item.draft && item.draftSaved ? ` saved ${Utils.UDate.prettyDate(item.draftSaved)}` : "";
 
   if (!item.selected) {
@@ -20,6 +20,7 @@ export const DraftPanel = observer(({ item }) => {
   if (!item.versions.result || !item.versions.result.length) {
     return <div className={panel}>{saved ? `draft${saved}` : "not submitted draft"}</div>;
   }
+
   return (
     <div className={panel}>
       <Tooltip placement="topLeft" title={item.draftSelected ? "switch to original result" : "switch to current draft"}>
