@@ -442,6 +442,7 @@ export default observer(
       // item.freezeHistory();
       const p = e.target.getParent();
 
+      if (!this.props.item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
       if (
@@ -725,6 +726,8 @@ export default observer(
         suggestedBrush: suggestedBrushRegions,
         suggestedShape: suggestedShapeRegions,
       });
+
+      console.log({ item });
 
       return (
         <ObjectTag
