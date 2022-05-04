@@ -121,7 +121,9 @@ const Result = types
     },
 
     get editable() {
-      return self.readonly === false && self.annotation.editable === true;
+      // readonly can be either boolean or undefined,
+      // so we need to check only for `true` value
+      return self.readonly !== true && self.annotation.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
