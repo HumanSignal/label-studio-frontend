@@ -94,7 +94,7 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", rows = 1, onlyEdit, name, onFocus, ...props } = this.props;
+    const { className = "", rows = 1, onlyEdit, name, onFocus, onChange, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
@@ -105,7 +105,7 @@ export class HtxTextBox extends React.Component {
       ref: this.inputRef,
       value,
       onBlur: isFF(FF_DEV_1566) ? ()=>{
-        this.props.onChange(this.state.value);
+        onChange(this.state.value);
       } : this.save,
       onFocus,
       onChange: e => {
