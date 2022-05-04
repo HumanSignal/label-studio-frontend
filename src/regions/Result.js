@@ -121,9 +121,9 @@ const Result = types
     },
 
     get editable() {
-      // readonly can be either boolean or undefined,
-      // so we need to check only for `true` value
-      return self.readonly !== true && self.annotation.editable === true;
+      // @todo readonly is not defined here, so we have to fix this
+      // @todo and as it's used only in region list view of textarea get rid of this getter
+      return !self.readonly && self.annotation.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
