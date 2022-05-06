@@ -193,7 +193,10 @@ const HistoryComment: FC<{
       </Elem>
 
       {collapsible && (
-        <Elem name="collapse-comment" mod={{ collapsed }} onClick={() => setCollapsed((v) => !v)}>
+        <Elem name="collapse-comment" mod={{ collapsed }} onClick={(e: MouseEvent) => {
+          e.stopPropagation();
+          setCollapsed((v) => !v);
+        }}>
           {collapsed ? "Show more" : "Show less"}
         </Elem>
       )}
