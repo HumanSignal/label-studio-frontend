@@ -16,7 +16,7 @@ export const CurrentEntity = injector(observer(({
     const copyToClipboard = (ev) => {
       const { clipboardData } = ev;
       const results = entity.serializedSelection;
-
+      
       clipboardData.setData('application/json', JSON.stringify(results));
       ev.preventDefault();
 
@@ -37,8 +37,9 @@ export const CurrentEntity = injector(observer(({
 
     const copyHandler = (ev) =>{
       const selection = window.getSelection();
+      const exceptionList = ['input', 'textarea'];
 
-      if (!selection.isCollapsed) return;
+      if (!selection.isCollapsed || exceptionList.includes( ev.target.tagName.toLowerCase())) return;
 
       copyToClipboard(ev);
     };
