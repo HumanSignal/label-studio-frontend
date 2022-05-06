@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
-import { FC, useCallback, useMemo } from "react";
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   IconAnnotationAccepted,
   IconAnnotationImported,
@@ -154,18 +154,52 @@ const HistoryItemComponent: FC<{
           ) : null}
         </Space>
       </Space>
-      {reason && (
+      {(reason || comment) && (
         <Elem name="action" tag={Space} size="small">
-          <HistoryIcon type={acceptedState}/>
-          <Elem name="comment" data-reason={`${reason}${comment ? ': ' : ''}`}>
-            {comment}
-          </Elem>
+          {acceptedState && <HistoryIcon type={acceptedState}/>}
+          <HistoryComment comment={comment} reason={reason}/>
         </Elem>
       )}
     </Block>
   );
 };
 
+const HistoryComment: FC<{
+  reason: string | null,
+  comment: string,
+}> = ({ reason, comment }) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const [collapsible, setCollapsible] = useState(false);
+  const commentRef = useRef();
+
+  useLayoutEffect(() => {
+    if (commentRef.current) {
+      const { clientHeight } = commentRef.current;
+      const heightExceeded = clientHeight > 66;
+
+      setCollapsible(heightExceeded);
+      setCollapsed(heightExceeded);
+    }
+  }, []);
+
+  return (
+    <Elem
+      name="comment"
+      ref={commentRef}
+      mod={{ collapsed }}
+    >
+      <Elem name="comment-content" data-reason={`${reason}${comment ? ': ' : ''}`}>
+        {comment}
+      </Elem>
+
+      {collapsible && (
+        <Elem name="collapse-comment" mod={{ collapsed }} onClick={() => setCollapsed((v) => !v)}>
+          {collapsed ? "Show more" : "Show less"}
+        </Elem>
+      )}
+    </Elem>
+  );
+};
 
 const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
   const icon = useMemo(() => {
