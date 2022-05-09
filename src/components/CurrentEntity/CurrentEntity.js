@@ -1,6 +1,6 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { Block } from "../../utils/bem";
+import { Block, Elem } from "../../utils/bem";
 import { AnnotationHistory } from "./AnnotationHistory.tsx";
 import "./CurrentEntity.styl";
 import { DraftPanel } from "../DraftPanel/DraftPanel";
@@ -103,8 +103,12 @@ export const CurrentEntity = injector(observer(({
 
       <DraftPanel item={entity} />
 
-      {showHistory && !entity.userGenerate && (
-        <AnnotationHistory/>
+      {/* {showHistory && !entity.userGenerate && ( */}
+      {showHistory && (
+        <>
+          <Elem name="title">Annotation History</Elem>
+          <AnnotationHistory/>
+        </>
       )}
     </Block>
   ) : null;
