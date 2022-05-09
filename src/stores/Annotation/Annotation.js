@@ -177,7 +177,7 @@ export const Annotation = types
 
     get onlyTextObjects() {
       return self.objects.reduce((res, obj) => {
-        return res && ['text', 'hypertext'].includes(obj.type);
+        return res && ['text', 'hypertext', 'paragraphs'].includes(obj.type);
       }, true);
     },
   }))
@@ -834,7 +834,7 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          if (['richtextregion', 'text'].includes(suggestion.type)) {
+          if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
             self.acceptSuggestion(suggestion.id);
           }
         });
