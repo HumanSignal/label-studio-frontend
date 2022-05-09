@@ -727,8 +727,6 @@ export default observer(
         suggestedShape: suggestedShapeRegions,
       });
 
-      console.log({ item });
-
       return (
         <ObjectTag
           item={item}
