@@ -442,6 +442,7 @@ export default observer(
       // item.freezeHistory();
       const p = e.target.getParent();
 
+      if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
       if (
@@ -457,7 +458,7 @@ export default observer(
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
-        const { left, top } = this.props.item.containerRef.getBoundingClientRect();
+        const { left, top } = item.containerRef.getBoundingClientRect();
 
         this.canvasX = left;
         this.canvasY = top;
