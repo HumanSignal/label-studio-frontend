@@ -43,15 +43,38 @@ const injector = inject(({ store }) => {
   };
 });
 
+const DraftState: FC<any> = observer(({ annotation, history }) => {
+  const hasChanges = history?.length > 1;
+
+  if (!hasChanges && !annotation.draftSelected) return null;
+
+  return (
+    <HistoryItem
+      key="draft"
+      user={annotation.user ?? { email: annotation.createdBy }}
+      date={annotation.createdDate}
+      comment=""
+      acceptedState="draft_created"
+      selected={annotation.draftSelected}
+      onClick={() => {
+        annotation.toggleDraft();
+      }}
+    />
+  );
+});
+
 const AnnotationHistoryComponent: FC<any> = ({
   annotationStore,
   selectedHistory,
   history,
   inline = false,
 }) => {
+  const annotation = annotationStore.selected;
+  const hist = annotation.history.history;
+
   return (
     <Block name="annotation-history" mod={{ inline }}>
-      <Elem name="title">Annotation History</Elem>
+      <DraftState annotation={annotation} history={hist} />
 
       {history.length > 0 && history.map((item: any) => {
         const { id, user, createdDate } = item;
