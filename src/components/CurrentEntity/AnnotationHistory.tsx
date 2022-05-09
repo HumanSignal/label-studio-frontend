@@ -3,6 +3,7 @@ import { inject, observer } from "mobx-react";
 import { FC, useCallback, useMemo } from "react";
 import {
   IconAnnotationAccepted,
+  IconAnnotationImported,
   IconAnnotationPrediction,
   IconAnnotationRejected,
   IconAnnotationSkipped,
@@ -77,7 +78,18 @@ const AnnotationHistoryComponent: FC<any> = ({
   );
 };
 
-const HistoryItemComponent: FC<any> = ({
+const HistoryItemComponent: FC<{
+  entity?: any,
+  user: any,
+  date: string | number,
+  extra?: any,
+  comment: string,
+  acceptedState: HistoryItemType,
+  selected?: boolean,
+  disabled?: boolean,
+  inline?: boolean,
+  onClick: any,
+}> = ({
   entity,
   user,
   date,
@@ -96,12 +108,12 @@ const HistoryItemComponent: FC<any> = ({
       case "accepted": return "Accepted";
       case "rejected": return "Rejected";
       case "fixed_and_accepted": return "Fixed";
-      case "update": return "Updated";
-      case "submit": return "Submitted";
+      case "updated": return "Updated";
+      case "submitted": return "Submitted";
       case 'prediction': return "From prediction";
       case 'imported': return "Imported";
       case 'skipped': return "Skipped";
-      case "draft-created": return "Created a draft";
+      case "draft_created": return "Created a draft";
       default: return null;
     }
   }, []);
@@ -165,8 +177,8 @@ const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
       case 'rejected': return <IconAnnotationRejected style={{ color: "#dd0000" }}/>;
       case 'fixed_and_accepted': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
       case 'prediction': return <IconAnnotationPrediction style={{ color: '#944BFF' }}/>;
-      case 'imported': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
-      case 'skipped': return <IconAnnotationSkipped style={{ color: '#FA8C16' }}/>;
+      case 'imported': return <IconAnnotationImported style={{ color: '#2AA000' }}/>;
+      case 'skipped': return <IconAnnotationSkipped style={{ color: '#dd0000' }}/>;
       default: return null;
     }
   }, [type]);

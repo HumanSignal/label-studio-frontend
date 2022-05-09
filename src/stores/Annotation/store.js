@@ -104,7 +104,11 @@ export default types
 
       if (!c) return null;
       c.selected = true;
+
+      self.selectedHistory = null;
+      self.history = [];
       self.selected = c;
+
       c.updateObjects();
       if (c.type === "annotation") c.setInitialValues();
 
