@@ -44,7 +44,7 @@ const injector = inject(({ store }) => {
 });
 
 const DraftState: FC<any> = observer(({ annotation, history }) => {
-  const hasChanges = history?.length > 1;
+  const hasChanges = annotation.history.hasChanges;
 
   if (!hasChanges && !annotation.draftSelected) return null;
 
@@ -57,7 +57,7 @@ const DraftState: FC<any> = observer(({ annotation, history }) => {
       acceptedState="draft_created"
       selected={annotation.draftSelected}
       onClick={() => {
-        annotation.toggleDraft();
+        !annotation.draftSelected && annotation.toggleDraft();
       }}
     />
   );
@@ -71,6 +71,7 @@ const AnnotationHistoryComponent: FC<any> = ({
 }) => {
   const annotation = annotationStore.selected;
   const hist = annotation.history.history;
+  const lastItem = history[0];
 
   return (
     <Block name="annotation-history" mod={{ inline }}>
@@ -78,8 +79,10 @@ const AnnotationHistoryComponent: FC<any> = ({
 
       {history.length > 0 && history.map((item: any) => {
         const { id, user, createdDate } = item;
-
-        const selected = selectedHistory?.id === item.id;
+        const isLastItem = lastItem?.id === item.id;
+        const isSelected = isLastItem && !selectedHistory
+          ? !annotation.draftSelected
+          : selectedHistory?.id === item.id;
 
         return (
           <HistoryItem
@@ -89,10 +92,12 @@ const AnnotationHistoryComponent: FC<any> = ({
             date={createdDate}
             comment={item.comment}
             acceptedState={item.actionType}
-            selected={selected}
+            selected={isSelected}
             disabled={item.results.length === 0}
             onClick={() => {
-              annotationStore.selectHistory(selected ? null : item);
+              if (isSelected) return;
+              if (isLastItem) annotation.toggleDraft();
+              else annotationStore.selectHistory(item);
             }}
           />
         );
