@@ -14,6 +14,7 @@ import {
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
+import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
 import { userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
 
@@ -79,12 +80,14 @@ const AnnotationHistoryComponent: FC<any> = ({
 
   return (
     <Block name="annotation-history" mod={{ inline }}>
-      <DraftState annotation={annotation} isSelected={isDraftSelected} />
+      {isFF(FF_DEV_2290) && (
+        <DraftState annotation={annotation} isSelected={isDraftSelected} />
+      )}
 
       {history.length > 0 && history.map((item: any) => {
         const { id, user, createdDate } = item;
         const isLastItem = lastItem?.id === item.id;
-        const isSelected = isLastItem && !selectedHistory
+        const isSelected = isLastItem && !selectedHistory && isFF(FF_DEV_2290)
           ? !isDraftSelected
           : selectedHistory?.id === item.id;
 
@@ -99,6 +102,11 @@ const AnnotationHistoryComponent: FC<any> = ({
             selected={isSelected}
             disabled={item.results.length === 0}
             onClick={() => {
+              if (!isFF(FF_DEV_2290)) {
+                annotationStore.selectHistory(isSelected ? null : item);
+                return;
+              }
+
               if (isSelected) return;
               if (isLastItem) annotation.toggleDraft(false);
 

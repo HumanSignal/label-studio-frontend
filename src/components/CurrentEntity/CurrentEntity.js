@@ -4,6 +4,7 @@ import { Block, Elem } from "../../utils/bem";
 import { AnnotationHistory } from "./AnnotationHistory.tsx";
 import "./CurrentEntity.styl";
 import { DraftPanel } from "../DraftPanel/DraftPanel";
+import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
 
 const injector = inject('store');
 
@@ -101,7 +102,9 @@ export const CurrentEntity = injector(observer(({
       {/* </Space>
       </Elem> */}
 
-      <DraftPanel item={entity} />
+      {!isFF(FF_DEV_2290) && (
+        <DraftPanel item={entity} />
+      )}
 
       {/* {showHistory && !entity.userGenerate && ( */}
       {showHistory && (
