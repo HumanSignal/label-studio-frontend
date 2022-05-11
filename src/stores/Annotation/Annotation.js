@@ -479,21 +479,29 @@ export const Annotation = types
       if (versions.draft) self.setDraftSelected();
     },
 
-    toggleDraft() {
+    toggleDraft(explicitValue) {
       const isDraft = self.draftSelected;
+      const shouldSelectDraft = explicitValue ?? !isDraft;
 
-      if (!isDraft && !self.versions.draft) return;
+      // if explicitValue already achieved
+      if (shouldSelectDraft === isDraft) return;
+      // if there are no draft to switch to
+      if (shouldSelectDraft && !self.versions.draft) return;
+
+      // if there were some changes waiting they'll be saved
       self.autosave.flush();
       self.pauseAutosave();
-      if (isDraft) self.versions.draft = self.serializeAnnotation({ fast: true });
+
+      // reinit annotation from required state
       self.deleteAllRegions({ deleteReadOnly: true });
-      if (isDraft) {
-        self.deserializeResults(self.versions.result);
-        self.draftSelected = false;
-      } else {
+      if (shouldSelectDraft) {
         self.deserializeResults(self.versions.draft);
-        self.draftSelected = true;
+      } else {
+        self.deserializeResults(self.versions.result);
       }
+      self.draftSelected = shouldSelectDraft;
+
+      // reinit objects
       self.updateObjects();
       self.startAutosave();
     },

@@ -43,8 +43,9 @@ const injector = inject(({ store }) => {
   };
 });
 
-const DraftState: FC<any> = observer(({ annotation, history }) => {
+const DraftState: FC<any> = observer(({ annotation, isSelected }) => {
   const hasChanges = annotation.history.hasChanges;
+  const store = annotation.list; // @todo weird name
 
   if (!hasChanges && !annotation.draftSelected) return null;
 
@@ -55,9 +56,10 @@ const DraftState: FC<any> = observer(({ annotation, history }) => {
       date={annotation.createdDate}
       comment=""
       acceptedState="draft_created"
-      selected={annotation.draftSelected}
+      selected={isSelected}
       onClick={() => {
-        !annotation.draftSelected && annotation.toggleDraft();
+        store.selectHistory(null);
+        annotation.toggleDraft(true);
       }}
     />
   );
@@ -70,18 +72,20 @@ const AnnotationHistoryComponent: FC<any> = ({
   inline = false,
 }) => {
   const annotation = annotationStore.selected;
-  const hist = annotation.history.history;
   const lastItem = history[0];
+  const hasChanges = annotation.history.hasChanges;
+  // if user makes changes at the first time there are no draft yet
+  const isDraftSelected = !annotationStore.selectedHistory && (annotation.draftSelected || (!annotation.versions.draft && hasChanges));
 
   return (
     <Block name="annotation-history" mod={{ inline }}>
-      <DraftState annotation={annotation} history={hist} />
+      <DraftState annotation={annotation} isSelected={isDraftSelected} />
 
       {history.length > 0 && history.map((item: any) => {
         const { id, user, createdDate } = item;
         const isLastItem = lastItem?.id === item.id;
         const isSelected = isLastItem && !selectedHistory
-          ? !annotation.draftSelected
+          ? !isDraftSelected
           : selectedHistory?.id === item.id;
 
         return (
@@ -96,8 +100,9 @@ const AnnotationHistoryComponent: FC<any> = ({
             disabled={item.results.length === 0}
             onClick={() => {
               if (isSelected) return;
-              if (isLastItem) annotation.toggleDraft();
-              else annotationStore.selectHistory(item);
+              if (isLastItem) annotation.toggleDraft(false);
+
+              annotationStore.selectHistory(isLastItem ? null : item);
             }}
           />
         );
