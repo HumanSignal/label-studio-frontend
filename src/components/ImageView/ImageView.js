@@ -429,6 +429,9 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
+
+      if (!item.annotation.editable) return;
+
       const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
