@@ -46,7 +46,7 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
  * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
  * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
- * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
+ * @param {boolean} [rotateControl=true]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
  */
 const TagAttrs = types.model({
@@ -72,7 +72,7 @@ const TagAttrs = types.model({
   zoomcontrol: types.optional(types.boolean, true),
   brightnesscontrol: types.optional(types.boolean, false),
   contrastcontrol: types.optional(types.boolean, false),
-  rotatecontrol: types.optional(types.boolean, false),
+  rotatecontrol: types.optional(types.boolean, true),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
 });
