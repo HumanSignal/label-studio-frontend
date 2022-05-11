@@ -288,7 +288,7 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
   );
 });
 
-const SelectionLayer = observer(({ item, selectionArea }) => {
+const SelectionLayer = observer(({ item, selectionArea, isPanning }) => {
   const scale = 1 / (item.zoomScale || 1);
 
   let supportsTransform = true;
@@ -310,26 +310,28 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       ) : (!supportsTransform && item.selectedRegions.length > 1 ? (
         <SelectionBorders item={item} selectionArea={selectionArea} />
       ) : null)}
-
-      <ImageTransformer
-        item={item}
-        rotateEnabled={supportsRotate}
-        supportsTransform={supportsTransform}
-        supportsScale={supportsScale}
-        selectedShapes={item.selectedRegions}
-        singleNodeMode={item.selectedRegions.length === 1}
-        useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
-        draggableBackgroundSelector={`#${TRANSFORMER_BACK_ID}`}
-      />
+      {!isPanning && (
+        <ImageTransformer
+          item={item}
+          rotateEnabled={supportsRotate}
+          supportsTransform={supportsTransform}
+          supportsScale={supportsScale}
+          selectedShapes={item.selectedRegions}
+          singleNodeMode={item.selectedRegions.length === 1}
+          useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
+          draggableBackgroundSelector={`#${TRANSFORMER_BACK_ID}`}
+        />
+      )}
     </Layer>
   );
 });
 
-const Selection = observer(({ item, selectionArea }) => {
+const Selection = observer(({ item, selectionArea, isPanning }) => {
+
   return (
     <>
       <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
-      <SelectionLayer item={item} selectionArea={selectionArea} />
+      <SelectionLayer item={item} selectionArea={selectionArea} isPanning={isPanning}/>
     </>
   );
 });
@@ -422,10 +424,31 @@ export default observer(
     state = {
       imgStyle: {},
       pointer: [0, 0],
+      isPanning: false,
     };
 
     imageRef = createRef();
     crosshairRef = createRef();
+
+    handleDragStart = (e) => {
+      const { item } = this.props;
+      const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+      const isMouseWheelClick = e.evt && e.evt.buttons === 4;
+      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+
+      if ((isMouseWheelClick || isShiftDrag || isPanTool) && item.zoomScale > 1) {
+        this.setState({
+          ...this.state, isPanning: true,
+        });
+      }
+    }
+    handleDragEnd = () => {
+      const { item } = this.props;
+
+      this.setState({
+        ...this.state, isPanning: false,
+      });
+    }
 
     handleOnClick = e => {
       const { item } = this.props;
@@ -688,6 +711,7 @@ export default observer(
     }
 
     render() {
+
       const { item, store } = this.props;
 
       // @todo stupid but required check for `resetState()`
@@ -793,6 +817,8 @@ export default observer(
               offsetY={item.stageTranslate.y}
               rotation={item.rotation}
               onClick={this.handleOnClick}
+              onDragStart={this.handleDragStart}
+              onDragEnd={this.handleDragEnd}
               onMouseEnter={() => {
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(true);
@@ -832,8 +858,7 @@ export default observer(
                   />
                 ) : <Fragment key={groupName} />;
               })}
-
-              <Selection item={item} selectionArea={item.selectionArea} />
+              <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
               <DrawingRegion item={item} />
 
               {item.crosshair && (
