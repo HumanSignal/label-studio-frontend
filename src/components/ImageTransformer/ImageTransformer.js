@@ -183,6 +183,7 @@ export default class TransformerComponent extends Component {
           boundBoxFunc={this.constrainSizes}
           anchorSize={8}
           flipEnabled={false}
+          zoomedIn={this.props.item.zoomScale > 1}
           onDragStart={e => {
             const { item: { selectedRegionsBBox } } = this.props;
 

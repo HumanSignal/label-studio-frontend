@@ -85,7 +85,9 @@ const _Tool = types
     return {
       handleToolSwitch() {
         if (self.getCurrentArea()?.isDrawing) {
-          if (self.getCurrentArea().canClose()) self.finishDrawing();
+          const shape = self.getCurrentArea()?.toJSON();
+
+          if (shape?.points?.length > 2) self.finishDrawing();
           else self.cleanupUncloseableShape();
         }
       },

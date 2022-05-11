@@ -17,6 +17,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { rotateBboxCoords } from "../utils/bboxCoords";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { EditableRegion } from "./EditableRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -67,6 +68,14 @@ const Model = types
 
     _supportsTransform: true,
     hideable: true,
+
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+      { property: "radiusX", label: "Rx" },
+      { property: "radiusY", label: "Ry" },
+      { property: "rotation", label: "icon:angle" },
+    ],
   }))
   .volatile(() => {
     return {
@@ -258,6 +267,7 @@ const EllipseRegionModel = types.compose(
   NormalizationMixin,
   DisabledMixin,
   KonvaRegionMixin,
+  EditableRegion,
   Model,
 );
 

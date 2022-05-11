@@ -112,13 +112,15 @@ const Result = types
     get hasValue() {
       const value = self.mainValue;
 
-      if (!value) return false;
+      if (!isDefined(value)) return false;
       if (Array.isArray(value)) return value.length > 0;
       return true;
     },
 
     get editable() {
-      return self.readonly === false && self.annotation.editable === true;
+      // @todo readonly is not defined here, so we have to fix this
+      // @todo and as it's used only in region list view of textarea get rid of this getter
+      return !self.readonly && self.annotation.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
