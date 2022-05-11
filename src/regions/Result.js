@@ -3,7 +3,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { isDefined } from "../utils/utilities";
-import { FF_DEV_1372, isFF } from "../utils/feature-flags";
+import { FF_DEV_1372, FF_DEV_2007, isFF } from "../utils/feature-flags";
 
 const Result = types
   .model("Result", {
@@ -59,7 +59,10 @@ const Result = types
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
-      choices: types.maybe(types.array(types.string)),
+      ...(isFF(FF_DEV_2007)
+        ? { choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))) }
+        : { choices: types.maybe(types.array(types.string)) }
+      ),
       // pairwise
       selected: types.maybe(types.enumeration(["left", "right"])),
       // @todo all other *labels
@@ -120,7 +123,7 @@ const Result = types
     get editable() {
       // @todo readonly is not defined here, so we have to fix this
       // @todo and as it's used only in region list view of textarea get rid of this getter
-      return !self.readonly && self.annotation.editable === true;
+      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
@@ -282,6 +285,8 @@ const Result = types
       }
 
       if (typeof score === "number") data.score = score;
+
+      if (!self.editable) data.readonly = true;
 
       return data;
     },
