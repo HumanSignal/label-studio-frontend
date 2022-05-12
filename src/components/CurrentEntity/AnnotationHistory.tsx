@@ -44,7 +44,11 @@ const injector = inject(({ store }) => {
   };
 });
 
-const DraftState: FC<any> = observer(({ annotation, isSelected }) => {
+const DraftState: FC<{
+  annotation: any,
+  inline?: boolean,
+  isSelected?: boolean,
+}> = observer(({ annotation, inline, isSelected }) => {
   const hasChanges = annotation.history.hasChanges;
   const store = annotation.list; // @todo weird name
 
@@ -55,6 +59,7 @@ const DraftState: FC<any> = observer(({ annotation, isSelected }) => {
       key="draft"
       user={annotation.user ?? { email: annotation.createdBy }}
       date={annotation.createdDate}
+      inline={inline}
       comment=""
       acceptedState="draft_created"
       selected={isSelected}
@@ -81,7 +86,7 @@ const AnnotationHistoryComponent: FC<any> = ({
   return (
     <Block name="annotation-history" mod={{ inline }}>
       {isFF(FF_DEV_2290) && (
-        <DraftState annotation={annotation} isSelected={isDraftSelected} />
+        <DraftState annotation={annotation} isSelected={isDraftSelected} inline={inline} />
       )}
 
       {history.length > 0 && history.map((item: any) => {

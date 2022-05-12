@@ -1,10 +1,10 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
 import { Block, Elem } from "../../utils/bem";
+import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
+import { DraftPanel } from "../DraftPanel/DraftPanel";
 import { AnnotationHistory } from "./AnnotationHistory.tsx";
 import "./CurrentEntity.styl";
-import { DraftPanel } from "../DraftPanel/DraftPanel";
-import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
 
 const injector = inject('store');
 
