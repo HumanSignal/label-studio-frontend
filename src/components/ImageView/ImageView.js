@@ -760,10 +760,7 @@ export default observer(
             />
             <div
               className={styles.frame}
-              style={{
-                width: item.stageComponentSize.width,
-                height: item.stageComponentSize.height,
-              }}
+              style={item.canvasSize}
             >
               <img
                 ref={ref => {
@@ -786,10 +783,10 @@ export default observer(
               }}
               style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
-              width={item.stageComponentSize.width}
-              height={item.stageComponentSize.height}
-              scaleX={item.stageScale}
-              scaleY={item.stageScale}
+              width={item.canvasSize.width}
+              height={item.canvasSize.height}
+              scaleX={item.zoomScale}
+              scaleY={item.zoomScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               offsetX={item.stageTranslate.x}
