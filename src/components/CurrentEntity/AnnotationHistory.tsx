@@ -175,6 +175,7 @@ const HistoryComment: FC<{
   useLayoutEffect(() => {
     if (commentRef.current) {
       const { clientHeight } = commentRef.current;
+      // 3 lines of text 22px height each
       const heightExceeded = clientHeight > 66;
 
       setCollapsible(heightExceeded);
