@@ -134,7 +134,9 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
+  console.log('julio params', params);
   const options = {
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
     onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,

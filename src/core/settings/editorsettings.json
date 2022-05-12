@@ -1,53 +1,43 @@
 {
-  "data": [
-    {
+    "enableHotkeys": {
       "description": "Enable labeling hotkeys",
       "onChangeEvent": "toggleHotkeys",
-      "checked": "enableHotkeys",
       "defaultValue": true
     },
-    {
+    "enableTooltips": {
       "description": "Show hotkey tooltips",
       "onChangeEvent": "toggleTooltips",
-      "checked": "enableTooltips",
+      "checked": "",
       "defaultValue": false
     },
-    {
+    "enableLabelTooltips":{
       "description": "Show labels hotkey tooltips",
       "onChangeEvent": "toggleLabelTooltips",
-      "checked": "enableLabelTooltips",
       "defaultValue": true
     },
-    {
+    "showLabels": {
       "description": "Show labels inside the regions",
       "onChangeEvent": "toggleShowLabels",
-      "checked": "showLabels",
       "defaultValue": false
     },
-    {
+    "continuousLabeling": {
       "description": "Keep label selected after creating a region",
       "onChangeEvent": "toggleContinuousLabeling",
-      "checked": "continuousLabeling",
       "defaultValue": false
     },
-    {
+    "selectAfterCreate": {
       "description": "Select regions after creating",
       "onChangeEvent": "toggleSelectAfterCreate",
-      "checked": "selectAfterCreate",
       "defaultValue": false
     },
-    {
+    "showLineNumbers": {
       "description": "Show line numbers for Text",
       "onChangeEvent": "toggleShowLineNumbers",
-      "checked": "showLineNumbers",
       "defaultValue": false
     },
-    {
+    "preserveSelectedTool": {
       "description": "Remember Selected Tool",
       "onChangeEvent": "togglepreserveSelectedTool",
-      "checked": "preserveSelectedTool",
       "defaultValue": true
     }
-
-  ]
 }

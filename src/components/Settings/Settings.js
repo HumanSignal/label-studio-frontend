@@ -9,6 +9,7 @@ import { Block, Elem } from "../../utils/bem";
 import { triggerResizeEvent } from "../../utils/utilities";
 
 import EditorSettings from "../../core/settings/editorsettings.json";
+import { getEnv, getRoot } from "mobx-state-tree";
 
 const HotkeysDescription = () => {
   const columns = [
@@ -51,16 +52,20 @@ const HotkeysDescription = () => {
   );
 };
 
-const TabPaneGeneral = (settings) => {
-  return EditorSettings.data.map((obj, index) => {
+
+
+const TabPaneGeneral = (store) => {
+  const env = getEnv(getRoot(store));
+
+  return Object.keys(EditorSettings).map((obj, index)=> {
     return (
       <span key={index}>
         <Checkbox
           key={index}
-          checked={settings[obj.checked]}
-          onChange={settings[obj.onChangeEvent]}
+          checked={store.settings[obj]}
+          onChange={store.settings[EditorSettings[obj].onChangeEvent]}
         >
-          {obj.description}
+          {EditorSettings[obj].description}
         </Checkbox>
         <br />
       </span>
@@ -79,7 +84,7 @@ export default observer(({ store }) => {
     >
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="General" key="1">
-          {TabPaneGeneral(store.settings)}
+          {TabPaneGeneral(store)}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Hotkeys" key="2">
           <HotkeysDescription />

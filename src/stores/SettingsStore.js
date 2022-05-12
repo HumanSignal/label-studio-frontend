@@ -1,4 +1,4 @@
-import { getRoot, onSnapshot, types } from "mobx-state-tree";
+import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 import EditorSettings from "../core/settings/editorsettings.json";
@@ -91,9 +91,15 @@ const SettingsModel = types
           Object.keys(lsp).forEach(k => {
             if (k in self) self[k] = lsp[k];
           });
-      }else{
-        EditorSettings.data.map((obj, index) => {
-          self[obj.checked] = obj.defaultValue;
+      } else {
+        const env = getEnv(self);
+
+        Object.keys(EditorSettings).map((obj, index) => {
+          if( typeof env.settings[obj] === 'boolean'){
+            self[obj] = env.settings[obj];
+          }else{
+            self[obj] = EditorSettings[obj].defaultValue;
+          }
         });
       }
 
