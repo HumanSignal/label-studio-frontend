@@ -1,4 +1,4 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useRef, useState } from "react";
+import React, { Component, createRef, forwardRef, Fragment, memo, useContext, useRef, useState } from "react";
 import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
@@ -288,7 +288,10 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
   );
 });
 
-const SelectionLayer = observer(({ item, selectionArea, isPanning }) => {
+const SelectionLayer = observer(({ item, selectionArea }) => {
+
+  const isPanning = useContext(PanningContext);
+
   const scale = 1 / (item.zoomScale || 1);
 
   let supportsTransform = true;
@@ -302,7 +305,6 @@ const SelectionLayer = observer(({ item, selectionArea, isPanning }) => {
   });
 
   supportsTransform = supportsTransform && (item.selectedRegions.length > 1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
-
   return (
     <Layer scaleX={scale} scaleY={scale}>
       {selectionArea.isActive ? (
@@ -326,12 +328,12 @@ const SelectionLayer = observer(({ item, selectionArea, isPanning }) => {
   );
 });
 
-const Selection = observer(({ item, selectionArea, isPanning }) => {
+const Selection = observer(({ item, selectionArea }) => {
 
   return (
     <>
       <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
-      <SelectionLayer item={item} selectionArea={selectionArea} isPanning={isPanning}/>
+      <SelectionLayer item={item} selectionArea={selectionArea}/>
     </>
   );
 });
@@ -414,6 +416,10 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
   );
 }));
 
+
+
+const PanningContext = React.createContext();
+
 export default observer(
   class ImageView extends Component {
     // stored position of canvas before creating region
@@ -443,8 +449,6 @@ export default observer(
       }
     }
     handleDragEnd = () => {
-      const { item } = this.props;
-
       this.setState({
         ...this.state, isPanning: false,
       });
@@ -858,7 +862,9 @@ export default observer(
                   />
                 ) : <Fragment key={groupName} />;
               })}
-              <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+              <PanningContext.Provider value={this.state.isPanning}>
+                <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+              </PanningContext.Provider>
               <DrawingRegion item={item} />
 
               {item.crosshair && (
