@@ -17,6 +17,7 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
 import ToolsManager from "../../tools/Manager";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
+import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
 
 /**
  * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
@@ -61,6 +62,7 @@ const TagAttrs = types.model({
   granularity: types.maybeNull(types.enumeration(["symbol", "word", "sentence", "paragraph"])),
   groupcancontain: types.maybeNull(types.string),
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
+  ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {} ),
 });
 
 const Model = types.model({
@@ -260,7 +262,7 @@ const HtxLabelView = inject("store")(
         item.toggleSelected();
         return false;
       }}>
-        {item._value}
+        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}

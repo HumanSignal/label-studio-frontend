@@ -6,6 +6,7 @@ import WithStatesMixin from "../mixins/WithStates";
 import Registry from "../core/Registry";
 import { AreaMixin } from "../mixins/AreaMixin";
 import { interpolateProp, onlyProps, VideoRegion } from "./VideoRegion";
+import { findClosestKeypoint } from "../components/Timeline/Views/Frames/Utils";
 
 const Model = types
   .model("VideoRectangleRegionModel", {
@@ -46,21 +47,27 @@ const Model = types
   .actions(self => ({
     updateShape(data, frame) {
       const newItem = {
+        ...data,
         frame,
         enabled: true,
-        rotation: 0,
-        ...data,
       };
+
+      const kp = self.closestKeypoint(frame);
       const index = self.sequence.findIndex(item => item.frame >= frame);
 
       if (index < 0) {
         self.sequence = [...self.sequence, newItem];
       } else {
-        const keypoint = self.sequence[index];
+        const keypoint = {
+          ...(self.sequence[index] ?? {}),
+          ...data,
+          enabled: kp?.enabled ?? true,
+          frame,
+        };
 
         self.sequence = [
           ...self.sequence.slice(0, index),
-          ({ ...keypoint, ...newItem }),
+          keypoint,
           ...self.sequence.slice(index + (self.sequence[index].frame === frame)),
         ];
       }

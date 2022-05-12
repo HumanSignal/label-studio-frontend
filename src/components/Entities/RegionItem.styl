@@ -54,6 +54,7 @@
     border-top: 1px solid #e5e5e5;
     border-bottom-left-radius 5px
     border-bottom-right-radius 5px
+    min-height 36px
 
     ~/_hidden &
       background: #fff;;
@@ -73,6 +74,9 @@
     right: 8px
     opacity 0.25
     padding: 0
+
+  &__controls:empty + &__collapse
+    display none
 
   &__id
     width 16px

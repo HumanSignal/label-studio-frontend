@@ -1,0 +1,69 @@
+.detailed-region
+  &__icon
+    width 24px
+    height 24px
+    margin-right 8px
+
+  &__head
+    height 32px
+    display flex
+    margin 8px 0
+    padding 0 8px
+    align-items center
+    justify-content space-between
+
+    span
+      color #000
+
+      &:before
+        opacity 0.6
+        content "ID "
+
+  &__title
+    display flex
+    align-items center
+
+  &__result
+    padding 0 8px
+
+  &__meta-text
+    width calc(100% - 16px)
+    border 1px solid transparent
+    margin 0 8px
+    padding 4px 8px
+    min-height 64px
+    border-radius 4px
+    outline none
+    background-color rgba(#000, 0.05)
+    transition-property background-color, border-color
+    transition-duration 80ms
+    transition-timing-function ease
+
+    textarea&:hover
+      border-color #E5E5E5
+      background-color #fff
+
+    textarea&:focus
+      background-color #fff
+      border-color $accent_color
+      box-shadow 0 0 0 1px $accent_color
+
+    &:not(textarea)
+      white-space pre-wrap
+      word-break break-all
+
+  &_compact &__head
+    margin -5px 0
+
+.region-meta
+  &__content
+    margin 8px 0
+
+    &_type
+      &_text
+        padding 3px 6px
+        border-radius 4px
+        background-color rgba(#000, 0.06)
+        white-space pre-wrap
+        line-break loose
+        word-break break-all

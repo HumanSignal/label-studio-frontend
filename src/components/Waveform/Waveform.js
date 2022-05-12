@@ -157,7 +157,7 @@ export default class Waveform extends React.Component {
       zoom: 0,
       zoomY: MIN_ZOOM_Y,
       speed: 1,
-      volume: 1,
+      volume: props.muted ? 0 : 1,
     };
   }
 
@@ -319,7 +319,13 @@ export default class Waveform extends React.Component {
       };
     }
 
-    this.wavesurfer = WaveSurfer.create(wavesurferConfigure);
+    this.wavesurfer = WaveSurfer.create({
+      ...wavesurferConfigure,
+    });
+
+    if (this.props.muted) {
+      this.wavesurfer.setVolume(0);
+    }
 
     this.wavesurfer.on("error", e => {
       const error = String(e.message || e || "");
@@ -375,6 +381,13 @@ export default class Waveform extends React.Component {
        * Add region to wave
        */
       this.wavesurfer.on("region-created", (reg) => {
+        const history = self.props.item.annotation.history;
+
+        // if user draw new region the final state will be in `onUpdateEnd`
+        // so we should skip history action in `addRegion`;
+        // during annotation init this step will be rewritten at the end
+        // during undo/redo this action will be skipped the same way
+        history.setSkipNextUndoState();
         const region = self.props.addRegion(reg);
 
         if (!region) return;

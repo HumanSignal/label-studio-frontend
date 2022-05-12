@@ -9,42 +9,26 @@ import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
-import { Hotkey } from "../../../core/Hotkey";
+// import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
+import { useToggle } from "../../../hooks/useToggle";
 
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
+import ResizeObserver from "../../../utils/resize-observer";
+import { useFullscreen } from "../../../hooks/useFullscreen";
 
-const hotkeys = Hotkey("Video", "Video Annotation");
-
-const enterFullscreen = (el) => {
-  if ('webkitRequestFullscreen' in el) {
-    el.webkitRequestFullscreen();
-  } else {
-    el.requestFullscreen();
-  }
-};
-
-const cancelFullscreen = () => {
-  if ('webkitCancelFullScreen' in document) {
-    document.webkitCancelFullScreen();
-  } else {
-    document.exitFullscreen();
-  }
-};
-
-const getFullscreenElement = () => {
-  return document.webkitCurrentFullScreenElement ?? document.fullscreenElement;
-};
+// const hotkeys = Hotkey("Video", "Video Annotation");
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;
+  const videoBlockRef = useRef();
   const videoContainerRef = useRef();
   const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
   const [videoLength, _setVideoLength] = useState(0);
-  const [playing, _setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [position, _setPosition] = useState(1);
 
   const [videoSize, setVideoSize] = useState(null);
@@ -52,27 +36,17 @@ const HtxVideoView = ({ item }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
-
-  const setPlaying = useCallback((playing) => {
-    _setPlaying(playing);
-    if (playing) item.triggerSyncPlay();
-    else item.triggerSyncPause();
-  }, [item]);
-
-  const togglePlaying = useCallback(() => {
-    _setPlaying(playing => {
-      if (!playing) item.triggerSyncPlay();
-      else item.triggerSyncPause();
-      return !playing;
-    });
-  }, [item]);
+  const [isFullScreen, enterFullscreen, exitFullscren, handleFullscreenToggle] = useToggle(false);
+  const fullscreen = useFullscreen({
+    onEnterFullscreen() { enterFullscreen(); },
+    onExitFullscreen() { exitFullscren(); },
+  });
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
       _setPosition(clamp(value, 1, videoLength));
     }
-  }, [position, videoLength]);
+  }, [position, videoLength, playing]);
 
   const setVideoLength = useCallback((value) => {
     if (value !== videoLength) _setVideoLength(value);
@@ -94,14 +68,6 @@ const HtxVideoView = ({ item }) => {
       ]);
     }
   }, []);
-
-  useEffect(() => {
-    const video = item.ref.current;
-
-    if (video) {
-      playing ? video.play() : video.pause();
-    }
-  }, [playing]);
 
   useEffect(() => {
     const container = videoContainerRef.current;
@@ -147,38 +113,31 @@ const HtxVideoView = ({ item }) => {
       }
     };
 
-    window.addEventListener('resize', onResize);
     document.addEventListener('keydown', onKeyDown);
 
+    const observer = new ResizeObserver(() => onResize());
+    const [vContainer, vBlock] = [videoContainerRef.current, videoBlockRef.current];
+
+    observer.observe(vContainer);
+    observer.observe(vBlock);
+
     return () => {
-      window.removeEventListener('resize', onResize);
       document.removeEventListener('keydown', onKeyDown);
+      observer.unobserve(vContainer);
+      observer.unobserve(vBlock);
+      observer.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    const fullscreenElement = getFullscreenElement();
+    const fullscreenElement = fullscreen.getElement();
 
-    if (fullscreen && !fullscreenElement) {
-      enterFullscreen(mainContentRef.current);
-    } else if (!fullscreen && fullscreenElement) {
-      cancelFullscreen();
+    if (isFullScreen && !fullscreenElement) {
+      fullscreen.enter(mainContentRef.current);
+    } else if (!isFullScreen && fullscreenElement) {
+      fullscreen.exit();
     }
-  }, [fullscreen]);
-
-  useEffect(() => {
-    const onChangeFullscreen = () => {
-      const fullscreenElement = getFullscreenElement();
-
-      if (!fullscreenElement) setFullscreen(false);
-    };
-
-    const evt = 'onwebkitfullscreenchange' in document ? 'webkitfullscreenchange' : 'fullscreenchange';
-
-    document.addEventListener(evt, onChangeFullscreen);
-
-    return () => document.removeEventListener(evt, onChangeFullscreen);
-  }, []);
+  }, [isFullScreen]);
 
   const handleZoom = useCallback((e) => {
     if (!e.shiftKey) return;
@@ -248,6 +207,7 @@ const HtxVideoView = ({ item }) => {
     setVideoLength(length);
     item.setOnlyFrame(1);
     item.setLength(length);
+    item.setReady(true);
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
@@ -260,16 +220,28 @@ const HtxVideoView = ({ item }) => {
   }, [videoLength, setPosition, setPlaying]);
 
   // TIMELINE EVENT HANDLERS
-  const handlePlayToggle = useCallback((playing) => {
-    if (position === videoLength) {
-      setPosition(1);
-    }
-    setPlaying(playing);
-  }, [position, videoLength, setPosition]);
+  const handlePlay = useCallback(() => {
+    setPlaying((playing) => {
+      if (playing === false) {
+        item.ref.current.play();
+        item.triggerSyncPlay();
+        return true;
+      }
+      return playing;
+    });
+  }, []);
 
-  const handleFullscreenToggle = useCallback(() => {
-    setFullscreen(!fullscreen);
-  }, [fullscreen]);
+  const handlePause = useCallback(() => {
+    setPlaying((playing) => {
+      if (playing === true) {
+        item.ref.current.pause();
+        item.triggerSyncPause();
+        return false;
+      }
+      return playing;
+    });
+  }, []);
+
 
   const handleSelectRegion = useCallback((_, id, select) => {
     const region = item.findRegion(id);
@@ -301,6 +273,13 @@ const HtxVideoView = ({ item }) => {
     });
   }, [item.regs]);
 
+  const handleTimelinePositionChange = useCallback((newPosition) => {
+    if (position !== newPosition) {
+      item.setFrame(newPosition);
+      setPosition(newPosition);
+    }
+  }, [item, position]);
+
   useEffect(() => () => {
     item.ref.current = null;
   }, []);
@@ -325,16 +304,17 @@ const HtxVideoView = ({ item }) => {
 
   return (
     <ObjectTag item={item}>
-      <Block name="video-segmentation" ref={mainContentRef} mod={{ fullscreen }}>
+      <Block name="video-segmentation" ref={mainContentRef} mod={{ fullscreen: isFullScreen }}>
         {item.errors?.map((error, i) => (
           <ErrorMessage key={`err-${i}`} error={error} />
         ))}
 
-        <Block name="video" mod={{ fullscreen }}>
+        <Block name="video" mod={{ fullscreen: isFullScreen }} ref={videoBlockRef}>
           <Elem tag={Space} name="controls" align="end" size="small">
             <Dropdown.Trigger
+              inline={isFullScreen}
               content={(
-                <Menu size="medium" closeDropdownOnItemClick={false}>
+                <Menu size="medium" style={{ width: 150 }} closeDropdownOnItemClick={false}>
                   <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
                   <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
                   <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
@@ -350,7 +330,7 @@ const HtxVideoView = ({ item }) => {
           <Elem
             name="main"
             ref={videoContainerRef}
-            style={{ minHeight: 600 }}
+            style={{ height: Number(item.height) }}
             onWheel={handleZoom}
             onMouseDown={handlePan}
           >
@@ -381,8 +361,11 @@ const HtxVideoView = ({ item }) => {
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}
-                  onClick={togglePlaying}
+                  // onClick={togglePlaying}
                   onEnded={handleVideoEnded}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeeked={item.handleSeek}
                 />
               </>
             )}
@@ -396,16 +379,14 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
-            fullscreen={fullscreen}
+            fullscreen={isFullScreen}
             defaultStepSize={16}
-            disableFrames={!supportsRegions}
+            disableView={!supportsRegions}
             framerate={item.framerate}
-            onPositionChange={(frame) => {
-              item.setFrame(frame);
-              setPosition(frame);
-            }}
             controls={{ FramesControl: true }}
-            onPlayToggle={handlePlayToggle}
+            onPositionChange={handleTimelinePositionChange}
+            onPlay={handlePlay}
+            onPause={handlePause}
             onFullscreenToggle={handleFullscreenToggle}
             onSelectRegion={handleSelectRegion}
             onAction={handleAction}

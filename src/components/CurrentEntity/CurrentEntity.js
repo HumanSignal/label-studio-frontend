@@ -1,7 +1,7 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
 import { Block } from "../../utils/bem";
-import { AnnotationHistory } from "./AnnotationHistory";
+import { AnnotationHistory } from "./AnnotationHistory.tsx";
 import "./CurrentEntity.styl";
 import { DraftPanel } from "../DraftPanel/DraftPanel";
 
