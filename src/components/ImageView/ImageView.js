@@ -1,4 +1,4 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useContext, useRef, useState } from "react";
+import React, { Component, createRef, forwardRef, Fragment, memo, useContext, useEffect, useRef, useState } from "react";
 import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
@@ -290,9 +290,30 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
 
-  const isPanning = useContext(PanningContext);
-
   const scale = 1 / (item.zoomScale || 1);
+
+  const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
+  const [shift, setShift] = useState(false);
+  const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+
+  const dragHandler = (e) => setIsMouseWheelClick(e.buttons === 4);
+
+  const handleKey = (e) => setShift(e.shiftKey);
+
+  useEffect(()=>{  
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("keyup", handleKey);
+    window.addEventListener("mousedown", dragHandler);
+    window.addEventListener("mouseup", dragHandler);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keyup", handleKey);
+      window.removeEventListener("mousedown", dragHandler);
+      window.removeEventListener("mouseup", dragHandler);
+    };
+  },[]);
+
+  const disableTransform = item.zoomScale > 1 && (shift || isPanTool || isMouseWheelClick);
 
   let supportsTransform = true;
   let supportsRotate = true;
@@ -304,26 +325,28 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsScale = supportsScale && true;
   });
 
-  supportsTransform = supportsTransform && (item.selectedRegions.length > 1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
+  supportsTransform =
+    supportsTransform &&
+    (item.selectedRegions.length > 1 ||
+      ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
+  
   return (
     <Layer scaleX={scale} scaleY={scale}>
       {selectionArea.isActive ? (
         <SelectionRect item={selectionArea} />
-      ) : (!supportsTransform && item.selectedRegions.length > 1 ? (
+      ) : !supportsTransform && item.selectedRegions.length > 1 ? (
         <SelectionBorders item={item} selectionArea={selectionArea} />
-      ) : null)}
-      {!isPanning && (
-        <ImageTransformer
-          item={item}
-          rotateEnabled={supportsRotate}
-          supportsTransform={supportsTransform}
-          supportsScale={supportsScale}
-          selectedShapes={item.selectedRegions}
-          singleNodeMode={item.selectedRegions.length === 1}
-          useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
-          draggableBackgroundSelector={`#${TRANSFORMER_BACK_ID}`}
-        />
-      )}
+      ) : null}
+      <ImageTransformer
+        item={item}
+        rotateEnabled={supportsRotate}
+        supportsTransform={!disableTransform && supportsTransform}
+        supportsScale={supportsScale}
+        selectedShapes={item.selectedRegions}
+        singleNodeMode={item.selectedRegions.length === 1}
+        useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
+        draggableBackgroundSelector={`#${TRANSFORMER_BACK_ID}`}
+      />
     </Layer>
   );
 });
@@ -416,10 +439,6 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
   );
 }));
 
-
-
-const PanningContext = React.createContext();
-
 export default observer(
   class ImageView extends Component {
     // stored position of canvas before creating region
@@ -430,29 +449,10 @@ export default observer(
     state = {
       imgStyle: {},
       pointer: [0, 0],
-      isPanning: false,
     };
 
     imageRef = createRef();
     crosshairRef = createRef();
-
-    handleDragStart = (e) => {
-      const { item } = this.props;
-      const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
-      const isMouseWheelClick = e.evt && e.evt.buttons === 4;
-      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
-
-      if ((isMouseWheelClick || isShiftDrag || isPanTool) && item.zoomScale > 1) {
-        this.setState({
-          ...this.state, isPanning: true,
-        });
-      }
-    }
-    handleDragEnd = () => {
-      this.setState({
-        ...this.state, isPanning: false,
-      });
-    }
 
     handleOnClick = e => {
       const { item } = this.props;
@@ -821,8 +821,6 @@ export default observer(
               offsetY={item.stageTranslate.y}
               rotation={item.rotation}
               onClick={this.handleOnClick}
-              onDragStart={this.handleDragStart}
-              onDragEnd={this.handleDragEnd}
               onMouseEnter={() => {
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(true);
@@ -862,9 +860,7 @@ export default observer(
                   />
                 ) : <Fragment key={groupName} />;
               })}
-              <PanningContext.Provider value={this.state.isPanning}>
-                <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
-              </PanningContext.Provider>
+              <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
               <DrawingRegion item={item} />
 
               {item.crosshair && (
