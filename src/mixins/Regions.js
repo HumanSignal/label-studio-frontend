@@ -104,6 +104,10 @@ const RegionsMixin = types
         self.locked = locked;
       },
 
+      makeDynamic() {
+        self.dynamic = true;
+      },
+
       // All of the below accept size as an argument
       moveTop() {},
       moveBottom() {},
