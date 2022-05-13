@@ -8,6 +8,9 @@ import "./Settings.styl";
 import { Block, Elem } from "../../utils/bem";
 import { triggerResizeEvent } from "../../utils/utilities";
 
+import EditorSettings from "../../core/settings/editorsettings.json";
+import { getEnv, getRoot } from "mobx-state-tree";
+
 const HotkeysDescription = () => {
   const columns = [
     { title: "Shortcut", dataIndex: "combo", key: "combo" },
@@ -49,6 +52,27 @@ const HotkeysDescription = () => {
   );
 };
 
+
+
+const TabPaneGeneral = (store) => {
+  const env = getEnv(getRoot(store));
+
+  return Object.keys(EditorSettings).map((obj, index)=> {
+    return (
+      <span key={index}>
+        <Checkbox
+          key={index}
+          checked={store.settings[obj]}
+          onChange={store.settings[EditorSettings[obj].onChangeEvent]}
+        >
+          {EditorSettings[obj].description}
+        </Checkbox>
+        <br />
+      </span>
+    );
+  });
+};
+
 export default observer(({ store }) => {
   return (
     <Modal
@@ -60,91 +84,7 @@ export default observer(({ store }) => {
     >
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="General" key="1">
-          <Checkbox
-            checked={store.settings.enableHotkeys}
-            onChange={() => {
-              store.settings.toggleHotkeys();
-            }}
-          >
-            Enable labeling hotkeys
-          </Checkbox>
-          <br />
-          <Checkbox
-            checked={store.settings.enableTooltips}
-            onChange={() => {
-              store.settings.toggleTooltips();
-            }}
-          >
-            Show hotkey tooltips
-          </Checkbox>
-          <br />
-          <Checkbox
-            checked={store.settings.enableLabelTooltips}
-            onChange={() => {
-              store.settings.toggleLabelTooltips();
-            }}
-          >
-            Show labels hotkey tooltips
-          </Checkbox>
-          <br />
-          <Checkbox
-            checked={store.settings.showLabels}
-            onChange={() => {
-              store.settings.toggleShowLabels();
-            }}
-          >
-            Show labels inside the regions
-          </Checkbox>
-          {/* <br/> */}
-          {/* <Checkbox */}
-          {/*   value="Show scores inside the regions" */}
-          {/*   defaultChecked={store.settings.showScore} */}
-          {/*   onChange={() => { */}
-          {/*     store.settings.toggleShowScore(); */}
-          {/*   }} */}
-          {/* > */}
-          {/*   Show scores inside the regions */}
-          {/* </Checkbox> */}
-
-          <br />
-          <Checkbox
-            checked={store.settings.continuousLabeling}
-            onChange={() => {
-              store.settings.toggleContinuousLabeling();
-            }}
-          >
-            Keep label selected after creating a region
-          </Checkbox>
-
-          <br />
-          <Checkbox checked={store.settings.selectAfterCreate} onChange={store.settings.toggleSelectAfterCreate}>
-            Select regions after creating
-          </Checkbox>
-
-          <br />
-          <Checkbox checked={store.settings.showLineNumbers} onChange={store.settings.toggleShowLineNumbers}>
-            Show line numbers for Text
-          </Checkbox>
-          <br />
-          <Checkbox checked={store.settings.preserveSelectedTool} onChange={store.settings.togglepreserveSelectedTool}>
-            Remember Selected Tool
-          </Checkbox>
-
-          {/* <br /> */}
-          {/* <Checkbox */}
-          {/*   value="Enable auto-save" */}
-          {/*   defaultChecked={store.settings.enableAutoSave} */}
-          {/*   onChange={() => { */}
-          {/*     store.settings.toggleAutoSave(); */}
-          {/*   }} */}
-          {/* > */}
-          {/*   Enable auto-save */}
-
-          {/* </Checkbox> */}
-          {/* { store.settings.enableAutoSave && */}
-          {/*   <div style={{ marginLeft: "1.7em" }}> */}
-          {/*     Save every <InputNumber size="small" min={5} max={120} /> seconds */}
-          {/*   </div> } */}
+          {TabPaneGeneral(store)}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Hotkeys" key="2">
           <HotkeysDescription />
