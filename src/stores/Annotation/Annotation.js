@@ -532,6 +532,7 @@ export const Annotation = types
 
           self.setDraftSelected();
           self.versions.draft = result;
+          self.setDraftSaving(true);
 
           self.store.submitDraft(self).then(self.onDraftSaved);
         },
@@ -562,6 +563,7 @@ export const Annotation = types
 
     onDraftSaved() {
       self.draftSaved = Utils.UDate.currentISODate();
+      self.setDraftSaving(false);
     },
 
     dropDraft() {
@@ -571,6 +573,10 @@ export const Annotation = types
       self.draftSelected = false;
       self.draftSaved = undefined;
       self.versions.draft = undefined;
+    },
+
+    setDraftSaving(saving = false) {
+      self.isDraftSaving = saving;
     },
 
     afterAttach() {

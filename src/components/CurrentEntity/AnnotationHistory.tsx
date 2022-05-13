@@ -52,13 +52,23 @@ const DraftState: FC<{
   const hasChanges = annotation.history.hasChanges;
   const store = annotation.list; // @todo weird name
 
+  const dateCreated = useMemo(() => {
+    return !annotation.isDraftSaving && annotation.draftSaved;
+  }, [annotation.draftSaved, annotation.isDraftSaving]);
+
   if (!hasChanges && !annotation.draftSelected) return null;
 
   return (
     <HistoryItem
       key="draft"
       user={annotation.user ?? { email: annotation.createdBy }}
-      date={annotation.createdDate}
+      date={dateCreated}
+      extra={annotation.isDraftSaving && (
+        <Elem name="saving">
+          <Elem name="spin"/>
+          saving
+        </Elem>
+      )}
       inline={inline}
       comment=""
       acceptedState="draft_created"
