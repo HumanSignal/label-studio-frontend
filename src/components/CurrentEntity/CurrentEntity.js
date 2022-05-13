@@ -1,9 +1,10 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { Block } from "../../utils/bem";
+import { Block, Elem } from "../../utils/bem";
+import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
+import { DraftPanel } from "../DraftPanel/DraftPanel";
 import { AnnotationHistory } from "./AnnotationHistory.tsx";
 import "./CurrentEntity.styl";
-import { DraftPanel } from "../DraftPanel/DraftPanel";
 
 const injector = inject('store');
 
@@ -101,10 +102,16 @@ export const CurrentEntity = injector(observer(({
       {/* </Space>
       </Elem> */}
 
-      <DraftPanel item={entity} />
+      {!isFF(FF_DEV_2290) && (
+        <DraftPanel item={entity} />
+      )}
 
-      {showHistory && !entity.userGenerate && (
-        <AnnotationHistory/>
+      {/* {showHistory && !entity.userGenerate && ( */}
+      {showHistory && (
+        <>
+          <Elem name="title">Annotation History</Elem>
+          <AnnotationHistory/>
+        </>
       )}
     </Block>
   ) : null;
