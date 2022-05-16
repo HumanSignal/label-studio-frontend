@@ -5,7 +5,9 @@ import {
   IconAnnotationAccepted,
   IconAnnotationImported,
   IconAnnotationPrediction,
+  IconAnnotationPropagated,
   IconAnnotationRejected,
+  IconAnnotationReviewRemoved,
   IconAnnotationSkipped,
   IconAnnotationSubmitted,
   IconDraftCreated,
@@ -277,6 +279,8 @@ const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
       case 'prediction': return <IconAnnotationPrediction style={{ color: '#944BFF' }}/>;
       case 'imported': return <IconAnnotationImported style={{ color: '#2AA000' }}/>;
       case 'skipped': return <IconAnnotationSkipped style={{ color: '#dd0000' }}/>;
+      case 'deleted_review': return <IconAnnotationReviewRemoved style={{ color: '#dd0000' }}/>;
+      case 'propagated_annotation': return <IconAnnotationPropagated style={{ color: '#2AA000' }}/>;
       default: return null;
     }
   }, [type]);
