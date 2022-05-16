@@ -91,7 +91,7 @@ class ToolsManager {
     const currentTool = this.findSelectedTool();
 
     if (currentTool && currentTool.handleToolSwitch) {
-      currentTool.handleToolSwitch();
+      currentTool.handleToolSwitch(tool);
     }
 
     if (selected) {
