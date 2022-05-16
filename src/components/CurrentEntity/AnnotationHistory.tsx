@@ -27,7 +27,9 @@ type HistoryItemType = (
   'accepted' |
   'rejected' |
   'fixed_and_accepted' |
-  'draft_created'
+  'draft_created' |
+  'deleted_review' |
+  'propagated_annotation'
 );
 
 const injector = inject(({ store }) => {
@@ -170,6 +172,8 @@ const HistoryItemComponent: FC<{
       case 'imported': return "Imported";
       case 'skipped': return "Skipped";
       case "draft_created": return "Created a draft";
+      case "deleted_review": return "Review deleted";
+      case "propagated_annotation": return "Propagated";
       default: return null;
     }
   }, []);
