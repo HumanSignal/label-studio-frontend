@@ -102,6 +102,7 @@ const Model = types
     },
   }))
   .actions(self => ({
+
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
@@ -125,6 +126,31 @@ const Model = types
       }
       self.checkSizes();
       self.updateAppearenceFromState();
+    },
+
+    getDistanceBetweenPoints(pointA, pointB, abs = true) {
+      const { x: xA, y: yA } = pointA;
+      const { x: xB, y: yB } = pointB;
+      const distanceX = Math.abs(xA - xB);
+      const distanceY = Math.abs(yA - yB);
+      
+      return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+    },
+
+    draw(x, y, points) {
+      if(points.length === 1) {
+        self.width = self.getDistanceBetweenPoints({ x, y }, self);
+        self.rotation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+      } else if(points.length === 2) {
+        const h = self.getDistanceBetweenPoints({ x, y }, self);
+        const a = self.width;
+        const o = Math.sqrt(Math.pow(h, 2) - Math.pow(self.width, 2));
+
+        self.height = o;
+      } else {
+        return;
+      }
+      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
     },
 
     // @todo not used

@@ -2,7 +2,7 @@ import { types } from "mobx-state-tree";
 
 import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { TwoPointsDrawingTool } from "../mixins/DrawingTool";
+import { ThreePointsDrawingTool } from "../mixins/DrawingTool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { NodeViews } from "../components/Node/Node";
 
@@ -15,9 +15,22 @@ const _Tool = types
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,
+      isIncorrectControl: self.isIncorrectControl,
+      isIncorrectLabel: self.isIncorrectLabel,
     };
 
     return {
+
+      get getActivePolygon() {
+        const poly = self.currentArea;
+
+        if (poly && poly.closed) return null;
+        if (poly === undefined) return null;
+        if (poly && poly.type !== "rectangleregion") return null;
+
+        return poly;
+      },
+
       get tagTypes() {
         return {
           stateTypes: "rectanglelabels",
@@ -43,6 +56,20 @@ const _Tool = types
           width: 1,
         });
       },
+
+      isIncorrectControl() {
+        return Super.isIncorrectControl() && self.current() === null;
+      },
+      isIncorrectLabel() {
+        return !self.current() && Super.isIncorrectLabel();
+      },
+      canStart() {
+        return self.current() === null;
+      },
+
+      current() {
+        return self.getActivePolygon;
+      },
     };
   })
   .actions(self => ({
@@ -53,6 +80,6 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _Tool, AnnotationMixin);
+const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, ThreePointsDrawingTool, _Tool, AnnotationMixin);
 
 export { Rect };

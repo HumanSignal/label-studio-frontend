@@ -152,7 +152,9 @@ const DrawingTool = types
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        self.createDrawingRegion(self.createRegionOptions({ x, y }));
+        const currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
+
+        self.currentArea = currentArea;
       },
       finishDrawing() {
         if (!self.beforeCommitDrawing()) {
@@ -384,4 +386,70 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     };
   });
 
-export { DrawingTool, TwoPointsDrawingTool, MultipleClicksDrawingTool };
+const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
+  .views(() => ({
+    canStart() {
+      return !this.current();
+    },
+  }))
+  .actions(self => {
+    let points = [];
+    let lastEvent = 0;
+    const MOUSE_DOWN_EVENT = 1;
+    const MOUSE_UP_EVENT = 2;
+    const CLICK_EVENT = 3;
+    const Super = {
+      finishDrawing: self.finishDrawing,
+    };
+
+    return {
+      updateDraw: throttle(function(x, y) {
+        self.getCurrentArea().draw(x, y, points);
+      }, 48), // 3 frames, optimized enough and not laggy yet
+
+      nextPoint(x, y) {
+        points.push({ x, y });
+        self.getCurrentArea().draw(x, y, points);
+      },
+      finishDrawing(x, y) {
+        if (self.isDrawing) {
+          points = [];
+          Super.finishDrawing(x, y);
+          setTimeout(()=>{
+            self._finishDrawing();
+          });
+        } else return;
+      },
+      mousemoveEv(_, [x, y]) {
+        if (!self.isDrawing) return;
+        self.updateDraw(x, y);
+      },
+      mousedownEv(ev, [x, y]) {
+        lastEvent = MOUSE_DOWN_EVENT;
+      },
+      mouseupEv(ev, [x, y]) {
+        if (lastEvent === MOUSE_DOWN_EVENT) {
+          self._clickEv(ev, [x, y]);
+          lastEvent = MOUSE_UP_EVENT;
+        }
+      },
+      clickEv(ev, [x, y]) {
+        if (lastEvent !== MOUSE_UP_EVENT) {
+          self._clickEv(ev, [x, y]);
+        }
+        lastEvent = CLICK_EVENT;
+      },
+      _clickEv(ev, [x, y]) {
+        if (points.length >= 2) {
+          self.finishDrawing(x, y);
+        } else if (points.length === 0) {
+          points = [{ x, y }];
+          self.startDrawing(x, y);
+        } else {
+          self.nextPoint(x, y);
+        }
+      },
+    };
+  });
+
+export { DrawingTool, TwoPointsDrawingTool, MultipleClicksDrawingTool, ThreePointsDrawingTool };
