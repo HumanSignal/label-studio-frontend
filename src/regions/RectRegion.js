@@ -143,10 +143,8 @@ const Model = types
         self.rotation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
       } else if(points.length === 2) {
         const h = self.getDistanceBetweenPoints({ x, y }, self);
-        const a = self.width;
-        const o = Math.sqrt(Math.pow(h, 2) - Math.pow(self.width, 2));
-
-        self.height = o;
+        
+        self.height = Math.sqrt(Math.pow(h, 2) - Math.pow(self.width, 2));
       } else {
         return;
       }

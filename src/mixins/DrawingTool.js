@@ -107,6 +107,8 @@ const DrawingTool = types
       },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
+        
+        if(!currentArea) return;
         const source = currentArea.toJSON();
         const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
           value[key] = source[key];
