@@ -177,7 +177,7 @@ export const Annotation = types
 
     get onlyTextObjects() {
       return self.objects.reduce((res, obj) => {
-        return res && ['text', 'hypertext'].includes(obj.type);
+        return res && ['text', 'hypertext', 'paragraphs'].includes(obj.type);
       }, true);
     },
   }))
@@ -479,21 +479,29 @@ export const Annotation = types
       if (versions.draft) self.setDraftSelected();
     },
 
-    toggleDraft() {
+    toggleDraft(explicitValue) {
       const isDraft = self.draftSelected;
+      const shouldSelectDraft = explicitValue ?? !isDraft;
 
-      if (!isDraft && !self.versions.draft) return;
+      // if explicitValue already achieved
+      if (shouldSelectDraft === isDraft) return;
+      // if there are no draft to switch to
+      if (shouldSelectDraft && !self.versions.draft) return;
+
+      // if there were some changes waiting they'll be saved
       self.autosave.flush();
       self.pauseAutosave();
-      if (isDraft) self.versions.draft = self.serializeAnnotation({ fast: true });
+
+      // reinit annotation from required state
       self.deleteAllRegions({ deleteReadOnly: true });
-      if (isDraft) {
-        self.deserializeResults(self.versions.result);
-        self.draftSelected = false;
-      } else {
+      if (shouldSelectDraft) {
         self.deserializeResults(self.versions.draft);
-        self.draftSelected = true;
+      } else {
+        self.deserializeResults(self.versions.result);
       }
+      self.draftSelected = shouldSelectDraft;
+
+      // reinit objects
       self.updateObjects();
       self.startAutosave();
     },
@@ -524,6 +532,7 @@ export const Annotation = types
 
           self.setDraftSelected();
           self.versions.draft = result;
+          self.setDraftSaving(true);
 
           self.store.submitDraft(self).then(self.onDraftSaved);
         },
@@ -554,6 +563,7 @@ export const Annotation = types
 
     onDraftSaved() {
       self.draftSaved = Utils.UDate.currentISODate();
+      self.setDraftSaving(false);
     },
 
     dropDraft() {
@@ -563,6 +573,10 @@ export const Annotation = types
       self.draftSelected = false;
       self.draftSaved = undefined;
       self.versions.draft = undefined;
+    },
+
+    setDraftSaving(saving = false) {
+      self.isDraftSaving = saving;
     },
 
     afterAttach() {
@@ -834,7 +848,7 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          if (['richtextregion', 'text'].includes(suggestion.type)) {
+          if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
             self.acceptSuggestion(suggestion.id);
           }
         });

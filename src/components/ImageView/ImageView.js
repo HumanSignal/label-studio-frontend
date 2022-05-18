@@ -429,6 +429,9 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
+
+      if (!item.annotation.editable) return;
+
       const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
@@ -442,6 +445,7 @@ export default observer(
       // item.freezeHistory();
       const p = e.target.getParent();
 
+      if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
       if (
@@ -457,7 +461,7 @@ export default observer(
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
-        const { left, top } = this.props.item.containerRef.getBoundingClientRect();
+        const { left, top } = item.containerRef.getBoundingClientRect();
 
         this.canvasX = left;
         this.canvasY = top;
@@ -756,10 +760,7 @@ export default observer(
             />
             <div
               className={styles.frame}
-              style={{
-                width: item.stageComponentSize.width,
-                height: item.stageComponentSize.height,
-              }}
+              style={item.canvasSize}
             >
               <img
                 ref={ref => {
@@ -782,10 +783,10 @@ export default observer(
               }}
               style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
-              width={item.stageComponentSize.width}
-              height={item.stageComponentSize.height}
-              scaleX={item.stageScale}
-              scaleY={item.stageScale}
+              width={item.canvasSize.width}
+              height={item.canvasSize.height}
+              scaleX={item.zoomScale}
+              scaleY={item.zoomScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               offsetX={item.stageTranslate.x}

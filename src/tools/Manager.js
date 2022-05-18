@@ -29,6 +29,7 @@ class ToolsManager {
 
   static removeAllTools() {
     INSTANCES.forEach((manager) => manager.removeAllTools());
+    INSTANCES.clear();
   }
 
   constructor({
