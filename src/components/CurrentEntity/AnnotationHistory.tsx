@@ -5,7 +5,9 @@ import {
   IconAnnotationAccepted,
   IconAnnotationImported,
   IconAnnotationPrediction,
+  IconAnnotationPropagated,
   IconAnnotationRejected,
+  IconAnnotationReviewRemoved,
   IconAnnotationSkipped,
   IconAnnotationSubmitted,
   IconDraftCreated,
@@ -27,7 +29,9 @@ type HistoryItemType = (
   'accepted' |
   'rejected' |
   'fixed_and_accepted' |
-  'draft_created'
+  'draft_created' |
+  'deleted_review' |
+  'propagated_annotation'
 );
 
 const injector = inject(({ store }) => {
@@ -170,6 +174,8 @@ const HistoryItemComponent: FC<{
       case 'imported': return "Imported";
       case 'skipped': return "Skipped";
       case "draft_created": return "Created a draft";
+      case "deleted_review": return "Review deleted";
+      case "propagated_annotation": return "Propagated";
       default: return null;
     }
   }, []);
@@ -273,6 +279,8 @@ const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
       case 'prediction': return <IconAnnotationPrediction style={{ color: '#944BFF' }}/>;
       case 'imported': return <IconAnnotationImported style={{ color: '#2AA000' }}/>;
       case 'skipped': return <IconAnnotationSkipped style={{ color: '#dd0000' }}/>;
+      case 'deleted_review': return <IconAnnotationReviewRemoved style={{ color: '#dd0000' }}/>;
+      case 'propagated_annotation': return <IconAnnotationPropagated style={{ color: '#2AA000' }}/>;
       default: return null;
     }
   }, [type]);
