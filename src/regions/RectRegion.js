@@ -131,8 +131,8 @@ const Model = types
     getDistanceBetweenPoints(pointA, pointB, abs = true) {
       const { x: xA, y: yA } = pointA;
       const { x: xB, y: yB } = pointB;
-      const distanceX = Math.abs(xA - xB);
-      const distanceY = Math.abs(yA - yB);
+      const distanceX = abs ? Math.abs(xA - xB) : xA - xB;
+      const distanceY = abs ? Math.abs(yA - yB) : yA - yB;
       
       return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
     },
@@ -142,11 +142,9 @@ const Model = types
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
         self.rotation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
       } else if(points.length === 2) {
-        const h = self.getDistanceBetweenPoints({ x, y }, self);
-        
+        const h = self.getDistanceBetweenPoints({ x, y }, self, false);
+
         self.height = Math.sqrt(Math.pow(h, 2) - Math.pow(self.width, 2));
-      } else {
-        return;
       }
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
     },

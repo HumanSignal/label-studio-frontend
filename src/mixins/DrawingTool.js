@@ -389,33 +389,63 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
   });
 
 const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
-  .views(() => ({
+  .views((self) => ({
     canStart() {
       return !this.current();
+    },
+    get defaultDimensions() {
+      return {
+        width: self.MIN_SIZE.X,
+        height: self.MIN_SIZE.Y,
+      };
     },
   }))
   .actions(self => {
     let points = [];
     let lastEvent = 0;
+    const DEFAULT_MODE = 0;
     const MOUSE_DOWN_EVENT = 1;
     const MOUSE_UP_EVENT = 2;
     const CLICK_EVENT = 3;
+    const DRAG_MODE = 4;
+    let currentMode = DEFAULT_MODE;
+    let startPoint = null;
     const Super = {
       finishDrawing: self.finishDrawing,
     };
 
     return {
       updateDraw: throttle(function(x, y) {
-        self.getCurrentArea().draw(x, y, points);
+        if (currentMode === DEFAULT_MODE)
+          self.getCurrentArea()?.draw(x, y, points);
+        else if (currentMode === DRAG_MODE)
+          self.draw(x, y);
       }, 48), // 3 frames, optimized enough and not laggy yet
 
       nextPoint(x, y) {
         points.push({ x, y });
         self.getCurrentArea().draw(x, y, points);
       },
+      draw(x, y) {
+        const shape = self.getCurrentArea();
+
+        if (!shape) return;
+        const { stageWidth, stageHeight } = self.obj;
+
+        let { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
+
+        x1 = Math.max(0, x1);
+        y1 = Math.max(0, y1);
+        x2 = Math.min(stageWidth, x2);
+        y2 = Math.min(stageHeight, y2);
+
+        shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+      },
       finishDrawing(x, y) {
         if (self.isDrawing) {
           points = [];
+          startPoint = null;
+          currentMode = DEFAULT_MODE;
           Super.finishDrawing(x, y);
           setTimeout(()=>{
             self._finishDrawing();
@@ -423,20 +453,34 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         } else return;
       },
       mousemoveEv(_, [x, y]) {
-        if (!self.isDrawing) return;
-        self.updateDraw(x, y);
+        if(self.isDrawing){
+          if(lastEvent === MOUSE_DOWN_EVENT) {
+            currentMode = DRAG_MODE;
+          }
+          if(currentMode === DEFAULT_MODE) {
+            self.updateDraw(x, y);
+          } else if (currentMode === DRAG_MODE && startPoint) {
+            self.startDrawing(startPoint.x, startPoint.y);
+            self.updateDraw(x, y);
+          }
+        }
       },
       mousedownEv(ev, [x, y]) {
         lastEvent = MOUSE_DOWN_EVENT;
+        startPoint = { x, y };
+        self.mode = "drawing";
       },
       mouseupEv(ev, [x, y]) {
-        if (lastEvent === MOUSE_DOWN_EVENT) {
-          self._clickEv(ev, [x, y]);
+        if(self.isDrawing) {
+          if (currentMode === DRAG_MODE) {
+            self.draw(x, y);
+            self.finishDrawing(x, y);
+          }
           lastEvent = MOUSE_UP_EVENT;
         }
       },
       clickEv(ev, [x, y]) {
-        if (lastEvent !== MOUSE_UP_EVENT) {
+        if (currentMode === DEFAULT_MODE) {
           self._clickEv(ev, [x, y]);
         }
         lastEvent = CLICK_EVENT;
