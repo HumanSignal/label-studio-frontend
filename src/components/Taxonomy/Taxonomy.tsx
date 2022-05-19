@@ -58,6 +58,7 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
+  widthCallback: (renderedWidth:number) => void;
   item: {
     row: {
       id: string,
@@ -74,7 +75,6 @@ interface RowProps {
     toggle: (id: string) => void,
     addInside: (id?: string) => void,
   };
-  atMaxWidth: boolean;
 }
 
 const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
@@ -133,7 +133,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
+const Item: React.FC<RowProps> = ({ style, item, widthCallback }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -141,6 +141,7 @@ const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
   } = item;
 
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
+  const [width, setWidth] = useState();
   const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel, onDeleteLabel } = useContext(TaxonomyOptionsContext);
 
   const checked = selected.some(current => isArraysEqual(current, path));
@@ -181,13 +182,22 @@ const Item: React.FC<RowProps> = ({ style, item }: RowProps) => {
 
   const isAddingItem = name === "" && onAddLabel;
 
+  const itemContainer = useRef<any>();
+
+  // useEffect(() => {
+  //   if (itemContainer?.current?.scrollWidth) {
+  //     widthCallback(itemContainer.current.scrollWidth);
+  //   }
+  // }, []);
+
   return (
-    <div style={{ paddingLeft: padding, ...style }}>
+    <div ref={itemContainer} style={{ paddingLeft: padding, ...style }}>
       {!isAddingItem ? (
-        <div className={[styles.taxonomy__item, customClassname].join(" ")}>
+        <div className={[styles.taxonomy__item, customClassname].join(" ")} >
           <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
             <LsChevron stroke="#09f" style={arrowStyle} />
           </div>
+
           <label
             onClick={onClick}
             title={title}

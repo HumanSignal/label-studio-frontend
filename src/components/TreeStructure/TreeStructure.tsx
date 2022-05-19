@@ -1,5 +1,5 @@
-import React, { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { FixedSizeList } from "react-window";
+import React, { RefObject, useEffect, useRef, useState } from "react";
+import { VariableSizeList } from "react-window";
 
 type ExtendedData = Readonly<{
   id: string,
@@ -58,8 +58,6 @@ const countChildNodes = (item: RowItem[]) => {
 
 const blankItem = (path: string[], depth: number): RowItem => ({ label: "", depth, path, isOpen: true });
 
-
-
 const TreeStructure = ({
   items,
   rowComponent,
@@ -85,19 +83,23 @@ const TreeStructure = ({
 
   const [data, setData] = useState<ExtendedData[]>();
   const [openNodes, setOpenNodes] = useState<{ [key: string]: number }>({});
-  const [height, setHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [oversizeRowHeightTracker, setOversizeRowHeightTracker] = useState<{ [key: string]: number }>({});
   const [width, setWidth] = useState(minWidth);
-  const containerRef = useRef<RefObject<HTMLDivElement> | any>();
+  const listRef = useRef<RefObject<HTMLDivElement> | any>();
 
-  const calcHeight = () => {
-    const visibleHeight = (data?.length || 0) * rowHeight;
+  const rowHeightCalc = (index: number): number => {
+    return rowHeight;
+    return oversizeRowHeightTracker[`${index}`] || rowHeight;
+  };
+  const containerHeightCalc = () => {
+    const visibleHeight = (data?.length || 0) * rowHeight + Object.keys(oversizeRowHeightTracker).length * rowHeight;
     const maxHeight = maxHeightPercentage * 0.01 * browserHeight;
 
     return visibleHeight > maxHeight ? maxHeight : visibleHeight;
   };
 
-  const updateHeight = () => setHeight(calcHeight());
-
+  const updateHeight = () => setContainerHeight(containerHeightCalc());
 
   const toggle = (id: string) => {
     const toggleItem = defaultExpanded
@@ -143,25 +145,33 @@ const TreeStructure = ({
     rowStyle: any,
     rowComponent: React.FC<any>,
   }) => {
-    const rowRef = useRef<RefObject<HTMLDivElement> | any>();
-
-    useEffect(() => {
-      const itemWidth = rowRef.current?.firstChild?.scrollWidth;
-
-      if (width < itemWidth) {
-        if (maxWidth < itemWidth) {
-          setWidth(maxWidth);
-        } else setWidth(itemWidth);
-      }
-    }, []);
     const item = dataGetter(index);
+    const rowRef = useRef<any>();
 
-    return (
-      <div ref={rowRef}>
-        <RowComponent {...{ item, style }} />
-      </div>
-    );
+    // useEffect(() => {
+    //   const itemWidth = rowRef.current?.firstChild?.scrollWidth;
+      
+    //   if (width < itemWidth) {
+    //     if (maxWidth < itemWidth) {
+    //       setWidth(maxWidth);
+    //     } else setWidth(itemWidth);
+    //   }
+    // }, []);
+    const widthCallback = (itemWidth: number) => {
+      if (width < itemWidth && !oversizeRowHeightTracker[`${index}`]) {
+        if (maxWidth < itemWidth) {
+          setOversizeRowHeightTracker({ ...oversizeRowHeightTracker, [`${index}`]: rowHeight * 2 });
+          setWidth(maxWidth);
+        } else {
+          setWidth(itemWidth);
+        }
+      }
+    };
+    // const widthCallback = (renderedWidth: number) => {};
+  
+    return <div ref={rowRef}><RowComponent {...{ item, style, widthCallback }} /></div>;
   };
+
   const recursiveTreeWalker = ({
     items,
     depth,
@@ -210,18 +220,24 @@ const TreeStructure = ({
     setData(recursiveTreeWalker({ items }));
   }, [items]);
   useEffect(() => updateHeight(), [data]);
+  // useEffect(() => {
+  //   listRef.current.resetAfterIndex(0);
+  //   updateHeight();
+  // }, [oversizeRowHeightTracker]);
 
   return (
-    <FixedSizeList
-      ref={containerRef}
-      height={height}
-      itemCount={data?.length || 0}
-      itemSize={rowHeight}
-      width={width}
-      itemData={(index: number) => ({ row: data && data[index], toggle, addInside })}
-    >
-      {({ data, index, style }) => <Row data={data} rowStyle={style} index={index} rowComponent={rowComponent} />}
-    </FixedSizeList>
+    <div>
+      <VariableSizeList
+        ref={listRef}
+        height={containerHeight}
+        itemCount={data?.length || 0}
+        itemSize={rowHeightCalc}
+        width={width}
+        itemData={(index: number) => ({ row: data && data[index], toggle, addInside })}
+      >
+        {({ data, index, style }) => <Row data={data} rowStyle={style} index={index} rowComponent={rowComponent} />}
+      </VariableSizeList>
+    </div>
   );
 };
 
