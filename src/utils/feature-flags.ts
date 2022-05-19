@@ -56,6 +56,10 @@ export const FF_DEV_2128 = "ff_dev_2128_html_in_labels_150422_short";
 // Fix preselected choices
 export const FF_DEV_2100_A = "ff_dev_2100_preselected_choices_250422_short";
 
+export const FF_DEV_2290 = "ff_front_dev_2290_draft_in_annotation_history_short";
+
+export const FF_DEV_2186 = "ff_front_dev_2186_comments_for_update";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,
