@@ -123,7 +123,7 @@ const Result = types
     get editable() {
       // @todo readonly is not defined here, so we have to fix this
       // @todo and as it's used only in region list view of textarea get rid of this getter
-      return !self.readonly && self.annotation.editable === true;
+      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
@@ -285,6 +285,8 @@ const Result = types
       }
 
       if (typeof score === "number") data.score = score;
+
+      if (!self.editable) data.readonly = true;
 
       return data;
     },
