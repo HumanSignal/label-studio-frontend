@@ -417,7 +417,6 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
 
     return {
       updateDraw: throttle(function(x, y) {
-        console.log("updateDraw", currentMode, self.getCurrentArea()?.draw);
         if (currentMode === DEFAULT_MODE)
           self.getCurrentArea()?.draw(x, y, points);
         else if (currentMode === DRAG_MODE)
@@ -480,7 +479,6 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       clickEv(ev, [x, y]) {
-        console.log("clickEv");
         if (currentMode === DEFAULT_MODE) {
           self._clickEv(ev, [x, y]);
         }
@@ -498,7 +496,6 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
       },
 
       dblclickEv(_, [x, y]) {
-        console.log("dblclickEv");
         lastEvent = DBL_CLICK_EVENT;
         if (!self.canStartDrawing()) return;
         if (currentMode === DEFAULT_MODE) {

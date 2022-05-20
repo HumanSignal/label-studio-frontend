@@ -2,9 +2,10 @@ import { types } from "mobx-state-tree";
 
 import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
-import { ThreePointsDrawingTool } from "../mixins/DrawingTool";
+import { ThreePointsDrawingTool, TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { NodeViews } from "../components/Node/Node";
+import { FF_DEV_2132, isFF } from "../utils/feature-flags";
 
 const _Tool = types
   .model("RectangleTool", {
@@ -80,6 +81,8 @@ const _Tool = types
     },
   }));
 
-const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, ThreePointsDrawingTool, _Tool, AnnotationMixin);
+const RectDrawingTool = isFF(FF_DEV_2132) ? TwoPointsDrawingTool : ThreePointsDrawingTool;
+
+const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, RectDrawingTool, _Tool, AnnotationMixin);
 
 export { Rect };
