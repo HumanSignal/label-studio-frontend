@@ -14,6 +14,7 @@ import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
 import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
+import Result from "../../regions/Result";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -937,6 +938,15 @@ export const Annotation = types
         const areaId = `${id || guidGenerator()}#${self.id}`;
         const resultId = `${data.from_name}@${areaId}`;
         const value = self.prepareValue(rawValue, tagType);
+        // This should fix a problem when the order of results is broken
+        const omitValueFields = (value) => {
+          const newValue = { ...value };
+
+          Result.properties.value.propertyNames.forEach(propName => {
+            delete newValue[propName];
+          });
+          return newValue;
+        };
 
         let area = getArea(areaId);
 
@@ -945,7 +955,8 @@ export const Annotation = types
             id: areaId,
             object: data.to_name,
             ...data,
-            ...value,
+            // We need to omit value properties due to there may be conflicting property types, for example a text.
+            ...omitValueFields(value),
             value,
           };
 
