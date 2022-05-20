@@ -408,6 +408,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
     const MOUSE_UP_EVENT = 2;
     const CLICK_EVENT = 3;
     const DRAG_MODE = 4;
+    const DBL_CLICK_EVENT = 5;
     let currentMode = DEFAULT_MODE;
     let startPoint = null;
     const Super = {
@@ -416,6 +417,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
 
     return {
       updateDraw: throttle(function(x, y) {
+        console.log("updateDraw", currentMode, self.getCurrentArea()?.draw);
         if (currentMode === DEFAULT_MODE)
           self.getCurrentArea()?.draw(x, y, points);
         else if (currentMode === DRAG_MODE)
@@ -457,12 +459,10 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
           if(lastEvent === MOUSE_DOWN_EVENT) {
             currentMode = DRAG_MODE;
           }
-          if(currentMode === DEFAULT_MODE) {
-            self.updateDraw(x, y);
-          } else if (currentMode === DRAG_MODE && startPoint) {
+          if (currentMode === DRAG_MODE && startPoint) {
             self.startDrawing(startPoint.x, startPoint.y);
-            self.updateDraw(x, y);
           }
+          self.updateDraw(x, y);
         }
       },
       mousedownEv(ev, [x, y]) {
@@ -480,6 +480,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       clickEv(ev, [x, y]) {
+        console.log("clickEv");
         if (currentMode === DEFAULT_MODE) {
           self._clickEv(ev, [x, y]);
         }
@@ -493,6 +494,20 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
           self.startDrawing(x, y);
         } else {
           self.nextPoint(x, y);
+        }
+      },
+
+      dblclickEv(_, [x, y]) {
+        console.log("dblclickEv");
+        lastEvent = DBL_CLICK_EVENT;
+        if (!self.canStartDrawing()) return;
+        if (currentMode === DEFAULT_MODE) {
+          self.startDrawing(x, y);
+          if (!self.isDrawing) return;
+          x += self.defaultDimensions.width;
+          y += self.defaultDimensions.height;
+          self.draw(x, y);
+          self.finishDrawing(x, y);
         }
       },
     };
