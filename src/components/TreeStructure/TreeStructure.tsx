@@ -167,7 +167,6 @@ const TreeStructure = ({
           setWidth(itemWidth);
         }
       } else heightAccumulator[key] = rowHeight;
-      console.log(visibleCounter, visibleRendered);
       if (visibleCounter >= visibleRendered) {
         visibleCounter = 0;
         updateHeight();
