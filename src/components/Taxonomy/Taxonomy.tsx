@@ -58,7 +58,8 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
-  widthCallback: (renderedWidth:number) => void;
+  dimensionCallback: (renderedWidth: number, renderedHeight: number) => void;
+  maxWidth: number;
   item: {
     row: {
       id: string,
@@ -133,7 +134,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = ({ style, item, widthCallback }: RowProps) => {
+const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -141,7 +142,6 @@ const Item: React.FC<RowProps> = ({ style, item, widthCallback }: RowProps) => {
   } = item;
 
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
-  const [width, setWidth] = useState();
   const { leafsOnly, maxUsages, maxUsagesReached, onAddLabel, onDeleteLabel } = useContext(TaxonomyOptionsContext);
 
   const checked = selected.some(current => isArraysEqual(current, path));
@@ -184,32 +184,33 @@ const Item: React.FC<RowProps> = ({ style, item, widthCallback }: RowProps) => {
 
   const itemContainer = useRef<any>();
 
-  // useEffect(() => {
-  //   if (itemContainer?.current?.scrollWidth) {
-  //     widthCallback(itemContainer.current.scrollWidth);
-  //   }
-  // }, []);
+  useEffect(() => {
+    const container = itemContainer?.current;
+    
+    if (container) {
+      dimensionCallback(container.scrollWidth, container.scrollHeight );
+    }
+  }, []);
 
   return (
-    <div ref={itemContainer} style={{ paddingLeft: padding, ...style }}>
+    <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: 'fit-content' }}>
       {!isAddingItem ? (
         <div className={[styles.taxonomy__item, customClassname].join(" ")} >
           <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
             <LsChevron stroke="#09f" style={arrowStyle} />
           </div>
-
+          <input
+            type="checkbox"
+            disabled={disabled}
+            checked={checked}
+            ref={setIndeterminate}
+            onChange={e => setSelected(path, e.currentTarget.checked)}
+          />
           <label
             onClick={onClick}
             title={title}
             className={disabled ? styles.taxonomy__collapsable : undefined}
           >
-            <input
-              type="checkbox"
-              disabled={disabled}
-              checked={checked}
-              ref={setIndeterminate}
-              onChange={e => setSelected(path, e.currentTarget.checked)}
-            />
             {name}
           </label>
           {!isFiltering && (
