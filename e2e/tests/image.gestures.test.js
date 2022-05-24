@@ -89,7 +89,7 @@ const createShape = {
         },
       };
     },
-    byTwoClicks(x, y, radius, opts = {}) {
+    byThreeClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
