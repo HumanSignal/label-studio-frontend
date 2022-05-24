@@ -96,7 +96,7 @@ const _detect = region => {
     case "paragraphs":
     case "timeseriesregion": {
       const regionBbox = Geometry.getDOMBBox(region.getRegionElement());
-      const container = region.parent?.rootNodeRef?.current;
+      const container = region.parent?.visibleNodeRef?.current;
 
       if (container?.tagName === "IFRAME") {
         const iframeBbox = Geometry.getDOMBBox(container, true);
@@ -138,7 +138,9 @@ const _detect = region => {
     }
     case "brushregion": {
       // If there is no imageData we just wait for the next render
-      return region.imageData && imageRelatedBBox(
+      const bbox = region.imageData && Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height);
+
+      return bbox && imageRelatedBBox(
         region,
         Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height),
       );

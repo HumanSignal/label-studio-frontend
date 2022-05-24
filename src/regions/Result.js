@@ -3,6 +3,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { isDefined } from "../utils/utilities";
+import { FF_DEV_1372, FF_DEV_2007, isFF } from "../utils/feature-flags";
 
 const Result = types
   .model("Result", {
@@ -58,7 +59,10 @@ const Result = types
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
-      choices: types.maybe(types.array(types.string)),
+      ...(isFF(FF_DEV_2007)
+        ? { choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))) }
+        : { choices: types.maybe(types.array(types.string)) }
+      ),
       // pairwise
       selected: types.maybe(types.enumeration(["left", "right"])),
       // @todo all other *labels
@@ -111,13 +115,15 @@ const Result = types
     get hasValue() {
       const value = self.mainValue;
 
-      if (!value) return false;
+      if (!isDefined(value)) return false;
       if (Array.isArray(value)) return value.length > 0;
       return true;
     },
 
     get editable() {
-      return self.readonly === false && self.annotation.editable === true;
+      // @todo readonly is not defined here, so we have to fix this
+      // @todo and as it's used only in region list view of textarea get rid of this getter
+      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
@@ -143,7 +149,7 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
-      if (control.visiblewhen === "choice-selected") {
+      const isChoiceSelected = () => {
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
         const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
@@ -162,6 +168,13 @@ const Result = types
           // if no given choice value is selected in any choice result
           if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
         }
+        return true;
+      };
+
+      if (control.visiblewhen === "choice-selected") {
+        return isChoiceSelected();
+      } else if (isFF(FF_DEV_1372) && control.visiblewhen === "choice-unselected") {
+        return !isChoiceSelected();
       }
 
       return true;
@@ -195,6 +208,14 @@ const Result = types
       if (!fillcolor) return null;
       const strokecolor = emptyLabel.background || emptyLabel.parent.strokecolor;
       const { strokewidth, fillopacity, opacity } = emptyLabel.parent;
+
+      return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
+    },
+
+    get controlStyle() {
+      if (!self.from_name) return null;
+
+      const { fillcolor, strokecolor, strokewidth, fillopacity, opacity } = self.from_name;
 
       return { strokecolor, strokewidth, fillcolor, fillopacity, opacity };
     },
@@ -264,6 +285,8 @@ const Result = types
       }
 
       if (typeof score === "number") data.score = score;
+
+      if (!self.editable) data.readonly = true;
 
       return data;
     },

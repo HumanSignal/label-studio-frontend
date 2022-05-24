@@ -367,8 +367,59 @@ function removeSpans(spans) {
   norm.forEach(n => n.normalize());
 }
 
+function moveStylesBetweenHeadTags(srcHead, destHead) {
+  const rulesByStyleId = {};
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < srcHead.children.length; ) {
+    const style = srcHead.children[i];
+
+    if (style?.tagName !== "STYLE") {
+      i++;
+      continue;
+    }
+
+    const styleSheet = style.sheet;
+
+    // Sometimes rules are not accessible
+    try {
+      const rules = styleSheet.rules;
+
+      const cssTexts = rulesByStyleId[style.id] = [];
+
+      for (let k = 0;k < rules.length; k++) {
+        cssTexts.push(rules[k].cssText);
+      }
+    } finally {
+      fragment.appendChild(style);
+    }
+  }
+  destHead.appendChild(fragment);
+  applyHighlightStylesToDoc(destHead.ownerDocument,rulesByStyleId);
+}
+
+function applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
+  for (let i = 0; i < destDoc.styleSheets.length; i++) {
+    const styleSheet = destDoc.styleSheets[i];
+    const style = styleSheet.ownerNode;
+
+    if (!style.id) continue;
+    // Sometimes rules are not accessible
+    try {
+      const rules = rulesByStyleId[style.id];
+
+      if (!rules) continue;
+      for (let k = 0;k < rules.length; k++) {
+        style.sheet.insertRule(rules[k]);
+      }
+    } catch {
+      continue;
+    }
+  }
+}
+
 /**
- * Checks if element of one of it's descendants match given selector
+ * Checks if element or one of its descendants match given selector
  * @param {HTMLElement} element Element to match
  * @param {string} selector CSS selector
  */
@@ -458,5 +509,7 @@ export {
   highlightRange,
   splitBoundaries,
   normalizeBoundaries,
-  createClass
+  createClass,
+  moveStylesBetweenHeadTags,
+  applyHighlightStylesToDoc
 };

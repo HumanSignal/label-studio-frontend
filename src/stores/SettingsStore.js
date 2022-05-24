@@ -1,6 +1,7 @@
-import { getRoot, onSnapshot, types } from "mobx-state-tree";
+import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
+import EditorSettings from "../core/settings/editorsettings.json";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
@@ -90,6 +91,16 @@ const SettingsModel = types
           Object.keys(lsp).forEach(k => {
             if (k in self) self[k] = lsp[k];
           });
+      } else {
+        const env = getEnv(self);
+
+        Object.keys(EditorSettings).map((obj, index) => {
+          if( typeof env.settings[obj] === 'boolean'){
+            self[obj] = env.settings[obj];
+          }else{
+            self[obj] = EditorSettings[obj].defaultValue;
+          }
+        });
       }
 
       // capture changes and save it
@@ -116,10 +127,6 @@ const SettingsModel = types
 
     toggleShowLineNumbers() {
       self.showLineNumbers = !self.showLineNumbers;
-
-      // hack to enable it from outside, because Text spawns spans on every rerender
-      // @todo it should be enabled inside Text
-      document.querySelectorAll(".htx-text").forEach(text => text.classList.toggle("htx-line-numbers"));
     },
 
     toggleContinuousLabeling() {

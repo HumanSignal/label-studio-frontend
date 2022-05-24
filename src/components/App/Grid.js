@@ -1,10 +1,13 @@
 import React, { Component } from "react";
-import { Button } from "antd";
+import { Button, Spin } from "antd";
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
-import Tree from "../../core/Tree";
-import styles from "./App.module.scss";
-import { EntityTab } from '../AnnotationTabs/AnnotationTabs';
+import styles from "./Grid.module.scss";
+import { EntityTab } from "../AnnotationTabs/AnnotationTabs";
 import { observe } from "mobx";
+import Konva from "konva";
+import { Annotation } from "./Annotation";
+import { isDefined } from "../../utils/utilities";
+import { moveStylesBetweenHeadTags } from "../../utils/html";
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -17,12 +20,14 @@ This triggers next rerender with next annotation until all the annotations are r
 class Item extends Component {
   componentDidMount() {
     Promise.all(this.props.annotation.objects.map(o => {
-      return o.isReady || new Promise(resolve => {
-        const dispose = observe(o, "isReady", ()=>{
-          dispose();
-          resolve();
+      return o.isReady
+        ? Promise.resolve(o.isReady)
+        : new Promise(resolve => {
+          const dispose = observe(o, "isReady", ()=>{
+            dispose();
+            resolve();
+          });
         });
-      });
     })).then(()=>{
       // ~2 ticks for canvas to be rendered and resized completely
       setTimeout(this.props.onFinish, 32);
@@ -30,27 +35,58 @@ class Item extends Component {
   }
 
   render() {
-    return Tree.renderItem(this.props.root);
+    return <Annotation root={this.props.root} annotation={this.props.annotation} />;
   }
 }
 
 export default class Grid extends Component {
   state = {
     item: 0,
+    loaded: new Set(),
   };
   container = React.createRef();
+
+  shouldComponentUpdate(nextProps, nexState) {
+    return !nextProps.store.selected.selected || nexState.item >= nextProps.annotations.length || nextProps.annotations[nexState.item] === nextProps.store.selected;
+  }
+
+  componentDidMount() {
+    if (this.props.annotations[0] !== this.props.store.selected) {
+      this.startRenderCycle();
+    }
+  }
+
+  startRenderCycle() {
+    this.renderNext(0);
+  }
+
+  renderNext(idx) {
+    this.setState(
+      { item: isDefined(idx) ? idx : this.state.item + 1 },
+      () => {
+        if (this.state.item < this.props.annotations.length) {
+          this.props.store._selectItem(this.props.annotations[this.state.item]);
+        } else {
+          this.props.store._unselectAll();
+        }
+      });
+  }
 
   onFinish = () => {
     const c = this.container.current;
 
     if (!c) return;
 
-    const item = c.children[c.children.length - 1];
+    const itemWrapper = c.children[c.children.length - 1];
+    const item = itemWrapper.children[itemWrapper.children.length - 1];
     const clone = item.cloneNode(true);
 
     c.children[this.state.item].appendChild(clone);
 
-    /* canvas are cloned empty, so clone their content */
+    // Force redraw
+    Konva.stages.map(stage => stage.draw());
+
+    /* canvases are cloned empty, so clone their content */
     const sourceCanvas = item.querySelectorAll("canvas");
     const clonedCanvas = clone.querySelectorAll("canvas");
 
@@ -58,7 +94,27 @@ export default class Grid extends Component {
       canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
     });
 
-    this.setState({ item: this.state.item + 1 });
+    /*
+      Procedure created style rules are not clonable so for
+      iframe we should take care about them (highlight styles)
+    */
+    const sourceIframe = item.querySelectorAll("iframe");
+    const clonedIframe = clone.querySelectorAll("iframe");
+
+    clonedIframe.forEach((iframe, idx) => {
+      iframe.contentWindow.document.open();
+      iframe.contentWindow.document.write(sourceIframe[idx].contentDocument.documentElement.outerHTML);
+      moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
+    });
+
+    this.setState((state) => {
+      return {
+        ...state,
+        loaded: new Set([...state.loaded, this.props.store.selected.id]),
+      };
+    });
+
+    this.renderNext();
   };
 
   shift = delta => {
@@ -89,22 +145,17 @@ export default class Grid extends Component {
     c.type === "annotation" ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
+
   render() {
     const i = this.state.item;
-    const { annotations } = this.props;
-    const renderNext = i < annotations.length;
-
-    if (renderNext) {
-      this.props.store._selectItem(annotations[i]);
-    } else {
-      this.props.store._unselectAll();
-    }
+    const { annotations, store: { selected } } = this.props;
+    const isRenderingNext = i < annotations.length && annotations[i] === selected;
 
     return (
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
           {annotations.filter(c => !c.hidden).map((c) => (
-            <div id={`c-${c.id}`} key={`anno-${c.id}`}>
+            <div id={`c-${c.id}`} key={`anno-${c.id}`} style={{ position: 'relative' }}>
               <EntityTab
                 entity={c}
                 onClick={() => this.select(c)}
@@ -112,10 +163,32 @@ export default class Grid extends Component {
                 bordered={false}
                 style={{ height: 44 }}
               />
+              {!this.state.loaded.has(c.id) && (
+                <div style={{
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Spin size="large" />
+                </div>
+              )}
             </div>
           ))}
-          {renderNext && (
-            <Item root={this.props.root} onFinish={this.onFinish} key={this.state.item} annotation={this.props.store.selected}/>
+          {isRenderingNext && (
+            <div id={`c-tmp`} key={`anno-tmp`} style={{ opacity: 0, position: 'relative', right: 99999 }}>
+              <EntityTab
+                entity={selected}
+                prediction={selected.type === "prediction"}
+                bordered={false}
+                style={{ height: 44 }}
+              />
+              <Item root={this.props.root} onFinish={this.onFinish} key={i} annotation={selected} />
+            </div>
           )}
         </div>
         <Button type="text" onClick={this.left} className={styles.left} icon={<LeftCircleOutlined />} />

@@ -18,12 +18,16 @@
     align-items: center;
     display: flex;
     flex-wrap: nowrap;
+    margin-bottom: 12px;
+  }
+
+  .ant-tree-draggable-icon {
+    width: 14px;
+    flex-shrink: 0;
   }
 
   .ant-tree .ant-tree-node-content-wrapper {
     padding: 0;
-    margin-bottom: 12px;
-    transition: margin-bottom 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   }
 
   .ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected,

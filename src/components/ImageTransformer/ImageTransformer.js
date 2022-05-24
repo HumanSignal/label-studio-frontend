@@ -2,29 +2,16 @@ import React, { Component } from "react";
 import { MIN_SIZE } from "../../tools/Base";
 import { getBoundingBoxAfterChanges } from "../../utils/image";
 import LSTransformer from "./LSTransformer";
-import { Rect } from "react-konva";
-import { Portal } from "react-konva-utils";
-import Constants from "../../core/Constants";
+
+const EPSILON = 0.001;
 
 export default class TransformerComponent extends Component {
-  backgroundRef = React.createRef()
-  // For forcing image transformer area recalculation
-  needsUpdate = false
-
   componentDidMount() {
     setTimeout(this.checkNode);
-    this._stopListeningHistory = this.props.item.annotation?.history?.onUpdate(() => {
-      this.needsUpdate = true;
-      this.checkNode();
-    });
   }
 
   componentDidUpdate() {
     setTimeout(this.checkNode);
-  }
-
-  componentWillUnmount() {
-    this._stopListeningHistory?.();
   }
 
   get freezeKey() {
@@ -81,35 +68,20 @@ export default class TransformerComponent extends Component {
     });
     const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
+    const nodesWereNotChanged = selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx]);
 
-    if (!this.needsUpdate && selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx])) {
+    if (nodesWereNotChanged) {
       return;
     }
 
-    if (this.needsUpdate) {
-      const { item } = this.props;
-      const { selectedRegionsBBox } = item;
-
-      this.backgroundRef.current?.setAttrs({
-        x:selectedRegionsBBox.left,
-        y:selectedRegionsBBox.top,
-        width:selectedRegionsBBox.right-selectedRegionsBBox.left,
-        height:selectedRegionsBBox.bottom-selectedRegionsBBox.top,
-      });
-      this.needsUpdate = false;
-    }
     if (selectedNodes.length) {
-      // attach to another node
-      if (this.backgroundRef.current) {
-        selectedNodes.push(this.backgroundRef.current);
-      }
       this.transformer.nodes(selectedNodes);
     } else {
       // remove transformer
       this.transformer.nodes([]);
     }
     this.transformer.getLayer().batchDraw();
-  }
+  };
 
   fitBBoxToScaledStage(box, stage) {
     let { x, y, width, height } = box;
@@ -165,7 +137,7 @@ export default class TransformerComponent extends Component {
       const fixed = this.fitBBoxToScaledStage(clientRect, stageDimensions);
 
       // if bounding box is out of stage — do nothing
-      if (["x", "y", "width", "height"].some(key => fixed[key] !== clientRect[key])) return oldBox;
+      if (["x", "y", "width", "height"].some(key => Math.abs(fixed[key] - clientRect[key]) > EPSILON)) return oldBox;
       return newBox;
     } else {
       return this.fitBBoxToScaledStage(newBox, stageDimensions);
@@ -175,7 +147,7 @@ export default class TransformerComponent extends Component {
   dragBoundFunc = (pos) => {
     const { item } = this.props;
 
-    return item.fixForZoomWrapper(pos,pos => {
+    return item.fixForZoomWrapper(pos, pos => {
       if (!this.transformer || !item) return;
 
       let { x, y } = pos;
@@ -190,48 +162,17 @@ export default class TransformerComponent extends Component {
 
       return { x, y };
     });
-  }
-
-  get draggableBackground() {
-    const { draggableBackgroundAt, item } = this.props;
-    const { selectedRegionsBBox } = item;
-
-    return draggableBackgroundAt ? (
-      <Portal selector={draggableBackgroundAt}>
-        {selectedRegionsBBox && (
-          <Rect
-            ref={this.backgroundRef}
-            x={selectedRegionsBBox.left}
-            y={selectedRegionsBBox.top}
-            width={selectedRegionsBBox.right-selectedRegionsBBox.left}
-            height={selectedRegionsBBox.bottom-selectedRegionsBBox.top}
-            fill="rgba(0,0,0,0)"
-            draggable
-            onClick={()=>{
-              item.annotation.unselectAreas();
-            }}
-            onMouseOver={() => {
-              if (!item.annotation.relationMode) {
-                this.backgroundRef.current.getStage().container().style.cursor = Constants.POINTER_CURSOR;
-              }
-            }}
-            onMouseOut={() => {
-              this.backgroundRef.current.getStage().container().style.cursor = Constants.DEFAULT_CURSOR;
-            }}
-          />
-        )}
-      </Portal>
-    ) : null;
-  }
+  };
 
   render() {
     if (!this.props.supportsTransform) return null;
-    const { draggableBackground } = this;
 
     return (
       <>
-        { this.props.singleNodeMode !== true && draggableBackground }
         <LSTransformer
+          ref={node => {
+            this.transformer = node;
+          }}
           resizeEnabled={true}
           ignoreStroke={true}
           keepRatio={this.props.singleNodeMode !== true}
@@ -242,12 +183,13 @@ export default class TransformerComponent extends Component {
           boundBoxFunc={this.constrainSizes}
           anchorSize={8}
           flipEnabled={false}
+          zoomedIn={this.props.item.zoomScale > 1}
           onDragStart={e => {
             const { item: { selectedRegionsBBox } } = this.props;
 
             this.freeze();
 
-            if (!this.transformer|| e.target !== e.currentTarget || !selectedRegionsBBox) return;
+            if (!this.transformer || e.target !== e.currentTarget || !selectedRegionsBBox) return;
 
             this.draggingAreaBBox = {
               x: selectedRegionsBBox.left,
@@ -257,12 +199,10 @@ export default class TransformerComponent extends Component {
             };
           }}
           dragBoundFunc={this.dragBoundFunc}
-          onDragEnd ={() => {
+          onDragEnd={() => {
             this.unfreeze();
           }}
-          ref={node => {
-            this.transformer = node;
-          }}
+          backSelector={this.props.draggableBackgroundSelector}
         />
       </>
     );

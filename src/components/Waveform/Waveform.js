@@ -11,6 +11,7 @@ import { Col, Row, Select, Slider } from "antd";
 import { SoundOutlined } from "@ant-design/icons";
 import messages from "../../utils/messages";
 import { Hotkey } from "../../core/Hotkey";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
 const MIN_ZOOM_Y = 1;
 const MAX_ZOOM_Y = 50;
@@ -156,7 +157,7 @@ export default class Waveform extends React.Component {
       zoom: 0,
       zoomY: MIN_ZOOM_Y,
       speed: 1,
-      volume: 1,
+      volume: props.muted ? 0 : 1,
     };
   }
 
@@ -284,6 +285,8 @@ export default class Waveform extends React.Component {
       progressColor: this.state.colors.progressColor,
 
       splitChannels: true,
+      cursorWidth: this.props.cursorWidth,
+      cursorColor: this.props.cursorColor,
       barHeight: 1,
     };
 
@@ -316,7 +319,13 @@ export default class Waveform extends React.Component {
       };
     }
 
-    this.wavesurfer = WaveSurfer.create(wavesurferConfigure);
+    this.wavesurfer = WaveSurfer.create({
+      ...wavesurferConfigure,
+    });
+
+    if (this.props.muted) {
+      this.wavesurfer.setVolume(0);
+    }
 
     this.wavesurfer.on("error", e => {
       const error = String(e.message || e || "");
@@ -372,6 +381,13 @@ export default class Waveform extends React.Component {
        * Add region to wave
        */
       this.wavesurfer.on("region-created", (reg) => {
+        const history = self.props.item.annotation.history;
+
+        // if user draw new region the final state will be in `onUpdateEnd`
+        // so we should skip history action in `addRegion`;
+        // during annotation init this step will be rewritten at the end
+        // during undo/redo this action will be skipped the same way
+        history.setSkipNextUndoState();
         const region = self.props.addRegion(reg);
 
         if (!region) return;
@@ -409,6 +425,10 @@ export default class Waveform extends React.Component {
       this.wavesurfer.container.onwheel = throttle(this.onWheel, 100);
     });
 
+    this.wavesurfer.on("waveform-ready", () => {
+      this.props.onReady?.(this.wavesurfer);
+    });
+
     /**
      * Pause trigger of audio
      */
@@ -430,6 +450,7 @@ export default class Waveform extends React.Component {
 
   componentWillUnmount() {
     this.hotkeys.unbindAll();
+    this.wavesurfer.unAll();
   }
 
   setWaveformRef = node => {
@@ -452,7 +473,9 @@ export default class Waveform extends React.Component {
             <Col flex={8} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
-                  <ZoomOutOutlined onClick={this.onZoomMinus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Horizontal zoom out">
+                    <ZoomOutOutlined onClick={this.onZoomMinus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
@@ -466,14 +489,18 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <ZoomInOutlined onClick={this.onZoomPlus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Horizontal zoom in">
+                    <ZoomInOutlined onClick={this.onZoomPlus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
               </div>
             </Col>
             <Col flex={4} style={{ textAlign: "right", marginTop: "6px" }}>
               <div style={{ display: "flex" }}>
                 <div style={{ marginTop: "6px", marginRight: "5px" }}>
-                  <ZoomOutOutlined onClick={this.onZoomYMinus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Vertical zoom out">
+                    <ZoomOutOutlined onClick={this.onZoomYMinus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
                 <div style={{ width: "100%" }}>
                   <Slider
@@ -487,7 +514,9 @@ export default class Waveform extends React.Component {
                   />
                 </div>
                 <div style={{ marginTop: "6px", marginLeft: "5px" }}>
-                  <ZoomInOutlined onClick={this.onZoomYPlus} className={globalStyles.link} />
+                  <Tooltip placement="topLeft" title="Vertical zoom in">
+                    <ZoomInOutlined onClick={this.onZoomYPlus} className={globalStyles.link} />
+                  </Tooltip>
                 </div>
               </div>
             </Col>

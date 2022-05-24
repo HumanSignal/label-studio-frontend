@@ -17,6 +17,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { rotateBboxCoords } from "../utils/bboxCoords";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { EditableRegion } from "./EditableRegion";
 
 /**
  * Ellipse object for Bounding Box
@@ -67,6 +68,14 @@ const Model = types
 
     _supportsTransform: true,
     hideable: true,
+
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+      { property: "radiusX", label: "Rx" },
+      { property: "radiusY", label: "Ry" },
+      { property: "rotation", label: "icon:angle" },
+    ],
   }))
   .volatile(() => {
     return {
@@ -258,6 +267,7 @@ const EllipseRegionModel = types.compose(
   NormalizationMixin,
   DisabledMixin,
   KonvaRegionMixin,
+  EditableRegion,
   Model,
 );
 
@@ -285,6 +295,11 @@ const HtxEllipseView = ({ item }) => {
         opacity={1}
         rotation={item.rotation}
         name={`${item.id} _transformable`}
+        onTransform={({ target }) => {
+          // resetting the skew makes transformations weird but predictable
+          target.setAttr("skewX", 0);
+          target.setAttr("skewY", 0);
+        }}
         onTransformEnd={e => {
           const t = e.target;
 
@@ -321,24 +336,7 @@ const HtxEllipseView = ({ item }) => {
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
-        dragBoundFunc={createDragBoundFunc(item.parent,pos => {
-          let { x, y } = pos;
-          const { radiusX, radiusY, rotation } = item;
-          const { stageHeight, stageWidth } = item.parent;
-          const selfRect = { x: -radiusX, y: -radiusY, width: radiusX * 2, height: radiusY * 2 };
-          const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
-          const fixed = fixRectToFit(box, stageWidth, stageHeight);
-
-          if (fixed.width !== box.width) {
-            x += (fixed.width - box.width) * (fixed.x !== box.x ? -1 : 1);
-          }
-
-          if (fixed.height !== box.height) {
-            y += (fixed.height - box.height) * (fixed.y !== box.y ? -1 : 1);
-          }
-
-          return { x, y };
-        })}
+        dragBoundFunc={createDragBoundFunc(item, { x: item.x - item.bboxCoords.left, y: item.y - item.bboxCoords.top })}
         onMouseOver={() => {
 
           if (store.annotationStore.selected.relationMode) {

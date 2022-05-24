@@ -7,7 +7,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
-const { EnvironmentPlugin } = require("webpack");
+const { EnvironmentPlugin, DefinePlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
   ? path.resolve(__dirname, process.env.WORK_DIR)
@@ -172,6 +172,20 @@ const cssLoader = (withLocalIdent = true) => {
     },
   };
 
+  const postcssLoader = {
+    loader: "postcss-loader",
+    options: {
+      sourceMap: true,
+      postcssOptions: {
+        plugins: [
+          require("autoprefixer")({
+            env: "last 4 version"
+          })
+        ]
+      }
+    }
+  }
+
   const stylusLoader = {
     loader: "stylus-loader",
     options: {
@@ -182,7 +196,7 @@ const cssLoader = (withLocalIdent = true) => {
     },
   };
 
-  rules.push(cssLoader, stylusLoader);
+  rules.push(cssLoader, postcssLoader, stylusLoader);
 
   return rules;
 };
@@ -305,7 +319,7 @@ module.exports = ({withDevServer = true} = {}) => ({
       },
       {
         test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
       },
       {
         test: /\.styl$/i,
@@ -348,6 +362,7 @@ module.exports = ({withDevServer = true} = {}) => ({
               },
             },
           },
+          "postcss-loader",
           {
             loader: "sass-loader",
             options: {

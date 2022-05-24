@@ -1,4 +1,4 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useState } from "react";
+import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from "react";
 import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
@@ -12,13 +12,15 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import messages from "../../utils/messages";
 import { chunks, findClosestParent } from "../../utils/utilities";
 import Konva from "konva";
-import { observe } from "mobx";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Toolbar } from "../Toolbar/Toolbar";
 import { ImageViewProvider } from "./ImageViewContext";
 import { Hotkey } from "../../core/Hotkey";
-import { useObserver } from "mobx-react-lite";
+import { useObserver } from "mobx-react";
 import ResizeObserver from "../../utils/resize-observer";
+import { debounce } from "../../utils/debounce";
+import Constants from "../../core/Constants";
+import { fixRectToFit } from "../../utils/image";
 import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
@@ -31,7 +33,7 @@ const splitRegions = (regions) => {
   const l = regions.length;
   let i = 0;
 
-  for(i; i < l; i++) {
+  for (i; i < l; i++) {
     const region = regions[i];
 
     if (region.type === "brushregion") {
@@ -48,12 +50,12 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(()=>(region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
+  return useObserver(() => (region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
   const content = regions.map((el) => (
-    <Region key={`region-${el.id}`} region={el} showSelected={showSelected}/>
+    <Region key={`region-${el.id}`} region={el} showSelected={showSelected} />
   ));
 
   return useLayers === false ? (
@@ -65,7 +67,7 @@ const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) =
   );
 });
 
-const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, suggestion = false, showSelected = false }) => {
+const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = false, showSelected = false }) => {
   return (
     <ImageViewProvider value={{ suggestion }}>
       {(chunkSize ? chunks(regions, chunkSize) : regions).map((chunk, i) => (
@@ -83,23 +85,32 @@ const Regions = memo(({ regions, useLayers = true, chunkSize  = 15, suggestion =
 
 const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
-  const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment: Layer;
+  const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment : Layer;
 
   return (
     <Wrapper>
-      {drawingRegion?<Region key={`drawing`} region={drawingRegion}/>:drawingRegion}
+      {drawingRegion ? <Region key={`drawing`} region={drawingRegion} /> : drawingRegion}
     </Wrapper>
   );
 });
 
 const SELECTION_COLOR = "#40A9FF";
 const SELECTION_SECOND_COLOR = "white";
-const SELECTION_DASH = [3,3];
+const SELECTION_DASH = [3, 3];
 
-const SelectionBorders = observer(({ item }) => {
-  const { selectionBorders: bbox } = item;
+const SelectionBorders = observer(({ item, selectionArea }) => {
+  const { selectionBorders: bbox } = selectionArea;
+  const offset = {
+    x: item.zoomingPositionX || 0,
+    y: item.zoomingPositionY || 0,
+  };
 
-  const points = bbox? [
+  bbox.left = bbox.left * item.stageScale;
+  bbox.right = bbox.right * item.stageScale;
+  bbox.top = bbox.top * item.stageScale ;
+  bbox.bottom = bbox.bottom * item.stageScale ;
+
+  const points = bbox ? [
     {
       x: bbox.left,
       y: bbox.top,
@@ -136,8 +147,8 @@ const SelectionBorders = observer(({ item }) => {
         return (
           <Rect
             key={idx}
-            x={point.x-3}
-            y={point.y-3}
+            x={point.x - 3}
+            y={point.y - 3}
             width={6}
             height={6}
             fill={SELECTION_COLOR}
@@ -180,14 +191,79 @@ const SelectionRect = observer(({ item }) => {
   );
 });
 
-const TRANSFORMER_BACK_NAME = "transformer_back";
-const SelectedRegions = observer(({ selectedRegions }) => {
+const TRANSFORMER_BACK_ID = "transformer_back";
+
+const TransformerBack = observer(({ item }) => {
+  const { selectedRegionsBBox } = item;
+  const singleNodeMode = item.selectedRegions.length === 1;
+  const dragStartPointRef = useRef({ x: 0, y: 0 });
+
+  return (
+    <Layer>
+      {selectedRegionsBBox && !singleNodeMode && (
+        <Rect
+          id={TRANSFORMER_BACK_ID}
+          fill="rgba(0,0,0,0)"
+          draggable
+          onClick={()=>{
+            item.annotation.unselectAreas();
+          }}
+          onMouseOver={(ev) => {
+            if (!item.annotation.relationMode) {
+              ev.target.getStage().container().style.cursor = Constants.POINTER_CURSOR;
+            }
+          }}
+          onMouseOut={(ev) => {
+            ev.target.getStage().container().style.cursor = Constants.DEFAULT_CURSOR;
+          }}
+          onDragStart={e=>{
+            dragStartPointRef.current = {
+              x: e.target.getAttr("x"),
+              y: e.target.getAttr("y"),
+            };
+          }}
+          dragBoundFunc={(pos) => {
+            let { x, y } = pos;
+            const { top, left, right, bottom } =  item.selectedRegionsBBox;
+            const { stageHeight, stageWidth } = item;
+
+            const offset = {
+              x: dragStartPointRef.current.x-left,
+              y: dragStartPointRef.current.y-top,
+            };
+
+            x -=offset.x;
+            y -=offset.y;
+
+            const bbox = { x, y, width: right - left, height: bottom  - top };
+
+            const fixed = fixRectToFit(bbox, stageWidth, stageHeight);
+
+            if (fixed.width !== bbox.width) {
+              x += (fixed.width - bbox.width) * (fixed.x !== bbox.x ? -1 : 1);
+            }
+
+            if (fixed.height !== bbox.height) {
+              y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
+            }
+
+            x +=offset.x;
+            y +=offset.y;
+            return { x, y };
+          }}
+        />
+      )}
+    </Layer>
+  );
+});
+
+const SelectedRegions = observer(({ item, selectedRegions }) => {
   if (!selectedRegions) return null;
   const { brushRegions = [], shapeRegions = [] } = splitRegions(selectedRegions);
 
   return (
     <>
-      <Layer id={TRANSFORMER_BACK_NAME} />
+      <TransformerBack item={item}/>
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -213,7 +289,31 @@ const SelectedRegions = observer(({ selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-  const scale = 1 / (item.zoomScale ||1);
+
+  const scale = 1 / (item.zoomScale || 1);
+
+  const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
+  const [shift, setShift] = useState(false);
+  const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+
+  const dragHandler = (e) => setIsMouseWheelClick(e.buttons === 4);
+
+  const handleKey = (e) => setShift(e.shiftKey);
+
+  useEffect(()=>{  
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("keyup", handleKey);
+    window.addEventListener("mousedown", dragHandler);
+    window.addEventListener("mouseup", dragHandler);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keyup", handleKey);
+      window.removeEventListener("mousedown", dragHandler);
+      window.removeEventListener("mouseup", dragHandler);
+    };
+  },[]);
+
+  const disableTransform = item.zoomScale > 1 && (shift || isPanTool || isMouseWheelClick);
 
   let supportsTransform = true;
   let supportsRotate = true;
@@ -225,35 +325,38 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsScale = supportsScale && true;
   });
 
-  supportsTransform = supportsTransform && (item.selectedRegions.length>1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
-
+  supportsTransform =
+    supportsTransform &&
+    (item.selectedRegions.length > 1 ||
+      ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
+  
   return (
     <Layer scaleX={scale} scaleY={scale}>
-      { selectionArea.isActive ? (
-        <SelectionRect item={selectionArea}/>
-      ) : (!supportsTransform && item.selectedRegions.length>1 ? (
-        <SelectionBorders item={selectionArea} />
-      ) : null)}
-
+      {selectionArea.isActive ? (
+        <SelectionRect item={selectionArea} />
+      ) : !supportsTransform && item.selectedRegions.length > 1 ? (
+        <SelectionBorders item={item} selectionArea={selectionArea} />
+      ) : null}
       <ImageTransformer
         item={item}
         rotateEnabled={supportsRotate}
-        supportsTransform={supportsTransform}
+        supportsTransform={!disableTransform && supportsTransform}
         supportsScale={supportsScale}
         selectedShapes={item.selectedRegions}
         singleNodeMode={item.selectedRegions.length === 1}
         useSingleNodeRotation={item.selectedRegions.length === 1 && supportsRotate}
-        draggableBackgroundAt={`#${TRANSFORMER_BACK_NAME}`}
+        draggableBackgroundSelector={`#${TRANSFORMER_BACK_ID}`}
       />
     </Layer>
   );
 });
 
 const Selection = observer(({ item, selectionArea }) => {
+
   return (
     <>
-      <SelectedRegions key="selected-regions" selectedRegions={item.selectedRegions} />
-      <SelectionLayer item={item} selectionArea={selectionArea} />
+      <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
+      <SelectionLayer item={item} selectionArea={selectionArea}/>
     </>
   );
 });
@@ -266,7 +369,7 @@ const Crosshair = memo(forwardRef(({ width, height }, ref) => {
 
   const [visible, setVisible] = useState(false);
   const strokeWidth = 1;
-  const dashStyle = [3,3];
+  const dashStyle = [3, 3];
   let enableStrokeScale = true;
 
   if (isFF(FF_DEV_1285)) {
@@ -342,18 +445,20 @@ export default observer(
     canvasX;
     canvasY;
     lastOffsetWidth = -1;
-    propsObserverDispose = [];
+    lastOffsetHeight = -1;
     state = {
       imgStyle: {},
-      ratio: 1,
       pointer: [0, 0],
-    }
+    };
 
     imageRef = createRef();
     crosshairRef = createRef();
 
     handleOnClick = e => {
       const { item } = this.props;
+
+      if (!item.annotation.editable) return;
+
       const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
@@ -367,6 +472,7 @@ export default observer(
       // item.freezeHistory();
       const p = e.target.getParent();
 
+      if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
       if (
@@ -382,7 +488,7 @@ export default observer(
         window.addEventListener("mouseup", this.handleGlobalMouseUp);
         const { offsetX: x, offsetY: y } = e.evt;
         // store the canvas coords for calculations in further events
-        const { left, top } = this.container.getBoundingClientRect();
+        const { left, top } = item.containerRef.getBoundingClientRect();
 
         this.canvasX = left;
         this.canvasY = top;
@@ -465,7 +571,7 @@ export default observer(
           this.crosshairRef.current.updatePointer(x, y);
         }
       }
-    }
+    };
 
     handleError = () => {
       const { item, store } = this.props;
@@ -542,24 +648,21 @@ export default observer(
       );
     }
 
-    onResize = () => {
-      if (!this.container) return;
-      if (this.container.offsetWidth <= 1) return;
-      if (this.lastOffsetWidth === this.container.offsetWidth) return;
+    onResize = debounce(() => {
+      if (!this?.props?.item?.containerRef) return;
+      const { offsetWidth, offsetHeight } = this.props.item.containerRef;
 
-      this.props.item.onResize(this.container.offsetWidth, this.container.offsetHeight, true);
-      this.lastOffsetWidth = this.container.offsetWidth;
-    };
+      if (this.props.item.naturalWidth <= 1) return;
+      if (this.lastOffsetWidth === offsetWidth && this.lastOffsetHeight === offsetHeight) return;
+
+      this.props.item.onResize(offsetWidth, offsetHeight, true);
+      this.lastOffsetWidth = offsetWidth;
+      this.lastOffsetHeight = offsetHeight;
+    }, 16);
 
     componentDidMount() {
       window.addEventListener("resize", this.onResize);
-      this.attachObserver(this.container);
-
-      if (this.props.item && isAlive(this.props.item)) {
-        this.updateImageTransform();
-        this.observerObjectUpdate();
-      }
-
+      this.attachObserver(this.props.item.containerRef);
       this.updateReadyStatus();
 
       hotkeys.addDescription("shift", "Pan image");
@@ -570,31 +673,26 @@ export default observer(
 
       if (node) {
         this.resizeObserver = new ResizeObserver(this.onResize);
-        this.resizeObserver.observe(this.container);
+        this.resizeObserver.observe(node);
       }
-    }
+    };
 
     detachObserver = () => {
       if (this.resizeObserver) {
         this.resizeObserver.disconnect();
         this.resizeObserver = null;
       }
-    }
+    };
 
     componentWillUnmount() {
       this.detachObserver();
       window.removeEventListener("resize", this.onResize);
-      this.propsObserverDispose.forEach(dispose => dispose());
 
       hotkeys.removeDescription("shift");
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
       this.onResize();
-
-      if (prevProps.item !== this.props.item && isAlive(this.props.item)) {
-        this.observerObjectUpdate();
-      }
       this.updateReadyStatus();
     }
 
@@ -606,77 +704,6 @@ export default observer(
       if (item.isReady !== imageRef.current.complete) item.setReady(imageRef.current.complete);
     }
 
-    observerObjectUpdate(){
-      this.propsObserverDispose.forEach(dispose => dispose());
-      this.propsObserverDispose = [
-        'width',
-        'brightnessGrade',
-        'contrastGrade',
-        'zoomScale',
-        'resize',
-        'rotation',
-        'naturalWidth',
-        'naturalHeight',
-        'zoomingPositionY',
-        'zoomingPositionX',
-      ].map((prop) => {
-        return observe(this.props.item, prop, this.updateImageTransform, true);
-      });
-    }
-
-    updateImageTransform = () => {
-      const { item } = this.props;
-
-      let ratio = 1;
-
-      const imgStyle = {
-        width: item.width,
-        transformOrigin: "left top",
-        transform: 'none',
-        filter: `brightness(${item.brightnessGrade}%) contrast(${item.contrastGrade}%)`,
-      };
-
-      const imgTransform = [];
-
-      if (item.zoomScale !== 1) {
-        const { zoomingPositionX, zoomingPositionY } = item;
-
-        imgTransform.push("translate(" + zoomingPositionX + "px," + zoomingPositionY + "px)");
-        imgTransform.push("scale(" + item.resize + ", " + item.resize + ")");
-      }
-
-      if (item.rotation) {
-        const translate = {
-          90: `0, -100%`,
-          180: `-100%, -100%`,
-          270: `-100%, 0`,
-        };
-
-        // there is a top left origin already set for zoom; so translate+rotate
-        imgTransform.push(`rotate(${item.rotation}deg)`);
-        imgTransform.push(`translate(${translate[item.rotation] || "0, 0"})`);
-
-        if ([90, 270].includes(item.rotation)) {
-          // we can not rotate img itself, so we change container's size via css margin hack, ...
-          ratio = item.naturalWidth / item.naturalHeight;
-          // ... prepare image size for transform rotation and use position: absolute
-          imgStyle.width = `${ratio * 100}%`;
-        }
-      }
-
-      if (imgTransform?.length > 0) {
-        imgStyle.transform = imgTransform.join(" ");
-      }
-
-      if (this.imageRef.current) {
-        Object.assign(this.imageRef.current.style, imgStyle);
-      }
-
-      if (this.state.ratio !== ratio) {
-        this.setState({ ratio });
-      }
-    }
-
     renderTools() {
       const { item, store } = this.props;
       const cs = store.annotationStore;
@@ -686,11 +713,12 @@ export default observer(
       const tools = item.getToolsManager().allTools();
 
       return (
-        <Toolbar tools={tools}/>
+        <Toolbar tools={tools} />
       );
     }
 
     render() {
+
       const { item, store } = this.props;
 
       // @todo stupid but required check for `resetState()`
@@ -704,14 +732,13 @@ export default observer(
 
       const containerStyle = {};
 
-      let containerClassName = styles.container;
-
-      if (this.state.ratio !== 1) {
-        containerClassName += " " + styles.rotated;
-      }
+      const containerClassName = styles.container;
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle["maxWidth"] = item.maxwidth;
+        containerStyle["maxHeight"] = item.maxheight;
+        containerStyle["width"] = item.width;
+        containerStyle["height"] = item.height;
       }
 
       const {
@@ -736,49 +763,58 @@ export default observer(
           item={item}
           className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
           style={{
+            flex: 1,
             position: "relative",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
+            alignSelf: "stretch",
           }}
         >
           <div
             ref={node => {
-              this.container = node;
+              item.setContainerRef(node);
               this.attachObserver(node);
             }}
             className={containerClassName}
             style={containerStyle}
           >
-            {this.state.ratio !== 1 && (
-              <div
-                className={styles.filler}
-                style={{ marginTop: `${this.state.ratio * 100}%`, width: item.stageWidth }}
-              />
-            )}
-            <img
-              ref={ref => {
-                item.setImageRef(ref);
-                this.imageRef.current = ref;
+            <div
+              ref={node => {
+                this.filler = node;
               }}
-              src={item._value}
-              onLoad={item.updateImageSize}
-              onError={this.handleError}
-              alt="LS"
+              className={styles.filler}
+              style={{ width: "100%", marginTop: item.fillerHeight }}
             />
+            <div
+              className={styles.frame}
+              style={item.canvasSize}
+            >
+              <img
+                ref={ref => {
+                  item.setImageRef(ref);
+                  this.imageRef.current = ref;
+                }}
+                style={item.imageTransform}
+                src={item._value}
+                onLoad={item.updateImageSize}
+                onError={this.handleError}
+                alt="LS"
+              />
+            </div>
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-          {item.stageWidth <= 1 ? (item.hasTools?<div className={styles.loading}><LoadingOutlined /></div>:null) : (
+          {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
             <Stage
               ref={ref => {
                 item.setStageRef(ref);
               }}
               style={{ position: "absolute", top: 0, left: 0 }}
               className={"image-element"}
-              width={item.stageComponentSize.width}
-              height={item.stageComponentSize.height}
-              scaleX={item.stageScale}
-              scaleY={item.stageScale}
+              width={item.canvasSize.width}
+              height={item.canvasSize.height}
+              scaleX={item.zoomScale}
+              scaleY={item.zoomScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               offsetX={item.stageTranslate.x}
@@ -799,19 +835,20 @@ export default observer(
               onMouseDown={this.handleMouseDown}
               onMouseMove={this.handleMouseMove}
               onMouseUp={this.handleMouseUp}
-              onWheel={item.zoom ? this.handleZoom : () => {}}
+              onWheel={item.zoom ? this.handleZoom : () => {
+              }}
             >
               {/* Hack to keep stage in place when there's no regions */}
               {regions.length === 0 && (
                 <Layer>
-                  <Line points={[0,0,0,1]} stroke="rgba(0,0,0,0)"/>
+                  <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
                 </Layer>
               )}
               {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
               {renderableRegions.map(([groupName, list]) => {
                 const isBrush = groupName.match(/brush/i) !== null;
-                const isSuggestion = groupName.match('suggested') !== null;
+                const isSuggestion = groupName.match("suggested") !== null;
 
                 return list.length > 0 ? (
                   <Regions
@@ -821,11 +858,10 @@ export default observer(
                     useLayers={isBrush === false}
                     suggestion={isSuggestion}
                   />
-                ) : <Fragment key={groupName}/>;
+                ) : <Fragment key={groupName} />;
               })}
-
-              <Selection item={item} selectionArea={item.selectionArea}/>
-              <DrawingRegion item={item}/>
+              <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+              <DrawingRegion item={item} />
 
               {item.crosshair && (
                 <Crosshair

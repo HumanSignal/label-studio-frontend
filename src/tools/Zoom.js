@@ -5,7 +5,7 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { Tool } from "../components/Toolbar/Tool";
-import { IconHandTool, IconMagnifyTool, IconMinifyTool } from "../assets/icons";
+import { IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -23,7 +23,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <Tool
-        icon={<IconMagnifyTool />}
+        icon={<IconZoomIn />}
         ariaLabel="zoom-in"
         label="Zoom In"
         shortcut="ctrl+plus"
@@ -32,7 +32,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <Tool
-        icon={<IconMinifyTool />}
+        icon={<IconZoomOut />}
         ariaLabel="zoom-out"
         label="Zoom Out"
         shortcut="ctrl+minus"
@@ -96,7 +96,10 @@ const _Tool = types
       }
     },
 
-    mousedownEv() {
+    mousedownEv(ev) {
+      // don't pan on right click
+      if (ev.button === 2) return;
+
       self.mode = "moving";
       self.stageContainer.style.cursor = "grabbing";
     },

@@ -23,6 +23,7 @@ import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
 import { VideoRectangles } from "../examples/video_bboxes";
 import { VideoClassification } from "../examples/video";
+import { VideoAudio } from "../examples/video_audio";
 
 /**
  * Image
@@ -32,6 +33,7 @@ import { ImageBboxLarge } from "../examples/image_bbox_large";
 import { ImageKeyPoint } from "../examples/image_keypoints";
 import { ImageMultilabel } from "../examples/image_multilabel";
 import { ImageEllipselabels } from "../examples/image_ellipses";
+import { ImageOCR } from "../examples/image_ocr";
 import { ImagePolygons } from "../examples/image_polygons";
 import { ImageSegmentation } from "../examples/image_segmentation";
 import { ImageTools } from "../examples/image_tools";
@@ -55,6 +57,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
 import { Table } from "../examples/table";
+import { TableCsv } from "../examples/table_csv";
 
 import { TimeSeries } from "../examples/timeseries";
 import { TimeSeriesSingle } from "../examples/timeseries_single";
@@ -64,7 +67,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageTools;
+const data = ImageBbox;
 
 function getData(task) {
   if (task && task.data) {
@@ -131,7 +134,9 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
+  console.log('julio params', params);
   const options = {
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
     onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,

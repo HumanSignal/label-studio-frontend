@@ -299,6 +299,10 @@ const Model = types
       const labels = { [control.valueType]: control.selectedValues() };
       const area = self.annotation.createResult(range, labels, control, self);
 
+      if (getRoot(self).autoAnnotation) {
+        area.makeDynamic();
+      }
+
       area.notifyDrawingFinished();
 
       area._range = range._range;

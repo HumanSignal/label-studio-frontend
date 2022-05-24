@@ -45,9 +45,9 @@ examples.forEach(example => {
     if (regionsCount) {
       const restored = await LabelStudio.serialize();
 
-      Asserts.notDeepEqualWithTolerance(result, restored);
-      for (let i = result.length; i--; ) {
-        Asserts.deepEqualWithTolerance(Helpers.omitBy(result[i], isLabels), restored[i]);
+      Asserts.notDeepEqualWithTolerance(result, restored, 1);
+      for (let i = result.length; i--;) {
+        Asserts.deepEqualWithTolerance(Helpers.omitBy(result[i], isLabels), restored[i], 1);
       }
     }
   });
@@ -81,11 +81,12 @@ examples.forEach(example => {
     if (regionsCount) {
       const restored = await LabelStudio.serialize();
 
-      Asserts.notDeepEqualWithTolerance(result, restored);
-      for (let i = result.length; i--; ) {
+      Asserts.notDeepEqualWithTolerance(result, restored, 1);
+      for (let i = result.length; i--;) {
         Asserts.deepEqualWithTolerance(
           Helpers.omitBy(result[i], (val, key) => key === "from_name" || isLabels(val, key)),
           Helpers.omitBy(restored[i], (val, key) => key === "from_name" || isLabels(val, key)),
+          1,
         );
       }
     }
@@ -163,8 +164,8 @@ const MULTIPLE_TYPE = "multiple";
 
     const restored = await LabelStudio.serialize();
 
-    Asserts.notDeepEqualWithTolerance(result[0], restored[0]);
-    Asserts.deepEqualWithTolerance(Helpers.omitBy(result[0], isLabels), Helpers.omitBy(restored[0], isLabels));
+    Asserts.notDeepEqualWithTolerance(result[0], restored[0], 1);
+    Asserts.deepEqualWithTolerance(Helpers.omitBy(result[0], isLabels), Helpers.omitBy(restored[0], isLabels), 1);
     assert.strictEqual(restored[0].value.labels.length, 0);
     await clickLabelWithLengthExpection(2, 1, 1);
     switch (type) {
@@ -227,5 +228,6 @@ Scenario(`Consistency of empty labels`, async ({ I, LabelStudio, AtSidebar, AtIm
   Asserts.deepEqualWithTolerance(
     restored[0].value,
     convertToImageSize({ x: 200, y: 200, width: 100, height: 100, rotation: 0, rectanglelabels: [] }),
+    1,
   );
 });

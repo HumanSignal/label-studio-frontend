@@ -15,6 +15,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { EditableRegion } from "./EditableRegion";
 
 const Model = types
   .model({
@@ -38,6 +39,10 @@ const Model = types
     useTransformer: false,
     supportsRotate: false,
     supportsScale: false,
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+    ],
   }))
   .views(self => ({
     get store() {
@@ -153,6 +158,7 @@ const KeyPointRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   KonvaRegionMixin,
+  EditableRegion,
   Model,
 );
 
@@ -167,7 +173,7 @@ const HtxKeyPointView = ({ item }) => {
     includeFill: true,
     defaultFillColor: "#000",
     defaultStrokeColor: "#fff",
-    defaultFillOpacity: (item.style ?? item.tag) ? 0.6 : 1,
+    defaultOpacity: (item.style ?? item.tag) ? 0.6 : 1,
     defaultStrokeWidth: 2,
   });
 
@@ -207,20 +213,8 @@ const HtxKeyPointView = ({ item }) => {
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
-        dragBoundFunc={createDragBoundFunc(item.parent, pos => {
-          const r = item.parent.stageWidth;
-          const b = item.parent.stageHeight;
-
-          let { x, y } = pos;
-
-          if (x < 0) x = 0;
-          if (y < 0) y = 0;
-
-          if (x > r) x = r;
-          if (y > b) y = b;
-
-          return { x, y };
-        })}
+        dragBoundFunc={createDragBoundFunc(item)}
+        transformsEnabled="position"
         onTransformEnd={e => {
           const t = e.target;
 

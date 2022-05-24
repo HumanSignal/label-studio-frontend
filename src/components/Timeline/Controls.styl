@@ -1,7 +1,7 @@
 .timeline-controls
   &__counter
     height 36px
-    width 115px
+    min-width 115px
     display flex
     align-items center
     justify-content center
@@ -12,6 +12,7 @@
     font-size 16px
     line-height 19px
     color #000
+    padding 0 8px
 
     span
       opacity 0.4
@@ -31,7 +32,7 @@
 
   &__main-controls
     display flex
-    max-width 390px
+    max-width 310px
     justify-content space-between
     width 390px
 
@@ -47,8 +48,27 @@
       opacity 0.3
 
   &__time
+    height 36px
     display flex
-    color rgba(#000, 0.4)
+    font-size 16px
+    border-radius 4px
+    color rgba(#000, 0.6)
+    box-shadow inset 0px 0px 0px 1px rgba(0, 0, 0, 0.1)
+
+    &-section
+      display flex
+      height 100%
+      padding 0 8px
+      align-items center
+
+      span
+        opacity 0.48
+
+        &::before
+          content ":"
+
+      & + &
+        border-left 1px solid rgba(#000, 0.1)
 
 .timeline-time
   padding 0 5px

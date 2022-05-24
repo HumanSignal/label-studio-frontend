@@ -6,8 +6,13 @@
   flex-direction column
   list-style-type none
 
+  ul, li
+    display block
+    list-style-type none
+
   &__item
     height 48px
+    width 100%
     display flex
     cursor pointer
     padding 0 13px
@@ -43,7 +48,7 @@
       color #000
       background-color rgba(0, 0, 0, 0.08)
 
-    &_active:not(.sidebar__pin)
+    &_active:not(.sidebar__pin):not(&_clickable)
       pointer-events none
 
     &:hover &-icon, &_active &-icon

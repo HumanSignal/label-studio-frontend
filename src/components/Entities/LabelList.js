@@ -9,11 +9,13 @@ export const LabelList = observer(({ regionStore }) => {
   const treeData = regionStore.asLabelsTree((item, idx, isLabel, children, onClick) => {
     return {
       key: item.id,
-      title: isLabel ? (
-        <LabelItem item={item} idx={idx} regions={children} regionStore={regionStore} />
-      ) : (
-        <RegionItem item={item} idx={idx} onClick={onClick}/>
-      ),
+      title: (data) => {
+        return isLabel ? (
+          <LabelItem item={item} idx={idx} regions={data.children} regionStore={regionStore} />
+        ) : (
+          <RegionItem item={item} idx={idx} onClick={onClick}/>
+        );
+      },
     };
   });
 

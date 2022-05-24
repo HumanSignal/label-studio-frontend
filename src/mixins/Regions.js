@@ -19,6 +19,8 @@ const RegionsMixin = types
     // Dynamic preannotations enabled
     dynamic: false,
 
+    locked: false,
+
     origin: types.optional(types.enumeration([
       'prediction',
       'prediction-changed',
@@ -49,6 +51,8 @@ const RegionsMixin = types
     },
 
     get editable() {
+      if (self.locked === true) return false;
+
       return self.readonly === false && self.annotation.editable === true;
     },
 
@@ -62,6 +66,10 @@ const RegionsMixin = types
 
     get inSelection() {
       return self.annotation?.regionStore.isSelected(self);
+    },
+
+    get isReady() {
+      return true;
     },
 
     getConnectedDynamicRegions(selfExcluding) {
@@ -90,6 +98,14 @@ const RegionsMixin = types
 
       beforeDestroy() {
         self.notifyDrawingFinished({ destroy: true });
+      },
+
+      setLocked(locked){
+        self.locked = locked;
+      },
+
+      makeDynamic() {
+        self.dynamic = true;
       },
 
       // All of the below accept size as an argument

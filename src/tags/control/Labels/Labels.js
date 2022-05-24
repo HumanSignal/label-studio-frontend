@@ -15,6 +15,8 @@ import { Block } from "../../../utils/bem";
 import { customTypes } from "../../../core/CustomTypes";
 import { defaultStyle } from "../../../core/Constants";
 import "../Label";
+import DynamicChildrenMixin from "../../../mixins/DynamicChildrenMixin";
+import { FF_DEV_2007_DEV_2008, isFF } from "../../../utils/feature-flags";
 
 /**
  * Use the Labels tag to create a set of labels that can be assigned to identified regions. Use with the Label tag to specify the values of labels to assign to regions.
@@ -53,13 +55,15 @@ const TagAttrs = types.model({
   // TODO this will move away from here
   groupdepth: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "1"),
+  opacity: types.optional(customTypes.range(), "0.2"),
   fillcolor: types.optional(customTypes.color, "#f48a42"),
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(customTypes.color, "#f48a42"),
-  fillopacity: types.optional(customTypes.range(), "0.2"),
+  fillopacity: types.maybeNull(customTypes.range()),
   allowempty: types.optional(types.boolean, false),
+
+  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 });
 
 /**
@@ -78,6 +82,9 @@ const ModelAttrs = types.model({
 const Model = LabelMixin.views(self => ({
   get shouldBeUnselected() {
     return self.choice === "single";
+  },
+  get defaultChildType() {
+    return "label";
   },
 })).actions(self => ({
   afterCreate() {
@@ -121,6 +128,7 @@ const LabelsModel = types.compose(
   "LabelsModel",
   ModelAttrs,
   TagAttrs,
+  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

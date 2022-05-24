@@ -1,6 +1,5 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from "react";
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { Button, Form, Input } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react";
 import { destroy, isAlive, types } from "mobx-state-tree";
 
@@ -18,6 +17,8 @@ import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
 import { Block, Elem } from "../../../utils/bem";
 import "./TextArea.styl";
+import { IconTrash } from "../../../assets/icons";
+import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 
 const { TextArea } = Input;
 
@@ -125,128 +126,152 @@ const Model = types.model({
   get result() {
     return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
   },
-})).actions(self => ({
-  getSerializableValue() {
-    const texts = self.regions.map(s => s._value);
+})).actions(self => {
+  let lastActiveElement = null;
+  let lastActiveElementModel = null;
 
-    if (texts.length === 0) return;
+  return {
+    getSerializableValue() {
+      const texts = self.regions.map(s => s._value);
 
-    return { text: texts };
-  },
+      if (texts.length === 0) return;
 
-  needsUpdate() {
-    self.updateFromResult(self.result?.mainValue);
-  },
+      return { text: texts };
+    },
 
-  requiredModal() {
-    InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
-  },
+    needsUpdate() {
+      self.updateFromResult(self.result?.mainValue);
+    },
 
-  setResult(value) {
-    const values = Array.isArray(value) ? value : [value];
+    requiredModal() {
+      InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
 
-    values.forEach(v => self.createRegion(v));
-  },
+    setResult(value) {
+      const values = Array.isArray(value) ? value : [value];
 
-  updateFromResult(value) {
-    self.regions = [];
-    value && self.setResult(value);
-  },
+      values.forEach(v => self.createRegion(v));
+    },
 
-  setValue(value) {
-    self._value = value;
-  },
+    updateFromResult(value) {
+      self.regions = [];
+      value && self.setResult(value);
+    },
 
-  remove(region) {
-    const index = self.regions.indexOf(region);
+    setValue(value) {
+      self._value = value;
+    },
 
-    if (index < 0) return;
-    self.regions.splice(index, 1);
-    destroy(region);
-    self.onChange();
-  },
+    remove(region) {
+      const index = self.regions.indexOf(region);
 
-  copyState(obj) {
-    self.regions = obj.regions.map(r => cloneNode(r));
-  },
+      if (index < 0) return;
+      self.regions.splice(index, 1);
+      destroy(region);
+      self.onChange();
+    },
 
-  perRegionCleanup() {
-    self.regions = [];
-  },
+    copyState(obj) {
+      self.regions = obj.regions.map(r => cloneNode(r));
+    },
 
-  createRegion(text, pid) {
-    const r = TextAreaRegionModel.create({ pid, _value: text });
+    perRegionCleanup() {
+      self.regions = [];
+    },
 
-    self.regions.push(r);
+    createRegion(text, pid) {
+      const r = TextAreaRegionModel.create({ pid, _value: text });
 
-    return r;
-  },
+      self.regions.push(r);
 
-  onChange() {
-    if (self.result) {
-      self.result.area.setValue(self);
-    } else {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
+      return r;
+    },
 
-        if (!area) return null;
-        area.setValue(self);
+    onChange() {
+      if (self.result) {
+        self.result.area.setValue(self);
       } else {
-        self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+        if (self.perregion) {
+          const area = self.annotation.highlightedNode;
+
+          if (!area) return null;
+          area.setValue(self);
+        } else {
+          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+        }
       }
-    }
-  },
+    },
 
-  addText(text, pid) {
-    self.createRegion(text, pid);
-    self.onChange();
-  },
+    addText(text, pid) {
+      self.createRegion(text, pid);
+      self.onChange();
+    },
 
-  beforeSend() {
-    if (self._value && self._value.length) {
-      self.addText(self._value);
-      self._value = "";
-    }
-  },
+    beforeSend() {
+      if (self._value && self._value.length) {
+        self.addText(self._value);
+        self._value = "";
+      }
+    },
 
-  // add unsubmitted text when user switches region
-  submitChanges() {
-    self.beforeSend();
-  },
+    // add unsubmitted text when user switches region
+    submitChanges() {
+      self.beforeSend();
+    },
 
-  deleteText(text) {
-    destroy(text);
-  },
+    deleteText(text) {
+      destroy(text);
+    },
 
-  onShortcut(value) {
-    self.setValue(self._value + value);
-  },
+    onShortcut(value) {
+      if (isFF(FF_DEV_1564_DEV_1565)) {
+        if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
+        // Do nothing if active element is disappeared
+        if (self === lastActiveElementModel && !self.showSubmit) return;
+        if (!lastActiveElement.parentElement) return;
 
-  toStateJSON() {
-    if (!self.regions.length) return;
+        lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, "end");
+        lastActiveElementModel.setValue(lastActiveElement.value);
+      } else {
+        self.setValue(self._value + value);
+      }
+    },
 
-    const toname = self.toname || self.name;
-    const tree = {
-      id: self.pid,
-      from_name: self.name,
-      to_name: toname,
-      type: "textarea",
-      value: {
-        text: self.regions.map(r => r._value),
-      },
-    };
+    toStateJSON() {
+      if (!self.regions.length) return;
 
-    return tree;
-  },
+      const toname = self.toname || self.name;
+      const tree = {
+        id: self.pid,
+        from_name: self.name,
+        to_name: toname,
+        type: "textarea",
+        value: {
+          text: self.regions.map(r => r._value),
+        },
+      };
 
-  fromStateJSON(obj) {
-    let { text } = obj.value;
+      return tree;
+    },
 
-    if (!Array.isArray(text)) text = [text];
+    fromStateJSON(obj) {
+      let { text } = obj.value;
 
-    text.forEach(t => self.addText(t, obj.id));
-  },
-}));
+      if (!Array.isArray(text)) text = [text];
+
+      text.forEach(t => self.addText(t, obj.id));
+    },
+
+    setLastFocusedElement(element, model = self) {
+      lastActiveElement = element;
+      lastActiveElementModel = model;
+    },
+
+    returnFocus() {
+      lastActiveElement?.focus?.();
+    },
+  };
+});
 
 const TextAreaModel = types.compose(
   "TextAreaModel",
@@ -261,6 +286,11 @@ const TextAreaModel = types.compose(
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
+  const onFocus = useCallback((ev, model) => {
+    if (isFF(FF_DEV_1564_DEV_1565)) {
+      item.setLastFocusedElement(ev.target, model);
+    }
+  }, [item]);
 
   const props = {
     name: item.name,
@@ -274,6 +304,7 @@ const HtxTextArea = observer(({ item }) => {
 
       item.setValue(value);
     },
+    onFocus,
   };
 
   if (rows > 1) {
@@ -330,7 +361,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.regions.length > 0 && (
         <div style={{ marginBottom: "1em" }}>
           {item.regions.map(t => (
-            <HtxTextAreaRegion key={t.id} item={t}/>
+            <HtxTextAreaRegion key={t.id} item={t} onFocus={onFocus}/>
           ))}
         </div>
       )}
@@ -339,19 +370,27 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFocus, control }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control, collapsed }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
   const inputRef = useRef();
+  const displayValue = useMemo(() => {
+    if (collapsed) {
+      return (value ?? "").split(/\n/)[0] ?? "";
+    }
+
+    return value;
+  }, [value, collapsed]);
 
   const inputProps = {
     ref: inputRef,
     className: "ant-input " + styles.input,
-    value,
+    value: displayValue,
     autoSize: isTextarea ? { minRows: 1 } : null,
     onChange: e => {
-      onChange(idx, e.target.value);
+      if (!collapsed) onChange(idx, e.target.value);
     },
+    readOnly: readOnly || collapsed,
     onFocus,
   };
 
@@ -364,22 +403,41 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFo
       }
     };
   }
+
   return (
     <Elem name="item">
       <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/>
+      { (!collapsed && !readOnly) && (
+        <Elem
+          name="action"
+          tag={Button}
+          icon={<IconTrash />}
+          size="small"
+          type="text"
+          onClick={()=>{onDelete(idx);}}
+        />
+      ) }
     </Elem>
   );
 });
 
-const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocus }) => {
+const HtxTextAreaResult = observer(({
+  item,
+  control,
+  firstResultInputRef,
+  onFocus,
+  collapsed,
+}) => {
   const value = item.mainValue;
+  const editable = item.editable && item.from_name.editable && !item.area.readonly;
+
   const changeHandler = useCallback((idx, val) => {
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1, val);
     item.setValue(newValue);
   }, [value]);
+
   const deleteHandler = useCallback((idx) => {
     const newValue = value.toJSON();
 
@@ -389,13 +447,23 @@ const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocu
 
   return value.map((line, idx) => {
     return (
-      <HtxTextAreaResultLine key={idx} idx={idx} value={line} onChange={changeHandler} onDelete={deleteHandler} control={control} ref={idx === 0 ? firstResultInputRef : null}
-        onFocus={onFocus}/>
+      <HtxTextAreaResultLine
+        key={idx}
+        idx={idx}
+        value={line}
+        readOnly={!editable}
+        onChange={changeHandler}
+        onDelete={deleteHandler}
+        control={control}
+        ref={idx === 0 ? firstResultInputRef : null}
+        onFocus={onFocus}
+        collapsed={collapsed}
+      />
     );
   });
 });
 
-const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed }) => {
+const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, outliner, color }) => {
   const rows = parseInt(item.rows);
   const isTextArea = rows > 1;
   const isActive = item.area === area;
@@ -406,6 +474,10 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const expand = useCallback(() => {
     if (collapsed) {
       setCollapsed(false);
+
+      if (!area.isSelected) {
+        area.annotation.selectArea(area);
+      }
     }
   }, [collapsed]);
 
@@ -425,6 +497,11 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
   const mainInputRef = useRef();
   const firstResultInputRef = useRef();
   const lastFocusRequest = useRef(0);
+  const styles = useMemo(() => {
+    return color ? {
+      '--border-color': color,
+    } : {};
+  }, [color]);
 
   useEffect(() => {
     if (isActive && shouldFocus && lastFocusRequest.current < area.perRegionFocusRequest) {
@@ -448,11 +525,15 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
     placeholder: item.placeholder,
     autoSize: isTextArea ? { minRows: 1 } : null,
     onChange: ev => {
+      if (collapsed) return;
+
       const { value } = ev.target;
 
       item.setValue(value);
     },
-    onFocus: () => {
+    onFocus: (ev) => {
+      ev.stopPropagation();
+      ev.preventDefault();
       if (!area.isSelected) {
         area.annotation.selectArea(area);
       }
@@ -481,12 +562,22 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
 
   if (showAddButton) itemStyle["marginBottom"] = 0;
 
-  const showSubmit = !result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions));
+  const showSubmit = (!result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions)))
+  && !area.readonly;
 
   if (!isAlive(item) || !isAlive(area)) return null;
-  return (
-    <Block name="textarea-tag" mod={{ mode: item.mode }}>
-      {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
+
+  return (result || showSubmit) && (
+    <Block name="textarea-tag" mod={{ mode: item.mode, outliner }} style={styles}>
+      {result ? (
+        <HtxTextAreaResult
+          control={item}
+          item={result}
+          collapsed={collapsed}
+          firstResultInputRef={firstResultInputRef}
+          onFocus={expand}
+        />
+      ) : null}
 
       {showSubmit && (
         <Elem name="form"
@@ -497,8 +588,13 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed })
             }
             return false;
           }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
-          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} />
+          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} onClick={(e) => {
+            e.stopPropagation();
+          }} />
         </Elem>
       )}
     </Block>

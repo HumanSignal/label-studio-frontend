@@ -130,7 +130,7 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  * rootRef: React.RefObject<HTMLElement>
  * }}
  */
-const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }) => {
+const RelationItemObserver = observer(({ relation, startNode, endNode, visible, ...rest }) => {
   const nodes = [
     startNode.getRegionElement
       ? startNode.getRegionElement()
@@ -160,8 +160,17 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, ...rest }
     return () => clearTimeout(timer);
   }, [nodes, render]);
 
+  const visibility = visible && relation.visible;
+
   return render ? (
-    <RelationItem id={relation.id} startNode={startNode} endNode={endNode} direction={relation.direction} {...rest} />
+    <RelationItem
+      id={relation.id}
+      startNode={startNode}
+      endNode={endNode}
+      direction={relation.direction}
+      visible={visibility}
+      {...rest}
+    />
   ) : null;
 });
 

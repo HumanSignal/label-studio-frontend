@@ -158,6 +158,7 @@ const DrawingTool = types
         if (!self.beforeCommitDrawing()) {
           self.deleteRegion();
           if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
+          self._resetState();
         } else {
           self._finishDrawing();
         }
@@ -318,6 +319,11 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         setTimeout(()=>{
           self._finishDrawing();
         });
+      },
+      cleanupUncloseableShape() {
+        self.deleteRegion();
+        if (self.control.type === self.tagTypes.stateTypes) self.annotation.unselectAll(true);
+        self._resetState();
       },
       mousedownEv(ev, [x, y]) {
         lastPoint = { x, y };

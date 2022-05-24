@@ -5,14 +5,14 @@ import Constants from "../core/Constants";
 import NormalizationMixin from "../mixins/Normalization";
 import RegionsMixin from "../mixins/Regions";
 import Utils from "../utils";
-import { AudioPlusModel } from "../tags/object/AudioPlus";
+import { AudioModel } from "../tags/object/AudioNext";
 import { AreaMixin } from "../mixins/AreaMixin";
 import Registry from "../core/Registry";
 
 const Model = types
   .model("AudioRegionModel", {
     type: "audioregion",
-    object: types.late(() => types.reference(AudioPlusModel)),
+    object: types.late(() => types.reference(AudioModel)),
 
     start: types.number,
     end: types.number,
@@ -28,6 +28,8 @@ const Model = types
     },
 
     wsRegionElement(wsRegion) {
+      if (!wsRegion) return null;
+
       const elID = wsRegion.id;
       const el = document.querySelector(`[data-id="${elID}"]`);
 
@@ -86,11 +88,20 @@ const Model = types
       const color = Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
       // eslint-disable-next-line no-unused-expressions
 
-      self._ws_region?.update({ color });
+      try {
+        self._ws_region?.update({ color });
+      } catch {
+        /**
+         * Sometimes this method is called too soon in the new UI so it fails.
+         * Will be good on the next execution
+         * */
+      }
     },
 
     updateAppearenceFromState() {
       if (self._ws_region?.update) {
+        self._ws_region.start = self.start;
+        self._ws_region.end = self.end;
         self.applyCSSClass(self._ws_region);
       }
     },
@@ -211,5 +222,6 @@ const AudioRegionModel = types.compose(
 );
 
 Registry.addRegionType(AudioRegionModel, "audioplus");
+Registry.addRegionType(AudioRegionModel, "audio");
 
 export { AudioRegionModel };

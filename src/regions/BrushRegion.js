@@ -19,6 +19,7 @@ import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { RegionWrapper } from "./RegionWrapper";
 import { Geometry } from "../components/RelationsOverlay/Geometry";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import IsReadyMixin from "../mixins/IsReadyMixin";
 
 const highlightOptions = {
   shadowColor: "red",
@@ -303,7 +304,7 @@ const Model = types
       },
 
       updateImageSize(wp, hp, sw, sh) {
-        if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
+        if (self.parent.stageWidth > 1 && self.parent.stageHeight > 1) {
           self.touches.forEach(stroke => stroke.updateImageSize(wp, hp, sw, sh));
 
           self.needsUpdate = self.needsUpdate + 1;
@@ -388,6 +389,7 @@ const BrushRegionModel = types.compose(
   NormalizationMixin,
   AreaMixin,
   KonvaRegionMixin,
+  IsReadyMixin,
   Model,
 );
 
@@ -448,7 +450,10 @@ const HtxBrushView = ({ item }) => {
     if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
     const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
 
-    img.onload = () => setImage(img);
+    img.onload = () => {
+      setImage(img);
+      item.setReady(true);
+    };
   }, [
     item.rle,
     item.parent,
@@ -520,7 +525,18 @@ const HtxBrushView = ({ item }) => {
       highlightedImageRef.current.src = dataUrl;
       done = true;
     };
-  }, [item.touches.length, item.strokeColor, item.parent.stageScale, store.annotationStore.selected?.id, item.parent?.zoomingPositionX, item.parent?.zoomingPositionY, item.parent?.stageWidth, item.parent?.stageHeight]);
+  }, [
+    item.touches.length,
+    item.strokeColor,
+    item.parent.stageScale,
+    store.annotationStore.selected?.id,
+    item.parent?.zoomingPositionX,
+    item.parent?.zoomingPositionY,
+    item.parent?.stageWidth,
+    item.parent?.stageHeight,
+    item.rle,
+    image,
+  ]);
 
   if (!item.parent) return null;
 

@@ -16,6 +16,7 @@ import { parseValue } from "../../utils/data";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
+import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -53,7 +54,9 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
-  maxwidth: types.optional(types.string, "750px"),
+  height: types.maybeNull(types.string),
+  maxwidth: types.optional(types.string, "100%"),
+  maxheight: types.optional(types.string, "calc(100vh - 194px)"),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
@@ -211,12 +214,6 @@ const Model = types.model({
   naturalWidth: types.optional(types.integer, 1),
   naturalHeight: types.optional(types.integer, 1),
 
-  /**
-   * Initial width and height of the image
-   */
-  initialWidth: types.optional(types.integer, 1),
-  initialHeight: types.optional(types.integer, 1),
-
   stageWidth: types.optional(types.integer, 1),
   stageHeight: types.optional(types.integer, 1),
 
@@ -229,8 +226,8 @@ const Model = types.model({
    * Coordinates of left top corner
    * Default: { x: 0, y: 0 }
    */
-  zoomingPositionX: types.maybeNull(types.number),
-  zoomingPositionY: types.maybeNull(types.number),
+  zoomingPositionX: types.optional(types.number, 0),
+  zoomingPositionY: types.optional(types.number, 0),
 
   /**
    * Brightness of Canvas
@@ -266,6 +263,14 @@ const Model = types.model({
 }).volatile(() => ({
   currentImage: 0,
   stageRatio: 1,
+  // Container's sizes causing limits to calculate a scale factor
+  containerWidth: 1,
+  containerHeight: 1,
+
+  stageZoom: 1,
+  stageZoomX: 1,
+  stageZoomY: 1,
+  currentZoom: 1,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -352,11 +357,19 @@ const Model = types.model({
   },
 
   get stageScale() {
-    return self.zoomScale * self.stageRatio;
+    return self.zoomScale;
   },
 
   get hasTools() {
     return !!self.getToolsManager().allTools()?.length;
+  },
+
+  get fillerHeight() {
+    if (self.isSideways) {
+      return `${self.naturalWidth / self.naturalHeight * 100}%`;
+    } else {
+      return `${self.naturalHeight / self.naturalWidth * 100}%`;
+    }
   },
 
   /**
@@ -398,16 +411,34 @@ const Model = types.model({
     return getType(name).name;
   },
 
+  get isSideways() {
+    return (self.rotation + 360) % 180 === 90;
+  },
+
   get stageComponentSize() {
-    if ((self.rotation + 360) % 180 === 90) {
+    if (self.isSideways) {
       return {
-        width: self.stageHeight * self.stageRatio,
-        height: self.stageWidth * self.stageRatio,
+        width: self.stageHeight,
+        height: self.stageWidth,
       };
     }
     return {
-      width: self.stageWidth * self.stageRatio,
-      height: self.stageHeight * self.stageRatio,
+      width: self.stageWidth,
+      height: self.stageHeight,
+    };
+  },
+
+  get canvasSize() {
+    if (self.isSideways) {
+      return {
+        width: Math.round(self.naturalHeight * self.stageZoomX),
+        height: Math.round(self.naturalWidth * self.stageZoomY),
+      };
+    }
+
+    return {
+      width: Math.round(self.naturalWidth * self.stageZoomX),
+      height: Math.round(self.naturalHeight * self.stageZoomY),
     };
   },
 
@@ -416,6 +447,42 @@ const Model = types.model({
   },
   get isDrawing() {
     return !!self.drawingRegion;
+  },
+
+  get imageTransform() {
+    const imgStyle = {
+      width: `${self.stageWidth}px`,
+      height: `${self.stageHeight}px`,
+      transformOrigin: "left top",
+      transform: "none",
+      filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
+    };
+    const imgTransform = [];
+
+    if (self.zoomScale !== 1) {
+      const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
+
+      imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
+      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
+    }
+
+    if (self.rotation) {
+      const translate = {
+        90: `0, -100%`,
+        180: `-100%, -100%`,
+        270: `-100%, 0`,
+      };
+
+      // there is a top left origin already set for zoom; so translate+rotate
+      imgTransform.push(`rotate(${self.rotation}deg)`);
+      imgTransform.push(`translate(${translate[self.rotation] || "0, 0"})`);
+
+    }
+
+    if (imgTransform?.length > 0) {
+      imgStyle.transform = imgTransform.join(" ");
+    }
+    return imgStyle;
   },
 }))
 
@@ -556,54 +623,114 @@ const Model = types.model({
     /**
      * Set zoom
      */
-    setZoom(scale, x, y) {
-      self.resize = scale;
-      self.zoomScale = scale;
-      self.zoomingPositionX = x;
-      self.zoomingPositionY = y;
+    setZoom(scale) {
+      self.currentZoom = scale;
+
+      // cool comment about all this stuff
+      const maxScale = self.isSideways
+        ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+        : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+      const coverScale = self.isSideways
+        ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+        : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+
+      if (maxScale > 1) { // image < container
+        if (scale < maxScale) { // scale = 1 or before stage size is max
+          self.stageZoom = scale; // scale stage
+          self.zoomScale = 1; // don't scale image
+        } else {
+          self.stageZoom = maxScale; // scale stage to max
+          self.zoomScale = scale / maxScale; // scale image for the rest scale
+        }
+      } else { // image > container
+        if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
+          self.stageZoom = maxScale; // stage squizzed
+          self.zoomScale = scale; // scale image usually
+        } else { // negative zoom bigger than image negative scale
+          self.stageZoom = scale; // squize stage more
+          self.zoomScale = 1; // don't scale image
+        }
+      }
+
+      if (self.zoomScale > 1) {
+        // zoomScale scales image above maxScale, so scale the rest of stage the same way
+        const z = Math.min(maxScale * self.zoomScale, coverScale);
+
+        if (self.containerWidth / self.naturalWidth > self.containerHeight / self.naturalHeight) {
+          self.stageZoomX = z;
+          self.stageZoomY = self.stageZoom;
+        } else {
+          self.stageZoomX = self.stageZoom;
+          self.stageZoomY = z;
+        }
+      } else {
+        self.stageZoomX = self.stageZoom;
+        self.stageZoomY = self.stageZoom;
+      }
+    },
+
+    updateImageAfterZoom() {
+      const { stageWidth, stageHeight } = self;
+
+      self._recalculateImageParams();
+
+      if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
+        self._updateRegionsSizes({
+          width: self.stageWidth,
+          height: self.stageHeight,
+          naturalWidth: self.naturalWidth,
+          naturalHeight: self.naturalHeight,
+        });
+      }
     },
 
     setZoomPosition(x, y) {
-      self.zoomingPositionX = clamp(
-        x,
-        self.stageComponentSize.width - self.stageComponentSize.width * self.zoomScale,
-        0,
-      );
-      self.zoomingPositionY = clamp(
-        y,
-        self.stageComponentSize.height - self.stageComponentSize.height * self.zoomScale,
-        0,
-      );
+      const min = {
+        x: self.containerWidth - self.stageComponentSize.width * self.zoomScale,
+        y: self.containerHeight - self.stageComponentSize.height * self.zoomScale,
+      };
+
+      self.zoomingPositionX = clamp(x, min.x, 0);
+      self.zoomingPositionY = clamp(y, min.y, 0);
     },
 
-    handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
+    handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
       if (val) {
-        self.freezeHistory();
-        let stageScale = self.stageScale;
-        let zoomScale = self.zoomScale;
+        let zoomScale = self.currentZoom;
+
+        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
+        if (self.negativezoom !== true && zoomScale <= 1) {
+          self.setZoom(1);
+          self.setZoomPosition(0, 0);
+          self.updateImageAfterZoom();
+          return;
+        }
+        if (zoomScale <= 1) {
+          self.setZoom(zoomScale);
+          self.setZoomPosition(0, 0);
+          self.updateImageAfterZoom();
+          return;
+        }
+
+        // DON'T TOUCH THIS
+        let stageScale = self.zoomScale;
 
         const mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
           y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
         };
 
-        stageScale = val > 0 ? stageScale * self.zoomBy : stageScale / self.zoomBy;
-        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
-
+        self.setZoom(zoomScale);
+        
+        stageScale = self.zoomScale;
+        
         const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,
         };
 
-        if (self.negativezoom !== true && zoomScale <= 1) {
-          self.setZoom(1, 0, 0);
-          return;
-        }
-        if (zoomScale <= 1) {
-          self.setZoom(zoomScale, 0, 0);
-          return;
-        }
-        self.setZoom(zoomScale, zoomingPosition.x, zoomingPosition.y);
+        self.setZoomPosition(zoomingPosition.x, zoomingPosition.y);
+        self.updateImageAfterZoom();
       }
     },
 
@@ -619,17 +746,16 @@ const Model = types.model({
       self.imageRef = ref;
     },
 
+    setContainerRef(ref) {
+      self.containerRef = ref;
+    },
+
     setStageRef(ref) {
       self.stageRef = ref;
 
       const currentTool = self.getToolsManager().findSelectedTool();
 
       currentTool?.updateCursor?.();
-
-      // Konva updates ref repeatedly and this breaks brush scaling
-      if (self.initialWidth > 1) return;
-      self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;
-      self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },
 
     // @todo remove
@@ -641,12 +767,15 @@ const Model = types.model({
       self.rotation = (self.rotation + degree + 360) % 360;
       let ratioK = 1 / self.stageRatio;
 
-      if ((self.rotation + 360) % 180 === 90) {
-        self.stageRatio = self.initialWidth / self.initialHeight;
+      if (self.isSideways) {
+        self.stageRatio = self.naturalWidth / self.naturalHeight;
       } else {
         self.stageRatio = 1;
       }
       ratioK = ratioK * self.stageRatio;
+
+      self.setZoom(self.currentZoom);
+
       if (degree === -90) {
         this.setZoomPosition(
           self.zoomingPositionY * ratioK,
@@ -663,27 +792,35 @@ const Model = types.model({
           self.zoomingPositionX * ratioK,
         );
       }
+
+      self.updateImageAfterZoom();
     },
 
-    _updateImageSize({ width, height, naturalWidth, naturalHeight, userResize }) {
-      if (naturalWidth !== undefined) {
-        self.naturalWidth = naturalWidth;
-        self.naturalHeight = naturalHeight;
+    _recalculateImageParams() {
+      self.stageWidth = Math.round(self.naturalWidth * self.stageZoom);
+      self.stageHeight = Math.round(self.naturalHeight * self.stageZoom);
+    },
+
+    _updateImageSize({ width, height, userResize }) {
+      if (self.naturalWidth === undefined) {
+        return;
       }
-      if ((self.rotation + 360) % 180 === 90) {
-        self.stageWidth = width;
-        self.stageHeight = Math.round((width / self.initialWidth) * self.initialHeight);
-      } else {
-        self.stageWidth = width;
-        self.stageHeight = height;
+      if (width > 1 && height > 1) {
+        self.containerWidth = width;
+        self.containerHeight = height;
+
+        // reinit zoom to calc stageW/H
+        self.setZoom(self.currentZoom);
+
+        self._recalculateImageParams();
       }
 
       self.sizeUpdated = true;
       self._updateRegionsSizes({
         width: self.stageWidth,
         height: self.stageHeight,
-        naturalWidth,
-        naturalHeight,
+        naturalWidth: self.naturalWidth,
+        naturalHeight: self.naturalHeight,
         userResize,
       });
     },
@@ -698,11 +835,12 @@ const Model = types.model({
     },
 
     updateImageSize(ev) {
-      const { width, height, naturalWidth, naturalHeight } = ev.target;
+      const { naturalWidth, naturalHeight } = ev.target;
+      const { offsetWidth, offsetHeight } = self.containerRef;
 
-      self.initialWidth = width;
-      self.initialHeight = height;
-      self._updateImageSize({ width, height, naturalWidth, naturalHeight });
+      self.naturalWidth = naturalWidth;
+      self.naturalHeight = naturalHeight;
+      self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
@@ -804,7 +942,7 @@ const Model = types.model({
     },
   }));
 
-const ImageModel = types.compose("ImageModel", TagAttrs, Model, ObjectBase, AnnotationMixin);
+const ImageModel = types.compose("ImageModel", TagAttrs, ObjectBase, AnnotationMixin, IsReadyWithDepsMixin, Model);
 
 const HtxImage = inject("store")(ImageView);
 

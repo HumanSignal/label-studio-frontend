@@ -7,17 +7,12 @@ import { isDefined } from "../utils/utilities";
 
 export const HighlightMixin = types
   .model()
-  .volatile(()  =>({
-    _highlightedText: "",
-  }))
   .views(self => ({
     get _hasSpans() {
+      // @todo is it possible that only some spans are connected?
       return self._spans ? (
         self._spans.every(span => span.isConnected)
       ) : false;
-    },
-    get highlightedText() {
-      return self.text || self._highlightedText;
     },
   }))
   .actions(self => ({
@@ -26,15 +21,17 @@ export const HighlightMixin = types
      */
     applyHighlight() {
       if (self.parent.isLoaded === false) return;
-      // Avoid calling this method twice
+
       // spans in iframe disappear on every annotation switch, so check for it
       // in iframe spans still isConnected, but window is missing
-      if (self._hasSpans && self._spans[0]?.ownerDocument?.defaultView) {
-        console.warn("Spans already created");
+      const isReallyConnected = Boolean(self._spans?.[0]?.ownerDocument?.defaultView);
+
+      // Avoid calling this method twice
+      if (self._hasSpans && isReallyConnected) {
         return;
       }
 
-      const range = self.rangeFromGlobalOffset();
+      const range = self.getRangeToHighlight();
       const root = self._getRootNode();
 
       // Avoid rendering before view is ready
@@ -47,6 +44,7 @@ export const HighlightMixin = types
 
       const labelColor = self.getLabelColor();
       const identifier = guidGenerator(5);
+      // @todo use label-based stylesheets created only once
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
       const classNames = ["htx-highlight", stylesheet.className];
 
@@ -70,8 +68,8 @@ export const HighlightMixin = types
 
     updateHighlightedText() {
       if (!self.text) {
-        // Concatinating of spans' innerText is up to 10 times faster, but loses "\n"
-        const range = self.rangeFromGlobalOffset();
+        // Concatenating of spans' innerText is up to 10 times faster, but loses "\n"
+        const range = self.getRangeToHighlight();
         const root = self._getRootNode();
 
         if (!range || !root) {
@@ -81,9 +79,8 @@ export const HighlightMixin = types
 
         selection.removeAllRanges();
         selection.addRange(range);
-        self._highlightedText = String(selection);
+        self.text = String(selection);
         selection.removeAllRanges();
-
       }
     },
 
@@ -267,7 +264,7 @@ const createSpanStylesheet = (document, identifier, color) => {
 
   const rules = {
     [className]: `
-      background-color: var(${variables.color});
+      background-color: var(${variables.color}) !important;
       cursor: var(${variables.cursor}, pointer);
       border: 1px dashed transparent;
     `,
@@ -281,7 +278,7 @@ const createSpanStylesheet = (document, identifier, color) => {
       line-height: 0;
     `,
     [classNames.active]: `
-      color: ${Utils.Colors.contrastColor(initialActiveColor)};
+      color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
       ${variables.color}: ${initialActiveColor}
     `,
     [classNames.highlighted]: `

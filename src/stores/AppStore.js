@@ -2,18 +2,20 @@
 
 import { flow, getEnv, types } from "mobx-state-tree";
 
-import AnnotationStore from "./AnnotationStore";
-import { Hotkey } from "../core/Hotkey";
 import InfoModal from "../components/Infomodal/Infomodal";
+import { Hotkey } from "../core/Hotkey";
+import ToolsManager from "../tools/Manager";
+import Utils from "../utils";
+import messages from "../utils/messages";
+import { guidGenerator } from "../utils/unique";
+import { delay, isDefined } from "../utils/utilities";
+import AnnotationStore from "./Annotation/store";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User, { UserExtended } from "./UserStore";
-import Utils from "../utils";
-import { delay, isDefined } from "../utils/utilities";
-import messages from "../utils/messages";
-import { guidGenerator } from "../utils/unique";
-import ToolsManager from "../tools/Manager";
+import { UserLabels } from "./UserLabels";
+import { FF_DEV_1536, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -66,7 +68,7 @@ export default types
     /**
      * Debug for development environment
      */
-    debug: types.optional(types.boolean, true),
+    debug: window.HTX_DEBUG === true,
 
     /**
      * Settings of Label Studio
@@ -130,6 +132,8 @@ export default types
     awaitingSuggestions: false,
 
     users: types.optional(types.array(UserExtended), []),
+
+    userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
     return {
@@ -276,7 +280,7 @@ export default types
         hotkeys.addNamed("annotation:skip", () => {
           if (self.annotationStore.viewingAll) return;
 
-          if (self.hasInterface("review")){
+          if (self.hasInterface("review")) {
             self.rejectAnnotation();
           } else {
             self.skipTask();
@@ -393,7 +397,8 @@ export default types
       }
       self.task = Task.create(taskObject);
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
-        self.taskHistory.push({ taskId: self.task.id,
+        self.taskHistory.push({
+          taskId: self.task.id,
           annotationId: null,
         });
       }
@@ -457,7 +462,7 @@ export default types
       entity.dropDraft();
     }
 
-    function updateAnnotation() {
+    function updateAnnotation(extraData) {
       if (self.isSubmitting) return;
 
       const entity = self.annotationStore.selected;
@@ -467,7 +472,7 @@ export default types
       if (!entity.validate()) return;
 
       handleSubmittingFlag(async () => {
-        await getEnv(self).events.invoke('updateAnnotation', self, entity);
+        await getEnv(self).events.invoke('updateAnnotation', self, entity, extraData);
       });
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
@@ -501,7 +506,7 @@ export default types
       }, "Error during accept, try again");
     }
 
-    function rejectAnnotation() {
+    function rejectAnnotation({ comment = null }) {
       if (self.isSubmitting) return;
 
       handleSubmittingFlag(async () => {
@@ -513,7 +518,7 @@ export default types
         const isDirty = entity.history.canUndo;
 
         entity.dropDraft();
-        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity });
+        await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity, comment });
       }, "Error during reject, try again");
     }
 
@@ -586,21 +591,9 @@ export default types
       as.clearHistory();
 
       (history ?? []).forEach(item => {
-        const fixed = isDefined(item.fixed_annotation_history_result);
-        const accepted = item.accepted;
+        const obj = as.addHistory(item);
 
-        const obj = as.addHistory({
-          ...item,
-          pk: guidGenerator(),
-          user: item.created_by,
-          createdDate: item.created_at,
-          acceptedState: accepted ? (fixed ? "fixed" : "accepted") : "rejected",
-          editable: false,
-        });
-
-        const result = item.previous_annotation_history_result ?? [];
-
-        obj.deserializeResults(result, { hidden: true });
+        obj.deserializeResults(item.result ?? [], { hidden: true });
       });
     }
 
