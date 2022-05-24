@@ -96,10 +96,17 @@ const createShape = {
         params: [
           [
             [x - radius, y - radius],
+            [x + radius, y - radius],
             [x + radius, y + radius],
           ],
         ],
-        result: { width: radius * 2, height: radius * 2, rotation: 0, x: x - radius, y: y - radius },
+        result: { 
+          width: radius * 2, 
+          height: radius * 2, 
+          rotation: 0, 
+          x: x - radius, 
+          y: y - radius, 
+        },
       };
     },
     byDoubleClick(x, y, radius, opts = {}) {

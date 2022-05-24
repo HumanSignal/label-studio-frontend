@@ -460,8 +460,10 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
           }
           if (currentMode === DRAG_MODE && startPoint) {
             self.startDrawing(startPoint.x, startPoint.y);
+            self.updateDraw(x, y);
+          } else if (currentMode === DEFAULT_MODE) {
+            self.updateDraw(x, y);
           }
-          self.updateDraw(x, y);
         }
       },
       mousedownEv(ev, [x, y]) {

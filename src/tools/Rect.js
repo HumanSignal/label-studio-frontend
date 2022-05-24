@@ -81,7 +81,7 @@ const _Tool = types
     },
   }));
 
-const RectDrawingTool = isFF(FF_DEV_2132) ? TwoPointsDrawingTool : ThreePointsDrawingTool;
+const RectDrawingTool = isFF(FF_DEV_2132) ? ThreePointsDrawingTool : TwoPointsDrawingTool;
 
 const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, RectDrawingTool, _Tool, AnnotationMixin);
 
