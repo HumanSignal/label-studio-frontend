@@ -95,17 +95,16 @@ const createShape = {
         action: "clickPointsKonva",
         params: [
           [
-            [x - radius, y - radius],
-            [x + radius, y - radius],
+            [x , y],
             [x + radius, y + radius],
           ],
         ],
         result: { 
-          width: radius * 2, 
-          height: radius * 2, 
+          width: radius, 
+          height: radius, 
           rotation: 0, 
-          x: x - radius, 
-          y: y - radius, 
+          x, 
+          y, 
         },
       };
     },
@@ -212,7 +211,7 @@ Scenario("Creating regions by various gestures", async function({ I, AtImageView
   for (const [idx, region] of Object.entries(regions)) {
     I.pressKey(region.hotKey);
     AtImageView[region.action](...region.params);
-    AtSidebar.seeRegions(+idx+1);
+    AtSidebar.seeRegions(+idx);
   }
   const result = await I.executeScript(serialize);
 
