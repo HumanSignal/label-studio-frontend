@@ -2,7 +2,7 @@ name: Sync PR
 
 on:
   pull_request_target:
-    types: [ opened ]
+    types: [ opened, closed, converted_to_draft, ready_for_review ]
     branches:
       - master
 
@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: hmarr/debug-action@v2.0.1
+
       - name: Create PR
         uses: actions/github-script@v6
         id: create-pr
@@ -33,6 +34,7 @@ jobs:
                 commit_sha : '${{ github.sha }}',
                 title: '${{ github.event.pull_request.title }}',
                 html_url: '${{ github.event.pull_request.html_url }}',
-                actor: '${{ github.actor }}'
+                actor: '${{ github.actor }}',
+                event_action: '${{ github.event.action }}'
               }
             });
