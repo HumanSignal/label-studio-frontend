@@ -31,5 +31,8 @@ jobs:
                 branch_name: '${{ github.head_ref }}',
                 repo_name: '${{ github.repository }}',
                 commit_sha : '${{ github.sha }}',
+                title: '${{ github.event.pull_request.title }}',
+                html_url: '${{ github.event.pull_request.html_url }}',
+                actor: '${{ github.actor }}'
               }
             });
