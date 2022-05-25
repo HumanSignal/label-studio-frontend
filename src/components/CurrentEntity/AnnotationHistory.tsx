@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Tooltip } from "antd";
 import {
   IconAnnotationAccepted,
   IconAnnotationImported,
@@ -232,7 +233,9 @@ const HistoryItemComponent: FC<{
           )}
           {date && (
             <Elem name="date">
-              {humanDateDiff(date)}
+              <Tooltip placement="topRight" title={new Date(date).toLocaleString()}>
+                {humanDateDiff(date)}
+              </Tooltip>
             </Elem>
           )}
         </Space>
