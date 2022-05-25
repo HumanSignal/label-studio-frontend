@@ -123,10 +123,15 @@ const AnnotationHistoryComponent: FC<any> = ({
                 return;
               }
 
-              if (isSelected) return;
-              if (isLastItem) annotation.toggleDraft(false);
-
-              annotationStore.selectHistory(isLastItem ? null : item);
+              if (isLastItem || isSelected) {
+                // last history state and draft are actual annotation, not from history
+                // and if user clicks on already selected item we should switch to last state
+                annotationStore.selectHistory(null);
+                // if user clicks on last history state we should disable draft to see submitted state
+                annotation.toggleDraft(isSelected);
+              } else {
+                annotationStore.selectHistory(item);
+              }
             }}
           />
         );
