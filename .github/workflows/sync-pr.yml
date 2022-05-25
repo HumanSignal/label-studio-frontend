@@ -1,0 +1,35 @@
+name: Sync PR
+
+on:
+  pull_request_target:
+    types: [ opened ]
+    branches:
+      - master
+
+env:
+  DOWNSTREAM_REPO_OWNER: heartex
+  DOWNSTREAM_REPO: label-studio-enterprise
+
+jobs:
+  sync:
+    name: "Sync"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hmarr/debug-action@v2.0.1
+      - name: Create PR
+        uses: actions/github-script@v6
+        id: create-pr
+        with:
+          github-token: ${{ secrets.GIT_PAT }}
+          script: |
+            const { repo, owner } = context.repo;
+            const result = await github.rest.repos.createDispatchEvent({
+              owner: '${{ env.DOWNSTREAM_REPO_OWNER }}',
+              repo: '${{ env.DOWNSTREAM_REPO }},
+              event_type: 'upstream_repo_update',
+              client_payload: {
+                branch_name: '${{ github.head_ref }}',
+                repo_name: '${{ github.repository }}',
+                commit_sha : '${{ github.sha }}',
+              }
+            });
