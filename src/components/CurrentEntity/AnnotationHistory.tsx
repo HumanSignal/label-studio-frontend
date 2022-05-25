@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
-import { FC, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   IconAnnotationAccepted,
   IconAnnotationImported,
@@ -10,6 +10,7 @@ import {
   IconAnnotationReviewRemoved,
   IconAnnotationSkipped,
   IconAnnotationSubmitted,
+  IconCheck,
   IconDraftCreated,
   LsSparks
 } from "../../assets/icons";
@@ -57,19 +58,32 @@ const DraftState: FC<{
   const store = annotation.list; // @todo weird name
   const dateCreated = !annotation.isDraftSaving && annotation.draftSaved;
 
+  const [hasUnsavedChanges, setChanges] = useState(false);
+
+  // turn it on when changes just made; off when they we saved
+  useEffect(() => setChanges(true), [annotation.history.history.length]);
+  useEffect(() => setChanges(false), [annotation.draftSaved]);
+
   if (!hasChanges && !annotation.versions.draft) return null;
 
   return (
     <HistoryItem
       key="draft"
       user={annotation.user ?? { email: annotation.createdBy }}
-      date={dateCreated}
-      extra={annotation.isDraftSaving && (
+      date={annotation.draftSaved}
+      extra={annotation.isDraftSaving ? (
         <Elem name="saving">
           <Elem name="spin"/>
-          saving
         </Elem>
-      )}
+      ) : hasUnsavedChanges ? (
+        <Elem name="saving">
+          <Elem name="dot"/>
+        </Elem>
+      ) : hasChanges ? (
+        <Elem name="saving">
+          <Elem name="saved" component={IconCheck} />
+        </Elem>
+      ) : null}
       inline={inline}
       comment=""
       acceptedState="draft_created"
@@ -206,16 +220,14 @@ const HistoryItemComponent: FC<{
         </Space>
 
         <Space size="small">
-
-          {date ? (
+          {extra && (
+            <Elem name="date">{extra}</Elem>
+          )}
+          {date && (
             <Elem name="date">
               {formatDistanceToNow(new Date(date), { addSuffix: true })}
             </Elem>
-          ) : extra ? (
-            <Elem name="date">
-              {extra}
-            </Elem>
-          ) : null}
+          )}
         </Space>
       </Space>
       {(reason || comment) && (
