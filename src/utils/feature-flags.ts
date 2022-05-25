@@ -7,9 +7,6 @@ export const FF_DEV_1170 = "ff_front_1170_outliner_030222_short";
 // Fix stuck userpic
 export const FF_DEV_1507 = "ff_front_DEV_1507_stuck_userpic_210122_short";
 
-// Auto-annotation regions are not visible until refresh
-export const FF_DEV_1555 = "ff_front_dev_1555_auto_annotations_not_visible";
-
 // Fix shortcuts focus and cursor problems
 export const FF_DEV_1564_DEV_1565 = "ff_front_dev_1564_dev_1565_shortcuts_focus_and_cursor_010222_short";
 
@@ -55,6 +52,10 @@ export const FF_DEV_2128 = "ff_dev_2128_html_in_labels_150422_short";
 
 // Fix preselected choices
 export const FF_DEV_2100_A = "ff_dev_2100_preselected_choices_250422_short";
+
+export const FF_DEV_2290 = "ff_front_dev_2290_draft_in_annotation_history_short";
+
+export const FF_DEV_2186 = "ff_front_dev_2186_comments_for_update";
 
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {

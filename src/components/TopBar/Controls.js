@@ -8,7 +8,7 @@ import { IconBan } from "../../assets/icons";
 import "./Controls.styl";
 import { useCallback, useMemo, useState } from "react";
 import { Dropdown } from "../../common/Dropdown/DropdownComponent";
-import { FF_DEV_1593, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1593, FF_DEV_2186, isFF } from "../../utils/feature-flags";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -154,11 +154,11 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       const isUpdate = sentUserGenerate || versions.result;
-      const isRejected = store.task.queue === "Rejected queue";
-      const withComments = store.hasInterface("comments:update");
+      const isRejected = store.task.queue?.includes("Rejected queue");
+      const withComments = isFF(FF_DEV_2186) || store.hasInterface("comments:update");
       let button;
-
-      if (withComments && isRejected && isUpdate) {
+      
+      if (withComments && isUpdate) {
         button = (
           <ActionDialog
             type="update"
