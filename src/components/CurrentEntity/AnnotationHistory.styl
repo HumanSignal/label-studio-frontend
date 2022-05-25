@@ -36,8 +36,11 @@
   &:not(&_disabled)
     cursor pointer
 
-  &:hover:not(&_disabled),
-  &_selected:not(&_disabled)
+  &:hover:not(&_disabled)
+    background-color #f6f6f6
+
+  &_selected:not(&_disabled),
+  &_selected:hover:not(&_disabled)
     background-color #efefef
 
   &__name,
