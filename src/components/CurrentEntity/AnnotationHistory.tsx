@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
-import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   IconAnnotationAccepted,
   IconAnnotationImported,
@@ -55,12 +55,9 @@ const DraftState: FC<{
 }> = observer(({ annotation, inline, isSelected }) => {
   const hasChanges = annotation.history.hasChanges;
   const store = annotation.list; // @todo weird name
+  const dateCreated = !annotation.isDraftSaving && annotation.draftSaved;
 
-  const dateCreated = useMemo(() => {
-    return !annotation.isDraftSaving && annotation.draftSaved;
-  }, [annotation.draftSaved, annotation.isDraftSaving]);
-
-  if (!hasChanges && !annotation.draftSelected) return null;
+  if (!hasChanges && !annotation.versions.draft) return null;
 
   return (
     <HistoryItem
@@ -112,7 +109,7 @@ const AnnotationHistoryComponent: FC<any> = ({
 
         return (
           <HistoryItem
-            key={`h-${id}`}
+            key={id}
             inline={inline}
             user={user ?? { email: item?.createdBy }}
             date={createdDate}
