@@ -49,6 +49,13 @@ const injector = inject(({ store }) => {
   };
 });
 
+const humanDateDiff = (date: string | number) => {
+  const fnsDate = formatDistanceToNow(new Date(date), { addSuffix: true });
+
+  if (fnsDate === "less than a minute ago") return "just now";
+  return fnsDate;
+};
+
 const DraftState: FC<{
   annotation: any,
   inline?: boolean,
@@ -189,7 +196,7 @@ const HistoryItemComponent: FC<{
       case 'prediction': return "From prediction";
       case 'imported': return "Imported";
       case 'skipped': return "Skipped";
-      case "draft_created": return "Created a draft";
+      case "draft_created": return "Draft";
       case "deleted_review": return "Review deleted";
       case "propagated_annotation": return "Propagated";
       default: return null;
@@ -225,7 +232,7 @@ const HistoryItemComponent: FC<{
           )}
           {date && (
             <Elem name="date">
-              {formatDistanceToNow(new Date(date), { addSuffix: true })}
+              {humanDateDiff(date)}
             </Elem>
           )}
         </Space>
