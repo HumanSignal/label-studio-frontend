@@ -23,18 +23,18 @@ jobs:
         with:
           github-token: ${{ secrets.GIT_PAT }}
           script: |
-            const { repo, owner } = context.repo;
             const result = await github.rest.repos.createDispatchEvent({
               owner: '${{ env.DOWNSTREAM_REPO_OWNER }}',
-              repo: '${{ env.DOWNSTREAM_REPO }},
+              repo: '${{ env.DOWNSTREAM_REPO }}',
               event_type: 'upstream_repo_update',
               client_payload: {
                 branch_name: '${{ github.head_ref }}',
                 repo_name: '${{ github.repository }}',
-                commit_sha : '${{ github.sha }}',
+                commit_sha : '${{ github.event.pull_request.head.sha }}',
                 title: '${{ github.event.pull_request.title }}',
                 html_url: '${{ github.event.pull_request.html_url }}',
                 actor: '${{ github.actor }}',
                 event_action: '${{ github.event.action }}'
               }
             });
+            return result
