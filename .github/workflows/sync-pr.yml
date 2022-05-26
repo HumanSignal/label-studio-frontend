@@ -7,7 +7,7 @@ on:
       - master
 
 env:
-  DOWNSTREAM_REPO_OWNER: heartex
+  DOWNSTREAM_REPO_OWNER: heartexlabs
   DOWNSTREAM_REPO: label-studio-enterprise
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
             try {
               return (await github.rest.orgs.getMembershipForUser({
                 org: '${{ env.DOWNSTREAM_REPO_OWNER }}',
-                username: '${{ env.GITHUB_ACTOR }}',
+                username: '${{ github.actor }}',
               }))?.data?.state == "active";
             } catch (error) {
               return false;
@@ -43,11 +43,11 @@ jobs:
             const result = await github.rest.issues.createComment({
               owner,
               repo,
-              issue_number: '${{ github.event.number }} ',
+              issue_number: '${{ github.event.number }}',
               body: [
                 'Hi @${{ github.actor }}!',
                 '',
-                'Unfortunately you don't have membership in ${{ env.DOWNSTREAM_REPO_OWNER }} organization, your PR wasn't synced with ${{ env.DOWNSTREAM_REPO }}.'
+                'Unfortunately you don\'t have membership in ${{ env.DOWNSTREAM_REPO_OWNER }} organization, your PR wasn\'t synced with ${{ env.DOWNSTREAM_REPO }}.'
               ].join('\n')
             });
 
