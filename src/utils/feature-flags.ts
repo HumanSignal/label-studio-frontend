@@ -59,6 +59,8 @@ export const FF_DEV_2186 = "ff_front_dev_2186_comments_for_update";
 
 export const FF_DEV_2458 = "ff_front_dev_2458_comments_for_skip_250522_short";
 
+export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,
