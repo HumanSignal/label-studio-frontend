@@ -55,6 +55,8 @@ export const FF_DEV_2100_A = "ff_dev_2100_preselected_choices_250422_short";
 
 export const FF_DEV_2290 = "ff_front_dev_2290_draft_in_annotation_history_short";
 
+export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,
