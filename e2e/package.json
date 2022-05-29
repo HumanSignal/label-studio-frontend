@@ -5,7 +5,7 @@
   "main": "codecept.conf.js",
   "private": true,
   "scripts": {
-    "test": "echo 'Start' && codeceptjs run --steps",
+    "test": "codeceptjs run-workers 10",
     "test:local": "HEADLESS=true yarn test",
     "test:ci": "HEADLESS=true yarn test",
     "codeceptjs": "codeceptjs run --steps",
