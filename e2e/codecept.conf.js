@@ -25,6 +25,7 @@ exports.config = {
     Playwright: {
       url: "http://localhost:3000",
       show: !headless,
+      restart: 'context',
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
       video: true,
