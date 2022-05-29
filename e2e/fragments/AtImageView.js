@@ -21,30 +21,30 @@ module.exports = {
   },
 
   waitForImage() {
-    I.executeAsyncScript(Helpers.waitForImage);
+    I.executeScript(Helpers.waitForImage);
     I.waitForVisible("canvas", 5);
   },
 
   async getCanvasSize() {
-    const sizes = await I.executeAsyncScript(Helpers.getCanvasSize);
+    const sizes = await I.executeScript(Helpers.getCanvasSize);
 
     return sizes;
   },
 
   async getImageSize() {
-    const sizes = await I.executeAsyncScript(Helpers.getImageSize);
+    const sizes = await I.executeScript(Helpers.getImageSize);
 
     return sizes;
   },
 
   async getImageFrameSize() {
-    const sizes = await I.executeAsyncScript(Helpers.getImageFrameSize);
+    const sizes = await I.executeScript(Helpers.getImageFrameSize);
 
     return sizes;
   },
 
   setZoom(scale, x, y) {
-    I.executeAsyncScript(Helpers.setZoom, scale, x, y);
+    I.executeScript(Helpers.setZoom, [scale, x, y]);
   },
 
   /**
@@ -53,14 +53,14 @@ module.exports = {
    * @param {number} y
    */
   clickKonva(x, y) {
-    I.executeAsyncScript(Helpers.clickKonva, x, y);
+    I.executeScript(Helpers.clickKonva, [x, y]);
   },
   /**
    * Click multiple times on the main Stage
    * @param {number[][]} points
    */
   clickPointsKonva(points) {
-    I.executeAsyncScript(Helpers.clickMultipleKonva, points);
+    I.executeScript(Helpers.clickMultipleKonva, points);
   },
   /**
    * Click multiple times on the main Stage then close Polygon
@@ -68,7 +68,7 @@ module.exports = {
    * @deprecated Use drawByClickingPoints instead
    */
   clickPolygonPointsKonva(points) {
-    I.executeAsyncScript(Helpers.polygonKonva, points);
+    I.executeScript(Helpers.polygonKonva, points);
   },
   /**
    * Dragging between two points
@@ -79,7 +79,7 @@ module.exports = {
    * @deprecated Use drawByDrag instead
    */
   dragKonva(x, y, shiftX, shiftY) {
-    I.executeAsyncScript(Helpers.dragKonva, x, y, shiftX, shiftY);
+    I.executeScript(Helpers.dragKonva, [x, y, shiftX, shiftY]);
   },
 
   /**
@@ -90,7 +90,7 @@ module.exports = {
    * @param {number} tolerance
    */
   async hasPixelColor(x, y, rgbArray, tolerance = 3) {
-    const colorPixels = await I.executeAsyncScript(Helpers.getKonvaPixelColorFromPoint, x, y);
+    const colorPixels = await I.executeScript(Helpers.getKonvaPixelColorFromPoint, [x, y]);
     const hasPixel = Helpers.areEqualRGB(rgbArray, colorPixels, tolerance);
 
     return hasPixel;
@@ -98,25 +98,25 @@ module.exports = {
 
   // Only for debugging
   async whereIsPixel(rgbArray, tolerance = 3) {
-    const points = await I.executeAsyncScript(Helpers.whereIsPixel, rgbArray, tolerance);
+    const points = await I.executeScript(Helpers.whereIsPixel, [rgbArray, tolerance]);
 
     return points;
   },
 
   async countKonvaShapes() {
-    const count = await I.executeAsyncScript(Helpers.countKonvaShapes);
+    const count = await I.executeScript(Helpers.countKonvaShapes);
 
     return count;
   },
 
   async isTransformerExist() {
-    const isTransformerExist = await I.executeAsyncScript(Helpers.isTransformerExist);
+    const isTransformerExist = await I.executeScript(Helpers.isTransformerExist);
 
     return isTransformerExist;
   },
 
   async isRotaterExist() {
-    const isRotaterExist = await I.executeAsyncScript(Helpers.isRotaterExist);
+    const isRotaterExist = await I.executeScript(Helpers.isRotaterExist);
 
     return isRotaterExist;
   },

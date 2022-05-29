@@ -47,7 +47,7 @@ examples.slice(-1).forEach(example =>
     const count = ids.length;
 
     await I.amOnPage("/");
-    await I.executeAsyncScript(initLabelStudio, params);
+    await I.executeScript(initLabelStudio, params);
 
     AtSidebar.seeRegions(count);
 

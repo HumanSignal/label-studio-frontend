@@ -66,10 +66,10 @@ Scenario("Check Rect region for Image", async function({ I, AtImageView, AtSideb
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   AtImageView.waitForImage();
-  I.executeAsyncScript(waitForImage);
+  I.executeScript(waitForImage);
   AtSidebar.seeRegions(1);
   // select first and only region
   I.click(locate('[aria-label="region"]'));
@@ -89,10 +89,10 @@ Scenario("Image with perRegion tags", async function({ I, AtImageView, AtSidebar
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   AtImageView.waitForImage();
-  I.executeAsyncScript(waitForImage);
+  I.executeScript(waitForImage);
   AtSidebar.seeRegions(1);
   // select first and only region
   I.click(locate('[aria-label="region"]'));

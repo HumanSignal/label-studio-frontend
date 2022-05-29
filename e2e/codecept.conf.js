@@ -1,3 +1,5 @@
+require('ts-node/register');
+
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
@@ -16,14 +18,20 @@ const recordVideo = process.env.GIF
 
 // eslint-disable-next-line no-undef
 exports.config = {
-  tests: "./**/*.test.js",
+  timeout: 30000,
+  tests: "./tests/*.test.js",
   output: "./output",
   helpers: {
-    Puppeteer: {
+    Playwright: {
       url: "http://localhost:3000",
       show: !headless,
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
+      video: true,
+      trace: true,
+      uniqueScreenshotNames: true,
+      waitForNavigation: "networkidle",
+      browser: "chromium",
     },
     MouseActions: {
       require: "./helpers/MouseActions.js",
@@ -45,11 +53,20 @@ exports.config = {
     ErrorsCollector: "./fragments/ErrorsCollector.js",
   },
   bootstrap: null,
-  mocha: {},
+  mocha: { bail: true },
   name: "label-studio-frontend",
   plugins: {
     retryFailedStep: {
       enabled: true,
+      minTimeout: 3,
+      defaultIgnoredSteps: [
+        //'amOnPage',
+        //'wait*',
+        'send*',
+        'execute*',
+        'run*',
+        'have*',
+      ],
     },
     screenshotOnFail: {
       enabled: true,
