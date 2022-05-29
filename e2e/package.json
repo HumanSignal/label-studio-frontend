@@ -5,9 +5,9 @@
   "main": "codecept.conf.js",
   "private": true,
   "scripts": {
-    "test": "codeceptjs run-workers 10",
+    "test": "codeceptjs run",
     "test:local": "HEADLESS=true yarn test",
-    "test:ci": "HEADLESS=true yarn test",
+    "test:ci": "HEADLESS=true codeceptjs run-workers 4",
     "codeceptjs": "codeceptjs run --steps",
     "codeceptjs:headless": "HEADLESS=true codeceptjs run --steps",
     "codeceptjs:ui": "codecept-ui --app",
