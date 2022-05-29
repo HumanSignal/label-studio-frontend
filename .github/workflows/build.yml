@@ -66,12 +66,12 @@ jobs:
         done
 
     - name: Run e2e test suite
+      if: github.event_name == 'push'
+      timeout-minutes: 15
       run: |
         set -euo pipefail
         cd e2e
-        yarn install --frozen-lockfile && yarn run test:e2e:headless
-      timeout-minutes: 15
-      if: github.event_name == 'push'
+        yarn install --frozen-lockfile && yarn run test:ci
 
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
