@@ -19,6 +19,7 @@ module.exports.config = {
       url: "http://localhost:3000",
       show: !headless,
       restart: 'context',
+      timeout: 60000,
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
       uniqueScreenshotNames: true,
