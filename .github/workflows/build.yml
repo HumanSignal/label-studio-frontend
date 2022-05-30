@@ -73,6 +73,14 @@ jobs:
         cd e2e
         yarn install --frozen-lockfile && yarn run test:ci
 
+    - name: "Upload e2e coverage to Codecov"
+      uses: codecov/codecov-action@v3.1.0
+      with:
+        name: codecov-general
+        directory: ./e2e/output/coverage
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
+
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:

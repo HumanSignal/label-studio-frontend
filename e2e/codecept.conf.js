@@ -18,7 +18,7 @@ const recordVideo = process.env.GIF
 
 // eslint-disable-next-line no-undef
 exports.config = {
-  timeout: 30000,
+  timeout: 30,
   tests: "./tests/*.test.js",
   output: "./output",
   helpers: {
@@ -28,11 +28,13 @@ exports.config = {
       restart: 'context',
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
-      video: true,
-      trace: true,
       uniqueScreenshotNames: true,
       waitForNavigation: "networkidle",
       browser: "chromium",
+      trace: true,
+      video: true,
+      keepVideoForPassedTests: false,
+      keepTraceForPassedTests: false,
     },
     MouseActions: {
       require: "./helpers/MouseActions.js",
@@ -54,7 +56,12 @@ exports.config = {
     ErrorsCollector: "./fragments/ErrorsCollector.js",
   },
   bootstrap: null,
-  mocha: { bail: true },
+  mocha: {
+    bail: true,
+    reporterOptions: {
+      mochaFile: "output/result.xml",
+    },
+  },
   name: "label-studio-frontend",
   plugins: {
     retryFailedStep: {
@@ -68,6 +75,10 @@ exports.config = {
         'run*',
         'have*',
       ],
+    },
+    coverage: {
+      enabled: true,
+      coverageDir: "output/coverage",
     },
     screenshotOnFail: {
       enabled: true,
