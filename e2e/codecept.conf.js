@@ -18,7 +18,7 @@ const recordVideo = process.env.GIF
 
 // eslint-disable-next-line no-undef
 exports.config = {
-  timeout: 30,
+  timeout: 240,
   tests: "./tests/*.test.js",
   output: "./output",
   helpers: {
@@ -77,7 +77,7 @@ exports.config = {
       ],
     },
     coverage: {
-      enabled: true,
+      enabled: headless,
       coverageDir: "output/coverage",
     },
     screenshotOnFail: {
