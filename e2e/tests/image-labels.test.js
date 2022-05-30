@@ -1,7 +1,6 @@
-/* global Feature, Scenario, locate */
+/* global Data, Feature, locate */
 const assert = require("assert");
 const { toKebabCase } = require("strman");
-const Helpers = require("./helpers.js");
 
 Feature("Images' labels type matching");
 
@@ -106,9 +105,21 @@ const createShape = {
   },
 };
 
-Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio, AtImageView, AtSidebar, AtLabels }) => {
-  const shapes = Object.keys(createShape);
-  const config = createConfig({ shapes, props: `strokewidth="5"` });
+const DataStore = Data(Object.keys(createShape));
+
+DataStore.Scenario("Preventing applying labels of mismatch types", async ({
+  I,
+  LabelStudio,
+  AtImageView,
+  AtSidebar,
+  AtLabels,
+  current,
+}) => {
+  const shape = current;
+  const config = createConfig({
+    shapes: [shape],
+    props: `strokewidth="5"`,
+  });
 
   const params = {
     config,
@@ -134,69 +145,73 @@ Scenario("Preventing applying labels of mismatch types", async ({ I, LabelStudio
     },
   ];
 
-  for (const [shapeIdx, shapeName] of Object.entries(shapes)) {
-    for (const creator of Object.values(createShape[shapeName])) {
-      const regions = toolSelectors.map((selector, idx) => {
-        const x1 = size / 3 * idx + offset;
-        const x2 = size / 3 * (idx + 1) - offset;
-        const y1 = size / 3;
-        const y2 = size / 3 * 2;
+  for (const creator of Object.values(createShape[shape])) {
+    const regions = toolSelectors.map((selector, idx) => {
+      const x1 = size / 3 * idx + offset;
+      const x2 = size / 3 * (idx + 1) - offset;
+      const y1 = size / 3;
+      const y2 = size / 3 * 2;
 
-        return creator(x1, y1, x2 - x1, y2 - y1, {
-          shape: shapeName,
-        });
-      });
+      return creator(x1, y1, x2 - x1, y2 - y1, { shape });
+    });
 
-      const labelsCounter = (results, currentLabelName = "Label") => {
-        return results.reduce((counter, result) => {
-          const { type, value } = result;
+    console.log(regions);
 
-          return counter + (type.endsWith("labels") && value[type] && value[type].includes(currentLabelName));
-        }, 0);
-      };
+    const labelsCounter = (results, currentLabelName = "Label") => {
+      return results.reduce((counter, result) => {
+        const { type, value } = result;
 
-      const toolSelector = `[aria-label=${toKebabCase(`${shapeName}-tool`)}]`;
+        return counter + (type.endsWith("labels") && value[type] && value[type].includes(currentLabelName));
+      }, 0);
+    };
 
-      LabelStudio.init(params);
-      AtImageView.waitForImage();
-      AtSidebar.seeRegions(0);
-      I.click(toolSelector);
-      await AtImageView.lookForStage();
-      I.say(`${shapeName}: Drawing.`);
+    const toolSelector = `[aria-label=${toKebabCase(`${shape}-tool`)}]`;
 
-      regions.forEach((region, idx) => {
-        toolSelectors[idx](shapeName, shapeIdx);
-        AtImageView[region.action](...region.params);
-        AtSidebar.seeRegions(idx + 1);
-        I.pressKey(["u"]);
-      });
+    LabelStudio.init(params);
+    AtImageView.waitForImage();
+    AtSidebar.seeRegions(0);
+    I.click(toolSelector);
+    await AtImageView.lookForStage();
+    I.say(`${shape}: Drawing.`);
 
-      I.click(toolSelector);
-      I.say(`${shapeName}: Labeling.`);
-      for (const currentShapeName of shapes) {
-        const currentLabelName = currentShapeName + "Append";
-        let expectedCount = 0;
+    regions.forEach((region, idx) => {
+      toolSelectors[idx](shape, 0);
+      AtImageView[region.action](...region.params);
+      AtSidebar.seeRegions(idx + 1);
+      I.pressKey(["u"]);
+    });
 
-        regions.forEach((region, idx) => {
-          AtSidebar.clickRegion(+idx + 1);
-          AtLabels.clickLabel(currentLabelName);
-          expectedCount += shapeName === currentShapeName;
-          I.pressKey(["u"]);
-        });
-        const results = await LabelStudio.serialize();
+    I.click(toolSelector);
+    I.say(`${shape}: Labeling.`);
 
-        assert.strictEqual(expectedCount, labelsCounter(results, currentLabelName));
-      }
+    const currentLabelName = shape + "Append";
 
-      const expectedCount = 3;
+    regions.forEach((region, idx) => {
+      AtSidebar.clickRegion(+idx + 1);
+      AtLabels.clickLabel(currentLabelName);
+      I.pressKey(["u"]);
+    });
 
-      regions.forEach((region, idx) => {
-        AtSidebar.clickRegion(+idx + 1);
-        AtLabels.clickLabel("Label");
-      });
-      const results = await LabelStudio.serialize();
+    const results1 = await LabelStudio.serialize();
 
-      assert.strictEqual(expectedCount, labelsCounter(results, "Label"));
-    }
+    assert.strictEqual(
+      labelsCounter(results1, currentLabelName),
+      3,
+      "Labels number don't match",
+    );
+
+    regions.forEach((region, idx) => {
+      I.say(`Click label ${idx}`);
+      AtSidebar.clickRegion(+idx + 1);
+      AtLabels.clickLabel("Label");
+    });
+
+    const results = await LabelStudio.serialize();
+
+    assert.strictEqual(
+      labelsCounter(results, "Label"),
+      3,
+      "Labels number don't match",
+    );
   }
 });

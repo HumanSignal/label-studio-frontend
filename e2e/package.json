@@ -8,6 +8,7 @@
     "test": "codeceptjs run",
     "test:local": "HEADLESS=true yarn test",
     "test:ci": "HEADLESS=true codeceptjs run-workers 4",
+    "test:ci:no-worker": "HEADLESS=true codeceptjs run",
     "codeceptjs": "codeceptjs run --steps",
     "codeceptjs:headless": "HEADLESS=true codeceptjs run --steps",
     "codeceptjs:ui": "codecept-ui --app",

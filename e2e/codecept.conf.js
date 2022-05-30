@@ -4,24 +4,17 @@ require('ts-node/register');
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
 
-// codecept can make screenshot on every step and create html
-// with "gif" and annotations. possible usage:
-// GIF=true yarn e2e:test:headless e2e/present_feature_test.js
-const recordVideo = process.env.GIF
-  ? {
-    stepByStepReport: {
-      enabled: true,
-      deleteSuccessful: false,
-    },
-  }
-  : null;
-
-// eslint-disable-next-line no-undef
-exports.config = {
+module.exports.config = {
   timeout: 240,
   tests: "./tests/*.test.js",
   output: "./output",
   helpers: {
+    // Puppeteer: {
+    //   url: "http://localhost:3000",
+    //   show: !headless,
+    //   waitForAction: headless ? 100 : 1200,
+    //   windowSize: "1200x900",
+    // },
     Playwright: {
       url: "http://localhost:3000",
       show: !headless,
@@ -83,6 +76,5 @@ exports.config = {
     screenshotOnFail: {
       enabled: true,
     },
-    ...recordVideo,
   },
 };
