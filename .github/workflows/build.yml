@@ -32,7 +32,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/yarn.lock') }}
+        key: yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('e2e/yarn.lock') }}
+        restore-keys: |
+          yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
     - name: Print Yarn cache size
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
