@@ -17,7 +17,7 @@
     "codeceptjs:demo:ui": "codecept-ui --app  -c node_modules/@codeceptjs/examples",
     "show-trace": "playwright show-trace"
   },
-  "dependencies": {
+  "devDependencies": {
     "@types/mkdirp": "^1.0.1",
     "@types/node-fetch": "^2.5.8",
     "@types/puppeteer": "^5.4.3",
@@ -29,10 +29,9 @@
     "strman": "2.0.1",
     "ts-node": "^10.0.0",
     "typescript": "^4.5.3",
+    "v8-to-istanbul": "^9.0.0",
     "xml2js": "^0.4.23",
-    "xmlbuilder": "^15.1.1"
-  },
-  "devDependencies": {
+    "xmlbuilder": "^15.1.1",
     "@codeceptjs/configure": "^0.7.0",
     "@codeceptjs/examples": "^1.2.1",
     "@codeceptjs/ui": "^0.4.6",
