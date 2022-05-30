@@ -21,6 +21,7 @@ module.exports = {
   },
 
   waitForImage() {
+    I.say("Waiting for image to be loaded");
     I.executeScript(Helpers.waitForImage);
     I.waitForVisible("canvas", 5);
   },
@@ -190,6 +191,7 @@ module.exports = {
   clickAt(x, y) {
     I.scrollPageToTop();
     I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
   },
   dblClickAt(x, y) {
     I.scrollPageToTop();

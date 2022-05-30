@@ -1,11 +1,9 @@
-require('ts-node/register');
-
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
 
 module.exports.config = {
-  timeout: 240,
+  timeout: 60 * 30, // Time out after 30 minutes
   tests: "./tests/*.test.js",
   output: "./output",
   helpers: {
@@ -18,8 +16,8 @@ module.exports.config = {
     Playwright: {
       url: "http://localhost:3000",
       show: !headless,
-      restart: 'context',
-      timeout: 60000,
+      restart: 'session',
+      timeout: 60000, // Action timeout after 60 seconds
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
       uniqueScreenshotNames: true,
@@ -78,4 +76,5 @@ module.exports.config = {
       enabled: true,
     },
   },
+  require: ['ts-node/register'],
 };
