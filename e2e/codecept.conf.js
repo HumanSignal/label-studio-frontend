@@ -59,8 +59,8 @@ module.exports.config = {
   name: "label-studio-frontend",
   plugins: {
     retryFailedStep: {
-      enabled: true,
-      minTimeout: 3,
+      enabled: false,
+      minTimeout: 1000,
       defaultIgnoredSteps: [
         //'amOnPage',
         //'wait*',
