@@ -38,6 +38,7 @@ const Model = types
     height: types.number,
 
     rotation: 0,
+    rotationAtCreation: 0,
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(() => ({
@@ -140,11 +141,26 @@ const Model = types
     draw(x, y, points) {
       if(points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
       } else if(points.length === 2) {
-        const h = self.getDistanceBetweenPoints({ x, y }, self, false);
+        const { y: firstPointY, x: firstPointX } = points[0];
+        const { y: secondPointY, x: secondPointX } = points[1];
+        const h = secondPointY - y;
+        const isAboveTheLine = y < secondPointY;
+        const isSecondLeftOfFirst = secondPointX < firstPointX;
 
-        self.height = Math.sqrt(Math.pow(h, 2) - Math.pow(self.width, 2));
+        if(isAboveTheLine && !isSecondLeftOfFirst || !isAboveTheLine && isSecondLeftOfFirst) {
+          self.x = secondPointX;
+          self.y = secondPointY;
+          self.rotation = self.rotationAtCreation + 180;
+        } else {
+          self.x = firstPointX;
+          self.y = firstPointY;
+          self.rotation = self.rotationAtCreation;
+        }
+
+        console.log("rectRegion draw", isAboveTheLine, isSecondLeftOfFirst, self.rotationAtCreation, self.rotation);
+        self.height = Math.abs(h);
       }
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
     },
