@@ -178,7 +178,10 @@ const Model = types
 
         // clean up the html — remove scripts and iframes
         // nodes count better be the same, so replace them with stubs
+
+
         val = val
+          .toString()
           .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
             return [opener,body.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi,"<!--ls-stub></ls-stub-->"),closer].join("");
           })
