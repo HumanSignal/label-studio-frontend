@@ -1,5 +1,6 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
+import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
 import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
 import { DraftPanel } from "../DraftPanel/DraftPanel";
@@ -109,7 +110,10 @@ export const CurrentEntity = injector(observer(({
       {/* {showHistory && !entity.userGenerate && ( */}
       {showHistory && (
         <>
-          <Elem name="title">Annotation History</Elem>
+          <Elem tag={Space} spread name="title">
+            Annotation History
+            <Elem name="id">#{entity.pk ?? entity.id}</Elem>
+          </Elem>
           <AnnotationHistory/>
         </>
       )}

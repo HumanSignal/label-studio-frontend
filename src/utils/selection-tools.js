@@ -1,3 +1,4 @@
+import { FF_DEV_2480, isFF } from "./feature-flags";
 import { clamp, isDefined } from "./utilities";
 
 const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
@@ -275,11 +276,13 @@ const applyTextGranularity = (selection, granularity) => {
  * @param {HTMLElement} commonContainer
  * @param {HTMLElement} node
  * @param {number} offset
+ * @param {string} direction forward, backward, forward-next, backward-next
+ *                           "-next" when we need to skip node if it's a text node
  */
-const textNodeLookup = (commonContainer, node, offset, direction) => {
+const textNodeLookup = (commonContainer, node, offset, direction = "forward") => {
   const startNode = node === commonContainer ? node.childNodes[offset] : node;
 
-  if (isTextNode(startNode)) return startNode;
+  if (isTextNode(startNode) && !direction.endsWith("next")) return startNode;
 
   const walker = commonContainer.ownerDocument.createTreeWalker(commonContainer, NodeFilter.SHOW_ALL);
   let currentNode = walker.nextNode();
@@ -290,7 +293,9 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
     currentNode = walker.nextNode();
   }
 
-  if (currentNode && direction === "backward") return lastTextNode;
+  if (currentNode && direction.startsWith("backward")) return lastTextNode;
+
+  if (direction === "forward-next") currentNode = walker.nextNode();
 
   while (currentNode) {
     if (isTextNode(currentNode)) return currentNode;
@@ -312,10 +317,27 @@ const fixRange = range => {
     range.setStart(startContainer, 0);
   }
 
+  if (isFF(FF_DEV_2480) && startContainer.wholeText.length === startOffset) {
+    do {
+      startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward-next");
+    } while (/^\s*$/.test(startContainer.wholeText));
+    range.setStart(startContainer, 0);
+  }
+
   if (!isTextNode(endContainer)) {
+    let isIncluded = false;
+
     endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward");
     if (!endContainer) return null;
-    const isIncluded = !!range.toString().match(endContainer.wholeText)?.length;
+
+    if (isFF(FF_DEV_2480)) {
+      while (/^\s*$/.test(endContainer.wholeText)) {
+        endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward-next");
+      }
+      isIncluded = range.toString().trimEnd().endsWith(endContainer.wholeText.trimEnd());
+    } else {
+      isIncluded = range.toString().includes(endContainer.wholeText);
+    }
 
     range.setEnd(endContainer, isIncluded ? endContainer.length : 0);
   }
