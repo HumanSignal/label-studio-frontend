@@ -1,4 +1,4 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario, locate, pause */
 
 const { initLabelStudio, serialize, selectText } = require("./helpers");
 
@@ -210,7 +210,7 @@ Scenario("NER Text from url with text saved", async function({ I }) {
   assert.deepEqual(result, resultsFromUrl);
 });
 
-Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) {
+Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I, LabelStudio }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -222,7 +222,8 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) 
     window.OLD_LS_SECURE_MODE = window.LS_SECURE_MODE;
     window.LS_SECURE_MODE = true;
   });
-  I.executeScript(initLabelStudio, params);
+
+  LabelStudio.init(params);
 
   I.see("In SECURE MODE"); // error about valueType in secure mode
   I.dontSee("American political leader");
@@ -232,7 +233,7 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) 
   });
 });
 
-Scenario("NER Text with SECURE MODE", async function({ I }) {
+Scenario("NER Text with SECURE MODE", async function({ I, LabelStudio }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
@@ -244,7 +245,10 @@ Scenario("NER Text with SECURE MODE", async function({ I }) {
     window.OLD_LS_SECURE_MODE = window.LS_SECURE_MODE;
     window.LS_SECURE_MODE = true;
   });
-  I.executeScript(initLabelStudio, params);
+  LabelStudio.init(params);
+
+  I.waitForElement(".lsf-richtext__line", 60);
+
   I.see("American political leader");
 
   // restore saved result and check it back that it didn't change
