@@ -40,10 +40,10 @@ jobs:
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
     - name: Install dependencies
-      run: rm package-lock.json && yarn install
+      run: yarn install
 
     - name: Unit tests
-      run: yarn test
+      run: yarn test && yarn test:coverage
 
     - name: Build distribution package
       timeout-minutes: 10
@@ -94,7 +94,9 @@ jobs:
       uses: codecov/codecov-action@v3.1.0
       with:
         name: codecov-general
-        directory: ./e2e/output/coverage
+        directory: |
+          - ./coverage
+          - ./e2e/output/coverage
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true
 
