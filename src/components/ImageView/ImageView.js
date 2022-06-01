@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_2497, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -739,6 +739,12 @@ export default observer(
         containerStyle["maxHeight"] = item.maxheight;
         containerStyle["width"] = item.width;
         containerStyle["height"] = item.height;
+      }
+
+      if(isFF(FF_DEV_2497)){
+        if(!item.smoothing || item.zoomScale > 2){
+          containerStyle["imageRendering"] = 'pixelated';
+        }
       }
 
       const {

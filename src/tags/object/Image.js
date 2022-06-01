@@ -35,6 +35,7 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} value                      - Data field containing a path or URL to the image
+ * @param {boolean=} [smoothing=true]         - Enable smoothing
  * @param {string=} [width=100%]              - Image width
  * @param {string=} [maxWidth=750px]          - Maximum image width
  * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
@@ -57,6 +58,7 @@ const TagAttrs = types.model({
   height: types.maybeNull(types.string),
   maxwidth: types.optional(types.string, "100%"),
   maxheight: types.optional(types.string, "calc(100vh - 194px)"),
+  smoothing: types.optional(types.boolean, true),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
