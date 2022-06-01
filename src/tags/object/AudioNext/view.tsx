@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
-import { Block, Elem } from "../../../utils/bem";
+import { Block } from "../../../utils/bem";
 
 interface AudioNextProps {
   item: any;
@@ -19,6 +19,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
+
     item.onLoad(data.surfer);
     item.onReady();
   }, []);
@@ -71,6 +72,10 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
       return playing;
     });
   }, [item, playing]);
+
+  console.log('heartex item.regions', item.regions);
+  console.log('heartex item', item);
+
 
   return (
     <ObjectTag item={item}>
