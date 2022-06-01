@@ -57,6 +57,8 @@ export const FF_DEV_2290 = "ff_front_dev_2290_draft_in_annotation_history_short"
 
 export const FF_DEV_2186 = "ff_front_dev_2186_comments_for_update";
 
+export const FF_DEV_2132 = "ff_front_dev_2132_rotating_bounding_box";
+
 export const FF_DEV_2458 = "ff_front_dev_2458_comments_for_skip_250522_short";
 
 export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
