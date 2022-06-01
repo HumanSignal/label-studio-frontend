@@ -10,7 +10,6 @@ function onSubmitAnnotation() {}
  * Callback on update annotation
  */
 function onUpdateAnnotation() {}
-
 /**
  * Callback on delete annotation
  */
