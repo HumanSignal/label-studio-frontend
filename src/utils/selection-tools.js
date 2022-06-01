@@ -342,7 +342,8 @@ const fixRange = range => {
         endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward-next");
         if (!endContainer) return null;
       }
-      isIncluded = range.toString().trimEnd().endsWith(endContainer.wholeText.trimEnd());
+      // we skip empty whitespace only text nodes, so we need the found one to be included
+      isIncluded = true;
     } else {
       isIncluded = range.toString().includes(endContainer.wholeText);
     }
