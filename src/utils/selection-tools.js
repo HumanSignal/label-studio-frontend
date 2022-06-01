@@ -308,20 +308,27 @@ const textNodeLookup = (commonContainer, node, offset, direction = "forward") =>
  * @param {Range} range
  */
 const fixRange = range => {
-  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
-  let { startContainer, endContainer } = range;
+  const { endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startOffset, startContainer, endContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
     if (!startContainer) return null;
     range.setStart(startContainer, 0);
+    startOffset = 0;
   }
 
-  if (isFF(FF_DEV_2480) && startContainer.wholeText.length === startOffset) {
+  const selectionFromTheEnd = startContainer.wholeText.length === startOffset;
+  const isBasicallyEmpty = textNode => /^\s*$/.test(textNode.wholeText);
+
+  if (isFF(FF_DEV_2480) && (selectionFromTheEnd || isBasicallyEmpty(startContainer))) {
     do {
       startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward-next");
-    } while (/^\s*$/.test(startContainer.wholeText));
+      if (!startContainer) return null;
+    } while (isBasicallyEmpty(startContainer));
+
     range.setStart(startContainer, 0);
+    startOffset = 0;
   }
 
   if (!isTextNode(endContainer)) {
@@ -333,6 +340,7 @@ const fixRange = range => {
     if (isFF(FF_DEV_2480)) {
       while (/^\s*$/.test(endContainer.wholeText)) {
         endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward-next");
+        if (!endContainer) return null;
       }
       isIncluded = range.toString().trimEnd().endsWith(endContainer.wholeText.trimEnd());
     } else {
