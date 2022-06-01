@@ -81,7 +81,7 @@ jobs:
       run: |
         set -euo pipefail
         cd e2e
-        yarn run test:ci
+        yarn run test:ci 2
 
     - name: "Convert coverage report to Istanbul"
       if: github.event_name == 'push'

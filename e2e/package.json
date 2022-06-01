@@ -7,7 +7,7 @@
   "scripts": {
     "test": "codeceptjs run",
     "test:local": "HEADLESS=true yarn test",
-    "test:parallel": "codeceptjs run-workers 5",
+    "test:parallel": "codeceptjs run-workers",
     "test:ci": "HEADLESS=true yarn run test:parallel",
     "test:ci:no-worker": "HEADLESS=true codeceptjs run",
     "codeceptjs": "codeceptjs run --steps",

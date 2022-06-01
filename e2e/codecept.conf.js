@@ -16,7 +16,7 @@ module.exports.config = {
     Playwright: {
       url: "http://localhost:3000",
       show: !headless,
-      restart: 'session',
+      restart: true,
       timeout: 60000, // Action timeout after 60 seconds
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
