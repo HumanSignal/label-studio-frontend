@@ -454,6 +454,13 @@ export default observer(
     imageRef = createRef();
     crosshairRef = createRef();
 
+    constructor(props) {
+      super(props);
+
+      if(isFF(FF_DEV_2497) && typeof props.item.smoothing !== 'undefined')
+        props.store.settings.setSmoothing(props.item.smoothing);
+    }
+
     handleOnClick = e => {
       const { item } = this.props;
 
@@ -742,7 +749,7 @@ export default observer(
       }
 
       if(isFF(FF_DEV_2497)){
-        if(!item.smoothing || item.zoomScale > 2){
+        if(!this.props.store.settings.enableSmoothing && item.zoomScale > 1.4){
           containerStyle["imageRendering"] = 'pixelated';
         }
       }

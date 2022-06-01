@@ -3,9 +3,13 @@ import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
 import { Hotkey } from "../core/Hotkey";
 import EditorSettings from "../core/settings/editorsettings.json";
 import Utils from "../utils";
+import { FF_DEV_2497, isFF } from "../utils/feature-flags";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
 const SIDEPANEL_MODE_LABELS = "SIDEPANEL_MODE_LABELS";
+
+if(!isFF(FF_DEV_2497))
+  delete EditorSettings.enableSmoothing;
 
 /**
  * Setting store of Label Studio
@@ -58,6 +62,8 @@ const SettingsModel = types
     // showScore: types.optional(types.boolean, false),
 
     preserveSelectedTool: types.optional(types.boolean, true),
+
+    enableSmoothing: isFF(FF_DEV_2497) ? types.optional(types.boolean, true) : types.undefined,
   })
   .views(self => ({
     get annotation() {
@@ -197,6 +203,14 @@ const SettingsModel = types
 
     togglePredictionsPanel() {
       self.showPredictionsPanel = !self.showPredictionsPanel;
+    },
+
+    toggleSmoothing() {
+      self.enableSmoothing = !self.enableSmoothing;
+    },
+
+    setSmoothing(value) {
+      self.enableSmoothing = value;
     },
   }));
 

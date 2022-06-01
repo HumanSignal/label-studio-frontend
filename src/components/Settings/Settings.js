@@ -10,6 +10,10 @@ import { triggerResizeEvent } from "../../utils/utilities";
 
 import EditorSettings from "../../core/settings/editorsettings.json";
 import { getEnv, getRoot } from "mobx-state-tree";
+import { FF_DEV_2497, isFF } from "../../utils/feature-flags";
+
+if(!isFF(FF_DEV_2497))
+  delete EditorSettings.enableSmoothing;
 
 const HotkeysDescription = () => {
   const columns = [
