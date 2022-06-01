@@ -10,6 +10,7 @@ on:
       - synchronize
     branches:
       - master
+      - 'lse-release/**'
 
 env:
   DOWNSTREAM_REPO_OWNER: heartexlabs
@@ -71,6 +72,7 @@ jobs:
               event_type: 'upstream_repo_update',
               client_payload: {
                 branch_name: '${{ github.head_ref }}',
+                base_branch_name: '${{ github.base_ref }}',
                 repo_name: '${{ github.repository }}',
                 commit_sha : '${{ github.sha }}',
                 title: '${{ github.event.pull_request.title }}',
@@ -96,6 +98,7 @@ jobs:
               event_type: 'upstream_repo_update',
               client_payload: {
                 branch_name: '${{ github.head_ref }}',
+                base_branch_name: '${{ github.base_ref }}',
                 repo_name: '${{ github.repository }}',
                 commit_sha : '${{ github.event.pull_request.head.sha }}',
                 title: '${{ github.event.pull_request.title }}',
