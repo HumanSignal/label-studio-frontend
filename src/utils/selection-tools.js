@@ -304,7 +304,10 @@ const textNodeLookup = (commonContainer, node, offset, direction = "forward") =>
 };
 
 /**
- * Fix range if it contains non-text nodes
+ * Fix range if it contains non-text nodes and shrink it down to the better fit.
+ * The main goal here is to get the most relevant xpath+offset combination.
+ * i.e. `start` should point to the element, containing first char, not parent,
+ * not root, not some previous element with `startOffset` on the last char.
  * @param {Range} range
  */
 const fixRange = range => {
@@ -318,7 +321,10 @@ const fixRange = range => {
     startOffset = 0;
   }
 
+  // if user started selection from the end of the tag, start could be this tag,
+  // so we should move it to more relevant one
   const selectionFromTheEnd = startContainer.wholeText.length === startOffset;
+  // we skip ephemeral whitespace only text nodes, like \n between tags in original html
   const isBasicallyEmpty = textNode => /^\s*$/.test(textNode.wholeText);
 
   if (isFF(FF_DEV_2480) && (selectionFromTheEnd || isBasicallyEmpty(startContainer))) {
