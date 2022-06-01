@@ -304,24 +304,37 @@ const textNodeLookup = (commonContainer, node, offset, direction = "forward") =>
 };
 
 /**
- * Fix range if it contains non-text nodes
+ * Fix range if it contains non-text nodes and shrink it down to the better fit.
+ * The main goal here is to get the most relevant xpath+offset combination.
+ * i.e. `start` should point to the element, containing first char, not parent,
+ * not root, not some previous element with `startOffset` on the last char.
  * @param {Range} range
  */
 const fixRange = range => {
-  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
-  let { startContainer, endContainer } = range;
+  const { endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startOffset, startContainer, endContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
     if (!startContainer) return null;
     range.setStart(startContainer, 0);
+    startOffset = 0;
   }
 
-  if (isFF(FF_DEV_2480) && startContainer.wholeText.length === startOffset) {
+  // if user started selection from the end of the tag, start could be this tag,
+  // so we should move it to more relevant one
+  const selectionFromTheEnd = startContainer.wholeText.length === startOffset;
+  // we skip ephemeral whitespace only text nodes, like \n between tags in original html
+  const isBasicallyEmpty = textNode => /^\s*$/.test(textNode.wholeText);
+
+  if (isFF(FF_DEV_2480) && (selectionFromTheEnd || isBasicallyEmpty(startContainer))) {
     do {
       startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward-next");
-    } while (/^\s*$/.test(startContainer.wholeText));
+      if (!startContainer) return null;
+    } while (isBasicallyEmpty(startContainer));
+
     range.setStart(startContainer, 0);
+    startOffset = 0;
   }
 
   if (!isTextNode(endContainer)) {
@@ -333,8 +346,10 @@ const fixRange = range => {
     if (isFF(FF_DEV_2480)) {
       while (/^\s*$/.test(endContainer.wholeText)) {
         endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward-next");
+        if (!endContainer) return null;
       }
-      isIncluded = range.toString().trimEnd().endsWith(endContainer.wholeText.trimEnd());
+      // we skip empty whitespace only text nodes, so we need the found one to be included
+      isIncluded = true;
     } else {
       isIncluded = range.toString().includes(endContainer.wholeText);
     }
