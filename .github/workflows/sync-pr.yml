@@ -83,7 +83,8 @@ jobs:
                 commit_sha : '${{ github.sha }}',
                 title: '${{ github.event.pull_request.title }}',
                 html_url: '${{ github.event.pull_request.html_url }}',
-                actor: getCommitResponse.data.commit.author.name,
+                actor: '${{ github.actor }}',
+                author_username: getCommitResponse.data.commit.author.name,
                 author_email: getCommitResponse.data.commit.author.email,
                 event_action: 'merged'
               }
@@ -116,7 +117,8 @@ jobs:
                 commit_sha : '${{ github.event.pull_request.head.sha }}',
                 title: '${{ github.event.pull_request.title }}',
                 html_url: '${{ github.event.pull_request.html_url }}',
-                actor: getCommitResponse.data.commit.author.name,
+                actor: '${{ github.actor }}',
+                author_username: getCommitResponse.data.commit.author.name,
                 author_email: getCommitResponse.data.commit.author.email,
                 event_action: '${{ github.event.action }}'
               }
