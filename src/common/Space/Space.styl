@@ -6,12 +6,14 @@
     &_horizontal
       grid-auto-flow column
       align-items center
-      grid-auto-columns max-content
 
     &_vertical
       grid-auto-flow row
       justify-content center
       grid-auto-rows max-content
+
+  &_direction_horizontal:not(&_truncated)
+    grid-auto-columns max-content
 
   &_spread
     width 100%
@@ -35,6 +37,9 @@
   &_size
     &_large
       grid-gap 32px
+
+    &_medium
+      grid-gap 16px
 
     &_small
       grid-gap 8px

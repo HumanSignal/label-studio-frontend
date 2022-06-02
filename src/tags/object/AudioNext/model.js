@@ -136,7 +136,7 @@ export const AudioModel = types.compose(
       },
 
       handleNewRegions() {
-        if (!self._ws) return;
+        if (!self._ws?.isReady) return;
         self.regs.map(reg => {
           if (reg._ws_region) return;
           self.createWsRegion(reg);
