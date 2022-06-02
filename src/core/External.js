@@ -15,7 +15,6 @@ function onUpdateAnnotation() {}
  * Callback on delete annotation
  */
 function onDeleteAnnotation() {}
-
 /**
  * Callback on skip task
  */
