@@ -50,7 +50,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => (region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -471,6 +471,13 @@ export default observer(
 
       // item.freezeHistory();
       const p = e.target.getParent();
+
+      // clicking on an empty region after a node has already been highlighted
+      // should clear selected areas and not continue drawing a new region immediately.
+      if (p === null && item.annotation.highlightedNode !== null) {
+        item.annotation.unselectAreas();
+        return;
+      }
 
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
