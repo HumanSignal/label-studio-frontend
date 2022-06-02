@@ -58,7 +58,7 @@ const TagAttrs = types.model({
   height: types.maybeNull(types.string),
   maxwidth: types.optional(types.string, "100%"),
   maxheight: types.optional(types.string, "calc(100vh - 194px)"),
-  smoothing: types.optional(types.boolean, true),
+  smoothing: types.maybeNull(types.boolean),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),

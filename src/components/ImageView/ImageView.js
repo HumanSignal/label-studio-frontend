@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, FF_DEV_2497, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -457,7 +457,7 @@ export default observer(
     constructor(props) {
       super(props);
 
-      if(isFF(FF_DEV_2497) && typeof props.item.smoothing !== 'undefined')
+      if(typeof props.item.smoothing === 'boolean')
         props.store.settings.setSmoothing(props.item.smoothing);
     }
 
@@ -748,10 +748,8 @@ export default observer(
         containerStyle["height"] = item.height;
       }
 
-      if(isFF(FF_DEV_2497)){
-        if(!this.props.store.settings.enableSmoothing && item.zoomScale > 1.4){
-          containerStyle["imageRendering"] = 'pixelated';
-        }
+      if(!this.props.store.settings.enableSmoothing && item.zoomScale > 1.4){
+        containerStyle["imageRendering"] = 'pixelated';
       }
 
       const {
