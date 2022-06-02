@@ -12,6 +12,9 @@ on:
       - master
       - 'lse-release/**'
 
+concurrency:
+  group: ${{ github.head_ref }}
+
 env:
   DOWNSTREAM_REPO_OWNER: heartexlabs
   DOWNSTREAM_REPO: label-studio-enterprise
