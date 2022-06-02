@@ -65,7 +65,7 @@ const TagAttrs = types.model({
 
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 
-  ...(isFF(FF_DEV_2007) ? { allownested: types.optional(types.boolean, false) } : {}),
+  allownested: types.optional(types.boolean, false),
 });
 
 const Model = types
