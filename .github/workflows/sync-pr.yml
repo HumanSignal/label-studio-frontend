@@ -66,6 +66,12 @@ jobs:
         with:
           github-token: ${{ secrets.GIT_PAT }}
           script: |
+            const { repo, owner } = context.repo;
+            const getCommitResponse = await github.rest.repos.getCommit({
+              owner,
+              repo,
+              ref: '${{ github.sha }}'
+            });
             const result = await github.rest.repos.createDispatchEvent({
               owner: '${{ env.DOWNSTREAM_REPO_OWNER }}',
               repo: '${{ env.DOWNSTREAM_REPO }}',
@@ -77,7 +83,8 @@ jobs:
                 commit_sha : '${{ github.sha }}',
                 title: '${{ github.event.pull_request.title }}',
                 html_url: '${{ github.event.pull_request.html_url }}',
-                actor: '${{ github.actor }}',
+                actor: getCommitResponse.data.commit.author.name,
+                author_email: getCommitResponse.data.commit.author.email,
                 event_action: 'merged'
               }
             });
@@ -92,6 +99,12 @@ jobs:
         with:
           github-token: ${{ secrets.GIT_PAT }}
           script: |
+            const { repo, owner } = context.repo;
+            const getCommitResponse = await github.rest.repos.getCommit({
+              owner,
+              repo,
+              ref: '${{ github.event.pull_request.head.sha }}'
+            });
             const result = await github.rest.repos.createDispatchEvent({
               owner: '${{ env.DOWNSTREAM_REPO_OWNER }}',
               repo: '${{ env.DOWNSTREAM_REPO }}',
@@ -103,7 +116,8 @@ jobs:
                 commit_sha : '${{ github.event.pull_request.head.sha }}',
                 title: '${{ github.event.pull_request.title }}',
                 html_url: '${{ github.event.pull_request.html_url }}',
-                actor: '${{ github.actor }}',
+                actor: getCommitResponse.data.commit.author.name,
+                author_email: getCommitResponse.data.commit.author.email,
                 event_action: '${{ github.event.action }}'
               }
             });
