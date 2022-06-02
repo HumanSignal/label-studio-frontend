@@ -478,9 +478,9 @@ export default types
       !entity.sentUserGenerate && entity.sendUserGenerate();
     }
 
-    function skipTask() {
+    function skipTask(extraData) {
       handleSubmittingFlag(() => {
-        getEnv(self).events.invoke('skipTask', self);
+        getEnv(self).events.invoke('skipTask', self, extraData);
       }, "Error during skip, try again");
     }
 
