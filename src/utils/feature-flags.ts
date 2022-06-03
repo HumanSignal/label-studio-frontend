@@ -57,6 +57,8 @@ export const FF_DEV_2290 = "ff_front_dev_2290_draft_in_annotation_history_short"
 
 export const FF_DEV_2186 = "ff_front_dev_2186_comments_for_update";
 
+export const FF_DEV_2394 = "ff_front_dev_2394_zoomed_transforms_260522_short";
+
 // Make nested choices work according to the DES-107
 export const FF_DEV_2244 = "ff_front_dev_2244_nested_choices_des_107_160522_short";
 
