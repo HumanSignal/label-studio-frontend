@@ -212,8 +212,8 @@ const HistoryItemComponent: FC<{
 
   return (
     <Block name="history-item" mod={{ inline, selected, disabled }} onClick={handleClick}>
-      <Space spread>
-        <Space size="small">
+      <Space spread size="medium" truncated>
+        <Space size="small" truncated>
           <Elem
             tag={Userpic}
             user={user}

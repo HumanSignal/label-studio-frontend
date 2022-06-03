@@ -10,7 +10,7 @@ import Tree, { TRAVERSE_STOP } from "../../core/Tree";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
-import { FF_DEV_2007, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2007, FF_DEV_2244, isFF } from "../../utils/feature-flags";
 import { Block, Elem } from "../../utils/bem";
 import "./Choice/Choice.styl";
 import { LsChevron } from "../../assets/icons";
@@ -76,6 +76,15 @@ const Model = types
 
       return !self.children?.length;
     },
+
+    get sel() {
+      return !isFF(FF_DEV_2244) || self.isLeaf ? self._sel : self.children.every(child => child.sel === true);
+    },
+
+    get indeterminate() {
+      return isFF(FF_DEV_2244) && (self.isLeaf ? false : !self.sel && self.children.some(child => child.sel === true));
+    },
+
     get parentChoice() {
       return Types.getParentTagOfTypeString(self, "choice");
     },
@@ -83,7 +92,7 @@ const Model = types
       return !self.nestedResults && !!self.parentChoice;
     },
     get nestedResults() {
-      return self.parent?.allownested !== false;
+      return isFF(FF_DEV_2007) && self.parent?.allownested !== false;
     },
     get _resultValue() {
       return self.alias ?? self._value;
@@ -105,7 +114,7 @@ const Model = types
   }))
   .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
-    sel: false,
+    _sel: false,
   }))
   .actions(self => ({
     toggleSelected() {
@@ -124,7 +133,12 @@ const Model = types
     },
 
     setSelected(val) {
-      self.sel = val;
+      self._sel = val;
+      if (!self.isLeaf) {
+        self.children.forEach((child)=>{
+          child.setSelected(val);
+        });
+      }
     },
   }))
   .actions(self => {
@@ -221,6 +235,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           component={nameWrapper(item.isCheckbox ? Checkbox : Radio, item._value)}
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
+          indeterminate={!item.sel && item.indeterminate}
           disabled={item.parent?.readonly}
           onChange={changeHandler}
         >
@@ -242,7 +257,14 @@ const HtxNewChoiceView = ({ item, store }) => {
   );
 };
 
-const HtxChoice = inject("store")(observer(!isFF(FF_DEV_2007) ? HtxChoiceView : HtxNewChoiceView));
+const HtxOldChoice = inject("store")(observer(HtxChoiceView));
+const HtxNewChoice = inject("store")(observer(HtxNewChoiceView));
+
+const HtxChoice = (props) => {
+  const HtxChoiceComponent = !isFF(FF_DEV_2007) ? HtxOldChoice : HtxNewChoice;
+
+  return <HtxChoiceComponent {...props} />;
+};
 
 Registry.addTag("choice", ChoiceModel, HtxChoice);
 
