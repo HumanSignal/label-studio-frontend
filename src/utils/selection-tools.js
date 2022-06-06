@@ -222,11 +222,12 @@ export const captureSelection = (
   if (granularity !== "symbol") {
     trimSelection(selection);
   }
-  const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
 
   applyTextGranularity(selection, granularity);
+
+  const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   for (let i = 0; i < selection.rangeCount; i++) {
     const range = fixRange(selection.getRangeAt(i));
