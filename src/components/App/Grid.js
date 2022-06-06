@@ -118,20 +118,20 @@ export default class Grid extends Component {
   };
 
   shift = delta => {
-    const c = this.container.current;
-    
-    if (!c) return;
-    if (!c.viewing) c.viewing = 0;
+    const container = this.container.current;
+    const children = container.children;
 
+    const current = Array.from(children).findIndex(child => container.scrollLeft <= child.offsetLeft);
+
+    if (!container) return;
+    
     const count = this.props.annotations.length;
-    const next = c.viewing + delta; 
+    const next = current + delta; 
     
     if (next < 0 || next > count - 1) return;
-    const newPosition = c.children[next].offsetLeft;
+    const newPosition = children[next].offsetLeft;
 
-    c.viewing = next;
-
-    c.scrollTo({ left: newPosition, top: 0, behavior: "smooth" });
+    container.scrollTo({ left: newPosition, top: 0, behavior: "smooth" });
   };
 
   left = () => {
