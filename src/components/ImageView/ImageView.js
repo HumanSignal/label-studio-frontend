@@ -457,8 +457,9 @@ export default observer(
     constructor(props) {
       super(props);
 
-      if( typeof props.item.smoothing === 'boolean' )
+      if (typeof props.item.smoothing === 'boolean')
         props.store.settings.setSmoothing(props.item.smoothing);
+
     }
 
     handleOnClick = e => {
@@ -748,7 +749,7 @@ export default observer(
         containerStyle["height"] = item.height;
       }
 
-      if(!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
+      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
         containerStyle["imageRendering"] = 'pixelated';
       }
 
