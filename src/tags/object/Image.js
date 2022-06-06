@@ -35,7 +35,7 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} value                      - Data field containing a path or URL to the image
- * @param {boolean} smoothing                 - Enable smoothing, by default it uses user settings
+ * @param {boolean} [smoothing]               - Enable smoothing, by default it uses user settings
  * @param {string=} [width=100%]              - Image width
  * @param {string=} [maxWidth=750px]          - Maximum image width
  * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
