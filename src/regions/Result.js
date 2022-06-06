@@ -59,10 +59,7 @@ const Result = types
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
-      ...(isFF(FF_DEV_2007)
-        ? { choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))) }
-        : { choices: types.maybe(types.array(types.string)) }
-      ),
+      choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))),
       // pairwise
       selected: types.maybe(types.enumeration(["left", "right"])),
       // @todo all other *labels
