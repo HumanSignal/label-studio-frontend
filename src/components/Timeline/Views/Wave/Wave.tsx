@@ -291,7 +291,7 @@ export const Wave: FC<TimelineViewProps> = ({
   return (
     <Block name="wave">
       <Elem name="controls">
-        <Space spread>
+        <Space spread style={{ gridAutoColumns: 'auto' }}>
           <Range
             continuous
             value={speed}

@@ -1,4 +1,5 @@
 /* Grid (View All mode) */
+@import "../../assets/styles/global.scss";
 
 $gap: 30px;
 
@@ -6,6 +7,9 @@ $gap: 30px;
   flex-grow: 1;
   display: grid;
   grid-auto-columns: calc(50% - 15px);
+  @include respond("tablet") {
+    grid-auto-columns: 100%;
+  }
   grid-auto-flow: column;
   grid-column-gap: $gap;
   margin: 0 30px;
