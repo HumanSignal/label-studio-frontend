@@ -59,7 +59,7 @@ const SettingsModel = types
 
     preserveSelectedTool: types.optional(types.boolean, true),
 
-    enableSmoothing:types.optional(types.boolean, true),
+    enableSmoothing: types.optional(types.boolean, true),
   })
   .views(self => ({
     get annotation() {
