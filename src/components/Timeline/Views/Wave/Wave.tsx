@@ -279,8 +279,6 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
-    console.log(data.cursorcolor, parseInt(data.defaultscale, 10));
-
     return {
       left: cursorPosition,
       width: Number(data.cursorwidth ?? 2),
@@ -568,7 +566,7 @@ const useWaveSurfer = ({
       onSeek(currentTime * 1000);
     });
 
-    wsi.load(data._value);
+    if (data._value) wsi.load(data._value);
 
     ws.current = wsi;
 
