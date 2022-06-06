@@ -459,7 +459,6 @@ export default observer(
 
       if (typeof props.item.smoothing === 'boolean')
         props.store.settings.setSmoothing(props.item.smoothing);
-
     }
 
     handleOnClick = e => {
