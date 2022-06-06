@@ -83,8 +83,8 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   }, [altControlsMode]);
 
   return (
-    <Block name="timeline-controls" tag={Space} spread>
-      <Elem name="group" tag={Space} size="small">
+    <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
+      <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
         {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
           if (enabled === false) return;
 

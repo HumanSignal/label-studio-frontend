@@ -279,8 +279,6 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
-    console.log(data.cursorcolor, parseInt(data.defaultscale, 10));
-
     return {
       left: cursorPosition,
       width: Number(data.cursorwidth ?? 2),
@@ -291,7 +289,7 @@ export const Wave: FC<TimelineViewProps> = ({
   return (
     <Block name="wave">
       <Elem name="controls">
-        <Space spread>
+        <Space spread style={{ gridAutoColumns: 'auto' }}>
           <Range
             continuous
             value={speed}
@@ -568,7 +566,7 @@ const useWaveSurfer = ({
       onSeek(currentTime * 1000);
     });
 
-    wsi.load(data._value);
+    if (data._value) wsi.load(data._value);
 
     ws.current = wsi;
 
