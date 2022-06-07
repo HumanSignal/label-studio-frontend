@@ -22,6 +22,8 @@ Scenario("Travel through history with the selected brush region", async function
 
   // Draw a brush region
   await AtImageView.lookForStage();
+  I.pressKey(["b"]);
+
   AtImageView.drawThroughPoints([
     [50, 50], [100, 50], [50, 80],
   ]);
