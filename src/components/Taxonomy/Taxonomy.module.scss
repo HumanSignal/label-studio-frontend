@@ -119,11 +119,18 @@
 }
 
 .taxonomy__item label {
+  overflow-wrap: break-word;
   flex: 1;
   flex-grow: 1;
   width: max-content;
   line-height: 2em;
   padding-right: 8px;
+}
+
+.taxonomy__item .width_check {
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
 }
 
 .taxonomy__grouping {

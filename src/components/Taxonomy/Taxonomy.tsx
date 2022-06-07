@@ -183,14 +183,17 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   const isAddingItem = name === "" && onAddLabel;
 
   const itemContainer = useRef<any>();
-
+  const scrollSpace = maxWidth - itemContainer.current?.parentElement.offsetWidth || 0;
+  const labelMaxWidth = maxWidth - padding - scrollSpace - 90;
+  
   useEffect(() => {
     const container = itemContainer?.current;
-    
+
     if (container) {
       dimensionCallback(container.scrollWidth, container.scrollHeight );
     }
   }, []);
+  
 
   return (
     <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: 'fit-content' }}>
@@ -207,6 +210,13 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
             onChange={e => setSelected(path, e.currentTarget.checked)}
           />
           <label
+            style={{ left: `${padding + 44}px` }}
+            className={styles.width_check}
+          >
+            {name}
+          </label>
+          <label
+            style={{ maxWidth: `${labelMaxWidth}px` }}
             onClick={onClick}
             title={title}
             className={disabled ? styles.taxonomy__collapsable : undefined}
