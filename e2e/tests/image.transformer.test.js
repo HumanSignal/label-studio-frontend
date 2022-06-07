@@ -414,7 +414,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       assert.notStrictEqual(Math.round(rectangleResult[0].value.rotation), 45);
 
       // Undo changes
-      I.pressKey(["ctrl", "z"]);
+      I.pressKey(["CommandOrControl", "z"]);
 
       // Rotate for 90 degrees clockwise instead
       AtImageView.drawThroughPoints([
@@ -479,7 +479,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       assert.notStrictEqual(Math.round(rectangleResult[0].value.rotation), 45);
 
       // Undo changes
-      I.pressKey(["ctrl", "z"]);
+      I.pressKey(["CommandOrControl", "z"]);
 
       // Rotate for 90 degrees clockwise instead
       AtImageView.drawThroughPoints([

@@ -39,14 +39,14 @@ Scenario("Travel through history with the selected brush region", async function
   AtSidebar.seeSelectedRegion();
 
   // Go back through history
-  I.pressKey(["ctrl", "z"]);
+  I.pressKey(["CommandOrControl", "z"]);
 
   // The brush region still should be selected (1 stroke, 1 region)
   AtSidebar.seeRegions(1);
   AtSidebar.seeSelectedRegion();
 
   // Try the same with redo
-  I.pressKey(["ctrl", "shift", "z"]);
+  I.pressKey(["CommandOrControl", "shift", "z"]);
 
   // The brush region still should be selected (2 strokes, 1 region)
   AtSidebar.seeRegions(1);
@@ -87,21 +87,21 @@ Scenario("Travel through history after moving the rectangle region", async funct
   AtSidebar.seeSelectedRegion();
 
   // Go back through history
-  I.pressKey(["ctrl", "z"]);
+  I.pressKey(["CommandOrControl", "z"]);
 
   // The rectangle region still should be selected (moved 1 time)
   AtSidebar.seeRegions(1);
   AtSidebar.seeSelectedRegion();
 
   // Repeat going back through history
-  I.pressKey(["ctrl", "z"]);
+  I.pressKey(["CommandOrControl", "z"]);
 
   // The rectangle region still should be selected (moved 0 times)
   AtSidebar.seeRegions(1);
   AtSidebar.seeSelectedRegion();
 
   // Try the same with redo
-  I.pressKey(["ctrl", "shift", "z"]);
+  I.pressKey(["CommandOrControl", "shift", "z"]);
 
   // The brush region still should be selected (moved 1 time)
   AtSidebar.seeRegions(1);
