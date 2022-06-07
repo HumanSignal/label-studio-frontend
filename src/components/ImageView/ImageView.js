@@ -480,7 +480,11 @@ export default observer(
 
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
-      if (e.target === item.stageRef && item.annotation.selectedRegions.length > 0 && [undefined, "EllipseTool","EllipseTool-dynamic","RectangleTool","RectangleTool-dynamic"].includes(selectedTool)) {
+      if (
+        e.target === item.stageRef &&
+        item.annotation.selectedRegions.length > 0 &&
+        [undefined, "EllipseTool", "EllipseTool-dynamic", "RectangleTool", "RectangleTool-dynamic"].includes(selectedTool)
+      ) {
         item.annotation.unselectAreas();
         return;
       }
@@ -503,8 +507,7 @@ export default observer(
         this.canvasX = left;
         this.canvasY = top;
         return item.event("mousedown", e, x, y);
-      } 
-      
+      }
       return true;
     };
 
