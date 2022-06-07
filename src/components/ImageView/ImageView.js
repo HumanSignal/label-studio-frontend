@@ -472,20 +472,20 @@ export default observer(
       // item.freezeHistory();
       const p = e.target.getParent();
 
-      // clicking on an empty region after a node has already been highlighted
+      if (!item.annotation.editable) return;
+      if (p && p.className === "Transformer") return;
+
+      // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
-      if (p === null && item.annotation.highlightedNode !== null) {
+      if (e.target === item.stageRef && item.annotation.selectedRegions.length > 0) {
         item.annotation.unselectAreas();
         return;
       }
 
-      if (!item.annotation.editable) return;
-      if (p && p.className === "Transformer") return;
-
       if (
         // create regions over another regions with Cmd/Ctrl pressed
         item.getSkipInteractions() ||
-        e.target === e.target.getStage() ||
+        e.target === item.stageRef ||
         findClosestParent(
           e.target,
           el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
@@ -500,8 +500,8 @@ export default observer(
         this.canvasX = left;
         this.canvasY = top;
         return item.event("mousedown", e, x, y);
-      }
-
+      } 
+      
       return true;
     };
 
