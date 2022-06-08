@@ -78,7 +78,6 @@ Scenario("Check Rect region for Image", async function({ I, AtImageView, AtSideb
 
   // click on region's rect on the canvas
   AtImageView.clickAt(330, 80);
-  pause() // eslint-disable-line
   I.wait(1);
   I.dontSee("Labels:");
 });
