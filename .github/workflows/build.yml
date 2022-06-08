@@ -98,9 +98,7 @@ jobs:
       uses: codecov/codecov-action@v3.1.0
       with:
         name: codecov-general
-        directory: |
-          - ./coverage
-          - ./e2e/output/coverage
+        directory: ./e2e/output/coverage
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true
 

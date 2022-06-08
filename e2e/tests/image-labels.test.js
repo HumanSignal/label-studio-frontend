@@ -155,8 +155,6 @@ DataStore.Scenario("Preventing applying labels of mismatch types", async ({
       return creator(x1, y1, x2 - x1, y2 - y1, { shape });
     });
 
-    console.log(regions);
-
     const labelsCounter = (results, currentLabelName = "Label") => {
       return results.reduce((counter, result) => {
         const { type, value } = result;
