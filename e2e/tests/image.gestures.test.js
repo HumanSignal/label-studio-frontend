@@ -89,17 +89,23 @@ const createShape = {
         },
       };
     },
-    byTwoClicks(x, y, radius, opts = {}) {
+    byThreeClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
         params: [
           [
-            [x - radius, y - radius],
+            [x , y],
             [x + radius, y + radius],
           ],
         ],
-        result: { width: radius * 2, height: radius * 2, rotation: 0, x: x - radius, y: y - radius },
+        result: { 
+          width: radius, 
+          height: radius, 
+          rotation: 0, 
+          x, 
+          y, 
+        },
       };
     },
     byDoubleClick(x, y, radius, opts = {}) {

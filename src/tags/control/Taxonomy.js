@@ -224,7 +224,7 @@ const TaxonomyModel = types.compose("TaxonomyModel",
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
-  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
+  const visibleStyle = item.perRegionVisible() || item.isVisible ? {} : { display: "none" };
   const options = {
     showFullPath: item.showfullpath,
     leafsOnly: item.leafsonly,

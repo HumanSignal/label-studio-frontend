@@ -118,17 +118,20 @@ export default class Grid extends Component {
   };
 
   shift = delta => {
-    const c = this.container.current;
+    const container = this.container.current;
+    const children = container.children;
 
-    if (!c) return;
-    const gap = 30;
-    const step = (c.offsetWidth + gap) / 2;
-    const current = (c.scrollLeft + delta) / step;
-    const next = delta > 0 ? Math.ceil(current) : Math.floor(current);
+    const current = Array.from(children).findIndex(child => container.scrollLeft <= child.offsetLeft);
+
+    if (!container) return;
+    
     const count = this.props.annotations.length;
+    const next = current + delta; 
+    
+    if (next < 0 || next > count - 1) return;
+    const newPosition = children[next].offsetLeft;
 
-    if (next < 0 || next > count - 2) return;
-    c.scrollTo({ left: next * step, top: 0, behavior: "smooth" });
+    container.scrollTo({ left: newPosition, top: 0, behavior: "smooth" });
   };
 
   left = () => {
