@@ -68,10 +68,11 @@ module.exports.config = {
         'have*',
       ],
     },
-    coverage: {
-      enabled: headless,
-      coverageDir: "output/coverage",
-    },
+    // For the future generations
+    // coverage: {
+    //   enabled: false,
+    //   coverageDir: "output/coverage",
+    // },
     screenshotOnFail: {
       enabled: true,
     },
