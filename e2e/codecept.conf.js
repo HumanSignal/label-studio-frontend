@@ -16,16 +16,13 @@ module.exports.config = {
     Playwright: {
       url: "http://localhost:3000",
       show: !headless,
-      restart: true,
+      restart: 'context',
       timeout: 60000, // Action timeout after 60 seconds
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
-      uniqueScreenshotNames: true,
       waitForNavigation: "networkidle",
       browser: "chromium",
-      trace: true,
-      video: true,
-      keepVideoForPassedTests: false,
+      trace: false,
       keepTraceForPassedTests: false,
     },
     MouseActions: {
@@ -70,7 +67,7 @@ module.exports.config = {
     },
     // For the future generations
     // coverage: {
-    //   enabled: false,
+    //   enabled: true,
     //   coverageDir: "output/coverage",
     // },
     screenshotOnFail: {

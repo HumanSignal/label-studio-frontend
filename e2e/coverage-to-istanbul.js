@@ -8,7 +8,8 @@ const convertCoverage = async (fileName) => {
   if (fileName.match('istanbul')) return;
 
   const coverage = require(`${covDir}/${fileName}`);
-  const basename = path.basename(fileName).replace('.coverage', '');
+  const basename = path.basename(fileName).replace('.coverage.json', '');
+  const finalName = `${covDir}/${basename}_final.coverage.json`;
 
   for (const entry of coverage) {
     // Used to get file name
@@ -21,7 +22,11 @@ const convertCoverage = async (fileName) => {
     converter.applyCoverage(entry.functions);
 
     // Store converted coverage file which can later be used to generate report
-    await fs.writeFile(`${covDir}/${basename}-istanbul.coverage.json`, JSON.stringify(converter.toIstanbul(), null, 2));
+    await fs.writeFile(
+      finalName,
+      JSON.stringify(converter.toIstanbul(), null, 2),
+    );
+    console.log(`Processed ${basename}`);
   }
 
   await fs.unlink(`${covDir}/${fileName}`);
