@@ -9,6 +9,8 @@ import Registry from "../../core/Registry";
 import { guidGenerator } from "../../core/Helpers";
 import { Hotkey } from "../../core/Hotkey";
 import { FF_DEV_1564_DEV_1565, FF_DEV_1566, isFF } from "../../utils/feature-flags";
+import { customTypes } from "../../core/CustomTypes";
+import chroma from "chroma-js";
 
 /**
  * Use the Shortcut tag to define a shortcut that annotators can use to add a predefined object, such as a specific label value, with a hotkey or keyboard shortcut.
@@ -24,13 +26,15 @@ import { FF_DEV_1564_DEV_1565, FF_DEV_1566, isFF } from "../../utils/feature-fla
  * @name Shortcut
  * @meta_title Shortcut Tag to Define Shortcuts
  * @meta_description Customize Label Studio to define keyboard shortcuts and hotkeys to accelerate labeling for machine learning and data science projects.
- * @param {string} value    - The value of the shortcut
- * @param {string} [alias]  - Shortcut alias
- * @param {string} [hotkey] - Hotkey
+ * @param {string} value                    - The value of the shortcut
+ * @param {string} [alias]                  - Shortcut alias
+ * @param {string} [hotkey]                 - Hotkey
+ * @param {string} [background=#333333]     - Background color in hexadecimal
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   alias: types.maybeNull(types.string),
+  background: types.optional(customTypes.color, "#333333"),
   hotkey: types.maybeNull(types.string),
 });
 
@@ -73,8 +77,8 @@ const ShortcutModel = types.compose("ShortcutModel", TagAttrs, Model, ProcessAtt
 const HtxShortcutView = inject("store")(
   observer(({ item, store }) => {
     const bg = {
-      backgroundColor: item.selected ? item.background : "#e8e8e8",
-      color: item.selected ? item.selectedcolor : "#333333",
+      background: chroma(item.background).alpha(0.15),
+      color: "#333333",
       cursor: "pointer",
       margin: "5px",
     };
