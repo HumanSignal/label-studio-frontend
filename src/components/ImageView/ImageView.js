@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -475,15 +475,19 @@ export default observer(
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
-
-      const selectedTool = item.getToolsManager().findSelectedTool()?.fullName;
-
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
+        isFF(FF_DEV_1442) &&
         e.target === item.stageRef &&
         item.annotation.selectedRegions.length > 0 &&
-        [undefined, "EllipseTool", "EllipseTool-dynamic", "RectangleTool", "RectangleTool-dynamic"].includes(selectedTool)
+        [
+          undefined,
+          "EllipseTool",
+          "EllipseTool-dynamic",
+          "RectangleTool",
+          "RectangleTool-dynamic",
+        ].includes(item.getToolsManager().findSelectedTool()?.fullName)
       ) {
         item.annotation.unselectAreas();
         return;
