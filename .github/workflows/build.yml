@@ -44,7 +44,7 @@ jobs:
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
     - name: Install dependencies
-      run: yarn install
+      run: yarn install --frozen-lockfile
 
     - name: Unit tests
       run: yarn test && yarn test:coverage
