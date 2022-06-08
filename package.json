@@ -25,6 +25,107 @@
       "path": "build/static/js/*.js"
     }
   ],
+  "scripts": {
+    "build-bundle": "yarn run build:final",
+    "build-notsourcemap": "GENERATE_SOURCEMAP=false yarn run build",
+    "build:final": "BUILD_NO_CHUNKS=true yarn run build",
+    "build:no-hash": "BUILD_NO_HASH=true BUILD_NO_CHUNKS=true yarn run build",
+    "build:module": "BUILD_MODULE=true yarn run build:no-hash",
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "copy-examples": "bash scripts/copy.sh",
+    "eject": "react-scripts eject",
+    "docs:generate": "node scripts/create-docs.js",
+    "lint:write": "eslint --debug src/ --fix",
+    "lint": "eslint --debug src/",
+    "prepublishOnly": "yarn run test && yarn run build:final",
+    "prettier-styles": "prettier --write src/**/*.{css,scss}",
+    "prettier": "prettier --write src/**/*.js",
+    "size": "yarn run build && size-limit",
+    "start": "yarn run copy-examples && node dev-server.js",
+    "test:coverage": "yarn test -- --coverage",
+    "test:watch": "react-scripts test",
+    "test": "npx jest src"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "post-checkout": "bash scripts/copy.sh"
+    }
+  },
+  "lint-staged": {
+    "*.(js|ts|tsx)": [
+      "eslint --fix --quiet",
+      "git add"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not ie <= 11",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
+            }
+          ],
+          [
+            "@babel/preset-react",
+            {
+              "runtime": "automatic"
+            }
+          ],
+          "@babel/preset-typescript"
+        ],
+        "plugins": [
+          [
+            "@babel/plugin-transform-react-jsx",
+            {
+              "runtime": "automatic"
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "keywords": [
+    "image-annotation",
+    "annotation-tool",
+    "annotation",
+    "labeling",
+    "labeling-tool",
+    "image-labeling",
+    "image-classification",
+    "semantic-segmentation",
+    "data-labeling",
+    "text-annotation"
+  ],
+  "dependencies": {
+    "@thi.ng/rle-pack": "^2.1.6",
+    "babel-preset-react-app": "^9.1.1",
+    "d3": "^5.16.0",
+    "magic-wand-js": "^1.0.0",
+    "papaparse": "^5.3.1",
+    "rc-tree": "^5.3.0",
+    "react-konva-utils": "^0.2.0",
+    "react-virtualized-auto-sizer": "^1.0.6",
+    "react-window": "^1.8.6"
+  },
   "devDependencies": {
     "@babel/core": "^7.12.17",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
@@ -126,107 +227,6 @@
     "webpack-dev-server": "^4.2.1",
     "xml2js": "^0.4.23",
     "xpath-range": "^1.1.1"
-  },
-  "scripts": {
-    "build-bundle": "yarn run build:final",
-    "build-notsourcemap": "GENERATE_SOURCEMAP=false yarn run build",
-    "build:final": "BUILD_NO_CHUNKS=true yarn run build",
-    "build:no-hash": "BUILD_NO_HASH=true BUILD_NO_CHUNKS=true yarn run build",
-    "build:module": "BUILD_MODULE=true yarn run build:no-hash",
-    "build": "webpack",
-    "watch": "webpack --watch",
-    "copy-examples": "bash scripts/copy.sh",
-    "eject": "react-scripts eject",
-    "docs:generate": "node scripts/create-docs.js",
-    "lint:write": "eslint --debug src/ --fix",
-    "lint": "eslint --debug src/",
-    "prepublishOnly": "yarn run test && yarn run build:final",
-    "prettier-styles": "prettier --write src/**/*.{css,scss}",
-    "prettier": "prettier --write src/**/*.js",
-    "size": "yarn run build && size-limit",
-    "start": "yarn run copy-examples && node dev-server.js",
-    "test:coverage": "yarn test -- --coverage",
-    "test:watch": "react-scripts test",
-    "test": "npx jest src"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "post-checkout": "bash scripts/copy.sh"
-    }
-  },
-  "lint-staged": {
-    "*.(js|ts|tsx)": [
-      "eslint --fix --quiet",
-      "git add"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not ie <= 11",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "babel": {
-    "env": {
-      "test": {
-        "presets": [
-          [
-            "@babel/preset-env",
-            {
-              "targets": {
-                "node": "current"
-              }
-            }
-          ],
-          [
-            "@babel/preset-react",
-            {
-              "runtime": "automatic"
-            }
-          ],
-          "@babel/preset-typescript"
-        ],
-        "plugins": [
-          [
-            "@babel/plugin-transform-react-jsx",
-            {
-              "runtime": "automatic"
-            }
-          ]
-        ]
-      }
-    }
-  },
-  "keywords": [
-    "image-annotation",
-    "annotation-tool",
-    "annotation",
-    "labeling",
-    "labeling-tool",
-    "image-labeling",
-    "image-classification",
-    "semantic-segmentation",
-    "data-labeling",
-    "text-annotation"
-  ],
-  "dependencies": {
-    "@thi.ng/rle-pack": "^2.1.6",
-    "babel-preset-react-app": "^9.1.1",
-    "d3": "^5.16.0",
-    "magic-wand-js": "^1.0.0",
-    "papaparse": "^5.3.1",
-    "rc-tree": "^5.3.0",
-    "react-konva-utils": "^0.2.0",
-    "react-virtualized-auto-sizer": "^1.0.6",
-    "react-window": "^1.8.6"
   },
   "nohoist": [
     "**/babel-preset-react-app/@babel/runtime"
