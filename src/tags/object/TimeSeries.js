@@ -165,10 +165,9 @@ const Model = types
         const nonSeqValues = [`seq: 0, value: ${data[self.keyColumn][0]}`];
 
         const timestamps = data[self.keyColumn].map((value, i) => {
-          current = i > 0 ? self.parseTime(value) : current;
-
           // Compare previous and current timestamp to determine direction is ascending as the values must be sorted in ascending order to be valid timeseries data
           if (i > 0) {
+            current = self.parseTime(value);
             const diff = current - first;
             const direction= diff > 0 ? 1 : -1;
 
