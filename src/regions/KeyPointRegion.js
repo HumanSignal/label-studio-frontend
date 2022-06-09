@@ -174,9 +174,8 @@ const HtxKeyPointView = ({ item }) => {
     defaultFillColor: "#000",
     defaultStrokeColor: "#fff",
     defaultOpacity: (item.style ?? item.tag) ? 0.6 : 1,
-    // strokewidth is always defined, and we need it to remain the same
-    // to avoid this size glitching when user select/unselect region
-    defaultStrokeWidthHighlighted: +item.tag.strokewidth,
+    // avoid size glitching when user select/unselect region
+    sameStrokeWidthForSelected: true,
   });
 
   const props = {
