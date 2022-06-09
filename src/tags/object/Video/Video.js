@@ -1,4 +1,4 @@
-import { getRoot, types } from "mobx-state-tree";
+import { getParent, getRoot, types } from "mobx-state-tree";
 import React from "react";
 
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
@@ -69,10 +69,6 @@ const Model = types
   .views(self => ({
     get store() {
       return getRoot(self);
-    },
-
-    get annotation() {
-      return Types.getParentOfTypeString(self, "AnnotationStore")?.selected;
     },
 
     get regs() {
