@@ -160,7 +160,35 @@ const Model = types
 
         data = { ...data, [self.keyColumn]: indices };
       } else if (self.timeformat) {
-        const timestamps = data[self.keyColumn].map(self.parseTime);
+        let direction;
+        let previous;
+        let current = self.parseTime(data[self.keyColumn][0]);
+        const nonSeqValues = [`seq: 0, value: ${data[self.keyColumn][0]}`];
+
+        const timestamps = data[self.keyColumn].map((value, i) => {
+          current = i > 0 ? self.parseTime(value) : current;
+          previous = previous === undefined ? current : previous;
+
+          // Compare previous and current timestamp to determine direction is ascending as the values must be sorted in ascending order to be valid timeseries data
+          if (i > 0) {
+            const diff = current - previous;
+            const currentDirection = diff === 0 ? direction === undefined ? 0 : direction : diff > 0 ? 1 : -1;
+
+            if (
+              currentDirection < 0
+            ) {
+              nonSeqValues.push(`seq: ${i}, value: ${value}`);
+              throw new Error([
+                `<b>timeColumn</b> (${self.timecolumn}) must be incremental and sequentially ordered.`,
+                `First wrong values: ${nonSeqValues.join(", ")}`,
+                `<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.`,
+              ].join("<br/>"));
+            }
+            direction = currentDirection;
+          }
+
+          return current;
+        });
 
         if (timestamps[0] === 0 && timestamps[1] === 0 && timestamps[2] === 0) {
           const message = [
