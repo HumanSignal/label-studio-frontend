@@ -174,7 +174,8 @@ const HtxKeyPointView = ({ item }) => {
     defaultFillColor: "#000",
     defaultStrokeColor: "#fff",
     defaultOpacity: (item.style ?? item.tag) ? 0.6 : 1,
-    defaultStrokeWidth: 2,
+    // avoid size glitching when user select/unselect region
+    sameStrokeWidthForSelected: true,
   });
 
   const props = {
@@ -193,11 +194,13 @@ const HtxKeyPointView = ({ item }) => {
       <Circle
         x={x}
         y={y}
-        radius={Math.max(item.width, 2)}
+        // keypoint should always be the same visual size
+        radius={Math.max(item.width, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
-        scaleX={1 / item.parent.zoomScale}
-        scaleY={1 / item.parent.zoomScale}
+        // for some reason this scaling doesn't work, so moved this to radius
+        // scaleX={1 / item.parent.zoomScale}
+        // scaleY={1 / item.parent.zoomScale}
         name={`${item.id} _transformable`}
         onDragStart={e => {
           if (item.parent.getSkipInteractions()) {

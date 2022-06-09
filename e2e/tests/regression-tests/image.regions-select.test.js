@@ -107,14 +107,13 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
   };
-  const setSelectAfterCreate = async (state, done) => {
+  const setSelectAfterCreate = async (state) => {
     Htx.settings.toggleSelectAfterCreate(state);
-    done();
   };
 
   I.amOnPage("/");
-  await I.executeAsyncScript(initLabelStudio, params);
-  await I.executeAsyncScript(setSelectAfterCreate, false);
+  await I.executeScript(initLabelStudio, params);
+  await I.executeScript(setSelectAfterCreate, false);
 
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
@@ -128,7 +127,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   }
   I.pressKey(["u"]);
   if (current.shape === "Brush") {
-    await I.executeAsyncScript(setSelectAfterCreate, true);
+    await I.executeScript(setSelectAfterCreate, true);
     I.click('[aria-label=brush-tool]');
   }
 
