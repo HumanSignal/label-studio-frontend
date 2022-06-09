@@ -136,15 +136,15 @@ xScenario("Simple shapes on Image", async function({ I, AtImageView, AtSidebar }
     };
 
     I.amOnPage("/");
-    await I.executeAsyncScript(initLabelStudio, params);
+    await I.executeScript(initLabelStudio, params);
     // canvas won't be initialized fully before the image loads
-    await I.executeAsyncScript(waitForImage);
+    await I.executeScript(waitForImage);
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);
 
     for (const region of shape.regions) {
       // draw the shape using corresponding helper and params
-      const err = await I.executeAsyncScript(shape.action, ...region.params);
+      const err = await I.executeScript(shape.action, region.params);
 
       if (err) throw new Error(err);
     }

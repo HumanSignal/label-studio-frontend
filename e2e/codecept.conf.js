@@ -2,28 +2,28 @@
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
 
-// codecept can make screenshot on every step and create html
-// with "gif" and annotations. possible usage:
-// GIF=true yarn e2e:test:headless e2e/present_feature_test.js
-const recordVideo = process.env.GIF
-  ? {
-    stepByStepReport: {
-      enabled: true,
-      deleteSuccessful: false,
-    },
-  }
-  : null;
-
-// eslint-disable-next-line no-undef
-exports.config = {
-  tests: "./**/*.test.js",
+module.exports.config = {
+  timeout: 60 * 30, // Time out after 30 minutes
+  tests: "./tests/*.test.js",
   output: "./output",
   helpers: {
-    Puppeteer: {
+    // Puppeteer: {
+    //   url: "http://localhost:3000",
+    //   show: !headless,
+    //   waitForAction: headless ? 100 : 1200,
+    //   windowSize: "1200x900",
+    // },
+    Playwright: {
       url: "http://localhost:3000",
       show: !headless,
+      restart: 'context',
+      timeout: 60000, // Action timeout after 60 seconds
       waitForAction: headless ? 100 : 1200,
       windowSize: "1200x900",
+      waitForNavigation: "networkidle",
+      browser: "chromium",
+      trace: false,
+      keepTraceForPassedTests: false,
     },
     MouseActions: {
       require: "./helpers/MouseActions.js",
@@ -45,15 +45,34 @@ exports.config = {
     ErrorsCollector: "./fragments/ErrorsCollector.js",
   },
   bootstrap: null,
-  mocha: {},
+  mocha: {
+    bail: true,
+    reporterOptions: {
+      mochaFile: "output/result.xml",
+    },
+  },
   name: "label-studio-frontend",
   plugins: {
     retryFailedStep: {
       enabled: true,
+      minTimeout: 100,
+      defaultIgnoredSteps: [
+        //'amOnPage',
+        //'wait*',
+        'send*',
+        'execute*',
+        'run*',
+        'have*',
+      ],
     },
+    // For the future generations
+    // coverage: {
+    //   enabled: true,
+    //   coverageDir: "output/coverage",
+    // },
     screenshotOnFail: {
       enabled: true,
     },
-    ...recordVideo,
   },
+  require: ['ts-node/register'],
 };
