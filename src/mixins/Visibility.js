@@ -17,6 +17,9 @@ const VisibilityMixin = types
         return false;
       }
 
+      console.log('heartex visiblewhen', self.visiblewhen);
+      console.log('heartex self.whenchoicevalue', self.whenchoicevalue);
+
       if (self.visiblewhen) {
         const fns = {
           "region-selected": ({ tagName, labelValue }) => {
@@ -32,8 +35,12 @@ const VisibilityMixin = types
           },
 
           "choice-selected": ({ tagName, choiceValue }) => {
+            console.log('heartex choices', self.annotation.names.values());
+
             if (!tagName) {
               for (const choices of self.annotation.names.values()) {
+                console.log('heartex choices', choices?.selectedValues?.());
+
                 if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
                   return true;
                 }
@@ -63,7 +70,7 @@ const VisibilityMixin = types
         if (isFF(FF_DEV_1372)) {
           fns["choice-unselected"] = params => !fns["choice-selected"](params);
         }
-        
+
         if (Object.keys(fns).includes(self.visiblewhen)) {
           const res = fns[self.visiblewhen]({
             tagName: self.whentagname,
@@ -73,6 +80,19 @@ const VisibilityMixin = types
 
           return res !== false;
         }
+      }else if (self.whenchoicevalue){
+        for (const choices of self.annotation.names.values()) {
+          if (choices.selectedValues && choices.selectedValues().length){
+            const choicesList = choices.selectedValues();
+
+            for(const obj of choicesList){
+              if(obj === self.whenchoicevalue)
+                return true;
+            }
+          }
+        }
+
+        return false;
       }
 
       return true;
