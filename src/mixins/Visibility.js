@@ -32,11 +32,8 @@ const VisibilityMixin = types
           },
 
           "choice-selected": ({ tagName, choiceValue }) => {
-            console.log('heartex choices', self.annotation.names.values());
-
             if (!tagName) {
               for (const choices of self.annotation.names.values()) {
-                console.log('heartex choices', choices?.selectedValues?.());
 
                 if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
                   return true;
@@ -82,8 +79,8 @@ const VisibilityMixin = types
           if (choices.selectedValues && choices.selectedValues().length){
             const choicesList = choices.selectedValues();
 
-            for(const obj of choicesList){
-              if(obj === self.whenchoicevalue)
+            for (const obj of choicesList){
+              if (obj === self.whenchoicevalue)
                 return true;
             }
           }
