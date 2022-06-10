@@ -34,7 +34,6 @@ const VisibilityMixin = types
           "choice-selected": ({ tagName, choiceValue }) => {
             if (!tagName) {
               for (const choices of self.annotation.names.values()) {
-
                 if (choices.type === "choices" && choices.selectedValues && choices.selectedValues().length) {
                   return true;
                 }
@@ -64,7 +63,6 @@ const VisibilityMixin = types
         if (isFF(FF_DEV_1372)) {
           fns["choice-unselected"] = params => !fns["choice-selected"](params);
         }
-
         if (Object.keys(fns).includes(self.visiblewhen)) {
           const res = fns[self.visiblewhen]({
             tagName: self.whentagname,
