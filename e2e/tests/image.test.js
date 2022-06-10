@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, clickRect, serialize, waitForImage } = require("./helpers");
+const { initLabelStudio, serialize, waitForImage } = require("./helpers");
 
 const assert = require("assert");
 
@@ -66,17 +66,19 @@ Scenario("Check Rect region for Image", async function({ I, AtImageView, AtSideb
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   AtImageView.waitForImage();
-  I.executeAsyncScript(waitForImage);
+  await AtImageView.lookForStage();
+  I.executeScript(waitForImage);
   AtSidebar.seeRegions(1);
   // select first and only region
   I.click(locate('[aria-label="region"]'));
   I.see("Labels:");
 
   // click on region's rect on the canvas
-  I.executeScript(clickRect);
+  AtImageView.clickAt(330, 80);
+  I.wait(1);
   I.dontSee("Labels:");
 });
 
@@ -89,10 +91,10 @@ Scenario("Image with perRegion tags", async function({ I, AtImageView, AtSidebar
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   AtImageView.waitForImage();
-  I.executeAsyncScript(waitForImage);
+  I.executeScript(waitForImage);
   AtSidebar.seeRegions(1);
   // select first and only region
   I.click(locate('[aria-label="region"]'));

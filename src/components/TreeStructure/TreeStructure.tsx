@@ -57,7 +57,7 @@ const countChildNodes = (item: RowItem[]) => {
 };
 
 const blankItem = (path: string[], depth: number): RowItem => ({ label: "", depth, path, isOpen: true });
-const heightAccumulator: { [key: string]: number } = {};
+let heightAccumulator: { [key: string]: number } = {};
 let visibleCounter = 0;
 let visibleRendered = 0;
 let scrollTimeout: NodeJS.Timeout | null = null;
@@ -95,6 +95,11 @@ const TreeStructure = ({
     return heightAccumulator[`${index}`] || rowHeight;
   };
 
+  const rowHeightReCalcAll = () => {
+    heightAccumulator = {};
+    listRef.current.resetAfterIndex(0);
+  };
+
   const containerHeightCalc = () => {
     listRef.current.resetAfterIndex(0);
 
@@ -120,6 +125,7 @@ const TreeStructure = ({
     setOpenNodes({ ...openNodes, ...toggleItem });
     setData(recursiveTreeWalker({ items, toggleItem }));
     setContainerHeight(maxHeightPercentage * 0.01 * browserHeight);
+    rowHeightReCalcAll();
   };
 
   const addInside = (id?: string) => {

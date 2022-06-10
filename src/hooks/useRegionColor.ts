@@ -22,6 +22,7 @@ type StyleOptions = (typeof defaultStyles) & {
   suggestion?: boolean,
   includeFill?: boolean,
   useStrokeAsFill?: boolean,
+  sameStrokeWidthForSelected?: boolean,
 }
 
 export const getRegionStyles = ({
@@ -29,6 +30,7 @@ export const getRegionStyles = ({
   highlighted = false,
   shouldFill = false,
   useStrokeAsFill = false,
+  sameStrokeWidthForSelected = false,
   suggestion = false,
   defaultOpacity = defaultStyle.opacity,
   defaultFillColor = defaultStyle.fillcolor,
@@ -59,7 +61,7 @@ export const getRegionStyles = ({
   const strokeWidth = (() => {
     if (suggestion) {
       return defaultSuggestionWidth;
-    } else if (selected) {
+    } else if (selected && !sameStrokeWidthForSelected) {
       return defaultStrokeWidthHighlighted;
     } else {
       return +(style?.strokewidth ?? defaultStrokeWidth);

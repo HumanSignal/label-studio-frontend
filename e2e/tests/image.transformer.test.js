@@ -407,8 +407,16 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       // Check that we cannot rotate it like this
       let rectangleResult = await LabelStudio.serialize();
 
-      assert.notStrictEqual(Math.round(rectangleResult[0].value.rotation), 0);
-      assert.notStrictEqual(Math.round(rectangleResult[0].value.rotation), 45);
+      assert.notStrictEqual(
+        Math.round(rectangleResult[0].value.rotation),
+        0,
+        "Region must be rotated",
+      );
+      assert.notStrictEqual(
+        Math.round(rectangleResult[0].value.rotation),
+        45,
+        "Angle must not be 45 degrees",
+      );
 
       // Undo changes
       I.pressKey(["ctrl", "z"]);
@@ -423,7 +431,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       // Check the resulted rotation
       rectangleResult = await LabelStudio.serialize();
 
-      Asserts.deepEqualWithTolerance(rectangleResult[0].value.rotation, 90);
+      Asserts.deepEqualWithTolerance(rectangleResult[0].value.rotation, 90, "Angle must be 90 degrees");
       // remove region
       I.pressKey("Backspace");
     }
