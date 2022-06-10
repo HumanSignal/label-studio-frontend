@@ -71,10 +71,6 @@ const Model = types
       return getRoot(self);
     },
 
-    get annotation() {
-      return Types.getParentOfTypeString(self, "AnnotationStore")?.selected;
-    },
-
     get regs() {
       return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
     },

@@ -60,7 +60,7 @@ export function getUrl(i: number, text: string) {
  * @param {boolean} [relative=true] - Whether relative urls are good or nood
  */
 export function isValidObjectURL(str: string, relative = false) {
-  if (!str) return false;
+  if (typeof str !== "string") return false;
   if (relative && str.startsWith("/")) return true;
   return /^https?:\/\//.test(str);
 }
