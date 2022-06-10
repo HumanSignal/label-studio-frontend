@@ -21,6 +21,7 @@ const ZOOM_X = {
   max: 1500,
   step: 10,
   default: 300,
+  defaultValue: 300,
 };
 
 const SPEED = {
@@ -302,7 +303,6 @@ export const Wave: FC<TimelineViewProps> = ({
           <Range
             continuous
             value={currentZoom}
-            defaultValue={ZOOM_X.default}
             {...ZOOM_X}
             resetValue={ZOOM_X.default}
             minIcon={<IconZoomOut />}
