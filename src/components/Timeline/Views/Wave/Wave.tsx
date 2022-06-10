@@ -17,10 +17,10 @@ import { useMemo } from "react";
 import { WaveSurferParams } from "wavesurfer.js/types/params";
 
 const ZOOM_X = {
-  min: 10,
+  min: 300,
   max: 1500,
   step: 10,
-  default: 10,
+  default: 300,
 };
 
 const SPEED = {
@@ -299,15 +299,15 @@ export const Wave: FC<TimelineViewProps> = ({
             maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
             onChange={(value) => onSpeedChange?.(Number(value))}
           />
-
           <Range
             continuous
             value={currentZoom}
+            defaultValue={ZOOM_X.default}
             {...ZOOM_X}
             resetValue={ZOOM_X.default}
             minIcon={<IconZoomOut />}
             maxIcon={<IconZoomIn />}
-            onChange={value => setZoom(Number(value))}
+            onChange={value =>  setZoom(Number(value)) }
           />
         </Space>
       </Elem>
@@ -379,7 +379,6 @@ const useWaveSurfer = ({
 
   useEffect(() => {
     const root = containter.current!;
-
     const wsi = WaveSurfer.create({
       autoCenter: true,
       scrollParent: true,
