@@ -55,6 +55,7 @@ const Model = types
     // hierarchical Choices used for Taxonomy
     children: Types.unionArray(["choice"]),
     parentTypes: Types.tagsTypes(["Choices", "Taxonomy"]),
+    readonly: types.optional(types.boolean, false),
   })
   .views(self => ({
     get isCheckbox() {
@@ -170,7 +171,7 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly,
+      disabled: item.parent?.readonly || item.annotation?.readonly,
       onChange: ev => {
         if (!item.annotation.editable) return;
         item.toggleSelected();
@@ -225,7 +226,7 @@ const HtxNewChoiceView = ({ item, store }) => {
 
   const [collapsed, setCollapsed] = useState(false);
   const toogleCollapsed = useCallback(() => setCollapsed(collapsed => !collapsed), []);
-
+  
   return (
     <Block name="choice"
       mod={{ layout: item.parent.layout, leaf: item.isLeaf, notLeaf: !item.isLeaf, hidden: !item.visible }}>
@@ -236,7 +237,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly}
+          disabled={item.parent?.readonly || item.annotation?.readonly}
           onChange={changeHandler}
         >
           {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
