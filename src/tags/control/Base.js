@@ -1,4 +1,5 @@
 import { types } from "mobx-state-tree";
+import { BaseTag } from "../TagBase";
 
 const ControlBase = types.model({
   smart: true,
@@ -23,4 +24,4 @@ const ControlBase = types.model({
   },
 }));
 
-export default ControlBase;
+export default types.compose(ControlBase, BaseTag);

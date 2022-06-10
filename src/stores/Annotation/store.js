@@ -12,6 +12,7 @@ import { ViewModel } from "../../tags/visual";
 import { FF_DEV_1621, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
+import { isDefined } from "../../utils/utilities";
 
 const SelectedItem = types.union(Annotation, HistoryItem);
 
@@ -353,6 +354,10 @@ export default types
       setTimeout(() => {
         // update classifications after render
         const updatedItem = item ?? self.selected;
+
+        Array.from(updatedItem.names.values())
+          .filter(t => t.isClassification)
+          .forEach(t => t.updateFromResult([]));
 
         updatedItem?.results
           .filter(r => r.area.classification)
