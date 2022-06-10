@@ -1,4 +1,4 @@
-import { getParent, getRoot, types } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 import React from "react";
 
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
