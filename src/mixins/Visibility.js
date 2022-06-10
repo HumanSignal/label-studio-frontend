@@ -17,9 +17,6 @@ const VisibilityMixin = types
         return false;
       }
 
-      console.log('heartex visiblewhen', self.visiblewhen);
-      console.log('heartex self.whenchoicevalue', self.whenchoicevalue);
-
       if (self.visiblewhen) {
         const fns = {
           "region-selected": ({ tagName, labelValue }) => {
