@@ -31,6 +31,31 @@ import { FF_DEV_2007_DEV_2008, isFF } from "../../../utils/feature-flags";
  *   </Labels>
  *   <Text name="txt-1" value="$text" />
  * </View>
+ *
+ * @example <caption>This config with dynamic labels</caption>
+ * <!--
+ * All types of `Labels` can have dynamic `value` to load labels from task.
+ * This task data should contain a list of options to create underlying `<Label>`s.
+ * All the parameters from options will be transferred to corresponding tags.
+ * -->
+ * <PolygonLabels name="product" toName="shelf" value="$labels" />
+ * <!-- {
+ *   "data": {
+ *     "options": [
+ *       { "value": "Big brand" },
+ *       { "value": "Another brand", "background": "orange" },
+ *       { "value": "Local brand" },
+ *       { "value": "Green brand", "alias": "Eco", showalias: true }
+ *     ]
+ *   }
+ * } -->
+ * @example <caption>is equivalent to this config</caption>
+ * <PolygonLabels name="product" toName="shelf">
+ *   <Label value="Big brand" />
+ *   <Label value="Another brand" background="orange" />
+ *   <Label value="Local brand" />
+ *   <Label value="Green brand" alias="Eco" showAlias="true" />
+ * </PolygonLabels>
  * @name Labels
  * @meta_title Labels Tag for Labeling Regions
  * @meta_description Customize Label Studio by using the Labels tag to provide a set of labels for labeling regions in tasks for machine learning and data science projects.
