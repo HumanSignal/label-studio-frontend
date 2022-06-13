@@ -171,7 +171,7 @@ Object.entries(scenarios).forEach(([title, scenario]) =>
     // const configTree = Utils.parseXml(config);
 
     await I.amOnPage("/");
-    await I.executeAsyncScript(initLabelStudio, params);
+    await I.executeScript(initLabelStudio, params);
 
     scenario.assert(I);
   }));
