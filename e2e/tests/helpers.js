@@ -7,15 +7,14 @@
  * @param {object} params.data object with property used in config
  * @param {object[]} params.annotations
  * @param {object[]} params.predictions
- * @param {function} done
  */
-const initLabelStudio = async ({ 
-  config, 
-  data, 
-  annotations = [{ result: [] }], 
+const initLabelStudio = async ({
+  config,
+  data,
+  annotations = [{ result: [] }],
   predictions = [],
   settings = {},
-},  done) => {
+}) => {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -39,38 +38,36 @@ const initLabelStudio = async ({
 
   window.LabelStudio.destroyAll();
   new window.LabelStudio("label-studio", { interfaces, config, task, settings });
-  done();
 };
 
-const setFeatureFlags = (featureFlags, done) => {
+const setFeatureFlags = (featureFlags) => {
   if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
   if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
   window.APP_SETTINGS.feature_flags = {
     ...window.APP_SETTINGS.feature_flags,
     ...featureFlags,
   };
-  done();
 };
 
 /**
  * Wait for the main Image object to be loaded
- * @param {function} done codecept async success handler
  */
-const waitForImage = async done => {
-  const img = document.querySelector("[alt=LS]");
+const waitForImage = () => {
+  return new Promise((resolve) => {
+    const img = document.querySelector("[alt=LS]");
 
-  if (!img || img.complete) return done();
-  // this should be rewritten to isReady when it is ready
-  img.onload = ()=>{
-    setTimeout(done, 100);
-  };
+    if (!img || img.complete) return resolve();
+    // this should be rewritten to isReady when it is ready
+    img.onload = ()=>{
+      setTimeout(resolve, 100);
+    };
+  });
 };
 
 /**
  * Wait for all audio on the page to be loaded
- * @param {function} done codecept async success handler
  */
-const waitForAudio = async done => {
+const waitForAudio = async () => {
   const audios = document.querySelectorAll("audio");
 
   await Promise.all(
@@ -83,7 +80,6 @@ const waitForAudio = async done => {
       });
     }),
   );
-  done();
 };
 
 /**
@@ -165,23 +161,19 @@ const clickRect = () => {
 
 /**
  * Click once on the main Stage
- * @param {number} x
- * @param {number} y
- * @param {function} done
+ * @param {[number, number]} coords
  */
-const clickKonva = (x, y, done) => {
+const clickKonva = ([x, y]) => {
   const stage = window.Konva.stages[0];
 
   stage.fire("click", { clientX: x, clientY: y, evt: { offsetX: x, offsetY: y, timeStamp: Date.now() } });
-  done();
 };
 
 /**
  * Click multiple times on the Stage
  * @param {number[][]} points array of coords arrays ([[x1, y1], [x2, y2], ...])
- * @param {function} done
  */
-const clickMultipleKonva = async (points, done) => {
+const clickMultipleKonva = async (points) => {
   const stage = window.Konva.stages[0];
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
   let lastPoint;
@@ -199,15 +191,13 @@ const clickMultipleKonva = async (points, done) => {
     lastPoint = point;
     await delay();
   }
-  done();
 };
 
 /**
  * Create Polygon on Stage by clicking multiple times and click on the first point at the end
  * @param {number[][]} points array of coords arrays ([[x1, y1], [x2, y2], ...])
- * @param {function} done
  */
-const polygonKonva = async (points, done) => {
+const polygonKonva = async (points) => {
   try {
     const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
     const stage = window.Konva.stages[0];
@@ -231,9 +221,8 @@ const polygonKonva = async (points, done) => {
     await delay(100);
     // and only after that we can click on it
     firstPoint.fire("click", { evt: { preventDefault: () => {} } });
-    done();
   } catch (e) {
-    done(String(e));
+    return String(e);
   }
 };
 
@@ -243,9 +232,8 @@ const polygonKonva = async (points, done) => {
  * @param {number} y
  * @param {number} shiftX
  * @param {number} shiftY
- * @param {function} done
  */
-const dragKonva = async (x, y, shiftX, shiftY, done) => {
+const dragKonva = async ([x, y, shiftX, shiftY]) => {
   const stage = window.Konva.stages[0];
   const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
 
@@ -260,7 +248,6 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
   stage.fire("mouseup", { evt: { offsetX: x + shiftX, offsetY: y + shiftY } });
   // looks like Konva needs some time to update image according to dpi
   await delay(32);
-  done();
 };
 
 /**
@@ -268,10 +255,9 @@ const dragKonva = async (x, y, shiftX, shiftY, done) => {
  * @param {number} x
  * @param {number} y
  * @param {number[]} rgbArray
- * @param {function} done
  * @param {number} tolerance
  */
-const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
+const hasKonvaPixelColorAtPoint = ([x, y, rgbArray, tolerance]) => {
   const stage = window.Konva.stages[0];
   let result = false;
 
@@ -292,8 +278,7 @@ const hasKonvaPixelColorAtPoint = (x, y, rgbArray, tolerance, done) => {
     result = true;
   }
 
-  done(result);
-  return;
+  return result;
 };
 
 const areEqualRGB = (a, b, tolerance) => {
@@ -305,7 +290,7 @@ const areEqualRGB = (a, b, tolerance) => {
   return true;
 };
 
-const getKonvaPixelColorFromPoint = (x, y, done) => {
+const getKonvaPixelColorFromPoint = ([x, y]) => {
   const stage = window.Konva.stages[0];
   const colors = [];
 
@@ -317,48 +302,47 @@ const getKonvaPixelColorFromPoint = (x, y, done) => {
     colors.push(rgba);
   }
 
-  done(colors);
+  return colors;
 };
 
-const getCanvasSize = done => {
+const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
 
-  done({
+  return {
     width: stage.width(),
     height: stage.height(),
-  });
+  };
 };
-const getImageSize = done => {
+const getImageSize = () => {
   const image = window.document.querySelector('img[alt="LS"]');
   const clientRect = image.getBoundingClientRect();
 
-  done({
+  return {
     width: clientRect.width,
     height: clientRect.height,
-  });
+  };
 };
-const getImageFrameSize = done => {
+const getImageFrameSize = () => {
   const image = window.document.querySelector('img[alt="LS"]').parentElement;
   const clientRect = image.getBoundingClientRect();
 
-  done({
+  return {
     width: Math.round(clientRect.width),
     height: Math.round(clientRect.height),
-  });
+  };
 };
-const setZoom = (scale, x, y, done) => {
-  Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
-  setTimeout(() => {
-    done();
-  }, 30);
+const setZoom = ([scale, x, y]) => {
+  return new Promise((resolve) => {
+    Htx.annotationStore.selected.objects.find(o => o.type === "image").setZoom(scale, x, y);
+    setTimeout(resolve, 30);
+  });
 };
 
 /**
  * Count shapes on Konva, founded by selector
  * @param {string|function} selector from Konva's finding methods params
- * @param {function} done
  */
-const countKonvaShapes = async done => {
+const countKonvaShapes = async () => {
   const stage = window.Konva.stages[0];
   const regions = Htx.annotationStore.selected.regionStore.regions;
   let count = 0;
@@ -366,31 +350,31 @@ const countKonvaShapes = async done => {
   regions.forEach(region => {
     count +=  stage.find("."+region.id).filter(node => node.isVisible()).length;
   });
-  done(count);
+
+  return count;
 };
 
-const isTransformerExist = async done => {
+const isTransformerExist = async () => {
   const stage = window.Konva.stages[0];
   const achors = stage.find("._anchor").filter(shape => shape.getAttr("visible") !== false);
 
-  done(!!achors.length);
+  return !!achors.length;
 };
 
-const isRotaterExist = async done => {
+const isRotaterExist = async () => {
   const stage = window.Konva.stages[0];
   const achors = stage.find(".rotater").filter(shape => shape.getAttr("visible") !== false);
 
-  done(!!achors.length);
+  return !!achors.length;
 };
 
-const switchRegionTreeView = (viewName, done) => {
+const switchRegionTreeView = (viewName) => {
   Htx.annotationStore.selected.regionStore.setView(viewName);
-  done();
 };
 
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
-const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
+const selectText = async ({ selector, rangeStart, rangeEnd }) => {
   const findOnPosition = (root, position, borderSide = "left") => {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
@@ -437,12 +421,10 @@ const selectText = async ({ selector, rangeStart, rangeEnd }, done) => {
 
   evt.initMouseEvent("mouseup", true, true);
   elem.dispatchEvent(evt);
-
-  done();
 };
 
 // Only for debugging
-const whereIsPixel = (rgbArray, tolerance, done) => {
+const whereIsPixel = ([rgbArray, tolerance]) => {
   const stage = window.Konva.stages[0];
   const areEqualRGB = (a, b) => {
     for (let i = 3; i--; ) {
@@ -467,7 +449,7 @@ const whereIsPixel = (rgbArray, tolerance, done) => {
       }
     }
   }
-  done(points);
+  return points;
 };
 
 const dumpJSON = (obj) => {
@@ -503,8 +485,8 @@ function omitBy(object, predicate) {
   return _pickBy(object, _not(predicate));
 }
 
-function hasSelectedRegion(done) {
-  done(!!Htx.annotationStore.selected.highlightedNode);
+function hasSelectedRegion() {
+  return !!Htx.annotationStore.selected.highlightedNode;
 }
 
 module.exports = {

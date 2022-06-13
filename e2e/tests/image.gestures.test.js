@@ -179,7 +179,7 @@ Scenario("Creating regions by various gestures", async function({ I, AtImageView
   };
 
   I.amOnPage("/");
-  await I.executeAsyncScript(initLabelStudio, params);
+  await I.executeScript(initLabelStudio, params);
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();

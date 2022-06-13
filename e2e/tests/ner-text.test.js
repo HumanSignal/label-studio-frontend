@@ -92,7 +92,7 @@ Scenario("NERText", async function({ I, AtTopbar }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
   // better to always check the text are on the page,
   // so there are no errors and text is displayed correctly;
   // text should not be from regions to check the object tag, not the regions list
@@ -109,7 +109,7 @@ Scenario("NERText", async function({ I, AtTopbar }) {
   I.click('[aria-label="Create Annotation"]');
 
   I.pressKey("2");
-  I.executeAsyncScript(selectText, {
+  I.executeScript(selectText, {
     selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
@@ -125,7 +125,7 @@ Scenario("NERText", async function({ I, AtTopbar }) {
   I.click("Proceed"); // approve
 
   I.pressKey("1");
-  I.executeAsyncScript(selectText, {
+  I.executeScript(selectText, {
     selector: ".lsf-htx-richtext",
     rangeStart: 233,
     rangeEnd: 237,
@@ -164,7 +164,7 @@ Scenario("NER Text with text field missing", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
   I.see("Alice remarked");
 
   // restore saved result and check it back that it didn't change
@@ -182,7 +182,7 @@ Scenario("NER Text from url", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
   // wait for text to be loaded
   I.see("American political leader");
 
@@ -200,7 +200,7 @@ Scenario("NER Text from url with text saved", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
   // wait for text to be loaded
   I.see("American political leader");
 
@@ -210,7 +210,7 @@ Scenario("NER Text from url with text saved", async function({ I }) {
   assert.deepEqual(result, resultsFromUrl);
 });
 
-Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) {
+Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I, LabelStudio }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: results }],
     config: configSimple,
@@ -222,7 +222,8 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) 
     window.OLD_LS_SECURE_MODE = window.LS_SECURE_MODE;
     window.LS_SECURE_MODE = true;
   });
-  I.executeAsyncScript(initLabelStudio, params);
+
+  LabelStudio.init(params);
 
   I.see("In SECURE MODE"); // error about valueType in secure mode
   I.dontSee("American political leader");
@@ -232,7 +233,7 @@ Scenario("NER Text with SECURE MODE and wrong valueType", async function({ I }) 
   });
 });
 
-Scenario("NER Text with SECURE MODE", async function({ I }) {
+Scenario("NER Text with SECURE MODE", async function({ I, LabelStudio }) {
   const params = {
     annotations: [{ id: "TestCmpl", result: resultsFromUrl }],
     config: configUrl,
@@ -244,7 +245,10 @@ Scenario("NER Text with SECURE MODE", async function({ I }) {
     window.OLD_LS_SECURE_MODE = window.LS_SECURE_MODE;
     window.LS_SECURE_MODE = true;
   });
-  I.executeAsyncScript(initLabelStudio, params);
+  LabelStudio.init(params);
+
+  I.waitForElement(".lsf-richtext__line", 60);
+
   I.see("American political leader");
 
   // restore saved result and check it back that it didn't change
