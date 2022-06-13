@@ -475,6 +475,8 @@ export default observer(
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
+      const selectedTool = item.getToolsManager().findSelectedTool();
+
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
@@ -487,9 +489,12 @@ export default observer(
           "EllipseTool-dynamic",
           "RectangleTool",
           "RectangleTool-dynamic",
-        ].includes(item.getToolsManager().findSelectedTool()?.fullName)
+          "PolygonTool",
+          "PolygonTool-dynamic",
+        ].includes(selectedTool?.fullName)
       ) {
-        item.annotation.unselectAreas();
+        item.annotation.unselectAll();
+        item.getToolsManager().unselectAll();
         return;
       }
 
