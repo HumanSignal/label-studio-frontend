@@ -416,12 +416,12 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
     };
 
     return {
-      updateDraw: throttle(function(x, y) {
+      updateDraw: (x, y) => {
         if (currentMode === DEFAULT_MODE)
           self.getCurrentArea()?.draw(x, y, points);
         else if (currentMode === DRAG_MODE)
           self.draw(x, y);
-      }, 48), // 3 frames, optimized enough and not laggy yet
+      },
 
       nextPoint(x, y) {
         points.push({ x, y });
