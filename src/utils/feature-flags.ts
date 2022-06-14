@@ -70,6 +70,8 @@ export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
 
 export const FF_DEV_2431 = "ff_front_dev_2431_delete_polygon_points_080622_short";
 
+export const FF_DEV_2339 = "ff_front_dev_2339_bounding_box_select_on_creation";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,

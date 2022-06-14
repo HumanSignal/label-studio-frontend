@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
+import { FF_DEV_2339, isFF } from "../utils/feature-flags";
 
 const DrawingTool = types
   .model("DrawingTool", {
@@ -121,6 +122,9 @@ const DrawingTool = types
         self.applyActiveStates(newArea);
         self.deleteRegion();
         newArea.notifyDrawingFinished();
+        console.log("isFF", isFF(FF_DEV_2339));
+        if(isFF(FF_DEV_2339))
+          newArea._selectArea();
         return newArea;
       },
       createRegion(opts) {
