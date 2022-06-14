@@ -836,6 +836,7 @@ const Model = types.model({
       self.regs.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+      self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
     },
 
     updateImageSize(ev) {
