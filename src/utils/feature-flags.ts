@@ -68,6 +68,8 @@ export const FF_DEV_2458 = "ff_front_dev_2458_comments_for_skip_250522_short";
 
 export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
 
+export const FF_DEV_1442 = "ff_front_dev_1422_unselect_shape_on_click_outside_080622_short";
+
 export const FF_DEV_2431 = "ff_front_dev_2431_delete_polygon_points_080622_short";
 
 function getFeatureFlags() {
