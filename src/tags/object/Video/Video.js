@@ -62,6 +62,7 @@ const Model = types
   })
   .volatile(() => ({
     errors: [],
+    speed:1,
     ref: React.createRef(),
     frame: 1,
     length: 1,
@@ -119,6 +120,10 @@ const Model = types
 
     handleSyncPause() {
       self.ref.current?.pause();
+    },
+
+    handleSyncSpeed(speed) {
+      self.speed = speed;
     },
 
     handleSeek() {
