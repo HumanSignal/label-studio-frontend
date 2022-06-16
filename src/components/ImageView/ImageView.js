@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -427,9 +427,16 @@ export default observer(
     imageRef = createRef();
     crosshairRef = createRef();
 
+    skipMouseUp = false;
+
     handleOnClick = e => {
       const { item } = this.props;
 
+      if (self.skipMouseUp){
+        self.skipMouseUp = false;
+        return;
+      }
+      
       if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
@@ -447,6 +454,29 @@ export default observer(
 
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
+
+      const selectedTool = item.getToolsManager().findSelectedTool();
+
+      // clicking on the stage after there has already been a region selection
+      // should clear selected areas and not continue drawing a new region immediately.
+      if (
+        isFF(FF_DEV_1442) &&
+        e.target === item.stageRef &&
+        item.annotation.selectedRegions.length > 0 &&
+        [
+          undefined,
+          "EllipseTool",
+          "EllipseTool-dynamic",
+          "RectangleTool",
+          "RectangleTool-dynamic",
+          "PolygonTool",
+          "PolygonTool-dynamic",
+        ].includes(selectedTool?.fullName)
+      ) {
+        item.annotation.unselectAll();
+        self.skipMouseUp = true;
+        return;
+      }
 
       if (
         // create regions over another regions with Cmd/Ctrl pressed
@@ -502,7 +532,7 @@ export default observer(
      */
     handleMouseUp = e => {
       const { item } = this.props;
-
+  
       item.freezeHistory();
       item.setSkipInteractions(false);
 
@@ -798,10 +828,26 @@ export default observer(
                   this.crosshairRef.current.updateVisibility(true);
                 }
               }}
-              onMouseLeave={() => {
+              onMouseLeave={(e) => {
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(false);
                 }
+                const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
+                const newEvent = { ...e };
+
+                if(mouseposX <= 0) {
+                  e.offsetX = 0;
+                } else if (mouseposX >= stageWidth) {
+                  e.offsetX = mouseposX;
+                }
+                
+                if(mouseposY <= 0) {
+                  e.offsetY = 0;
+                } else if (mouseposY >= stageHeight) {
+                  e.offsetY = mouseposY;
+                }
+                this.handleMouseMove(newEvent);
               }}
               onDragMove={this.updateCrosshair}
               onMouseDown={this.handleMouseDown}

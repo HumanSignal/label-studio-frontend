@@ -127,6 +127,41 @@ const Model = types
       self.updateAppearenceFromState();
     },
 
+    getDistanceBetweenPoints(pointA, pointB, abs = true) {
+      const { x: xA, y: yA } = pointA;
+      const { x: xB, y: yB } = pointB;
+      const distanceX = abs ? Math.abs(xA - xB) : xA - xB;
+      const distanceY = abs ? Math.abs(yA - yB) : yA - yB;
+      
+      return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+    },
+
+    draw(x, y, points) {
+      if(points.length === 1) {
+        self.width = self.getDistanceBetweenPoints({ x, y }, self);
+        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+      } else if(points.length === 2) {
+        const { y: firstPointY, x: firstPointX } = points[0];
+        const { y: secondPointY, x: secondPointX } = points[1];
+        const h = secondPointY - y;
+        const isAboveTheLine = y < secondPointY;
+        const isSecondLeftOfFirst = secondPointX < firstPointX;
+
+        if(isAboveTheLine && !isSecondLeftOfFirst || !isAboveTheLine && isSecondLeftOfFirst) {
+          self.x = secondPointX;
+          self.y = secondPointY;
+          self.rotation = self.rotationAtCreation + 180;
+        } else {
+          self.x = firstPointX;
+          self.y = firstPointY;
+          self.rotation = self.rotationAtCreation;
+        }
+
+        self.height = Math.abs(h);
+      }
+      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+    },
+
     // @todo not used
     rotate(degree) {
       const p = self.rotatePoint(self, degree);
