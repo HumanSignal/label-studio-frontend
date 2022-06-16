@@ -1,8 +1,12 @@
 // Fix crosshair working with zoom & rotation
 export const FF_DEV_1285 = "ff_front_dev_1285_crosshair_wrong_zoom_140122_short";
 
+
 // Outliner + Details
 export const FF_DEV_1170 = "ff_front_1170_outliner_030222_short";
+
+// Fix hidding relations by topbar
+export const FF_DEV_1429 = "ff_front_dev_1429_relations_hidding_250122_short";
 
 // Fix stuck userpic
 export const FF_DEV_1507 = "ff_front_DEV_1507_stuck_userpic_210122_short";

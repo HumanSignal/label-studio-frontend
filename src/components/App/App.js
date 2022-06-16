@@ -1,7 +1,7 @@
 /**
 * Libraries
 */
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
 import { Result, Spin } from "antd";
 import { getEnv, getRoot } from "mobx-state-tree";
 import { observer, Provider } from "mobx-react";
@@ -49,6 +49,7 @@ import { Button } from "../../common/Button/Button";
  * App
  */
 class App extends Component {
+  annotationRef = createRef();
   relationsRef = React.createRef();
 
   renderSuccess() {
@@ -80,8 +81,6 @@ class App extends Component {
       </Block>
     );
   }
-
-
 
   renderNoAccess() {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
@@ -129,7 +128,7 @@ class App extends Component {
             name="main-view"
             onScrollCapture={this._notifyScroll}
           >
-            <Elem name="annotation">
+            <Elem name="annotation" ref={this.annotationRef}>
               {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
@@ -178,8 +177,23 @@ class App extends Component {
         ref={this.relationsRef}
         tags={selectedStore.names}
         taskData={taskData}
+        onNeedOffset={this.changeOffsetHandler}
       />
     );
+  }
+
+  annotationTopOffset = 0;
+  changeOffsetHandler = (dOffset) => {
+    const annotationNode = this.annotationRef.current;
+
+    if (annotationNode) {
+      const newOffset = Number.isFinite(dOffset) ? Math.max(this.annotationTopOffset + dOffset, 0) : 0;
+
+      if (newOffset !== this.annotationTopOffset) {
+        annotationNode.children[0].style.paddingTop = `${newOffset}px`;
+        this.annotationTopOffset = newOffset;
+      }
+    }
   }
 
   render() {
@@ -233,7 +247,7 @@ class App extends Component {
             ) : (
               <>
                 {mainContent}
- 
+
                 {(viewingAll === false) && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface("side-column") && (
@@ -241,7 +255,7 @@ class App extends Component {
                         <SidebarPage name="annotation" title="Annotation">
                           <AnnotationTab store={store}/>
                         </SidebarPage>
- 
+
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
                             <Component/>
@@ -253,19 +267,19 @@ class App extends Component {
                 )}
               </>
             )}
- 
+
           </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
       </Block>
     );
   }
- 
+
   _notifyScroll = () => {
     if (this.relationsRef.current) {
       this.relationsRef.current.onResize();
     }
   };
 }
- 
+
 export default observer(App);
