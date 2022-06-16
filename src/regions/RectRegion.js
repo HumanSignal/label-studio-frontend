@@ -159,7 +159,6 @@ const Model = types
           self.rotation = self.rotationAtCreation;
         }
 
-        console.log("rectRegion draw", isAboveTheLine, isSecondLeftOfFirst, self.rotationAtCreation, self.rotation);
         self.height = Math.abs(h);
       }
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
