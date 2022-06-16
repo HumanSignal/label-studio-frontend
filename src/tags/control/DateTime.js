@@ -11,6 +11,7 @@ import PerRegionMixin from "../../mixins/PerRegion";
 import RequiredMixin from "../../mixins/Required";
 import { isDefined } from "../../utils/utilities";
 import ControlBase from "./Base";
+import { FF_DEV_117, isFF } from "../../utils/feature-flags";
 
 const FORMAT_FULL = "%Y-%m-%dT%H:%M";
 const FORMAT_DATE = "%Y-%m-%d";
@@ -337,6 +338,6 @@ const HtxDateTime = inject("store")(
   }),
 );
 
-Registry.addTag("datetime", DateTimeModel, HtxDateTime);
+if (isFF(FF_DEV_117)) Registry.addTag("datetime", DateTimeModel, HtxDateTime);
 
 export { HtxDateTime, DateTimeModel };
