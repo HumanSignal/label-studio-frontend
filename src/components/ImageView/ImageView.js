@@ -454,9 +454,16 @@ export default observer(
     imageRef = createRef();
     crosshairRef = createRef();
 
+    skipMouseUp = false;
+
     handleOnClick = e => {
       const { item } = this.props;
 
+      if (self.skipMouseUp){
+        self.skipMouseUp = false;
+        return;
+      }
+      
       if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
@@ -494,7 +501,7 @@ export default observer(
         ].includes(selectedTool?.fullName)
       ) {
         item.annotation.unselectAll();
-        item.getToolsManager().unselectAll();
+        self.skipMouseUp = true;
         return;
       }
 
@@ -551,7 +558,7 @@ export default observer(
      */
     handleMouseUp = e => {
       const { item } = this.props;
-
+  
       item.freezeHistory();
       item.setSkipInteractions(false);
 
@@ -848,10 +855,26 @@ export default observer(
                   this.crosshairRef.current.updateVisibility(true);
                 }
               }}
-              onMouseLeave={() => {
+              onMouseLeave={(e) => {
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(false);
                 }
+                const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
+                const newEvent = { ...e };
+
+                if(mouseposX <= 0) {
+                  e.offsetX = 0;
+                } else if (mouseposX >= stageWidth) {
+                  e.offsetX = mouseposX;
+                }
+                
+                if(mouseposY <= 0) {
+                  e.offsetY = 0;
+                } else if (mouseposY >= stageHeight) {
+                  e.offsetY = mouseposY;
+                }
+                this.handleMouseMove(newEvent);
               }}
               onDragMove={this.updateCrosshair}
               onMouseDown={this.handleMouseDown}
