@@ -36,13 +36,21 @@
   &:not(&_disabled)
     cursor pointer
 
-  &:hover:not(&_disabled),
-  &_selected:not(&_disabled)
+  &:hover:not(&_disabled)
+    background-color #f6f6f6
+
+  &_selected:not(&_disabled),
+  &_selected:hover:not(&_disabled)
     background-color #efefef
 
   &__name,
   &__date
     font-size 15px
+
+  &__name
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
 
   &_disabled
     opacity 0.6
@@ -94,6 +102,21 @@
     border-top-color rgba(10, 87, 146, 0.3)
     animation spin 1s linear infinite
 
+  &__dot
+    width 10px
+    height 10px
+    margin-right 4px
+    display inline-block
+    background-color rgba(#000, 0.4)
+    border-radius 100%
+    animation pulse 1s linear infinite
+
+  &__saved
+    animation disappear 0.3s 3s forwards
+    width 12px
+    margin-right 4px
+    color green
+
   &__collapse-comment
     margin-top 3px
     color $accent_color
@@ -107,5 +130,23 @@
   }
   100% {
     transform rotate(360deg)
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform scale(1)
+  }
+  50% {
+    transform scale(0.5)
+  }
+}
+
+@keyframes disappear {
+  0% {
+    opacity 1
+  }
+  100% {
+    opacity 0
   }
 }

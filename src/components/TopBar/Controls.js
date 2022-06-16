@@ -8,7 +8,7 @@ import { IconBan } from "../../assets/icons";
 import "./Controls.styl";
 import { useCallback, useMemo, useState } from "react";
 import { Dropdown } from "../../common/Dropdown/DropdownComponent";
-import { FF_DEV_1593, FF_DEV_2186, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1593, FF_DEV_2186, FF_DEV_2458, isFF } from "../../utils/feature-flags";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -126,13 +126,25 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     );
   } else {
     if (store.hasInterface("skip")) {
-      buttons.push(
-        <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={store.skipTask}>
-            Skip
-          </Button>
-        </ButtonTooltip>,
-      );
+      if (isFF(FF_DEV_2458)) {
+        buttons.push(
+          <ActionDialog
+            type="skip"
+            onAction={store.skipTask}
+            buttonProps={{ disabled, look: "danger" }}
+            prompt="Reason of cancelling (skipping) task"
+            action="Skip"
+          />,
+        );
+      } else {
+        buttons.push(
+          <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
+            <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={store.skipTask}>
+              Skip
+            </Button>
+          </ButtonTooltip>,
+        );
+      }
     }
 
     if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
@@ -154,7 +166,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       const isUpdate = sentUserGenerate || versions.result;
-      const isRejected = store.task.queue?.includes("Rejected queue");
+      // const isRejected = store.task.queue?.includes("Rejected queue");
       const withComments = isFF(FF_DEV_2186) || store.hasInterface("comments:update");
       let button;
       

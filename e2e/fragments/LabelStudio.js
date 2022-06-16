@@ -5,7 +5,7 @@ const Helpers = require("../tests/helpers");
 
 module.exports = {
   init(params) {
-    I.executeAsyncScript(Helpers.initLabelStudio, params);
+    I.executeScript(Helpers.initLabelStudio, params);
   },
   async serialize() {
     const result = await I.executeScript(Helpers.serialize);
@@ -14,6 +14,6 @@ module.exports = {
   },
 
   setFeatureFlags(featureFlags) {
-    I.executeAsyncScript(Helpers.setFeatureFlags, featureFlags);
+    I.executeScript(Helpers.setFeatureFlags, featureFlags);
   },
 };

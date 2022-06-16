@@ -17,6 +17,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
 import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
+import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -812,6 +813,9 @@ const Model = types.model({
         // reinit zoom to calc stageW/H
         self.setZoom(self.currentZoom);
 
+        if (isFF(FF_DEV_2394)) {
+          self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+        }
         self._recalculateImageParams();
       }
 
@@ -832,6 +836,7 @@ const Model = types.model({
       self.regs.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+      self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
     },
 
     updateImageSize(ev) {

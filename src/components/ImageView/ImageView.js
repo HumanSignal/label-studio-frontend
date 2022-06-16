@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -50,7 +50,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => (region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -475,10 +475,33 @@ export default observer(
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
+      const selectedTool = item.getToolsManager().findSelectedTool();
+
+      // clicking on the stage after there has already been a region selection
+      // should clear selected areas and not continue drawing a new region immediately.
+      if (
+        isFF(FF_DEV_1442) &&
+        e.target === item.stageRef &&
+        item.annotation.selectedRegions.length > 0 &&
+        [
+          undefined,
+          "EllipseTool",
+          "EllipseTool-dynamic",
+          "RectangleTool",
+          "RectangleTool-dynamic",
+          "PolygonTool",
+          "PolygonTool-dynamic",
+        ].includes(selectedTool?.fullName)
+      ) {
+        item.annotation.unselectAll();
+        item.getToolsManager().unselectAll();
+        return;
+      }
+
       if (
         // create regions over another regions with Cmd/Ctrl pressed
         item.getSkipInteractions() ||
-        e.target === e.target.getStage() ||
+        e.target === item.stageRef ||
         findClosestParent(
           e.target,
           el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
@@ -494,7 +517,6 @@ export default observer(
         this.canvasY = top;
         return item.event("mousedown", e, x, y);
       }
-
       return true;
     };
 

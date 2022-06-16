@@ -17,10 +17,11 @@ import { useMemo } from "react";
 import { WaveSurferParams } from "wavesurfer.js/types/params";
 
 const ZOOM_X = {
-  min: 10,
+  min: 300,
   max: 1500,
   step: 10,
-  default: 10,
+  default: 300,
+  defaultValue: 300,
 };
 
 const SPEED = {
@@ -279,8 +280,6 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
-    console.log(data.cursorcolor, parseInt(data.defaultscale, 10));
-
     return {
       left: cursorPosition,
       width: Number(data.cursorwidth ?? 2),
@@ -291,7 +290,7 @@ export const Wave: FC<TimelineViewProps> = ({
   return (
     <Block name="wave">
       <Elem name="controls">
-        <Space spread>
+        <Space spread style={{ gridAutoColumns: 'auto' }}>
           <Range
             continuous
             value={speed}
@@ -301,7 +300,6 @@ export const Wave: FC<TimelineViewProps> = ({
             maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
             onChange={(value) => onSpeedChange?.(Number(value))}
           />
-
           <Range
             continuous
             value={currentZoom}
@@ -309,7 +307,7 @@ export const Wave: FC<TimelineViewProps> = ({
             resetValue={ZOOM_X.default}
             minIcon={<IconZoomOut />}
             maxIcon={<IconZoomIn />}
-            onChange={value => setZoom(Number(value))}
+            onChange={value =>  setZoom(Number(value)) }
           />
         </Space>
       </Elem>
@@ -381,7 +379,6 @@ const useWaveSurfer = ({
 
   useEffect(() => {
     const root = containter.current!;
-
     const wsi = WaveSurfer.create({
       autoCenter: true,
       scrollParent: true,
@@ -568,7 +565,7 @@ const useWaveSurfer = ({
       onSeek(currentTime * 1000);
     });
 
-    wsi.load(data._value);
+    if (data._value) wsi.load(data._value);
 
     ws.current = wsi;
 

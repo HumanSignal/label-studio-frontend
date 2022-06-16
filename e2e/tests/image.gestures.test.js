@@ -89,17 +89,23 @@ const createShape = {
         },
       };
     },
-    byTwoClicks(x, y, radius, opts = {}) {
+    byThreeClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
         action: "clickPointsKonva",
         params: [
           [
-            [x - radius, y - radius],
+            [x , y],
             [x + radius, y + radius],
           ],
         ],
-        result: { width: radius * 2, height: radius * 2, rotation: 0, x: x - radius, y: y - radius },
+        result: { 
+          width: radius, 
+          height: radius, 
+          rotation: 0, 
+          x, 
+          y, 
+        },
       };
     },
     byDoubleClick(x, y, radius, opts = {}) {
@@ -173,7 +179,7 @@ Scenario("Creating regions by various gestures", async function({ I, AtImageView
   };
 
   I.amOnPage("/");
-  await I.executeAsyncScript(initLabelStudio, params);
+  await I.executeScript(initLabelStudio, params);
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();

@@ -563,7 +563,7 @@ export const Annotation = types
     },
 
     onDraftSaved() {
-      self.draftSaved = Utils.UDate.currentISODate();
+      self.setDraftSaved(Utils.UDate.currentISODate());
       self.setDraftSaving(false);
     },
 
@@ -578,6 +578,10 @@ export const Annotation = types
 
     setDraftSaving(saving = false) {
       self.isDraftSaving = saving;
+    },
+
+    setDraftSaved(date) {
+      self.draftSaved = date;
     },
 
     afterAttach() {

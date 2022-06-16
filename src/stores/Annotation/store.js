@@ -54,7 +54,7 @@ export default types
           c.editable = false;
         });
       } else {
-        selectAnnotation(self.annotations[0].id);
+        selectAnnotation(self.annotations[0].id, { fromViewAll: true });
       }
     }
 
@@ -119,7 +119,7 @@ export default types
      * Select annotation
      * @param {*} id
      */
-    function selectAnnotation(id) {
+    function selectAnnotation(id, options = {}) {
       if (!self.annotations.length) return null;
 
       const { selected } = self;
@@ -128,7 +128,7 @@ export default types
       c.editable = true;
       c.setupHotKeys();
 
-      getEnv(self).events.invoke('selectAnnotation', c, selected);
+      getEnv(self).events.invoke('selectAnnotation', c, selected, options ?? {});
       if (c.pk) getParent(self).addAnnotationToTaskHistory(c.pk);
       return c;
     }
