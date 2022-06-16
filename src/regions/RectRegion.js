@@ -1,24 +1,24 @@
+import { getRoot, types } from "mobx-state-tree";
 import React, { useContext } from "react";
 import { Rect } from "react-konva";
-import { getRoot, types } from "mobx-state-tree";
-
-import Constants  from "../core/Constants";
-import DisabledMixin from "../mixins/Normalization";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
+import Constants from "../core/Constants";
+import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { default as DisabledMixin, default as NormalizationMixin } from "../mixins/Normalization";
+import RegionsMixin from "../mixins/Regions";
 import WithStatesMixin from "../mixins/WithStates";
 import { ImageModel } from "../tags/object/Image";
-import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
-import { guidGenerator } from "../core/Helpers";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
-import { useRegionStyles } from "../hooks/useRegionColor";
-import { AliveRegion } from "./AliveRegion";
-import { KonvaRegionMixin } from "../mixins/KonvaRegion";
-import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import { RegionWrapper } from "./RegionWrapper";
 import { rotateBboxCoords } from "../utils/bboxCoords";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { AliveRegion } from "./AliveRegion";
+import { EditableRegion } from "./EditableRegion";
+import { RegionWrapper } from "./RegionWrapper";
+
 
 /**
  * Rectangle object for Bounding Box
@@ -38,7 +38,7 @@ const Model = types
     height: types.number,
 
     rotation: 0,
-
+    rotationAtCreation: 0,
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(() => ({
@@ -67,6 +67,14 @@ const Model = types
     _supportsTransform: true,
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
+
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+      { property: "width", label: "W" },
+      { property: "height", label: "H" },
+      { property: "rotation", label: "icon:angle" },
+    ],
   }))
   .volatile(() => {
     return {
@@ -95,6 +103,7 @@ const Model = types
     },
   }))
   .actions(self => ({
+
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
@@ -118,6 +127,42 @@ const Model = types
       }
       self.checkSizes();
       self.updateAppearenceFromState();
+    },
+
+    getDistanceBetweenPoints(pointA, pointB, abs = true) {
+      const { x: xA, y: yA } = pointA;
+      const { x: xB, y: yB } = pointB;
+      const distanceX = abs ? Math.abs(xA - xB) : xA - xB;
+      const distanceY = abs ? Math.abs(yA - yB) : yA - yB;
+      
+      return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+    },
+
+    draw(x, y, points) {
+      if(points.length === 1) {
+        self.width = self.getDistanceBetweenPoints({ x, y }, self);
+        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+      } else if(points.length === 2) {
+        const { y: firstPointY, x: firstPointX } = points[0];
+        const { y: secondPointY, x: secondPointX } = points[1];
+        const h = secondPointY - y;
+        const isAboveTheLine = y < secondPointY;
+        const isSecondLeftOfFirst = secondPointX < firstPointX;
+
+        if(isAboveTheLine && !isSecondLeftOfFirst || !isAboveTheLine && isSecondLeftOfFirst) {
+          self.x = secondPointX;
+          self.y = secondPointY;
+          self.rotation = self.rotationAtCreation + 180;
+        } else {
+          self.x = firstPointX;
+          self.y = firstPointY;
+          self.rotation = self.rotationAtCreation;
+        }
+
+        console.log("rectRegion draw", isAboveTheLine, isSecondLeftOfFirst, self.rotationAtCreation, self.rotation);
+        self.height = Math.abs(h);
+      }
+      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
     },
 
     // @todo not used
@@ -246,6 +291,7 @@ const RectRegionModel = types.compose(
   DisabledMixin,
   AreaMixin,
   KonvaRegionMixin,
+  EditableRegion,
   Model,
 );
 
@@ -259,6 +305,11 @@ const HtxRectangleView = ({ item }) => {
   const eventHandlers = {};
 
   if (!suggestion && item.editable) {
+    eventHandlers.onTransform = ({ target }) => {
+      // resetting the skew makes transformations weird but predictable
+      target.setAttr("skewX", 0);
+      target.setAttr("skewY", 0);
+    };
     eventHandlers.onTransformEnd = (e) => {
       const t = e.target;
 
@@ -300,25 +351,7 @@ const HtxRectangleView = ({ item }) => {
       item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(item.parent, pos => {
-      let { x, y } = pos;
-      const { width, height, rotation } = item;
-      const { stageHeight, stageWidth } = item.parent;
-      const selfRect = { x: 0, y: 0, width, height };
-
-      const box = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
-      const fixed = fixRectToFit(box, stageWidth, stageHeight);
-
-      if (fixed.width !== box.width) {
-        x += (fixed.width - box.width) * (fixed.x !== box.x ? -1 : 1);
-      }
-
-      if (fixed.height !== box.height) {
-        y += (fixed.height - box.height) * (fixed.y !== box.y ? -1 : 1);
-      }
-
-      return { x, y };
-    });
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item, { x: item.x - item.bboxCoords.left, y: item.y - item.bboxCoords.top });
   }
 
   return (

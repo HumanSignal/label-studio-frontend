@@ -15,6 +15,7 @@ import { AliveRegion } from "./AliveRegion";
 import { KonvaRegionMixin } from "../mixins/KonvaRegion";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { EditableRegion } from "./EditableRegion";
 
 const Model = types
   .model({
@@ -38,6 +39,10 @@ const Model = types
     useTransformer: false,
     supportsRotate: false,
     supportsScale: false,
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+    ],
   }))
   .views(self => ({
     get store() {
@@ -153,6 +158,7 @@ const KeyPointRegionModel = types.compose(
   AreaMixin,
   NormalizationMixin,
   KonvaRegionMixin,
+  EditableRegion,
   Model,
 );
 
@@ -168,7 +174,8 @@ const HtxKeyPointView = ({ item }) => {
     defaultFillColor: "#000",
     defaultStrokeColor: "#fff",
     defaultOpacity: (item.style ?? item.tag) ? 0.6 : 1,
-    defaultStrokeWidth: 2,
+    // avoid size glitching when user select/unselect region
+    sameStrokeWidthForSelected: true,
   });
 
   const props = {
@@ -187,11 +194,13 @@ const HtxKeyPointView = ({ item }) => {
       <Circle
         x={x}
         y={y}
-        radius={Math.max(item.width, 2)}
+        // keypoint should always be the same visual size
+        radius={Math.max(item.width, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
-        scaleX={1 / item.parent.zoomScale}
-        scaleY={1 / item.parent.zoomScale}
+        // for some reason this scaling doesn't work, so moved this to radius
+        // scaleX={1 / item.parent.zoomScale}
+        // scaleY={1 / item.parent.zoomScale}
         name={`${item.id} _transformable`}
         onDragStart={e => {
           if (item.parent.getSkipInteractions()) {
@@ -207,20 +216,8 @@ const HtxKeyPointView = ({ item }) => {
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
-        dragBoundFunc={createDragBoundFunc(item.parent, pos => {
-          const r = item.parent.stageWidth;
-          const b = item.parent.stageHeight;
-
-          let { x, y } = pos;
-
-          if (x < 0) x = 0;
-          if (y < 0) y = 0;
-
-          if (x > r) x = r;
-          if (y > b) y = b;
-
-          return { x, y };
-        })}
+        dragBoundFunc={createDragBoundFunc(item)}
+        transformsEnabled="position"
         onTransformEnd={e => {
           const t = e.target;
 

@@ -29,6 +29,7 @@ class ToolsManager {
 
   static removeAllTools() {
     INSTANCES.forEach((manager) => manager.removeAllTools());
+    INSTANCES.clear();
   }
 
   constructor({
@@ -87,6 +88,12 @@ class ToolsManager {
   }
 
   selectTool(tool, selected) {
+    const currentTool = this.findSelectedTool();
+
+    if (currentTool && currentTool.handleToolSwitch) {
+      currentTool.handleToolSwitch(tool);
+    }
+
     if (selected) {
       this.unselectAll();
       if (tool.setSelected) tool.setSelected(true);

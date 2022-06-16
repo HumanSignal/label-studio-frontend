@@ -83,9 +83,18 @@ const _Tool = types
     let closed;
 
     return {
+      handleToolSwitch(tool) {
+
+        if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
+          const shape = self.getCurrentArea()?.toJSON();
+          
+          if (shape?.points?.length > 2) self.finishDrawing();
+          else self.cleanupUncloseableShape();
+        }
+      },
       listenForClose() {
         closed = false;
-        disposer = observe(self.getCurrentArea(), "closed", ()=>{
+        disposer = observe(self.getCurrentArea(), "closed", () => {
           if (self.getCurrentArea().closed && !closed) {
             self.finishDrawing();
           }

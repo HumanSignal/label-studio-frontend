@@ -29,6 +29,9 @@ const Model = types
 
     sequence: types.frozen([]),
   })
+  .preProcessSnapshot((snapshot) => {
+    return { ...snapshot, sequence: snapshot.value.sequence };
+  })
   .volatile(() => ({
     hideable: true,
   }))
@@ -73,7 +76,7 @@ const Model = types
     },
 
     toggleLifespan(frame) {
-      const keypoint = self.closestKeypoint(frame);
+      const keypoint = self.closestKeypoint(frame, true);
 
       if (keypoint) {
         const index = self.sequence.indexOf(keypoint);
@@ -90,13 +93,12 @@ const Model = types
       const sequence = Array.from(self.sequence);
       const closestKeypoint = self.closestKeypoint(frame);
       const newKeypoint = {
-        ...(closestKeypoint ?? {
+        ...(self.getShape(frame) ?? closestKeypoint ?? {
           x: 0,
           y: 0,
-          enabled: true,
         }),
+        enabled: closestKeypoint?.enabled ?? true,
         frame,
-        rotation: 0,
       };
 
       sequence.push(newKeypoint);
@@ -126,7 +128,7 @@ const Model = types
       return false;
     },
 
-    closestKeypoint(targetFrame) {
+    closestKeypoint(targetFrame, onlyPrevious = false) {
       const seq = self.sequence;
       let result;
 
@@ -134,7 +136,7 @@ const Model = types
 
       result = keypoints[keypoints.length - 1];
 
-      if (!result) {
+      if (!result && onlyPrevious !== true) {
         result = seq.find(({ frame }) => frame >= targetFrame);
       }
 

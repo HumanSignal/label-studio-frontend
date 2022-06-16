@@ -23,6 +23,7 @@ import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
 import { VideoRectangles } from "../examples/video_bboxes";
 import { VideoClassification } from "../examples/video";
+import { VideoAudio } from "../examples/video_audio";
 
 /**
  * Image
@@ -66,7 +67,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageOCR;
+const data = VideoRectangles;
 
 function getData(task) {
   if (task && task.data) {
@@ -133,7 +134,9 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
+  console.log('julio params', params);
   const options = {
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
     onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,

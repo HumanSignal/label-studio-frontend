@@ -1,4 +1,5 @@
 import React from "react";
+import { useMemo } from "react";
 import { cn } from "../../utils/bem";
 import { MenuContext } from "./MenuContext";
 
@@ -17,7 +18,7 @@ export const MenuItem = ({
   onClick,
   ...rest
 }) => {
-  const { selected } = React.useContext(MenuContext);
+  const { selected, allowClickSelected } = React.useContext(MenuContext);
   const rootClass = cn("menu", { elem: "item" });
   const isActive = (() => {
     const pathname = window.location.pathname.replace(/\/$/, "");
@@ -32,18 +33,19 @@ export const MenuItem = ({
     }
   })();
 
-  const linkContent = (
+  const linkContent = useMemo(() => (
     <>
       {icon && <span className={rootClass.elem("item-icon")}>{icon}</span>}
       {children ?? label}
     </>
-  );
+  ), [children, label, icon]);
 
   const linkAttributes = {
     className: rootClass
       .mod({
         active: isActive || active,
         look: danger && "danger",
+        clickable: allowClickSelected,
       })
       .mix(className),
     onClick,

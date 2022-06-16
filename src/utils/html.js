@@ -419,7 +419,7 @@ function applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
 }
 
 /**
- * Checks if element of one of it's descendants match given selector
+ * Checks if element or one of its descendants match given selector
  * @param {HTMLElement} element Element to match
  * @param {string} selector CSS selector
  */

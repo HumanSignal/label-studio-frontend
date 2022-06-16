@@ -55,6 +55,7 @@ function configureApplication(params) {
     // remove: params.remove || Requests.remover,
 
     // communication with the user
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
 

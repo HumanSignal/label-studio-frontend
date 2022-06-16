@@ -96,7 +96,10 @@ const _Tool = types
       }
     },
 
-    mousedownEv() {
+    mousedownEv(ev) {
+      // don't pan on right click
+      if (ev.button === 2) return;
+
       self.mode = "moving";
       self.stageContainer.style.cursor = "grabbing";
     },

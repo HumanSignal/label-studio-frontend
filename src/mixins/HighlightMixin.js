@@ -264,7 +264,7 @@ const createSpanStylesheet = (document, identifier, color) => {
 
   const rules = {
     [className]: `
-      background-color: var(${variables.color});
+      background-color: var(${variables.color}) !important;
       cursor: var(${variables.cursor}, pointer);
       border: 1px dashed transparent;
     `,
@@ -278,7 +278,7 @@ const createSpanStylesheet = (document, identifier, color) => {
       line-height: 0;
     `,
     [classNames.active]: `
-      color: ${Utils.Colors.contrastColor(initialActiveColor)};
+      color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
       ${variables.color}: ${initialActiveColor}
     `,
     [classNames.highlighted]: `

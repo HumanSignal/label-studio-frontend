@@ -100,7 +100,7 @@ Scenario("Check required param", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   // Add new Annotation to be able to submit it
   I.click('[aria-label="Annotations List Toggle"]');
@@ -123,7 +123,7 @@ Scenario("Check required param", async function({ I }) {
   I.see("Update");
 
   // Reload to check another combination
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
   // Page is reloaded, there are no new annotation from prev steps
   I.dontSee("New annotation");
   I.click('[aria-label="Annotations List Toggle"]');
@@ -150,7 +150,7 @@ Scenario("Check required param in complex config", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   // we already have an annotation
   I.click("Update");

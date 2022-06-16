@@ -13,4 +13,8 @@
     <Label value="Planet" background="red"></Label>
     <Label value="Moonwalker" background="purple"></Label>
   </RectangleLabels>
+  <Relations>
+    <Relation value="similar" />
+    <Relation value="dissimilar" />
+  </Relations>
 </View>
