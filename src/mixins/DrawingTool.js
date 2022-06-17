@@ -103,6 +103,7 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
+        self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
       commitDrawingRegion() {
@@ -172,6 +173,7 @@ const DrawingTool = types
         self._resetState();
       },
       _resetState(){
+        self.annotation.setIsDrawing(false);
         self.annotation.history.unfreeze();
         self.mode = "viewing";
       },

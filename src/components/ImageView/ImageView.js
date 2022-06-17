@@ -458,7 +458,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-
+    
       if (self.skipMouseUp){
         self.skipMouseUp = false;
         return;
@@ -473,7 +473,7 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
-
+      
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
@@ -483,7 +483,7 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       const selectedTool = item.getToolsManager().findSelectedTool();
-
+      
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
@@ -533,7 +533,7 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-
+      
       if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;

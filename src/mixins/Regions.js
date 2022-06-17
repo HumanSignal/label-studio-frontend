@@ -259,7 +259,8 @@ const RegionsMixin = types
       onClickRegion(ev) {
         const annotation = self.annotation;
 
-        if (!annotation.editable || self.isDrawing) return;
+        console.log("onClickRegion", annotation.isDrawing);
+        if (!annotation.editable || self.isDrawing || annotation.isDrawing) return;
 
         if (annotation.relationMode) {
           annotation.addRelation(self);
