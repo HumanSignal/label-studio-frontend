@@ -111,7 +111,6 @@ const _Tool3Point = types
           controlTagTypes: ["rectanglelabels", "rectangle"],
         };
       },
-
       get viewTooltip() {
         return "3 Point Rectangle";
       },
