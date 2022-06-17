@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import React from "react";
+import React, { useState } from "react";
 import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -126,7 +126,7 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    temporaryDateInputValue: undefined,
+    updateValue: false,
     day: undefined,
     month: undefined,
     year: undefined,
@@ -177,7 +177,12 @@ const Model = types
       self.setDateTime(obj.datetime);
     },
 
+    setNeedsUpdate(value) {
+      self.updateValue = value;
+    },
+
     needsUpdate() {
+      self.setNeedsUpdate(true);
       if (self.result) {
         self.setDateTime(self.result.mainValue);
       } else {
@@ -196,6 +201,15 @@ const Model = types
     resetDateTime() {
       self.resetDate();
       self.time = undefined;
+    },
+
+    validDateFormat(dateString) {
+      const dateNumberArray = dateString.split("-").map(dateString => parseInt(dateString, 10));
+      const year = dateNumberArray[0];
+      const jsDate = new Date(dateString);
+
+      if (isNaN(jsDate) || year < 1000 || year >= 10000) return false;
+      return dateNumberArray;
     },
 
     setDateTime(value) {
@@ -242,18 +256,11 @@ const Model = types
       self.updateResult();
     },
 
-    onDateChange(e) {
-      self.temporaryDateInputValue = e.target.value;
-      const date = new Date(e.target.value);
-      const year = date.getFullYear();
-
-      if (date && !isNaN(date)) {
-        self.day = date.getDate();
-        self.month = date.getMonth() + 1;
-        self.year = year > 1000 ? year : undefined;
-      } else {
-        self.resetDate();
-      }
+    setDate(dateArray) {
+      self.day = dateArray[2];
+      self.month = dateArray[1];
+      self.year = dateArray[0];
+      self.updateResult();
     },
 
     onTimeChange(e) {
@@ -288,6 +295,22 @@ const HtxDateTime = inject("store")(
       className: "ant-input",
     };
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
+    const [dateInputValue, setDateInputValue] = useState("");
+
+    const hanldeDateInputValueChange = event => {
+      const value = event.target.value;
+      const validDateArray = item.validDateFormat(value);
+
+      setDateInputValue(value);
+      if (validDateArray) item.setDate(validDateArray);
+    };
+
+    if (item.updateValue) {
+      if (item.showDate && (item.date === undefined || item.date !== dateInputValue)) {
+        setDateInputValue(item.date || "");
+      }
+      item.setNeedsUpdate(false);
+    }
 
     return (
       <div style={visibleStyle}>
@@ -316,10 +339,10 @@ const HtxDateTime = inject("store")(
             {...visual}
             type="date"
             name={item.name + "-date"}
-            value={item.date || item.temporaryDateInputValue || ""}
+            value={dateInputValue}
             min={item.min}
             max={item.max}
-            onChange={item.onDateChange}
+            onChange={hanldeDateInputValueChange}
           />
         )}
         {item.showTime && (
