@@ -206,10 +206,11 @@ const Model = types
     validDateFormat(dateString) {
       const dateNumberArray = dateString.split("-").map(dateString => parseInt(dateString, 10));
       const year = dateNumberArray[0];
-      const jsDate = new Date(dateString);
+      const isADate = !isNaN(new Date(dateString));
+      const fourPositiveIntegersYear = year <= 9999 && year >= 1000;
 
-      if (isNaN(jsDate) || year < 1000 || year >= 10000) return false;
-      return dateNumberArray;
+      if (isADate && fourPositiveIntegersYear) return dateNumberArray;
+      return false;
     },
 
     setDateTime(value) {
@@ -297,7 +298,7 @@ const HtxDateTime = inject("store")(
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
     const [dateInputValue, setDateInputValue] = useState("");
 
-    const hanldeDateInputValueChange = event => {
+    const handleDateInputValueChange = event => {
       const value = event.target.value;
       const validDateArray = item.validDateFormat(value);
 
@@ -311,6 +312,12 @@ const HtxDateTime = inject("store")(
       }
       item.setNeedsUpdate(false);
     }
+
+    const handleDateOnBlur = () => {
+      const dateWasNotSaved = dateInputValue !== item.date;
+
+      if (dateWasNotSaved) setDateInputValue(item.date || '');
+    };
 
     return (
       <div style={visibleStyle}>
@@ -342,7 +349,8 @@ const HtxDateTime = inject("store")(
             value={dateInputValue}
             min={item.min}
             max={item.max}
-            onChange={hanldeDateInputValueChange}
+            onChange={handleDateInputValueChange}
+            onBlur={handleDateOnBlur}
           />
         )}
         {item.showTime && (
