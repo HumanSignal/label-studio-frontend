@@ -138,6 +138,19 @@ const Model = types
       return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
     },
 
+    getHeightOnPerpendicular(pointA, pointB, cursor) {
+      const dx1 = pointB.x - pointA.x;
+      const dy1 = pointB.y - pointA.y;
+      const dy2 = pointB.y - cursor.y;
+      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
+      const dx3 = cursor.x - pointB.x - dx2;
+      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
+      const h = d2 + d3;
+
+      return Math.abs(h);
+    },
+
     isAboveTheLine(a, b, c){
       return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
     },
@@ -159,7 +172,7 @@ const Model = types
           self.y = firstPointY;
           self.rotation = self.rotationAtCreation;
         }
-        self.height = self.getDistanceBetweenPoints({ x, y }, points[1], false);
+        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
       }
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
     },
