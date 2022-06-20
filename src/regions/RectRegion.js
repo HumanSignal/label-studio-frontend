@@ -426,7 +426,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && item.editable}
+        listening={!suggestion && item.editable && !item.annotation.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>
