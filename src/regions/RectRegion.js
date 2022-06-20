@@ -156,6 +156,8 @@ const Model = types
     },
 
     draw(x, y, points) {
+      const oldHeight = self.height;
+
       if(points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
         self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
@@ -173,8 +175,21 @@ const Model = types
           self.rotation = self.rotationAtCreation;
         }
         self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
+
       }
+      
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+
+      const areaBBoxCoords = self?.bboxCoords;
+      
+      if(
+        areaBBoxCoords?.left < 0 || 
+        areaBBoxCoords?.top < 0 || 
+        areaBBoxCoords?.right > self.parent.stageWidth || 
+        areaBBoxCoords?.bottom > self.parent.stageHeight
+      ) {
+        self.height = oldHeight;
+      }
     },
 
     // @todo not used

@@ -567,7 +567,7 @@ export default observer(
 
     handleMouseMove = e => {
       const { item } = this.props;
-
+      
       item.freezeHistory();
 
       this.updateCrosshair(e);

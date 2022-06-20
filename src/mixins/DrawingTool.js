@@ -444,6 +444,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
 
         shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
       },
+
       finishDrawing(x, y) {
         if (self.isDrawing) {
           points = [];
@@ -455,11 +456,13 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
           });
         } else return;
       },
+
       mousemoveEv(_, [x, y]) {
         if(self.isDrawing){
           if(lastEvent === MOUSE_DOWN_EVENT) {
             currentMode = DRAG_MODE;
           }
+
           if (currentMode === DRAG_MODE && startPoint) {
             self.startDrawing(startPoint.x, startPoint.y);
             self.updateDraw(x, y);
