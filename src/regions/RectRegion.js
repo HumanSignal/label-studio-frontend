@@ -129,13 +129,17 @@ const Model = types
       self.updateAppearenceFromState();
     },
 
-    getDistanceBetweenPoints(pointA, pointB, abs = true) {
+    getDistanceBetweenPoints(pointA, pointB) {
       const { x: xA, y: yA } = pointA;
       const { x: xB, y: yB } = pointB;
-      const distanceX = abs ? Math.abs(xA - xB) : xA - xB;
-      const distanceY = abs ? Math.abs(yA - yB) : yA - yB;
+      const distanceX = xA - xB;
+      const distanceY = yA - yB;
       
       return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+    },
+
+    isAboveTheLine(a, b, c){
+      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
     },
 
     draw(x, y, points) {
@@ -145,11 +149,8 @@ const Model = types
       } else if(points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
-        const h = secondPointY - y;
-        const isAboveTheLine = y < secondPointY;
-        const isSecondLeftOfFirst = secondPointX < firstPointX;
 
-        if(isAboveTheLine && !isSecondLeftOfFirst || !isAboveTheLine && isSecondLeftOfFirst) {
+        if(self.isAboveTheLine(points[0], points[1], { x, y })) {
           self.x = secondPointX;
           self.y = secondPointY;
           self.rotation = self.rotationAtCreation + 180;
@@ -158,8 +159,7 @@ const Model = types
           self.y = firstPointY;
           self.rotation = self.rotationAtCreation;
         }
-
-        self.height = Math.abs(h);
+        self.height = self.getDistanceBetweenPoints({ x, y }, points[1], false);
       }
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
     },
