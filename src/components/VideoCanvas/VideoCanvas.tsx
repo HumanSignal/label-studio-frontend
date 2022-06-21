@@ -17,6 +17,7 @@ type VideoProps = {
   zoom?: number,
   pan?: PanOptions,
   allowInteractions?: boolean,
+  speed: number,
 
   contrast?: number,
   brightness?: number,
@@ -204,6 +205,16 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     props.onPause?.();
   }, [props.onEnded]);
 
+  const handleAnimationFrame = () => {
+    updateFrame();
+
+    if (playing) {
+      raf.current = requestAnimationFrame(handleAnimationFrame);
+    } else {
+      cancelAnimationFrame(raf.current!);
+    }
+  };
+
   useEffect(() => {
     if (!playing) {
       drawVideo();
@@ -211,23 +222,17 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [drawVideo, playing]);
 
   useEffect(() => {
-
-    const step = () => {
-      updateFrame();
-
-      if (playing) {
-        raf.current = requestAnimationFrame(step);
-      } else {
-        cancelAnimationFrame(raf.current!);
-      }
-    };
-
-    if (playing) raf.current = requestAnimationFrame(step);
+    if (playing) raf.current = requestAnimationFrame(handleAnimationFrame);
 
     return () => {
       cancelAnimationFrame(raf.current!);
     };
-  }, [playing, updateFrame]);
+  }, [playing]);
+
+  useEffect(() => {
+    if (videoRef.current && props.speed)
+      videoRef.current.playbackRate = props.speed;
+  }, [props.speed]);
 
   // Handle extrnal state change [position]
   useEffect(() => {

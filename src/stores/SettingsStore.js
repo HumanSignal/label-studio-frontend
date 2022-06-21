@@ -58,6 +58,8 @@ const SettingsModel = types
     // showScore: types.optional(types.boolean, false),
 
     preserveSelectedTool: types.optional(types.boolean, true),
+
+    enableSmoothing: types.optional(types.boolean, true),
   })
   .views(self => ({
     get annotation() {
@@ -197,6 +199,14 @@ const SettingsModel = types
 
     togglePredictionsPanel() {
       self.showPredictionsPanel = !self.showPredictionsPanel;
+    },
+
+    toggleSmoothing() {
+      self.enableSmoothing = !self.enableSmoothing;
+    },
+
+    setSmoothing(value) {
+      self.enableSmoothing = value;
     },
   }));
 

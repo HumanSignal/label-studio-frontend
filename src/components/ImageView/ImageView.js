@@ -453,8 +453,14 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
-
     skipMouseUp = false;
+
+    constructor(props) {
+      super(props);
+
+      if (typeof props.item.smoothing === 'boolean')
+        props.store.settings.setSmoothing(props.item.smoothing);
+    }
 
     handleOnClick = e => {
       const { item } = this.props;
@@ -768,6 +774,10 @@ export default observer(
         containerStyle["maxHeight"] = item.maxheight;
         containerStyle["width"] = item.width;
         containerStyle["height"] = item.height;
+      }
+
+      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
+        containerStyle["imageRendering"] = 'pixelated';
       }
 
       const {
