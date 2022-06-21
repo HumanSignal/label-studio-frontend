@@ -17,6 +17,7 @@ const _Tool = types
       createRegionOptions: self.createRegionOptions,
       isIncorrectControl: self.isIncorrectControl,
       isIncorrectLabel: self.isIncorrectLabel,
+      startDrawing: self.startDrawing,
     };
 
     return {
