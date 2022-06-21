@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
-import { FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const DrawingTool = types
   .model("DrawingTool", {
@@ -156,17 +155,7 @@ const DrawingTool = types
         self.annotation.history.freeze();
         self.mode = "drawing";
 
-        const isPolygon = self.control.type.startsWith("polygon");
-        const regionOptions = self.createRegionOptions({ x, y });
-        let currentArea;
-
-        if (isFF(FF_DEV_2432) && isPolygon) {
-          currentArea = self.createRegion(regionOptions);
-        } else {
-          currentArea = self.createDrawingRegion(regionOptions);
-        }
-
-        self.currentArea = currentArea;
+        self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
         if (!self.beforeCommitDrawing()) {
