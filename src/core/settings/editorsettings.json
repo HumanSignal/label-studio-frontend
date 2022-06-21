@@ -39,5 +39,10 @@
       "description": "Remember Selected Tool",
       "onChangeEvent": "togglepreserveSelectedTool",
       "defaultValue": true
+    },
+    "enableSmoothing": {
+      "description": "Enable image smoothing when zoom",
+      "onChangeEvent": "toggleSmoothing",
+      "defaultValue": true
     }
 }
