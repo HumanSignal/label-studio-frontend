@@ -20,6 +20,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { isSelectionContainsSpan } from "../../utils/selection-tools";
 import { isValidObjectURL } from "../../utils/utilities";
+import { FF_DEV_2669, isFF } from "../../utils/feature-flags";
 
 /**
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -137,9 +138,16 @@ const Model = types
 
       return states && states.filter(s => s.isSelected && s._type === "paragraphlabels");
     },
+
+    isVisibleForFilter(data) {
+      if(isFF(FF_DEV_2669)) return true;
+
+      return !self.filterBy.length || self.filterBy.includes(data[self.namekey]);
+    },
   }))
   .volatile(() => ({
     _value: "",
+    filterBy: [],
     playingId: -1,
   }))
   .actions(self => {
@@ -201,6 +209,18 @@ const Model = types
         self.playingId = idx;
         currentId = idx;
         end && stopIn(end - start);
+      },
+
+      addFilter(name) {
+        self.filterBy.includes(name) || self.filterBy.push(name);
+      },
+
+      removeFilter(name) {
+        self.filterBy.splice(self.filterBy.indexOf(name), 1);
+      },
+
+      clearFilter() {
+        self.filterBy = [];
       },
     };
   })
@@ -593,6 +613,14 @@ class HtxParagraphsView extends Component {
             onEnded={item.reset}
           />
         )}
+        {/* 
+          @todo Add ParagraphFilter here 
+
+          pass in item as the observed child to ParagraphFilter
+          and use the values/actions from it to operate the filter accordingly
+
+          Need to figure out where we have searchable multiselects, and if not what primitives we do have that could create one.
+        */}
         <div
           ref={this.myRef}
           data-update={item._update}
@@ -616,12 +644,13 @@ const Phrases = observer(({ item }) => {
   const val = item._value.map((v, idx) => {
     const style = item.layoutStyles(v);
     const classNames = [styles.phrase];
+    const isContentVisible = item.isVisibleForFilter(v);
 
     if (withAudio) classNames.push(styles.withAudio);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
-    return (
-      <div key={`${item.name}-${idx}`} className={classNames.join(" ")} style={style.phrase}>
+    const content = (
+      <>
         {withAudio && !isNaN(v.start) && (
           <Button
             type="text"
@@ -632,6 +661,12 @@ const Phrases = observer(({ item }) => {
         )}
         <span className={cls.name}>{v[item.namekey]}</span>
         <span className={cls.text}>{v[item.textkey]}</span>
+      </>
+    );
+
+    return (
+      <div key={`${item.name}-${idx}`} className={classNames.join(" ")} style={style.phrase}>
+        {isContentVisible && content}
       </div>
     );
   });
