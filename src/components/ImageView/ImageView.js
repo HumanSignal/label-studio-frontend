@@ -453,6 +453,7 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
+    skipMouseUp = false;
 
     constructor(props) {
       super(props);
@@ -463,7 +464,12 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-
+    
+      if (self.skipMouseUp) {
+        self.skipMouseUp = false;
+        return;
+      }
+      
       if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
@@ -473,7 +479,7 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
-
+      
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
@@ -483,7 +489,7 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       const selectedTool = item.getToolsManager().findSelectedTool();
-
+      
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
@@ -501,7 +507,7 @@ export default observer(
         ].includes(selectedTool?.fullName)
       ) {
         item.annotation.unselectAll();
-        item.getToolsManager().unselectAll();
+        self.skipMouseUp = true;
         return;
       }
 
@@ -533,7 +539,7 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-
+      
       if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;
@@ -558,7 +564,7 @@ export default observer(
      */
     handleMouseUp = e => {
       const { item } = this.props;
-
+  
       item.freezeHistory();
       item.setSkipInteractions(false);
 
@@ -567,7 +573,7 @@ export default observer(
 
     handleMouseMove = e => {
       const { item } = this.props;
-
+      
       item.freezeHistory();
 
       this.updateCrosshair(e);
@@ -859,10 +865,26 @@ export default observer(
                   this.crosshairRef.current.updateVisibility(true);
                 }
               }}
-              onMouseLeave={() => {
+              onMouseLeave={(e) => {
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(false);
                 }
+                const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
+                const newEvent = { ...e };
+
+                if (mouseposX <= 0) {
+                  e.offsetX = 0;
+                } else if (mouseposX >= stageWidth) {
+                  e.offsetX = stageWidth;
+                }
+                
+                if (mouseposY <= 0) {
+                  e.offsetY = 0;
+                } else if (mouseposY >= stageHeight) {
+                  e.offsetY = stageHeight;
+                }
+                this.handleMouseMove(newEvent);
               }}
               onDragMove={this.updateCrosshair}
               onMouseDown={this.handleMouseDown}

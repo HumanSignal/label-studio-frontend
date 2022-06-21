@@ -5,10 +5,9 @@ import ToolMixin from "../mixins/Tool";
 import { ThreePointsDrawingTool, TwoPointsDrawingTool } from "../mixins/DrawingTool";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { NodeViews } from "../components/Node/Node";
-import { FF_DEV_2132, isFF } from "../utils/feature-flags";
 
-const _Tool = types
-  .model("RectangleTool", {
+const _BaseNPointTool = types
+  .model("BaseNTool", {
     group: "segmentation",
     smart: true,
     shortcut: "R",
@@ -21,7 +20,6 @@ const _Tool = types
     };
 
     return {
-
       get getActivePolygon() {
         const poly = self.currentArea;
 
@@ -37,14 +35,6 @@ const _Tool = types
           stateTypes: "rectanglelabels",
           controlTagTypes: ["rectanglelabels", "rectangle"],
         };
-      },
-      get viewTooltip() {
-        return "Rectangle";
-      },
-      get iconComponent() {
-        return self.dynamic
-          ? NodeViews.RectRegionModel.altIcon
-          : NodeViews.RectRegionModel.icon;
       },
       get defaultDimensions() {
         return DEFAULT_DIMENSIONS.rect;
@@ -81,8 +71,38 @@ const _Tool = types
     },
   }));
 
-const RectDrawingTool = isFF(FF_DEV_2132) ? ThreePointsDrawingTool : TwoPointsDrawingTool;
+const _Tool = types
+  .model("RectangleTool", {
+    shortcut: "R",
+  })
+  .views(self => ({
+    get viewTooltip() {
+      return "Rectangle";
+    },
+    get iconComponent() {
+      return self.dynamic
+        ? NodeViews.RectRegionModel.altIcon
+        : NodeViews.RectRegionModel.icon;
+    },
+  }));
+  
+const _Tool3Point = types
+  .model("Rectangle3PointTool", {
+    shortcut: "shift+R",
+  })
+  .views(self => ({
+    get viewTooltip() {
+      return "3 Point Rectangle";
+    },
+    get iconComponent() {
+      return self.dynamic
+        ? NodeViews.Rect3PointRegionModel.altIcon
+        : NodeViews.Rect3PointRegionModel.icon;
+    },
+  }));
 
-const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, RectDrawingTool, _Tool, AnnotationMixin);
+const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _BaseNPointTool, _Tool, AnnotationMixin);
 
-export { Rect };
+const Rect3Point = types.compose(_Tool3Point.name, ToolMixin, BaseTool, ThreePointsDrawingTool, _BaseNPointTool, _Tool3Point, AnnotationMixin);
+
+export { Rect, Rect3Point };
