@@ -72,6 +72,8 @@ export const Annotation = types
     regionStore: types.optional(RegionStore, {
       regions: [],
     }),
+
+    isDrawing: types.optional(types.boolean, false),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
@@ -200,6 +202,10 @@ export const Annotation = types
 
     setEdit(val) {
       self.editable = val;
+    },
+
+    setIsDrawing(isDrawing) {
+      self.isDrawing = isDrawing;
     },
 
     setGroundTruth(value, ivokeEvent = true) {

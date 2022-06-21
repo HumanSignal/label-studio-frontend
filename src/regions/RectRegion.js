@@ -127,27 +127,43 @@ const Model = types
       self.updateAppearenceFromState();
     },
 
-    getDistanceBetweenPoints(pointA, pointB, abs = true) {
+    getDistanceBetweenPoints(pointA, pointB) {
       const { x: xA, y: yA } = pointA;
       const { x: xB, y: yB } = pointB;
-      const distanceX = abs ? Math.abs(xA - xB) : xA - xB;
-      const distanceY = abs ? Math.abs(yA - yB) : yA - yB;
+      const distanceX = xA - xB;
+      const distanceY = yA - yB;
       
       return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
     },
 
+    getHeightOnPerpendicular(pointA, pointB, cursor) {
+      const dx1 = pointB.x - pointA.x;
+      const dy1 = pointB.y - pointA.y;
+      const dy2 = pointB.y - cursor.y;
+      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
+      const dx3 = cursor.x - pointB.x - dx2;
+      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
+      const h = d2 + d3;
+
+      return Math.abs(h);
+    },
+
+    isAboveTheLine(a, b, c){
+      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
+    },
+
     draw(x, y, points) {
-      if(points.length === 1) {
+      const oldHeight = self.height;
+
+      if (points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
         self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
-      } else if(points.length === 2) {
+      } else if (points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
-        const h = secondPointY - y;
-        const isAboveTheLine = y < secondPointY;
-        const isSecondLeftOfFirst = secondPointX < firstPointX;
 
-        if(isAboveTheLine && !isSecondLeftOfFirst || !isAboveTheLine && isSecondLeftOfFirst) {
+        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
           self.x = secondPointX;
           self.y = secondPointY;
           self.rotation = self.rotationAtCreation + 180;
@@ -156,10 +172,22 @@ const Model = types
           self.y = firstPointY;
           self.rotation = self.rotationAtCreation;
         }
+        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
 
-        self.height = Math.abs(h);
       }
+      
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+
+      const areaBBoxCoords = self?.bboxCoords;
+      
+      if (
+        areaBBoxCoords?.left < 0 || 
+        areaBBoxCoords?.top < 0 || 
+        areaBBoxCoords?.right > self.parent.stageWidth || 
+        areaBBoxCoords?.bottom > self.parent.stageHeight
+      ) {
+        self.height = oldHeight;
+      }
     },
 
     // @todo not used
@@ -396,7 +424,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && item.editable}
+        listening={!suggestion && item.editable && !item.annotation.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

@@ -426,13 +426,14 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
+    skipMouseUp = false;
 
     skipMouseUp = false;
 
     handleOnClick = e => {
       const { item } = this.props;
-
-      if (self.skipMouseUp){
+    
+      if (self.skipMouseUp) {
         self.skipMouseUp = false;
         return;
       }
@@ -446,7 +447,7 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
-
+      
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
@@ -456,7 +457,7 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       const selectedTool = item.getToolsManager().findSelectedTool();
-
+      
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
@@ -507,7 +508,7 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-
+      
       if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;
@@ -541,7 +542,7 @@ export default observer(
 
     handleMouseMove = e => {
       const { item } = this.props;
-
+      
       item.freezeHistory();
 
       this.updateCrosshair(e);
@@ -836,16 +837,16 @@ export default observer(
                 const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
                 const newEvent = { ...e };
 
-                if(mouseposX <= 0) {
+                if (mouseposX <= 0) {
                   e.offsetX = 0;
                 } else if (mouseposX >= stageWidth) {
-                  e.offsetX = mouseposX;
+                  e.offsetX = stageWidth;
                 }
                 
-                if(mouseposY <= 0) {
+                if (mouseposY <= 0) {
                   e.offsetY = 0;
                 } else if (mouseposY >= stageHeight) {
-                  e.offsetY = mouseposY;
+                  e.offsetY = stageHeight;
                 }
                 this.handleMouseMove(newEvent);
               }}

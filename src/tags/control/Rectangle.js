@@ -45,18 +45,12 @@ const TagAttrs = types.model({
   canrotate: types.optional(types.boolean, true),
 });
 
-const allowedToolNames = ['Rect'];
-
-if(isFF(FF_DEV_2132)) {
-  allowedToolNames.push('Rect3Point');
-}
-
 const Model = types
   .model({
     type: "rectangle",
   })
   .volatile(() => ({
-    toolNames: allowedToolNames,
+    toolNames: isFF(FF_DEV_2132) ? ["Rect", "Rect3Point"] : ["Rect"],
   }));
 
 const RectangleModel = types.compose("RectangleModel",
