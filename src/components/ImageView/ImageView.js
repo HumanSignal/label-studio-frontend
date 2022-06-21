@@ -459,7 +459,7 @@ export default observer(
     handleOnClick = e => {
       const { item } = this.props;
     
-      if (self.skipMouseUp){
+      if (self.skipMouseUp) {
         self.skipMouseUp = false;
         return;
       }
@@ -863,16 +863,16 @@ export default observer(
                 const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
                 const newEvent = { ...e };
 
-                if(mouseposX <= 0) {
+                if (mouseposX <= 0) {
                   e.offsetX = 0;
                 } else if (mouseposX >= stageWidth) {
-                  e.offsetX = mouseposX;
+                  e.offsetX = stageWidth;
                 }
                 
-                if(mouseposY <= 0) {
+                if (mouseposY <= 0) {
                   e.offsetY = 0;
                 } else if (mouseposY >= stageHeight) {
-                  e.offsetY = mouseposY;
+                  e.offsetY = stageHeight;
                 }
                 this.handleMouseMove(newEvent);
               }}

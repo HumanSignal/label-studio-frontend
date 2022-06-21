@@ -158,14 +158,14 @@ const Model = types
     draw(x, y, points) {
       const oldHeight = self.height;
 
-      if(points.length === 1) {
+      if (points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
         self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
-      } else if(points.length === 2) {
+      } else if (points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
 
-        if(self.isAboveTheLine(points[0], points[1], { x, y })) {
+        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
           self.x = secondPointX;
           self.y = secondPointY;
           self.rotation = self.rotationAtCreation + 180;
@@ -182,7 +182,7 @@ const Model = types
 
       const areaBBoxCoords = self?.bboxCoords;
       
-      if(
+      if (
         areaBBoxCoords?.left < 0 || 
         areaBBoxCoords?.top < 0 || 
         areaBBoxCoords?.right > self.parent.stageWidth || 
