@@ -15,7 +15,6 @@ export const Phrases = observer(({ item }) => {
     const classNames = [styles.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
 
-
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);

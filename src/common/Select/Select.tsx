@@ -4,6 +4,7 @@ import { shallowEqualArrays } from 'shallow-equal';
 import { isDefined } from "../../utils/utilities";
 import { Dropdown } from "../Dropdown/Dropdown";
 import "./Select.styl";
+import { FF_DEV_2669, isFF } from "../../utils/feature-flags";
 
 type FoundChild = ReactChild | ReactFragment | ReactPortal;
 
@@ -15,6 +16,7 @@ interface SelectProps {
   style?: CSSProperties;
   dropdownStyle?: CSSProperties;
   multiple?: boolean;
+  renderMultipleSelected?: (value: string[]) => ReactNode;
   tabIndex?: number;
   onChange?: (newValue?: string | string[]) => void;
 }
@@ -68,6 +70,7 @@ export const Select: SelectComponent<SelectProps> = ({
   style,
   dropdownStyle,
   multiple,
+  renderMultipleSelected,
   onChange,
   tabIndex = 0,
   placeholder = "Select value",
@@ -118,6 +121,9 @@ export const Select: SelectComponent<SelectProps> = ({
   };
 
   const selected = useMemo(() => {
+    if (isFF(FF_DEV_2669) && multiple && renderMultipleSelected) {
+      return renderMultipleSelected(Array.isArray(currentValue) ? currentValue : [currentValue||""]);
+    }
     if (multiple && Array.isArray(currentValue) && currentValue?.length > 1) {
       return <>Multiple values selected</>;
     }
@@ -130,7 +136,7 @@ export const Select: SelectComponent<SelectProps> = ({
     const result = foundChild?.props?.children;
 
     return result ? cloneElement(<>{result}</>) : null;
-  }, [currentValue, defaultValue, children, value]);
+  }, [currentValue, defaultValue, children, value, renderMultipleSelected]);
 
   const focusItem = (i?: number) => {
     const child = options[i ?? 0] as any;

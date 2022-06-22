@@ -89,8 +89,15 @@
   max-width: max-content;
   margin-bottom: 16px;
 
+  &__showall {
+    display: inline-flex;
+    font-size: 14px;
+    line-height: 32px;
+  }
   &__placeholder {
     font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
   }
   &__search {
     min-width: 318px;
@@ -107,12 +114,21 @@
       outline: none;
     }
   }
+  &__select {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &__item {
+      display: inline-flex;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 16px;
+      border-radius: 4px;
+      padding: 3px 4px;
+    }
+  }
 }
-
-.authorSearch {
-
-}
-
 
 .audio {
   height: 32px;
