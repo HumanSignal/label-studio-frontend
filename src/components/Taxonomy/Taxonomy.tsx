@@ -188,8 +188,9 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   
   useEffect(() => {
     const container = itemContainer?.current;
-
+    
     if (container) {
+      container.toggle = toggle;
       dimensionCallback(container.scrollWidth, container.scrollHeight );
     }
   }, []);
@@ -203,6 +204,8 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
             <LsChevron stroke="#09f" style={arrowStyle} />
           </div>
           <input
+            className="item"
+            id={id}
             type="checkbox"
             disabled={disabled}
             checked={checked}
@@ -216,7 +219,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
             {name}
           </label>
           <label
-            style={{ maxWidth: `${labelMaxWidth}px` }}
+            // style={{ maxWidth: `${labelMaxWidth}px` }}
             onClick={onClick}
             title={title}
             className={disabled ? styles.taxonomy__collapsable : undefined}
@@ -411,13 +414,7 @@ const Taxonomy = ({
     if ([e.target, e.target.parentNode].some(n => n?.classList?.contains(cn))) return;
     if (!taxonomyRef.current?.contains(e.target)) close();
   }, []);
-  const onEsc = useCallback(e => {
-    if (e.key === "Escape") {
-      close();
-      e.stopPropagation();
-    }
-  }, []);
-
+ 
   const isOpenClassName = isOpen ? styles.taxonomy_open : "";
 
   const flatten = useMemo(() => {
@@ -432,6 +429,7 @@ const Taxonomy = ({
   }, [items]);
 
   const [selected, setInternalSelected] = useState(externalSelected);
+  
   const contextValue: TaxonomySelectedContextValue = useMemo(() => {
     const setSelected = (path: TaxonomyPath, value: boolean) => {
       const newSelected = value ? [...selected, path] : selected.filter(current => !isArraysEqual(current, path));
@@ -454,14 +452,46 @@ const Taxonomy = ({
   }, [externalSelected]);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.addEventListener("click", onClickOutside, true);
-      document.body.addEventListener("keydown", onEsc);
-    } else {
+    document.body.addEventListener("click", onClickOutside, true);
+    document.body.addEventListener("keydown", onKeyDown);
+    return () => {
       document.body.removeEventListener("click", onClickOutside);
-      document.body.removeEventListener("keydown", onEsc);
-    }
-  }, [isOpen]);
+      document.body.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  const onKeyDown = useCallback(e => {
+    const taxonomyList: NodeListOf<HTMLElement> | undefined = taxonomyRef.current?.querySelectorAll('.item');
+    const searchInput = taxonomyRef.current?.querySelector("input");
+    const focusedElement: HTMLInputElement | Element | any  = document.activeElement || undefined;
+    const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
+    const index = (taxonomyList && focusedElement) ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id)) : -1;
+    const shiftFocus = (index: number, shift: number) => taxonomyHasItems && taxonomyList[index + shift].focus();
+
+    switch (e.key) {
+      case "Escape":
+        close();
+        e.stopPropagation();
+        break;
+      case "ArrowDown":
+        if (e.shiftKey) {
+          setOpen(true);
+          searchInput && searchInput.focus();
+        }
+        if (index >= 0) shiftFocus(index, 1);
+        if (searchInput === focusedElement) shiftFocus(0, 0);
+        break;
+      case "ArrowUp":
+        if (index > 0) shiftFocus(index, -1);
+        else if (index === 0) searchInput && searchInput.focus();
+        break;
+      case "Shift":
+        if (index >= 0) focusedElement.parentNode?.parentNode?.toggle(focusedElement.id);
+        break;
+      default:
+        break;
+    }   
+  }, []);
 
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
