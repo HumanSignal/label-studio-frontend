@@ -219,7 +219,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
             {name}
           </label>
           <label
-            // style={{ maxWidth: `${labelMaxWidth}px` }}
+            style={{ maxWidth: `${labelMaxWidth}px` }}
             onClick={onClick}
             title={title}
             className={disabled ? styles.taxonomy__collapsable : undefined}
@@ -487,6 +487,7 @@ const Taxonomy = ({
         break;
       case "Shift":
         if (index >= 0) focusedElement.parentNode?.parentNode?.toggle(focusedElement.id);
+        if (searchInput) searchInput.focus();
         break;
       default:
         break;
