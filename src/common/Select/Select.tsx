@@ -8,10 +8,12 @@ import "./Select.styl";
 type FoundChild = ReactChild | ReactFragment | ReactPortal;
 
 interface SelectProps {
+  placeholder?: ReactNode;
   value?: string | string[];
   defaultValue?: string | string[];
   size?: "normal" | "medium" | "small";
   style?: CSSProperties;
+  dropdownStyle?: CSSProperties;
   multiple?: boolean;
   tabIndex?: number;
   onChange?: (newValue?: string | string[]) => void;
@@ -64,9 +66,11 @@ export const Select: SelectComponent<SelectProps> = ({
   size,
   children,
   style,
+  dropdownStyle,
   multiple,
-  tabIndex=0,
   onChange,
+  tabIndex = 0,
+  placeholder = "Select value",
 }) => {
   const dropdown = useRef<any>();
   const rootRef = useRef();
@@ -77,7 +81,11 @@ export const Select: SelectComponent<SelectProps> = ({
   );
   const [focused, setFocused] = useState<string | null>();
 
-  const options = Children.toArray(children);
+  const options = Children.toArray(children).filter(child => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return child.type.displayName === "Select.Option" && !child.props.exclude;
+  });
 
   const setValue = (newValue?: string | string[]) => {
     let updatedValue: string | string[] | undefined = newValue;
@@ -176,14 +184,14 @@ export const Select: SelectComponent<SelectProps> = ({
       <Block ref={rootRef} name="select" mod={{ size }} style={style} tabIndex={tabIndex} onKeyDown={handleKeyboard}>
         <Dropdown.Trigger
           ref={dropdown}
-          style={{ maxHeight: 280, overflow: 'auto' }}
+          style={{ maxHeight: 280, overflow: 'auto', ...dropdownStyle }}
           content={<Elem name="list">{children}</Elem>}
           onToggle={(visible: boolean) => {
             if (!visible) setFocused(null);
           }}
         >
           <Elem name="selected">
-            <Elem name="value">{selected ?? "Select value"}</Elem>
+            <Elem name="value">{selected ?? placeholder}</Elem>
             <Elem name="icon" />
           </Elem>
         </Dropdown.Trigger>
@@ -196,6 +204,7 @@ Select.displayName = "Select";
 interface SelectOptionProps {
   value?: string;
   style?: CSSProperties;
+  exclude?: boolean;
 }
 
 const SelectOption: FC<SelectOptionProps> = ({ value, children, style }) => {
