@@ -1,6 +1,5 @@
 import { destroy, getEnv, getParent, getRoot, types } from "mobx-state-tree";
 
-import { Hotkey } from "../../core/Hotkey";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
 import Types from "../../core/Types";
@@ -94,7 +93,7 @@ export default types
       item.updateObjects();
     }
 
-    function selectItem(id, list) {
+    function selectItem(id, list, resetHistory = true) {
       unselectViewingAll();
 
       self._unselectAll();
@@ -105,8 +104,11 @@ export default types
       if (!c) return null;
       c.selected = true;
 
-      self.selectedHistory = null;
-      self.history = [];
+      if (resetHistory) {
+        self.selectedHistory = null;
+        self.history = [];
+      }
+
       self.selected = c;
 
       c.updateObjects();
@@ -123,7 +125,7 @@ export default types
       if (!self.annotations.length) return null;
 
       const { selected } = self;
-      const c = selectItem(id, self.annotations);
+      const c = selectItem(id, self.annotations, !options.retainHistory);
 
       c.editable = true;
       c.setupHotKeys();
