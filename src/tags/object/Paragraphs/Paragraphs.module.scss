@@ -120,6 +120,8 @@
     gap: 4px;
 
     &__item {
+      color: initial;
+      background-color: #ffffff;
       display: inline-flex;
       font-weight: 400;
       font-size: 14px;
