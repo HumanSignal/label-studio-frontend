@@ -646,7 +646,7 @@ export default observer(
         item.handleZoom(e.evt.deltaY, stage.getPointerPosition());
       }
     };
-
+    
     renderRulers() {
       const { item } = this.props;
       const width = 1;
@@ -797,6 +797,8 @@ export default observer(
         suggestedShape: suggestedShapeRegions,
       });
 
+      const canvasSize = item.canvasSize;
+      
       return (
         <ObjectTag
           item={item}
@@ -826,8 +828,13 @@ export default observer(
               style={{ width: "100%", marginTop: item.fillerHeight }}
             />
             <div
-              className={styles.frame}
-              style={item.canvasSize}
+              className={[
+                styles.frame,
+                styles[`image_size__${item.size}`],
+                styles[`image_position__${item.verticalAlignment}`],
+                styles[`image_position__${item.horizontalAlignment}`],
+              ].join(" ")}
+              style={canvasSize}
             >
               <img
                 ref={ref => {
@@ -848,12 +855,15 @@ export default observer(
               ref={ref => {
                 item.setStageRef(ref);
               }}
-              style={{ position: "absolute", top: 0, left: 0 }}
-              className={"image-element"}
-              width={item.canvasSize.width}
-              height={item.canvasSize.height}
-              scaleX={item.zoomScale}
-              scaleY={item.zoomScale}
+              className={["image-element",
+                styles[`image_size__${item.size}`],
+                styles[`image_position__${item.verticalAlignment}`],
+                styles[`image_position__${item.horizontalAlignment}`],
+              ].join(" ")}
+              width={canvasSize.width}
+              height={canvasSize.height}
+              scaleX={item.isFit ? item.fitScale.stageZoomX : item.zoomScale}
+              scaleY={item.isFit ? item.fitScale.stageZoomY : item.zoomScale}
               x={item.zoomingPositionX}
               y={item.zoomingPositionY}
               offsetX={item.stageTranslate.x}
@@ -869,7 +879,7 @@ export default observer(
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(false);
                 }
-                const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                const { width: stageWidth, height: stageHeight } = canvasSize;
                 const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
                 const newEvent = { ...e };
 

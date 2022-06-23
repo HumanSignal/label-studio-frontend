@@ -50,6 +50,11 @@ import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
+ * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
+ * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "middle" or "bottom"
+ * @param {boolean} [precisionZoom=false]       - Displays image pixels when zooming in
+ * @param {string} [size="fit"]                 - Specify the initial size of the image within the viewport while preserving it’s ratio. Can be one of "auto" or "fit"
+ * @param {boolean} [constrainRegions=true]     - Constrains the regions transformations to the canvas
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -78,6 +83,12 @@ const TagAttrs = types.model({
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
+
+  horizontalAlignment: types.optional(types.string, "left"),
+  verticalAlignment: types.optional(types.string, "top"),
+  precisionZoom: types.optional(types.boolean, false),
+  size: types.optional(types.string, "fit"),
+  constrainRegions: types.optional(types.boolean, true),
 });
 
 const IMAGE_CONSTANTS = {
@@ -375,6 +386,10 @@ const Model = types.model({
     }
   },
 
+  get isFit() {
+    return self.size === "fit";
+  },
+
   /**
    * @return {object}
    */
@@ -432,16 +447,26 @@ const Model = types.model({
   },
 
   get canvasSize() {
+    const isFit = self.size === "fit";
+    const { stageZoomX: fitScaleX, stageZoomY: fitScaleY } = self.fitScale;
+    const isPortrait = self.naturalHeight > self.naturalWidth;
+    const fitHeight = isPortrait ? self.containerHeight : self.stageHeight;
+    const fitWidth = isPortrait ? self.containerWidth : self.stageWidth;
+    const height = isFit ? fitHeight : self.naturalHeight;
+    const width = isFit? fitWidth : self.naturalWidth;
+    const stageZoomX = isFit ? fitScaleX : self.stageZoomX;
+    const stageZoomY = isFit ? fitScaleY : self.stageZoomY;
+
     if (self.isSideways) {
       return {
-        width: Math.round(self.naturalHeight * self.stageZoomX),
-        height: Math.round(self.naturalWidth * self.stageZoomY),
+        width: Math.round(height * stageZoomX),
+        height: Math.round(width * stageZoomY),
       };
     }
 
     return {
-      width: Math.round(self.naturalWidth * self.stageZoomX),
-      height: Math.round(self.naturalHeight * self.stageZoomY),
+      width: Math.round(width * stageZoomX),
+      height: Math.round(height * stageZoomY),
     };
   },
 
@@ -452,10 +477,39 @@ const Model = types.model({
     return !!self.drawingRegion;
   },
 
+  get fitScale() {
+    const { containerHeight, containerWidth, naturalHeight, naturalWidth, isSideways, zoomScale } = self;
+    const maxScale = isSideways
+      ? Math.min(containerWidth / naturalHeight, containerHeight / naturalWidth)
+      : Math.min(containerWidth / naturalWidth, containerHeight / naturalHeight);
+    const coverScale = isSideways
+      ? Math.max(containerWidth / naturalHeight, containerHeight / naturalWidth)
+      : Math.max(containerWidth / naturalWidth, containerHeight / naturalHeight);
+    const z = Math.min(maxScale * zoomScale, coverScale);
+    let stageZoomX, stageZoomY;
+
+    if (containerWidth / naturalWidth > containerHeight / naturalHeight) {
+      stageZoomX = z;
+      stageZoomY = maxScale;
+    } else {
+      stageZoomX = maxScale;
+      stageZoomY = z;
+    }
+    
+    return {
+      stageZoomX,
+      stageZoomY,
+    };
+  },
+
   get imageTransform() {
+    const height = self.stageHeight;
+    const width = self.stageWidth;
+    const { stageZoomX, stageZoomY } = self.fitScale;
+
     const imgStyle = {
-      width: `${self.stageWidth}px`,
-      height: `${self.stageHeight}px`,
+      width: `${width}px`,
+      height: `${height}px`,
       transformOrigin: "left top",
       transform: "none",
       filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
@@ -466,7 +520,13 @@ const Model = types.model({
       const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
       imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
-      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
+      if(self.isFit) {
+        imgTransform.push("scale3d(" + stageZoomX + ", " + stageZoomY + ", 1)");
+      } else {
+        imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
+      }
+    } else if(self.isFit) {
+      imgTransform.push("scale3d(" + stageZoomX + ", " + stageZoomY + ", 1)");
     }
 
     if (self.rotation) {
@@ -735,6 +795,23 @@ const Model = types.model({
         self.setZoomPosition(zoomingPosition.x, zoomingPosition.y);
         self.updateImageAfterZoom();
       }
+    },
+
+    handleResize() {
+      const defaultSize = "fit";
+      const autoSize = "auto";
+
+      self.setZoom(1);
+      self.setZoomPosition(0, 0);
+      if(self.isFit) {
+        self.setSize(autoSize);
+      } else {
+        self.setSize(defaultSize);
+      }
+    },
+
+    setSize(newSize) {
+      self.size = newSize;
     },
 
     /**

@@ -5,9 +5,11 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { Tool } from "../components/Toolbar/Tool";
-import { IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
+import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
+  const expandLabel = item?.obj?.size === "auto" ? "actual size" : "fit";
+  
   return (
     <Fragment>
       <Tool
@@ -29,6 +31,15 @@ const ToolView = observer(({ item }) => {
         shortcut="ctrl+plus"
         onClick={() => {
           item.handleZoom(1);
+        }}
+      />
+      <Tool
+        icon={<IconExpand />}
+        ariaLabel={`Zoom to ${expandLabel}`}
+        label={`Zoom to ${expandLabel}`}
+        shortcut="shift+1"
+        onClick={() => {
+          item.handleResize();
         }}
       />
       <Tool
@@ -108,6 +119,12 @@ const _Tool = types
       const item = self.obj;
 
       item.handleZoom(val);
+    },
+
+    handleResize() {
+      const item = self.obj;
+
+      item?.handleResize();
     },
   }));
 

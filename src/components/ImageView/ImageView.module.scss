@@ -46,6 +46,41 @@
   font-size: 24px;
 }
 
+.image_size{
+  &__fit {
+    top: 0;
+    width: calc(100% - 40px);
+  }
+  &__auto {
+    position: absolute;
+    &.image_position {
+      &__top {
+        top: 0;
+      }
+      &__middle {
+        top: 50%;
+        transform: translateY(-50%);
+        &.image_position__center {
+          transform: translate(-50%, -50%);
+        }
+      }
+      &__bottom {
+        bottom: 0;
+      }
+      &__left {
+        left: 0;
+      }
+      &__center {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      &__right {
+        right: 0;
+      }
+    }
+  }
+}
+
 .container {
   overflow: hidden;
   width: 100%;
@@ -55,7 +90,6 @@
   .frame {
     position: absolute;
     overflow: hidden;
-    top: 0;
     height: 0;
   }
   .frame_height {
