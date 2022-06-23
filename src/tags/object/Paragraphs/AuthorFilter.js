@@ -32,11 +32,14 @@ const renderMultipleSelected = (selected) => {
 
 export const AuthorFilter = observer(({ item }) => {
   const placeholder = useMemo(() => (<span className={styles.authorFilter__placeholder}>Show all authors</span>), []);
-  const value = item.filterByAuthor.slice();
+  const value = item.filterByAuthor;
   const options = useMemo(() => item._value.reduce((all, v) => all.includes(v[item.namekey]) ? all : [...all, v[item.namekey]], []).sort(), [item._value, item.namekey]);
   const filteredOptions = item.searchAuthor ? options.filter(o => o.toLowerCase().includes(item.searchAuthor.toLowerCase())) : options;
   const onFilterChange = useCallback((next) => {
-    item.setAuthorFilter(!next || next?.includes(null) ? []: next);
+    // ensure this is cleared if any action promoting an empty value change is made
+    if (!next || next?.includes(null)) {
+      item.setAuthorFilter([]);
+    }
   }, [item.setAuthorFilter]);
 
   return (
