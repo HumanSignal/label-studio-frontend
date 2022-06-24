@@ -1,4 +1,4 @@
-import React, { forwardRef, RefObject, useEffect, useRef, useState } from "react";
+import React, { forwardRef, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { VariableSizeList } from "react-window";
 
 type ExtendedData = Readonly<{
@@ -159,12 +159,13 @@ const TreeStructure = ({
     rowComponent: React.FC<any>,
   }) => {
     const item = dataGetter(index);
-
-    const dimensionCallback = (itemWidth: number, itemHeight: number) => {
+    const dimensionCallback = useCallback((itemWidth: number, itemHeight: number) => {
       visibleCounter++;
       const key = `${index}`;
 
-      if (width <= itemWidth) {
+      if (width < itemWidth) console.log(width, itemWidth);
+
+      if (width < itemWidth) {
         if (maxWidth <= itemWidth) {
           heightAccumulator[key] = itemHeight;
           setWidth(maxWidth);
@@ -177,7 +178,7 @@ const TreeStructure = ({
         visibleCounter = 0;
         updateHeight();
       }
-    };
+    }, [width]);
 
     return <RowComponent {...{ item, style, dimensionCallback, maxWidth }} />;
   };

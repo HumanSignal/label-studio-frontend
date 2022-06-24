@@ -197,69 +197,68 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   
 
   return (
-    <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: 'fit-content' }}>
+    <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: "fit-content" }}>
       {!isAddingItem ? (
-        <div className={[styles.taxonomy__item, customClassname].join(" ")} >
-          <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
-            <LsChevron stroke="#09f" style={arrowStyle} />
+        <>
+          <div className={styles.taxonomy__measure}>
+            <label>{name}</label>
           </div>
-          <input
-            className="item"
-            id={id}
-            type="checkbox"
-            disabled={disabled}
-            checked={checked}
-            ref={setIndeterminate}
-            onChange={e => setSelected(path, e.currentTarget.checked)}
-          />
-          <label
-            style={{ left: `${padding + 44}px` }}
-            className={styles.width_check}
-          >
-            {name}
-          </label>
-          <label
-            style={{ maxWidth: `${labelMaxWidth}px` }}
-            onClick={onClick}
-            title={title}
-            className={disabled ? styles.taxonomy__collapsable : undefined}
-          >
-            {name}
-          </label>
-          {!isFiltering && (
-            <div className={styles.taxonomy__extra}>
-              <span className={styles.taxonomy__extra_count}>{childCount}</span>
-              {onAddLabel && (
-                <div className={styles.taxonomy__extra_actions}>
-                  <Dropdown
-                    destroyPopupOnHide // important for long interactions with huge taxonomy
-                    trigger={["click"]}
-                    overlay={(
-                      <Menu>
-                        <Menu.Item
-                          key="add-inside"
-                          className={styles.taxonomy__action}
-                          onClick={() => {
-                            addChild(id);
-                          }}
-                        >
-                          Add Inside
-                        </Menu.Item>
-                        {item.origin === "session" && (
-                          <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
-                            Delete
-                          </Menu.Item>
-                        )}
-                      </Menu>
-                    )}
-                  >
-                    <div>...</div>
-                  </Dropdown>
-                </div>
-              )}
+          <div className={[styles.taxonomy__item, customClassname].join(" ")}>
+            <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
+              <LsChevron stroke="#09f" style={arrowStyle} />
             </div>
-          )}
-        </div>
+            <input
+              className="item"
+              id={id}
+              type="checkbox"
+              disabled={disabled}
+              checked={checked}
+              ref={setIndeterminate}
+              onChange={e => setSelected(path, e.currentTarget.checked)}
+            />
+            <label
+              style={{ maxWidth: `${labelMaxWidth}px` }}
+              onClick={onClick}
+              title={title}
+              className={disabled ? styles.taxonomy__collapsable : undefined}
+            >
+              {name}
+            </label>
+            {!isFiltering && (
+              <div className={styles.taxonomy__extra}>
+                <span className={styles.taxonomy__extra_count}>{childCount}</span>
+                {onAddLabel && (
+                  <div className={styles.taxonomy__extra_actions}>
+                    <Dropdown
+                      destroyPopupOnHide // important for long interactions with huge taxonomy
+                      trigger={["click"]}
+                      overlay={(
+                        <Menu>
+                          <Menu.Item
+                            key="add-inside"
+                            className={styles.taxonomy__action}
+                            onClick={() => {
+                              addChild(id);
+                            }}
+                          >
+                            Add Inside
+                          </Menu.Item>
+                          {item.origin === "session" && (
+                            <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
+                              Delete
+                            </Menu.Item>
+                          )}
+                        </Menu>
+                      )}
+                    >
+                      <div>...</div>
+                    </Dropdown>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       ) : (
         <UserLabelForm key="" onAddLabel={onAddLabel} onFinish={() => addChild()} path={path} />
       )}
