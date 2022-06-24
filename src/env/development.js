@@ -54,6 +54,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 /**
  * Different
  */
+import { DateTime } from "../examples/datetime";
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
 import { Table } from "../examples/table";
@@ -67,7 +68,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+const data = DateTime;
 
 function getData(task) {
   if (task && task.data) {
