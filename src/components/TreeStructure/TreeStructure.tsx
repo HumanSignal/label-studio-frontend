@@ -163,8 +163,6 @@ const TreeStructure = ({
       visibleCounter++;
       const key = `${index}`;
 
-      if (width < itemWidth) console.log(width, itemWidth);
-
       if (width < itemWidth) {
         if (maxWidth <= itemWidth) {
           heightAccumulator[key] = itemHeight;
