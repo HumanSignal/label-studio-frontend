@@ -1,3 +1,5 @@
+export const FF_DEV_117 = "ff_front_dev_117_date_time_tag_160822_short";
+
 // Fix crosshair working with zoom & rotation
 export const FF_DEV_1285 = "ff_front_dev_1285_crosshair_wrong_zoom_140122_short";
 
