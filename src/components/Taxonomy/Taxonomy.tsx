@@ -204,6 +204,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
           </div>
           <input
             type="checkbox"
+            id={id}
             disabled={disabled}
             checked={checked}
             ref={setIndeterminate}
@@ -216,6 +217,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
             {name}
           </label>
           <label
+            htmlFor={id}
             style={{ maxWidth: `${labelMaxWidth}px` }}
             onClick={onClick}
             title={title}
