@@ -46,7 +46,7 @@
       "defaultValue": true
     },
     "deselectRegionOnOutsideClick": {
-      "description": "Deselects region when clicking outside of it",
+      "description": "Deselect region when clicking outside of it",
       "onChangeEvent": "toggleRegionDeselect",
       "defaultValue": false 
     }
