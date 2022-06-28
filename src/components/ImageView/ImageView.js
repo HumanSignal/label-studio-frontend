@@ -489,7 +489,7 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       const selectedTool = item.getToolsManager().findSelectedTool();
-      
+
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
@@ -514,7 +514,7 @@ export default observer(
 
       if (
         // create regions over another regions with Cmd/Ctrl pressed
-        item.getSkipInteractions() ||
+        skipInteractions ||
         e.target === item.stageRef ||
         findClosestParent(
           e.target,
