@@ -60,6 +60,8 @@ const SettingsModel = types
     preserveSelectedTool: types.optional(types.boolean, true),
 
     enableSmoothing: types.optional(types.boolean, true),
+
+    deselectRegionOnOutsideClick: types.optional(types.boolean, false),
   })
   .views(self => ({
     get annotation() {
@@ -203,6 +205,10 @@ const SettingsModel = types
 
     toggleSmoothing() {
       self.enableSmoothing = !self.enableSmoothing;
+    },
+
+    toggleRegionDeselect() {
+      self.deselectRegionOnOutsideClick = !self.deselectRegionOnOutsideClick;
     },
 
     setSmoothing(value) {

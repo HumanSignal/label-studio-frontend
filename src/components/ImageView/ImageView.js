@@ -496,6 +496,7 @@ export default observer(
       // should clear selected areas and not continue drawing a new region immediately.
       if (
         isFF(FF_DEV_1442) &&
+        this.props.store.settings.deselectRegionOnOutsideClick &&
         !skipInteractions &&
         e.target === item.stageRef &&
         item.annotation.selectedRegions.length > 0 &&

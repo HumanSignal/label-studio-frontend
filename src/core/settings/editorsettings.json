@@ -44,5 +44,10 @@
       "description": "Enable image smoothing when zoom",
       "onChangeEvent": "toggleSmoothing",
       "defaultValue": true
+    },
+    "deselectRegionOnOutsideClick": {
+      "description": "Deselects region when clicking outside of it",
+      "onChangeEvent": "toggleRegionDeselect",
+      "defaultValue": false 
     }
 }
