@@ -8,7 +8,7 @@ import "./Settings.styl";
 import { Block, Elem } from "../../utils/bem";
 import { triggerResizeEvent } from "../../utils/utilities";
 
-import EditorSettings from "../../core/settings/editorsettings.json";
+import EditorSettings from "../../core/settings/editorsettings";
 import { getEnv, getRoot } from "mobx-state-tree";
 
 const HotkeysDescription = () => {
