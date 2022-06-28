@@ -490,14 +490,11 @@ export default observer(
 
       const selectedTool = item.getToolsManager().findSelectedTool();
       
-      const skipInteractions = item.getSkipInteractions();
-
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
         isFF(FF_DEV_1442) &&
         this.props.store.settings.deselectRegionOnOutsideClick &&
-        !skipInteractions &&
         e.target === item.stageRef &&
         item.annotation.selectedRegions.length > 0 &&
         [
@@ -517,7 +514,7 @@ export default observer(
 
       if (
         // create regions over another regions with Cmd/Ctrl pressed
-        skipInteractions ||
+        item.getSkipInteractions() ||
         e.target === item.stageRef ||
         findClosestParent(
           e.target,
