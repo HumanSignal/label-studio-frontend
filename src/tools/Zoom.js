@@ -8,7 +8,7 @@ import { Tool } from "../components/Toolbar/Tool";
 import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
-  const expandLabel = item?.obj?.size === "auto" ? "actual size" : "fit";
+  const expandLabel = item?.obj?.isFit ? "actual size" : "fit";
   
   return (
     <Fragment>
