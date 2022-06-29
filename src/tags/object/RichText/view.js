@@ -9,6 +9,7 @@ import "./RichText.styl";
 import { isAlive } from "mobx-state-tree";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Block, cn, Elem } from "../../../utils/bem";
+import { findGlobalOffset, findRangeNative } from "../../../utils/selection-tools";
 import { observe } from "mobx";
 
 const DBLCLICK_TIMEOUT = 450; // ms
@@ -61,11 +62,41 @@ class RichTextPieceView extends Component {
       this.style = doc.createElement("style");
     }
 
+    this.expand = doc.caretRangeFromPoint(ev.clientX, ev.clientY);
+    console.log("DOWN", this.expand);
+
     this.style.innerText=`::selection{background:${color};}`;
-    root.appendChild(this.style);
+    // root.appendChild(this.style);
+
+    ev.preventDefault();
+  };
+
+  _onMouseMove = (ev) => {
+    const { item } = this.props;
+    const rootEl = item.visibleNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+    const doc = root.ownerDocument;
+
+    if (this.expand) {
+      const current = doc.caretRangeFromPoint(ev.clientX, ev.clientY);
+      const selection = doc.defaultView.getSelection();
+      const range = doc.createRange();
+
+      const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
+      const start = findRangeNative(offset - 5, offset - 5, root);
+      const finish = findRangeNative(offset + 5, offset + 5, root);
+
+      range.setStart(start.startContainer, start.startOffset);
+      range.setEnd(finish.startContainer, finish.startOffset);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
   };
 
   _onMouseUp = (ev) => {
+    console.log("UP");
+    this.expand = false;
+
     const { item } = this.props;
     const states = item.activeStates();
     const rootEl = item.visibleNodeRef.current;
@@ -329,6 +360,7 @@ class RichTextPieceView extends Component {
       keypress: [this._passHotkeys, false],
       mousedown: [this._onMouseDown, false],
       mouseup: [this._onMouseUp, false],
+      mousemove: [this._onMouseMove, true],
       mouseover: [this._onRegionMouseOver, true],
     };
 
@@ -343,6 +375,8 @@ class RichTextPieceView extends Component {
     const style = doc.createElement("style");
 
     style.textContent = "body a[href] { pointer-events: all; }";
+    // style.textContent = "body a[href] { pointer-events: all; } body { user-select: none; }";
+    style.textContent = "body a[href] { pointer-events: all; } body { cursor: move }";
     doc.head.appendChild(style);
 
     // // @todo make links selectable; dragstart supressing doesn't help — they are still draggable

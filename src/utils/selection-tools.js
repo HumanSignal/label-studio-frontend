@@ -701,14 +701,14 @@ export const rangeToGlobalOffset = (range, root) => {
  * @param {Number} position
  * @param {Node} root
  */
-const findGlobalOffset = (node, position, root) => {
+export const findGlobalOffset = (node, position, root) => {
   const walker = (root.contentDocument ?? root.ownerDocument).createTreeWalker(root, NodeFilter.SHOW_ALL);
 
   let globalPosition = 0;
   let nodeReached = false;
   let currentNode = walker.nextNode();
 
-  while(currentNode) {
+  while (currentNode) {
     // Indicates that we at or below desired node
     nodeReached = nodeReached || (node === currentNode);
     const atTargetNode = node === currentNode || currentNode.contains(node);
