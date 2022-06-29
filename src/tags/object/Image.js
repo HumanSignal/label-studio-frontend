@@ -449,9 +449,8 @@ const Model = types.model({
   get canvasSize() {
     const isFit = self.size === "fit";
     const { stageZoomX: fitScaleX, stageZoomY: fitScaleY } = self.fitScale;
-    const isPortrait = self.naturalHeight > self.naturalWidth;
-    const fitHeight = isPortrait ? self.containerHeight : self.stageHeight;
-    const fitWidth = isPortrait ? self.containerWidth : self.stageWidth;
+    const fitHeight = self.stageHeight;
+    const fitWidth = self.stageWidth;
     const height = isFit ? fitHeight : self.naturalHeight;
     const width = isFit? fitWidth : self.naturalWidth;
     const stageZoomX = isFit ? fitScaleX : self.stageZoomX;
@@ -801,7 +800,7 @@ const Model = types.model({
       const defaultSize = "fit";
       const autoSize = "auto";
 
-      self.setZoom(1);
+      self.handleZoom(1);
       self.setZoomPosition(0, 0);
       if(self.isFit) {
         self.setSize(autoSize);

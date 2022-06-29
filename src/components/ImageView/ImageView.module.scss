@@ -48,7 +48,10 @@
 
 .image_size{
   &__fit {
+    position: absolute;
     top: 0;
+    width: calc(100% - 40px);
+    height: 100%;
   }
   &__auto {
     position: absolute;
