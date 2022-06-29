@@ -49,6 +49,22 @@ class RichTextPieceView extends Component {
     }
   };
 
+  _onMouseDown = (ev) => {
+    const { item } = this.props;
+    const rootEl = item.visibleNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+    const doc = root.ownerDocument;
+    const target = ev.target;
+    const color = target?.classList.contains("htx-highlight") ? String(target.computedStyleMap().get("background-color")) : "";
+
+    if (!this.style) {
+      this.style = doc.createElement("style");
+    }
+
+    this.style.innerText=`::selection{background:${color};}`;
+    root.appendChild(this.style);
+  };
+
   _onMouseUp = (ev) => {
     const { item } = this.props;
     const states = item.activeStates();
@@ -311,6 +327,7 @@ class RichTextPieceView extends Component {
       keydown: [this._passHotkeys, false],
       keyup: [this._passHotkeys, false],
       keypress: [this._passHotkeys, false],
+      mousedown: [this._onMouseDown, false],
       mouseup: [this._onMouseUp, false],
       mouseover: [this._onRegionMouseOver, true],
     };
