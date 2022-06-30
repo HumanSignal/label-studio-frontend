@@ -256,7 +256,6 @@ class HtxParagraphsView extends Component {
           data-update={item._update}
           className={styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
-          // dangerouslySetInnerHTML={{ __html: val }}
         >
           <Phrases item={item} />
         </div>
