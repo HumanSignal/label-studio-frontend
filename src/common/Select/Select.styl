@@ -1,12 +1,17 @@
 .select
+  --select-surface-color: #FAFAFA
   height 40px
-  background #FAFAFA
+  background-color var(--select-surface-color)
   font-size 16px
   line-height 22px
   border 1px solid $black_15
   box-sizing border-box
   border-radius 5px
   cursor pointer
+
+  &_surface
+    &_emphasis
+      --select-surface-color: #FFFFFF
 
   &_size
     &_compact
@@ -20,6 +25,17 @@
   &__list
     width max-content
 
+  &__dropdown
+    &:not(.dropdown__trigger)
+      max-height 280px
+      overflow auto
+
+  &__dropdown_variant_rounded
+    &:not(.dropdown__trigger)
+      border-radius 4px
+      padding-bottom 8px
+      margin-top 4px
+      
   &__selected
     width 100%
     padding 0 7px

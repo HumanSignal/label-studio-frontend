@@ -1,5 +1,5 @@
-import { Children, cloneElement, createContext, CSSProperties, FC, KeyboardEvent, MouseEvent, ReactChild, ReactFragment, ReactNode, ReactPortal, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { BemWithSpecifiContext } from "../../utils/bem";
+import React, { Children, cloneElement, createContext, CSSProperties, FC, KeyboardEvent, MouseEvent, ReactChild, ReactElement, ReactFragment, ReactNode, ReactPortal, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { BemWithSpecifiContext, cn } from "../../utils/bem";
 import { shallowEqualArrays } from 'shallow-equal';
 import { isDefined } from "../../utils/utilities";
 import { Dropdown } from "../Dropdown/Dropdown";
@@ -14,7 +14,8 @@ interface SelectProps {
   defaultValue?: string | string[];
   size?: "normal" | "medium" | "small";
   style?: CSSProperties;
-  dropdownStyle?: CSSProperties;
+  variant?: "base" | "rounded";
+  surface?: "base" | "emphasis";
   multiple?: boolean;
   renderMultipleSelected?: (value: string[]) => ReactNode;
   tabIndex?: number;
@@ -68,10 +69,11 @@ export const Select: SelectComponent<SelectProps> = ({
   size,
   children,
   style,
-  dropdownStyle,
   multiple,
   renderMultipleSelected,
   onChange,
+  variant,
+  surface,
   tabIndex = 0,
   placeholder = "Select value",
 }) => {
@@ -84,9 +86,7 @@ export const Select: SelectComponent<SelectProps> = ({
   );
   const [focused, setFocused] = useState<string | null>();
 
-  const options = Children.toArray(children).filter(child => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+  const options = Children.toArray(children).filter((child: any) => { // toArray is returning incorrect types which don't have type.displayName or props, but the actual child does.
     return child.type.displayName === "Select.Option" && !child.props.exclude;
   });
 
@@ -184,13 +184,13 @@ export const Select: SelectComponent<SelectProps> = ({
       context.setCurrentValue(value);
     }
   }, [value, multiple]);
-
+ 
   return (
     <SelectContext.Provider value={context}>
-      <Block ref={rootRef} name="select" mod={{ size }} style={style} tabIndex={tabIndex} onKeyDown={handleKeyboard}>
+      <Block ref={rootRef} name="select" mod={{ size, surface }} style={style} tabIndex={tabIndex} onKeyDown={handleKeyboard}>
         <Dropdown.Trigger
           ref={dropdown}
-          style={{ maxHeight: 280, overflow: 'auto', ...dropdownStyle }}
+          className={cn("select", { elem: "dropdown", mod: { variant } }).toClassName()}
           content={<Elem name="list">{children}</Elem>}
           onToggle={(visible: boolean) => {
             if (!visible) setFocused(null);

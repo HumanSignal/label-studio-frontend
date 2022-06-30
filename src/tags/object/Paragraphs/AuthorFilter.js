@@ -5,15 +5,6 @@ import ColorScheme from "pleasejs";
 import Utils from "../../../utils";
 import styles from "./Paragraphs.module.scss";
 
-const selectStyle = {
-  backgroundColor: "#FFFFFF",
-};
-const dropdownStyle = {
-  borderRadius: "4px",
-  marginTop: "4px",
-  paddingBottom: "8px",
-};
-
 const AuthorTag = ({ name, selected }) => {
   const itemStyle = { border: `2px solid ${Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: name })[0])}` };
 
@@ -39,20 +30,22 @@ export const AuthorFilter = observer(({ item }) => {
     // ensure this is cleared if any action promoting an empty value change is made
     if (!next || next?.includes(null)) {
       item.setAuthorFilter([]);
+    } else {
+      item.setAuthorFilter(next);
     }
   }, [item.setAuthorFilter]);
 
   return (
     <div className={styles.authorFilter}>
       <Select
-        style={selectStyle}
-        dropdownStyle={dropdownStyle}
         placeholder={placeholder}
         value={value}
         options={options}
         onChange={onFilterChange}
         renderMultipleSelected={renderMultipleSelected}
         size="compact"
+        variant="rounded"
+        surface="emphasis"
         multiple
       >
         <div className={styles.authorFilter__search}>
