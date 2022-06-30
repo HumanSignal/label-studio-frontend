@@ -800,7 +800,7 @@ const Model = types.model({
       const defaultSize = "fit";
       const autoSize = "auto";
 
-      self.handleZoom(1);
+      self.handleZoom(0);
       self.setZoomPosition(0, 0);
       if(self.isFit) {
         self.setSize(autoSize);
