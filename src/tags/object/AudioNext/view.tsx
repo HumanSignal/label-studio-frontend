@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Block, Elem } from "../../../utils/bem";
@@ -30,6 +30,11 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const handleSeek = useCallback((frame: number) => {
     setPosition(frame);
     item.handleSeek();
+  }, []);
+
+  const handleSpeed = useCallback((speed: number) => {
+    setSpeed(speed);
+    item.handleSpeed(speed);
   }, []);
 
   const formatPosition = useCallback(({ time, fps }): string => {
@@ -107,7 +112,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         onPause={handlePause}
         onZoom={setZoom}
         onVolumeChange={setVolume}
-        onSpeedChange={setSpeed}
+        onSpeedChange={handleSpeed}
         formatPosition={formatPosition}
       />
     </ObjectTag>

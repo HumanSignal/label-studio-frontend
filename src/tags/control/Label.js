@@ -46,6 +46,7 @@ import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
  * @param {string} [background=#36B37E]     - Background color of an active label in hexadecimal
  * @param {string} [selectedColor=#ffffff]  - Color of text in an active label in hexadecimal
  * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
+ * @param {string} [html]                   - HTML code is used to display label button instead of raw text provided by `value` (should be properly escaped)
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),

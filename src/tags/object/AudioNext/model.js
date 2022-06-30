@@ -125,6 +125,8 @@ export const AudioModel = types.compose(
         self._ws?.pause();
       },
 
+      handleSyncSpeed() {},
+
       handleSyncSeek(time) {
         try {
           if (self._ws && time !== self._ws.getCurrentTime()) {
@@ -291,6 +293,10 @@ export const AudioModel = types.compose(
         if (self._ws) {
           self.triggerSyncSeek(self._ws.getCurrentTime());
         }
+      },
+
+      handleSpeed(speed) {
+        self.triggerSyncSpeed(speed);
       },
 
       createWsRegion(region) {

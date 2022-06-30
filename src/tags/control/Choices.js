@@ -26,7 +26,9 @@ const { Option } = Select;
 /**
  * Use the Choices tag to create a group of choices, with radio buttons or checkboxes. Can be used for single or multi-class classification. Use for advanced classification tasks where annotators can choose one or multiple answers.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Choice>s. All the parameters from options will be transferred to corresponding tags.
+ *
+ * The Choices tag can be used with any data types.
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
@@ -37,6 +39,32 @@ const { Option } = Select;
  *     <Choice alias="X" value="Other" />
  *   </Choices>
  *   <Text name="txt-1" value="John went to see Mary" />
+ * </View>
+ *
+ * @example <caption>This config with dynamic labels</caption>
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ *   <Choices name="transcription" toName="audio" value="$variants" />
+ * </View>
+ * <!-- {
+ *   "data": {
+ *     "variants": [
+ *       { "value": "Do or doughnut. There is no try." },
+ *       { "value": "Do or do not. There is no trial." },
+ *       { "value": "Do or do not. There is no try." },
+ *       { "value": "Duo do not. There is no try." }
+ *     ]
+ *   }
+ * } -->
+ * @example <caption>is equivalent to this config</caption>
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ *   <Choices name="transcription" toName="audio" value="$variants">
+ *     <Choice value="Do or doughnut. There is no try." />
+ *     <Choice value="Do or do not. There is no trial." />
+ *     <Choice value="Do or do not. There is no try." />
+ *     <Choice value="Duo do not. There is no try." />
+ *   </Choices>
  * </View>
  * @name Choices
  * @meta_title Choices Tag for Multiple Choice Labels
@@ -51,7 +79,9 @@ const { Option } = Select;
  * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
  * @param {string} [whenLabelValue]    - Narrow down visibility by label value
  * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
- * @param {boolean} [perRegion] - Use this tag to select a choice for a specific region instead of the entire task
+ * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
+ * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)
+ * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
   name: types.identifier,

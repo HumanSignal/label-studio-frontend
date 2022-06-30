@@ -453,10 +453,23 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
+    skipMouseUp = false;
+
+    constructor(props) {
+      super(props);
+
+      if (typeof props.item.smoothing === 'boolean')
+        props.store.settings.setSmoothing(props.item.smoothing);
+    }
 
     handleOnClick = e => {
       const { item } = this.props;
-
+    
+      if (self.skipMouseUp) {
+        self.skipMouseUp = false;
+        return;
+      }
+      
       if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
@@ -466,7 +479,7 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
-
+      
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
@@ -481,6 +494,7 @@ export default observer(
       // should clear selected areas and not continue drawing a new region immediately.
       if (
         isFF(FF_DEV_1442) &&
+        this.props.store.settings.deselectRegionOnOutsideClick &&
         e.target === item.stageRef &&
         item.annotation.selectedRegions.length > 0 &&
         [
@@ -494,7 +508,7 @@ export default observer(
         ].includes(selectedTool?.fullName)
       ) {
         item.annotation.unselectAll();
-        item.getToolsManager().unselectAll();
+        self.skipMouseUp = true;
         return;
       }
 
@@ -526,7 +540,7 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-
+      
       if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;
@@ -551,7 +565,7 @@ export default observer(
      */
     handleMouseUp = e => {
       const { item } = this.props;
-
+  
       item.freezeHistory();
       item.setSkipInteractions(false);
 
@@ -560,7 +574,7 @@ export default observer(
 
     handleMouseMove = e => {
       const { item } = this.props;
-
+      
       item.freezeHistory();
 
       this.updateCrosshair(e);
@@ -763,6 +777,10 @@ export default observer(
         containerStyle["height"] = item.height;
       }
 
+      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
+        containerStyle["imageRendering"] = 'pixelated';
+      }
+
       const {
         brushRegions,
         shapeRegions,
@@ -848,10 +866,26 @@ export default observer(
                   this.crosshairRef.current.updateVisibility(true);
                 }
               }}
-              onMouseLeave={() => {
+              onMouseLeave={(e) => {
                 if (this.crosshairRef.current) {
                   this.crosshairRef.current.updateVisibility(false);
                 }
+                const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
+                const newEvent = { ...e };
+
+                if (mouseposX <= 0) {
+                  e.offsetX = 0;
+                } else if (mouseposX >= stageWidth) {
+                  e.offsetX = stageWidth;
+                }
+                
+                if (mouseposY <= 0) {
+                  e.offsetY = 0;
+                } else if (mouseposY >= stageHeight) {
+                  e.offsetY = stageHeight;
+                }
+                this.handleMouseMove(newEvent);
               }}
               onDragMove={this.updateCrosshair}
               onMouseDown={this.handleMouseDown}
