@@ -834,6 +834,7 @@ export default observer(
                 styles[`image_size__${item.size}`],
                 styles[`image_position__${item.verticalAlignment}`],
                 styles[`image_position__${item.horizontalAlignment}`],
+                styles[`image_orientation__${item.naturalWidth > item.naturalHeight ? 'landscape' : 'portrait'}`],
               ].join(" ")}
               style={canvasSize}
             >
