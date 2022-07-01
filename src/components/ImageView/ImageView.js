@@ -489,11 +489,12 @@ export default observer(
       if (p && p.className === "Transformer") return;
 
       const selectedTool = item.getToolsManager().findSelectedTool();
-      
+
       // clicking on the stage after there has already been a region selection
       // should clear selected areas and not continue drawing a new region immediately.
       if (
         isFF(FF_DEV_1442) &&
+        this.props.store.settings.deselectRegionOnOutsideClick &&
         e.target === item.stageRef &&
         item.annotation.selectedRegions.length > 0 &&
         [
