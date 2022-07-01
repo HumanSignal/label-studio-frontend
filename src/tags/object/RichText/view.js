@@ -56,19 +56,40 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const doc = root.ownerDocument;
     const target = ev.target;
-    const color = target?.classList.contains("htx-highlight") ? String(target.computedStyleMap().get("background-color")) : "";
+    const color = target?.classList.contains("htx-highlight")
+      ? String(target.computedStyleMap().get("background-color"))
+      : "";
 
     if (!this.style) {
       this.style = doc.createElement("style");
+      root.appendChild(this.style);
     }
 
-    this.expand = doc.caretRangeFromPoint(ev.clientX, ev.clientY);
-    console.log("DOWN", this.expand);
+    // if we started to drag on highlighted span
+    if (color && ev.buttons === 1) {
+      ev.preventDefault();
 
-    this.style.innerText=`::selection{background:${color};}`;
-    // root.appendChild(this.style);
+      const id = target.className.match(/htx-highlight-(\S+)/)?.[1];
+      const rules = [
+        `::selection { background:${color}; }`,
+        `body { --background-color-${id}: #eee; }`, // doesn't matter if it's undefined
+      ];
 
-    ev.preventDefault();
+      const region = this._determineRegion(ev.target);
+      const anchor = doc.caretRangeFromPoint(ev.clientX, ev.clientY);
+      const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
+
+      this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
+      this.adjustedRegion = region;
+      this.adjustedId = id;
+      console.log("DOWN", this.spanOffsets, region);
+
+      this._highlightSelection(root, [ev.clientX, ev.clientY], this.spanOffsets);
+
+      this.style.innerText = rules.join("\n");
+    } else {
+      this.style.innerText = "";
+    }
   };
 
   _onMouseMove = (ev) => {
@@ -77,30 +98,60 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const doc = root.ownerDocument;
 
-    if (this.expand) {
-      const current = doc.caretRangeFromPoint(ev.clientX, ev.clientY);
-      const selection = doc.defaultView.getSelection();
-      const range = doc.createRange();
-
-      const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
-      const start = findRangeNative(offset - 5, offset - 5, root);
-      const finish = findRangeNative(offset + 5, offset + 5, root);
-
-      range.setStart(start.startContainer, start.startOffset);
-      range.setEnd(finish.startContainer, finish.startOffset);
-      selection.removeAllRanges();
-      selection.addRange(range);
+    if (this.spanOffsets) {
+      [this.adjustedOffsets, this.adjustedRange] = this._highlightSelection(root, [ev.clientX, ev.clientY], this.spanOffsets);
     }
   };
 
-  _onMouseUp = (ev) => {
-    console.log("UP");
-    this.expand = false;
+  _highlightSelection = (root, cursor, offsets) => {
+    const doc = root.ownerDocument;
 
+    const current = doc.caretRangeFromPoint(cursor[0], cursor[1]);
+    const selection = doc.defaultView.getSelection();
+    const range = doc.createRange();
+
+    const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
+    const globalOffsets = [offset + offsets[0], offset + offsets[1]];
+    const start = findRangeNative(globalOffsets[0], globalOffsets[0], root);
+    const finish = findRangeNative(globalOffsets[1], globalOffsets[1], root);
+
+    range.setStart(start.startContainer, start.startOffset);
+    range.setEnd(finish.startContainer, finish.startOffset);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    return [globalOffsets, range];
+  };
+
+  _onMouseUp = (ev) => {
     const { item } = this.props;
     const states = item.activeStates();
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
+
+    if (this.spanOffsets) {
+      const region = this.adjustedRegion;
+      const range = this.adjustedRange;
+      const offsets = this.adjustedOffsets;
+
+      region._fixXPaths(range, root);
+      region.updateGlobalOffsets(...offsets);
+
+      console.log("UP", region.start, region.startOffset);
+      // const normedRange = xpath.fromRange(range, root);
+
+      this.spanOffsets = null;
+      // getSelection().removeAllRanges();
+
+      // @fake it untill you make it
+      // if (this.style) this.style.innerText += `body { --background-color-${this.adjustedId}: transparent; }`;
+
+      // item.needsUpdate();
+
+      return;
+    } else {
+      if (this.style) this.style.innerText = "";
+    }
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
@@ -376,7 +427,7 @@ class RichTextPieceView extends Component {
 
     style.textContent = "body a[href] { pointer-events: all; }";
     // style.textContent = "body a[href] { pointer-events: all; } body { user-select: none; }";
-    style.textContent = "body a[href] { pointer-events: all; } body { cursor: move }";
+    style.textContent = "body a[href] { pointer-events: all; } .htx-highlight { cursor: move !important; }";
     doc.head.appendChild(style);
 
     // // @todo make links selectable; dragstart supressing doesn't help — they are still draggable
