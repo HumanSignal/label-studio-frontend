@@ -181,7 +181,7 @@ const Model = types
         // Ensure that the timestamps are incremental and formatted to proper numeric values
       } else {
         let current = 0;
-        let previous = 0;
+        let previous = undefined;
         const dataLength = data[self.keyColumn].length;
         const timestamps = Array.from({ length: dataLength });
 
@@ -191,7 +191,7 @@ const Model = types
           current = self.timeformat ? self.parseTime(value) : value;
           timestamps[i] = current;
 
-          if (current < previous) {
+          if (!previous && current < previous) {
             const nonSeqValues = [`seq: ${i - 1}, value: ${data[self.keyColumn][i - 1]}`, `seq: ${i}, value: ${value}`];
 
             throw new Error([
