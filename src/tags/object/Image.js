@@ -479,41 +479,39 @@ const Model = types.model({
   get fitScale() {
     const { containerHeight, containerWidth, isFit, naturalHeight, naturalWidth, isSideways, zoomScale } = self;
     const { min, max } = Math;
+    const isBiggerThanContainer = naturalHeight > containerHeight || naturalWidth > containerWidth;
     const maxScale = (isSideways
       ? min(
-        containerWidth / naturalHeight, 
-        containerHeight / naturalWidth,
+        isBiggerThanContainer ? naturalHeight / containerWidth : containerWidth / naturalHeight, 
+        isBiggerThanContainer ? naturalWidth / containerHeight : containerHeight / naturalWidth,
       )
       : min(
-        containerWidth / naturalWidth, 
-        containerHeight / naturalHeight,
+        isBiggerThanContainer ? naturalWidth / containerWidth : containerWidth / naturalWidth, 
+        isBiggerThanContainer ? naturalHeight / containerHeight : containerHeight / naturalHeight,
       )) * zoomScale;
     const coverScale = (isSideways
       ? max(
-        containerWidth / naturalHeight, 
-        containerHeight / naturalWidth,
+        isBiggerThanContainer ? naturalHeight / containerWidth : containerWidth / naturalHeight, 
+        isBiggerThanContainer ? naturalWidth / containerHeight : containerHeight / naturalWidth,
       )
       : max(
-        containerWidth / naturalWidth, 
-        containerHeight / naturalHeight,
+        isBiggerThanContainer ? naturalWidth / containerWidth : containerWidth / naturalWidth, 
+        isBiggerThanContainer ? naturalHeight / containerHeight : containerHeight / naturalHeight,
       )) * zoomScale;
     const z = min(maxScale, coverScale);
     let stageZoomX = zoomScale, stageZoomY = zoomScale;
 
-    console.log("fitScale");
-    if(!isFit) {
-      if ((containerWidth / naturalWidth > containerHeight / naturalHeight)) {
-        stageZoomX = z;
-        stageZoomY = maxScale;
-      } else {
-        stageZoomX = maxScale;
-        stageZoomY = z;
-      }
-    } else {
+    if(isFit) {
       if(containerHeight > naturalHeight || containerWidth > naturalWidth) {
         stageZoomX = z;
         stageZoomY = maxScale;
       }
+    } else if (containerWidth / naturalWidth > containerHeight / naturalHeight) {
+      stageZoomX = z;
+      stageZoomY = maxScale;
+    } else {
+      stageZoomX = maxScale;
+      stageZoomY = z;
     }
     
     return {
