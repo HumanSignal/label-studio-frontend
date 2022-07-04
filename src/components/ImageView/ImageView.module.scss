@@ -53,6 +53,8 @@
     top: 0;
     width: calc(100% - 40px);
     height: 100%;
+    min-height: 100%;
+    min-width: 100%;
   }
   &__auto {
     position: absolute;
