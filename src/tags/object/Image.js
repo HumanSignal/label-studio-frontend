@@ -477,22 +477,37 @@ const Model = types.model({
   },
 
   get fitScale() {
-    const { containerHeight, containerWidth, naturalHeight, naturalWidth, isSideways, zoomScale } = self;
+    const { containerHeight, containerWidth, isFit, naturalHeight, naturalWidth, isSideways, zoomScale } = self;
+    const { min, max } = Math;
     const maxScale = isSideways
-      ? Math.min(containerWidth / naturalHeight, containerHeight / naturalWidth)
-      : Math.min(containerWidth / naturalWidth, containerHeight / naturalHeight);
+      ? min(
+        containerWidth / naturalHeight, 
+        containerHeight / naturalWidth,
+      )
+      : min(
+        containerWidth / naturalWidth, 
+        containerHeight / naturalHeight,
+      );
     const coverScale = isSideways
-      ? Math.max(containerWidth / naturalHeight, containerHeight / naturalWidth)
-      : Math.max(containerWidth / naturalWidth, containerHeight / naturalHeight);
-    const z = Math.min(maxScale * zoomScale, coverScale);
-    let stageZoomX, stageZoomY;
-
-    if (containerWidth / naturalWidth > containerHeight / naturalHeight) {
-      stageZoomX = z;
-      stageZoomY = maxScale;
-    } else {
-      stageZoomX = maxScale;
-      stageZoomY = z;
+      ? max(
+        containerWidth / naturalHeight, 
+        containerHeight / naturalWidth,
+      )
+      : max(
+        containerWidth / naturalWidth, 
+        containerHeight / naturalHeight,
+      );
+    const z = min(maxScale, coverScale);
+    let stageZoomX = zoomScale, stageZoomY = zoomScale;
+    
+    if(!isFit) {
+      if ((containerWidth / naturalWidth > containerHeight / naturalHeight)) {
+        stageZoomX = z * zoomScale;
+        stageZoomY = maxScale;
+      } else {
+        stageZoomX = maxScale;
+        stageZoomY = z * zoomScale;
+      }
     }
     
     return {
@@ -519,13 +534,11 @@ const Model = types.model({
       const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
       imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
-      if(self.isFit) {
-        imgTransform.push("scale3d(" + stageZoomX + ", " + stageZoomY + ", 1)");
-      } else {
-        imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
-      }
-    } else if(self.isFit) {
+    } 
+    if(self.isFit) {
       imgTransform.push("scale3d(" + stageZoomX + ", " + stageZoomY + ", 1)");
+    } else {
+      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
     }
 
     if (self.rotation) {
