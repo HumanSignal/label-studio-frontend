@@ -5,6 +5,7 @@ import ToolMixin from "../mixins/Tool";
 import { MultipleClicksDrawingTool } from "../mixins/DrawingTool";
 import { NodeViews } from "../components/Node/Node";
 import { observe } from "mobx";
+import { FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const _Tool = types
   .model("PolygonTool", {
@@ -16,6 +17,7 @@ const _Tool = types
       createRegionOptions: self.createRegionOptions,
       isIncorrectControl: self.isIncorrectControl,
       isIncorrectLabel: self.isIncorrectLabel,
+      startDrawing: self.startDrawing,
     };
 
     return {
@@ -61,6 +63,17 @@ const _Tool = types
           points: [[x, y]],
           width: 10,
         });
+      },
+
+      startDrawing(x, y) {
+        if (isFF(FF_DEV_2432)) {
+          self.annotation.history.freeze();
+          self.mode = "drawing";
+
+          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
+        } else {
+          Super.startDrawing(x, y);
+        }
       },
 
       isIncorrectControl() {

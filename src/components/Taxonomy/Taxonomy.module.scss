@@ -67,9 +67,11 @@
   box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
 
   input[type="checkbox"] {
-    margin:  7px 4px 0 0 ;
+    margin-right: 4px;
     font-size: 20px;
     line-height: 30px;
+    width: 0.7em;
+    height: 1.4em;
 
     &:disabled {
       opacity: 0.5;

@@ -217,6 +217,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
               onChange={e => setSelected(path, e.currentTarget.checked)}
             />
             <label
+              htmlFor={id}
               style={{ maxWidth: `${labelMaxWidth}px` }}
               onClick={onClick}
               title={title}

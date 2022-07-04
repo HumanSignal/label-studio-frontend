@@ -1,7 +1,7 @@
 import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
-import EditorSettings from "../core/settings/editorsettings.json";
+import EditorSettings from "../core/settings/editorsettings";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
@@ -60,6 +60,8 @@ const SettingsModel = types
     preserveSelectedTool: types.optional(types.boolean, true),
 
     enableSmoothing: types.optional(types.boolean, true),
+
+    deselectRegionOnOutsideClick: types.optional(types.boolean, false),
   })
   .views(self => ({
     get annotation() {
@@ -203,6 +205,10 @@ const SettingsModel = types
 
     toggleSmoothing() {
       self.enableSmoothing = !self.enableSmoothing;
+    },
+
+    toggleRegionDeselect() {
+      self.deselectRegionOnOutsideClick = !self.deselectRegionOnOutsideClick;
     },
 
     setSmoothing(value) {
