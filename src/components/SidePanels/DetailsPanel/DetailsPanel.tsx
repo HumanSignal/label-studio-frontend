@@ -48,7 +48,7 @@ const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
           <span>#{currentEntity.pk ?? currentEntity.id}</span>
         </Elem>
         <Elem name="section-content">
-          <AnnotationHistory inline/>
+          <AnnotationHistory inline />
         </Elem>
       </Elem>
       <Elem name="section">
