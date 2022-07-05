@@ -74,6 +74,7 @@ export const Annotation = types
     }),
 
     readonly: types.optional(types.boolean, false),
+    isDrawing: types.optional(types.boolean, false),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
@@ -206,6 +207,10 @@ export const Annotation = types
 
     setReadonly(val) {
       self.readonly = val;
+    },
+
+    setIsDrawing(isDrawing) {
+      self.isDrawing = isDrawing;
     },
 
     setGroundTruth(value, ivokeEvent = true) {

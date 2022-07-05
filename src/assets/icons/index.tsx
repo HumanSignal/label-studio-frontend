@@ -42,6 +42,8 @@ export { ReactComponent as IconPolygonTool } from './tools/polygon-tool.svg';
 export { ReactComponent as IconPolygonToolSmart } from './tools/polygon-tool-smart.svg';
 export { ReactComponent as IconRectangleTool } from './tools/rectangle-tool.svg';
 export { ReactComponent as IconRectangleToolSmart } from './tools/rectangle-tool-smart.svg';
+export { ReactComponent as IconRectangle3PointTool } from './tools/rectangle-3point-tool.svg';
+export { ReactComponent as IconRectangle3PointToolSmart } from './tools/rectangle-3point-tool-smart.svg';
 export { ReactComponent as IconEraserTool } from './tools/eraser-tool.svg';
 export { ReactComponent as IconHandTool } from './tools/hand-tool.svg';
 export { ReactComponent as IconBrightnessTool } from "./tools/brightness-tool.svg";

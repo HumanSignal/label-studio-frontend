@@ -6,9 +6,10 @@ interface TimeSyncHandler {
   play: () => void;
   pause: () => void;
   seek: (time: number) => void;
+  speed: (speed: number) => void;
 }
 
-type TimeSyncEvent = "play" | "pause" | "seek";
+type TimeSyncEvent = "play" | "pause" | "seek" | "speed";
 
 export class TimeSyncSubscriber {
   private name: string;
@@ -19,6 +20,7 @@ export class TimeSyncSubscriber {
 
   playing = false;
   currentTime = 0;
+  currentSpeed = 1;
 
   constructor(name: string, sync: TimeSync, object: any) {
     this.name = name;
@@ -49,6 +51,7 @@ export class TimeSyncSubscriber {
 
     // Initial sync
     this.currentTime = this.sync.members.get(target)?.currentTime ?? this.currentTime;
+    this.currentSpeed = this.sync.members.get(target)?.currentSpeed ?? this.currentSpeed;
     this.playing = this.sync.members.get(target)?.playing ?? this.playing;
   }
 
@@ -85,6 +88,15 @@ export class TimeSyncSubscriber {
     this.whenUnlocked("seek", () => {
       this.events.invoke("seek", time);
       this.subscribers.forEach(sub => sub.seek(this.currentTime));
+    });
+  }
+
+  speed(speed: number) {
+    this.currentSpeed = speed;
+
+    this.whenUnlocked("speed", () => {
+      this.events.invoke("speed", speed);
+      this.subscribers.forEach(sub => sub.speed(this.currentSpeed));
     });
   }
 

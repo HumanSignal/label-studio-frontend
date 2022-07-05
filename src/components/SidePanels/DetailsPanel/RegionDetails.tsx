@@ -11,7 +11,7 @@ import "./RegionDetails.styl";
 const { Text, Paragraph } = Typography;
 
 const RegionLabels: FC<{result: any}> = ({ result }) => {
-  const labels: any[] = result.selectedLabels;
+  const labels: any[] = result.selectedLabels || []; // ensure labels is not underfined
   const showLabels = labels.length > 1;
 
   return (

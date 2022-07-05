@@ -45,36 +45,38 @@ export default observer(({
             <RadioGroup.Button value="labels">Labels</RadioGroup.Button>
           </RadioGroup>
 
-          <Tooltip title="Delete All Regions">
-            <Button
-              look="danger"
-              type="text"
-              aria-label="Delete All Regions"
-              icon={<LsTrash/>}
-              style={{
-                height: 36,
-                width: 36,
-                padding: 0,
-              }}
-              onClick={() => {
-                confirm({
-                  title: "Removing all regions",
-                  body: "Do you want to delete all annotated regions?",
-                  buttonLook: "destructive",
-                  onOk: () => annotation.deleteAllRegions(),
-                });
-              }}/>
-          </Tooltip>
+          {annotation.editable && !annotation.readonly && (
+            <Tooltip title="Delete All Regions">
+              <Button
+                look="danger"
+                type="text"
+                aria-label="Delete All Regions"
+                icon={<LsTrash />}
+                style={{
+                  height: 36,
+                  width: 36,
+                  padding: 0,
+                }}
+                onClick={() => {
+                  confirm({
+                    title: "Removing all regions",
+                    body: "Do you want to delete all annotated regions?",
+                    buttonLook: "destructive",
+                    onOk: () => annotation.deleteAllRegions(),
+                  });
+                }} />
+            </Tooltip>
+          )}
         </Space>
       </Elem>
 
       {count ? (
         <Elem name="header">
           <Space spread align={regionStore.view === "regions" ? null : "end"}>
-            {regionStore.view === "regions"  && (
-              <Dropdown overlay={<SortMenu regionStore={regionStore}/>} placement="bottomLeft">
+            {regionStore.view === "regions" && (
+              <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
                 <Elem name="sort" onClick={e => e.preventDefault()}>
-                  <Elem name="sort-icon"><SortMenuIcon sortKey={regionStore.sort}/></Elem> {`Sorted by ${regionStore.sort[0].toUpperCase()}${regionStore.sort.slice(1)}`}
+                  <Elem name="sort-icon"><SortMenuIcon sortKey={regionStore.sort} /></Elem> {`Sorted by ${regionStore.sort[0].toUpperCase()}${regionStore.sort.slice(1)}`}
                 </Elem>
               </Dropdown>
             )}
@@ -89,7 +91,7 @@ export default observer(({
                   style={{ padding: 0 }}
                   onClick={toggleVisibility}
                   mod={{ hidden: regionStore.isAllHidden }}
-                >{regionStore.isAllHidden ? <LsInvisible/> : <LsVisible/>}</Elem>
+                >{regionStore.isAllHidden ? <LsInvisible /> : <LsVisible />}</Elem>
               ) : null}
 
 
@@ -101,10 +103,10 @@ export default observer(({
 
       <Oneof value={regionStore.view}>
         <Elem name="regions" case="regions">
-          {count ? <RegionTree regionStore={regionStore}/> : <Elem name="empty">No Regions created yet</Elem>}
+          {count ? <RegionTree regionStore={regionStore} /> : <Elem name="empty">No Regions created yet</Elem>}
         </Elem>
         <Elem name="labels" case="labels">
-          {count ? <LabelList regionStore={regionStore}/> : <Elem name="empty">No Labeled Regions created yet</Elem>}
+          {count ? <LabelList regionStore={regionStore} /> : <Elem name="empty">No Labeled Regions created yet</Elem>}
         </Elem>
       </Oneof>
     </Block>
