@@ -84,10 +84,10 @@ const TagAttrs = types.model({
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
 
-  horizontalAlignment: types.optional(types.string, "left"),
-  verticalAlignment: types.optional(types.string, "top"),
+  horizontalAlignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
+  verticalAlignment: types.optional(types.enumeration(["top", "middle", "bottom"]), "top"),
   precisionZoom: types.optional(types.boolean, false),
-  size: types.optional(types.string, "fit"),
+  size: types.optional(types.enumeration(["auto", "fit"]), "fit"),
   constrainRegions: types.optional(types.boolean, true),
 });
 

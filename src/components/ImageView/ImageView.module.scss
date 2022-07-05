@@ -88,8 +88,8 @@
 
 .container {
   overflow: hidden;
+  position: relative;
   width: 100%;
-
     // padding hack to fill the empty space with given aspect ratio
     // see ImageView.render()
   .frame {
