@@ -447,19 +447,6 @@ const Taxonomy = ({
     return { ...options, maxUsagesReached, onAddLabel, onDeleteLabel };
   }, [options, options.maxUsages, options.maxUsages ? selected : 0]);
 
-  useEffect(() => {
-    setInternalSelected(externalSelected);
-  }, [externalSelected]);
-
-  useEffect(() => {
-    document.body.addEventListener("click", onClickOutside, true);
-    document.body.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.removeEventListener("click", onClickOutside);
-      document.body.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
-
   const onKeyDown = useCallback(e => {
     const taxonomyList: NodeListOf<HTMLElement> | undefined = taxonomyRef.current?.querySelectorAll('.item');
     const searchInput = taxonomyRef.current?.querySelector("input");
@@ -492,6 +479,19 @@ const Taxonomy = ({
       default:
         break;
     }   
+  }, []);
+
+  useEffect(() => {
+    setInternalSelected(externalSelected);
+  }, [externalSelected]);
+
+  useEffect(() => {
+    document.body.addEventListener("click", onClickOutside, true);
+    document.body.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.removeEventListener("click", onClickOutside);
+      document.body.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
   return (
