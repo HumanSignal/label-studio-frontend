@@ -70,8 +70,8 @@ interface RowProps {
       name: string,
       padding: number,
       isLeaf: boolean,
+      origin?: any,
     },
-    origin?: any,
     children?: any,
     toggle: (id: string) => void,
     addInside: (id?: string) => void,
@@ -174,9 +174,9 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   }, [item, onDeleteLabel]);
 
   const customClassname =
-    item.origin === "session"
+    item.row.origin === "session"
       ? styles.taxonomy__item_session
-      : item.origin === "user"
+      : item.row.origin === "user"
         ? styles.taxonomy__item_user
         : "";
 
@@ -244,7 +244,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
                           >
                             Add Inside
                           </Menu.Item>
-                          {item.origin === "session" && (
+                          {item.row.origin === "session" && (
                             <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
                               Delete
                             </Menu.Item>
@@ -333,27 +333,28 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   }, [show]);
 
   const dataTransformation = ({
-    node: { children, label, depth, path },
+    node: { children, depth, label, origin, path },
     nestingLevel,
     isFiltering,
     isOpen,
     childCount,
   }: {
-    node: RowItem,
+    node: TaxonomyItem,
     nestingLevel: number,
     isFiltering: boolean,
     isOpen: boolean,
     childCount: number | undefined,
   }) => ({
+    childCount,
     id: `${label}-${depth}`,
+    isFiltering,
     isLeaf: !children?.length,
+    isOpen,
     isOpenByDefault: true,
     name: label,
-    childCount,
     nestingLevel,
+    origin,
     padding: nestingLevel * 10 + 10,
-    isFiltering,
-    isOpen,
     path,
   });
 
