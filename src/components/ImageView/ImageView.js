@@ -453,6 +453,8 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
+    handleDeferredMouseDown = null;
+    deferredClickTimeout = null;
     skipMouseUp = false;
 
     constructor(props) {
@@ -465,11 +467,14 @@ export default observer(
     handleOnClick = e => {
       const { item } = this.props;
     
-      if (self.skipMouseUp) {
-        self.skipMouseUp = false;
+      if (isFF(FF_DEV_1442)) {
+        this.handleDeferredMouseDown?.();
+      }
+      if (this.skipMouseUp) {
+        this.skipMouseUp = false;
         return;
       }
-      
+
       if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
@@ -477,9 +482,26 @@ export default observer(
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
+    resetDeferredClickTimeout = () => {
+      if (this.deferredClickTimeout) {
+        clearTimeout(this.deferredClickTimeout);
+      }
+    }
+
+    handleDeferredClick = (handleDeferredMouseDown, handleDeselection) => {
+      this.handleDeferredMouseDown = () => {
+        if (!handleDeselection()) {
+          handleDeferredMouseDown();
+        } 
+      };
+      this.deferredClickTimeout = setTimeout(() => {
+        this.handleDeferredMouseDown = handleDeferredMouseDown;
+      }, 100);
+    }
+
     handleMouseDown = e => {
       const { item } = this.props;
-      
+  
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
@@ -488,49 +510,72 @@ export default observer(
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
-      const selectedTool = item.getToolsManager().findSelectedTool();
+      const handleMouseDown = () => {
+        if (
+        // create regions over another regions with Cmd/Ctrl pressed
+          item.getSkipInteractions() ||
+          e.target === item.stageRef ||
+          findClosestParent(
+            e.target,
+            el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
+          )
+        ) {
+          window.addEventListener("mousemove", this.handleGlobalMouseMove);
+          window.addEventListener("mouseup", this.handleGlobalMouseUp);
+          const { offsetX: x, offsetY: y } = e.evt;
+          // store the canvas coords for calculations in further events
+          const { left, top } = item.containerRef.getBoundingClientRect();
 
-      // clicking on the stage after there has already been a region selection
-      // should clear selected areas and not continue drawing a new region immediately.
-      if (
-        isFF(FF_DEV_1442) &&
-        this.props.store.settings.deselectRegionOnOutsideClick &&
-        e.target === item.stageRef &&
-        item.annotation.selectedRegions.length > 0 &&
-        [
-          undefined,
-          "EllipseTool",
-          "EllipseTool-dynamic",
-          "RectangleTool",
-          "RectangleTool-dynamic",
-          "PolygonTool",
-          "PolygonTool-dynamic",
-        ].includes(selectedTool?.fullName)
-      ) {
-        item.annotation.unselectAll();
-        self.skipMouseUp = true;
+          this.canvasX = left;
+          this.canvasY = top;
+          item.event("mousedown", e, x, y);
+
+          return true;
+        }
+      };
+
+      if (isFF(FF_DEV_1442)) {
+        const handleDeselection = () => {
+          const selectedTool = item.getToolsManager().findSelectedTool();
+
+          // clicking on the stage after there has already been a region selection
+          // should clear selected areas and not continue drawing a new region immediately.
+          if (
+            e.target === item.stageRef &&
+            item.annotation.selectedRegions.length > 0
+          ) {
+            if (
+              [
+                undefined,
+                "EllipseTool",
+                "EllipseTool-dynamic",
+                "RectangleTool",
+                "RectangleTool-dynamic",
+                "PolygonTool",
+                "PolygonTool-dynamic",
+              ].includes(selectedTool?.fullName) ||
+              ([
+                "Rectangle3PointTool",
+                "Rectangle3PointTool-dynamic",
+              ].includes(selectedTool?.fullName) &&
+              !selectedTool.isDrawing)
+            ) {
+              item.annotation.unselectAll();
+              this.skipMouseUp = true;
+              return true;
+            }
+          }
+          return false;
+        };
+
+        this.handleDeferredClick(handleMouseDown, handleDeselection);
         return;
       }
 
-      if (
-        // create regions over another regions with Cmd/Ctrl pressed
-        item.getSkipInteractions() ||
-        e.target === item.stageRef ||
-        findClosestParent(
-          e.target,
-          el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
-        )
-      ) {
-        window.addEventListener("mousemove", this.handleGlobalMouseMove);
-        window.addEventListener("mouseup", this.handleGlobalMouseUp);
-        const { offsetX: x, offsetY: y } = e.evt;
-        // store the canvas coords for calculations in further events
-        const { left, top } = item.containerRef.getBoundingClientRect();
+      const result = handleMouseDown();
 
-        this.canvasX = left;
-        this.canvasY = top;
-        return item.event("mousedown", e, x, y);
-      }
+      if (result) return result;
+
       return true;
     };
 
@@ -565,6 +610,10 @@ export default observer(
      */
     handleMouseUp = e => {
       const { item } = this.props;
+
+      if (isFF(FF_DEV_1442)) {
+        this.resetDeferredClickTimeout();
+      }
   
       item.freezeHistory();
       item.setSkipInteractions(false);
