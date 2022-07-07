@@ -155,9 +155,8 @@ const DrawingTool = types
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        const currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
 
-        self.currentArea = currentArea;
+        self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
         if (!self.beforeCommitDrawing()) {

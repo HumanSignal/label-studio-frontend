@@ -113,7 +113,16 @@ const Model = types
       const el = self.wsRegionElement(wsRegion);
 
       if (!el) return;
-      const classes = [el.className, "htx-highlight", "htx-highlight-last"];
+
+      const lastClassList = el.className.split(' ');
+
+      for(const obj in lastClassList){
+        if(lastClassList[obj].indexOf('htx-label') >= 0){
+          lastClassList.splice(obj, 1);
+        }
+      }
+
+      const classes = [...new Set([...lastClassList, "htx-highlight", "htx-highlight-last"])];
 
       if (!self.parent.showlabels && !settings.showLabels) {
         classes.push("htx-no-label");
@@ -125,6 +134,7 @@ const Model = types
 
         classes.push(cssCls);
       }
+
       el.className = classes.filter(Boolean).join(" ");
     },
 

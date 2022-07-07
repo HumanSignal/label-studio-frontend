@@ -66,11 +66,12 @@ const useDataTree = ({
   rootClass,
   selectedKeys,
 }: any) => {
-  const processor = useCallback((item: any, idx) => {
+  const processor = useCallback((item: any, idx, _false, _null, _onClick, groupId) => {
     const { id, type, hidden } = item;
     const style = item.background ?? item.getOneColor();
     const color = chroma(style ?? "#666").alpha(1);
     const mods: Record<string, any> = { hidden, type };
+    const key = `${id}${groupId ?? ''}`;
     const label = (() => {
       if (type.match('label')) {
         return item.value;
@@ -83,7 +84,7 @@ const useDataTree = ({
 
     return {
       idx,
-      key: id,
+      key,
       type,
       label,
       hidden,
