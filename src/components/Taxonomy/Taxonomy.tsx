@@ -58,7 +58,7 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
-  dimensionCallback: (renderedWidth: number, renderedHeight: number) => void;
+  dimensionCallback: (ref:any) => void;
   maxWidth: number;
   item: {
     row: {
@@ -74,7 +74,6 @@ interface RowProps {
     },
     children?: any,
     toggle: (id: string) => void,
-    onSelect: (id: string) => void,
     addInside: (id?: string) => void,
   };
 }
@@ -139,7 +138,6 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
-    onSelect,
     addInside: addChild,
   } = item;
 
@@ -165,10 +163,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
     el => {
       if (!el) return;
       if (checked) el.indeterminate = false;
-      else {
-        el.indeterminate = isChildSelected;
-        onSelect(id);
-      }
+      else el.indeterminate = isChildSelected;
     },
     [checked, isChildSelected],
   );
@@ -196,8 +191,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
     
     if (container) {
       container.toggle = toggle;
-      container.select = onSelect;
-      dimensionCallback(container.scrollWidth, container.scrollHeight );
+      dimensionCallback(container);
     }
   }, []);
   
@@ -374,19 +368,17 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         onInput={onInput}
         ref={inputRef}
       />
-      {show && (
-        <TreeStructure
-          items={list}
-          rowComponent={Item}
-          flatten={search !== ""}
-          rowHeight={30}
-          defaultExpanded={false}
-          maxHeightPercentage={50}
-          minWidth={Number(minWidth) || 200}
-          maxWidth={Number(maxWidth) || 600}
-          transformationCallback={dataTransformation}
-        />
-      )}
+      <TreeStructure
+        items={list}
+        rowComponent={Item}
+        flatten={search !== ""}
+        rowHeight={30}
+        defaultExpanded={false}
+        maxHeightPercentage={50}
+        minWidth={Number(minWidth) || 200}
+        maxWidth={Number(maxWidth) || 600}
+        transformationCallback={dataTransformation}
+      />
       {onAddLabel && search === "" && (
         <div className={styles.taxonomy__add__container}>
           {isAdding ? (
@@ -462,8 +454,6 @@ const Taxonomy = ({
     const index = (taxonomyList && focusedElement) ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id)) : -1;
     const shiftFocus = (index: number, shift: number) => taxonomyHasItems && taxonomyList[index + shift].focus();
 
-    console.log(e.key);
-
     switch (e.key) {
       case "Escape":
         close();
@@ -481,9 +471,9 @@ const Taxonomy = ({
         if (index > 0) shiftFocus(index, -1);
         else if (index === 0) searchInput && searchInput.focus();
         break;
-      case "Shift":
+      case "ArrowRight":
         if (index >= 0) focusedElement.parentNode?.parentNode?.toggle(focusedElement.id);
-        if (searchInput) searchInput.focus();
+        searchInput && searchInput.focus();
         break;
       default:
         break;
