@@ -77,7 +77,8 @@
   user-select: none;
 
   & > * {
-    visibility: hidden;
+    visibility: hidden !important;
+    opacity: 0;
     height: 1px;
     user-select: none;
   }
