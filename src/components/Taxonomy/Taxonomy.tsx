@@ -74,6 +74,7 @@ interface RowProps {
     },
     children?: any,
     toggle: (id: string) => void,
+    onSelect: (id: string) => void,
     addInside: (id?: string) => void,
   };
 }
@@ -138,6 +139,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
+    onSelect,
     addInside: addChild,
   } = item;
 
@@ -163,7 +165,10 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
     el => {
       if (!el) return;
       if (checked) el.indeterminate = false;
-      else el.indeterminate = isChildSelected;
+      else {
+        el.indeterminate = isChildSelected;
+        onSelect(id);
+      }
     },
     [checked, isChildSelected],
   );
@@ -191,6 +196,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
     
     if (container) {
       container.toggle = toggle;
+      container.select = onSelect;
       dimensionCallback(container.scrollWidth, container.scrollHeight );
     }
   }, []);
@@ -455,6 +461,8 @@ const Taxonomy = ({
     const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
     const index = (taxonomyList && focusedElement) ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id)) : -1;
     const shiftFocus = (index: number, shift: number) => taxonomyHasItems && taxonomyList[index + shift].focus();
+
+    console.log(e.key);
 
     switch (e.key) {
       case "Escape":
