@@ -284,9 +284,10 @@ export default types.model("RegionStore", {
         for(const label of labels) {
           const key = `${label.value}#${label.id}`;
           const group = getLabelGroup(label, key);
-
+          const groupId = group.id;
+            
           group.children.push({
-            ...enrich(region, index, false, null, onClick),
+            ...enrich(region, index, false, null, onClick, groupId),
             item: region,
             isArea: true,
           });

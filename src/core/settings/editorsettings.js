@@ -47,10 +47,5 @@ export default {
     "onChangeEvent": "toggleSmoothing",
     "defaultValue": true,
   },
-  ...(isFF(FF_DEV_1442) ? ({ "deselectRegionOnOutsideClick": {
-    "description": "Deselect region when clicking outside of it",
-    "onChangeEvent": "toggleRegionDeselect",
-    "defaultValue": false, 
-  } }) : null),
 };
 
