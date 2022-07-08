@@ -90,7 +90,8 @@ const TreeStructure = ({
   const containerRef = useRef<RefObject<HTMLDivElement> | any>();
   const scrollableElement = containerRef.current?.firstChild;
   
-  if(scrollableElement) scrollableElement.style.overflowX = "hidden";
+  if (scrollableElement) scrollableElement.style.overflowX = "hidden";
+
   const rowHeightCalc = (index: number): number => {
     return heightAccumulator[`${index}`] || rowHeight;
   };
@@ -169,10 +170,10 @@ const TreeStructure = ({
       const itemWidth = rowRef.offsetWidth + scrollbarWidth + 5;
       const itemHeight = rowRef.scrollHeight;
 
-      if (width < itemWidth ) {
+      if (width < itemWidth) {
         if (maxWidth < itemWidth) {
           heightAccumulator[key] = itemHeight;
-          setWidth(maxWidth );
+          setWidth(maxWidth);
         } else {
           heightAccumulator[key] = rowHeight;
           setWidth(itemWidth);
@@ -206,7 +207,6 @@ const TreeStructure = ({
       const addInside = addInsideId === id;
       const isOpen = (toggleItem && toggleItem[id]) || openNodes[id] || addInside || (defaultExpanded ? 1 : 2);
       
-      console.log(items[i]);
       const transformedData: ExtendedData = transformationCallback({
         node: items[i],
         nestingLevel: definedDepth,

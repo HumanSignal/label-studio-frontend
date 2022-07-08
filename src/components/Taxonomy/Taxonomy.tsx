@@ -58,7 +58,7 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
-  dimensionCallback: (ref:any) => void;
+  dimensionCallback: (ref: any) => void;
   maxWidth: number;
   item: {
     row: {
@@ -451,7 +451,9 @@ const Taxonomy = ({
     const searchInput = taxonomyRef.current?.querySelector("input");
     const focusedElement: HTMLInputElement | Element | any  = document.activeElement || undefined;
     const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
-    const index = (taxonomyList && focusedElement) ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id)) : -1;
+    const index = (taxonomyList && focusedElement)
+      ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id))
+      : -1;
     const shiftFocus = (index: number, shift: number) => taxonomyHasItems && taxonomyList[index + shift].focus();
     // to not scroll the dropdown during jumping over checkboxes
     const dontDoubleScroll = (e: KeyboardEvent) => {
