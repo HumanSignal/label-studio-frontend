@@ -104,6 +104,15 @@
   width: calc(100% - 100px);
 }
 
+.taxonomy__measure {
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+  display: flex;
+  padding-left: 43px;
+  padding-right: 60px;
+};
+
 .taxonomy__item {
   display: flex;
   &:focus-within {
@@ -127,12 +136,6 @@
   width: max-content;
   line-height: 2em;
   padding-right: 8px;
-}
-
-.taxonomy__item .width_check {
-  visibility: hidden;
-  position: absolute;
-  pointer-events: none;
 }
 
 .taxonomy__grouping {
