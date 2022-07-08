@@ -453,6 +453,10 @@ const Taxonomy = ({
     const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
     const index = (taxonomyList && focusedElement) ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id)) : -1;
     const shiftFocus = (index: number, shift: number) => taxonomyHasItems && taxonomyList[index + shift].focus();
+    // to not scroll the dropdown during jumping over checkboxes
+    const dontDoubleScroll = (e: KeyboardEvent) => {
+      if (["text", "checkbox"].includes((e.target as HTMLInputElement).type)) e.preventDefault();
+    };
 
     switch (e.key) {
       case "Escape":
@@ -460,6 +464,7 @@ const Taxonomy = ({
         e.stopPropagation();
         break;
       case "ArrowDown":
+        dontDoubleScroll(e);
         if (e.shiftKey) {
           setOpen(true);
           searchInput && searchInput.focus();
@@ -468,6 +473,7 @@ const Taxonomy = ({
         if (searchInput === focusedElement) shiftFocus(0, 0);
         break;
       case "ArrowUp":
+        dontDoubleScroll(e);
         if (index > 0) shiftFocus(index, -1);
         else if (index === 0) searchInput && searchInput.focus();
         break;
