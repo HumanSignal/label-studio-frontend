@@ -37,15 +37,19 @@ const RelationItem: FC<{relation: any}> = observer(({ relation }) => {
   const [hovered, setHovered] = useState(false);
 
   const onMouseEnter= useCallback(() => {
-    setHovered(true);
-    relation.toggleHighlight();
-    relation.setSelfHighlight(true);
+    if(!!relation.node1 && !!relation.node2){
+      setHovered(true);
+      relation.toggleHighlight();
+      relation.setSelfHighlight(true);
+    }
   }, []);
 
   const onMouseLeave = useCallback(() => {
-    setHovered(false);
-    relation.toggleHighlight();
-    relation.setSelfHighlight(false);
+    if(!!relation.node1 && !!relation.node2){
+      setHovered(false);
+      relation.toggleHighlight();
+      relation.setSelfHighlight(false);
+    }
   }, []);
 
   const directionIcon = useMemo(() => {
@@ -105,7 +109,11 @@ const RelationItem: FC<{relation: any}> = observer(({ relation }) => {
           </Elem>
           <Elem name="action">
             {hovered && (
-              <Button type="text" danger>
+              <Button type="text" danger onClick={() => {
+                relation.node1.setHighlight(false);
+                relation.node2.setHighlight(false);
+                relation.parent.deleteRelation(relation);
+              }}>
                 <IconTrash/>
               </Button>
             )}
