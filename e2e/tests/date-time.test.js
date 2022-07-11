@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 
-const { initLabelStudio, serialize, selectText } = require("./helpers");
+const { serialize, selectText } = require("./helpers");
 
 const assert = require("assert");
 
@@ -35,14 +35,13 @@ const annotations = [
   { label: 'event', rangeStart: 728, rangeEnd: 755, text: '1921 Nobel Prize in Physics', date: '10101921', dateValue: '1921-10-10', year: '2020' },
 ];
 
-Scenario("Check DateTime holds state between annotations and saves result", async function({ I }) {
-  const params = {
-    config,
-    data,
-  };
+const params = { config, data };
+
+Scenario("Check DateTime holds state between annotations and saves result", async function({ I, LabelStudio }) {
 
   I.amOnPage("/");
-  I.executeScript(initLabelStudio, params);
+
+  LabelStudio.init(params);
 
   annotations.forEach(annotation => {
     I.click(locate("span").withText(annotation.label));

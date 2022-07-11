@@ -369,6 +369,6 @@ const HtxDateTime = inject("store")(
   }),
 );
 
-if (isFF(FF_DEV_117)) Registry.addTag("datetime", DateTimeModel, HtxDateTime);
+Registry.addTag("datetime", DateTimeModel, HtxDateTime);
 
 export { HtxDateTime, DateTimeModel };
