@@ -50,6 +50,11 @@ import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
+ * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
+ * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "middle" or "bottom"
+ * @param {boolean} [precisionZoom=false]       - Displays image pixels when zooming in
+ * @param {string} [size="fit"]                 - Specify the initial size of the image within the viewport while preserving it’s ratio. Can be one of "auto" or "fit"
+ * @param {boolean} [constrainRegions=true]     - Constrains the regions transformations to the canvas
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -78,6 +83,12 @@ const TagAttrs = types.model({
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
+
+  horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
+  verticalalignment: types.optional(types.enumeration(["top", "middle", "bottom"]), "top"),
+  precisionzoom: types.optional(types.boolean, false),
+  size: types.optional(types.enumeration(["auto", "fit"]), "fit"),
+  constrainregions: types.optional(types.boolean, true),
 });
 
 const IMAGE_CONSTANTS = {
@@ -697,6 +708,22 @@ const Model = types.model({
       self.zoomingPositionY = clamp(y, min.y, 0);
     },
 
+    sizeToFit() {
+      const { containerHeight, containerWidth, naturalHeight, naturalWidth } = self;
+      const heightRatio = containerHeight / naturalHeight;
+      const widthRatio = containerWidth / naturalWidth;
+
+      self.setZoom(Math.min(heightRatio, widthRatio));
+      self.setZoomPosition(0, 0);
+      self.updateImageAfterZoom();
+    },
+
+    sizeToAuto() {
+      self.setZoom(1);
+      self.setZoomPosition(0, 0);
+      self.updateImageAfterZoom();
+    },
+
     handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
       if (val) {
         let zoomScale = self.currentZoom;
@@ -852,6 +879,11 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
+      if(self.size === "fit") {
+        self.sizeToFit();
+      } else {
+        self.sizeToAuto();
+      }
       setTimeout(self.annotation.reinitHistory, 0);
     },
 
