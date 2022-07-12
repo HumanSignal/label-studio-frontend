@@ -72,6 +72,9 @@ export const Annotation = types
     regionStore: types.optional(RegionStore, {
       regions: [],
     }),
+
+    readonly: types.optional(types.boolean, false),
+    isDrawing: types.optional(types.boolean, false),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
@@ -200,6 +203,14 @@ export const Annotation = types
 
     setEdit(val) {
       self.editable = val;
+    },
+
+    setReadonly(val) {
+      self.readonly = val;
+    },
+
+    setIsDrawing(isDrawing) {
+      self.isDrawing = isDrawing;
     },
 
     setGroundTruth(value, ivokeEvent = true) {
@@ -694,6 +705,7 @@ export const Annotation = types
         to_name: object,
         type: control.resultType,
         value: resultValue,
+        readonly: self.readonly,
       };
 
       const areaRaw = {
@@ -899,6 +911,12 @@ export const Annotation = types
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
+          const { readonly } = obj;
+
+          if(readonly) {
+            self.setReadonly(true);
+          }
+          
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),
