@@ -629,7 +629,14 @@ export default observer(
       this.updateCrosshair(e);
 
       const isMouseWheelClick = e.evt && e.evt.buttons === 4;
-      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+      const isDragging = e.evt && e.evt.buttons === 1;
+      const isShiftDrag = isDragging && e.evt.shiftKey;
+
+      if (isFF(FF_DEV_1442) && isDragging) {
+        this.resetDeferredClickTimeout();
+        this.handleDeferredMouseDown?.();
+        this.handleDeferredMouseDown = null;
+      }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
         item.setSkipInteractions(true);
