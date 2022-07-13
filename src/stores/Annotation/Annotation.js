@@ -13,7 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
@@ -761,7 +761,15 @@ export const Annotation = types
       document.body.style.cursor = "wait";
 
       const result = self.results
-        .map(r => r.serialize(options))
+        .map(r => {
+          const serialized = r.serialize(options);
+
+          if (isFF(FF_DEV_2432) && r.type === "polygonlabels") {
+            serialized.closed = r.area?.closed;
+          }
+
+          return serialized;
+        })
         .filter(Boolean)
         .concat(self.relationStore.serializeAnnotation(options));
 

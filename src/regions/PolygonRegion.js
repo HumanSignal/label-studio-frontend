@@ -21,6 +21,7 @@ import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model({
@@ -30,11 +31,11 @@ const Model = types
     object: types.late(() => types.reference(ImageModel)),
 
     points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
+    closed: false,
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(() => ({
-    closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
@@ -78,7 +79,7 @@ const Model = types
           index,
         }));
       }
-      if (self.points.length > 2) self.closed = true;
+      if (!isFF(FF_DEV_2432) && self.points.length > 2) self.closed = true;
       self.checkSizes();
     },
 
