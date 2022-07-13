@@ -132,12 +132,11 @@ const Model = types
     },
 
     deletePoint(point) {
-      const isNotMyPoint = self.points.includes(point);
       const willNotEliminateClosedShape = self.points.length <= 3 && point.parent.closed;
       const isLastPoint = self.points.length === 1;
       const isSelected = self.selectedPoint === point;
-
-      if (isNotMyPoint || willNotEliminateClosedShape || isLastPoint) return;
+      
+      if (willNotEliminateClosedShape || isLastPoint) return;
       if (isSelected) self.selectedPoint = null;
       destroy(point);
     },
