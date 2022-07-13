@@ -204,6 +204,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
 
   const padding = useMemo(() => {
+    const collapsedPadding = 24;
     const result = {
       paddingLeft: 0,
       paddingRight: 0,
@@ -215,11 +216,13 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
       const visible = !panelsHidden && !data.detached && data.visible;
+      const padding = visible ? data.width : collapsedPadding;
+      const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
 
-      switch (data.alignment) {
-        case "left": return { ...res, paddingLeft: visible ? data.width : 0 };
-        case "right": return { ...res, paddingRight: visible ? data.width : 0 };
-      }
+      return (!data.detached) ? {
+        ...res,
+        [paddingProperty]: padding,
+      } : res;
     }, result);
   }, [
     panelsHidden,
