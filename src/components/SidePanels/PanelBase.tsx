@@ -1,6 +1,6 @@
 import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
-import { IconCollapseLeft } from '../../assets/icons';
+import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
 
 import "./PanelBase.styl";
 import { PanelType } from "./SidePanels";
@@ -105,7 +105,10 @@ export const PanelBase: FC<PanelBaseProps> = ({
     return visible ? {
       height: detached ? height ?? '100%' : '100%',
       width: expanded ? "100%" : width ?? 320,
-    } : {};
+    } : {
+      width: detached ? width ?? 320 : "100%",
+      height: detached ? 26 : undefined, // header height + 1px margin,
+    };
   }, [width, height, visible, detached, expanded]);
 
   const coordinates = useMemo(() => {
@@ -115,7 +118,6 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [detached, left, top, locked]);
 
   const mods = useMemo(() => {
-
     return {
       detached: locked ? false : detached,
       resizing: isDefined(resizing),
@@ -124,6 +126,17 @@ export const PanelBase: FC<PanelBaseProps> = ({
       disabled: locked,
     };
   }, [alignment, visible, detached, resizing, locked]);
+
+  const CurrentIconComponent = useMemo(() => {
+    if (detached) {
+      return visible ? IconOutlinerCollapse : IconOutlinerExpand;
+    }
+
+    switch(alignment) {
+      case "left": return visible ? IconArrowLeft : IconArrowRight;
+      case "right": return visible ? IconArrowRight : IconArrowLeft;
+    }
+  }, [detached, visible, alignment]);
 
   useEffect(() => {
     Object.assign(handlers.current, { onDetach, onResize, onPositionChange, onVisibilityChange, onSnap });
@@ -261,9 +274,13 @@ export const PanelBase: FC<PanelBaseProps> = ({
             name="header"
             onClick={handleExpand}
           >
-            {visible ? (
-              <>{title} {<IconCollapseLeft onClick={handleCollapse}/>}</>
-            ) : icon}
+            <>
+              {(visible || detached) && title}
+
+              <Elem name="toggle" onClick={visible ? handleCollapse : undefined}>
+                <CurrentIconComponent/>
+              </Elem>
+            </>
           </Elem>
         )}
         {visible && (

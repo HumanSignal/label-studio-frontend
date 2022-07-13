@@ -101,7 +101,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     return viewportSizeMatch || screenSizeMatch.matches;
   }, [viewportSizeMatch, screenSizeMatch.matches]);
 
-  const updatePanel = useCallback((name: PanelType, patch: Partial<PanelBBox>) => {
+  const updatePanel = useCallback((
+    name: PanelType,
+    patch: Partial<PanelBBox>,
+  ) => {
     const panel = { ...panelData[name], ...patch };
 
     savePanel(name, panel);
@@ -113,7 +116,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData]);
 
   const onVisibilityChange = useCallback((name: PanelType, visible: boolean) => {
-    updatePanel(name, { visible });
+    const { top, left } = panelData[name];
+    const panelPosition = normalizeOffsets(name, top, left, visible);
+
+    updatePanel(name, { visible, ...panelPosition });
   }, [updatePanel]);
 
   const onDetach = useCallback((name: PanelType, detached: boolean) => {
@@ -138,11 +144,14 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   }, [spaceFree]);
 
-  const normalizeOffsets = (name: PanelType, top: number, left: number) => {
+  const normalizeOffsets = (name: PanelType, top: number, left: number, visible?: boolean) => {
     const panel = panelData[name];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
+    const height = panel.detached
+      ? (visible ?? panel.visible) ? panel.height : 26
+      : 0;
     const normalizedLeft = clamp(left, 0, parentWidth - panel.width);
-    const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - panel.height);
+    const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - height);
 
     return { left: normalizedLeft, top: normalizedTop };
   };
