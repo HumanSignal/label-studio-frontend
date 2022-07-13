@@ -557,12 +557,10 @@ export default observer(
                 "RectangleTool-dynamic",
                 "PolygonTool",
                 "PolygonTool-dynamic",
-              ].includes(selectedTool?.fullName) ||
-              ([
                 "Rectangle3PointTool",
                 "Rectangle3PointTool-dynamic",
               ].includes(selectedTool?.fullName) &&
-              !selectedTool.isDrawing)
+              !selectedTool.isDrawing
             ) {
               return true;
             }
