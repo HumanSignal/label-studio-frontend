@@ -148,12 +148,7 @@ class LSTransformer extends Konva.Transformer {
       this.getStage().content.style.cursor = ``;
     }
 
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('mousemove', this.handleMouseMove);
-      window.removeEventListener('touchmove', this.handleMouseMove);
-      window.removeEventListener('mouseup', this.handleMouseUp, true);
-      window.removeEventListener('touchend', this.handleMouseUp, true);
-    }
+    this.dispose();
 
     const node = this.getNode();
 
@@ -286,6 +281,15 @@ class LSTransformer extends Konva.Transformer {
     };
   }
 
+  dispose(){
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('mousemove', this.handleMouseMove);
+      window.removeEventListener('touchmove', this.handleMouseMove);
+      window.removeEventListener('mouseup', this.handleMouseUp, true);
+      window.removeEventListener('touchend', this.handleMouseUp, true);
+    }
+  }
+
   // Here starts override methods from LSTransform
 
   get _outerBack() {
@@ -310,12 +314,7 @@ class LSTransformer extends Konva.Transformer {
   destroy() {
     this.getStage().content.style.cursor = ``;
 
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('mousemove', this.handleMouseMove);
-      window.removeEventListener('touchmove', this.handleMouseMove);
-      window.removeEventListener('mouseup', this.handleMouseUp, true);
-      window.removeEventListener('touchend', this.handleMouseUp, true);
-    }
+    this.dispose();
 
     super.destroy();
   }
