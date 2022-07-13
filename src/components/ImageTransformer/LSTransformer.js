@@ -5,8 +5,8 @@ import IconRotate from '../../assets/icons/rotate.svg';
 const EVENTS_NAME = "tr-konva";
 
 class LSTransformer extends Konva.Transformer {
-  constructor(props) {
-    super();
+  constructor(config) {
+    super(config);
 
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -14,7 +14,7 @@ class LSTransformer extends Konva.Transformer {
     this.isMouseOver = false;
     this.isMouseDown = false;
 
-    if (props.rotateEnabled)
+    if (config.rotateEnabled)
       this.createRotateButton();
   }
 
@@ -64,12 +64,20 @@ class LSTransformer extends Konva.Transformer {
   }
 
   getCenter(shape) {
+    let shapeHeight = shape.height / 2;
+
+    if(this._movingAnchorName.indexOf('rotate-bottom') >= 0) {
+      shapeHeight = shape.height;
+    }else if(this._movingAnchorName.indexOf('rotate-top') >= 0){
+      shapeHeight = 10;
+    }
+
     return {
       x: shape.x +
           (shape.width / 2) * Math.cos(shape.rotation) +
-          (shape.height / 2) * Math.sin(-shape.rotation),
+          (shapeHeight) * Math.sin(-shape.rotation),
       y: shape.y +
-          (shape.height / 2) * Math.cos(shape.rotation) +
+          (shapeHeight) * Math.cos(shape.rotation) +
           (shape.width / 2) * Math.sin(shape.rotation),
     };
   }
@@ -191,16 +199,22 @@ class LSTransformer extends Konva.Transformer {
     const oldRotation = Konva.getAngle(this.rotation());
 
     if (this._movingAnchorName.indexOf('rotate-bottom') >= 0) {
-      x = anchorNode.x() + (attrs.width);
       y = -anchorNode.y() + (attrs.height);
-    } else {
-      x = anchorNode.x() + (attrs.width);
+    } else if(this._movingAnchorName.indexOf('rotate-top') >= 0) {
       y = -anchorNode.y() + 10;
+    } else {
+      y = -anchorNode.y() + ( attrs.height / 2);
+    }
+
+    if (this._movingAnchorName.indexOf('right') >= 0) {
+      x = anchorNode.x() + (attrs.width / 2);
+    } else {
+      x = -anchorNode.x() + (attrs.width / 2);
     }
 
     delta = Math.atan2(-y, x) + Math.PI;
 
-    if (attrs.width > 0) {
+    if (attrs.height > 0) {
       delta += Math.PI;
     }
 
@@ -235,6 +249,22 @@ class LSTransformer extends Konva.Transformer {
       "bottom-right": {
         x: this.getWidth() + 15,
         y: this.getHeight() + 15,
+      },
+      "center-left": {
+        x: -15,
+        y: this.getHeight() / 2,
+      },
+      "center-right": {
+        x: this.getWidth() + 15,
+        y: this.getHeight() / 2,
+      },
+      "center-left-inside": {
+        x: 15,
+        y: this.getHeight() / 2,
+      },
+      "center-right-inside": {
+        x: this.getWidth() - 15,
+        y: this.getHeight() / 2,
       },
       "top-left-inside": {
         x: 15,
@@ -274,6 +304,19 @@ class LSTransformer extends Konva.Transformer {
     this._outerBack?.off("." + EVENTS_NAME);
 
     super.detach();
+  }
+
+  destroy() {
+    this.getStage().content.style.cursor = ``;
+
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('mousemove', this.handleMouseMove);
+      window.removeEventListener('touchmove', this.handleMouseMove);
+      window.removeEventListener('mouseup', this.handleMouseUp, true);
+      window.removeEventListener('touchend', this.handleMouseUp, true);
+    }
+
+    super.destroy();
   }
 
   update() {
