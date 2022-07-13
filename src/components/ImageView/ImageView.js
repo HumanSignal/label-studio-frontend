@@ -488,14 +488,18 @@ export default observer(
       }
     }
 
-    handleDeferredClick = (handleDeferredMouseDown, handleDeselection) => {
-      this.handleDeferredMouseDown = () => {
-        if (!handleDeselection()) {
+    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, shouldDeselect = false) => {
+      this.handleDeferredMouseDown = (skipDeselect = false) => {
+        if (shouldDeselect && !skipDeselect) {
+          handleDeselection();
+        }  else {
           handleDeferredMouseDown();
-        } 
+        }
       };
       this.deferredClickTimeout = setTimeout(() => {
         this.handleDeferredMouseDown = handleDeferredMouseDown;
+        this.handleDeferredMouseDown?.();
+        this.handleDeferredMouseDown = null;
       }, 100);
     }
 
@@ -535,7 +539,7 @@ export default observer(
       };
 
       if (isFF(FF_DEV_1442)) {
-        const handleDeselection = () => {
+        const shouldDeselect = () => {
           const selectedTool = item.getToolsManager().findSelectedTool();
 
           // clicking on the stage after there has already been a region selection
@@ -560,15 +564,18 @@ export default observer(
               ].includes(selectedTool?.fullName) &&
               !selectedTool.isDrawing)
             ) {
-              item.annotation.unselectAll();
-              this.skipMouseUp = true;
               return true;
             }
           }
           return false;
         };
 
-        this.handleDeferredClick(handleMouseDown, handleDeselection);
+        const handleDeselection = () => {
+          item.annotation.unselectAll();
+          this.skipMouseUp = true;
+        };
+
+        this.handleDeferredClick(handleMouseDown, handleDeselection, shouldDeselect());
         return;
       }
 
@@ -634,7 +641,7 @@ export default observer(
 
       if (isFF(FF_DEV_1442) && isDragging) {
         this.resetDeferredClickTimeout();
-        this.handleDeferredMouseDown?.();
+        this.handleDeferredMouseDown?.(true);
         this.handleDeferredMouseDown = null;
       }
 
