@@ -14,6 +14,7 @@ class LSTransformer extends Konva.Transformer {
     this.isMouseOver = false;
     this.isMouseDown = false;
 
+
     if (config.rotateEnabled)
       this.createRotateButton();
   }

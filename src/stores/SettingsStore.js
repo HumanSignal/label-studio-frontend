@@ -1,7 +1,7 @@
 import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
-import EditorSettings from "../core/settings/editorsettings.json";
+import EditorSettings from "../core/settings/editorsettings";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
