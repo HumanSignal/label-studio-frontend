@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, FF_DEV_1442, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_2504, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -829,6 +829,12 @@ export default observer(
       if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
         containerStyle["imageRendering"] = 'pixelated';
       }
+      
+      const imagePositionClassnames = isFF(FF_DEV_2504) ? [
+        styles["image_position"],
+        styles[`image_position__${item.verticalalignment}`],
+        styles[`image_position__${item.horizontalalignment}`],
+      ] :[];
 
       const {
         brushRegions,
@@ -878,9 +884,7 @@ export default observer(
             <div
               className={[
                 styles.frame,
-                styles["image_position"],
-                styles[`image_position__${item.verticalalignment}`],
-                styles[`image_position__${item.horizontalalignment}`],
+                ...imagePositionClassnames,
               ].join(" ")}
               style={item.canvasSize}
             >
@@ -903,9 +907,7 @@ export default observer(
                   item.setStageRef(ref);
                 }}
                 className={["image-element",
-                  styles["image_position"],
-                  styles[`image_position__${item.verticalalignment}`],
-                  styles[`image_position__${item.horizontalalignment}`],
+                  ...imagePositionClassnames,
                 ].join(" ")}
                 width={item.canvasSize.width}
                 height={item.canvasSize.height}
