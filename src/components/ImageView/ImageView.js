@@ -488,9 +488,9 @@ export default observer(
       }
     }
 
-    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, shouldDeselect = false) => {
+    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
       this.handleDeferredMouseDown = (skipDeselect = false) => {
-        if (shouldDeselect && !skipDeselect) {
+        if (eligibleToDeselect && !skipDeselect) {
           handleDeselection();
         }  else {
           handleDeferredMouseDown();
@@ -538,42 +538,30 @@ export default observer(
         }
       };
 
-      if (isFF(FF_DEV_1442)) {
-        const shouldDeselect = () => {
-          const selectedTool = item.getToolsManager().findSelectedTool();
+      const selectedTool = item.getToolsManager().findSelectedTool();
+      const eligibleToolForDeselect = [
+        undefined,
+        "EllipseTool",
+        "EllipseTool-dynamic",
+        "RectangleTool",
+        "RectangleTool-dynamic",
+        "PolygonTool",
+        "PolygonTool-dynamic",
+        "Rectangle3PointTool",
+        "Rectangle3PointTool-dynamic",
+      ].includes(selectedTool?.fullName);
 
-          // clicking on the stage after there has already been a region selection
-          // should clear selected areas and not continue drawing a new region immediately.
-          if (
-            e.target === item.stageRef &&
-            item.annotation.selectedRegions.length > 0
-          ) {
-            if (
-              [
-                undefined,
-                "EllipseTool",
-                "EllipseTool-dynamic",
-                "RectangleTool",
-                "RectangleTool-dynamic",
-                "PolygonTool",
-                "PolygonTool-dynamic",
-                "Rectangle3PointTool",
-                "Rectangle3PointTool-dynamic",
-              ].includes(selectedTool?.fullName) &&
-              !selectedTool.isDrawing
-            ) {
-              return true;
-            }
-          }
-          return false;
-        };
+      if (isFF(FF_DEV_1442) && eligibleToolForDeselect) {
+        const targetIsCanvas = e.target === item.stageRef;
+        const annotationHasSelectedRegions = item.annotation.selectedRegions.length > 0;
+        const eligibleToDeselect = targetIsCanvas && annotationHasSelectedRegions;
 
         const handleDeselection = () => {
           item.annotation.unselectAll();
           this.skipMouseUp = true;
         };
 
-        this.handleDeferredClick(handleMouseDown, handleDeselection, shouldDeselect());
+        this.handleDeferredClick(handleMouseDown, handleDeselection, eligibleToDeselect);
         return;
       }
 
