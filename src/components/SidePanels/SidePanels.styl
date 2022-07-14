@@ -20,15 +20,21 @@
     pointer-events none
 
     &_snap::before
-      top 0
+      top 8px
       left 0
+      bottom 8px
       z-index 10
-      width 10px
-      height 100%
+      width 5px
       content ""
       display block
       position absolute
-      background linear-gradient(var(--snap-rotation), transparent, $accent_color)
+      background $accent_color
+
+    &_align_left&_snap::before
+      border-radius 0 4px 4px 0
+
+    &_align_right&_snap::before
+      border-radius 4px 0 0 4px
 
     &_align
       &_left

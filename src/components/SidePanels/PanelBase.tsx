@@ -41,15 +41,15 @@ interface PanelBaseProps {
   visible: boolean;
   alignment: "left" | "right";
   currentEntity: any;
-  icon: JSX.Element;
   detached: boolean;
   expanded: boolean;
   locked: boolean;
+  zIndex: number;
   onResize: ResizeHandler;
   onSnap: SnapHandler;
-  onDetach: DetachHandler;
   onPositionChange: PositonChangeHandler;
   onVisibilityChange: VisibilityChangeHandler;
+  onPositionChangeBegin: PositonChangeHandler;
 }
 
 export type PanelProps = Omit<PanelBaseProps, PanelBaseExclusiveProps>
@@ -67,26 +67,25 @@ export const PanelBase: FC<PanelBaseProps> = ({
   width,
   height,
   visible,
-  icon,
   detached,
   alignment,
   expanded,
   top,
   left,
+  zIndex,
   locked = false,
   onSnap,
-  onDetach,
   onResize,
   onVisibilityChange,
   onPositionChange,
+  onPositionChangeBegin,
   children,
-  ...props
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
   const [dragLocked, setLocked] = useState(false);
-  const handlers = useRef({ onDetach, onResize, onPositionChange, onVisibilityChange, onSnap });
+  const handlers = useRef({ onResize, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
 
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
@@ -102,14 +101,19 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [onVisibilityChange, dragLocked]);
 
   const style = useMemo(() => {
-    return visible ? {
+    const dynamicStyle = visible ? {
       height: detached ? height ?? '100%' : '100%',
       width: expanded ? "100%" : width ?? 320,
     } : {
       width: detached ? width ?? 320 : "100%",
       height: detached ? 26 : undefined, // header height + 1px margin,
     };
-  }, [width, height, visible, detached, expanded]);
+
+    return {
+      ...dynamicStyle,
+      zIndex,
+    };
+  }, [width, height, visible, detached, expanded, zIndex]);
 
   const coordinates = useMemo(() => {
     return detached && !locked ? {
@@ -122,7 +126,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       detached: locked ? false : detached,
       resizing: isDefined(resizing),
       hidden: !visible,
-      alignment: alignment ?? "left",
+      alignment: detached ? "left" : alignment ?? "left",
       disabled: locked,
     };
   }, [alignment, visible, detached, resizing, locked]);
@@ -139,8 +143,14 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [detached, visible, alignment]);
 
   useEffect(() => {
-    Object.assign(handlers.current, { onDetach, onResize, onPositionChange, onVisibilityChange, onSnap });
-  }, [onDetach, onResize, onPositionChange, onVisibilityChange, onSnap]);
+    Object.assign(handlers.current, {
+      onResize,
+      onPositionChangeBegin,
+      onPositionChange,
+      onVisibilityChange,
+      onSnap,
+    });
+  }, [onResize, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
 
   // Panel positioning
   useDrag({
@@ -158,23 +168,29 @@ export const PanelBase: FC<PanelBaseProps> = ({
         bbox.top - parentBBox.top,
       ];
 
+      handlers.current.onPositionChangeBegin?.(name, top, left, detached);
+
       return { x, y, oX, oY, allowDrag };
     },
 
-    onMouseMove(e, { x, y, oX, oY, allowDrag }) {
-      const [mX, mY] = [e.pageX, e.pageY];
-      const dist = distance(x, mX, y, mY);
+    onMouseMove(e, data) {
+      if (data) {
+        const { x, y, oX, oY } = data;
+        let { allowDrag } = data;
+        const [mX, mY] = [e.pageX, e.pageY];
+        const dist = distance(x, mX, y, mY);
 
-      if (dist > 30) {
-        setLocked(true);
-        allowDrag = true;
+        if (dist > 30) {
+          setLocked(true);
+          allowDrag = true;
+        }
+
+        if (!allowDrag) return;
+
+        const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
+
+        handlers.current.onPositionChange?.(name, nY, nX, true);
       }
-
-      if (!allowDrag) return;
-
-      const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
-
-      handlers.current.onPositionChange?.(name, nY, nX, true);
     },
 
     onMouseUp() {
@@ -224,35 +240,39 @@ export const PanelBase: FC<PanelBaseProps> = ({
         shift,
       };
     },
-    onMouseMove(e, {
-      pos,
-      width: w,
-      height: h,
-      top: t,
-      left: l,
-      resizeDirections,
-      shift,
-    }) {
-      const [sX, sY] = pos;
-      const wMod = resizeDirections.x ? e.pageX - sX : 0;
-      const hMod = resizeDirections.y ? e.pageY - sY : 0;
+    onMouseMove(e, data) {
+      if (data) {
+        const {
+          pos,
+          width: w,
+          height: h,
+          top: t,
+          left: l,
+          resizeDirections,
+          shift,
+        } = data;
 
-      const shiftLeft = ["left", "top-left"].includes(shift);
-      const shiftTop = ["top", "top-left"].includes(shift);
+        const [sX, sY] = pos;
+        const wMod = resizeDirections.x ? e.pageX - sX : 0;
+        const hMod = resizeDirections.y ? e.pageY - sY : 0;
 
-      const width = clamp((shiftLeft ? w - wMod : w + wMod), 320, Infinity);
-      const height = clamp((shiftTop ? h - hMod : h + hMod), 320, Infinity);
+        const shiftLeft = isDefined(shift) && ["left", "top-left"].includes(shift);
+        const shiftTop = isDefined(shift) && ["top", "top-left"].includes(shift);
 
-      const top = shiftTop ? (t + (h - height)) : t;
-      const left = shiftLeft ? (l + (w - width)) : l;
+        const width = clamp((shiftLeft ? w - wMod : w + wMod), 320, Infinity);
+        const height = clamp((shiftTop ? h - hMod : h + hMod), 320, Infinity);
 
-      handlers.current.onResize(
-        name,
-        width,
-        height,
-        top,
-        left,
-      );
+        const top = shiftTop ? (t + (h - height)) : t;
+        const left = shiftLeft ? (l + (w - width)) : l;
+
+        handlers.current.onResize(
+          name,
+          width,
+          height,
+          top,
+          left,
+        );
+      }
     },
     onMouseUp() {
       setResizing(undefined);
@@ -277,7 +297,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
             <>
               {(visible || detached) && title}
 
-              <Elem name="toggle" onClick={visible ? handleCollapse : undefined}>
+              <Elem name="toggle" mod={{ enabled: visible }} onClick={handleCollapse}>
                 <CurrentIconComponent/>
               </Elem>
             </>

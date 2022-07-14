@@ -27,6 +27,7 @@ interface PanelBBox {
   height:  number;
   left: number;
   top: number;
+  zIndex: number;
   visible: boolean;
   detached: boolean;
   alignment: "left" | "right";
@@ -71,6 +72,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   panelsHidden,
   children,
 }) => {
+  const snapTreshold = 5;
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
@@ -80,6 +82,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     outliner: restorePanel("outliner", {
       top: 0,
       left: 0,
+      zIndex: 1,
       width: 320,
       height: 400,
       visible: true,
@@ -89,6 +92,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     details: restorePanel("details", {
       top: 0,
       left: 0,
+      zIndex: 1,
       width: 320,
       height: 400,
       visible: true,
@@ -105,25 +109,25 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     name: PanelType,
     patch: Partial<PanelBBox>,
   ) => {
-    const panel = { ...panelData[name], ...patch };
+    setPanelData((state) => {
+      const panel = { ...state[name], ...patch };
 
-    savePanel(name, panel);
+      savePanel(name, panel);
 
-    setPanelData({
-      ...panelData,
-      [name]: panel,
+      return {
+        ...state,
+        [name]: panel,
+      };
     });
   }, [panelData]);
 
   const onVisibilityChange = useCallback((name: PanelType, visible: boolean) => {
     const { top, left } = panelData[name];
-    const panelPosition = normalizeOffsets(name, top, left, visible);
 
-    updatePanel(name, { visible, ...panelPosition });
-  }, [updatePanel]);
-
-  const onDetach = useCallback((name: PanelType, detached: boolean) => {
-    updatePanel(name, { detached });
+    updatePanel(name, {
+      visible,
+      ...normalizeOffsets(name, top, left, visible),
+    });
   }, [updatePanel]);
 
   const spaceFree = useCallback((alignment: "left" | "right") => {
@@ -132,9 +136,9 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   const checkSnap = useCallback((left: number, parentWidth: number, panelWidth: number) => {
     const right = left + panelWidth;
-    const rightLimit = parentWidth - 10;
+    const rightLimit = parentWidth - snapTreshold;
 
-    if (left >= 0 && left <= 10 && spaceFree('left')) {
+    if (left >= 0 && left <= snapTreshold && spaceFree('left')) {
       setSnap("left");
     } else if (right <= parentWidth && right >= rightLimit  && spaceFree('right')) {
       setSnap("right");
@@ -156,6 +160,23 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     return { left: normalizedLeft, top: normalizedTop };
   };
 
+  const onPositionChangeBegin = useCallback((name: PanelType, top: number, left: number) => {
+    const patch = Object.entries(panelData).reduce<PanelSize>((res, [panelName, panelData]) => {
+      const panel = { ...panelData, zIndex: 1 };
+
+      savePanel(panelName as PanelType, panel);
+      return { ...res, [panelName]: panel };
+    }, { ...panelData });
+
+    patch[name] = {
+      ...patch[name],
+      zIndex: 15,
+    };
+
+    savePanel(name, patch[name]);
+    setPanelData(patch);
+  }, [panelData]);
+
   const onPositionChange = useCallback((name: PanelType, t: number, l:  number, detached: boolean) => {
     const panel = panelData[name];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
@@ -165,7 +186,12 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     if (detached) checkSnap(left, parentWidth, panel.width);
 
     requestAnimationFrame(() => {
-      updatePanel(name, { top, left, detached });
+      updatePanel(name, {
+        top,
+        left,
+        detached,
+        alignment: detached ? undefined : panel.alignment,
+      });
     });
   }, [updatePanel, checkSnap, panelData]);
 
@@ -194,13 +220,13 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   const eventHandlers = useMemo(() => {
     return {
-      onDetach,
       onResize,
       onPositionChange,
       onVisibilityChange,
+      onPositionChangeBegin,
       onSnap,
     };
-  }, [onDetach, onResize, onPositionChange, onVisibilityChange, onSnap]);
+  }, [onResize, onPositionChange, onVisibilityChange, onSnap]);
 
   const commonProps = useMemo(() => {
     return {
@@ -259,6 +285,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         ...panelData,
         ...commonProps,
         icon: <Icon/>,
+        zIndex: panelData.zIndex,
         expanded: sidepanelsCollapsed,
         alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
         locked: sidepanelsCollapsed,
