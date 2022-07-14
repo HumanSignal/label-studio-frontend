@@ -909,7 +909,7 @@ export default observer(
                 ref={ref => {
                   item.setStageRef(ref);
                 }}
-                className={["image-element",
+                className={[styles[`image-element`],
                   ...imagePositionClassnames,
                 ].join(" ")}
                 width={item.canvasSize.width}

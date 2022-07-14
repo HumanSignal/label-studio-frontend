@@ -24,6 +24,7 @@
   flex: 1;
   position: relative;
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   align-self: stretch;
   &__top {
@@ -68,6 +69,10 @@
   font-size: 24px;
 }
 
+.image-element {
+  position: absolute;
+  top: 0;
+}
 
 .image_position {
   position: absolute;
@@ -108,6 +113,7 @@
     position: absolute;
     overflow: hidden;
     height: 0;
+    top: 0;
   }
   .frame_height {
     width: 100%;

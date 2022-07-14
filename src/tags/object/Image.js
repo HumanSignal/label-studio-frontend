@@ -719,14 +719,14 @@ const Model = types.model({
     sizeToFit() {
       self.size = "fit";
       self.setZoom(self.maxScale);
-      self.setZoomPosition(self.containerWidth - self.stageComponentSize.width * self.zoomScale / 2, self.containerHeight - self.stageComponentSize.height * self.zoomScale / 2);
+      self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale) / 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
       self.updateImageAfterZoom();
     },
 
     sizeToAuto() {
       self.size = "auto";
       self.setZoom(1 / self.maxScale);
-      self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale )/ 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
+      self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale) / 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
       self.updateImageAfterZoom();
     },
 
