@@ -17,7 +17,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
 import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
-import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2394, FF_DEV_2504, isFF } from "../../utils/feature-flags";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -659,7 +659,7 @@ const Model = types.model({
       } else { // image > container
         if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
           self.stageZoom = maxScale; // stage squizzed
-          self.zoomScale = scale; // scale image usually
+          self.zoomScale = isFF(FF_DEV_2504) && self.size === "auto" ? scale / maxScale : scale; // scale image for the rest scale : scale image usually
         } else { // negative zoom bigger than image negative scale
           self.stageZoom = scale; // squize stage more
           self.zoomScale = 1; // don't scale image
@@ -713,12 +713,14 @@ const Model = types.model({
       const heightRatio = containerHeight / naturalHeight;
       const widthRatio = containerWidth / naturalWidth;
 
+      self.size = "fit";
       self.setZoom(Math.min(heightRatio, widthRatio));
       self.setZoomPosition(0, 0);
       self.updateImageAfterZoom();
     },
 
     sizeToAuto() {
+      self.size = "auto";
       self.setZoom(1);
       self.setZoomPosition(0, 0);
       self.updateImageAfterZoom();

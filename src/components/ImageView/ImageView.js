@@ -836,6 +836,17 @@ export default observer(
         styles[`image_position__${item.horizontalalignment}`],
       ] :[];
 
+      const wrapperClasses = [
+        styles.wrapperComponent,
+        item.images.length > 1 ? styles.withGallery : styles.wrapper,
+      ];
+
+      if(isFF(FF_DEV_2504)){
+        wrapperClasses.push(styles[`wrapperComponent__${item.verticalalignment}`]);
+        wrapperClasses.push(styles[`wrapperComponent__${item.horizontalalignment}`]);
+      }
+      
+
       const {
         brushRegions,
         shapeRegions,
@@ -856,15 +867,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
-          style={{
-            flex: 1,
-            position: "relative",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            alignSelf: "stretch",
-          }}
+          className={wrapperClasses.join(" ")}
         >
           <div
             ref={node => {
