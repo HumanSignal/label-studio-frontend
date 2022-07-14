@@ -137,10 +137,8 @@ export const PanelBase: FC<PanelBaseProps> = ({
       return visible ? IconOutlinerCollapse : IconOutlinerExpand;
     }
 
-    switch(alignment) {
-      case "left": return visible ? IconArrowLeft : IconArrowRight;
-      case "right": return visible ? IconArrowRight : IconArrowLeft;
-    }
+    if (alignment === 'left') return visible ? IconArrowLeft : IconArrowRight;
+    if (alignment === 'right') return visible ? IconArrowRight : IconArrowLeft;
   }, [detached, visible, alignment]);
 
   const tooltipText = useMemo(() => {
