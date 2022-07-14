@@ -488,14 +488,18 @@ export default observer(
       }
     }
 
-    handleDeferredClick = (handleDeferredMouseDown, handleDeselection) => {
-      this.handleDeferredMouseDown = () => {
-        if (!handleDeselection()) {
+    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
+      this.handleDeferredMouseDown = (skipDeselect = false) => {
+        if (eligibleToDeselect && !skipDeselect) {
+          handleDeselection();
+        }  else {
           handleDeferredMouseDown();
-        } 
+        }
       };
       this.deferredClickTimeout = setTimeout(() => {
         this.handleDeferredMouseDown = handleDeferredMouseDown;
+        this.handleDeferredMouseDown?.();
+        this.handleDeferredMouseDown = null;
       }, 100);
     }
 
@@ -534,41 +538,30 @@ export default observer(
         }
       };
 
-      if (isFF(FF_DEV_1442)) {
-        const handleDeselection = () => {
-          const selectedTool = item.getToolsManager().findSelectedTool();
+      const selectedTool = item.getToolsManager().findSelectedTool();
+      const eligibleToolForDeselect = [
+        undefined,
+        "EllipseTool",
+        "EllipseTool-dynamic",
+        "RectangleTool",
+        "RectangleTool-dynamic",
+        "PolygonTool",
+        "PolygonTool-dynamic",
+        "Rectangle3PointTool",
+        "Rectangle3PointTool-dynamic",
+      ].includes(selectedTool?.fullName);
 
-          // clicking on the stage after there has already been a region selection
-          // should clear selected areas and not continue drawing a new region immediately.
-          if (
-            e.target === item.stageRef &&
-            item.annotation.selectedRegions.length > 0
-          ) {
-            if (
-              [
-                undefined,
-                "EllipseTool",
-                "EllipseTool-dynamic",
-                "RectangleTool",
-                "RectangleTool-dynamic",
-                "PolygonTool",
-                "PolygonTool-dynamic",
-              ].includes(selectedTool?.fullName) ||
-              ([
-                "Rectangle3PointTool",
-                "Rectangle3PointTool-dynamic",
-              ].includes(selectedTool?.fullName) &&
-              !selectedTool.isDrawing)
-            ) {
-              item.annotation.unselectAll();
-              this.skipMouseUp = true;
-              return true;
-            }
-          }
-          return false;
+      if (isFF(FF_DEV_1442) && eligibleToolForDeselect) {
+        const targetIsCanvas = e.target === item.stageRef;
+        const annotationHasSelectedRegions = item.annotation.selectedRegions.length > 0;
+        const eligibleToDeselect = targetIsCanvas && annotationHasSelectedRegions;
+
+        const handleDeselection = () => {
+          item.annotation.unselectAll();
+          this.skipMouseUp = true;
         };
 
-        this.handleDeferredClick(handleMouseDown, handleDeselection);
+        this.handleDeferredClick(handleMouseDown, handleDeselection, eligibleToDeselect);
         return;
       }
 
@@ -629,7 +622,14 @@ export default observer(
       this.updateCrosshair(e);
 
       const isMouseWheelClick = e.evt && e.evt.buttons === 4;
-      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+      const isDragging = e.evt && e.evt.buttons === 1;
+      const isShiftDrag = isDragging && e.evt.shiftKey;
+
+      if (isFF(FF_DEV_1442) && isDragging) {
+        this.resetDeferredClickTimeout();
+        this.handleDeferredMouseDown?.(true);
+        this.handleDeferredMouseDown = null;
+      }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
         item.setSkipInteractions(true);
