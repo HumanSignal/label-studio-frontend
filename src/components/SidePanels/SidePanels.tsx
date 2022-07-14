@@ -34,6 +34,7 @@ interface PanelBBox {
 }
 
 interface PanelView<T extends PanelProps = PanelProps> {
+  title: string;
   component: FC<T>;
   icon: FC;
 }
@@ -57,11 +58,13 @@ const savePanel = (name: PanelType, panelData: PanelBBox) => {
 
 const panelView: Record<PanelType, PanelView> = {
   outliner: {
-    component: OutlinerPanel,
+    title: "Outliner",
+    component: OutlinerPanel as FC<PanelProps>,
     icon: IconHamburger,
   },
   details: {
-    component: DetailsPanel,
+    title: "Details",
+    component: DetailsPanel as FC<PanelProps>,
     icon: IconDetails,
   },
 };
@@ -160,7 +163,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     return { left: normalizedLeft, top: normalizedTop };
   };
 
-  const onPositionChangeBegin = useCallback((name: PanelType, top: number, left: number) => {
+  const onPositionChangeBegin = useCallback((name: PanelType) => {
     const patch = Object.entries(panelData).reduce<PanelSize>((res, [panelName, panelData]) => {
       const panel = { ...panelData, zIndex: 1 };
 
@@ -284,6 +287,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       const props = {
         ...panelData,
         ...commonProps,
+        tooltip: view.title,
         icon: <Icon/>,
         zIndex: panelData.zIndex,
         expanded: sidepanelsCollapsed,

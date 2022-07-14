@@ -1,4 +1,5 @@
 .panel
+  --header-height: 24px
   --header-border-radius 0
   --header-background rgb(242, 242, 242)
 
@@ -43,7 +44,7 @@
 
   &__header
     top 0
-    height 24px
+    height var(--header-height)
     z-index 2
     display flex
     cursor pointer
@@ -79,6 +80,7 @@
     width 24px
     height 24px
     display flex
+    position relative
     align-items center
     justify-content center
     color var(--icon-color)
@@ -89,24 +91,68 @@
     &:hover
       background-color rgba(#096DD9, 0.16)
 
-    ~/_hidden &
-      background-color transparent
+  &:not(&_detached)&_hidden &__toggle
+    pointer-events none
 
-    &:not(&_enabled)
-      pointer-events none
+  &_hidden:not(&_detached) &__toggle
+    background-color transparent
+
+  // Toggle button tooltip styles
+  &:not(&_hidden) &__toggle:hover,
+  &_hidden &__header:hover &__toggle
+    &::before
+      color #fff
+      font-size 16px
+      font-weight 500
+      padding 4px 16px
+      position absolute
+      white-space nowrap
+      border-radius 4px
+      background-color #262626
+      content attr(data-tooltip)
+
+  // Panel is hidden and snapped to one of the sides
+  &_hidden&:not(&_detached)&_alignment_left &__toggle,
+  &_hidden&:not(&_detached)&_alignment_right &__toggle
+    &::before
+      top 50%
+      transform translate(0, -50%)
+
+  &_hidden&:not(&_detached)&_alignment_left &__toggle
+    &::before
+      left calc(100% + 4px)
+
+  &_hidden&:not(&_detached)&_alignment_right &__toggle
+    &::before
+      right calc(100% + 4px)
+
+  // Panel is visible and snapped to one of the sides
+  &:not(&_hidden):not(&_detached) &__toggle
+    &::before
+      left 50%
+      top calc(100% + 4px)
+      transform translate(-50%, 0)
+
+  // Panel is visible and floating
+  &_detached &__toggle
+    &::before
+      left 50%
+      bottom calc(100% + 4px)
+      transform translate(-50%, 0)
 
   &__content
     width 100%
     height 100%
-    overflow auto
-    styled-scrollbars()
 
     ~/_resizing
       pointer-events none
 
   &__body
     z-index 1
+    overflow auto
+    height calc(100% - var(--header-height))
     position relative
+    styled-scrollbars()
 
   &__resizer
     --size 12px

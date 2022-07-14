@@ -34,6 +34,7 @@ interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
   name: PanelType;
   title: string;
+  tooltip: string;
   top: number;
   left: number;
   width: number;
@@ -73,6 +74,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   top,
   left,
   zIndex,
+  tooltip,
   locked = false,
   onSnap,
   onResize,
@@ -141,6 +143,10 @@ export const PanelBase: FC<PanelBaseProps> = ({
       case "right": return visible ? IconArrowRight : IconArrowLeft;
     }
   }, [detached, visible, alignment]);
+
+  const tooltipText = useMemo(() => {
+    return `${visible ? "Collapse" : "Expand"} ${tooltip}`;
+  }, [visible, tooltip]);
 
   useEffect(() => {
     Object.assign(handlers.current, {
@@ -292,12 +298,17 @@ export const PanelBase: FC<PanelBaseProps> = ({
           <Elem
             ref={headerRef}
             name="header"
-            onClick={handleExpand}
+            onClick={!detached && handleExpand}
           >
             <>
               {(visible || detached) && title}
 
-              <Elem name="toggle" mod={{ enabled: visible }} onClick={handleCollapse}>
+              <Elem
+                name="toggle"
+                mod={{ enabled: visible }}
+                onClick={(detached && !visible) ? handleExpand : handleCollapse}
+                data-tooltip={tooltipText}
+              >
                 <CurrentIconComponent/>
               </Elem>
             </>
