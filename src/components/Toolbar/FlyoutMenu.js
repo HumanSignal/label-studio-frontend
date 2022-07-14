@@ -40,7 +40,6 @@ export const FlyoutMenu = ({
   items,
   icon,
 }) => {
-  const [hovered, setHovered] = useState(false);
   const [isClicked, setClicked] = useState(false);
 
   useEffect(() => {
@@ -89,19 +88,13 @@ export const FlyoutMenu = ({
 
   return (
     <Block name="flyoutmenu" tag="div"
-      className={`${hovered || isClicked ? 'hovered' : ''}`}
+      className={`${isClicked ? 'hovered' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
         setClicked(!isClicked);
       }}
-      onMouseEnter={() => {
-        setHovered(true);
-      }}
-      onMouseLeave={() => {
-        setHovered(false);
-      }}
     >
-      <Elem name="icon" className={`${isClicked ? 'isClicked' : ''}`}>
+      <Elem name="icon" className={`${isClicked ? 'isClicked' : ''}`} title="Zoom presets (click to see options)">
         {icon}
       </Elem>
       <Block name="tooltips" 
@@ -113,7 +106,6 @@ export const FlyoutMenu = ({
               e.stopPropagation();
               childItem?.onClick?.();
               setClicked(false);
-              setHovered(false);
             }}
           >
             <Elem name="tooltip-body">
