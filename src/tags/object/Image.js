@@ -717,20 +717,16 @@ const Model = types.model({
     },
 
     sizeToFit() {
-      const { containerHeight, containerWidth, naturalHeight, naturalWidth } = self;
-      const heightRatio = containerHeight / naturalHeight;
-      const widthRatio = containerWidth / naturalWidth;
-
       self.size = "fit";
-      self.setZoom(Math.min(heightRatio, widthRatio));
-      self.setZoomPosition(0, 0);
+      self.setZoom(self.maxScale);
+      self.setZoomPosition(self.containerWidth - self.stageComponentSize.width * self.zoomScale / 2, self.containerHeight - self.stageComponentSize.height * self.zoomScale / 2);
       self.updateImageAfterZoom();
     },
 
     sizeToAuto() {
       self.size = "auto";
       self.setZoom(1 / self.maxScale);
-      self.setZoomPosition(0, 0);
+      self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale )/ 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
       self.updateImageAfterZoom();
     },
 
