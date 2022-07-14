@@ -340,17 +340,17 @@ const Model = types
        *   }
        * }
        * @typedef {Object} BrushRegionResult
-       * @property {number} original_width width of the original image (px)
-       * @property {number} original_height height of the original image (px)
-       * @property {number} image_rotation rotation degree of the image (deg)
+       * @property {number} original_width  - Width of the original image (px)
+       * @property {number} original_height - Height of the original image (px)
+       * @property {number} image_rotation  - Rotation degree of the image (deg)
        * @property {Object} value
-       * @property {"rle"} value.format format of the masks, only RLE is supported for now
-       * @property {number[]} value.rle RLE-encoded image
+       * @property {"rle"} value.format     - Format of the masks, only RLE is supported for now
+       * @property {number[]} value.rle     - RLE-encoded image
        */
 
       /**
        * @param {object} options
-       * @param {boolean} [options.fast] saving only touches, without RLE
+       * @param {boolean} [options.fast] Saving only touches, without RLE
        * @return {BrushRegionResult}
        */
       serialize(options) {

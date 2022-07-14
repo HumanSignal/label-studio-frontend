@@ -12,7 +12,7 @@ import Tree from "../../core/Tree";
 const { Panel } = Collapse;
 
 /**
- * Collapse tag, A content area which can be collapsed and expanded.
+ * Collapse tag, a content area which can be collapsed and expanded.
  * @example
  * <Collapse>
  *   <Panel value="Panel Header">
@@ -20,8 +20,8 @@ const { Panel } = Collapse;
  *   </Panel>
  * </Collapse>
  * @name Collapse
- * @param {boolean} [accordion=true]  - works as an accordion
- * @param {string} [bordered=false]   - shows border
+ * @param {boolean} [accordion=true]  - Works as an accordion
+ * @param {string} [bordered=false]   - Shows border
  */
 const PanelModel = types.model({
   type: "panel",
