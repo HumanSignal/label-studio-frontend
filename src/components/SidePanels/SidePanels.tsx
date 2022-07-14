@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
 import { SidePanelsContext } from "./SidePanelsContext";
+import { DEFAUL_PANEL_HEIGHT, DEFAUL_PANEL_WIDTH } from "./constants";
 
 const maxWindowWidth = 980;
 
@@ -86,8 +87,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       top: 0,
       left: 0,
       zIndex: 1,
-      width: 320,
-      height: 400,
+      width: DEFAUL_PANEL_WIDTH,
+      height: DEFAUL_PANEL_HEIGHT,
       visible: true,
       detached: false,
       alignment: "left",
@@ -96,8 +97,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       top: 0,
       left: 0,
       zIndex: 1,
-      width: 320,
-      height: 400,
+      width: DEFAUL_PANEL_WIDTH,
+      height: DEFAUL_PANEL_HEIGHT,
       visible: true,
       detached: false,
       alignment: "right",
@@ -203,8 +204,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
     requestAnimationFrame(() => {
       updatePanel(name, {
-        width: clamp(w, 320, Infinity),
-        height: clamp(h, 320, Infinity),
+        width: clamp(w, DEFAUL_PANEL_WIDTH, Infinity),
+        height: clamp(h, DEFAUL_PANEL_WIDTH, Infinity),
         top,
         left,
       });

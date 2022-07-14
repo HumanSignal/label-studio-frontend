@@ -6,14 +6,13 @@ import "./PanelBase.styl";
 import { PanelType } from "./SidePanels";
 import { useDrag } from "../../hooks/useDrag";
 import { clamp, isDefined } from "../../utils/utilities";
+import { DEFAUL_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
 
 export type PanelBaseExclusiveProps = "name" | "title"
 
 type ResizeHandler = (name: PanelType, width: number, height: number, top: number, left: number) => void;
 
 type SnapHandler = (name: PanelType) => void
-
-type DetachHandler = (name: PanelType, detached: boolean) => void
 
 type PositonChangeHandler = (name: PanelType, top: number, left: number, detached: boolean) => void;
 
@@ -105,10 +104,10 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
       height: detached ? height ?? '100%' : '100%',
-      width: expanded ? "100%" : width ?? 320,
+      width: expanded ? "100%" : width ?? DEFAUL_PANEL_WIDTH,
     } : {
-      width: detached ? width ?? 320 : "100%",
-      height: detached ? 26 : undefined, // header height + 1px margin,
+      width: detached ? width ?? DEFAUL_PANEL_WIDTH : "100%",
+      height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined, // header height + 1px margin top and bottom,
     };
 
     return {
@@ -265,8 +264,8 @@ export const PanelBase: FC<PanelBaseProps> = ({
         const shiftLeft = isDefined(shift) && ["left", "top-left"].includes(shift);
         const shiftTop = isDefined(shift) && ["top", "top-left"].includes(shift);
 
-        const width = clamp((shiftLeft ? w - wMod : w + wMod), 320, Infinity);
-        const height = clamp((shiftTop ? h - hMod : h + hMod), 320, Infinity);
+        const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAUL_PANEL_WIDTH, Infinity);
+        const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAUL_PANEL_WIDTH, Infinity);
 
         const top = shiftTop ? (t + (h - height)) : t;
         const left = shiftLeft ? (l + (w - width)) : l;
