@@ -498,6 +498,18 @@ const Model = types.model({
     }
     return imgStyle;
   },
+
+  get maxScale() {
+    return self.isSideways
+      ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+      : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+  }, 
+
+  get coverScale() {
+    return self.isSideways
+      ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+      : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+  },
 }))
 
   // actions for the tools
@@ -641,12 +653,8 @@ const Model = types.model({
       self.currentZoom = scale;
 
       // cool comment about all this stuff
-      const maxScale = self.isSideways
-        ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
-        : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-      const coverScale = self.isSideways
-        ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
-        : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+      const maxScale = self.maxScale;
+      const coverScale = self.coverScale;
 
       if (maxScale > 1) { // image < container
         if (scale < maxScale) { // scale = 1 or before stage size is max
@@ -659,7 +667,7 @@ const Model = types.model({
       } else { // image > container
         if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
           self.stageZoom = maxScale; // stage squizzed
-          self.zoomScale = isFF(FF_DEV_2504) && self.size === "auto" ? scale / maxScale : scale; // scale image for the rest scale : scale image usually
+          self.zoomScale = scale; // scale image for the rest scale : scale image usually
         } else { // negative zoom bigger than image negative scale
           self.stageZoom = scale; // squize stage more
           self.zoomScale = 1; // don't scale image
@@ -721,7 +729,7 @@ const Model = types.model({
 
     sizeToAuto() {
       self.size = "auto";
-      self.setZoom(1);
+      self.setZoom(1 / self.maxScale);
       self.setZoomPosition(0, 0);
       self.updateImageAfterZoom();
     },
