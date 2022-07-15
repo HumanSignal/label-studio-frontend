@@ -724,8 +724,11 @@ const Model = types.model({
     },
 
     sizeToAuto() {
+      const { maxScale } = self;
+
+      console.log("sizeToAuto", maxScale);
       self.size = "auto";
-      self.setZoom(1 / self.maxScale);
+      self.setZoom(maxScale > 1 ? 1 : 1/maxScale);
       self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale) / 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
       self.updateImageAfterZoom();
     },
