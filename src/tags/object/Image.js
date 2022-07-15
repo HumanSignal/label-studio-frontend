@@ -717,19 +717,22 @@ const Model = types.model({
     },
 
     sizeToFit() {
+      const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { width, height } = stageComponentSize;
+
       self.size = "fit";
-      self.setZoom(self.maxScale);
-      self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale) / 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
+      self.setZoom(maxScale);
+      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
     },
 
     sizeToAuto() {
-      const { maxScale } = self;
+      const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { width, height } = stageComponentSize;
 
-      console.log("sizeToAuto", maxScale);
       self.size = "auto";
-      self.setZoom(maxScale > 1 ? 1 : 1/maxScale);
-      self.setZoomPosition((self.containerWidth - self.stageComponentSize.width * self.zoomScale) / 2, (self.containerHeight - self.stageComponentSize.height * self.zoomScale) / 2);
+      self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
+      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
     },
 
