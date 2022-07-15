@@ -4,6 +4,8 @@ import IconRotate from '../../assets/icons/rotate.svg';
 
 const EVENTS_NAME = "tr-konva";
 
+export const ROTATE_ANCHOR_TOP_CENTER = 10;
+
 class LSTransformer extends Konva.Transformer {
   constructor(config) {
     super(config);
@@ -67,10 +69,10 @@ class LSTransformer extends Konva.Transformer {
   getCenter(shape) {
     let shapeHeight = shape.height / 2;
 
-    if(this._movingAnchorName.indexOf('rotate-bottom') >= 0) {
+    if (this._movingAnchorName.indexOf('rotate-bottom') >= 0) {
       shapeHeight = shape.height;
-    }else if(this._movingAnchorName.indexOf('rotate-top') >= 0){
-      shapeHeight = 10;
+    } else if (this._movingAnchorName.indexOf('rotate-top') >= 0) {
+      shapeHeight = ROTATE_ANCHOR_TOP_CENTER;
     }
 
     return {
@@ -197,7 +199,7 @@ class LSTransformer extends Konva.Transformer {
     if (this._movingAnchorName.indexOf('rotate-bottom') >= 0) {
       y = -anchorNode.y() + (attrs.height);
     } else if(this._movingAnchorName.indexOf('rotate-top') >= 0) {
-      y = -anchorNode.y() + 10;
+      y = -anchorNode.y() + ROTATE_ANCHOR_TOP_CENTER;
     } else {
       y = -anchorNode.y() + ( attrs.height / 2);
     }
