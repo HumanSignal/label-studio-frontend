@@ -14,6 +14,7 @@ export const useDrag = <EL extends HTMLElement = HTMLElement, D = any>(options: 
 
     const onMouseDown = (e: MouseEvent) => {
       if (options.disabled) return;
+      if (e.defaultPrevented) return;
 
       const result = options.onMouseDown?.(e);
 

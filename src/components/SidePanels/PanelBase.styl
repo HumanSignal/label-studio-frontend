@@ -47,7 +47,7 @@
     height var(--header-height)
     z-index 2
     display flex
-    cursor pointer
+    cursor move
     font-size 13px
     font-weight 700
     line-height 16px
@@ -99,7 +99,8 @@
 
   // Toggle button tooltip styles
   &:not(&_hidden) &__toggle:hover,
-  &_hidden &__header:hover &__toggle
+  &_hidden&&_detached &__toggle:hover,
+  &_hidden:not(&_detached) &__header:hover &__toggle
     &::before
       color #fff
       font-size 16px

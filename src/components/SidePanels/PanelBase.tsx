@@ -46,6 +46,8 @@ interface PanelBaseProps {
   locked: boolean;
   zIndex: number;
   onResize: ResizeHandler;
+  onResizeStart: () => void;
+  onResizeEnd: () => void;
   onSnap: SnapHandler;
   onPositionChange: PositonChangeHandler;
   onVisibilityChange: VisibilityChangeHandler;
@@ -77,6 +79,8 @@ export const PanelBase: FC<PanelBaseProps> = ({
   locked = false,
   onSnap,
   onResize,
+  onResizeStart,
+  onResizeEnd,
   onVisibilityChange,
   onPositionChange,
   onPositionChangeBegin,
@@ -86,7 +90,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const panelRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
   const [dragLocked, setLocked] = useState(false);
-  const handlers = useRef({ onResize, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
+  const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
 
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
@@ -132,13 +136,12 @@ export const PanelBase: FC<PanelBaseProps> = ({
     };
   }, [alignment, visible, detached, resizing, locked]);
 
-  const CurrentIconComponent = useMemo(() => {
-    if (detached) {
-      return visible ? IconOutlinerCollapse : IconOutlinerExpand;
-    }
+  const currentIcon = useMemo(() => {
+    if (detached) return visible ? <IconOutlinerCollapse/> : <IconOutlinerExpand/>;
+    if (alignment === 'left') return visible ? <IconArrowLeft/> : <IconArrowRight/>;
+    if (alignment === 'right') return visible ? <IconArrowRight/> : <IconArrowLeft/>;
 
-    if (alignment === 'left') return visible ? IconArrowLeft : IconArrowRight;
-    if (alignment === 'right') return visible ? IconArrowRight : IconArrowLeft;
+    return null;
   }, [detached, visible, alignment]);
 
   const tooltipText = useMemo(() => {
@@ -148,12 +151,14 @@ export const PanelBase: FC<PanelBaseProps> = ({
   useEffect(() => {
     Object.assign(handlers.current, {
       onResize,
+      onResizeStart,
+      onResizeEnd,
       onPositionChangeBegin,
       onPositionChange,
       onVisibilityChange,
       onSnap,
     });
-  }, [onResize, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
+  }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
 
   // Panel positioning
   useDrag({
@@ -161,6 +166,13 @@ export const PanelBase: FC<PanelBaseProps> = ({
     disabled: locked,
 
     onMouseDown(e) {
+      const el = e.target as HTMLElement;
+      const toggleClassName = "[class*=__toggle]";
+
+      if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
+        return;
+      }
+
       const allowDrag = detached;
       const panel = panelRef.current!;
       const parentBBox = root.current!.getBoundingClientRect();
@@ -231,6 +243,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       })();
 
       setResizing(type);
+      handlers.current.onResizeStart?.();
 
       return {
         pos: [e.pageX, e.pageY],
@@ -278,6 +291,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       }
     },
     onMouseUp() {
+      handlers.current.onResizeEnd?.();
       setResizing(undefined);
     },
   }, [handlers, width, height, top, left, visible, dragLocked, locked]);
@@ -297,18 +311,18 @@ export const PanelBase: FC<PanelBaseProps> = ({
             name="header"
             onClick={!detached && handleExpand}
           >
-            <>
-              {(visible || detached) && title}
+            {(visible || detached) && (
+              <Elem name="title">{title}</Elem>
+            )}
 
-              <Elem
-                name="toggle"
-                mod={{ enabled: visible }}
-                onClick={(detached && !visible) ? handleExpand : handleCollapse}
-                data-tooltip={tooltipText}
-              >
-                <CurrentIconComponent/>
-              </Elem>
-            </>
+            <Elem
+              name="toggle"
+              mod={{ enabled: visible }}
+              onClick={(detached && !visible) ? handleExpand : handleCollapse}
+              data-tooltip={tooltipText}
+            >
+              {currentIcon}
+            </Elem>
           </Elem>
         )}
         {visible && (

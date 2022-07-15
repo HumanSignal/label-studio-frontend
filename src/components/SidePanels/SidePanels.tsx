@@ -28,6 +28,8 @@ interface PanelBBox {
   height:  number;
   left: number;
   top: number;
+  storedTop?: number;
+  storedLeft?: number;
   zIndex: number;
   visible: boolean;
   detached: boolean;
@@ -79,6 +81,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   const snapTreshold = 5;
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
+  const [resizing, setResizing] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<"left" | "right" | undefined>();
   const localSnap = useRef(snap);
@@ -126,11 +129,13 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData]);
 
   const onVisibilityChange = useCallback((name: PanelType, visible: boolean) => {
-    const { top, left } = panelData[name];
+    const panel = panelData[name];
+    const position = normalizeOffsets(name, panel.top, panel.left, visible);
 
     updatePanel(name, {
       visible,
-      ...normalizeOffsets(name, top, left, visible),
+      storedTop: position.top,
+      storedLeft: position.left,
     });
   }, [updatePanel]);
 
@@ -157,7 +162,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const parentWidth = rootRef.current?.clientWidth ?? 0;
     const height = panel.detached
       ? (visible ?? panel.visible) ? panel.height : 26
-      : 0;
+      : panel.height;
     const normalizedLeft = clamp(left, 0, parentWidth - panel.width);
     const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - height);
 
@@ -185,29 +190,41 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const panel = panelData[name];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
 
-    const { left, top } = normalizeOffsets(name, t, l);
+    const { left, top } = normalizeOffsets(name, t, l, panel.visible);
 
-    if (detached) checkSnap(left, parentWidth, panel.width);
+    checkSnap(left, parentWidth, panel.width);
 
     requestAnimationFrame(() => {
       updatePanel(name, {
         top,
         left,
+        storedLeft: undefined,
+        storedTop: undefined,
         detached,
         alignment: detached ? undefined : panel.alignment,
       });
     });
   }, [updatePanel, checkSnap, panelData]);
 
+  const onResizeStart = useCallback(() => {
+    setResizing(() => true);
+  }, []);
+
+  const onResizeEnd = useCallback(() => {
+    setResizing(() => false);
+  }, []);
+
   const onResize = useCallback((name: PanelType, w: number, h: number, t: number, l: number) => {
     const { left, top } = normalizeOffsets(name, t, l);
 
     requestAnimationFrame(() => {
       updatePanel(name, {
-        width: clamp(w, DEFAUL_PANEL_WIDTH, Infinity),
-        height: clamp(h, DEFAUL_PANEL_WIDTH, Infinity),
         top,
         left,
+        storedLeft: undefined,
+        storedTop: undefined,
+        width: clamp(w, DEFAUL_PANEL_WIDTH, Infinity),
+        height: clamp(h, DEFAUL_PANEL_WIDTH, Infinity),
       });
     });
   }, [updatePanel]);
@@ -225,12 +242,14 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   const eventHandlers = useMemo(() => {
     return {
       onResize,
+      onResizeStart,
+      onResizeEnd,
       onPositionChange,
       onVisibilityChange,
       onPositionChangeBegin,
       onSnap,
     };
-  }, [onResize, onPositionChange, onVisibilityChange, onSnap]);
+  }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onSnap]);
 
   const commonProps = useMemo(() => {
     return {
@@ -288,6 +307,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       const props = {
         ...panelData,
         ...commonProps,
+        top: panelData.storedTop ?? panelData.top,
+        left: panelData.storedLeft ?? panelData.left,
         tooltip: view.title,
         icon: <Icon/>,
         zIndex: panelData.zIndex,
@@ -349,7 +370,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         }}
         mod={{ collapsed: sidepanelsCollapsed }}
       >
-        <Elem name="content">
+        <Elem name="content" mod={{ resizing }}>
           {children}
         </Elem>
         {panelsHidden !== true && (
