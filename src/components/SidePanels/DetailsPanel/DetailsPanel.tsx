@@ -1,6 +1,8 @@
 import { observer } from "mobx-react";
 import { FC } from "react";
 import { Elem } from "../../../utils/bem";
+import { FF_DEV_2887, isFF } from "../../../utils/feature-flags";
+import { Comments } from "../../Comments/Comments";
 import { AnnotationHistory } from "../../CurrentEntity/AnnotationHistory";
 import { PanelBase, PanelProps } from "../PanelBase";
 import "./DetailsPanel.styl";
@@ -61,6 +63,16 @@ const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
           />
         </Elem>
       </Elem>
+      {isFF(FF_DEV_2887) && (
+        <Elem name="section">
+          <Elem name="section-head">
+            Comments
+          </Elem>
+          <Elem name="section-content">
+            <Comments />
+          </Elem>
+        </Elem>
+      )}
     </>
   );
 });

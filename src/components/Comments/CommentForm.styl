@@ -1,0 +1,29 @@
+.comment-form
+    --primary-action-color #00A8FF
+    --text-input-surface-color #FAFAFA
+    --text-input-border-size 1px
+    --text-input-border-color #DFDFDF
+    --text-input-border-radius 4px
+    --text-input-padding 8px 16px
+    --text-input-font-size 16px
+    --text-input-line-height 24px
+    --text-input-letter-spacing 0.5px
+
+    display flex
+    gap 4px
+
+    &__text-input
+        border var(--text-input-border-size) solid var(--text-input-border-color)
+        border-radius var(--text-input-border-radius)
+        padding var(--text-input-padding)
+        font-size var(--text-input-font-size)
+        line-height var(--text-input-line-height)
+        letter-spacing var(--text-input-letter-spacing)
+        resize none
+        flex 1
+
+    &__primary-action
+        flex-shrink 0
+        appearance none
+        border none
+        color var(--primary-action-color)
