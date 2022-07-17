@@ -4,6 +4,7 @@ import Utils from "../utils";
 import { guidGenerator } from "../utils/unique";
 import Constants, { defaultStyle } from "../core/Constants";
 import { isDefined } from "../utils/utilities";
+import { FF_DEV_2786, isFF } from "../utils/feature-flags";
 
 export const HighlightMixin = types
   .model()
@@ -67,7 +68,6 @@ export const HighlightMixin = types
     },
 
     updateHighlightedText() {
-      console.log('updateHighlightedText');
       if (!self.text) {
         // Concatenating of spans' innerText is up to 10 times faster, but loses "\n"
         const range = self.getRangeToHighlight();
@@ -90,7 +90,6 @@ export const HighlightMixin = types
         const lastSpan = self._spans[self._spans.length - 1];
         const label = self.getLabels();
 
-        console.log('updateSpans');
         // label is array, string or null, so check for length
         if (!label?.length) lastSpan.removeAttribute("data-label");
         else lastSpan.setAttribute("data-label", label);
@@ -108,7 +107,6 @@ export const HighlightMixin = types
      * Update region's appearance if the label was changed
      */
     updateAppearenceFromState() {
-      console.log('updateAppearenceFromState');
       if (!self._spans) return;
 
       const lastSpan = self._spans[self._spans.length - 1];
@@ -129,21 +127,21 @@ export const HighlightMixin = types
       const first = self._spans?.[0];
 
       if (!first) return;
-      //add feature flag
-      const { className, state: { resizeAreaRight, resizeAreaLeft } } = self._stylesheet;
-      const classes = [resizeAreaLeft, resizeAreaRight];
-      const span = self._spans[0];
+      if (isFF(FF_DEV_2786)) {
+        const { className, state: { resizeAreaRight, resizeAreaLeft } } = self._stylesheet;
+        const classes = [resizeAreaLeft, resizeAreaRight];
+        const span = self._spans[0];
 
-      classes.forEach((resizeClass, index) => {
-        const handleArea = document.createElement('area');
+        classes.forEach((resizeClass, index) => {
+          const handleArea = document.createElement('area');
 
-        handleArea.classList.add(className);
-        handleArea.classList.add(resizeClass);
-        index === 0 ?
-          span.prepend(handleArea) :
-          span.append(handleArea);
-      });
-      //end feature flag
+          handleArea.classList.add(className);
+          handleArea.classList.add(resizeClass);
+          index === 0 ?
+            span.prepend(handleArea) :
+            span.append(handleArea);
+        });
+      }
 
       if (first.scrollIntoViewIfNeeded) {
         first.scrollIntoViewIfNeeded();
@@ -157,9 +155,9 @@ export const HighlightMixin = types
      */
     afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
-      //add feature flag
-      self._spans[0].querySelectorAll("area").forEach(area => area.remove());
-      //end feature flag
+      if (isFF(FF_DEV_2786)) {
+        self._spans[0].querySelectorAll("area").forEach(area => area.remove());
+      }
     },
 
     /**
@@ -287,7 +285,7 @@ const createSpanStylesheet = (document, identifier, color) => {
 
   document.documentElement.style.setProperty(variables.color, color);
 
-  const rules = {
+  const rules = isFF(FF_DEV_2786) ? {
     [className]: `
       background-color: var(${variables.color}) !important;
       border: 1px dashed transparent;
@@ -333,6 +331,43 @@ const createSpanStylesheet = (document, identifier, color) => {
       cursor: col-resize;
       height: 17px;
       width: 15px;
+    `,
+    [`${className}.${stateClass.hidden}`]: `
+      border: none;
+      background: none;
+      padding: 0;
+    `,
+    [`${className}.${stateClass.hidden}::before`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.hidden}::after`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.noLabel}::after`]: `
+      display: none
+    `,
+  } : {
+    [className]: `
+      background-color: var(${variables.color}) !important;
+      cursor: var(${variables.cursor}, pointer);
+      border: 1px dashed transparent;
+    `,
+    [`${className}[data-label]::after`]: `
+      padding: 2px 2px;
+      font-size: 9.5px;
+      font-weight: bold;
+      font-family: Monaco;
+      vertical-align: super;
+      content: attr(data-label);
+      line-height: 0;
+    `,
+    [classNames.active]: `
+      color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
+      ${variables.color}: ${initialActiveColor}
+    `,
+    [classNames.highlighted]: `
+      position: relative;
+      border-color: rgb(0, 174, 255);
     `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;
