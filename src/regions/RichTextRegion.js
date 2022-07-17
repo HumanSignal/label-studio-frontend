@@ -105,6 +105,7 @@ const Model = types
       }
 
       if (self.object.savetextresult === "yes" && isDefined(self.text)) {
+        console.log(self.text);
         res.value["text"] = self.text;
       }
 
@@ -113,10 +114,12 @@ const Model = types
 
     // text regions have only start/end, so we should update start/endOffsets with these values
     updateTextOffsets(startOffset, endOffset) {
+      console.log('updateTextOffsets', startOffset, endOffset);
       Object.assign(self, { startOffset, endOffset });
     },
 
     updateGlobalOffsets(start, end) {
+      console.log('updateGlobalOffsets', start, end);
       self.globalOffsets = GlobalOffsets.create({
         start,
         end,
@@ -213,6 +216,7 @@ const Model = types
 
     // fix XPaths when we found region by globalOffsets
     _fixXPaths(range, root) {
+      console.log(range, root);
       const normedRange = xpath.fromRange(range, root);
 
       if (!isDefined(normedRange)) return;

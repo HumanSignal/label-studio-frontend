@@ -67,6 +67,7 @@ export const HighlightMixin = types
     },
 
     updateHighlightedText() {
+      console.log('updateHighlightedText');
       if (!self.text) {
         // Concatenating of spans' innerText is up to 10 times faster, but loses "\n"
         const range = self.getRangeToHighlight();
@@ -89,6 +90,7 @@ export const HighlightMixin = types
         const lastSpan = self._spans[self._spans.length - 1];
         const label = self.getLabels();
 
+        console.log('updateSpans');
         // label is array, string or null, so check for length
         if (!label?.length) lastSpan.removeAttribute("data-label");
         else lastSpan.setAttribute("data-label", label);
@@ -106,6 +108,7 @@ export const HighlightMixin = types
      * Update region's appearance if the label was changed
      */
     updateAppearenceFromState() {
+      console.log('updateAppearenceFromState');
       if (!self._spans) return;
 
       const lastSpan = self._spans[self._spans.length - 1];
@@ -126,6 +129,21 @@ export const HighlightMixin = types
       const first = self._spans?.[0];
 
       if (!first) return;
+      //add feature flag
+      const { className, state: { resizeAreaRight, resizeAreaLeft } } = self._stylesheet;
+      const classes = [resizeAreaLeft, resizeAreaRight];
+      const span = self._spans[0];
+
+      classes.forEach((resizeClass, index) => {
+        const handleArea = document.createElement('area');
+
+        handleArea.classList.add(className);
+        handleArea.classList.add(resizeClass);
+        index === 0 ?
+          span.prepend(handleArea) :
+          span.append(handleArea);
+      });
+      //end feature flag
 
       if (first.scrollIntoViewIfNeeded) {
         first.scrollIntoViewIfNeeded();
@@ -139,6 +157,9 @@ export const HighlightMixin = types
      */
     afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
+      //add feature flag
+      self._spans[0].querySelectorAll("area").forEach(area => area.remove());
+      //end feature flag
     },
 
     /**
@@ -233,6 +254,8 @@ export const HighlightMixin = types
 const stateClass = {
   active: "__active",
   highlighted: "__highlighted",
+  resizeAreaRight: "__resizeAreaRight",
+  resizeAreaLeft: "__resizeAreaLeft",
   collapsed: "__collapsed",
   hidden: "__hidden",
   noLabel: "htx-no-label",
@@ -253,6 +276,8 @@ const createSpanStylesheet = (document, identifier, color) => {
   const classNames = {
     active: `${className}.${stateClass.active}`,
     highlighted: `${className}.${stateClass.highlighted}`,
+    resizeAreaRight: `${className}.${stateClass.resizeAreaRight}`,
+    resizeAreaLeft: `${className}.${stateClass.resizeAreaLeft}`,
   };
 
   const activeColorOpacity = 0.8;
@@ -265,25 +290,49 @@ const createSpanStylesheet = (document, identifier, color) => {
   const rules = {
     [className]: `
       background-color: var(${variables.color}) !important;
-      cursor: var(${variables.cursor}, pointer);
       border: 1px dashed transparent;
+      cursor: var(${variables.cursor}, pointer);
     `,
     [`${className}[data-label]::after`]: `
-      padding: 2px 2px;
+      position: absolute;
+      display: inline-block;
+      transform: translate(-99%, -1px);
+      background-color: ${initialActiveColor};
+      color: ${Utils.Colors.contrastColor(initialActiveColor)};
+      height: 5px;
+      padding: 6px 6px 1px;
       font-size: 9.5px;
       font-weight: bold;
       font-family: Monaco;
-      vertical-align: super;
       content: attr(data-label);
       line-height: 0;
     `,
+    [`${className}[data-label]:hover::after`]: `
+      display: none;
+    `,
     [classNames.active]: `
       color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
-      ${variables.color}: ${initialActiveColor}
+      ${variables.color}: ${initialActiveColor};
+      cursor: move;
     `,
     [classNames.highlighted]: `
       position: relative;
       border-color: rgb(0, 174, 255);
+    `,
+    [classNames.resizeAreaRight]: `
+      opacity: 0;
+      position: absolute;
+      cursor: col-resize;
+      height: 17px;
+      width: 15px;
+      transform: translateX(-15px);
+    `,
+    [classNames.resizeAreaLeft]: `
+      opacity: 0;
+      position: absolute;
+      cursor: col-resize;
+      height: 17px;
+      width: 15px;
     `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;

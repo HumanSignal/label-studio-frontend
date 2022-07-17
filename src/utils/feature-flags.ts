@@ -72,6 +72,8 @@ export const FF_DEV_1442 = "ff_front_dev_1442_unselect_shape_on_click_outside_08
 
 export const FF_DEV_2431 = "ff_front_dev_2431_delete_polygon_points_080622_short";
 
+export const FF_DEV_2786 = "fflag_feat_front_dev_2758_adjustable_draggable_spans_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,
