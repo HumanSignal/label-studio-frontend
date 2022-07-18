@@ -356,6 +356,7 @@ const HtxVideoView = ({ item }) => {
                   muted={item.muted}
                   zoom={zoom}
                   pan={pan}
+                  speed={item.speed}
                   framerate={item.framerate}
                   allowInteractions={false}
                   onFrameChange={handleFrameChange}

@@ -68,9 +68,16 @@ export const FF_DEV_2458 = "ff_front_dev_2458_comments_for_skip_250522_short";
 
 export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
 
-export const FF_DEV_1442 = "ff_front_dev_1422_unselect_shape_on_click_outside_080622_short";
+export const FF_DEV_1442 = "ff_front_dev_1442_unselect_shape_on_click_outside_080622_short";
 
 export const FF_DEV_2431 = "ff_front_dev_2431_delete_polygon_points_080622_short";
+
+export const FF_DEV_2669 = "ff_front_dev_2669_paragraph_author_filter_210622_short";
+
+export const FF_DEV_2432 = "ff_front_dev_2432_auto_save_polygon_draft_210622_short";
+
+// Change the rotate tool from bbox
+export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
