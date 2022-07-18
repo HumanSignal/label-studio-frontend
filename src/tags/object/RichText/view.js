@@ -133,7 +133,6 @@ class RichTextPieceView extends Component {
 
     const current = doc.caretRangeFromPoint(cursor[0], cursor[1]);
     const selection = doc.defaultView.getSelection();
-    const range = doc.createRange();
 
     const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
 
@@ -141,12 +140,8 @@ class RichTextPieceView extends Component {
     const offsetRight = item.isGrabbingEdge?.freezeSideRight || offset + offsets[1];
 
     const globalOffsets = [offsetLeft, offsetRight];
+    const range = findRangeNative(globalOffsets[0], globalOffsets[1], root);
 
-    const start = findRangeNative(globalOffsets[0], globalOffsets[0], root);
-    const finish = findRangeNative(globalOffsets[1], globalOffsets[1], root);
-
-    range.setStart(current.startContainer, start.startOffset);
-    range.setEnd(finish.startContainer, finish.startOffset);
     selection.removeAllRanges();
     selection.addRange(range);
     return [globalOffsets, range];
