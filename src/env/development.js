@@ -54,6 +54,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 /**
  * Different
  */
+import { DateTime } from "../examples/datetime";
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
 import { Table } from "../examples/table";
@@ -67,7 +68,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+const data = RichTextHtml;
 
 function getData(task) {
   if (task && task.data) {
@@ -134,7 +135,7 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
-  console.log('julio params', params);
+
   const options = {
     settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)

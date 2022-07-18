@@ -453,6 +453,8 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
+    handleDeferredMouseDown = null;
+    deferredClickTimeout = null;
     skipMouseUp = false;
 
     constructor(props) {
@@ -465,11 +467,14 @@ export default observer(
     handleOnClick = e => {
       const { item } = this.props;
     
-      if (self.skipMouseUp) {
-        self.skipMouseUp = false;
+      if (isFF(FF_DEV_1442)) {
+        this.handleDeferredMouseDown?.();
+      }
+      if (this.skipMouseUp) {
+        this.skipMouseUp = false;
         return;
       }
-      
+
       if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
@@ -477,9 +482,30 @@ export default observer(
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
+    resetDeferredClickTimeout = () => {
+      if (this.deferredClickTimeout) {
+        clearTimeout(this.deferredClickTimeout);
+      }
+    }
+
+    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
+      this.handleDeferredMouseDown = (skipDeselect = false) => {
+        if (eligibleToDeselect && !skipDeselect) {
+          handleDeselection();
+        }  else {
+          handleDeferredMouseDown();
+        }
+      };
+      this.deferredClickTimeout = setTimeout(() => {
+        this.handleDeferredMouseDown = handleDeferredMouseDown;
+        this.handleDeferredMouseDown?.();
+        this.handleDeferredMouseDown = null;
+      }, 100);
+    }
+
     handleMouseDown = e => {
       const { item } = this.props;
-      
+  
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
@@ -488,49 +514,61 @@ export default observer(
       if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
-      const selectedTool = item.getToolsManager().findSelectedTool();
+      const handleMouseDown = () => {
+        if (
+        // create regions over another regions with Cmd/Ctrl pressed
+          item.getSkipInteractions() ||
+          e.target === item.stageRef ||
+          findClosestParent(
+            e.target,
+            el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
+          )
+        ) {
+          window.addEventListener("mousemove", this.handleGlobalMouseMove);
+          window.addEventListener("mouseup", this.handleGlobalMouseUp);
+          const { offsetX: x, offsetY: y } = e.evt;
+          // store the canvas coords for calculations in further events
+          const { left, top } = item.containerRef.getBoundingClientRect();
 
-      // clicking on the stage after there has already been a region selection
-      // should clear selected areas and not continue drawing a new region immediately.
-      if (
-        isFF(FF_DEV_1442) &&
-        this.props.store.settings.deselectRegionOnOutsideClick &&
-        e.target === item.stageRef &&
-        item.annotation.selectedRegions.length > 0 &&
-        [
-          undefined,
-          "EllipseTool",
-          "EllipseTool-dynamic",
-          "RectangleTool",
-          "RectangleTool-dynamic",
-          "PolygonTool",
-          "PolygonTool-dynamic",
-        ].includes(selectedTool?.fullName)
-      ) {
-        item.annotation.unselectAll();
-        self.skipMouseUp = true;
+          this.canvasX = left;
+          this.canvasY = top;
+          item.event("mousedown", e, x, y);
+
+          return true;
+        }
+      };
+
+      const selectedTool = item.getToolsManager().findSelectedTool();
+      const eligibleToolForDeselect = [
+        undefined,
+        "EllipseTool",
+        "EllipseTool-dynamic",
+        "RectangleTool",
+        "RectangleTool-dynamic",
+        "PolygonTool",
+        "PolygonTool-dynamic",
+        "Rectangle3PointTool",
+        "Rectangle3PointTool-dynamic",
+      ].includes(selectedTool?.fullName);
+
+      if (isFF(FF_DEV_1442) && eligibleToolForDeselect) {
+        const targetIsCanvas = e.target === item.stageRef;
+        const annotationHasSelectedRegions = item.annotation.selectedRegions.length > 0;
+        const eligibleToDeselect = targetIsCanvas && annotationHasSelectedRegions;
+
+        const handleDeselection = () => {
+          item.annotation.unselectAll();
+          this.skipMouseUp = true;
+        };
+
+        this.handleDeferredClick(handleMouseDown, handleDeselection, eligibleToDeselect);
         return;
       }
 
-      if (
-        // create regions over another regions with Cmd/Ctrl pressed
-        item.getSkipInteractions() ||
-        e.target === item.stageRef ||
-        findClosestParent(
-          e.target,
-          el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
-        )
-      ) {
-        window.addEventListener("mousemove", this.handleGlobalMouseMove);
-        window.addEventListener("mouseup", this.handleGlobalMouseUp);
-        const { offsetX: x, offsetY: y } = e.evt;
-        // store the canvas coords for calculations in further events
-        const { left, top } = item.containerRef.getBoundingClientRect();
+      const result = handleMouseDown();
 
-        this.canvasX = left;
-        this.canvasY = top;
-        return item.event("mousedown", e, x, y);
-      }
+      if (result) return result;
+
       return true;
     };
 
@@ -565,6 +603,10 @@ export default observer(
      */
     handleMouseUp = e => {
       const { item } = this.props;
+
+      if (isFF(FF_DEV_1442)) {
+        this.resetDeferredClickTimeout();
+      }
   
       item.freezeHistory();
       item.setSkipInteractions(false);
@@ -580,7 +622,14 @@ export default observer(
       this.updateCrosshair(e);
 
       const isMouseWheelClick = e.evt && e.evt.buttons === 4;
-      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+      const isDragging = e.evt && e.evt.buttons === 1;
+      const isShiftDrag = isDragging && e.evt.shiftKey;
+
+      if (isFF(FF_DEV_1442) && isDragging) {
+        this.resetDeferredClickTimeout();
+        this.handleDeferredMouseDown?.(true);
+        this.handleDeferredMouseDown = null;
+      }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
         item.setSkipInteractions(true);

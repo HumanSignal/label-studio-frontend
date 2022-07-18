@@ -155,9 +155,8 @@ const DrawingTool = types
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        const currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
 
-        self.currentArea = currentArea;
+        self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
         if (!self.beforeCommitDrawing()) {
@@ -418,6 +417,9 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
     };
 
     return {
+      canStartDrawing() {
+        return !self.isIncorrectControl();
+      },
       updateDraw: (x, y) => {
         if (currentMode === DEFAULT_MODE)
           self.getCurrentArea()?.draw(x, y, points);
@@ -472,11 +474,13 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       mousedownEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
         lastEvent = MOUSE_DOWN_EVENT;
         startPoint = { x, y };
         self.mode = "drawing";
       },
       mouseupEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
         if(self.isDrawing) {
           if (currentMode === DRAG_MODE) {
             self.draw(x, y);
@@ -486,6 +490,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       clickEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
         if (currentMode === DEFAULT_MODE) {
           self._clickEv(ev, [x, y]);
         }
