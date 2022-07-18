@@ -52,7 +52,7 @@ export const FlyoutMenu = ({
         }
       });
     };
-    const addShortcuts= () => {
+    const addShortcuts = () => {
       items.forEach(menuItem => {
         const currentShortcut = menuItem.shortcut;
 
