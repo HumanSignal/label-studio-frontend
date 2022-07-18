@@ -180,6 +180,7 @@ const VideoRegionsPure = ({
             workingArea={workinAreaCoordinates}
             draggable={!isDrawing && !locked}
             selected={reg.selected || reg.inSelection}
+            listening={!reg.locked}
             onClick={(e) => {
               // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
               if (store.annotationStore.selected.relationMode) {
