@@ -7,12 +7,22 @@ import "./CommentForm.styl";
 
 
 export type CommentFormProps = {
+  value?: string,
+  onChange?: (value: string) => void,
+  onInput?: (value: string) => void,
   inline?: boolean,
   rows?: number,
   maxRows?: number,
 }
 
-export const CommentForm: FC<CommentFormProps> = ({ inline, rows = 1, maxRows = 3 }) => {
+export const CommentForm: FC<CommentFormProps> = ({
+  value = "", 
+  inline,
+  onChange: _onChange,
+  onInput: _onInput,
+  rows = 1,
+  maxRows = 3,
+}) => {
   const autoGrowRef = useRef({
     rows,
     maxRows,
@@ -31,8 +41,13 @@ export const CommentForm: FC<CommentFormProps> = ({ inline, rows = 1, maxRows = 
 
     if (autoGrowRef.current.maxHeight === Infinity) {
       textarea.style.height = 'auto';
+      const value = textAreaRef.current.value;
+
+      textAreaRef.current.value = "";
       autoGrowRef.current.lineHeight = (textAreaRef.current.scrollHeight / autoGrowRef.current.rows);
       autoGrowRef.current.maxHeight = (autoGrowRef.current.lineHeight * autoGrowRef.current.maxRows);
+
+      textAreaRef.current.value = value;
     }
 
     let newHeight: number;
@@ -57,7 +72,17 @@ export const CommentForm: FC<CommentFormProps> = ({ inline, rows = 1, maxRows = 
     });
   }, 10, { leading: true }), []);
 
-  useEffect(() => {
+  const onInput = useCallback((e: any) => {
+    _onInput?.(e.target.value);
+    resizeTextArea();
+  }, [_onInput]);
+
+  const onChange = useCallback((e: any) => {
+    _onChange?.(e.target.value);
+    resizeTextArea();
+  }, [_onChange]);
+
+  useEffect(() => { 
     const resize = new ResizeObserver(resizeTextArea);
 
     resize.observe(textAreaRef.current as any);
@@ -69,9 +94,15 @@ export const CommentForm: FC<CommentFormProps> = ({ inline, rows = 1, maxRows = 
     }; 
   }, []);
 
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.value = value;
+    }
+  }, [value]);
+
   return (
     <Block tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
-      <Elem tag="textarea" name="text-input" ref={textAreaRef} placeholder="Add a comment" rows={autoGrowRef.current.rows} onInput={resizeTextArea}></Elem>
+      <Elem tag="textarea" name="text-input" ref={textAreaRef} placeholder="Add a comment" rows={autoGrowRef.current.rows} onChange={onChange} onInput={onInput}></Elem>
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />
