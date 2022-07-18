@@ -8,7 +8,7 @@ export const Comments = observer(() => {
 
   return (
     <Block name="comments">
-      <CommentForm />
+      <CommentForm inline />
     </Block>
   );
 });
