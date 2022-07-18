@@ -3,14 +3,16 @@
     --textarea-border-size 1px
     --textarea-border-color #DFDFDF
     --textarea-border-radius 4px
-    --textarea-padding 8px 16px
     --textarea-font-size 16px
     --textarea-line-height 24px
     --textarea-min-height 44px
     --textarea-letter-spacing 0.5px
+    --textarea-padding 8px 16px
 
     // @todo refactor the overall input styles to not have to use important to override
     &_inline
+        --textarea-padding 8px var(--textarea-min-height) 8px 16px 
+
         display flex
         align-items center
         min-height var(--textarea-min-height) !important
