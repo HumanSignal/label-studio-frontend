@@ -130,7 +130,8 @@ export const HighlightMixin = types
       if (isFF(FF_DEV_2786)) {
         const { className, state: { resizeAreaRight, resizeAreaLeft } } = self._stylesheet;
         const classes = [resizeAreaLeft, resizeAreaRight];
-        const span = self._spans[0];
+        const spanStart = self._spans[0];
+        const spanEnd = self._spans[self._spans.length - 1];
 
         classes.forEach((resizeClass, index) => {
           const handleArea = document.createElement('area');
@@ -138,8 +139,8 @@ export const HighlightMixin = types
           handleArea.classList.add(className);
           handleArea.classList.add(resizeClass);
           index === 0 ?
-            span.prepend(handleArea) :
-            span.append(handleArea);
+            spanStart.prepend(handleArea) :
+            spanEnd.append(handleArea);
         });
       }
 
@@ -156,7 +157,7 @@ export const HighlightMixin = types
     afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
       if (isFF(FF_DEV_2786)) {
-        self._spans[0].querySelectorAll("area").forEach(area => area.remove());
+        self._spans.forEach(span => span.querySelectorAll("area").forEach(area => area.remove()));
       }
     },
 

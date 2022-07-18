@@ -57,6 +57,7 @@ class RichTextPieceView extends Component {
     const region = this._determineRegion(event.target);
 
     if (isFF(FF_DEV_2786) && event.buttons === 1) {
+
       item.isDragging = true;
       const freezeSideLeft = target?.classList.contains('__resizeAreaRight') && region.startOffset;
       const freezeSideRight = target?.classList.contains('__resizeAreaLeft') && region.endOffset;
@@ -85,6 +86,7 @@ class RichTextPieceView extends Component {
     
     this.style.innerText = `::selection {${rules.join("\n")}}`;
   }
+
   _removeSelectionStyle = () => {
     if (this.style) this.style.innerText = "";
   }
@@ -94,25 +96,35 @@ class RichTextPieceView extends Component {
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const doc = root.ownerDocument;
-    const target = item.isGrabbingEdge ? event.path[1] : event.target;
-    const region = this._determineRegion(target);
     const anchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
+
     const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
 
+
+    this.dragTarget = item.isGrabbingEdge ? event.path[1] : event.target;
+    const region = this._determineRegion(this.dragTarget);
+    
+
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
-    this.adjustedRegion = region;
-    this._setSelectionStyle(target, root, doc);
-    this.preservedClasses = region._spans[0].classList;
-    Array.from(this.preservedClasses).forEach(className => region.removeClass(className));
+    this._setSelectionStyle(this.dragTarget, root, doc);
+    const cssClasses = region._spans[0].classList;
+
+    this.restoreClasses = () => Array.from(cssClasses).forEach(className => region.addClass(className));
+    Array.from(cssClasses).forEach(className => region.removeClass(className));
+
+    this.deleteAfterChange = region.deleteRegion;
     item.initializedDrag = true;
   }
 
   _onMouseMove = (event) => {
+
     const { item } = this.props;
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (item.isDragging && item.isActive) {
+      event.preventDefault();
+
       !item.initializedDrag ? this._initializeDrag(event) :
         [this.adjustedOffsets, this.adjustedRange] = this._highlightSelection(
           root, [event.clientX, event.clientY], this.spanOffsets,
@@ -129,14 +141,16 @@ class RichTextPieceView extends Component {
     const range = doc.createRange();
 
     const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
+
     const offsetLeft = item.isGrabbingEdge?.freezeSideLeft || offset + offsets[0];
     const offsetRight = item.isGrabbingEdge?.freezeSideRight || offset + offsets[1];
     const globalOffsets = [offsetLeft, offsetRight];
 
+
     const start = findRangeNative(globalOffsets[0], globalOffsets[0], root);
     const finish = findRangeNative(globalOffsets[1], globalOffsets[1], root);
 
-    range.setStart(start.startContainer, start.startOffset);
+    range.setStart(current.startContainer, start.startOffset);
     range.setEnd(finish.startContainer, finish.startOffset);
     selection.removeAllRanges();
     selection.addRange(range);
@@ -148,14 +162,8 @@ class RichTextPieceView extends Component {
     const states = item.activeStates();
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
-
-
     const label = states[0]?.selectedLabels?.[0];
     const value = states[0]?.selectedValues?.();
-
-    item.isDragging = false;
-    item.initializedDrag = false;
-
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
@@ -198,7 +206,19 @@ class RichTextPieceView extends Component {
       x: ev.pageX,
       y: ev.pageY,
     };
-    this._removeSelectionStyle();
+    if (isFF(FF_DEV_2786)) {
+      const selection = window.getSelection();
+
+      selection.empty();
+      selection.removeAllRanges();
+
+      this.deleteAfterChange && this.deleteAfterChange();
+      item.isDragging = false;
+      item.initializedDrag = false;
+      item.needsUpdate();
+      this.spanOffsets = null;
+      this._removeSelectionStyle();
+    }
   };
 
   /**
