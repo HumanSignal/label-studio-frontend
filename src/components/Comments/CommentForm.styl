@@ -3,45 +3,13 @@
     --primary-action-padding 4px
     --primary-action-border-radius 4px
     --primary-action-surface-color-hover rgba(9, 109, 217, 0.12)
-    --text-input-surface-color #FAFAFA
-    --text-input-border-size 1px
-    --text-input-border-color #DFDFDF
-    --text-input-border-radius 4px
-    --text-input-padding 8px 16px
-    --text-input-font-size 16px
-    --text-input-line-height 26px
     --text-input-min-height 44px
-    --text-input-letter-spacing 0.5px
 
     display grid
     grid-template-columns: auto var(--text-input-min-height);
     align-items center
     gap 4px
 
-    &__text-input
-        display flex
-        align-items center
-        min-height var(--text-input-min-height)
-        border var(--text-input-border-size) solid var(--text-input-border-color)
-        border-radius var(--text-input-border-radius)
-        background-color var(--text-input-surface-color)
-        padding var(--text-input-padding)
-        font-size var(--text-input-font-size)
-        line-height var(--text-input-line-height)
-        letter-spacing var(--text-input-letter-spacing)
-        resize none
-
-        ~/_inline &
-            grid-row 1 / 2
-            grid-column 1 / span 2
-            padding-right var(--text-input-min-height)
-            scrollbar-width none
-            -ms-overflow-style none
-
-        ~/_inline &::-webkit-scrollbar
-            width 0
-            height 0
-    
     &__primary-action
         height 100%
         width 100%

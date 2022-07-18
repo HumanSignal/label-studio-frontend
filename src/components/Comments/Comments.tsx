@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { Block, Elem } from "../../utils/bem";
+import { Block } from "../../utils/bem";
 import { CommentForm } from "./CommentForm";
 
 import './Comments.styl';
