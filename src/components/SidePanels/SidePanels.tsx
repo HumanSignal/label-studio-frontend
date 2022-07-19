@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
 import { SidePanelsContext } from "./SidePanelsContext";
-import { DEFAUL_PANEL_HEIGHT, DEFAUL_PANEL_WIDTH } from "./constants";
+import { DEFAUL_PANEL_HEIGHT, DEFAUL_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
 
 const maxWindowWidth = 980;
 
@@ -82,6 +82,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
   const [resizing, setResizing] = useState(false);
+  const [positioning, setPositioning] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<"left" | "right" | undefined>();
   const localSnap = useRef(snap);
@@ -161,7 +162,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const panel = panelData[name];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
     const height = panel.detached
-      ? (visible ?? panel.visible) ? panel.height : 26
+      ? (visible ?? panel.visible) ? panel.height : PANEL_HEADER_HEIGHT_PADDED
       : panel.height;
     const normalizedLeft = clamp(left, 0, parentWidth - panel.width);
     const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - height);
@@ -173,6 +174,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const patch = Object.entries(panelData).reduce<PanelSize>((res, [panelName, panelData]) => {
       const panel = { ...panelData, zIndex: 1 };
 
+      setPositioning(true);
       savePanel(panelName as PanelType, panel);
       return { ...res, [panelName]: panel };
     }, { ...panelData });
@@ -230,6 +232,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [updatePanel]);
 
   const onSnap = useCallback((name: PanelType) => {
+    setPositioning(false);
+
     if (!localSnap.current) return;
 
     updatePanel(name, {
@@ -262,7 +266,6 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
 
   const padding = useMemo(() => {
-    const collapsedPadding = 24;
     const result = {
       paddingLeft: 0,
       paddingRight: 0,
@@ -274,7 +277,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
       const visible = !panelsHidden && !data.detached && data.visible;
-      const padding = visible ? data.width : collapsedPadding;
+      const padding = visible ? data.width : PANEL_HEADER_HEIGHT;
       const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
 
       return (!data.detached) ? {
@@ -311,6 +314,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         left: panelData.storedLeft ?? panelData.left,
         tooltip: view.title,
         icon: <Icon/>,
+        positioning,
         zIndex: panelData.zIndex,
         expanded: sidepanelsCollapsed,
         alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
@@ -327,7 +331,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return result;
-  }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed]);
+  }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed, positioning]);
 
   useEffect(() => {
     localSnap.current = snap;
@@ -370,7 +374,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         }}
         mod={{ collapsed: sidepanelsCollapsed }}
       >
-        <Elem name="content" mod={{ resizing }}>
+        <Elem name="content" mod={{ resizing: resizing || positioning }}>
           {children}
         </Elem>
         {panelsHidden !== true && (

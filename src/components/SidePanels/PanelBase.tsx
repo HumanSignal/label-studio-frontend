@@ -45,6 +45,7 @@ interface PanelBaseProps {
   expanded: boolean;
   locked: boolean;
   zIndex: number;
+  positioning: boolean;
   onResize: ResizeHandler;
   onResizeStart: () => void;
   onResizeEnd: () => void;
@@ -77,6 +78,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   zIndex,
   tooltip,
   locked = false,
+  positioning = false,
   onSnap,
   onResize,
   onResizeStart,
@@ -89,21 +91,18 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
-  const [dragLocked, setLocked] = useState(false);
   const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
 
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
-    if (dragLocked) return;
     e.stopPropagation();
     e.preventDefault();
     onVisibilityChange?.(name, false);
-  }, [onVisibilityChange, dragLocked]);
+  }, [onVisibilityChange]);
 
   const handleExpand = useCallback(() => {
-    if (dragLocked) return;
     onVisibilityChange?.(name, true);
-  }, [onVisibilityChange, dragLocked]);
+  }, [onVisibilityChange]);
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
@@ -196,7 +195,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         const dist = distance(x, mX, y, mY);
 
         if (dist > 30) {
-          setLocked(true);
+          // setDragLocked(true);
           allowDrag = true;
         }
 
@@ -209,15 +208,16 @@ export const PanelBase: FC<PanelBaseProps> = ({
     },
 
     onMouseUp() {
-      setTimeout(() => setLocked(false), 50);
       handlers.current.onSnap?.(name);
     },
-  }, [headerRef, detached, dragLocked, locked]);
+  }, [headerRef, detached, locked]);
 
   // Panel resizing
   useDrag({
     elementRef: resizerRef,
-    disabled: locked,
+    disabled: locked || positioning,
+    capture: true,
+    passive: true,
 
     onMouseDown(e) {
       const target = e.target as HTMLElement;
@@ -294,7 +294,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       handlers.current.onResizeEnd?.();
       setResizing(undefined);
     },
-  }, [handlers, width, height, top, left, visible, dragLocked, locked]);
+  }, [handlers, width, height, top, left, visible, locked, positioning]);
 
   return (
     <Block
@@ -309,7 +309,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
           <Elem
             ref={headerRef}
             name="header"
-            onClick={!detached && handleExpand}
+            onClick={!detached ? handleExpand : undefined}
           >
             {(visible || detached) && (
               <Elem name="title">{title}</Elem>
@@ -334,8 +334,8 @@ export const PanelBase: FC<PanelBaseProps> = ({
         )}
       </Elem>
 
-      {visible && !dragLocked && !locked && (
-        <Elem name="resizers" ref={resizerRef}>
+      {visible && !positioning && !locked && (
+        <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
           {resizers.map((res) => {
             const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;
 
