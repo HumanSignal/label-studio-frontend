@@ -87,7 +87,7 @@ const TagAttrs = types.model({
   horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
   verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
   precisionzoom: types.optional(types.boolean, false),
-  defaultZoom: types.optional(types.enumeration(["auto", "fit"]), "fit"),
+  defaultzoom: types.optional(types.enumeration(["auto", "fit"]), "fit"),
   constrainregions: types.optional(types.boolean, true),
 });
 
@@ -720,8 +720,18 @@ const Model = types.model({
       const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
 
-      self.defaultZoom = "fit";
+      self.defaultzoom = "fit";
       self.setZoom(maxScale);
+      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
+      self.updateImageAfterZoom();
+    },
+
+    sizeToOriginal() {
+      const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { width, height } = stageComponentSize;
+
+      self.defaultzoom = "original";
+      self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
       self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
     },
@@ -730,8 +740,8 @@ const Model = types.model({
       const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
 
-      self.defaultZoom = "auto";
-      self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
+      self.defaultzoom = "auto";
+      self.setZoom(1);
       self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
     },
@@ -891,7 +901,8 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
-      if (self.defaultZoom === "fit") {
+      console.log("updateImageSize", self.defaultzoom);
+      if (self.defaultzoom === "fit") {
         self.sizeToFit();
       } else {
         self.sizeToAuto();
