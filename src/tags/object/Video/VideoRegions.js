@@ -41,7 +41,7 @@ const VideoRegionsPure = ({
   const [isDrawing, setDrawingMode] = useState(false);
   const stageRef = useRef();
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden);
+  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked);
   const listenToEvents = !locked && item.annotation.editable;
 
   const workinAreaCoordinates = useMemo(() => {
@@ -160,6 +160,7 @@ const VideoRegionsPure = ({
     onMouseMove: handleMouseMove,
     onMouseUp: handleMouseUp,
   } : {};
+
 
   return (
     <Stage
