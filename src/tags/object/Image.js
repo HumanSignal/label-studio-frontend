@@ -86,9 +86,7 @@ const TagAttrs = types.model({
 
   horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
   verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
-  precisionzoom: types.optional(types.boolean, false),
   defaultzoom: types.optional(types.enumeration(["auto", "original", "fit"]), "fit"),
-  constrainregions: types.optional(types.boolean, true),
 });
 
 const IMAGE_CONSTANTS = {
