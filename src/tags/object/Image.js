@@ -891,7 +891,7 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
-      if(self.size === "fit") {
+      if (self.size === "fit") {
         self.sizeToFit();
       } else {
         self.sizeToAuto();

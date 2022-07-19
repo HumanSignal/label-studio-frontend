@@ -834,14 +834,14 @@ export default observer(
         styles["image_position"],
         styles[`image_position__${item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],
-      ] :[];
+      ] : [];
 
       const wrapperClasses = [
         styles.wrapperComponent,
         item.images.length > 1 ? styles.withGallery : styles.wrapper,
       ];
 
-      if(isFF(FF_DEV_2504)){
+      if (isFF(FF_DEV_2504)) {
         wrapperClasses.push(styles[`wrapperComponent__${item.verticalalignment}`]);
         wrapperClasses.push(styles[`wrapperComponent__${item.horizontalalignment}`]);
       }
