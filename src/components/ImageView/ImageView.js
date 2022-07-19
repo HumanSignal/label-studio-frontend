@@ -832,7 +832,7 @@ export default observer(
       
       const imagePositionClassnames = isFF(FF_DEV_2504) ? [
         styles["image_position"],
-        styles[`image_position__${item.verticalalignment}`],
+        styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],
       ] : [];
 
@@ -842,7 +842,7 @@ export default observer(
       ];
 
       if (isFF(FF_DEV_2504)) {
-        wrapperClasses.push(styles[`wrapperComponent__${item.verticalalignment}`]);
+        wrapperClasses.push(styles[`wrapperComponent__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`]);
         wrapperClasses.push(styles[`wrapperComponent__${item.horizontalalignment}`]);
       }
       

@@ -51,7 +51,7 @@ import { FF_DEV_2394, FF_DEV_2504, isFF } from "../../utils/feature-flags";
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
- * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "middle" or "bottom"
+ * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {boolean} [precisionZoom=false]       - Displays image pixels when zooming in
  * @param {string} [size="fit"]                 - Specify the initial size of the image within the viewport while preserving it’s ratio. Can be one of "auto" or "fit"
  * @param {boolean} [constrainRegions=true]     - Constrains the regions transformations to the canvas
@@ -85,7 +85,7 @@ const TagAttrs = types.model({
   selectioncontrol: types.optional(types.boolean, true),
 
   horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
-  verticalalignment: types.optional(types.enumeration(["top", "middle", "bottom"]), "top"),
+  verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
   precisionzoom: types.optional(types.boolean, false),
   size: types.optional(types.enumeration(["auto", "fit"]), "fit"),
   constrainregions: types.optional(types.boolean, true),
