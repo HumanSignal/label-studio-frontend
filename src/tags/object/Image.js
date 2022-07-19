@@ -901,7 +901,7 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
-      console.log("updateImageSize", self.defaultzoom);
+
       if (self.defaultzoom === "fit") {
         self.sizeToFit();
       } else {
