@@ -48,7 +48,7 @@ const ToolView = observer(({ item }) => {
               label: `Zoom to actual size`,
               shortcut: "shift+2",
               onClick: () => {
-                item.sizeToAuto();
+                item.sizeToOriginal();
               },
             },
           ]}
@@ -143,6 +143,12 @@ const _Tool = types
       const item = self.obj;
 
       item.sizeToAuto();
+    },
+
+    sizeToOriginal() {
+      const item = self.obj;
+
+      item.sizeToOriginal();
     },
   }));
 
