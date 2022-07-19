@@ -162,7 +162,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   // Panel positioning
   useDrag({
     elementRef: headerRef,
-    disabled: locked,
+    disabled: locked || (!detached && !visible),
 
     onMouseDown(e) {
       const el = e.target as HTMLElement;
@@ -210,7 +210,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
     onMouseUp() {
       handlers.current.onSnap?.(name);
     },
-  }, [headerRef, detached, locked]);
+  }, [headerRef, detached, visible, locked]);
 
   // Panel resizing
   useDrag({
