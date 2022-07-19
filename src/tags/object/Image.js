@@ -17,7 +17,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
 import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
-import { FF_DEV_2394, FF_DEV_2504, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -53,7 +53,7 @@ import { FF_DEV_2394, FF_DEV_2504, isFF } from "../../utils/feature-flags";
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {boolean} [precisionZoom=false]       - Displays image pixels when zooming in
- * @param {string} [size="fit"]                 - Specify the initial size of the image within the viewport while preserving it’s ratio. Can be one of "auto" or "fit"
+ * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto" or "fit"
  * @param {boolean} [constrainRegions=true]     - Constrains the regions transformations to the canvas
  */
 const TagAttrs = types.model({
@@ -87,7 +87,7 @@ const TagAttrs = types.model({
   horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
   verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
   precisionzoom: types.optional(types.boolean, false),
-  size: types.optional(types.enumeration(["auto", "fit"]), "fit"),
+  defaultZoom: types.optional(types.enumeration(["auto", "fit"]), "fit"),
   constrainregions: types.optional(types.boolean, true),
 });
 
@@ -720,7 +720,7 @@ const Model = types.model({
       const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
 
-      self.size = "fit";
+      self.defaultZoom = "fit";
       self.setZoom(maxScale);
       self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
@@ -730,7 +730,7 @@ const Model = types.model({
       const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
 
-      self.size = "auto";
+      self.defaultZoom = "auto";
       self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
       self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
@@ -891,7 +891,7 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
-      if (self.size === "fit") {
+      if (self.defaultZoom === "fit") {
         self.sizeToFit();
       } else {
         self.sizeToAuto();
