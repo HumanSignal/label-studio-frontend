@@ -43,6 +43,7 @@ type TaxonomyProps = {
   onAddLabel?: onAddLabelCallback,
   onDeleteLabel?: onDeleteLabelCallback,
   options?: TaxonomyOptions,
+  isReadonly?: boolean,
 };
 
 type TaxonomySelectedContextValue = [TaxonomyPath[], (path: TaxonomyPath, value: boolean) => any];
@@ -112,7 +113,7 @@ const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
   );
 };
 
-const SelectedList = () => {
+const SelectedList = ({ isReadonly }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { showFullPath, pathSeparator = " / " } = useContext(TaxonomyOptionsContext);
 
@@ -121,7 +122,9 @@ const SelectedList = () => {
       {selected.map(path => (
         <div key={path.join("|")}>
           {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
-          <input type="button" onClick={() => setSelected(path, false)} value="×" />
+          {!isReadonly &&
+            <input type="button" onClick={() => setSelected(path, false)} value="×" />
+          }
         </div>
       ))}
     </div>
@@ -401,6 +404,7 @@ const Taxonomy = ({
   onAddLabel,
   onDeleteLabel,
   options = {},
+  isReadonly = false,
 }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const taxonomyRef = useRef<HTMLDivElement>(null);
@@ -504,14 +508,16 @@ const Taxonomy = ({
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
-        <SelectedList />
-        <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
-          <span onClick={() => setOpen(val => !val)}>
-            {options.placeholder || "Click to add..."}
-            <LsChevron stroke="#09f" />
-          </span>
-          <TaxonomyDropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
-        </div>
+        <SelectedList isReadonly={isReadonly}/>
+        {!isReadonly && (
+          <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
+            <span onClick={() => setOpen(val => !val)}>
+              {options.placeholder || "Click to add..."}
+              <LsChevron stroke="#09f" />
+            </span>
+            <TaxonomyDropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
+          </div>
+        )}
       </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>
   );
