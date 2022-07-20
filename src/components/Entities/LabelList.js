@@ -45,8 +45,6 @@ export const LabelList = observer(({ regionStore }) => {
 
   const expandedKeys = treeData.filter( item => !collapsedPos.includes(item.pos) ).map( item => item.key ) ?? [];
 
-  console.log("treeData", treeData);
-
   return (
     <Tree
       className={styles.treelabels}
