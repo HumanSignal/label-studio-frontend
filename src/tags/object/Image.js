@@ -712,34 +712,37 @@ const Model = types.model({
       self.zoomingPositionY = clamp(y, min.y, 0);
     },
 
-    sizeToFit() {
-      const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+    resetZoomPositionToCenter() {
+      const { containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
+
+      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
+    },
+
+    sizeToFit() {
+      const { maxScale } = self;
 
       self.defaultzoom = "fit";
       self.setZoom(maxScale);
-      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
     },
 
     sizeToOriginal() {
-      const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
-      const { width, height } = stageComponentSize;
+      const { maxScale } = self;
 
       self.defaultzoom = "original";
       self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
-      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
     },
 
     sizeToAuto() {
-      const { maxScale, containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
-      const { width, height } = stageComponentSize;
 
       self.defaultzoom = "auto";
       self.setZoom(1);
-      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
       self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
     },
 
     handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
