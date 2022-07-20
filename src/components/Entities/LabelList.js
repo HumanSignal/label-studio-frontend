@@ -19,7 +19,6 @@ export const LabelList = observer(({ regionStore }) => {
   const collapse = (pos) => {
     const newCollapsedPos = [...collapsedPos, pos];
 
-    console.log("collpase", pos);
     setCollapsedPos( newCollapsedPos );
     updateLocalStorage( newCollapsedPos );
   };
@@ -27,7 +26,6 @@ export const LabelList = observer(({ regionStore }) => {
   const expand = (pos) => {
     const newCollapsedPos = collapsedPos.filter( cPos => cPos !== pos);
     
-    console.log("expand", pos);
     setCollapsedPos( newCollapsedPos );
     updateLocalStorage( newCollapsedPos );
   };
@@ -46,13 +44,8 @@ export const LabelList = observer(({ regionStore }) => {
   });
 
   const expandedKeys = treeData.filter( item => !collapsedPos.includes(item.pos) ).map( item => item.key ) ?? [];
-  const expandedKeysProps = {};
 
-  if(collapsedPos.length === 0) {
-    expandedKeysProps.defaultExpandAll = true;
-  } else {
-    expandedKeysProps.expandedKeys = expandedKeys;
-  }
+  console.log("treeData", treeData);
 
   return (
     <Tree
@@ -60,14 +53,15 @@ export const LabelList = observer(({ regionStore }) => {
       treeData={treeData}
       showIcon={false}
       blockNode={true}
+      defaultExpandAll={true}
       autoExpandParent={true}
+      expandedKeys={expandedKeys}
       switcherIcon={<LsChevron className={styles.switcherIcon} opacity="0.25" />}
       onExpand={(internalExpandedKeys, { expanded, node, nativeEvent }) => {
         const pos = node?.pos;
         
         collapsedPos.includes(pos) ? expand(pos) : collapse(pos);
       }}
-      {...expandedKeysProps}
     />
   );
 });
