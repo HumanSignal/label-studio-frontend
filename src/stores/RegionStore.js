@@ -281,29 +281,33 @@ export default types.model("RegionStore", {
       };
 
       const addToLabelGroup = (labels, region) => {
-        for(const label of labels) {
+        labels.forEach((label) => {
           const key = `${label.value}#${label.id}`;
           const group = getLabelGroup(label, key);
           const groupId = group.id;
-            
+          
           group.children.push({
             ...enrich(region, index, false, null, onClick, groupId),
             item: region,
             isArea: true,
           });
-        }
+        });
       };
 
-      for (const region of self.regions) {
+      self.regions.forEach((region) => {
         const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
 
         addToLabelGroup(labelsForRegion, region);
 
         index++;
-      }
+      });
 
-      result.push(...Object.values(groups));
-
+      result.push(...Object.values(groups)
+        .map( (group, groupIndex) => {
+          group.pos = `0-${groupIndex}`;
+          return group;
+        }));
+      
       return result;
     },
 
