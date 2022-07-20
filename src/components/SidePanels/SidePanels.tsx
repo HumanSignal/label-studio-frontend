@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
 import { SidePanelsContext } from "./SidePanelsContext";
-import { DEFAUL_PANEL_HEIGHT, DEFAUL_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
 
 const maxWindowWidth = 980;
 
@@ -91,8 +91,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       top: 0,
       left: 0,
       zIndex: 1,
-      width: DEFAUL_PANEL_WIDTH,
-      height: DEFAUL_PANEL_HEIGHT,
+      width: DEFAULT_PANEL_WIDTH,
+      height: DEFAULT_PANEL_HEIGHT,
       visible: true,
       detached: false,
       alignment: "left",
@@ -101,8 +101,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       top: 0,
       left: 0,
       zIndex: 1,
-      width: DEFAUL_PANEL_WIDTH,
-      height: DEFAUL_PANEL_HEIGHT,
+      width: DEFAULT_PANEL_WIDTH,
+      height: DEFAULT_PANEL_HEIGHT,
       visible: true,
       detached: false,
       alignment: "right",
@@ -225,8 +225,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         left,
         storedLeft: undefined,
         storedTop: undefined,
-        width: clamp(w, DEFAUL_PANEL_WIDTH, Infinity),
-        height: clamp(h, DEFAUL_PANEL_WIDTH, Infinity),
+        width: clamp(w, DEFAULT_PANEL_WIDTH, Infinity),
+        height: clamp(h, DEFAULT_PANEL_WIDTH, Infinity),
       });
     });
   }, [updatePanel]);
