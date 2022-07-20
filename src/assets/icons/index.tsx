@@ -72,7 +72,8 @@ export { ReactComponent as IconSpeed } from "./speed.svg";
 export { ReactComponent as IconTagAlt } from "./tag-alt.svg";
 export { ReactComponent as IconSortUp } from "./sort-up.svg";
 export { ReactComponent as IconSortDown } from "./sort-down.svg";
-export { ReactComponent as IconCollapseLeft } from "./collapse-left.svg";
+export { ReactComponent as IconArrowLeft } from "./arrow-left.svg";
+export { ReactComponent as IconArrowRight } from "./arrow-right.svg";
 
 
 // Relations
@@ -84,3 +85,4 @@ export { ReactComponent as IconRelationBi } from "./relations/bi.svg";
 export { ReactComponent as IconPropertyAngle } from "./properties/angle.svg";
 
 export * from "./annotation";
+export * from "./outliner";
