@@ -285,7 +285,7 @@ export default types.model("RegionStore", {
           const key = `${label.value}#${label.id}`;
           const group = getLabelGroup(label, key);
           const groupId = group.id;
-          
+            
           group.children.push({
             ...enrich(region, index, false, null, onClick, groupId),
             item: region,
