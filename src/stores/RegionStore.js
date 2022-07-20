@@ -281,7 +281,7 @@ export default types.model("RegionStore", {
       };
 
       const addToLabelGroup = (labels, region) => {
-        labels.forEach((label) => {
+        for(const label of labels) {
           const key = `${label.value}#${label.id}`;
           const group = getLabelGroup(label, key);
           const groupId = group.id;
@@ -291,16 +291,16 @@ export default types.model("RegionStore", {
             item: region,
             isArea: true,
           });
-        });
+        }
       };
 
-      self.regions.forEach((region) => {
+      for (const region of self.regions) {
         const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
 
         addToLabelGroup(labelsForRegion, region);
 
         index++;
-      });
+      }
 
       result.push(...Object.values(groups)
         .map( (group, groupIndex) => {
