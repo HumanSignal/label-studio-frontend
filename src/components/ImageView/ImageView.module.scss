@@ -27,24 +27,6 @@
   align-items: flex-start;
   justify-content: space-between;
   align-self: stretch;
-  &__top {
-    align-items: flex-start;
-  }
-  &__middle {
-    align-items: center;
-  }
-  &__bottom {
-    align-items: flex-end;
-  }
-  &__left {
-    justify-content: flex-start;
-  }
-  &__center {
-    justify-content: center;
-  }
-  &__right {
-    justify-content: flex-end;
-  }
 }
 
 .wrapper {

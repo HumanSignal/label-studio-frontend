@@ -841,12 +841,6 @@ export default observer(
         item.images.length > 1 ? styles.withGallery : styles.wrapper,
       ];
 
-      if (isFF(FF_DEV_2504)) {
-        wrapperClasses.push(styles[`wrapperComponent__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`]);
-        wrapperClasses.push(styles[`wrapperComponent__${item.horizontalalignment}`]);
-      }
-      
-
       const {
         brushRegions,
         shapeRegions,
