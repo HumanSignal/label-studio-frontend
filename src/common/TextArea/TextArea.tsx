@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useRef } from "react";
 import { debounce } from "lodash";
-import { Block } from "../../utils/bem";
+import { Block, cn } from "../../utils/bem";
 
 import "./TextArea.styl";
 
@@ -12,6 +12,10 @@ export type TextAreaProps = {
   maxRows?: number,
   inlineAction?: boolean,
   autoSize?: boolean,
+  className?: string,
+  placeholder?: string,
+  name?: string,
+  id?: string,
 }
 
 export const TextArea: FC<TextAreaProps> = ({
@@ -22,7 +26,15 @@ export const TextArea: FC<TextAreaProps> = ({
   autoSize = true,
   rows = 1,
   maxRows = 3,
+  className,
+  ...props
 }) => {
+
+  const rootClass = cn('textarea');
+  const classList = [
+    rootClass.mod({ inline: inlineAction, autosize: autoSize }),
+    className,
+  ].join(" ").trim();
 
   const autoGrowRef = useRef({
     rows,
@@ -34,7 +46,7 @@ export const TextArea: FC<TextAreaProps> = ({
   const resizeTextArea = useCallback(debounce(() => {
     const textarea = textAreaRef.current;
 
-    if (!textarea || !autoGrowRef.current) return;
+    if (!textarea || !autoGrowRef.current || !textAreaRef.current) return;
 
     if (autoGrowRef.current.maxHeight === Infinity) {
       textarea.style.height = 'auto';
@@ -98,6 +110,6 @@ export const TextArea: FC<TextAreaProps> = ({
   }, [value]);
 
   return (
-    <Block tag="textarea" name="textarea" mod={{ inline: inlineAction, autosize: autoSize }} ref={textAreaRef} placeholder="Add a comment" rows={autoGrowRef.current.rows} onChange={onChange} onInput={onInput}></Block>
+    <textarea ref={textAreaRef} className={classList} rows={autoGrowRef.current.rows} onChange={onChange} onInput={onInput} {...props}></textarea>
   );
 };

@@ -15,6 +15,7 @@ import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
 import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
+import { CommentStore } from "./Comment/CommentStore";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 
@@ -75,6 +76,16 @@ export const Annotation = types
 
     readonly: types.optional(types.boolean, false),
     isDrawing: types.optional(types.boolean, false),
+
+    commentStore: types.optional(CommentStore, {
+      comments: Array.from({ length: Math.floor(Math.random() * 30) }).map((_, i) => ({ 
+        id: guidGenerator(5),
+        content: i === 0 ? "I’m not sure which of these labels is correct for the task. Can you please tell me which label is appropriate?" : i === 1 ? "Instructions are not clear for the labels, could someone give more details?" : "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
+        updatedAt: Utils.UDate.currentISODate(),
+        createdBy: [98, 99, 100, 101][Math.floor(Math.random() * 4)],
+        is_resolved: Math.random() > 0.5,
+      })),
+    }),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);

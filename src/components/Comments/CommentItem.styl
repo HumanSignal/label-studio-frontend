@@ -1,0 +1,45 @@
+.comment-item
+  --comment-item-padding 8px
+  --comment-item-spacing 6px
+  --comment-item-content-font-size 14px
+  --comment-item-content-line-height 20px
+  --comment-item-content-letter-spacing 0.25px
+  --comment-item-name-color #1f1f1f
+  --comment-item-content-color #413C4A
+  --comment-item-content-color-resolved #898098
+  --comment-item-icon-color-resolved #389E0D
+  
+  padding var(--comment-item-padding)
+  color var(--comment-item-content-color)
+
+  & > * + * {
+    margin-top var(--comment-item-spacing);
+  }
+
+  &__name
+    color var(--comment-item-name-color)
+
+  &__name,
+  &__date
+    font-size var(--comment-item-content-font-size)
+
+  &__resolved
+    opacity 0
+    transition opacity 0.3s ease
+    will-change opacity
+
+    ~/_resolved &
+      opacity 1
+      width 12px
+      margin-right 4px
+      color var(--comment-item-icon-color-resolved)
+
+  &__content
+    font-size var(--comment-item-content-font-size)
+    line-height var(--comment-item-content-line-height)
+    letter-spacing var(--comment-item-content-letter-spacing)
+
+    ~/_resolved &
+      color var(--comment-item-content-color-resolved)
+
+

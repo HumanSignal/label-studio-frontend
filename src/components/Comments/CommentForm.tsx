@@ -4,9 +4,11 @@ import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
 import "./CommentForm.styl";
 import { TextArea } from "../../common/TextArea/TextArea";
+import { observer } from "mobx-react";
 
 
 export type CommentFormProps = {
+  commentStore: any,
   value?: string,
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
@@ -15,7 +17,8 @@ export type CommentFormProps = {
   maxRows?: number,
 }
 
-export const CommentForm: FC<CommentFormProps> = ({
+export const CommentForm: FC<CommentFormProps> = observer(({
+  commentStore,
   value = "", 
   inline,
   onChange,
@@ -25,11 +28,12 @@ export const CommentForm: FC<CommentFormProps> = ({
 }) => {
   const onSubmit = useCallback((e: any) => {
     e.preventDefault();
+    commentStore.addComment(e.target.value);
   }, []);
 
   return (
     <Block tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
-      <TextArea value={value} rows={rows} maxRows={maxRows} onChange={onChange} onInput={onInput} inlineAction={inline} />
+      <TextArea placeholder="Add a comment" value={value} rows={rows} maxRows={maxRows} onChange={onChange} onInput={onInput} inlineAction={inline} />
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />
@@ -37,4 +41,4 @@ export const CommentForm: FC<CommentFormProps> = ({
       </Elem>
     </Block>
   );
-};
+});

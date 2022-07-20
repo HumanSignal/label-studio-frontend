@@ -1,4 +1,3 @@
-import { formatDistanceToNow } from "date-fns";
 import { inject, observer } from "mobx-react";
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Tooltip } from "antd";
@@ -19,7 +18,7 @@ import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
 import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
-import { userDisplayName } from "../../utils/utilities";
+import { humanDateDiff, userDisplayName } from "../../utils/utilities";
 import "./AnnotationHistory.styl";
 
 type HistoryItemType = (
@@ -49,13 +48,6 @@ const injector = inject(({ store }) => {
     selectedHistory: as?.selectedHistory,
   };
 });
-
-const humanDateDiff = (date: string | number) => {
-  const fnsDate = formatDistanceToNow(new Date(date), { addSuffix: true });
-
-  if (fnsDate === "less than a minute ago") return "just now";
-  return fnsDate;
-};
 
 const DraftState: FC<{
   annotation: any,

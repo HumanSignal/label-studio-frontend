@@ -1,4 +1,9 @@
 .comments
     --comments-padding 0 16px 12px  
+    --comments-spacing 8px
 
     padding var(--comments-padding)
+
+    & > * + * {
+        margin-top var(--comments-spacing)
+    }

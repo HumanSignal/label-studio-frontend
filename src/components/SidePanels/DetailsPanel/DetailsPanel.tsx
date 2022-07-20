@@ -1,7 +1,6 @@
-import { observer } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { FC } from "react";
 import { Elem } from "../../../utils/bem";
-import { FF_DEV_2887, isFF } from "../../../utils/feature-flags";
 import { Comments } from "../../Comments/Comments";
 import { AnnotationHistory } from "../../CurrentEntity/AnnotationHistory";
 import { PanelBase, PanelProps } from "../PanelBase";
@@ -39,7 +38,7 @@ const Content: FC<any> = observer(({
   );
 });
 
-const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
+const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
 
   return (
@@ -63,19 +62,23 @@ const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
           />
         </Elem>
       </Elem>
-      {isFF(FF_DEV_2887) && (
+      {store.hasInterface('annotations:comments') && (
         <Elem name="section">
           <Elem name="section-head">
             Comments
           </Elem>
           <Elem name="section-content">
-            <Comments />
+            <Comments
+              commentStore={currentEntity.commentStore}
+            />
           </Elem>
         </Elem>
       )}
     </>
   );
-});
+}));
+
+GeneralPanel.displayName = "GeneralPanel";
 
 const RegionsPanel: FC<{regions:  any}> = observer(({
   regions,

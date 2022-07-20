@@ -79,8 +79,6 @@ export const FF_DEV_2432 = "ff_front_dev_2432_auto_save_polygon_draft_210622_sho
 // Change the rotate tool from bbox
 export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
-export const FF_DEV_2887 = "fflag-front-dev-2887-comments-editor-ui-short";
-
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,
