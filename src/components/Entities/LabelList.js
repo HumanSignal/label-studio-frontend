@@ -30,7 +30,7 @@ export const LabelList = observer(({ regionStore }) => {
     updateLocalStorage( newCollapsedPos );
   };
 
-  const treeData = regionStore.asLabelsTree( ( item, idx, isLabel, children, onClick ) => {
+  const treeData = regionStore.asLabelsTree((item, idx, isLabel, children, onClick) => {
     return {
       key: item.id,
       title: (data) => {
