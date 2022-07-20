@@ -167,6 +167,8 @@ const Model = types
     setHighlight(val) {
       self._highlighted = val;
 
+      if (!self._ws_region) return;
+
       if (val) {
         self.updateColor(0.8);
         self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
