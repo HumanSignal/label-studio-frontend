@@ -45,7 +45,7 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
 
 const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
-    <Text mark >
+    <Text mark>
       {mainValue.map((value: string, i: number) => (
         <p key={`${value}-${i}`} data-counter={i + 1}>{value}</p>
       ))}
