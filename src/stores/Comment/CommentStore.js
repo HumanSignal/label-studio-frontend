@@ -1,4 +1,4 @@
-import { getEnv, getParent, types } from "mobx-state-tree";
+import { getEnv, getParent, getSnapshot, types } from "mobx-state-tree";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
 
@@ -35,7 +35,19 @@ export const CommentStore = types
       const index = comments.findIndex(comment => comment.id === id);
 
       if (index > -1) {
-        comments[index].id = newComment.id;
+        const snapshot = getSnapshot(comments[index]);
+
+        comments[index] = { ...snapshot, id : newComment.id || snapshot.id };
+      }
+    }
+
+    function removeCommentId(id)  {
+      const comments = self.comments;
+
+      const index = comments.findIndex(comment => comment.id === id);
+
+      if (index > -1) {
+        comments.splice(index, 1);
       }
     }
 
@@ -60,7 +72,7 @@ export const CommentStore = types
           self.replaceId(now, newComment);
         }
       } catch(err) {
-        self.comments.shift();
+        self.removeCommentId(now);
         throw err;
       } finally{ 
         self.setLoading(null);
@@ -94,6 +106,7 @@ export const CommentStore = types
     return {
       setLoading,
       replaceId,
+      removeCommentId,
       addComment,
       setComments,
       listComments,

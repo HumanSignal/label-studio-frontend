@@ -27,20 +27,24 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   maxRows = 4,
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  const actionRef = useRef<{ clear?: () => void }>({});
+  const actionRef = useRef<{ update?: (text?: string) => void }>({});
 
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
     if (!formRef.current) return;
     
-    const comment = new FormData(formRef.current).get("comment");
+    const comment = new FormData(formRef.current).get("comment") as string;
+
+    if (!comment.trim()) return;
 
     try {
+      actionRef.current.update?.("");
+
       await commentStore.addComment(comment);
       
-      actionRef.current.clear?.();
     } catch(err) {
+      actionRef.current.update?.(comment || "");
       console.log(err);
     }
   }, []);

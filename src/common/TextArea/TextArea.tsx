@@ -11,7 +11,7 @@ export type TextAreaProps = {
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
   ref?: MutableRefObject<HTMLTextAreaElement>,
-  actionRef?: MutableRefObject<{ clear?: () => void }>,
+  actionRef?: MutableRefObject<{ update?: (text?: string) => void }>,
   rows?: number,
   maxRows?: number,
   autoSize?: boolean,
@@ -91,10 +91,10 @@ export const TextArea: FC<TextAreaProps> = ({
 
   if (actionRef) {
     actionRef.current = {
-      clear: () => {
+      update: (text = "") => {
         if (!textAreaRef.current) return;
 
-        textAreaRef.current.value = "";
+        textAreaRef.current.value = text;
         resizeTextArea();
       },
     };
