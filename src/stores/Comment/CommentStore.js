@@ -52,7 +52,7 @@ export const CommentStore = types
     }
 
     async function addComment(text) {
-      const now = Date.now();
+      const now = Date.now() * -1;
 
       const comment =  {
         id: now,
