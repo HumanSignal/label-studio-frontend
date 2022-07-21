@@ -1,16 +1,19 @@
-import { FC, useCallback, useEffect, useRef } from "react";
+import { FC, MutableRefObject, useCallback, useEffect, useRef } from "react";
 import { debounce } from "lodash";
-import { Block, cn } from "../../utils/bem";
+import { cn } from "../../utils/bem";
 
 import "./TextArea.styl";
+import mergeRefs from "../Utils/mergeRefs";
 
 export type TextAreaProps = {
-  value?: string,
+  value?: string|null,
+  onSubmit?: () => void|Promise<void>,
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
+  ref?: MutableRefObject<HTMLTextAreaElement>,
+  actionRef?: MutableRefObject<{ clear?: () => void }>,
   rows?: number,
   maxRows?: number,
-  inlineAction?: boolean,
   autoSize?: boolean,
   className?: string,
   placeholder?: string,
@@ -19,16 +22,20 @@ export type TextAreaProps = {
 }
 
 export const TextArea: FC<TextAreaProps> = ({
-  inlineAction,
+  ref,
+  actionRef,
   onChange: _onChange,
   onInput: _onInput,
-  value = "", 
+  onSubmit,
+  value, 
   autoSize = true,
   rows = 1,
-  maxRows = 3,
+  maxRows = 4,
   className,
   ...props
 }) => {
+
+  const inlineAction = !!onSubmit;
 
   const rootClass = cn('textarea');
   const classList = [
@@ -38,7 +45,7 @@ export const TextArea: FC<TextAreaProps> = ({
 
   const autoGrowRef = useRef({
     rows,
-    maxRows,
+    maxRows: Math.max(maxRows - 1, 1),
     lineHeight: 24,
     maxHeight: Infinity,
   });
@@ -82,6 +89,17 @@ export const TextArea: FC<TextAreaProps> = ({
     });
   }, 10, { leading: true }), []);
 
+  if (actionRef) {
+    actionRef.current = {
+      clear: () => {
+        if (!textAreaRef.current) return;
+
+        textAreaRef.current.value = "";
+        resizeTextArea();
+      },
+    };
+  }
+
   const onInput = useCallback((e: any) => {
     _onInput?.(e.target.value);
     resizeTextArea();
@@ -106,13 +124,33 @@ export const TextArea: FC<TextAreaProps> = ({
 
   useEffect(() => {
     if (textAreaRef.current) {
-      textAreaRef.current.value = value;
-      console.log("value changed", textAreaRef.current.value);
+      textAreaRef.current.value = value || "";
       resizeTextArea();
     }
   }, [value]);
 
+  useEffect(() => {
+    if (!onSubmit) return;
+
+    const listener = (event: KeyboardEvent) => {
+      if (!textAreaRef.current) return;
+      if (event.key === "Enter" && event.metaKey) {
+        onSubmit();
+      }
+    };
+
+    if (textAreaRef.current) {
+      textAreaRef.current.addEventListener("keydown", listener);
+    }
+    return () => {
+      if (textAreaRef.current) {
+        textAreaRef.current.removeEventListener("keydown", listener);
+      }
+    };
+  }, [onSubmit]);
+
+
   return (
-    <textarea ref={textAreaRef} className={classList} rows={autoGrowRef.current.rows} onChange={onChange} onInput={onInput} {...props}></textarea>
+    <textarea ref={mergeRefs(textAreaRef, ref)} className={classList} rows={autoGrowRef.current.rows} onChange={onChange} onInput={onInput} {...props}></textarea>
   );
 };

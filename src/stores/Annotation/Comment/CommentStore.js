@@ -1,4 +1,4 @@
-import { getParent, types } from "mobx-state-tree";
+import { getEnv, getParent, types } from "mobx-state-tree";
 import Utils from "../../../utils";
 import { guidGenerator } from "../../../utils/unique";
 import { Comment } from "./Comment";
@@ -11,24 +11,47 @@ export const CommentStore = types
     get parent() {
       return getParent(self);
     },
-
     get currentUser() {
       return self.parent.user;
     },
+    get sdk() {
+      return getEnv(self).events;
+    },
   }))
   .actions(self => {
-    function addComment(content) {
-      self.comments.unshift({
+    async function addComment(content) {
+      const comment =  {
         id: guidGenerator(5),
         content,
-        createdBy: self.currentUser.id,
-        createdAt: Utils.UDate.currentISODate(),
-        updatedAt: Utils.UDate.currentISODate(),
-        is_resolved: false,
-      });
+        annotation: self.parent.pk,
+        created_by: self.currentUser.id,
+        created_at: Utils.UDate.currentISODate(),
+      };
+
+      self.comments.unshift(comment);
+
+      try {
+        await self.sdk.invoke("comments:add", comment);
+      } catch(err) {
+        self.comments.shift();
+        throw err;
+      }
+    }
+
+    async function fetchComments() {
+      try {
+        const comments = await self.sdk.invoke("comments:list", {
+          annotation: self.parent.pk,
+        });
+
+        self.comments.replace(comments);
+      } catch(err) {
+        console.log(err);
+      }
     }
 
     return {
       addComment,
+      fetchComments,
     };
   });

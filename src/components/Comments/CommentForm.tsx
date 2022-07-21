@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useRef } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
@@ -20,35 +20,43 @@ export type CommentFormProps = {
 export const CommentForm: FC<CommentFormProps> = observer(({
   commentStore,
   value = "", 
-  inline,
+  inline = true,
   onChange,
   onInput,
   rows = 1,
-  maxRows = 3,
+  maxRows = 4,
 }) => {
-  const [content, setContent] = useState(value);
+  const formRef = useRef<HTMLFormElement>(null);
+  const actionRef = useRef<{ clear?: () => void }>({});
 
-  const onSubmit = useCallback((e: any) => {
-    e.preventDefault();
+  const onSubmit = useCallback(async (e?: any) => {
+    e?.preventDefault?.();
 
-    const comment = new FormData(e.target).get("comment");
+    if (!formRef.current) return;
+    
+    const comment = new FormData(formRef.current).get("comment");
 
-    commentStore.addComment(comment);
-
-    setContent('');
+    try {
+      await commentStore.addComment(comment);
+      
+      actionRef.current.clear?.();
+    } catch(err) {
+      console.log(err);
+    }
   }, []);
 
   return (
-    <Block tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
+    <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
       <TextArea
+        actionRef={actionRef}
         name="comment"
         placeholder="Add a comment"
-        value={content}
+        value={value}
         rows={rows}
         maxRows={maxRows}
         onChange={onChange}
         onInput={onInput}
-        inlineAction={inline}
+        onSubmit={inline ? onSubmit : undefined}
       />
       <Elem tag="div" name="primary-action">
         <button type="submit">
