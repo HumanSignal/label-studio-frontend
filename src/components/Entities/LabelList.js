@@ -56,8 +56,9 @@ export const LabelList = observer(({ regionStore }) => {
       expandedKeys={expandedKeys}
       switcherIcon={<LsChevron className={styles.switcherIcon} opacity="0.25" />}
       onExpand={( internalExpandedKeys, { node } ) => {
-        const pos = node?.pos;
-        
+        const nodeRegion = treeData.find(region => region.key === node.key);
+        const pos = nodeRegion?.pos;
+
         collapsedPos.includes(pos) ? expand(pos) : collapse(pos);
       }}
     />

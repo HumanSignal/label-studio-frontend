@@ -5,6 +5,7 @@ import { isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { debounce } from "../utils/debounce";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
+import { FF_DEV_2755, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("RegionStore");
 
@@ -264,9 +265,7 @@ export default types.model("RegionStore", {
       const groups = {};
       const result = [];
       const onClick = createClickRegionInTreeHandler(result);
-
       let index = 0;
-
       const getLabelGroup = (label, key) => {
         const labelGroup = groups[key];
 
@@ -279,13 +278,18 @@ export default types.model("RegionStore", {
           children: [],
         };
       };
-
+      const getRegionLabel = (region) => region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
       const addToLabelGroup = (labels, region) => {
         for(const label of labels) {
           const key = `${label.value}#${label.id}`;
           const group = getLabelGroup(label, key);
           const groupId = group.id;
-            
+          const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
+
+          if( isFF( FF_DEV_2755 ) ) {
+            group.hotkey = parseInt(labelHotKey);
+            group.pos = `0-${labelHotKey}`;
+          }
           group.children.push({
             ...enrich(region, index, false, null, onClick, groupId),
             item: region,
@@ -295,21 +299,22 @@ export default types.model("RegionStore", {
       };
 
       for (const region of self.regions) {
-        const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
-
+        const labelsForRegion = getRegionLabel(region);
+        
         addToLabelGroup(labelsForRegion, region);
 
         index++;
       }
 
-      result.push(...Object.values(groups)
-        .map( (group, groupIndex) => {
-          group.pos = `0-${groupIndex}`;
-          return group;
-        }));
-      
-      result.sort((a, b) => a.pos < b.pos);
-      
+      const groupsArray = Object.values(groups);
+
+      if( isFF( FF_DEV_2755 ) ) {
+        groupsArray.sort((a, b) => a.hotkey > b.hotkey ? 1 : a.hotkey < b.hotkey ? -1 : 0);
+      }
+      result.push(
+        ...groupsArray,
+      );
+
       return result;
     },
 
