@@ -55,7 +55,7 @@ const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
 
 const CnoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
-    <Text mark >
+    <Text mark>
       {mainValue.join(", ")}
     </Text>
   );
