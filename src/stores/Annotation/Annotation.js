@@ -15,7 +15,7 @@ import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
 import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
-import { CommentStore } from "./Comment/CommentStore";
+import { CommentStore } from "../Comment/CommentStore";
 
 const hotkeys = Hotkey("Annotations", "Annotations");
 

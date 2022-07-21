@@ -1,6 +1,6 @@
 import { getEnv, getParent, types } from "mobx-state-tree";
-import Utils from "../../../utils";
-import { guidGenerator } from "../../../utils/unique";
+import Utils from "../../utils";
+import { guidGenerator } from "../../utils/unique";
 import { Comment } from "./Comment";
 
 export const CommentStore = types

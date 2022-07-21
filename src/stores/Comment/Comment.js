@@ -1,7 +1,7 @@
 import { getEnv, types } from "mobx-state-tree";
-import Utils from "../../../utils";
-import { camelizeKeys } from "../../../utils/utilities";
-import { UserExtended } from "../../UserStore";
+import Utils from "../../utils";
+import { camelizeKeys } from "../../utils/utilities";
+import { UserExtended } from "../UserStore";
 
 export const Comment = types.model("Comment", {
   id: types.identifier,
