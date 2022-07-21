@@ -3,7 +3,7 @@
     --primary-action-padding 4px
     --primary-action-border-radius 4px
     --primary-action-surface-color-hover rgba(9, 109, 217, 0.12)
-    --text-input-min-height 44px
+    --text-input-min-height 40px
 
     display grid
     grid-template-columns: auto var(--text-input-min-height);
@@ -20,7 +20,7 @@
         flex-grow 0
 
         button
-            margin-top 2px
+            margin-top 4px
             display flex
             justify-content center
             align-items center
@@ -37,8 +37,8 @@
 
             ~/_inline &
                 padding 0
-                height calc(var(--text-input-min-height) - 4px);
-                width calc(var(--text-input-min-height) - 4px);
+                height calc(var(--text-input-min-height) - 8px);
+                width calc(var(--text-input-min-height) - 8px);
 
         ~/_inline &
             grid-row 1 / 2

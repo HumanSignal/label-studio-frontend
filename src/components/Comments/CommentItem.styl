@@ -4,6 +4,7 @@
   --comment-item-content-font-size 14px
   --comment-item-content-line-height 20px
   --comment-item-content-letter-spacing 0.25px
+  --comment-item-avatar-size 24px
   --comment-item-name-color #1f1f1f
   --comment-item-content-color #413C4A
   --comment-item-content-color-resolved #898098
@@ -16,8 +17,16 @@
     margin-top var(--comment-item-spacing);
   }
 
+  &__userpic
+    width var(--comment-item-avatar-size)
+    height var(--comment-item-avatar-size)
+
   &__name
     color var(--comment-item-name-color)
+    text-overflow ellipsis
+    overflow hidden
+    white-space nowrap
+    flex 1
 
   &__name,
   &__date

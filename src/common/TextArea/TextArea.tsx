@@ -107,7 +107,7 @@ export const TextArea: FC<TextAreaProps> = ({
   useEffect(() => {
     if (textAreaRef.current) {
       textAreaRef.current.value = value;
-      console.log("value changed", value);
+      console.log("value changed", textAreaRef.current.value);
       resizeTextArea();
     }
   }, [value]);
