@@ -441,7 +441,10 @@ export default types
       // but block for at least 0.2s to prevent from double clicking.
 
       Promise.race([Promise.all([res, delay(200)]), delay(5000)])
-        .catch(err => showModal(err?.message || err || defaultMessage))
+        .catch(err => {
+          showModal(err?.message || err || defaultMessage);
+          console.error(err);
+        })
         .then(() => self.setFlags({ isSubmitting: false }));
     }
 

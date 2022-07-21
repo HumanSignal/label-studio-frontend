@@ -221,7 +221,7 @@ class App extends Component {
           )}
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel || newUIEnabled }}>
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
             {newUIEnabled ? (
               <SidePanels
                 panelsHidden={viewingAll}
@@ -233,7 +233,7 @@ class App extends Component {
             ) : (
               <>
                 {mainContent}
- 
+
                 {(viewingAll === false) && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface("side-column") && (
@@ -241,7 +241,7 @@ class App extends Component {
                         <SidebarPage name="annotation" title="Annotation">
                           <AnnotationTab store={store}/>
                         </SidebarPage>
- 
+
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
                             <Component/>
@@ -253,19 +253,19 @@ class App extends Component {
                 )}
               </>
             )}
- 
+
           </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
       </Block>
     );
   }
- 
+
   _notifyScroll = () => {
     if (this.relationsRef.current) {
       this.relationsRef.current.onResize();
     }
   };
 }
- 
+
 export default observer(App);
