@@ -43,6 +43,7 @@ export const TextArea: FC<TextAreaProps> = ({
     maxHeight: Infinity,
   });
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
   const resizeTextArea = useCallback(debounce(() => {
     const textarea = textAreaRef.current;
 
@@ -50,13 +51,13 @@ export const TextArea: FC<TextAreaProps> = ({
 
     if (autoGrowRef.current.maxHeight === Infinity) {
       textarea.style.height = 'auto';
-      const value = textAreaRef.current.value;
+      const currentValue = textAreaRef.current.value;
 
       textAreaRef.current.value = "";
       autoGrowRef.current.lineHeight = (textAreaRef.current.scrollHeight / autoGrowRef.current.rows);
       autoGrowRef.current.maxHeight = (autoGrowRef.current.lineHeight * autoGrowRef.current.maxRows);
 
-      textAreaRef.current.value = value;
+      textAreaRef.current.value = currentValue;
     }
 
     let newHeight: number;
@@ -106,6 +107,8 @@ export const TextArea: FC<TextAreaProps> = ({
   useEffect(() => {
     if (textAreaRef.current) {
       textAreaRef.current.value = value;
+      console.log("value changed", value);
+      resizeTextArea();
     }
   }, [value]);
 

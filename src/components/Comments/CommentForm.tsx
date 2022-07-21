@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react";
+import { FC, useCallback, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
@@ -26,14 +26,30 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   rows = 1,
   maxRows = 3,
 }) => {
+  const [content, setContent] = useState(value);
+
   const onSubmit = useCallback((e: any) => {
     e.preventDefault();
-    commentStore.addComment(e.target.value);
+
+    const comment = new FormData(e.target).get("comment");
+
+    commentStore.addComment(comment);
+
+    setContent('');
   }, []);
 
   return (
     <Block tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
-      <TextArea placeholder="Add a comment" value={value} rows={rows} maxRows={maxRows} onChange={onChange} onInput={onInput} inlineAction={inline} />
+      <TextArea
+        name="comment"
+        placeholder="Add a comment"
+        value={content}
+        rows={rows}
+        maxRows={maxRows}
+        onChange={onChange}
+        onInput={onInput}
+        inlineAction={inline}
+      />
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />

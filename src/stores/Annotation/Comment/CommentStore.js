@@ -21,7 +21,7 @@ export const CommentStore = types
       self.comments.unshift({
         id: guidGenerator(5),
         content,
-        createdBy: self.currentUser,
+        createdBy: self.currentUser.id,
         createdAt: Utils.UDate.currentISODate(),
         updatedAt: Utils.UDate.currentISODate(),
         is_resolved: false,
