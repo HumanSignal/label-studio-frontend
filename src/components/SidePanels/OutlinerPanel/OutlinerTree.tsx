@@ -309,7 +309,6 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const onToggleHidden = useCallback(() => {
     if (type.match('region')) {
       entity.toggleHidden();
-      console.log({ entity });
     } else if(type.match('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }

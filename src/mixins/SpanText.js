@@ -177,7 +177,7 @@ export default types
     toggleHidden(e) {
       self.hidden = !self.hidden;
       self.setHighlight(self.highlighted);
-      console.log(self.hidden);
+
       if (self.hidden) {
         self.updateSpansColor("transparent", 0);
         if (self._spans) {
