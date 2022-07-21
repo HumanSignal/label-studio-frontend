@@ -32,10 +32,10 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
         <Space size="small">
           <Elem name="resolved" component={IconCheck} />
 
-          {comment.updatedAt && (
+          {comment.createdAt && (
             <Elem name="date">
-              <Tooltip placement="topRight" title={new Date(comment.updatedAt).toLocaleString()}>
-                {humanDateDiff(comment.updatedAt)}
+              <Tooltip placement="topRight" title={new Date(comment.createdAt).toLocaleString()}>
+                {humanDateDiff(comment.createdAt)}
               </Tooltip>
             </Elem>
           )}
@@ -43,7 +43,7 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
       </Space>
 
       <Elem name="content">
-        {comment.content}
+        {comment.text}
       </Elem>
     </Block>
   );

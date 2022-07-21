@@ -1,10 +1,10 @@
 import { getEnv, getParent, types } from "mobx-state-tree";
 import Utils from "../../utils";
-import { guidGenerator } from "../../utils/unique";
 import { Comment } from "./Comment";
 
 export const CommentStore = types
   .model("CommentStore", {
+    loading: types.optional(types.maybeNull(types.string), "list"),
     comments: types.optional(types.array(Comment), []),
   })
   .views(self => ({
@@ -17,12 +17,34 @@ export const CommentStore = types
     get sdk() {
       return getEnv(self).events;
     },
+    get isListLoading() {
+      return self.loading === "list";
+    },
+    get parentId() {
+      return self.parent.pk;
+    },
   }))
   .actions(self => {
-    async function addComment(content) {
+    function setLoading(loading = null) {
+      self.loading = loading;
+    }
+
+    function replaceId(id, newComment) {
+      const comments = self.comments;
+
+      const index = comments.findIndex(comment => comment.id === id);
+
+      if (index > -1) {
+        comments[index].id = newComment.id;
+      }
+    }
+
+    async function addComment(text) {
+      const now = Date.now();
+
       const comment =  {
-        id: guidGenerator(5),
-        content,
+        id: now,
+        text,
         annotation: self.parent.pk,
         created_by: self.currentUser.id,
         created_at: Utils.UDate.currentISODate(),
@@ -31,27 +53,49 @@ export const CommentStore = types
       self.comments.unshift(comment);
 
       try {
-        await self.sdk.invoke("comments:add", comment);
+        self.setLoading("addComment");
+        const [newComment] = await self.sdk.invoke("comments:create", comment);
+
+        if (newComment) {
+          self.replaceId(now, newComment);
+        }
       } catch(err) {
         self.comments.shift();
         throw err;
+      } finally{ 
+        self.setLoading(null);
       }
     }
 
-    async function fetchComments() {
+    function setComments(comments) {
+      if (comments) {
+        self.comments.replace(comments);
+      }
+    }
+
+    async function listComments() {
+      if (!self.parentId) return;
+
       try {
-        const comments = await self.sdk.invoke("comments:list", {
-          annotation: self.parent.pk,
+        self.setLoading("list");
+
+        const [comments] = await self.sdk.invoke("comments:list", {
+          annotation: self.parentId,
         });
 
-        self.comments.replace(comments);
+        self.setComments(comments);
       } catch(err) {
         console.log(err);
+      } finally {
+        self.setLoading(null);
       }
     }
 
     return {
+      setLoading,
+      replaceId,
       addComment,
-      fetchComments,
+      setComments,
+      listComments,
     };
   });
