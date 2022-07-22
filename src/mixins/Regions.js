@@ -100,7 +100,7 @@ const RegionsMixin = types
         self.notifyDrawingFinished({ destroy: true });
       },
 
-      setLocked(locked){
+      setLocked(locked) {
         if (locked instanceof Function) {
           self.locked = locked(self.locked);
         } else {
