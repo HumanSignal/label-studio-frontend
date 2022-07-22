@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
 import { SidePanelsContext } from "./SidePanelsContext";
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
 
 const maxWindowWidth = 980;
 
@@ -80,6 +80,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 }) => {
   const snapTreshold = 5;
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
+  const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [positioning, setPositioning] = useState(false);
@@ -225,11 +226,11 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         left,
         storedLeft: undefined,
         storedTop: undefined,
-        width: clamp(w, DEFAULT_PANEL_WIDTH, Infinity),
+        width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
         height: clamp(h, DEFAULT_PANEL_WIDTH, Infinity),
       });
     });
-  }, [updatePanel]);
+  }, [updatePanel, panelMaxWidth]);
 
   const onSnap = useCallback((name: PanelType) => {
     setPositioning(false);
@@ -343,9 +344,13 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       const matches = (rootRef.current?.clientWidth ?? 0) < maxWindowWidth;
 
       setViewportSizeMatch(matches);
+      setPanelMaxWidth(root.clientWidth * 0.4);
     });
 
-    if (root) observer.observe(root);
+    if (root) {
+      observer.observe(root);
+      setPanelMaxWidth(root.clientWidth * 0.4);
+    }
 
     return () => {
       if (root) observer.unobserve(root);
