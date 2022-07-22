@@ -13,8 +13,6 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
   const labels: any[] = result.selectedLabels || []; // ensure labels is not underfined
   const showLabels = labels.length > 1;
 
-  console.log(result);
-
   return (
     <Elem name="item" key={result.pid}>
       {showLabels && (
