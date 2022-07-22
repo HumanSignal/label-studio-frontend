@@ -85,21 +85,28 @@ export const CommentStore = types
       }
     }
 
-    async function listComments() {
+    async function listComments({ mounted = null } = {}) {
       if (!self.parentId) return;
 
       try {
-        self.setLoading("list");
+        if (mounted === null || mounted.current) {
+          self.setLoading("list");
+        }
 
         const [comments] = await self.sdk.invoke("comments:list", {
           annotation: self.parentId,
         });
 
-        self.setComments(comments);
+        if (mounted === null || mounted.current) {
+          self.setComments(comments);
+        }
       } catch(err) {
         console.log(err);
       } finally {
-        self.setLoading(null);
+
+        if (mounted === null || mounted.current) {
+          self.setLoading(null);
+        }
       }
     }
 
