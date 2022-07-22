@@ -67,13 +67,15 @@ const useDataTree = ({
   selectedKeys,
 }: any) => {
   const processor = useCallback((item: any, idx, _false, _null, _onClick, groupId) => {
-    const { id, type, hidden } = item;
-    const style = item.background ?? item.getOneColor();
+    const { id, type, hidden } = item ?? {};
+    const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? "#666").alpha(1);
     const mods: Record<string, any> = { hidden, type };
     const key = `${id}${groupId ?? ''}`;
     const label = (() => {
-      if (type.match('label')) {
+      if (!type) {
+        return "No Label";
+      } else if (type.match('label')) {
         return item.value;
       } else if(type.match("region")) {
         return (item?.labels ?? []).join(", ") || "No label";
@@ -296,9 +298,9 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const { regions: regionStore } = useContext(OutlinerContext);
 
   const hidden = useMemo(() => {
-    if (type.match('region')) {
+    if (type?.match('region')) {
       return entity.hidden;
-    } else if(type.match('label') && regions) {
+    } else if((!type || type.match('label')) && regions) {
       return Object
         .values(regions)
         .reduce((acc, { hidden }) => acc && hidden, true);
@@ -307,9 +309,9 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   }, [entity, type, regions]);
 
   const onToggleHidden = useCallback(() => {
-    if (type.match('region')) {
+    if (type?.match('region')) {
       entity.toggleHidden();
-    } else if(type.match('label')) {
+    } else if(!type || type.match('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);

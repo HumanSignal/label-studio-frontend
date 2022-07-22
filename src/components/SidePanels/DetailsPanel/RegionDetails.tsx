@@ -10,7 +10,7 @@ import "./RegionDetails.styl";
 
 const { Text, Paragraph } = Typography;
 
-const RegionLabels: FC<{result: any}> = ({ result }) => {
+const RegionLabels: FC<{result: any}> = observer(({ result }) => {
   const labels: any[] = result.selectedLabels || []; // ensure labels is not underfined
   const showLabels = labels.length > 1;
 
@@ -41,11 +41,11 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
       ) : null}
     </Elem>
   );
-};
+});
 
 const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
-    <Text mark>
+    <Text>
       {mainValue.map((value: string, i: number) => (
         <p key={`${value}-${i}`} data-counter={i + 1}>{value}</p>
       ))}
@@ -55,7 +55,7 @@ const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
 
 const ChoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
-    <Text mark>
+    <Text>
       {mainValue.join(", ")}
     </Text>
   );
