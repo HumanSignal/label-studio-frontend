@@ -47,7 +47,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
       actionRef.current.update?.(comment || "");
       console.log(err);
     }
-  }, []);
+  }, [commentStore]);
 
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 

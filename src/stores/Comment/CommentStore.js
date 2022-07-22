@@ -57,7 +57,7 @@ export const CommentStore = types
       const comment =  {
         id: now,
         text,
-        annotation: self.parent.pk,
+        annotation: self.parentId,
         created_by: self.currentUser.id,
         created_at: Utils.UDate.currentISODate(),
       };
