@@ -115,7 +115,6 @@ export const Tool = ({
       expanded: expanded && !dynamic,
       smart: dynamic || smart,
     }} onClick={(e) => {
-      e.stopPropagation();
       e.preventDefault();
       onClick?.(e);
     }} onMouseEnter={() => {

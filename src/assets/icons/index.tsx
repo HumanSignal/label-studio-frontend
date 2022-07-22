@@ -51,6 +51,7 @@ export { ReactComponent as IconContrastTool } from "./tools/contrast-tool.svg";
 
 export { ReactComponent as IconZoomIn } from './tools/magnify-tool.svg';
 export { ReactComponent as IconZoomOut } from './tools/minify-tool.svg';
+export { ReactComponent as IconExpand } from './tools/expand-tool.svg';
 export { ReactComponent as IconMoveTool } from './tools/move-tool.svg';
 export { ReactComponent as IconRotateLeftTool } from './tools/rotate-left-tool.svg';
 export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool.svg';
