@@ -263,7 +263,6 @@ export const Wave: FC<TimelineViewProps> = ({
       const wsi = ws.current;
 
       requestAnimationFrame(() => {
-        // if (wsi) wsi.zoom(storedPosition.current.zoom);
         if (wsi) wsi.drawBuffer();
         scrollTo(storedPosition.current.scroll);
       });
