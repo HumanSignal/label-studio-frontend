@@ -41,9 +41,35 @@
       opacity 1
       width 12px
       margin-right 4px
-      color var(--comment-item-icon-color-resolved)
+      color var(--comment-item-icon-color-resolved) !important
 
   &__content
+    display flex
+    gap 8px
+    align-items flex-start
+
+
+  &__actions
+    .button_size_small
+      flex-shrink 0
+      padding 0 !important
+      width 32px !important
+      height 32px !important
+
+      &:hover
+        background: linear-gradient(0deg, rgba(0,0,0,0.02), rgba(0,0,0,0.02)), #fff !important;
+
+    .button__icon
+      padding 0 !important
+      width 20px !important
+      height 20px !important
+
+    svg
+      width 16px !important
+      height 16px !important
+
+  &__text
+    flex 1
     white-space pre-wrap
     font-size var(--comment-item-content-font-size)
     line-height var(--comment-item-content-line-height)
@@ -51,5 +77,4 @@
 
     ~/_resolved &
       color var(--comment-item-content-color-resolved)
-
 

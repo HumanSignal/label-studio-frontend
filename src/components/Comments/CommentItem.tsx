@@ -1,13 +1,17 @@
 import { observer } from "mobx-react";
 import { FC } from "react";
 import { Tooltip } from "antd";
-import { IconCheck } from "../../assets/icons";
+import { IconCheck, IconEllipsis } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
+import { Dropdown } from "../../common/Dropdown/Dropdown";
+import { Menu } from "../../common/Menu/Menu";
 import { Block, Elem } from "../../utils/bem";
 import { humanDateDiff, userDisplayName } from "../../utils/utilities";
 
 import "./CommentItem.styl";
+import { Button } from "../../common/Button/Button";
+
 
 export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
 
@@ -43,7 +47,26 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
       </Space>
 
       <Elem name="content">
-        {comment.text}
+        <Elem name="text">
+          {comment.text}
+        </Elem>
+
+        <Elem name="actions"
+          onClick={(e: any) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          <Dropdown.Trigger content={(
+            <Menu size="compact">
+              <Menu.Item onClick={comment.toggleResolve}>
+                {resolved ? "Unresolve" : "Resolve"}
+              </Menu.Item>
+            </Menu>
+          )}>
+            <Button size="small" type="text" icon={<IconEllipsis />} />
+          </Dropdown.Trigger>
+        </Elem>
       </Elem>
     </Block>
   );
