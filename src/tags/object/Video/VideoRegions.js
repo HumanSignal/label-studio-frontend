@@ -41,7 +41,7 @@ const VideoRegionsPure = ({
   const [isDrawing, setDrawingMode] = useState(false);
   const stageRef = useRef();
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden);
+  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
   const listenToEvents = !locked && item.annotation.editable;
 
   const workinAreaCoordinates = useMemo(() => {
@@ -161,6 +161,7 @@ const VideoRegionsPure = ({
     onMouseUp: handleMouseUp,
   } : {};
 
+
   return (
     <Stage
       ref={stageRef}
@@ -180,6 +181,7 @@ const VideoRegionsPure = ({
             workingArea={workinAreaCoordinates}
             draggable={!isDrawing && !locked}
             selected={reg.selected || reg.inSelection}
+            listening={(!reg.locked && !reg.readonly)}
             onClick={(e) => {
               // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
               if (store.annotationStore.selected.relationMode) {
