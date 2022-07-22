@@ -53,7 +53,7 @@ const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   );
 });
 
-const CnoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+const ChoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
     <Text mark>
       {mainValue.join(", ")}
@@ -101,7 +101,7 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
         <Elem name="result">
           <Text>Choices: </Text>
           <Elem name="value">
-            <CnoicesResult mainValue={mainValue}/>
+            <ChoicesResult mainValue={mainValue}/>
           </Elem>
         </Elem>
       );
