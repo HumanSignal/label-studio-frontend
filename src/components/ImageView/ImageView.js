@@ -834,7 +834,11 @@ export default observer(
         styles["image_position"],
         styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],
-      ] : [];
+      ] : [
+        styles["image_position"],
+        styles[`image_position__left`],
+        styles[`image_position__top`],
+      ];
 
       const wrapperClasses = [
         styles.wrapperComponent,
