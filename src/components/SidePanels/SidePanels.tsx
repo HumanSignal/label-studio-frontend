@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
 import { SidePanelsContext } from "./SidePanelsContext";
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
 
 const maxWindowWidth = 980;
 
@@ -28,8 +28,11 @@ interface PanelBBox {
   height:  number;
   left: number;
   top: number;
+  relativeLeft: number;
+  relativeTop: number;
   storedTop?: number;
   storedLeft?: number;
+  maxHeight: number;
   zIndex: number;
   visible: boolean;
   detached: boolean;
@@ -79,6 +82,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   children,
 }) => {
   const snapTreshold = 5;
+  const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
@@ -91,22 +95,28 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     outliner: restorePanel("outliner", {
       top: 0,
       left: 0,
+      relativeLeft: 0,
+      relativeTop: 0,
       zIndex: 1,
       width: DEFAULT_PANEL_WIDTH,
       height: DEFAULT_PANEL_HEIGHT,
       visible: true,
       detached: false,
       alignment: "left",
+      maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     }),
     details: restorePanel("details", {
       top: 0,
       left: 0,
+      relativeLeft: 0,
+      relativeTop: 0,
       zIndex: 1,
       width: DEFAULT_PANEL_WIDTH,
       height: DEFAULT_PANEL_HEIGHT,
       visible: true,
       detached: false,
       alignment: "right",
+      maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     }),
   });
 
@@ -136,8 +146,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
     updatePanel(name, {
       visible,
-      storedTop: position.top,
-      storedLeft: position.left,
+      storedTop: position.top / viewportSize.current.height * 100,
+      storedLeft: position.left / viewportSize.current.width * 100,
     });
   }, [updatePanel]);
 
@@ -168,7 +178,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const normalizedLeft = clamp(left, 0, parentWidth - panel.width);
     const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - height);
 
-    return { left: normalizedLeft, top: normalizedTop };
+    return {
+      left: normalizedLeft,
+      top: normalizedTop,
+    };
   };
 
   const onPositionChangeBegin = useCallback((name: PanelType) => {
@@ -194,6 +207,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const parentWidth = rootRef.current?.clientWidth ?? 0;
 
     const { left, top } = normalizeOffsets(name, t, l, panel.visible);
+    const maxHeight = viewportSize.current.height - top;
 
     checkSnap(left, parentWidth, panel.width);
 
@@ -201,9 +215,12 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       updatePanel(name, {
         top,
         left,
+        relativeTop: top / viewportSize.current.height * 100,
+        relativeLeft: left / viewportSize.current.width * 100,
         storedLeft: undefined,
         storedTop: undefined,
         detached,
+        maxHeight,
         alignment: detached ? undefined : panel.alignment,
       });
     });
@@ -219,15 +236,19 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   const onResize = useCallback((name: PanelType, w: number, h: number, t: number, l: number) => {
     const { left, top } = normalizeOffsets(name, t, l);
+    const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
       updatePanel(name, {
         top,
         left,
+        relativeTop: top / viewportSize.current.height * 100,
+        relativeLeft: left / viewportSize.current.width * 100,
         storedLeft: undefined,
         storedTop: undefined,
+        maxHeight,
         width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-        height: clamp(h, DEFAULT_PANEL_WIDTH, Infinity),
+        height: clamp(h, DEFAULT_PANEL_WIDTH, maxHeight),
       });
     });
   }, [updatePanel, panelMaxWidth]);
@@ -316,6 +337,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         tooltip: view.title,
         icon: <Icon/>,
         positioning,
+        maxWidth: panelMaxWidth,
         zIndex: panelData.zIndex,
         expanded: sidepanelsCollapsed,
         alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
@@ -332,7 +354,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return result;
-  }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed, positioning]);
+  }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed, positioning, panelMaxWidth]);
 
   useEffect(() => {
     localSnap.current = snap;
@@ -341,7 +363,13 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   useEffect(() => {
     const root = rootRef.current!;
     const observer = new ResizeObserver(() => {
+      const width = rootRef.current?.clientWidth ?? 0;
+      const height = rootRef.current?.clientHeight ?? 0;
       const matches = (rootRef.current?.clientWidth ?? 0) < maxWindowWidth;
+
+      // Remember current width and height of the viewport
+      viewportSize.current.width = width;
+      viewportSize.current.height = height;
 
       setViewportSizeMatch(matches);
       setPanelMaxWidth(root.clientWidth * 0.4);
