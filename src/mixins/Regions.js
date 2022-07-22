@@ -101,7 +101,11 @@ const RegionsMixin = types
       },
 
       setLocked(locked){
-        self.locked = locked;
+        if (locked instanceof Function) {
+          self.locked = locked(self.locked);
+        } else {
+          self.locked = locked;
+        }
       },
 
       makeDynamic() {

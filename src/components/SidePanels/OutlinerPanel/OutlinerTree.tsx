@@ -319,8 +319,8 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   }, [toggleCollapsed]);
 
   const onToggleLocked = useCallback(() => {
-    item.setLocked(!item.locked);
-  }, [item.locked]);
+    item.setLocked((locked: boolean) => !locked);
+  }, []);
 
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
