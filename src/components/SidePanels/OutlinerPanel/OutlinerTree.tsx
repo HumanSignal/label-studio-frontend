@@ -315,12 +315,12 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   }, [item, item?.toggleHidden, hidden]);
 
   const onToggleCollapsed = useCallback((e: MouseEvent) => {
-    onToggleCollapsed(e);
+    toggleCollapsed(e);
   }, [toggleCollapsed]);
 
   const onToggleLocked = useCallback(() => {
     item.setLocked(!item.locked);
-  }, [item]);
+  }, [item.locked]);
 
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
