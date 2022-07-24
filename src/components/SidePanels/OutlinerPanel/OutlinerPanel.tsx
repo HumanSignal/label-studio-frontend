@@ -12,14 +12,12 @@ interface OutlinerPanelProps extends PanelProps {
 
 const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
   const onOrderingChange = useCallback((value) => {
-    console.log("onOrderingChange", { value });
     regions.setSort(value);
-  }, []);
+  }, [regions]);
 
   const onGroupingChange = useCallback((value) => {
-    console.log("onGroupingChange", { value });
     regions.setGrouping(value);
-  }, []);
+  }, [regions]);
 
   return (
     <PanelBase {...props} name="outliner" title="Outliner">

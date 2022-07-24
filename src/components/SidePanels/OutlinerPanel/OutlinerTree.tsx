@@ -8,7 +8,7 @@ import { IconArrow } from "../../../assets/icons/tree";
 import { Button, ButtonProps } from "../../../common/Button/Button";
 import Registry from "../../../core/Registry";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
-import { Block, CN, cn, Elem } from "../../../utils/bem";
+import { Block, cn, Elem } from "../../../utils/bem";
 import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
 import { NodeIcon } from "../../Node/Node";
 import "./TreeView.styl";
@@ -75,11 +75,11 @@ const useDataTree = ({
     const label = (() => {
       if (!type) {
         return "No Label";
-      } else if (type.match('label')) {
+      } else if (type.includes('label')) {
         return item.value;
-      } else if(type.match("region")) {
+      } else if (type.includes("region")) {
         return (item?.labels ?? []).join(", ") || "No label";
-      } else if(type.match('tool')) {
+      } else if (type.includes('tool')) {
         return item.value;
       }
     })();
@@ -118,7 +118,7 @@ const useEventHandlers = ({
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node, selected } = evt;
 
-    if (!node.type.match('region')) return;
+    if (!node.type.includes('region')) return;
 
     if (!multi) regions.selection.clear();
 
@@ -298,20 +298,18 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const { regions: regionStore } = useContext(OutlinerContext);
 
   const hidden = useMemo(() => {
-    if (type?.match('region')) {
+    if (type?.includes('region')) {
       return entity.hidden;
-    } else if((!type || type.match('label')) && regions) {
-      return Object
-        .values(regions)
-        .reduce((acc, { hidden }) => acc && hidden, true);
+    } else if ((!type || type.includes('label')) && regions) {
+      return Object.values(regions).every(({ hidden }) => hidden);
     }
     return false;
   }, [entity, type, regions]);
 
   const onToggleHidden = useCallback(() => {
-    if (type?.match('region')) {
+    if (type?.includes('region')) {
       entity.toggleHidden();
-    } else if(!type || type.match('label')) {
+    } else if(!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
