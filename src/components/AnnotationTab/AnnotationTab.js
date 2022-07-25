@@ -1,10 +1,12 @@
 import { observer } from "mobx-react";
-import { Elem } from "../../utils/bem";
+import { Block, Elem } from "../../utils/bem";
 import { CurrentEntity } from "../CurrentEntity/CurrentEntity";
 import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
 import { Comments } from "../Comments/Comments";
+
+import './CommentsSection.styl';
 
 export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
@@ -45,16 +47,17 @@ export const AnnotationTab = observer(({ store }) => {
       )}
 
       {store.hasInterface("annotations:comments") && (
-        <Elem name="section">
-          <Elem name="section-head">
-            Comments
+        <Block name="comments-section">
+          <Elem name="header">
+            <Elem name="title">Comments</Elem>
           </Elem>
-          <Elem name="section-content">
+
+          <Elem name="content">
             <Comments
               commentStore={annotation.commentStore}
             />
           </Elem>
-        </Elem>
+        </Block>
       )}
     </>
   );
