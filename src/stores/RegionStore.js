@@ -288,7 +288,7 @@ export default types.model("RegionStore", {
 
           if( isFF( FF_DEV_2755 ) ) {
             group.hotkey = parseInt(labelHotKey);
-            group.pos = `0-${labelHotKey}`;
+            group.pos = `0-${index}`;
           }
           group.children.push({
             ...enrich(region, index, false, null, onClick, groupId),
