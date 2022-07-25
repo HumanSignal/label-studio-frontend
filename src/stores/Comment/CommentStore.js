@@ -12,7 +12,7 @@ export const CommentStore = types
       return getParent(self);
     },
     get currentUser() {
-      return self.parent.user;
+      return getEnv(self).user;
     },
     get sdk() {
       return getEnv(self).events;
