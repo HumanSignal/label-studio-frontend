@@ -7,6 +7,7 @@ import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import VisibilityMixin from "../../mixins/Visibility";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import styles from "./View.module.scss";
 
 /**
  * Use the View element to configure the display of blocks, similar to the div tag in HTML.
@@ -110,8 +111,15 @@ const HtxView = observer(({ item }) => {
     style["display"] = "none";
   }
 
+  const className = [
+    item.className,
+    styles.viewContainer,
+  ]
+    .filter((className) => !!className)
+    .join(" ");
+
   return (
-    <div className={item.classname} style={style}>
+    <div className={className} style={style}>
       {Tree.renderChildren(item)}
     </div>
   );
