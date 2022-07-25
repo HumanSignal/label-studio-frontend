@@ -135,7 +135,7 @@ export const TextArea: FC<TextAreaProps> = ({
 
     const listener = (event: KeyboardEvent) => {
       if (!textAreaRef.current) return;
-      if (event.key === "Enter" && (event.ctrlKey || isMacOS() && event.ctrlKey)) {
+      if (event.key === "Enter" && (event.ctrlKey || isMacOS() && event.metaKey)) {
         onSubmit();
       }
     };
