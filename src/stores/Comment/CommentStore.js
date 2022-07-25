@@ -1,4 +1,4 @@
-import { getEnv, getParent, getSnapshot, types } from "mobx-state-tree";
+import { getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
 
@@ -12,7 +12,7 @@ export const CommentStore = types
       return getParent(self);
     },
     get currentUser() {
-      return getEnv(self).user;
+      return getRoot(self).user;
     },
     get sdk() {
       return getEnv(self).events;
