@@ -58,7 +58,7 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
           }}
         >
           <Dropdown.Trigger content={(
-            <Menu size="compact">
+            <Menu size="auto">
               <Menu.Item onClick={comment.toggleResolve}>
                 {resolved ? "Unresolve" : "Resolve"}
               </Menu.Item>
