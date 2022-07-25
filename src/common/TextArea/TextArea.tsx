@@ -1,6 +1,7 @@
 import { FC, MutableRefObject, useCallback, useEffect, useRef } from "react";
 import { debounce } from "lodash";
 import { cn } from "../../utils/bem";
+import { isMacOS } from "../../utils/utilities";
 
 import "./TextArea.styl";
 import mergeRefs from "../Utils/mergeRefs";
@@ -134,7 +135,7 @@ export const TextArea: FC<TextAreaProps> = ({
 
     const listener = (event: KeyboardEvent) => {
       if (!textAreaRef.current) return;
-      if (event.key === "Enter" && event.metaKey) {
+      if (event.key === "Enter" && (event.ctrlKey || isMacOS() && event.ctrlKey)) {
         onSubmit();
       }
     };
