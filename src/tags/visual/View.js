@@ -115,7 +115,7 @@ const HtxView = observer(({ item }) => {
     item.className,
     styles.viewContainer,
   ]
-    .filter((className) => !!className)
+    .filter(Boolean)
     .join(" ");
 
   return (
