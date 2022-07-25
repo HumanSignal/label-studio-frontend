@@ -1,8 +1,10 @@
 import { observer } from "mobx-react";
+import { Elem } from "../../utils/bem";
 import { CurrentEntity } from "../CurrentEntity/CurrentEntity";
 import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
+import { Comments } from "../Comments/Comments";
 
 export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
@@ -40,6 +42,19 @@ export const AnnotationTab = observer(({ store }) => {
 
       {hasSegmentation && (
         <Relations store={store} item={annotation} />
+      )}
+
+      {store.hasInterface("annotations:comments") && (
+        <Elem name="section">
+          <Elem name="section-head">
+            Comments
+          </Elem>
+          <Elem name="section-content">
+            <Comments
+              commentStore={annotation.commentStore}
+            />
+          </Elem>
+        </Elem>
       )}
     </>
   );
