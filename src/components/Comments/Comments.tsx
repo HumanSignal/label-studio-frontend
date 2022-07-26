@@ -20,6 +20,23 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
     loadComments();
   }, [commentStore.parentId, cacheKey]);
 
+  useEffect(() => {
+    const confirmCommentsLoss = (e: any) => {
+
+      if (commentStore.hasUnpersisted) {
+        e.returnValue = "You have unpersisted comments which will be lost if continuing.";
+      }
+
+      return e;
+    };
+
+    // Need to handle this entirely separate to client-side based navigation
+    window.addEventListener("beforeunload", confirmCommentsLoss);
+    return () => {
+      window.removeEventListener("beforeunload", confirmCommentsLoss);
+    };
+  }, [commentStore.hasUnpersisted]);
+
   return (
     <Block name="comments">
       <CommentForm commentStore={commentStore} inline />
