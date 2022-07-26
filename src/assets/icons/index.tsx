@@ -51,6 +51,7 @@ export { ReactComponent as IconContrastTool } from "./tools/contrast-tool.svg";
 
 export { ReactComponent as IconZoomIn } from './tools/magnify-tool.svg';
 export { ReactComponent as IconZoomOut } from './tools/minify-tool.svg';
+export { ReactComponent as IconExpand } from './tools/expand-tool.svg';
 export { ReactComponent as IconMoveTool } from './tools/move-tool.svg';
 export { ReactComponent as IconRotateLeftTool } from './tools/rotate-left-tool.svg';
 export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool.svg';
@@ -72,7 +73,8 @@ export { ReactComponent as IconSpeed } from "./speed.svg";
 export { ReactComponent as IconTagAlt } from "./tag-alt.svg";
 export { ReactComponent as IconSortUp } from "./sort-up.svg";
 export { ReactComponent as IconSortDown } from "./sort-down.svg";
-export { ReactComponent as IconCollapseLeft } from "./collapse-left.svg";
+export { ReactComponent as IconArrowLeft } from "./arrow-left.svg";
+export { ReactComponent as IconArrowRight } from "./arrow-right.svg";
 
 
 // Relations
@@ -84,3 +86,4 @@ export { ReactComponent as IconRelationBi } from "./relations/bi.svg";
 export { ReactComponent as IconPropertyAngle } from "./properties/angle.svg";
 
 export * from "./annotation";
+export * from "./outliner";
