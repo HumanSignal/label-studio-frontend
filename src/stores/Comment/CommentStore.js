@@ -34,7 +34,7 @@ export const CommentStore = types
 
       return queued.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     },
-    get hasUnpersisted() {
+    get hasUnsaved() {
       return self.queuedComments.length > 0;
     },
   }))

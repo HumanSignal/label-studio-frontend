@@ -23,7 +23,7 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
   useEffect(() => {
     const confirmCommentsLoss = (e: any) => {
 
-      if (commentStore.hasUnpersisted) {
+      if (commentStore.hasUnsaved) {
         e.returnValue = "You have unpersisted comments which will be lost if continuing.";
       }
 
@@ -35,7 +35,7 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
     return () => {
       window.removeEventListener("beforeunload", confirmCommentsLoss);
     };
-  }, [commentStore.hasUnpersisted]);
+  }, [commentStore.hasUnsaved]);
 
   return (
     <Block name="comments">
