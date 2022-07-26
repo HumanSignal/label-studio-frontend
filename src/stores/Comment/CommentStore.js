@@ -30,10 +30,24 @@ export const CommentStore = types
       return ["annotation"].includes(self.parent.type);
     },
     get queuedComments() {
-      return self.comments.filter(comment => !comment.isPersisted).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      const queued = self.comments.filter(comment => !comment.isPersisted);
+
+      return queued.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    get hasUnpersisted() {
+      return self.queuedComments.length > 0;
     },
   }))
   .actions(self => {
+    function serialize({ commentsFilter, queueComments } = { commentsFilter: 'all', queueComments: false }) { 
+
+      const serializedComments = getSnapshot(commentsFilter === 'queued' ? self.queuedComments : self.comments);
+      
+      return {
+        comments: queueComments ? serializedComments.map(comment => ({ id: comment.id > 0 ? comment.id * -1 : comment.id, ...comment })): serializedComments,
+      };
+    }
+
     function setLoading(loading = null) {
       self.loading = loading;
     }
@@ -119,6 +133,40 @@ export const CommentStore = types
       }
     }
 
+    function hasCache(key) {
+      localStorage.getItem(`commentStore.${key}`) !== null;
+    }
+
+    function removeCache(key) {
+      localStorage.removeItem(`commentStore.${key}`);
+    }
+
+    function toCache(key, options = { commentsFilter: 'all', queueComments: true }) {
+      localStorage.setItem(`commentStore.${key}`, JSON.stringify(self.serialize(options)));
+    }
+
+    function fromCache(key, { merge = true, queueRestored = false } = { }) {
+      const value = localStorage.getItem(`commentStore.${key}`);
+
+      if (value) {
+        const restored = JSON.parse(value);
+
+        if (Array.isArray(restored?.comments)) {
+          if (queueRestored) {
+            restored.comments = restored.comments.map(comment => ({ id: comment.id > 0 ? comment.id * -1 : comment.id,  ...comment }));
+          }
+          if (merge) {
+            restored.comments = [...restored.comments, ...getSnapshot(self.comments)].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          }
+          self.setComments(restored.comments);
+        }
+      }
+    }
+
+    async function restoreCommentsFromCache(key) {
+      self.fromCache(key, { merge: true, queueRestored: true });
+    }
+
     async function listComments({ mounted = null } = {}) {
       if (!self.parentId) return;
 
@@ -144,6 +192,12 @@ export const CommentStore = types
     }
 
     return {
+      serialize,
+      hasCache,
+      removeCache,
+      toCache,
+      fromCache,
+      restoreCommentsFromCache,
       setLoading,
       replaceId,
       removeCommentById,

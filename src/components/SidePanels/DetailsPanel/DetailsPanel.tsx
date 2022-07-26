@@ -70,6 +70,7 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
           <Elem name="section-content">
             <Comments
               commentStore={currentEntity.commentStore}
+              cacheKey={`task.${store.task.id}`}
             />
           </Elem>
         </Elem>

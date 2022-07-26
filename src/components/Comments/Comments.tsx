@@ -8,12 +8,17 @@ import { useMounted } from "../../common/Utils/useMounted";
 import './Comments.styl';
 
 
-export const Comments: FC<{ commentStore: any }>= observer(({ commentStore }) => {
+export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({ commentStore, cacheKey }) => {
   const mounted = useMounted();
 
+  const loadComments = async () => {
+    await commentStore.listComments({ mounted });
+    commentStore.restoreCommentsFromCache(cacheKey);
+  };
+
   useEffect(() => {
-    commentStore.listComments({ mounted });
-  }, [commentStore.parentId]);
+    loadComments();
+  }, [commentStore.parentId, cacheKey]);
 
   return (
     <Block name="comments">
