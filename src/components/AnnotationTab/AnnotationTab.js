@@ -46,7 +46,7 @@ export const AnnotationTab = observer(({ store }) => {
         <Relations store={store} item={annotation} />
       )}
 
-      {store.hasInterface("annotations:comments") && (
+      {store.hasInterface("annotations:comments") && annotation.commentStore.isCommentable && (
         <Block name="comments-section">
           <Elem name="header">
             <Elem name="title">Comments</Elem>

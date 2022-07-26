@@ -26,6 +26,9 @@ export const CommentStore = types
     get canPersist() {
       return self.parentId !== null && self.parentId !== undefined;
     },
+    get isCommentable() {
+      return ["annotation"].includes(self.parent.type);
+    },
     get queuedComments() {
       return self.comments.filter(comment => !comment.isPersisted).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
     },

@@ -62,7 +62,7 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
           />
         </Elem>
       </Elem>
-      {store.hasInterface('annotations:comments') && (
+      {store.hasInterface('annotations:comments') && currentEntity.commentStore.isCommentable && (
         <Elem name="section">
           <Elem name="section-head">
             Comments
