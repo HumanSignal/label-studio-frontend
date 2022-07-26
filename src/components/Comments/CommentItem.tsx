@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { observer } from "mobx-react";
 import { FC } from "react";
 import { Tooltip } from "antd";
@@ -14,7 +15,6 @@ import { Button } from "../../common/Button/Button";
 
 
 export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
-
   const resolved = comment.isResolved;
 
   return (
@@ -35,8 +35,11 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
 
         <Space size="small">
           <Elem name="resolved" component={IconCheck} />
+          <Elem name="saving" mod={{ hide: comment.isPersisted }}>
+            <Elem name="dot" />
+          </Elem>
 
-          {comment.createdAt && (
+          {comment.isPersisted && comment.createdAt && (
             <Elem name="date">
               <Tooltip placement="topRight" title={new Date(comment.createdAt).toLocaleString()}>
                 {humanDateDiff(comment.createdAt)}
@@ -57,15 +60,17 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
             e.preventDefault();
           }}
         >
-          <Dropdown.Trigger content={(
-            <Menu size="auto">
-              <Menu.Item onClick={comment.toggleResolve}>
-                {resolved ? "Unresolve" : "Resolve"}
-              </Menu.Item>
-            </Menu>
-          )}>
-            <Button size="small" type="text" icon={<IconEllipsis />} />
-          </Dropdown.Trigger>
+          {comment.isPersisted && (
+            <Dropdown.Trigger content={(
+              <Menu size="auto">
+                <Menu.Item onClick={comment.toggleResolve}>
+                  {resolved ? "Unresolve" : "Resolve"}
+                </Menu.Item>
+              </Menu>
+            )}>
+              <Button size="small" type="text" icon={<IconEllipsis />} />
+            </Dropdown.Trigger>
+          )}
         </Elem>
       </Elem>
     </Block>

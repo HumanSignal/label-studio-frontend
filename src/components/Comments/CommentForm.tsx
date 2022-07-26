@@ -45,7 +45,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
       
     } catch(err) {
       actionRef.current.update?.(comment || "");
-      console.log(err);
+      console.error(err);
     }
   }, [commentStore]);
 

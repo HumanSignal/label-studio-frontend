@@ -23,6 +23,12 @@ export const CommentStore = types
     get parentId() {
       return self.parent.pk;
     },
+    get canPersist() {
+      return self.parentId !== null && self.parentId !== undefined;
+    },
+    get queuedComments() {
+      return self.comments.filter(comment => !comment.isPersisted).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    },
   }))
   .actions(self => {
     function setLoading(loading = null) {
@@ -41,13 +47,35 @@ export const CommentStore = types
       }
     }
 
-    function removeCommentId(id)  {
+    function removeCommentById(id)  {
       const comments = self.comments;
 
       const index = comments.findIndex(comment => comment.id === id);
 
       if (index > -1) {
         comments.splice(index, 1);
+      }
+    }
+
+    async function persistQueuedComments() {
+      const toPersist = self.queuedComments;
+
+      if (!self.canPersist || !toPersist.length) return;
+
+      try {
+        self.setLoading("persistQueuedComments");
+        await Promise.all(toPersist.map(async (comment) => {
+          comment.annotation = self.parentId;
+          const [persistedComment] = await self.sdk.invoke("comments:create", comment);
+
+          if (persistedComment) {
+            self.replaceId(comment.id, persistedComment);
+          }
+        }));
+      } catch(err) {
+        console.error(err);
+      } finally {
+        self.setLoading(null);
       }
     }
 
@@ -64,18 +92,21 @@ export const CommentStore = types
 
       self.comments.unshift(comment);
 
-      try {
-        self.setLoading("addComment");
-        const [newComment] = await self.sdk.invoke("comments:create", comment);
+      if (self.canPersist) {
+        try {
+          self.setLoading("addComment");
 
-        if (newComment) {
-          self.replaceId(now, newComment);
+          const [newComment] = await self.sdk.invoke("comments:create", comment);
+
+          if (newComment) {
+            self.replaceId(now, newComment);
+          }
+        } catch(err) {
+          self.removeCommentById(now);
+          throw err;
+        } finally{ 
+          self.setLoading(null);
         }
-      } catch(err) {
-        self.removeCommentId(now);
-        throw err;
-      } finally{ 
-        self.setLoading(null);
       }
     }
 
@@ -101,9 +132,8 @@ export const CommentStore = types
           self.setComments(comments);
         }
       } catch(err) {
-        console.log(err);
+        console.error(err);
       } finally {
-
         if (mounted === null || mounted.current) {
           self.setLoading(null);
         }
@@ -113,7 +143,8 @@ export const CommentStore = types
     return {
       setLoading,
       replaceId,
-      removeCommentId,
+      removeCommentById,
+      persistQueuedComments,
       addComment,
       setComments,
       listComments,

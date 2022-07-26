@@ -18,9 +18,13 @@ export const Comment = types.model("Comment", {
     get sdk() {
       return getEnv(self).events;
     },
+    get isPersisted() {
+      return self.id > 0;
+    },
   }))
   .actions(self => {
     async function toggleResolve() {
+      if (!self.isPersisted) return;
 
       self.isResolved = !self.isResolved;
 
