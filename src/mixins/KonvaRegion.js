@@ -14,9 +14,9 @@ export const KonvaRegionMixin = types.model({})
       get canRotate() {
         return self.control?.canrotate && self.supportsRotate;
       },
-      
+
       get supportsTransform() {
-        return this._supportsTransform && this.editable;
+        return this._supportsTransform && this.editable && !this.hidden;
       },
     };
   })
