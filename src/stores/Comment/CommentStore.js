@@ -81,14 +81,14 @@ export const CommentStore = types
 
       try {
         self.setLoading("persistQueuedComments");
-        await Promise.all(toPersist.map(async (comment) => {
+        for (const comment of toPersist) {
           comment.annotation = self.parentId;
           const [persistedComment] = await self.sdk.invoke("comments:create", comment);
 
           if (persistedComment) {
             self.replaceId(comment.id, persistedComment);
           }
-        }));
+        }
       } catch(err) {
         console.error(err);
       } finally {
