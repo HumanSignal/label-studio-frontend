@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
-import { Hotkey } from "../core/Hotkey";
 
 const DrawingTool = types
   .model("DrawingTool", {
