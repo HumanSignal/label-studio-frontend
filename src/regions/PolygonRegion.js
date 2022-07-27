@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React, { memo, useContext, useMemo } from "react";
+import React, { memo, useContext, useEffect, useMemo } from "react";
 import { Group, Line } from "react-konva";
 import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
@@ -21,7 +21,7 @@ import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import { FF_DEV_2432, isFF } from "../utils/feature-flags";
+import { FF_DEV_2431, FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model({
@@ -275,6 +275,11 @@ const Model = types
      */
     serialize() {
       if (self.points.length < 3) return null;
+
+      if (isFF(FF_DEV_2432)) {
+        self.closed = self.area.closed;
+      }
+      
       return {
         original_width: self.parent.naturalWidth,
         original_height: self.parent.naturalHeight,
@@ -542,6 +547,10 @@ const HtxPolygonView = ({ item }) => {
   if (!item.parent) return null;
 
   const stage = item.parent.stageRef;
+
+  useEffect(() => {
+    if (isFF(FF_DEV_2431) && !item.closed) item.control.tools.Polygon.resumeUnfinishedPolygon(item);
+  }, []);
 
   return (
     <Group

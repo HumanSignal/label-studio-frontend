@@ -17,6 +17,7 @@ const DrawingTool = types
   .views(self => {
     return {
       createRegionOptions(opts) {
+        console.log(opts);
         return {
           ...opts,
           coordstype: "px",
@@ -97,14 +98,21 @@ const DrawingTool = types
   .actions(self => {
     return {
       createDrawingRegion(opts) {
+        console.log(self.currentArea);
         const control = self.control;
         const resultValue = control.getResultValue();
-
+        
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
         self.annotation.setIsDrawing(true);
         return self.currentArea;
+      },
+      resumeUnfinishedPolygon(existingUnclosedPolygon) {        
+        self.currentArea = existingUnclosedPolygon;
+        self.currentArea.setDrawing(true);
+        self.applyActiveStates(self.currentArea);
+        self.annotation.setIsDrawing(true);
       },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
@@ -153,6 +161,7 @@ const DrawingTool = types
       },
 
       startDrawing(x, y) {
+        console.log('startDrawing');
         self.annotation.history.freeze();
         self.mode = "drawing";
 
@@ -308,6 +317,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
 
     return {
       nextPoint(x, y) {
+        console.log('next point');
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;
       },
@@ -349,6 +359,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         lastPoint = { x: -1, y: -1 };
       },
       _clickEv(ev, [x, y]) {
+        console.log(self.selected, self.currentArea);
         if (self.current()) {
           if (
             pointsCount === 1 &&
