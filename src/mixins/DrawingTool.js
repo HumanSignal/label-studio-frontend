@@ -97,7 +97,6 @@ const DrawingTool = types
   .actions(self => {
     return {
       createDrawingRegion(opts) {
-        console.log(self.currentArea);
         const control = self.control;
         const resultValue = control.getResultValue();
         
