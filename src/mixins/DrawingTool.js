@@ -17,7 +17,6 @@ const DrawingTool = types
   .views(self => {
     return {
       createRegionOptions(opts) {
-        console.log(opts);
         return {
           ...opts,
           coordstype: "px",
