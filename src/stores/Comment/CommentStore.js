@@ -159,7 +159,11 @@ export const CommentStore = types
             restoreIds = restored.comments.map(comment => comment.id);
           }
           if (merge) {
-            restored.comments = uniqBy([...restored.comments, ...getSnapshot(self.comments)], 'id').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            restored.comments = uniqBy([
+              ...restored.comments,
+              ...getSnapshot(self.comments),
+            ], 'id')
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           }
           if (restoreIds.length) {
             restored.comments = restored.comments.map((comment) =>
