@@ -746,11 +746,24 @@ export default observer(
     }, 16);
 
     componentDidMount() {
+      const { store, item } = this.props;
+      const annotation = store.annotationStore.selected;
+
       window.addEventListener("resize", this.onResize);
-      this.attachObserver(this.props.item.containerRef);
+      this.attachObserver(item.containerRef);
       this.updateReadyStatus();
 
       hotkeys.addDescription("shift", "Pan image");
+      hotkeys.addNamed("polygon:undo", () => {
+        if (annotation.isDrawing) {
+          item.drawingRegion.undoPoints();
+        }
+      });
+      hotkeys.addNamed("polygon:redo", () => {
+        if (annotation.isDrawing) {
+          item.drawingRegion.redoPoints();
+        }
+      });
     }
 
     attachObserver = (node) => {
@@ -774,6 +787,8 @@ export default observer(
       window.removeEventListener("resize", this.onResize);
 
       hotkeys.removeDescription("shift");
+      hotkeys.removeNamed("polygon:undo");
+      hotkeys.removeNamed("polygon:redo");
     }
 
     componentDidUpdate() {

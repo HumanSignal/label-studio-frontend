@@ -171,14 +171,15 @@ const Model = types
         self.points.splice(insertIdx, 0, p);
       },
 
-      undoRedoPoints(undo = true){
-        if(undo){
-          this.deletePoint(self.points[self.points.length - 1]);
-        }else{
-          if(_historyPoints[self.points.length])
-            this._addPoint(_historyPoints[self.points.length].x, _historyPoints[self.points.length].y);
-        }
+      undoPoints(){
+        this.deletePoint(self.points[self.points.length - 1]);
       },
+
+      redoPoints(){
+        if(_historyPoints[self.points.length])
+          this._addPoint(_historyPoints[self.points.length].x, _historyPoints[self.points.length].y);
+      },
+
       _addPoint(x, y) {
         self.points.push({
           id: guidGenerator(),

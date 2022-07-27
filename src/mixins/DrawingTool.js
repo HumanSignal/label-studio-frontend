@@ -5,13 +5,6 @@ import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
 import { Hotkey } from "../core/Hotkey";
 
-const initializeHotkeys = (self) =>{
-  const hotkeys = Hotkey("Polygons");
-
-  hotkeys.addNamed("polygon:undo", () => self.getCurrentArea()?.undoRedoPoints(true));
-  hotkeys.addNamed("polygon:redo", () => self.getCurrentArea()?.undoRedoPoints(false));
-};
-
 const DrawingTool = types
   .model("DrawingTool", {
     default: true,
@@ -313,8 +306,6 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     const MOUSE_UP_EVENT = 2;
     const CLICK_EVENT = 3;
     let lastClickTs = 0;
-
-    initializeHotkeys(self);
 
     return {
       nextPoint(x, y) {
