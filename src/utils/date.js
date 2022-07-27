@@ -52,12 +52,18 @@ export function prettyDate(time) {
   );
 }
 
+export function toISODateString(date) {
+  date = date || new Date();
+
+  const tzOffest = date.getTimezoneOffset() * 60000;
+  const localISOTime = new Date(date.getTime() - tzOffest).toISOString().slice(0, -1);
+
+  return localISOTime;
+}
+
 /**
  * Helper function to get current timezone
  */
 export function currentISODate() {
-  const tzOffest = new Date().getTimezoneOffset() * 60000;
-  const localISOTime = new Date(Date.now() - tzOffest).toISOString().slice(0, -1);
-
-  return localISOTime;
+  return toISODateString();
 }
