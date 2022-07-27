@@ -15,7 +15,7 @@ import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import { UserExtended } from "./UserStore";
 import { UserLabels } from "./UserLabels";
-import { FF_DEV_1536, FF_DEV_2887, isFF } from "../utils/feature-flags";
+import { FF_DEV_1536, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -136,16 +136,16 @@ export default types
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
-    if (isFF(FF_DEV_2887)) {
-      const currentUser = window.APP_SETTINGS?.user ?? null;
+    const currentUser = window.APP_SETTINGS?.user ?? sn.user ?? null;
 
-      if (sn.users?.length) {
-        sn.users = [currentUser, ...sn.users.filter(({ id }) => id !== currentUser.id)];
-      }
+    // This should never be null, but just incase the app user is missing from constructor or the window
+    if (currentUser) {
+      sn.user = currentUser.id;
 
-      if (currentUser?.id) {
-        sn.user = currentUser.id;
-      }
+      sn.users = sn.users?.length ? [
+        currentUser,
+        ...sn.users.filter(({ id }) => id !== currentUser.id),
+      ] : [currentUser];
     }
 
     return {

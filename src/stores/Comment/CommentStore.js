@@ -79,7 +79,7 @@ export const CommentStore = types
       const toPersist = self.queuedComments;
 
       if (!self.canPersist || !toPersist.length) return;
- 
+
       try {
         self.setLoading("persistQueuedComments");
         for (const comment of toPersist) {
@@ -162,7 +162,11 @@ export const CommentStore = types
             restored.comments = uniqBy([...restored.comments, ...getSnapshot(self.comments)], 'id').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           }
           if (restoreIds.length) {
-            restored.comments = restored.comments.map((comment) => restoreIds.includes(comment.id) ? ({ id: comment.id > 0 ? comment.id * -1 : comment.id,  ...comment }): comment);
+            restored.comments = restored.comments.map((comment) =>
+              restoreIds.includes(comment.id) ? ({
+                id: comment.id > 0 ? comment.id * -1 : comment.id,
+                ...comment,
+              }): comment);
           }
           self.setComments(restored.comments);
         }
