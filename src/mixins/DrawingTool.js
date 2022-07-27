@@ -316,7 +316,6 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
 
     return {
       nextPoint(x, y) {
-        console.log('next point');
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;
       },
@@ -358,7 +357,6 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
         lastPoint = { x: -1, y: -1 };
       },
       _clickEv(ev, [x, y]) {
-        console.log(self.selected, self.currentArea);
         if (self.current()) {
           if (
             pointsCount === 1 &&
