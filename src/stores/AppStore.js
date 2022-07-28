@@ -136,7 +136,7 @@ export default types
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
-    const currentUser = window.APP_SETTINGS?.user ?? sn.user ?? null;
+    const currentUser = sn.user ?? window.APP_SETTINGS?.user ?? null;
 
     // This should never be null, but just incase the app user is missing from constructor or the window
     if (currentUser) {
