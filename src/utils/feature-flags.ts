@@ -81,6 +81,8 @@ export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
 export const FF_DEV_2504 = "fflag-feat-frontend-dev-2504-image-enhancements-zoom-center";
 
+export const FF_DEV_2395 = "fflag-feat-front-dev-2395-consistent-working-area-for-all-image-sizes";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,

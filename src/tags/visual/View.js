@@ -8,6 +8,7 @@ import Types from "../../core/Types";
 import VisibilityMixin from "../../mixins/Visibility";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import styles from "./View.module.scss";
+import { FF_DEV_2395, isFF } from "../../utils/feature-flags";
 
 /**
  * Use the View element to configure the display of blocks, similar to the div tag in HTML.
@@ -119,7 +120,7 @@ const HtxView = observer(({ item }) => {
     .join(" ");
 
   return (
-    <div className={className} style={style}>
+    <div className={isFF(FF_DEV_2395) ? className : item.className} style={style}>
       {Tree.renderChildren(item)}
     </div>
   );
