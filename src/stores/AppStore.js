@@ -136,6 +136,10 @@ export default types
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
+    if (!sn.user) {
+      sn.user = window.APP_SETTINGS?.user ?? null;
+    }
+
     return {
       ...sn,
       _autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
