@@ -43,6 +43,32 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
   );
 };
 
+const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <Text mark>
+      {mainValue.map((value: string, i: number) => (
+        <p key={`${value}-${i}`} data-counter={i + 1}>{value}</p>
+      ))}
+    </Text>
+  );
+});
+
+const ChoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <Text mark>
+      {mainValue.join(", ")}
+    </Text>
+  );
+});
+
+const RatingResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <span>
+      {mainValue}
+    </span>
+  );
+});
+
 const ResultItem: FC<{result: any}> = observer(({ result }) => {
   const { type, from_name, mainValue } = result;
   const isRegionList = from_name.displaMode === PER_REGION_MODES.REGION_LIST;
@@ -54,26 +80,30 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
       );
     } else if (type === "rating") {
       return (
-        <>
+        <Elem name="result">
           <Text>Rating: </Text>
-          {mainValue}
-        </>
+          <Elem name="value">
+            <RatingResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
       );
     } else if (type === "textarea" && !(from_name.perregion && isRegionList)) {
       return (
-        <>
+        <Elem name="result">
           <Text>Text: </Text>
-          <Text mark >
-            {mainValue.join("\n")}
-          </Text>
-        </>
+          <Elem name="value">
+            <TextResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
       );
     } else if (type === "choices") {
       return (
-        <>
+        <Elem name="result">
           <Text>Choices: </Text>
-          {mainValue.join(", ")}
-        </>
+          <Elem name="value">
+            <ChoicesResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
       );
     }
   }, [type, from_name, mainValue]);

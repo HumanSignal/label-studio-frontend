@@ -109,6 +109,8 @@ const _Tool = types
         closed = false;
         disposer = observe(self.getCurrentArea(), "closed", () => {
           if (self.getCurrentArea().closed && !closed) {
+            if (isFF(FF_DEV_2432)) self.mode = "viewing";
+
             self.finishDrawing();
           }
         }, true);
