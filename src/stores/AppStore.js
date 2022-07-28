@@ -13,7 +13,7 @@ import AnnotationStore from "./Annotation/store";
 import Project from "./ProjectStore";
 import Settings from "./SettingsStore";
 import Task from "./TaskStore";
-import User, { UserExtended } from "./UserStore";
+import { UserExtended } from "./UserStore";
 import { UserLabels } from "./UserLabels";
 import { FF_DEV_1536, isFF } from "../utils/feature-flags";
 
@@ -63,7 +63,7 @@ export default types
     /**
      * User of Label Studio
      */
-    user: types.maybeNull(User),
+    user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
 
     /**
      * Debug for development environment
@@ -136,8 +136,16 @@ export default types
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
-    if (!sn.user) {
-      sn.user = window.APP_SETTINGS?.user ?? null;
+    const currentUser = sn.user ?? window.APP_SETTINGS?.user ?? null;
+
+    // This should never be null, but just incase the app user is missing from constructor or the window
+    if (currentUser) {
+      sn.user = currentUser.id;
+
+      sn.users = sn.users?.length ? [
+        currentUser,
+        ...sn.users.filter(({ id }) => id !== currentUser.id),
+      ] : [currentUser];
     }
 
     return {
