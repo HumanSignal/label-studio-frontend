@@ -755,10 +755,10 @@ export default observer(
 
       hotkeys.addDescription("shift", "Pan image");
       hotkeys.addNamed("polygon:undo", () => {
-        if (annotation.isDrawing) item.drawingRegion.undoPoints();
+        if (annotation.isDrawing) item.drawingRegion?.undoPoints();
       });
       hotkeys.addNamed("polygon:redo", () => {
-        if (annotation.isDrawing) item.drawingRegion.redoPoints();
+        if (annotation.isDrawing) item.drawingRegion?.redoPoints();
       });
     }
 
