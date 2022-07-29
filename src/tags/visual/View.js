@@ -114,13 +114,13 @@ const HtxView = observer(({ item }) => {
 
   const className = [
     item.className,
-    styles.viewContainer,
+    isFF(FF_DEV_2395) && styles.viewContainer,
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div className={isFF(FF_DEV_2395) ? className : item.className} style={style}>
+    <div className={className} style={style}>
       {Tree.renderChildren(item)}
     </div>
   );
