@@ -136,18 +136,22 @@ export default types
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
   .preProcessSnapshot((sn) => {
-    const currentUser = sn.user ?? window.APP_SETTINGS?.user ?? null;
+    // This should only be handled if the sn.user value is an object, and converted to a reference id for other
+    // entities.
+    if (typeof sn.user !== 'number') {
+      const currentUser = sn.user ?? window.APP_SETTINGS?.user ?? null;
 
-    // This should never be null, but just incase the app user is missing from constructor or the window
-    if (currentUser) {
-      sn.user = currentUser.id;
+      // This should never be null, but just incase the app user is missing from constructor or the window
+      if (currentUser) {
+        sn.user = currentUser.id;
 
-      sn.users = sn.users?.length ? [
-        currentUser,
-        ...sn.users.filter(({ id }) => id !== currentUser.id),
-      ] : [currentUser];
+        sn.users = sn.users?.length ? [
+          currentUser,
+          ...sn.users.filter(({ id }) => id !== currentUser.id),
+        ] : [currentUser];
+      }
+
     }
-
     return {
       ...sn,
       _autoAnnotation: localStorage.getItem("autoAnnotation") === "true",
