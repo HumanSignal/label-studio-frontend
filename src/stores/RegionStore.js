@@ -13,6 +13,7 @@ const localStorageKeys = {
   sort: "outliner:sort",
   sortDirection: "outliner:sort-direction",
   group: "outliner:group",
+  view: "regionstore:view",
 };
 
 const SelectionMap = types.model(
@@ -127,7 +128,10 @@ export default types.model("RegionStore", {
     window.localStorage.getItem(localStorageKeys.group) ?? "manual",
   ),
 
-  view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
+  view: types.optional(
+    types.enumeration(["regions", "labels"]), 
+    window.localStorage.getItem(localStorageKeys.view) ?? "regions",
+  ),
   selection: types.optional(SelectionMap, {}),
 }).views(self => {
   let lastClickedItem;
@@ -280,21 +284,23 @@ export default types.model("RegionStore", {
       };
       const getRegionLabel = (region) => region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
       const addToLabelGroup = (labels, region) => {
-        for(const label of labels) {
-          const key = `${label.value}#${label.id}`;
-          const group = getLabelGroup(label, key);
-          const groupId = group.id;
-          const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
+        if(labels) {
+          for(const label of labels) {
+            const key = `${label.value}#${label.id}`;
+            const group = getLabelGroup(label, key);
+            const groupId = group.id;
+            const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-          if( isFF( FF_DEV_2755 ) ) {
-            group.hotkey = parseInt(labelHotKey);
-            group.pos = `0-${index}`;
+            if( isFF( FF_DEV_2755 ) ) {
+              group.hotkey = parseInt(labelHotKey);
+              group.pos = `0-${index}`;
+            }
+            group.children.push({
+              ...enrich(region, index, false, null, onClick, groupId),
+              item: region,
+              isArea: true,
+            });
           }
-          group.children.push({
-            ...enrich(region, index, false, null, onClick, groupId),
-            item: region,
-            isArea: true,
-          });
         }
       };
 
@@ -393,6 +399,7 @@ export default types.model("RegionStore", {
   },
 
   setView(view) {
+    window.localStorage.setItem(localStorageKeys.view, view);
     self.view = view;
   },
 
@@ -451,7 +458,7 @@ export default types.model("RegionStore", {
         self.initHotkeys();
       }
     });
-    self.view = self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
+    self.view = window.localStorage.getItem(localStorageKeys.view) ?? self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
   },
 
   // init Alt hotkeys for regions selection

@@ -20,9 +20,8 @@ export default observer(({
   regionStore,
   annotation,
 }) => {
-  const { classifications, regions } = regionStore;
-  const count = regions.length + (regionStore.view === "regions" ? classifications.length : 0);
-
+  const { classifications, regions, view } = regionStore;
+  const count = regions.length + (view === "regions" ? classifications.length : 0);
   const toggleVisibility = e => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,7 +34,7 @@ export default observer(({
         <Space spread>
           <RadioGroup
             size="small"
-            value={regionStore.view}
+            value={view}
             style={{ width: 240 }}
             onChange={e => {
               regionStore.setView(e.target.value);
@@ -72,8 +71,8 @@ export default observer(({
 
       {count ? (
         <Elem name="header">
-          <Space spread align={regionStore.view === "regions" ? null : "end"}>
-            {regionStore.view === "regions" && (
+          <Space spread align={view === "regions" ? null : "end"}>
+            {view === "regions" && (
               <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
                 <Elem name="sort" onClick={e => e.preventDefault()}>
                   <Elem name="sort-icon"><SortMenuIcon sortKey={regionStore.sort} /></Elem> {`Sorted by ${regionStore.sort[0].toUpperCase()}${regionStore.sort.slice(1)}`}
@@ -101,7 +100,7 @@ export default observer(({
       )
         : null}
 
-      <Oneof value={regionStore.view}>
+      <Oneof value={view}>
         <Elem name="regions" case="regions">
           {count ? <RegionTree regionStore={regionStore} /> : <Elem name="empty">No Regions created yet</Elem>}
         </Elem>
