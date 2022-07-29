@@ -693,12 +693,14 @@ const Model = types.model({
       self._recalculateImageParams();
 
       if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
+        self.annotation.history.freeze();
         self._updateRegionsSizes({
           width: self.stageWidth,
           height: self.stageHeight,
           naturalWidth: self.naturalWidth,
           naturalHeight: self.naturalHeight,
         });
+        self.annotation.history.unfreeze();
       }
     },
 
@@ -720,34 +722,28 @@ const Model = types.model({
     },
 
     sizeToFit() {
-      self.annotation.history.freeze();
       const { maxScale } = self;
 
       self.defaultzoom = "fit";
       self.setZoom(maxScale);
       self.updateImageAfterZoom();
       self.resetZoomPositionToCenter();
-      self.annotation.history.unfreeze();
     },
 
     sizeToOriginal() {
-      self.annotation.history.freeze();
       const { maxScale } = self;
 
       self.defaultzoom = "original";
       self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
       self.updateImageAfterZoom();
       self.resetZoomPositionToCenter();
-      self.annotation.history.unfreeze();
     },
 
     sizeToAuto() {
-      self.annotation.history.freeze();
       self.defaultzoom = "auto";
       self.setZoom(1);
       self.updateImageAfterZoom();
       self.resetZoomPositionToCenter();
-      self.annotation.history.unfreeze();
     },
 
     handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
