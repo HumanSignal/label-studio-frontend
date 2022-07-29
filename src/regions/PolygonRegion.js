@@ -178,8 +178,9 @@ const Model = types
       redoPoints(){
         const historyPoints = _historyPoints[self.points.length];
 
-        if (historyPoints)
+        if (historyPoints) {
           this._addPoint(historyPoints.x, historyPoints.y);
+        }
       },
 
       _addPoint(x, y) {
