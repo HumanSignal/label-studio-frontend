@@ -176,8 +176,10 @@ const Model = types
       },
 
       redoPoints(){
-        if(_historyPoints[self.points.length])
-          this._addPoint(_historyPoints[self.points.length].x, _historyPoints[self.points.length].y);
+        const historyPoints = _historyPoints[self.points.length];
+
+        if (historyPoints)
+          this._addPoint(historyPoints.x, historyPoints.y);
       },
 
       _addPoint(x, y) {
