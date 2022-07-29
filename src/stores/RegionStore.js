@@ -292,7 +292,7 @@ export default types.model("RegionStore", {
             const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
             if( isFF( FF_DEV_2755 ) ) {
-              group.hotkey = parseInt(labelHotKey);
+              group.hotkey = labelHotKey;
               group.pos = `0-${index}`;
             }
             group.children.push({
