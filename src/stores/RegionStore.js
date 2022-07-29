@@ -399,7 +399,9 @@ export default types.model("RegionStore", {
   },
 
   setView(view) {
-    window.localStorage.setItem(localStorageKeys.view, view);
+    if( isFF( FF_DEV_2755 ) ) {
+      window.localStorage.setItem(localStorageKeys.view, view);
+    }
     self.view = view;
   },
 
