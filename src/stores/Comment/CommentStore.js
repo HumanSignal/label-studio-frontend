@@ -1,4 +1,5 @@
 import { getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
+import uniqBy from "lodash/uniqBy";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
 
@@ -152,11 +153,24 @@ export const CommentStore = types
         const restored = JSON.parse(value);
 
         if (Array.isArray(restored?.comments)) {
-          if (queueRestored) {
-            restored.comments = restored.comments.map(comment => ({ id: comment.id > 0 ? comment.id * -1 : comment.id,  ...comment }));
+          let restoreIds = [];
+
+          if (queueRestored) { 
+            restoreIds = restored.comments.map(comment => comment.id);
           }
           if (merge) {
-            restored.comments = [...restored.comments, ...getSnapshot(self.comments)].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            restored.comments = uniqBy([
+              ...restored.comments,
+              ...getSnapshot(self.comments),
+            ], 'id')
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          }
+          if (restoreIds.length) {
+            restored.comments = restored.comments.map((comment) =>
+              restoreIds.includes(comment.id) ? ({
+                id: comment.id > 0 ? comment.id * -1 : comment.id,
+                ...comment,
+              }): comment);
           }
           self.setComments(restored.comments);
         }
