@@ -4,6 +4,7 @@ import { Block } from "../../utils/bem";
 import { CommentForm } from "./CommentForm";
 import { CommentsList } from "./CommentsList";
 import { useMounted } from "../../common/Utils/useMounted";
+import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
 
 import './Comments.styl';
 
@@ -13,12 +14,14 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
 
   const loadComments = async () => {
     await commentStore.listComments({ mounted });
-    commentStore.restoreCommentsFromCache(cacheKey);
+    if (!isFF(FF_DEV_3034)) {
+      commentStore.restoreCommentsFromCache(cacheKey);
+    }
   };
 
   useEffect(() => {
     loadComments();
-  }, [commentStore.parentId, cacheKey]);
+  }, [commentStore.taskId, commentStore.annotationId, commentStore.draftId]);
 
   useEffect(() => {
     const confirmCommentsLoss = (e: any) => {

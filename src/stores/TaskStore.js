@@ -1,7 +1,6 @@
 import { getParent, types } from "mobx-state-tree";
 import Utilities from "../utils";
 
-
 /**
  * Model for HTTP Basic Authorization
  */

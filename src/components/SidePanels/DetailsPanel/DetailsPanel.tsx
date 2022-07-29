@@ -62,14 +62,14 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
           />
         </Elem>
       </Elem>
-      {store.hasInterface('annotations:comments') && currentEntity.commentStore.isCommentable && (
+      {store.hasInterface('annotations:comments') && store.commentStore.isCommentable && (
         <Elem name="section">
           <Elem name="section-head">
             Comments
           </Elem>
           <Elem name="section-content">
             <Comments
-              commentStore={currentEntity.commentStore}
+              commentStore={store.commentStore}
               cacheKey={`task.${store.task.id}`}
             />
           </Elem>

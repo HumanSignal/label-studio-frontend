@@ -46,7 +46,7 @@ export const AnnotationTab = observer(({ store }) => {
         <Relations store={store} item={annotation} />
       )}
 
-      {store.hasInterface("annotations:comments") && annotation.commentStore.isCommentable && (
+      {store.hasInterface("annotations:comments") && store.commentStore.isCommentable && (
         <Block name="comments-section">
           <Elem name="header">
             <Elem name="title">Comments</Elem>
@@ -54,7 +54,7 @@ export const AnnotationTab = observer(({ store }) => {
 
           <Elem name="content">
             <Comments
-              commentStore={annotation.commentStore}
+              commentStore={store.commentStore}
               cacheKey={`task.${store.task.id}`}
             />
           </Elem>

@@ -2,15 +2,28 @@ import { getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree"
 import uniqBy from "lodash/uniqBy";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
+import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
+import { debounce } from "lodash";
 
+// fflag-feat-dev-3034-comments-with-drafts-short
 export const CommentStore = types
   .model("CommentStore", {
     loading: types.optional(types.maybeNull(types.string), "list"),
     comments: types.optional(types.array(Comment), []),
   })
   .views(self => ({
-    get parent() {
-      return getParent(self);
+    get task() {
+      return getParent(self).task;
+    },
+    get annotation() {
+      return getParent(self).annotationStore.selected;
+    },
+    get annotationId() {
+      return self.annotation?.pk;
+    },
+    get draftId() {
+      if (!self.annotation?.draftId) return null;
+      return self.annotation.draftId;
     },
     get currentUser() {
       return getRoot(self).user;
@@ -21,14 +34,17 @@ export const CommentStore = types
     get isListLoading() {
       return self.loading === "list";
     },
-    get parentId() {
-      return self.parent.pk;
+    get taskId() {
+      return self.task?.id;
     },
     get canPersist() {
-      return self.parentId !== null && self.parentId !== undefined;
+      if (isFF(FF_DEV_3034)) {
+        return self.taskId !== null && self.taskId !== undefined;
+      }
+      return self.annotationId !== null && self.annotationId !== undefined;
     },
     get isCommentable() {
-      return ["annotation"].includes(self.parent.type);
+      return !self.annotation || ["annotation"].includes(self.annotation.type);
     },
     get queuedComments() {
       const queued = self.comments.filter(comment => !comment.isPersisted);
@@ -80,10 +96,20 @@ export const CommentStore = types
 
       if (!self.canPersist || !toPersist.length) return;
 
+      if (isFF(FF_DEV_3034) && !self.annotationId) {
+        await self.annotationStore.submitDraft(self.annotation);
+      }
+
       try {
         self.setLoading("persistQueuedComments");
         for (const comment of toPersist) {
-          comment.annotation = self.parentId;
+          if (self.annotationId) {
+            comment.annotation = self.annotationId;
+          } else if (self.draftId) {
+            comment.draft = self.draftId;
+          } else {
+            comment.task = self.taskId;
+          }
           const [persistedComment] = await self.sdk.invoke("comments:create", comment);
 
           if (persistedComment) {
@@ -103,10 +129,16 @@ export const CommentStore = types
       const comment =  {
         id: now,
         text,
-        annotation: self.parentId,
+        task: self.taskId,
         created_by: self.currentUser.id,
         created_at: Utils.UDate.currentISODate(),
       };
+
+      if (self.annotationId) {
+        comment.annotation =  self.annotationId;
+      } else if (self.draftId) {
+        comment.draft = self.draftId;
+      }
 
       self.comments.unshift(comment);
 
@@ -181,8 +213,8 @@ export const CommentStore = types
       self.fromCache(key, { merge: true, queueRestored: true });
     }
 
-    async function listComments({ mounted = null } = {}) {
-      if (!self.parentId) return;
+    const listComments = debounce(async ({ mounted = null } = {}) => {
+      if ((isFF(FF_DEV_3034) && !self.draftId) && !self.annotationId) return;
 
       try {
         if (mounted === null || mounted.current) {
@@ -190,7 +222,8 @@ export const CommentStore = types
         }
 
         const [comments] = await self.sdk.invoke("comments:list", {
-          annotation: self.parentId,
+          annotation: self.annotationId,
+          draft: isFF(FF_DEV_3034) ? self.draftId : undefined,
         });
 
         if (mounted === null || mounted.current) {
@@ -203,7 +236,7 @@ export const CommentStore = types
           self.setLoading(null);
         }
       }
-    }
+    }, 1000);
 
     return {
       serialize,

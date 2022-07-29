@@ -16,6 +16,7 @@ import Task from "./TaskStore";
 import { UserExtended } from "./UserStore";
 import { UserLabels } from "./UserLabels";
 import { FF_DEV_1536, isFF } from "../utils/feature-flags";
+import { CommentStore } from "./Comment/CommentStore";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -58,6 +59,13 @@ export default types
       annotations: [],
       predictions: [],
       history: [],
+    }),
+
+    /**
+     * Comments Store
+     */
+    commentStore: types.optional(CommentStore, {
+      comments: [],
     }),
 
     /**
