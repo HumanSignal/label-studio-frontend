@@ -1,7 +1,7 @@
 import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import Tree from 'rc-tree';
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from "react";
 import { IconLockLocked, IconLockUnlocked, LsSparks } from "../../../assets/icons";
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { IconArrow } from "../../../assets/icons/tree";
@@ -314,6 +314,14 @@ const RegionControls: FC<RegionControlsProps> = observer(({
     }
   }, [item, item?.toggleHidden, hidden]);
 
+  const onToggleCollapsed = useCallback((e: MouseEvent) => {
+    toggleCollapsed(e);
+  }, [toggleCollapsed]);
+
+  const onToggleLocked = useCallback(() => {
+    item.setLocked((locked: boolean) => !locked);
+  }, []);
+
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
       <Elem name="control" mod={{ type: "score" }}>
@@ -330,7 +338,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       <Elem name="control" mod={{ type: "lock" }}>
         {/* TODO: implement manual region locking */}
         {item && (hovered || !item.editable) && (
-          <RegionControlButton disabled={item.readonly} onClick={() => item.setLocked(!item.locked)}>
+          <RegionControlButton disabled={item.readonly} onClick={onToggleLocked}>
             {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
           </RegionControlButton>
         )}
@@ -344,7 +352,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       </Elem>
       {hasControls && (
         <Elem name="control" mod={{ type: "visibility" }}>
-          <RegionControlButton onClick={toggleCollapsed}>
+          <RegionControlButton onClick={onToggleCollapsed}>
             <IconChevronLeft
               style={{
                 transform: `rotate(${collapsed ? -90 : 90}deg)`,
