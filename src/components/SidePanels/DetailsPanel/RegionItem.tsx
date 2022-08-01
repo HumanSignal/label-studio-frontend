@@ -119,7 +119,7 @@ const RegionAction: FC<any> = observer(({
       <Elem name="group" mod={{ align: "right" }}>
         <RegionActionButton
           icon={region.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
-          disabled={region.readonly || !region.editable}
+          disabled={region.readonly}
           onClick={() => region.setLocked(!region.locked)}
           hotkey="region:lock"
         />
