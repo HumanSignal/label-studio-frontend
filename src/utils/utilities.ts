@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from "date-fns";
 import { toCamelCase } from "strman";
 
 /**
@@ -218,4 +219,11 @@ export const triggerResizeEvent = () => {
 
   event.initEvent("resize", false, false);
   window.dispatchEvent(event);
+};
+
+export const humanDateDiff = (date: string | number): string => {
+  const fnsDate = formatDistanceToNow(new Date(date), { addSuffix: true });
+
+  if (fnsDate === "less than a minute ago") return "just now";
+  return fnsDate;
 };

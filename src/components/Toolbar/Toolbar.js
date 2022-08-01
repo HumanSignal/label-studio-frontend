@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import './Toolbar.styl';
 import './Tool.styl';
+import './FlyoutMenu.styl';
 import { useWindowSize } from "../../common/Utils/useWindowSize";
 import { isDefined } from "../../utils/utilities";
 import { inject, observer } from "mobx-react";

@@ -6,7 +6,7 @@ import "./PanelBase.styl";
 import { PanelType } from "./SidePanels";
 import { useDrag } from "../../hooks/useDrag";
 import { clamp, isDefined } from "../../utils/utilities";
-import { DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
 
 export type PanelBaseExclusiveProps = "name" | "title"
 
@@ -36,7 +36,10 @@ interface PanelBaseProps {
   tooltip: string;
   top: number;
   left: number;
+  relativeTop: number;
+  relativeLeft: number;
   width: number;
+  maxWidth: number;
   height: number;
   visible: boolean;
   alignment: "left" | "right";
@@ -68,6 +71,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   root,
   title,
   width,
+  maxWidth,
   height,
   visible,
   detached,
@@ -75,6 +79,8 @@ export const PanelBase: FC<PanelBaseProps> = ({
   expanded,
   top,
   left,
+  relativeTop,
+  relativeLeft,
   zIndex,
   tooltip,
   locked = false,
@@ -121,9 +127,10 @@ export const PanelBase: FC<PanelBaseProps> = ({
 
   const coordinates = useMemo(() => {
     return detached && !locked ? {
-      transform: `translate3d(${left}px, ${top}px, 0)`,
+      top: `${relativeTop}%`,
+      left: `${relativeLeft}%`,
     } : {};
-  }, [detached, left, top, locked]);
+  }, [detached, relativeTop, relativeLeft, locked]);
 
   const mods = useMemo(() => {
     return {
@@ -249,6 +256,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         pos: [e.pageX, e.pageY],
         type,
         width,
+        maxWidth,
         height,
         top,
         left,
@@ -262,6 +270,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
           pos,
           width: w,
           height: h,
+          maxWidth,
           top: t,
           left: l,
           resizeDirections,
@@ -269,14 +278,15 @@ export const PanelBase: FC<PanelBaseProps> = ({
         } = data;
 
         const [sX, sY] = pos;
+
         const wMod = resizeDirections.x ? e.pageX - sX : 0;
         const hMod = resizeDirections.y ? e.pageY - sY : 0;
 
         const shiftLeft = isDefined(shift) && ["left", "top-left"].includes(shift);
         const shiftTop = isDefined(shift) && ["top", "top-left"].includes(shift);
 
-        const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, Infinity);
-        const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_WIDTH, Infinity);
+        const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, maxWidth);
+        const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_HEIGHT, t + h);
 
         const top = shiftTop ? (t + (h - height)) : t;
         const left = shiftLeft ? (l + (w - width)) : l;
@@ -294,7 +304,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       handlers.current.onResizeEnd?.();
       setResizing(undefined);
     },
-  }, [handlers, width, height, top, left, visible, locked, positioning]);
+  }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
 
   return (
     <Block

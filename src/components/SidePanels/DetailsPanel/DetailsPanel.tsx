@@ -1,6 +1,7 @@
-import { observer } from "mobx-react";
+import { inject, observer } from "mobx-react";
 import { FC } from "react";
 import { Elem } from "../../../utils/bem";
+import { Comments } from "../../Comments/Comments";
 import { AnnotationHistory } from "../../CurrentEntity/AnnotationHistory";
 import { PanelBase, PanelProps } from "../PanelBase";
 import "./DetailsPanel.styl";
@@ -37,7 +38,7 @@ const Content: FC<any> = observer(({
   );
 });
 
-const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
+const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
 
   return (
@@ -61,9 +62,24 @@ const GeneralPanel: FC<any> = observer(({ currentEntity }) => {
           />
         </Elem>
       </Elem>
+      {store.hasInterface('annotations:comments') && currentEntity.commentStore.isCommentable && (
+        <Elem name="section">
+          <Elem name="section-head">
+            Comments
+          </Elem>
+          <Elem name="section-content">
+            <Comments
+              commentStore={currentEntity.commentStore}
+              cacheKey={`task.${store.task.id}`}
+            />
+          </Elem>
+        </Elem>
+      )}
     </>
   );
-});
+}));
+
+GeneralPanel.displayName = "GeneralPanel";
 
 const RegionsPanel: FC<{regions:  any}> = observer(({
   regions,
