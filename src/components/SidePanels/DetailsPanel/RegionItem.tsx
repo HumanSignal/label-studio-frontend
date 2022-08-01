@@ -121,7 +121,7 @@ const RegionAction: FC<any> = observer(({
       <Elem name="group" mod={{ align: "right" }}>
         <RegionActionButton
           icon={region.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
-          disabled={region.readonly}
+          disabled={region.readonly || !region.editable}
           onClick={() => region.setLocked(!region.locked)}
           hotkey="region:lock"
         />
@@ -132,7 +132,7 @@ const RegionAction: FC<any> = observer(({
         />
         <RegionActionButton
           danger
-          disabled={region.readonly || region.locked}
+          disabled={region.readonly || region.locked || !region.editable}
           icon={<IconTrash/>}
           onClick={() => annotation.deleteRegion(region)}
         />
