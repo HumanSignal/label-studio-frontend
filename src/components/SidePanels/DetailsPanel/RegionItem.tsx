@@ -111,6 +111,8 @@ const RegionAction: FC<any> = observer(({
     ));
   }
 
+  console.log('heartex', region);
+
   return (
     <Block name="region-actions">
       <Elem name="group" mod={{ align: "left" }}>
@@ -130,7 +132,7 @@ const RegionAction: FC<any> = observer(({
         />
         <RegionActionButton
           danger
-          disabled={region.readonly}
+          disabled={region.readonly || region.locked}
           icon={<IconTrash/>}
           onClick={() => annotation.deleteRegion(region)}
         />
