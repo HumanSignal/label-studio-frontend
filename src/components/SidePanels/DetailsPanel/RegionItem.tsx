@@ -111,8 +111,6 @@ const RegionAction: FC<any> = observer(({
     ));
   }
 
-  console.log('heartex', region);
-
   return (
     <Block name="region-actions">
       <Elem name="group" mod={{ align: "left" }}>
