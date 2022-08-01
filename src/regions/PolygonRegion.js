@@ -588,8 +588,8 @@ const HtxPolygonView = ({ item }) => {
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
-      {item.points ? renderLines(item.points, item.closed) : null}
-      {item.points ? renderCircles(item.points) : null}
+      {(item.points && item.editable) ? renderLines(item.points, item.closed) : null}
+      {(item.points && item.editable) ? renderCircles(item.points) : null}
     </Group>
   );
 };

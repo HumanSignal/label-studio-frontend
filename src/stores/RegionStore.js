@@ -280,24 +280,29 @@ export default types.model("RegionStore", {
         };
       };
 
-      const addToLabelGroup = (labels, region) => {
-        for(const label of labels) {
-          const key = `${label.value}#${label.id}`;
-          const group = getLabelGroup(label, key);
-          const groupId = group.id;
-            
-          group.children.push({
-            ...enrich(region, index, false, null, onClick, groupId),
-            item: region,
-            isArea: true,
-          });
+      const addToLabelGroup = (key, label, region) => {
+        const group = getLabelGroup(label, key);
+        const groupId = group.id;
+
+        group.children.push({
+          ...enrich(region, index, false, null, onClick, groupId),
+          item: region,
+          isArea: true,
+        });
+      };
+
+      const addRegionsToLabelGroup = (labels, region) => {
+        if (labels) {
+          for(const label of labels) {
+            addToLabelGroup(`${label.value}#${label.id}`, label, region);
+          }
+        } else {
+          addToLabelGroup('no-label', undefined, region);
         }
       };
 
       for (const region of self.regions) {
-        const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
-
-        addToLabelGroup(labelsForRegion, region);
+        addRegionsToLabelGroup(region.labeling?.selectedLabels, region);
 
         index++;
       }
