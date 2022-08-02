@@ -193,7 +193,7 @@ export default types
     },
     get canGoPrevTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
-      const firstTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+      const firstTaskId = self.taskHistory[0].taskId;
 
       return hasHistory && self.task.id !== firstTaskId;
     },
