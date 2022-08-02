@@ -158,6 +158,8 @@ export const CommentStore = types
 
           if (newComment) {
             self.replaceId(now, newComment);
+            // don't wait, this is not the part of the flow
+            self.listComments();
           }
         } catch(err) {
           self.removeCommentById(now);
