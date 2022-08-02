@@ -186,16 +186,16 @@ export default types
       return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
     get canGoNextTask() {
-      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
-        return true;
-      }
-      return false;
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+      const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+
+      return hasHistory && self.task.id !== lastTaskId;
     },
     get canGoPrevTask() {
-      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[0].taskId) {
-        return true;
-      }
-      return false;
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+      const firstTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+
+      return hasHistory && self.task.id !== firstTaskId;
     },
     get forceAutoAnnotation() {
       return getEnv(self).forceAutoAnnotation;
@@ -443,12 +443,12 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
-    function submitDraft(c) {
+    function submitDraft(c, params = {}) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
         if (!events.hasEvent('submitDraft')) return resolve();
-        const res = events.invokeFirst('submitDraft', self, c);
+        const res = events.invokeFirst('submitDraft', self, c, params);
 
         if (res && res.then) res.then(resolve);
         else resolve(res);
@@ -656,6 +656,13 @@ export default types
       }
     }
 
+    async function postponeTask() {
+      const annotation = self.annotationStore.selected;
+
+      await self.submitDraft(annotation, { was_postponed: true });
+      await getEnv(self).events.invoke('nextTask');
+    }
+
     function nextTask() {
       if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
@@ -705,6 +712,7 @@ export default types
       addAnnotationToTaskHistory,
       nextTask,
       prevTask,
+      postponeTask,
       beforeDestroy() {
         ToolsManager.removeAllTools();
       },
