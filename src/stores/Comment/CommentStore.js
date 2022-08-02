@@ -1,4 +1,4 @@
-import { getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
+import { flow, getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
 import uniqBy from "lodash/uniqBy";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
@@ -12,6 +12,9 @@ export const CommentStore = types
     comments: types.optional(types.array(Comment), []),
   })
   .views(self => ({
+    get store() {
+      return getParent(self);
+    },
     get task() {
       return getParent(self).task;
     },
@@ -97,7 +100,7 @@ export const CommentStore = types
       if (!self.canPersist || !toPersist.length) return;
 
       if (isFF(FF_DEV_3034) && !self.annotationId) {
-        await self.annotationStore.submitDraft(self.annotation);
+        await self.store.submitDraft(self.annotation);
       }
 
       try {
@@ -123,7 +126,7 @@ export const CommentStore = types
       }
     }
 
-    async function addComment(text) {
+    const addComment = flow(function* (text) {
       const now = Date.now() * -1;
 
       const comment =  {
@@ -134,19 +137,24 @@ export const CommentStore = types
         created_at: Utils.UDate.currentISODate(),
       };
 
+      if (isFF(FF_DEV_3034) && !self.annotationId) {
+        yield self.store.submitDraft(self.annotation);
+      }
+
       if (self.annotationId) {
-        comment.annotation =  self.annotationId;
+        comment.annotation = self.annotationId;
       } else if (self.draftId) {
         comment.draft = self.draftId;
       }
 
+      // @todo setComments?
       self.comments.unshift(comment);
 
       if (self.canPersist) {
         try {
           self.setLoading("addComment");
 
-          const [newComment] = await self.sdk.invoke("comments:create", comment);
+          const [newComment] = yield self.sdk.invoke("comments:create", comment);
 
           if (newComment) {
             self.replaceId(now, newComment);
@@ -158,7 +166,7 @@ export const CommentStore = types
           self.setLoading(null);
         }
       }
-    }
+    });
 
     function setComments(comments) {
       if (comments) {
@@ -213,30 +221,33 @@ export const CommentStore = types
       self.fromCache(key, { merge: true, queueRestored: true });
     }
 
-    const listComments = debounce(async ({ mounted = null } = {}) => {
+    const listComments = flow(function* ({ mounted = { current: true } } = {}) {
+      self.setComments([]);
+
       if ((isFF(FF_DEV_3034) && !self.draftId) && !self.annotationId) return;
 
       try {
-        if (mounted === null || mounted.current) {
+        if (mounted.current) {
           self.setLoading("list");
         }
 
-        const [comments] = await self.sdk.invoke("comments:list", {
-          annotation: self.annotationId,
+        const annotation = self.annotationId;
+        const [comments] = yield self.sdk.invoke("comments:list", {
+          annotation,
           draft: isFF(FF_DEV_3034) ? self.draftId : undefined,
         });
 
-        if (mounted === null || mounted.current) {
+        if (mounted.current && annotation === self.annotationId) {
           self.setComments(comments);
         }
       } catch(err) {
         console.error(err);
       } finally {
-        if (mounted === null || mounted.current) {
+        if (mounted.current) {
           self.setLoading(null);
         }
       }
-    }, 1000);
+    });
 
     return {
       serialize,
