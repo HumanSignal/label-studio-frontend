@@ -5,11 +5,9 @@ import { Comment } from "./Comment";
 import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
 import { delay } from "../../utils/utilities";
 
-const requests = {};
-
 export const CommentStore = types
   .model("CommentStore", {
-    loading: types.optional(types.maybeNull(types.string), null),
+    loading: types.optional(types.maybeNull(types.string), "list"),
     comments: types.optional(types.array(Comment), []),
   })
   .views(self => ({
@@ -57,14 +55,6 @@ export const CommentStore = types
     },
     get hasUnsaved() {
       return self.queuedComments.length > 0;
-    },
-    get refKey() {
-      const parentId = self.annotationId || self.draftId;
-
-      return parentId ? `t:${self.taskId}-${self.annotationId ? 'a:' : self.draftId ? 'd:' : ''}${parentId}` : '';
-    },
-    get shouldFetch() {
-      return !self.isListLoading && !!self.refKey && Date.now() - (requests?.[self.refKey]?.at || 0) >= 0;
     },
   }))
   .actions(self => {
@@ -247,22 +237,13 @@ export const CommentStore = types
     }
 
     const listComments = flow((function* ({ mounted = { current: true } } = {}) {
-      const shouldFetch = self.shouldFetch;
-      const refKey = self.refKey;
+      self.setComments([]);
 
-      if (shouldFetch) {
-        // stale-while-revalidate to dedupe requests for the same comments
-        self.setComments(requests?.[refKey]?.comments || []);
-      }
-
-      if ((!self.draftId && !self.annotationId) || !shouldFetch) return;
+      if (!self.draftId && !self.annotationId) return;
 
       try {
         if (mounted.current) {
           self.setLoading("list");
-          // clear the comments cache and leave the request 30 seconds to become stale, so we don't get a stuck cache
-          // forever if there are api errors or actual issues.
-          requests[refKey] = { at: Date.now() + 30000, comments: [] };
         }
 
         const annotation = self.annotationId;
@@ -271,15 +252,10 @@ export const CommentStore = types
           draft: self.draftId,
         });
 
-        // Fresh for 1 second after the request completes to avoid refetching the same data again
-        requests[refKey] = { at: Date.now() + 1000, comments };
-
         if (mounted.current && annotation === self.annotationId) {
           self.setComments(comments);
         }
       } catch(err) {
-        // clear the comments cache if there was an error
-        requests[refKey] = { at: 0, comments: [] };
         console.error(err);
       } finally {
         if (mounted.current) {
