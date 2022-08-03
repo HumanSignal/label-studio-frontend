@@ -100,8 +100,12 @@ const RegionsMixin = types
         self.notifyDrawingFinished({ destroy: true });
       },
 
-      setLocked(locked){
-        self.locked = locked;
+      setLocked(locked) {
+        if (locked instanceof Function) {
+          self.locked = locked(self.locked);
+        } else {
+          self.locked = locked;
+        }
       },
 
       makeDynamic() {
