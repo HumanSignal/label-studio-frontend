@@ -3,9 +3,7 @@ import uniqBy from "lodash/uniqBy";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
 import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
-import { debounce } from "lodash";
 
-// fflag-feat-dev-3034-comments-with-drafts-short
 export const CommentStore = types
   .model("CommentStore", {
     loading: types.optional(types.maybeNull(types.string), "list"),
@@ -22,7 +20,7 @@ export const CommentStore = types
       return getParent(self).annotationStore.selected;
     },
     get annotationId() {
-      return self.annotation?.pk;
+      return isNaN(self.annotation?.pk) ? undefined : self.annotation.pk;
     },
     get draftId() {
       if (!self.annotation?.draftId) return null;
@@ -99,7 +97,7 @@ export const CommentStore = types
 
       if (!self.canPersist || !toPersist.length) return;
 
-      if (isFF(FF_DEV_3034) && !self.annotationId) {
+      if (isFF(FF_DEV_3034) && !self.annotationId && !self.draftId) {
         await self.store.submitDraft(self.annotation);
       }
 
@@ -137,8 +135,11 @@ export const CommentStore = types
         created_at: Utils.UDate.currentISODate(),
       };
 
-      if (isFF(FF_DEV_3034) && !self.annotationId) {
+      let refetchList = false;
+
+      if (isFF(FF_DEV_3034) && !self.annotationId && !self.draftId) {
         yield self.store.submitDraft(self.annotation);
+        refetchList = true;
       }
 
       if (self.annotationId) {
@@ -158,8 +159,7 @@ export const CommentStore = types
 
           if (newComment) {
             self.replaceId(now, newComment);
-            // don't wait, this is not the part of the flow
-            self.listComments();
+            if (refetchList) self.listComments();
           }
         } catch(err) {
           self.removeCommentById(now);
@@ -223,10 +223,10 @@ export const CommentStore = types
       self.fromCache(key, { merge: true, queueRestored: true });
     }
 
-    const listComments = flow(function* ({ mounted = { current: true } } = {}) {
+    const listComments = flow((function* ({ mounted = { current: true } } = {}) {
       self.setComments([]);
 
-      if ((isFF(FF_DEV_3034) && !self.draftId) && !self.annotationId) return;
+      if (!self.draftId && !self.annotationId) return;
 
       try {
         if (mounted.current) {
@@ -236,7 +236,7 @@ export const CommentStore = types
         const annotation = self.annotationId;
         const [comments] = yield self.sdk.invoke("comments:list", {
           annotation,
-          draft: isFF(FF_DEV_3034) ? self.draftId : undefined,
+          draft: self.draftId,
         });
 
         if (mounted.current && annotation === self.annotationId) {
@@ -249,7 +249,8 @@ export const CommentStore = types
           self.setLoading(null);
         }
       }
-    });
+    }));
+
 
     return {
       serialize,
