@@ -3,6 +3,7 @@ import uniqBy from "lodash/uniqBy";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
 import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
+import { delay } from "../../utils/utilities";
 
 export const CommentStore = types
   .model("CommentStore", {
@@ -136,9 +137,21 @@ export const CommentStore = types
       };
 
       let refetchList = false;
+      const { annotation } = self;
 
       if (isFF(FF_DEV_3034) && !self.annotationId && !self.draftId) {
-        yield self.store.submitDraft(self.annotation);
+        // rare case: draft is already saving, so just wait for it
+        if (annotation.versions.draft) {
+          yield delay(annotation.autosaveDelay);
+        } else {
+          // replicate actions from autosave()
+          // versions.draft should not be empty
+          annotation.versions.draft = [];
+          annotation.setDraftSelected();
+          annotation.setDraftSaving(true);
+          yield self.store.submitDraft(self.annotation);
+          annotation.onDraftSaved();
+        }
         refetchList = true;
       }
 
