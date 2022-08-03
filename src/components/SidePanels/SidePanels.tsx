@@ -77,11 +77,12 @@ const panelView: Record<PanelType, PanelView> = {
 
 const SidePanelsComponent: FC<SidePanelsProps> = ({
   currentEntity,
-  regions,
+  // regions,
   panelsHidden,
   children,
 }) => {
   const snapTreshold = 5;
+  const regions = currentEntity.regionStore;
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
