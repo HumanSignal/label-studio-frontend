@@ -1,6 +1,7 @@
 import { inject, observer } from "mobx-react";
 import { FC } from "react";
 import { Elem } from "../../../utils/bem";
+import { FF_DEV_2290, isFF } from "../../../utils/feature-flags";
 import { Comments } from "../../Comments/Comments";
 import { AnnotationHistory } from "../../CurrentEntity/AnnotationHistory";
 import { PanelBase, PanelProps } from "../PanelBase";
@@ -40,20 +41,27 @@ const Content: FC<any> = observer(({
 
 const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
+  const historyEnabled = store.hasInterface("annotations:history");
+  const draftsEnabled = isFF(FF_DEV_2290);
+  const hideHistoryTitle = !historyEnabled && draftsEnabled;
 
   return (
     <>
-      {store.hasInterface("annotations:history") && (
-        <Elem name="section">
+      <Elem name="section">
+        {hideHistoryTitle === false && (
           <Elem name="section-head">
             Annotation History
             <span>#{currentEntity.pk ?? currentEntity.id}</span>
           </Elem>
-          <Elem name="section-content">
-            <AnnotationHistory inline />
-          </Elem>
+        )}
+        <Elem name="section-content">
+          <AnnotationHistory
+            inline
+            showDraft={draftsEnabled}
+            enabled={historyEnabled}
+          />
         </Elem>
-      )}
+      </Elem>
       <Elem name="section">
         <Elem name="section-head">
           Relations ({relationStore.size})
