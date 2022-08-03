@@ -14,12 +14,11 @@ export const CurrentTask = observer(({ store }) => {
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
   // @todo some interface?
-  const canPostpone = isFF(FF_DEV_3034) && !store.canGoNextTask;
-  const showButtons = historyEnabled || canPostpone;
+  const canPostpone = isFF(FF_DEV_3034) && !store.canGoNextTask && !store.hasInterface('review');
 
   return (
     <Elem name="section">
-      <Block name="current-task" mod={{ 'with-history': showButtons }}>
+      <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
         <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
           {historyEnabled && (
@@ -28,7 +27,7 @@ export const CurrentTask = observer(({ store }) => {
             </Elem>
           )}
         </Elem>
-        {showButtons && (
+        {historyEnabled && (
           <Elem name="history-controls">
             <Elem
               tag={Button}
