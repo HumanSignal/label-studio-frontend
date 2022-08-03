@@ -20,7 +20,11 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
   };
 
   useEffect(() => {
-    if (commentStore.annotationId || commentStore.draftId) loadComments();
+    if (commentStore.annotationId || commentStore.draftId) {
+      loadComments();
+    } else if (!commentStore.annotationId && !commentStore.draftId) {
+      commentStore.setComments([]);
+    }
   }, [commentStore.taskId, commentStore.annotationId, commentStore.draftId]);
 
   useEffect(() => {
