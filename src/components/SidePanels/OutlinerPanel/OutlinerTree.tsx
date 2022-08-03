@@ -37,8 +37,6 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   const eventHandlers = useEventHandlers({ regions, onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
-  console.log(regions);
-
   return (
     <OutlinerContext.Provider value={{ regions }}>
       <Block name="outliner-tree">

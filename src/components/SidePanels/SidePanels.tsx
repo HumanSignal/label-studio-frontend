@@ -20,7 +20,6 @@ interface SidePanelsProps {
   panelsHidden: boolean;
   store: any;
   currentEntity: any;
-  regions: any;
 }
 
 interface PanelBBox {
@@ -77,7 +76,6 @@ const panelView: Record<PanelType, PanelView> = {
 
 const SidePanelsComponent: FC<SidePanelsProps> = ({
   currentEntity,
-  // regions,
   panelsHidden,
   children,
 }) => {
