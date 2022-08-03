@@ -48,7 +48,7 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
   return (
     <>
       <Elem name="section">
-        {hideHistoryTitle === false && (
+        {!hideHistoryTitle && (
           <Elem name="section-head">
             Annotation History
             <span>#{currentEntity.pk ?? currentEntity.id}</span>
