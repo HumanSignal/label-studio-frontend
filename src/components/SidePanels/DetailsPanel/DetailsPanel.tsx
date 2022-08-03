@@ -43,15 +43,17 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
 
   return (
     <>
-      <Elem name="section">
-        <Elem name="section-head">
-          Annotation History
-          <span>#{currentEntity.pk ?? currentEntity.id}</span>
+      {store.hasInterface("annotations:history") && (
+        <Elem name="section">
+          <Elem name="section-head">
+            Annotation History
+            <span>#{currentEntity.pk ?? currentEntity.id}</span>
+          </Elem>
+          <Elem name="section-content">
+            <AnnotationHistory inline />
+          </Elem>
         </Elem>
-        <Elem name="section-content">
-          <AnnotationHistory inline />
-        </Elem>
-      </Elem>
+      )}
       <Elem name="section">
         <Elem name="section-head">
           Relations ({relationStore.size})
