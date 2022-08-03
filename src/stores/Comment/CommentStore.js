@@ -155,8 +155,8 @@ export const CommentStore = types
           yield delay(annotation.autosaveDelay);
         } else {
           // replicate actions from autosave()
-          // versions.draft should not be empty
-          annotation.versions.draft = [];
+          // if versions.draft is empty, the current state (prediction actually) is in result
+          annotation.versions.draft = annotation.versions.result;
           annotation.setDraftSelected();
           annotation.setDraftSaving(true);
           yield self.store.submitDraft(self.annotation);
