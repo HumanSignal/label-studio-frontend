@@ -20,8 +20,11 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
   };
 
   useEffect(() => {
-    if (commentStore.annotationId || commentStore.draftId) loadComments();
-  }, [commentStore.taskId, commentStore.annotationId, commentStore.draftId]);
+    loadComments(); // will reset comments during load
+    // id is internal id,
+    // always different for different annotations, even empty ones;
+    // remain the same when user submit draft, so no unneeded calls.
+  }, [commentStore.annotation.id]);
 
   useEffect(() => {
     const confirmCommentsLoss = (e: any) => {
