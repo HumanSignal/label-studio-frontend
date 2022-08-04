@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_2504, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -830,14 +830,10 @@ export default observer(
         containerStyle["imageRendering"] = 'pixelated';
       }
       
-      const imagePositionClassnames = isFF(FF_DEV_2504) ? [
+      const imagePositionClassnames =  [
         styles["image_position"],
         styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],
-      ] : [
-        styles["image_position"],
-        styles[`image_position__left`],
-        styles[`image_position__top`],
       ];
 
       const wrapperClasses = [
