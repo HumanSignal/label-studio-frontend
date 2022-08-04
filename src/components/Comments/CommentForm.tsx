@@ -47,10 +47,8 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     }
   }, [commentStore]);
 
-  const onInput = useCallback((e: any) => {
-    const value = e.target.value;
-
-    commentStore.setCurrentComment(value);
+  const onInput = useCallback((comment: string) => {
+    commentStore.setCurrentComment(comment || '');
   }, [commentStore]);
 
   return (
