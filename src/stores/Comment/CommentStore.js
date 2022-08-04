@@ -10,6 +10,9 @@ export const CommentStore = types
     loading: types.optional(types.maybeNull(types.string), "list"),
     comments: types.optional(types.array(Comment), []),
   })
+  .volatile(() => ({
+    currentComment: '',
+  }))
   .views(self => ({
     get store() {
       return getParent(self);
@@ -65,6 +68,10 @@ export const CommentStore = types
       return {
         comments: queueComments ? serializedComments.map(comment => ({ id: comment.id > 0 ? comment.id * -1 : comment.id, ...comment })): serializedComments,
       };
+    }
+
+    function setCurrentComment(comment) {
+      self.currentComment = comment;
     }
 
     function setLoading(loading = null) {
@@ -172,6 +179,7 @@ export const CommentStore = types
 
           if (newComment) {
             self.replaceId(now, newComment);
+            self.setCurrentComment('');
             if (refetchList) self.listComments();
           }
         } catch(err) {
@@ -181,6 +189,12 @@ export const CommentStore = types
           self.setLoading(null);
         }
       }
+    });
+
+    const addCurrentComment = flow(function* () {
+      if (!self.currentComment) return;
+
+      yield addComment(self.currentComment);
     });
 
     function setComments(comments) {
@@ -276,6 +290,8 @@ export const CommentStore = types
       replaceId,
       removeCommentById,
       persistQueuedComments,
+      setCurrentComment,
+      addCurrentComment,
       addComment,
       setComments,
       listComments,
