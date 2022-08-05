@@ -8,7 +8,7 @@ import { guidGenerator } from "../../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../../core/DataValidator";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { ViewModel } from "../../tags/visual";
-import { FF_DEV_1621, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1621, FF_DEV_3034, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
 
@@ -282,7 +282,17 @@ export default types
       const item = createItem(options);
 
       if (item.userGenerate) {
-        item.completed_by = getRoot(self).user?.id ?? undefined;
+        let actual_user;
+
+        if (isFF(FF_DEV_3034)) {
+          // drafts can be created by other user, but we don't have much info
+          // so parse "id", get email and find user by it
+          const email = item.createdBy?.replace(/,\s*\d+$/, '');
+          const user = email && self.store.users.find(user => user.email === email);
+
+          if (user) actual_user = user.id;
+        }
+        item.completed_by = actual_user ?? getRoot(self).user?.id ?? undefined;
       }
 
       self.annotations.unshift(item);
