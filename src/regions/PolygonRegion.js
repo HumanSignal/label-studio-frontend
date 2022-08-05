@@ -171,7 +171,14 @@ const Model = types
         self.points.splice(insertIdx, 0, p);
       },
 
-      undoPoints(){
+      undoPoints(drawingTool){
+        if(self.points.length === 1){
+          drawingTool.cleanupUncloseableShape();
+          _historyPoints = [];
+
+          return;
+        }
+
         this.deletePoint(self.points[self.points.length - 1]);
       },
 

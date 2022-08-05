@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_2504, FF_DEV_2576, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_2504, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -754,14 +754,6 @@ export default observer(
       this.updateReadyStatus();
 
       hotkeys.addDescription("shift", "Pan image");
-      if(isFF(FF_DEV_2576)){
-        hotkeys.addNamed("polygon:undo", () => {
-          if (annotation.isDrawing) item.drawingRegion?.undoPoints();
-        });
-        hotkeys.addNamed("polygon:redo", () => {
-          if (annotation.isDrawing) item.drawingRegion?.redoPoints();
-        });
-      }
     }
 
     attachObserver = (node) => {
@@ -785,10 +777,6 @@ export default observer(
       window.removeEventListener("resize", this.onResize);
 
       hotkeys.removeDescription("shift");
-      if(isFF(FF_DEV_2576)) {
-        hotkeys.removeNamed("polygon:undo");
-        hotkeys.removeNamed("polygon:redo");
-      }
     }
 
     componentDidUpdate() {
