@@ -1,7 +1,8 @@
 /* global LSF_VERSION */
 
-import { flow, getEnv, types } from "mobx-state-tree";
+import { flow, getEnv, getSnapshot, types } from "mobx-state-tree";
 
+import uniqBy from "lodash/uniqBy";
 import InfoModal from "../components/Infomodal/Infomodal";
 import { Hotkey } from "../core/Hotkey";
 import ToolsManager from "../tools/Manager";
@@ -687,6 +688,14 @@ export default types
       }
     }
 
+    function setUsers(users) {
+      self.users.replace(users);
+    }
+
+    function mergeUsers(users) {
+      self.setUsers(uniqBy([...getSnapshot(self.users), ...users], 'id'));
+    }
+
     return {
       setFlags,
       addInterface,
@@ -707,6 +716,8 @@ export default types
       updateAnnotation,
       acceptAnnotation,
       rejectAnnotation,
+      setUsers,
+      mergeUsers,
 
       showModal,
       toggleComments,
