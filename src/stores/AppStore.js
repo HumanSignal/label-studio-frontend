@@ -187,15 +187,23 @@ export default types
     },
     get canGoNextTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
-      const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
 
-      return hasHistory && self.task.id !== lastTaskId;
+      if (hasHistory) {
+        const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+        
+        return self.task.id !== lastTaskId;
+      }
+      return false;
     },
     get canGoPrevTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
-      const firstTaskId = self.taskHistory[0].taskId;
 
-      return hasHistory && self.task.id !== firstTaskId;
+      if (hasHistory) {
+        const firstTaskId = self.taskHistory[0].taskId;
+
+        return self.task.id !== firstTaskId;
+      }
+      return false;
     },
     get forceAutoAnnotation() {
       return getEnv(self).forceAutoAnnotation;
