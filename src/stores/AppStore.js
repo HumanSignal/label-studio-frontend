@@ -16,6 +16,7 @@ import Task from "./TaskStore";
 import { UserExtended } from "./UserStore";
 import { UserLabels } from "./UserLabels";
 import { FF_DEV_1536, isFF } from "../utils/feature-flags";
+import { CommentStore } from "./Comment/CommentStore";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -58,6 +59,13 @@ export default types
       annotations: [],
       predictions: [],
       history: [],
+    }),
+
+    /**
+     * Comments Store
+     */
+    commentStore: types.optional(CommentStore, {
+      comments: [],
     }),
 
     /**
@@ -178,16 +186,16 @@ export default types
       return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
     get canGoNextTask() {
-      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
-        return true;
-      }
-      return false;
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+      const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+
+      return hasHistory && self.task.id !== lastTaskId;
     },
     get canGoPrevTask() {
-      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[0].taskId) {
-        return true;
-      }
-      return false;
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+      const firstTaskId = self.taskHistory[0].taskId;
+
+      return hasHistory && self.task.id !== firstTaskId;
     },
     get forceAutoAnnotation() {
       return getEnv(self).forceAutoAnnotation;
@@ -435,12 +443,12 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
-    function submitDraft(c) {
+    function submitDraft(c, params = {}) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
         if (!events.hasEvent('submitDraft')) return resolve();
-        const res = events.invokeFirst('submitDraft', self, c);
+        const res = events.invokeFirst('submitDraft', self, c, params);
 
         if (res && res.then) res.then(resolve);
         else resolve(res);
@@ -503,9 +511,9 @@ export default types
       }, "Error during skip, try again");
     }
 
-    function cancelSkippingTask() {
+    function unskipTask() {
       handleSubmittingFlag(() => {
-        getEnv(self).events.invoke('cancelSkippingTask', self);
+        getEnv(self).events.invoke('unskipTask', self);
       }, "Error during cancel skipping task, try again");
     }
 
@@ -648,6 +656,13 @@ export default types
       }
     }
 
+    async function postponeTask() {
+      const annotation = self.annotationStore.selected;
+
+      await self.submitDraft(annotation, { was_postponed: true });
+      await getEnv(self).events.invoke('nextTask');
+    }
+
     function nextTask() {
       if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
@@ -678,7 +693,7 @@ export default types
       attachHotkeys,
 
       skipTask,
-      cancelSkippingTask,
+      unskipTask,
       submitDraft,
       submitAnnotation,
       updateAnnotation,
@@ -697,6 +712,7 @@ export default types
       addAnnotationToTaskHistory,
       nextTask,
       prevTask,
+      postponeTask,
       beforeDestroy() {
         ToolsManager.removeAllTools();
       },
