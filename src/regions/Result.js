@@ -3,7 +3,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { isDefined } from "../utils/utilities";
-import { FF_DEV_1372, FF_DEV_2007, isFF } from "../utils/feature-flags";
+import { FF_DEV_1170, FF_DEV_1372, isFF } from "../utils/feature-flags";
 
 const Result = types
   .model("Result", {
@@ -122,6 +122,10 @@ const Result = types
     get editable() {
       // @todo readonly is not defined here, so we have to fix this
       // @todo and as it's used only in region list view of textarea get rid of this getter
+      if (isFF(FF_DEV_1170)) {
+        // The value of self.area.editable is always false whenever region is locked, so we need to check if it's explicitly readonly on the area.
+        return !self.readonly && self.annotation.editable === true && !self.area.readonly;
+      }
       return !self.readonly && self.annotation.editable === true && self.area.editable === true;
     },
 

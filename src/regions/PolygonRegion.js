@@ -525,7 +525,6 @@ const HtxPolygonView = ({ item }) => {
         if (e.target === e.currentTarget) {
 
           item.annotation.setDragMode(false);
-          if (!item.closed) item.closePoly();
 
           item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
           item.annotation.history.unfreeze(item.id);

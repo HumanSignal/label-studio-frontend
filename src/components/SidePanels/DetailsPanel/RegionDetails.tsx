@@ -1,14 +1,13 @@
 import { Typography } from "antd";
 import { observer } from "mobx-react";
 import { FC, useMemo } from "react";
-import { IconTrash } from "../../../assets/icons";
 import { Tag } from "../../../common/Tag/Tag";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
 import { Block, Elem, useBEM } from "../../../utils/bem";
 import { RegionEditor } from "./RegionEditor";
 import "./RegionDetails.styl";
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 const RegionLabels: FC<{result: any}> = ({ result }) => {
   const labels: any[] = result.selectedLabels || []; // ensure labels is not underfined
@@ -30,12 +29,12 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
         </Elem>
       )}
 
-      {result.value.text ? (
+      {result.area.text ? (
         <Elem
           name="content"
           mod={{ type: "text" }}
           dangerouslySetInnerHTML={{
-            __html: result.value.text.replace(/\\n/g, '\n'),
+            __html: result.area.text.replace(/\\n/g, '\n'),
           }}
         />
       ) : null}

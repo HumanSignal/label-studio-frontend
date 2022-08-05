@@ -48,8 +48,15 @@
   &_outliner
     --border-color rgba(#000, 0.2)
 
-  &_outliner &__item
+  &_outliner &__item,
+  &_outliner &__form
     margin 0 0 0 -8px
+
+  &_outliner &__item + &__item,
+  &_outliner &__item + &__form,
+  &_outliner &__form + &__item,
+  &_outliner &__form + &__form
+    margin-top 8px
 
   &_outliner &__input
     display block
@@ -60,6 +67,10 @@
     box-sizing border-box
     border-radius 4px
     border 1px solid transparent
+    background-color rgba(#000, 0.05)
+
+    &::placeholder
+      color rgba(#000, 0.5)
 
   &_outliner &__input:focus
     background-color #fff
@@ -69,3 +80,4 @@
 
   &_outliner &__action
     margin 4px
+    margin-top 5px
