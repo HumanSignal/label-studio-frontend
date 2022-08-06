@@ -305,11 +305,15 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     window.addEventListener("keyup", handleKey);
     window.addEventListener("mousedown", dragHandler);
     window.addEventListener("mouseup", dragHandler);
+    window.addEventListener("touchstart", dragHandler);
+    window.addEventListener("touchend", dragHandler);
     return () => {
       window.removeEventListener("keydown", handleKey);
       window.removeEventListener("keyup", handleKey);
       window.removeEventListener("mousedown", dragHandler);
       window.removeEventListener("mouseup", dragHandler);
+      window.removeEventListener("touchstart", dragHandler);
+      window.removeEventListener("touchend", dragHandler);
     };
   },[]);
 
@@ -503,7 +507,14 @@ export default observer(
       }, 100);
     }
 
+    preventDefaultTouch = e => {
+      if (e.type.startsWith("touch")) {
+        e.preventDefault();
+      }
+    }
+
     handleMouseDown = e => {
+      this.preventDefaultTouch(e.evt);
       const { item } = this.props;
   
       item.updateSkipInteractions(e);
@@ -526,6 +537,8 @@ export default observer(
         ) {
           window.addEventListener("mousemove", this.handleGlobalMouseMove);
           window.addEventListener("mouseup", this.handleGlobalMouseUp);
+          window.addEventListener("touchmove", this.handleGlobalMouseMove);
+          window.addEventListener("touchend", this.handleGlobalMouseUp);
           const { offsetX: x, offsetY: y } = e.evt;
           // store the canvas coords for calculations in further events
           const { left, top } = item.containerRef.getBoundingClientRect();
@@ -578,6 +591,8 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
+      window.removeEventListener("touchmove", this.handleGlobalMouseMove);
+      window.removeEventListener("touchend", this.handleGlobalMouseUp);
       
       if (e.target && e.target.tagName === "CANVAS") return;
 
@@ -602,6 +617,7 @@ export default observer(
      * Mouse up on Stage
      */
     handleMouseUp = e => {
+      this.preventDefaultTouch(e.evt);
       const { item } = this.props;
 
       if (isFF(FF_DEV_1442)) {
@@ -611,10 +627,11 @@ export default observer(
       item.freezeHistory();
       item.setSkipInteractions(false);
 
-      return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
+      return item.event("mouseup", e, e.evt.offsetX ?? e.evt.layerX, e.evt.offsetY ?? e.evt.layerY);
     };
 
     handleMouseMove = e => {
+      this.preventDefaultTouch(e.evt);
       const { item } = this.props;
       
       item.freezeHistory();
@@ -642,7 +659,7 @@ export default observer(
 
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
-        item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
+        item.event("mousemove", e, e.evt.offsetX ?? e.evt.layerX, e.evt.offsetY ?? e.evt.layerY);
       }
     };
 
@@ -948,6 +965,9 @@ export default observer(
                 onMouseUp={this.handleMouseUp}
                 onWheel={item.zoom ? this.handleZoom : () => {
                 }}
+                onTouchStart={this.handleMouseDown}
+                onTouchMove={this.handleMouseMove}
+                onTouchEnd={this.handleMouseUp}
               >
                 {/* Hack to keep stage in place when there's no regions */}
                 {regions.length === 0 && (
