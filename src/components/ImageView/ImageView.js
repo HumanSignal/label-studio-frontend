@@ -539,7 +539,9 @@ export default observer(
           window.addEventListener("mouseup", this.handleGlobalMouseUp);
           window.addEventListener("touchmove", this.handleGlobalMouseMove);
           window.addEventListener("touchend", this.handleGlobalMouseUp);
-          const { offsetX: x, offsetY: y } = e.evt;
+
+          const x = e.evt.offsetX ?? e.evt.layerX;
+          const y = e.evt.offsetY ?? e.evt.layerY;
           // store the canvas coords for calculations in further events
           const { left, top } = item.containerRef.getBoundingClientRect();
 
