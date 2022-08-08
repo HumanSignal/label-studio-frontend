@@ -283,31 +283,33 @@ export default types.model("RegionStore", {
         };
       };
       const getRegionLabel = (region) => region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
-      const addToLabelGroup = (labels, region) => {
-        if(labels) {
-          for(const label of labels) {
-            const key = `${label.value}#${label.id}`;
-            const group = getLabelGroup(label, key);
-            const groupId = group.id;
-            const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
+      const addToLabelGroup = (key, label, region) => {
+        const group = getLabelGroup(label, key);
+        const groupId = group.id;
+        const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-            if( isFF( FF_DEV_2755 ) ) {
-              group.hotkey = labelHotKey;
-              group.pos = `0-${index}`;
-            }
-            group.children.push({
-              ...enrich(region, index, false, null, onClick, groupId),
-              item: region,
-              isArea: true,
-            });
+        if( isFF( FF_DEV_2755 ) ) {
+          group.hotkey = labelHotKey;
+          group.pos = `0-${index}`;
+        }
+        group.children.push({
+          ...enrich(region, index, false, null, onClick, groupId),
+          item: region,
+          isArea: true,
+        });
+      };
+      const addRegionsToLabelGroup = (labels, region) => {
+        if (labels) {
+          for(const label of labels) {
+            addToLabelGroup(`${label.value}#${label.id}`, label, region);
           }
+        } else {
+          addToLabelGroup('no-label', undefined, region);
         }
       };
-
+      
       for (const region of self.regions) {
-        const labelsForRegion = getRegionLabel(region);
-        
-        addToLabelGroup(labelsForRegion, region);
+        addRegionsToLabelGroup(region.labeling?.selectedLabels, region);
 
         index++;
       }

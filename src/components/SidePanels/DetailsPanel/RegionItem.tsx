@@ -130,6 +130,7 @@ const RegionAction: FC<any> = observer(({
         />
         <RegionActionButton
           danger
+          disabled={region.readonly || region.locked || !region.editable}
           icon={<IconTrash/>}
           onClick={() => annotation.deleteRegion(region)}
         />

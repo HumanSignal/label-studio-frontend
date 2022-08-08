@@ -39,7 +39,7 @@ const zero = n => (n < 10 ? "0" : "") + n;
  * @param {string} format            - Input/output strftime format for datetime (internally it's always ISO);
  *        when both date and time are displayed, by default shows ISO with a "T" separator;
  *        when only date is displayed, by default shows ISO date;
- *        when only time is displayed, by default shows a 24h time with leading zero
+ *        when only time is displayed, by default shows a 24 hour time with leading zero
  * @param {string} [min]             - Set a minimum datetime value for only=date, minimum year for only=year
  * @param {string} [max]             - Set a maximum datetime value for only=date, maximum year for only=year
  * @param {boolean} [required=false] - Whether datetime is required or not

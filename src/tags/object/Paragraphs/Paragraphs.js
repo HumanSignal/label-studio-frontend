@@ -239,6 +239,9 @@ class HtxParagraphsView extends Component {
     const { item } = this.props;
     const withAudio = !!item.audio;
 
+    // current way to not render when we wait for data
+    if (isFF(FF_DEV_2669) && !item._value) return null;
+
     return (
       <ObjectTag item={item}>
         {withAudio && (

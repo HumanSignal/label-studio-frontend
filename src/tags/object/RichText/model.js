@@ -35,15 +35,15 @@ const WARNING_MESSAGES = {
  * @name Text
  * @param {string} name                                   - name of the element
  * @param {string} value                                  - value of the element
- * @param {url|text} [valueType=url|text]                – source of the data
+ * @param {url|text} [valueType=url|text]                 – source of the data, check (Data retrieval)[https://labelstud.io/guide/tasks.html] page for more inforamtion
  * @param {boolean} [inline=false]                        - whether to embed html directly to LS or use iframe (only HyperText)
  * @param {boolean} [saveTextResult=true]                 – whether or not to save selected text to the serialized data
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
- * @param {boolean} [clickableLinks=false]                 – allow annotator to open resources from links
+ * @param {boolean} [clickableLinks=false]                – allow annotator to open resources from links
  * @param {string} [highlightColor]                       - hex string with highlight color, if not provided uses the labels color
  * @param {boolean} [showLabels=true]                     - whether or not to show labels next to the region
  * @param {none|base64|base64unicode} [encoding]          - decode value from an encoded string
- * @param {symbol|word|sentence|paragraph} [granularity]   - control region selection granularity
+ * @param {symbol|word|sentence|paragraph} [granularity]  - control region selection granularity
  */
 const TagAttrs = types.model("RichTextModel", {
   name: types.identifier,
