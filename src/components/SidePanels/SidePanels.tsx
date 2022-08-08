@@ -20,7 +20,6 @@ interface SidePanelsProps {
   panelsHidden: boolean;
   store: any;
   currentEntity: any;
-  regions: any;
 }
 
 interface PanelBBox {
@@ -77,11 +76,11 @@ const panelView: Record<PanelType, PanelView> = {
 
 const SidePanelsComponent: FC<SidePanelsProps> = ({
   currentEntity,
-  regions,
   panelsHidden,
   children,
 }) => {
   const snapTreshold = 5;
+  const regions = currentEntity.regionStore;
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
