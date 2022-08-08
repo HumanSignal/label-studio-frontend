@@ -44,8 +44,8 @@ export const LabelList = observer(({ regionStore }) => {
       setCollapsedPos( newCollapsedPos );
       updateLocalStorage( newCollapsedPos );
     };
-    const expandedKeys = treeData.filter( (item, itemIndex) => !collapsedPos.includes( `0-${itemIndex}` ) ).map( item => item.key ) ?? [];
-  
+    const expandedKeys = treeData.filter( (item) => !collapsedPos.includes( item.pos ) ).map( item => item.key ) ?? [];
+    
     return (
       <Tree
         className={styles.treelabels}
@@ -57,8 +57,8 @@ export const LabelList = observer(({ regionStore }) => {
         expandedKeys={expandedKeys}
         switcherIcon={<LsChevron className={styles.switcherIcon} opacity="0.25" />}
         onExpand={( internalExpandedKeys, { node } ) => {
-          const nodeRegionIndex = treeData.findIndex(region => region.key === node.key);
-          const pos = `0-${nodeRegionIndex}`;
+          const region = treeData.find(region => region.key === node.key);
+          const pos = region.pos;
   
           collapsedPos.includes(pos) ? expand(pos) : collapse(pos);
         }}
