@@ -386,6 +386,10 @@ export default types.model("RegionStore", {
     get selectedIds() {
       return Array.from(self.selection.selected.values()).map(reg => reg.id);
     },
+
+    get persistantView() {
+      return window.localStorage.getItem(localStorageKeys.view) ?? self.view;
+    },
   };
 }).actions(self => ({
   addRegion(region) {
@@ -401,6 +405,7 @@ export default types.model("RegionStore", {
   setView(view) {
     if( isFF( FF_DEV_2755 ) ) {
       window.localStorage.setItem(localStorageKeys.view, view);
+      console.log("setView", window.localStorage.getItem(localStorageKeys.view));
     }
     self.view = view;
   },
@@ -460,7 +465,7 @@ export default types.model("RegionStore", {
         self.initHotkeys();
       }
     });
-    self.view = window.localStorage.getItem(localStorageKeys.view) ?? self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
+    self.view = window.localStorage.getItem(localStorageKeys.view) ?? (self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions");
   },
 
   // init Alt hotkeys for regions selection
