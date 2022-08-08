@@ -79,8 +79,6 @@ export const FF_DEV_2432 = "ff_front_dev_2432_auto_save_polygon_draft_210622_sho
 // Change the rotate tool from bbox
 export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
-export const FF_DEV_2504 = "fflag-feat-frontend-dev-2504-image-enhancements-zoom-center";
-
 export const FF_DEV_2755 = "fflag-feat-dev-2755-regions-list-grouped-by-labels-with-ordered-collapse-short";
 
 export const FF_DEV_3034 = "fflag-feat-dev-3034-comments-with-drafts-short";
