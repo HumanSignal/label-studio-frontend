@@ -890,6 +890,7 @@ export default observer(
                   item.setImageRef(ref);
                   this.imageRef.current = ref;
                 }}
+                loading="lazy"
                 style={item.imageTransform}
                 src={item._value}
                 onLoad={item.updateImageSize}
