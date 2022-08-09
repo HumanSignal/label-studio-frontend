@@ -114,7 +114,7 @@ const RegionAction: FC<any> = observer(({
   return (
     <Block name="region-actions">
       <Elem name="group" mod={{ align: "left" }}>
-        {entityButtons}
+        {region.editable && entityButtons}
       </Elem>
       <Elem name="group" mod={{ align: "right" }}>
         <RegionActionButton
