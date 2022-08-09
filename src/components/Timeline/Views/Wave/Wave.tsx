@@ -325,7 +325,7 @@ export const Wave: FC<TimelineViewProps> = ({
   }, [cursorPosition]);
 
   return (
-    <Block name="wave" ref={rootRef}>
+    <Block name="wave" ref={rootRef} mod={{ 'with-playhead': isFF(FF_DEV_2715) }}>
       {!isFF(FF_DEV_2715) && (
         <Elem name="controls">
           <Space spread style={{ gridAutoColumns: 'auto' }}>
@@ -350,16 +350,16 @@ export const Wave: FC<TimelineViewProps> = ({
           </Space>
         </Elem>
       )}
-      <Elem name="wrapper">
+      <Elem name="wrapper" mod={isFF(FF_DEV_2715) ? {  layout: 'stack', edge: 'relaxed' } : {}}>
+        {isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} mod={{ position: 'outside', placement: 'top' }} />}
         <Elem
           name="body"
           ref={bodyRef}
           onClick={onTimelineClick}
         >
-          {isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} />}
-          <Elem name="cursor" style={cursorStyle}/>
+          <Elem name="cursor" style={cursorStyle} />
           <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
-          {!isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} />}
+          {!isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} mod={{ position: 'inside', placement: 'bottom' }} />}
           {loading && <Elem name="loader" mod={{ animated: true }}/>}
         </Elem>
         {!isFF(FF_DEV_2715) && (
