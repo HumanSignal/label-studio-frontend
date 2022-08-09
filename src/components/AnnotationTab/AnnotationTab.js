@@ -1,8 +1,12 @@
 import { observer } from "mobx-react";
+import { Block, Elem } from "../../utils/bem";
 import { CurrentEntity } from "../CurrentEntity/CurrentEntity";
 import Entities from "../Entities/Entities";
 import Entity from "../Entity/Entity";
 import Relations from "../Relations/Relations";
+import { Comments } from "../Comments/Comments";
+
+import './CommentsSection.styl';
 
 export const AnnotationTab = observer(({ store }) => {
   const as = store.annotationStore;
@@ -40,6 +44,21 @@ export const AnnotationTab = observer(({ store }) => {
 
       {hasSegmentation && (
         <Relations store={store} item={annotation} />
+      )}
+
+      {store.hasInterface("annotations:comments") && store.commentStore.isCommentable && (
+        <Block name="comments-section">
+          <Elem name="header">
+            <Elem name="title">Comments</Elem>
+          </Elem>
+
+          <Elem name="content">
+            <Comments
+              commentStore={store.commentStore}
+              cacheKey={`task.${store.task.id}`}
+            />
+          </Elem>
+        </Block>
       )}
     </>
   );

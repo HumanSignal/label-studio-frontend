@@ -829,6 +829,17 @@ export default observer(
       if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
         containerStyle["imageRendering"] = 'pixelated';
       }
+      
+      const imagePositionClassnames =  [
+        styles["image_position"],
+        styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
+        styles[`image_position__${item.horizontalalignment}`],
+      ];
+
+      const wrapperClasses = [
+        styles.wrapperComponent,
+        item.images.length > 1 ? styles.withGallery : styles.wrapper,
+      ];
 
       const {
         brushRegions,
@@ -850,15 +861,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
-          style={{
-            flex: 1,
-            position: "relative",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            alignSelf: "stretch",
-          }}
+          className={wrapperClasses.join(" ")}
         >
           <div
             ref={node => {
@@ -876,7 +879,10 @@ export default observer(
               style={{ width: "100%", marginTop: item.fillerHeight }}
             />
             <div
-              className={styles.frame}
+              className={[
+                styles.frame,
+                ...imagePositionClassnames,
+              ].join(" ")}
               style={item.canvasSize}
             >
               <img
@@ -891,92 +897,93 @@ export default observer(
                 alt="LS"
               />
             </div>
-          </div>
-          {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-          {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
-            <Stage
-              ref={ref => {
-                item.setStageRef(ref);
-              }}
-              style={{ position: "absolute", top: 0, left: 0 }}
-              className={"image-element"}
-              width={item.canvasSize.width}
-              height={item.canvasSize.height}
-              scaleX={item.zoomScale}
-              scaleY={item.zoomScale}
-              x={item.zoomingPositionX}
-              y={item.zoomingPositionY}
-              offsetX={item.stageTranslate.x}
-              offsetY={item.stageTranslate.y}
-              rotation={item.rotation}
-              onClick={this.handleOnClick}
-              onMouseEnter={() => {
-                if (this.crosshairRef.current) {
-                  this.crosshairRef.current.updateVisibility(true);
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (this.crosshairRef.current) {
-                  this.crosshairRef.current.updateVisibility(false);
-                }
-                const { width: stageWidth, height: stageHeight } = item.canvasSize;
-                const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
-                const newEvent = { ...e };
+            {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
+            {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
+              <Stage
+                ref={ref => {
+                  item.setStageRef(ref);
+                }}
+                className={[styles[`image-element`],
+                  ...imagePositionClassnames,
+                ].join(" ")}
+                width={item.canvasSize.width}
+                height={item.canvasSize.height}
+                scaleX={item.zoomScale}
+                scaleY={item.zoomScale}
+                x={item.zoomingPositionX}
+                y={item.zoomingPositionY}
+                offsetX={item.stageTranslate.x}
+                offsetY={item.stageTranslate.y}
+                rotation={item.rotation}
+                onClick={this.handleOnClick}
+                onMouseEnter={() => {
+                  if (this.crosshairRef.current) {
+                    this.crosshairRef.current.updateVisibility(true);
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (this.crosshairRef.current) {
+                    this.crosshairRef.current.updateVisibility(false);
+                  }
+                  const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                  const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
+                  const newEvent = { ...e };
 
-                if (mouseposX <= 0) {
-                  e.offsetX = 0;
-                } else if (mouseposX >= stageWidth) {
-                  e.offsetX = stageWidth;
-                }
-                
-                if (mouseposY <= 0) {
-                  e.offsetY = 0;
-                } else if (mouseposY >= stageHeight) {
-                  e.offsetY = stageHeight;
-                }
-                this.handleMouseMove(newEvent);
-              }}
-              onDragMove={this.updateCrosshair}
-              onMouseDown={this.handleMouseDown}
-              onMouseMove={this.handleMouseMove}
-              onMouseUp={this.handleMouseUp}
-              onWheel={item.zoom ? this.handleZoom : () => {
-              }}
-            >
-              {/* Hack to keep stage in place when there's no regions */}
-              {regions.length === 0 && (
-                <Layer>
-                  <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
-                </Layer>
-              )}
-              {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+                  if (mouseposX <= 0) {
+                    e.offsetX = 0;
+                  } else if (mouseposX >= stageWidth) {
+                    e.offsetX = stageWidth;
+                  }
+                  
+                  if (mouseposY <= 0) {
+                    e.offsetY = 0;
+                  } else if (mouseposY >= stageHeight) {
+                    e.offsetY = stageHeight;
+                  }
+                  this.handleMouseMove(newEvent);
+                }}
+                onDragMove={this.updateCrosshair}
+                onMouseDown={this.handleMouseDown}
+                onMouseMove={this.handleMouseMove}
+                onMouseUp={this.handleMouseUp}
+                onWheel={item.zoom ? this.handleZoom : () => {
+                }}
+              >
+                {/* Hack to keep stage in place when there's no regions */}
+                {regions.length === 0 && (
+                  <Layer>
+                    <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
+                  </Layer>
+                )}
+                {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
-              {renderableRegions.map(([groupName, list]) => {
-                const isBrush = groupName.match(/brush/i) !== null;
-                const isSuggestion = groupName.match("suggested") !== null;
+                {renderableRegions.map(([groupName, list]) => {
+                  const isBrush = groupName.match(/brush/i) !== null;
+                  const isSuggestion = groupName.match("suggested") !== null;
 
-                return list.length > 0 ? (
-                  <Regions
-                    key={groupName}
-                    name={groupName}
-                    regions={list}
-                    useLayers={isBrush === false}
-                    suggestion={isSuggestion}
+                  return list.length > 0 ? (
+                    <Regions
+                      key={groupName}
+                      name={groupName}
+                      regions={list}
+                      useLayers={isBrush === false}
+                      suggestion={isSuggestion}
+                    />
+                  ) : <Fragment key={groupName} />;
+                })}
+                <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+                <DrawingRegion item={item} />
+
+                {item.crosshair && (
+                  <Crosshair
+                    ref={this.crosshairRef}
+                    width={isFF(FF_DEV_1285) ? item.stageWidth : item.stageComponentSize.width}
+                    height={isFF(FF_DEV_1285) ? item.stageHeight : item.stageComponentSize.height}
                   />
-                ) : <Fragment key={groupName} />;
-              })}
-              <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
-              <DrawingRegion item={item} />
-
-              {item.crosshair && (
-                <Crosshair
-                  ref={this.crosshairRef}
-                  width={isFF(FF_DEV_1285) ? item.stageWidth : item.stageComponentSize.width}
-                  height={isFF(FF_DEV_1285) ? item.stageHeight : item.stageComponentSize.height}
-                />
-              )}
-            </Stage>
-          )}
+                )}
+              </Stage>
+            )}
+          </div>
           {this.renderTools()}
           {item.images.length > 1 && (
             <div className={styles.gallery}>

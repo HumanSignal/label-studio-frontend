@@ -119,6 +119,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
+      if (self.parent?.readonly || self.annotation?.readonly) return;
       const choices = self.parent;
       const selected = self.sel;
 

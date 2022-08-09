@@ -1,14 +1,13 @@
 import { Typography } from "antd";
 import { observer } from "mobx-react";
 import { FC, useMemo } from "react";
-import { IconTrash } from "../../../assets/icons";
 import { Tag } from "../../../common/Tag/Tag";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
 import { Block, Elem, useBEM } from "../../../utils/bem";
 import { RegionEditor } from "./RegionEditor";
 import "./RegionDetails.styl";
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 const RegionLabels: FC<{result: any}> = ({ result }) => {
   const labels: any[] = result.selectedLabels || []; // ensure labels is not underfined
@@ -30,18 +29,44 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
         </Elem>
       )}
 
-      {result.value.text ? (
+      {result.area.text ? (
         <Elem
           name="content"
           mod={{ type: "text" }}
           dangerouslySetInnerHTML={{
-            __html: result.value.text.replace(/\\n/g, '\n'),
+            __html: result.area.text.replace(/\\n/g, '\n'),
           }}
         />
       ) : null}
     </Elem>
   );
 };
+
+const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <Text mark>
+      {mainValue.map((value: string, i: number) => (
+        <p key={`${value}-${i}`} data-counter={i + 1}>{value}</p>
+      ))}
+    </Text>
+  );
+});
+
+const ChoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <Text mark>
+      {mainValue.join(", ")}
+    </Text>
+  );
+});
+
+const RatingResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <span>
+      {mainValue}
+    </span>
+  );
+});
 
 const ResultItem: FC<{result: any}> = observer(({ result }) => {
   const { type, from_name, mainValue } = result;
@@ -54,26 +79,30 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
       );
     } else if (type === "rating") {
       return (
-        <>
+        <Elem name="result">
           <Text>Rating: </Text>
-          {mainValue}
-        </>
+          <Elem name="value">
+            <RatingResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
       );
     } else if (type === "textarea" && !(from_name.perregion && isRegionList)) {
       return (
-        <>
+        <Elem name="result">
           <Text>Text: </Text>
-          <Text mark >
-            {mainValue.join("\n")}
-          </Text>
-        </>
+          <Elem name="value">
+            <TextResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
       );
     } else if (type === "choices") {
       return (
-        <>
+        <Elem name="result">
           <Text>Choices: </Text>
-          {mainValue.join(", ")}
-        </>
+          <Elem name="value">
+            <ChoicesResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
       );
     }
   }, [type, from_name, mainValue]);

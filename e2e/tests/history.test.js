@@ -9,7 +9,7 @@ Scenario("Travel through history with the selected brush region", async function
   LabelStudio.init({
     data: { image: IMAGE },
     config: `<View>
-      <Image name="img" value="$image" />
+      <Image name="img" value="$image" defaultZoom="auto"/>
       <Brush name="tag" toName="img" />
       <Labels name="labels">
         <Label value="1"></Label>
@@ -63,7 +63,7 @@ Scenario("Travel through history after moving the rectangle region", async funct
   LabelStudio.init({
     data: { image: IMAGE },
     config: `<View>
-    <Image name="img" value="$image" />
+    <Image name="img" value="$image" defaultZoom="auto" />
     <Rectangle name="tag" toName="img" />
     <Labels name="labels">
         <Label value="1"></Label>

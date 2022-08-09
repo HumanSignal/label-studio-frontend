@@ -50,6 +50,9 @@ import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
+ * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
+ * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
+ * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -78,6 +81,10 @@ const TagAttrs = types.model({
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
+
+  horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
+  verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
+  defaultzoom: types.optional(types.enumeration(["auto", "original", "fit"]), "fit"),
 });
 
 const IMAGE_CONSTANTS = {
@@ -487,6 +494,18 @@ const Model = types.model({
     }
     return imgStyle;
   },
+
+  get maxScale() {
+    return self.isSideways
+      ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+      : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+  }, 
+
+  get coverScale() {
+    return self.isSideways
+      ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+      : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+  },
 }))
 
   // actions for the tools
@@ -630,12 +649,8 @@ const Model = types.model({
       self.currentZoom = scale;
 
       // cool comment about all this stuff
-      const maxScale = self.isSideways
-        ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
-        : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-      const coverScale = self.isSideways
-        ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
-        : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+      const maxScale = self.maxScale;
+      const coverScale = self.coverScale;
 
       if (maxScale > 1) { // image < container
         if (scale < maxScale) { // scale = 1 or before stage size is max
@@ -648,7 +663,7 @@ const Model = types.model({
       } else { // image > container
         if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
           self.stageZoom = maxScale; // stage squizzed
-          self.zoomScale = scale; // scale image usually
+          self.zoomScale = scale; // scale image for the rest scale : scale image usually
         } else { // negative zoom bigger than image negative scale
           self.stageZoom = scale; // squize stage more
           self.zoomScale = 1; // don't scale image
@@ -695,6 +710,39 @@ const Model = types.model({
 
       self.zoomingPositionX = clamp(x, min.x, 0);
       self.zoomingPositionY = clamp(y, min.y, 0);
+    },
+
+    resetZoomPositionToCenter() {
+      const { containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { width, height } = stageComponentSize;
+
+      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
+    },
+
+    sizeToFit() {
+      const { maxScale } = self;
+
+      self.defaultzoom = "fit";
+      self.setZoom(maxScale);
+      self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
+    },
+
+    sizeToOriginal() {
+      const { maxScale } = self;
+
+      self.defaultzoom = "original";
+      self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
+      self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
+    },
+
+    sizeToAuto() {
+
+      self.defaultzoom = "auto";
+      self.setZoom(1);
+      self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
     },
 
     handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
@@ -852,6 +900,12 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
+
+      if (self.defaultzoom === "fit") {
+        self.sizeToFit();
+      } else {
+        self.sizeToAuto();
+      }
       setTimeout(self.annotation.reinitHistory, 0);
     },
 
