@@ -6,6 +6,7 @@ import WaveSurfer from "wavesurfer.js";
 import "./Wave.styl";
 import RegionsPlugin from "wavesurfer.js/src/plugin/regions";
 import TimelinePlugin from "wavesurfer.js/src/plugin/timeline";
+import { TimelinePlugin as CustomTimelinePlugin } from "../../Plugins/Timeline";
 import { formatTimeCallback, secondaryLabelInterval, timeInterval } from "./Utils";
 import { clamp, isDefined, isMacOS } from "../../../../utils/utilities";
 import { Range } from "../../../../common/Range/Range";
@@ -16,6 +17,7 @@ import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
 import { useMemo } from "react";
 import { WaveSurferParams } from "wavesurfer.js/types/params";
 import ResizeObserver from "../../../../utils/resize-observer";
+import { FF_DEV_2715, isFF } from "../../../../utils/feature-flags";
 
 export const WS_ZOOM_X = {
   min: 1,
@@ -324,52 +326,57 @@ export const Wave: FC<TimelineViewProps> = ({
 
   return (
     <Block name="wave" ref={rootRef}>
-      <Elem name="controls">
-        <Space spread style={{ gridAutoColumns: 'auto' }}>
-          <Range
-            continuous
-            value={speed}
-            {...SPEED}
-            resetValue={SPEED.default}
-            minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
-            maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
-            onChange={(value) => onSpeedChange?.(Number(value))}
-          />
-          <Range
-            continuous
-            value={currentZoom}
-            {...WS_ZOOM_X}
-            resetValue={WS_ZOOM_X.default}
-            minIcon={<IconZoomOut />}
-            maxIcon={<IconZoomIn />}
-            onChange={value =>  setZoom(Number(value)) }
-          />
-        </Space>
-      </Elem>
+      {!isFF(FF_DEV_2715) && (
+        <Elem name="controls">
+          <Space spread style={{ gridAutoColumns: 'auto' }}>
+            <Range
+              continuous
+              value={speed}
+              {...SPEED}
+              resetValue={SPEED.default}
+              minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
+              maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
+              onChange={(value) => onSpeedChange?.(Number(value))}
+            />
+            <Range
+              continuous
+              value={currentZoom}
+              {...WS_ZOOM_X}
+              resetValue={WS_ZOOM_X.default}
+              minIcon={<IconZoomOut />}
+              maxIcon={<IconZoomIn />}
+              onChange={value =>  setZoom(Number(value)) }
+            />
+          </Space>
+        </Elem>
+      )}
       <Elem name="wrapper">
         <Elem
           name="body"
           ref={bodyRef}
           onClick={onTimelineClick}
         >
+          {isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} />}
           <Elem name="cursor" style={cursorStyle}/>
           <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
-          <Elem name="timeline" ref={timelineRef} />
+          {!isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} />}
           {loading && <Elem name="loader" mod={{ animated: true }}/>}
         </Elem>
-        <Elem name="scale">
-          <Range
-            min={1}
-            max={50}
-            step={0.1}
-            reverse
-            continuous
-            value={scale}
-            resetValue={1}
-            align="vertical"
-            onChange={(value) => setScale(Number(value))}
-          />
-        </Elem>
+        {!isFF(FF_DEV_2715) && (
+          <Elem name="scale">
+            <Range
+              min={1}
+              max={50}
+              step={0.1}
+              reverse
+              continuous
+              value={scale}
+              resetValue={1}
+              align="vertical"
+              onChange={(value) => setScale(Number(value))}
+            />
+          </Elem>
+        )}
       </Elem>
     </Block>
   );
@@ -420,10 +427,10 @@ const useWaveSurfer = ({
       ...params,
       barHeight: 1,
       container: root,
-      height: Number(containter?.current?.parentElement?.offsetHeight ?? 146),
+      height:  Number(containter?.current?.parentElement?.offsetHeight ?? (isFF(FF_DEV_2715) ? 64 : 146)),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
-      waveColor: "#D5D5D5",
+      waveColor: isFF(FF_DEV_2715) ? "#BEB9C5": "#D5D5D5",
       progressColor: "#656F83",
       cursorWidth: 0,
       backend: "MediaElement",
@@ -437,7 +444,20 @@ const useWaveSurfer = ({
           deferInit: true,
           dragSelection: true,
         }),
-        TimelinePlugin.create({
+        isFF(FF_DEV_2715) ? CustomTimelinePlugin.create({
+          deferInit: true,
+          container: timelineContainer.current!,
+          formatTimeCallback,
+          timeInterval,
+          secondaryLabelInterval,
+          primaryColor: "#BEB9C5",
+          secondaryColor: "#BEB9C5",
+          primaryFontColor: "rgba(0,0,0,0.4)",
+          secondaryFontColor: "#000",
+          labelPadding: 4,
+          unlabeledNotchColor: "#BEB9C5",
+          notchPercentHeight: 50,
+        }) : TimelinePlugin.create({
           deferInit: true,
           container: timelineContainer.current!,
           formatTimeCallback,
