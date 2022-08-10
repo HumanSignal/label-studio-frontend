@@ -693,14 +693,12 @@ const Model = types.model({
       self._recalculateImageParams();
 
       if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
-        self.annotation.history.freeze();
         self._updateRegionsSizes({
           width: self.stageWidth,
           height: self.stageHeight,
           naturalWidth: self.naturalWidth,
           naturalHeight: self.naturalHeight,
         });
-        self.annotation.history.unfreeze();
       }
     },
 
@@ -881,6 +879,8 @@ const Model = types.model({
     },
 
     _updateRegionsSizes({ width, height, naturalWidth, naturalHeight, userResize }) {
+      self.annotation.history.freeze();
+
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
@@ -888,6 +888,8 @@ const Model = types.model({
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
+
+      setTimeout(self.annotation.history.freeze, 0);
     },
 
     updateImageSize(ev) {
