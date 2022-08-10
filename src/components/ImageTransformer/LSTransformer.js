@@ -4,33 +4,86 @@ import IconRotate from '../../assets/icons/rotate.svg';
 
 const EVENTS_NAME = "tr-konva";
 
-class LSTransformer extends Konva.Transformer {
-  constructor(props) {
-    super();
+// Copies of local methods from Konva's original implementation
+function getCenter(shape) {
+  return {
+    x: shape.x +
+      (shape.width / 2) * Math.cos(shape.rotation) +
+      (shape.height / 2) * Math.sin(-shape.rotation),
+    y: shape.y +
+      (shape.height / 2) * Math.cos(shape.rotation) +
+      (shape.width / 2) * Math.sin(shape.rotation),
+  };
+}
 
-    this.handleMouseUp = this.handleMouseUp.bind(this);
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.isMouseOver = false;
-    this.isMouseDown = false;
+function rotateAroundPoint(shape, angleRad, point) {
+  const x = point.x +
+    (shape.x - point.x) * Math.cos(angleRad) -
+    (shape.y - point.y) * Math.sin(angleRad);
+  const y = point.y +
+    (shape.x - point.x) * Math.sin(angleRad) +
+    (shape.y - point.y) * Math.cos(angleRad);
+
+  return {
+    ...shape,
+    rotation: shape.rotation + angleRad,
+    x,
+    y,
+  };
+}
+
+function rotateAroundCenter(shape, deltaRad) {
+  const center = getCenter(shape);
+
+  return rotateAroundPoint(shape, deltaRad, center);
+}
+
+function getSnap(snaps, newRotationRad, tol) {
+  let snapped = newRotationRad;
+
+  for (let i = 0; i < snaps.length; i++) {
+    const angle = Konva.getAngle(snaps[i]);
+
+    const absDiff = Math.abs(angle - newRotationRad) % (Math.PI * 2);
+    const dif = Math.min(absDiff, Math.PI * 2 - absDiff);
+
+    if (dif < tol) {
+      snapped = angle;
+    }
+  }
+  return snapped;
+}
+
+class LSTransformer extends Konva.Transformer {
+  isMouseOver = false;
+  isMouseDown = false;
+
+  initialRotationDelta = 0;
+  origin;
+
+  constructor(props) {
+    super(props);
 
     if (props.rotateEnabled)
       this.createRotateButton();
   }
 
   // Here starts the configuration of the rotation tool
-  createRotateButton(){
+  createRotateButton() {
     const rotateList = this.refreshRotationList();
 
-    for (const obj in rotateList){
+    for (const obj in rotateList) {
       const rotateButton = new Konva.Circle({
-        radius: 10,
+        radius: 20,
         name:`rotate-${obj}`,
         dragDistance: 0,
         draggable: true,
+        x: rotateList[obj].x,
+        y: rotateList[obj].y,
       });
 
       this.add(rotateButton);
+      rotateButton.moveToBottom(); // to not overlap other controls
 
       rotateButton.on('mousedown touchstart', this.handleMouseDown);
 
@@ -45,7 +98,7 @@ class LSTransformer extends Konva.Transformer {
       rotateButton.on('mouseout', () => {
         this.isMouseOver = false;
 
-        if (!this.isMouseDown){
+        if (!this.isMouseDown) {
           this.getStage().content.style.cursor = ``;
         }
       });
@@ -63,68 +116,33 @@ class LSTransformer extends Konva.Transformer {
     }
   }
 
-  getCenter(shape) {
-    return {
-      x: shape.x +
-          (shape.width / 2) * Math.cos(shape.rotation) +
-          (shape.height / 2) * Math.sin(-shape.rotation),
-      y: shape.y +
-          (shape.height / 2) * Math.cos(shape.rotation) +
-          (shape.width / 2) * Math.sin(shape.rotation),
-    };
-  }
+  handleMouseDown = (e) => {
+    const stage = this.getStage();
+    const pp = stage?.getPointerPosition();
 
-  rotateAroundPoint(shape, angleRad, point) {
-    const x = point.x +
-        (shape.x - point.x) * Math.cos(angleRad) -
-        (shape.y - point.y) * Math.sin(angleRad);
-    const y = point.y +
-        (shape.x - point.x) * Math.sin(angleRad) +
-        (shape.y - point.y) * Math.cos(angleRad);
+    if (!stage || !pp) return;
 
-    return Object.assign(Object.assign({}, shape), { rotation: shape.rotation + angleRad, x,
-      y });
-  }
+    const shape = this._getNodeRect();
+    const origin = getCenter(shape);
+    const dx = pp.x - origin.x;
+    const dy = pp.y - origin.y;
+    const azimuth = (Math.PI / 2 - Math.atan2(-dy, dx));
 
-  rotateAroundCenter(shape, deltaRad) {
-    const center = this.getCenter(shape);
-
-    return this.rotateAroundPoint(shape, deltaRad, center);
-  }
-
-  getSnap(snaps, newRotationRad, tol) {
-    let snapped = newRotationRad;
-
-    for (let i = 0; i < snaps.length; i++) {
-      const angle = Konva.getAngle(snaps[i]);
-      const absDiff = Math.abs(angle - newRotationRad) % (Math.PI * 2);
-      const dif = Math.min(absDiff, Math.PI * 2 - absDiff);
-
-      if (dif < tol) {
-        snapped = angle;
-      }
-    }
-    return snapped;
-  }
-
-  handleMouseDown(e) {
-    this.getStage().content.style.cursor = `url(${IconRotate}) 16 16, pointer`;
+    stage.content.style.cursor = `url(${IconRotate}) 16 16, pointer`;
     this.isMouseDown = true;
     this._movingAnchorName = e.target.name().split(' ')[0];
-    const ap = e.target.getAbsolutePosition();
-    const pos = e.target.getStage().getPointerPosition();
 
-    if (typeof window !== 'undefined') {
+    // we save angle between vector to current pointer and shape rotation
+    // and we keep this angle the same during mousemove by changing shape rotation
+    this.initialRotationDelta = azimuth - shape.rotation;
+    this.origin = origin;
+
+    if (window) {
       window.addEventListener('mousemove', this.handleMouseMove);
       window.addEventListener('touchmove', this.handleMouseMove);
       window.addEventListener('mouseup', this.handleMouseUp, true);
       window.addEventListener('touchend', this.handleMouseUp, true);
     }
-
-    this._anchorDragOffset = {
-      x: pos.x - ap.x,
-      y: pos.y - ap.y,
-    };
 
     this._fire('transformstart', { evt: e, target: this.getNode() });
     this._nodes.forEach((target) => {
@@ -132,14 +150,15 @@ class LSTransformer extends Konva.Transformer {
     });
   }
 
-  handleMouseUp(e){
+  handleMouseUp = (e) => {
     this.isMouseDown = false;
+    this.origin = undefined;
 
     if (!this.isMouseOver) {
       this.getStage().content.style.cursor = ``;
     }
 
-    if (typeof window !== 'undefined') {
+    if (window) {
       window.removeEventListener('mousemove', this.handleMouseMove);
       window.removeEventListener('touchmove', this.handleMouseMove);
       window.removeEventListener('mouseup', this.handleMouseUp, true);
@@ -154,103 +173,54 @@ class LSTransformer extends Konva.Transformer {
         target._fire('transformend', { evt: e, target });
       });
     }
-    this._movingAnchorName = null;
+    this._movingAnchorName = '';
   }
 
-  handleMouseMove(e) {
-    const anchorNode = this.findOne('.' + this._movingAnchorName);
+  handleMouseMove = (e) => {
     const stage = this.getStage();
 
-    if (this.isMouseDown) {
-      this.getStage().content.style.cursor = `url(${IconRotate}) 16 16, pointer`;
-    }
+    if (!this.isMouseDown || !this.origin || !stage) return;
 
+    // register coordinates outside the stage into the stage
     stage.setPointersPositions(e);
     const pp = stage.getPointerPosition();
-    const oldAbs = anchorNode.getAbsolutePosition();
-    let newNodePos = {
-      x: pp.x - this._anchorDragOffset.x,
-      y: pp.y - this._anchorDragOffset.y,
-    };
+    const shape = this._getNodeRect();
 
-    if (this.anchorDragBoundFunc()) {
-      newNodePos = this.anchorDragBoundFunc()(oldAbs, newNodePos, e);
-    }
+    if (!pp) return;
 
-    anchorNode.setAbsolutePosition(newNodePos);
-    const newAbs = anchorNode.getAbsolutePosition();
+    const dx = pp.x - this.origin.x;
+    const dy = pp.y - this.origin.y;
+    // @todo why such signs? but they produce correct angles in every quadrant
+    const azimuth = (Math.PI / 2 - Math.atan2(-dy, dx));
 
-    if (oldAbs.x === newAbs.x && oldAbs.y === newAbs.y) {
-      return;
-    }
+    const newRotation = azimuth - this.initialRotationDelta;
 
-    stage.setPointersPositions(e);
-
-    let x, y, delta, newRotation;
-    const attrs = this._getNodeRect();
-    const oldRotation = Konva.getAngle(this.rotation());
-
-    if (this._movingAnchorName.indexOf('rotate-bottom') >= 0) {
-      x = anchorNode.x() + (attrs.width);
-      y = -anchorNode.y() + (attrs.height);
-    } else {
-      x = anchorNode.x() + (attrs.width);
-      y = -anchorNode.y() + 10;
-    }
-
-    delta = Math.atan2(-y, x) + Math.PI;
-
-    if (attrs.width > 0) {
-      delta += Math.PI;
-    }
-
-    if (this._movingAnchorName.indexOf('right') >= 0) {
-      newRotation = oldRotation + delta;
-    } else {
-      newRotation = oldRotation - delta;
-    }
-
+    // in case we have rotation snap enabled
     const tol = Konva.getAngle(this.rotationSnapTolerance());
-    const snappedRot = this.getSnap(this.rotationSnaps(), newRotation, tol);
-    const diff = snappedRot - attrs.rotation;
-    const shape = this.rotateAroundCenter(attrs, diff);
+    const snappedRot = getSnap(this.rotationSnaps(), newRotation, tol);
+    const diff = snappedRot - shape.rotation;
+    const rotated = rotateAroundCenter(shape, diff);
 
-    this._fitNodesInto(shape, e);
+    this._fitNodesInto(rotated, e);
   }
 
   refreshRotationList() {
     return {
       "top-left": {
-        x: -15,
-        y: -15,
+        x: 0,
+        y: 0,
       },
       "top-right": {
-        x: this.getWidth() + 15,
-        y: -15,
+        x: this.getWidth(),
+        y: 0,
       },
       "bottom-left": {
-        x: -15,
-        y: this.getHeight() + 10,
+        x: 0,
+        y: this.getHeight(),
       },
       "bottom-right": {
-        x: this.getWidth() + 15,
-        y: this.getHeight() + 15,
-      },
-      "top-left-inside": {
-        x: 15,
-        y: 15,
-      },
-      "top-right-inside": {
-        x: this.getWidth() - 15,
-        y: 15,
-      },
-      "bottom-left-inside": {
-        x: 15,
-        y: this.getHeight() - 15,
-      },
-      "bottom-right-inside": {
-        x: this.getWidth() - 15,
-        y: this.getHeight() - 15,
+        x: this.getWidth(),
+        y: this.getHeight(),
       },
     };
   }
@@ -284,7 +254,7 @@ class LSTransformer extends Konva.Transformer {
     const outerBack = this._outerBack;
     const rotateList = this.refreshRotationList();
 
-    for(const obj in rotateList){
+    for (const obj in rotateList) {
       const anchorNode = this.findOne(`.rotate-${obj}`);
 
       if (anchorNode) {
