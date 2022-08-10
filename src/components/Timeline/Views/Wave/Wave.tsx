@@ -317,10 +317,12 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Cursor styles
   const cursorStyle = useMemo<CSSProperties>(() => {
+    const isNewTimelineStyle = isFF(FF_DEV_2715);
+
     return {
       left: cursorPosition,
-      width: Number(data.cursorwidth ?? 2),
-      background: data.cursorcolor,
+      width: isNewTimelineStyle ? 1 : Number(data.cursorwidth ?? 2),
+      background: isNewTimelineStyle ? "#1f1f1f" : data.cursorcolor,
     };
   }, [cursorPosition]);
 
@@ -427,11 +429,11 @@ const useWaveSurfer = ({
       ...params,
       barHeight: 1,
       container: root,
-      height:  Number(containter?.current?.parentElement?.offsetHeight ?? (isFF(FF_DEV_2715) ? 64 : 146)),
+      height:  Number(containter?.current?.parentElement?.offsetHeight ?? (isFF(FF_DEV_2715) ? 118 : 146)),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: isFF(FF_DEV_2715) ? "#BEB9C5": "#D5D5D5",
-      progressColor: "#656F83",
+      progressColor: isFF(FF_DEV_2715) ? "#BEB9C5" : "#656F83",
       cursorWidth: 0,
       backend: "MediaElement",
       loopSelection: true,
@@ -445,6 +447,7 @@ const useWaveSurfer = ({
           dragSelection: true,
         }),
         isFF(FF_DEV_2715) ? CustomTimelinePlugin.create({
+          offset: 8,
           deferInit: true,
           container: timelineContainer.current!,
           formatTimeCallback,
@@ -452,9 +455,9 @@ const useWaveSurfer = ({
           secondaryLabelInterval,
           primaryColor: "#BEB9C5",
           secondaryColor: "#BEB9C5",
-          primaryFontColor: "rgba(0,0,0,0.4)",
-          secondaryFontColor: "#000",
-          labelPadding: 4,
+          primaryFontColor: "#413C4A",
+          secondaryFontColor: "#413C4A",
+          labelPadding: 6,
           unlabeledNotchColor: "#BEB9C5",
           notchPercentHeight: 50,
         }) : TimelinePlugin.create({
