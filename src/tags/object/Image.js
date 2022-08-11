@@ -889,7 +889,7 @@ const Model = types.model({
       });
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
-      setTimeout(self.annotation.history.freeze, 0);
+      setTimeout(self.annotation.history.unfreeze, 0);
     },
 
     updateImageSize(ev) {
