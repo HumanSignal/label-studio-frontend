@@ -9,6 +9,7 @@ import "./DetailsPanel.styl";
 import { RegionDetailsMain, RegionDetailsMeta } from "./RegionDetails";
 import { RegionItem } from "./RegionItem";
 import { Relations } from "./Relations";
+import { DraftPanel } from "../../DraftPanel/DraftPanel";
 interface DetailsPanelProps extends PanelProps {
   regions: any;
   selection: any;
@@ -41,14 +42,16 @@ const Content: FC<any> = observer(({
 
 const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
-  const historyEnabled = store.hasInterface("annotations:history");
-  const draftsEnabled = isFF(FF_DEV_2290);
-  const hideHistoryTitle = !historyEnabled && draftsEnabled;
+  const showAnnotationHistory = store.hasInterface("annotations:history");
+  const sohwDraftInHistory = isFF(FF_DEV_2290);
 
   return (
     <>
       <Elem name="section">
-        {!hideHistoryTitle && (
+        {!sohwDraftInHistory && (
+          <DraftPanel item={currentEntity} />
+        )}
+        {showAnnotationHistory && (
           <Elem name="section-head">
             Annotation History
             <span>#{currentEntity.pk ?? currentEntity.id}</span>
@@ -57,8 +60,8 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
         <Elem name="section-content">
           <AnnotationHistory
             inline
-            showDraft={draftsEnabled}
-            enabled={historyEnabled}
+            showDraft={sohwDraftInHistory}
+            enabled={showAnnotationHistory}
           />
         </Elem>
       </Elem>

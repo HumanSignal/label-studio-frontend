@@ -55,7 +55,6 @@ const DraftState: FC<{
 }> = observer(({ annotation, inline, isSelected }) => {
   const hasChanges = annotation.history.hasChanges;
   const store = annotation.list; // @todo weird name
-  const dateCreated = !annotation.isDraftSaving && annotation.draftSaved;
 
   const [hasUnsavedChanges, setChanges] = useState(false);
 
