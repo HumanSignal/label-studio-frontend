@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, FF_DEV_1442, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -890,6 +890,7 @@ export default observer(
                   item.setImageRef(ref);
                   this.imageRef.current = ref;
                 }}
+                loading={isFF(FF_DEV_3077) && "lazy"}
                 style={item.imageTransform}
                 src={item._value}
                 onLoad={item.updateImageSize}
