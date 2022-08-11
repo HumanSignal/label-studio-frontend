@@ -117,7 +117,7 @@ export const CurrentEntity = injector(observer(({
         </Elem>
       )}
       <AnnotationHistory
-        showHistory={showHistory}
+        enabled={showHistory}
         showDraft={showDraftInHistory}
       />
     </Block>
