@@ -877,6 +877,8 @@ const Model = types.model({
         userResize,
       });
 
+
+      //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (self.annotation?.history?.history?.length <= 1){
         setTimeout(self.annotation.reinitHistory, 0);
       }
