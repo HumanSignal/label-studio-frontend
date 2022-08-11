@@ -876,6 +876,10 @@ const Model = types.model({
         naturalHeight: self.naturalHeight,
         userResize,
       });
+
+      if (self.annotation?.history?.history?.length <= 1){
+        setTimeout(self.annotation.reinitHistory, 0);
+      }
     },
 
     _updateRegionsSizes({ width, height, naturalWidth, naturalHeight, userResize }) {
