@@ -77,4 +77,5 @@ export const LabelList = observer(({ regionStore }) => {
       switcherIcon={<LsChevron opacity="0.25" />}
     />
   );
+  
 });
