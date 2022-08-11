@@ -43,12 +43,12 @@ const Content: FC<any> = observer(({
 const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
   const showAnnotationHistory = store.hasInterface("annotations:history");
-  const sohwDraftInHistory = isFF(FF_DEV_2290);
+  const showDraftInHistory = isFF(FF_DEV_2290);
 
   return (
     <>
       <Elem name="section">
-        {!sohwDraftInHistory && (
+        {!showDraftInHistory && (
           <DraftPanel item={currentEntity} />
         )}
         {showAnnotationHistory && (
@@ -60,7 +60,7 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
         <Elem name="section-content">
           <AnnotationHistory
             inline
-            showDraft={sohwDraftInHistory}
+            showDraft={showDraftInHistory}
             enabled={showAnnotationHistory}
           />
         </Elem>
