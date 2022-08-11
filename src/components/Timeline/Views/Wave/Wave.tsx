@@ -57,6 +57,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
   const bodyRef = useRef<HTMLElement>();
+  const cursorRef = useRef<HTMLElement>();
 
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [loading, setLoading] = useState(true);
@@ -326,6 +327,44 @@ export const Wave: FC<TimelineViewProps> = ({
     };
   }, [cursorPosition]);
 
+  const onCursorMouseDown = useCallback((e: any) => {
+    if(!isFF(FF_DEV_2715)) return;
+    if (!cursorRef.current) return;
+
+    // @todo
+    // - Need to properly interpolate according to timeline/wave element
+    // - Clamp the start/end of the draggable position
+    // - Dragging in the start/end positions will scroll the position of the timeline
+    const dX = e.clientX - cursorRef.current.getBoundingClientRect().left;
+
+    function moveCursor(pageX: number) {
+      if (!cursorRef.current) return;
+      cursorRef.current.style.left = `${pageX - dX}px`;
+    }
+
+    moveCursor(e.pageX);
+
+    function onDocumentMouseMove(docEvent: any) {
+      moveCursor(docEvent.pageX);
+    }
+
+    document.addEventListener('mousemove', onDocumentMouseMove);
+
+    cursorRef.current.onmouseup = () => {
+      document.removeEventListener('mousemove', onDocumentMouseMove);
+      if (cursorRef.current) {
+        cursorRef.current.onmouseup = null;
+      }
+    };
+
+  }, []);
+
+  const onCursorDragStart = useCallback(() => {
+    if(!isFF(FF_DEV_2715)) return;
+
+    return false;
+  }, []);
+
   return (
     <Block name="wave" ref={rootRef} mod={{ 'with-playhead': isFF(FF_DEV_2715) }}>
       {!isFF(FF_DEV_2715) && (
@@ -353,13 +392,13 @@ export const Wave: FC<TimelineViewProps> = ({
         </Elem>
       )}
       <Elem name="wrapper" mod={isFF(FF_DEV_2715) ? {  layout: 'stack', edge: 'relaxed' } : {}}>
-        {isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} mod={{ position: 'outside', placement: 'top' }} />}
+        {isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} mod={{ position: 'outside', placement: 'top'  }} onClick={onTimelineClick} />}
         <Elem
           name="body"
           ref={bodyRef}
           onClick={onTimelineClick}
         >
-          <Elem name="cursor" style={cursorStyle} />
+          <Elem name="cursor" ref={cursorRef} style={cursorStyle} onMouseDown={onCursorMouseDown} onDragStart={onCursorDragStart} />
           <Elem name="surfer" ref={waveRef} onClick={(e: RMouseEvent<HTMLElement>) => e.stopPropagation()}/>
           {!isFF(FF_DEV_2715) && <Elem name="timeline" ref={timelineRef} mod={{ position: 'inside', placement: 'bottom' }} />}
           {loading && <Elem name="loader" mod={{ animated: true }}/>}
@@ -447,7 +486,6 @@ const useWaveSurfer = ({
           dragSelection: true,
         }),
         isFF(FF_DEV_2715) ? CustomTimelinePlugin.create({
-          offset: 8,
           deferInit: true,
           container: timelineContainer.current!,
           formatTimeCallback,
