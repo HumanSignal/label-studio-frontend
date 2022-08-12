@@ -348,15 +348,13 @@ export const Wave: FC<TimelineViewProps> = ({
       moveCursor(docEvent.pageX);
     }
 
-    document.addEventListener('mousemove', onDocumentMouseMove);
-
-    cursorRef.current.onmouseup = () => {
+    function onDocumentMouseUp() {
       document.removeEventListener('mousemove', onDocumentMouseMove);
-      if (cursorRef.current) {
-        cursorRef.current.onmouseup = null;
-      }
-    };
+      document.removeEventListener('mouseup', onDocumentMouseUp);
+    }
 
+    document.addEventListener('mousemove', onDocumentMouseMove);
+    document.addEventListener('mouseup', onDocumentMouseUp);
   }, []);
 
   const onCursorDragStart = useCallback(() => {
@@ -366,7 +364,7 @@ export const Wave: FC<TimelineViewProps> = ({
   }, []);
 
   return (
-    <Block name="wave" ref={rootRef} mod={{ 'with-playhead': isFF(FF_DEV_2715) }}>
+    <Block name="wave" ref={rootRef} mod={{ 'with-playhead': isFF(FF_DEV_2715), compact: isFF(FF_DEV_2715) }}>
       {!isFF(FF_DEV_2715) && (
         <Elem name="controls">
           <Space spread style={{ gridAutoColumns: 'auto' }}>
@@ -468,7 +466,7 @@ const useWaveSurfer = ({
       ...params,
       barHeight: 1,
       container: root,
-      height:  Number(containter?.current?.parentElement?.offsetHeight ?? (isFF(FF_DEV_2715) ? 118 : 146)),
+      height: Number(containter?.current?.parentElement?.offsetHeight ?? 146),
       hideScrollbar: true,
       maxCanvasWidth: 8000,
       waveColor: isFF(FF_DEV_2715) ? "#BEB9C5": "#D5D5D5",
