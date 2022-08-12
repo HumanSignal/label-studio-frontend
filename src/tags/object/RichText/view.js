@@ -56,8 +56,7 @@ class RichTextPieceView extends Component {
     const target = event.target;
     const region = this._determineRegion(event.target);
 
-    if (isFF(FF_DEV_2786) && event.buttons === 1) {
-
+    if (isFF(FF_DEV_2786) && event.buttons === 1 && region?.selected) {
       item.isDragging = true;
       const freezeSideLeft = target?.classList.contains('__resizeAreaRight') && region.startOffset;
       const freezeSideRight = target?.classList.contains('__resizeAreaLeft') && region.endOffset;
@@ -162,13 +161,16 @@ class RichTextPieceView extends Component {
 
   _onDragStop = () => {
     const { item } = this.props;
+
+    if (!item.isDragging) return;
+
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const doc = root.ownerDocument;
     const selection = doc.defaultView.getSelection();
     const selectionIsEmpty = selection.focusOffset - selection.anchorOffset < 1;
     
-    if (selectionIsEmpty) this._restoreOriginalRangeAsSelection(doc, selection);
+    // if (selectionIsEmpty) this._restoreOriginalRangeAsSelection(doc, selection);
 
     item.isDragging = false;
     item.initializedDrag = false;
@@ -188,9 +190,11 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const label = states[0]?.selectedLabels?.[0];
     const value = states[0]?.selectedValues?.();
+    let wasDragged = false;
 
     if (isFF(FF_DEV_2786) && item.isDragging) {
       this._onDragStop();
+      wasDragged = true;
     }
 
 
@@ -232,7 +236,7 @@ class RichTextPieceView extends Component {
       granularity: label?.granularity ?? item.granularity,
       beforeCleanup: () => {
         this.doubleClickSelection = undefined;
-        this._selectionMode = true;
+        if (!wasDragged) this._selectionMode = true;
       },
     });
     this.doubleClickSelection = {
