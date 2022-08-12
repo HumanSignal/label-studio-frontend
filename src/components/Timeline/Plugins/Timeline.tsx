@@ -198,7 +198,7 @@ export class TimelinePlugin extends BaseTimelinePlugin {
             this.fillText(
               (formatTime as any)(curSeconds, pixelsPerSecond),
               curPixel * pxRatio,
-              height + labelPadding!,
+              height + Math.ceil(labelPadding! * 1.5),
               "center",
             );
             break;
@@ -244,7 +244,7 @@ export class TimelinePlugin extends BaseTimelinePlugin {
             this.fillText(
               (formatTime as any)(curSeconds, pixelsPerSecond),
               curPixel  * pxRatio,
-              height + labelPadding!,
+              height + Math.ceil(labelPadding! * 1.5),
               "center",
             );
             break;

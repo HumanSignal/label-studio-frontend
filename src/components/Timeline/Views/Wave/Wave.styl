@@ -1,8 +1,12 @@
 .wave
   --container-edge-padding 24px
+  --border-color rgba(0, 0, 0, 0.1)
 
   position relative
   user-select none
+
+  &_compact
+    --border-color rgba(137, 128, 152, 0.16) 
 
   &__loader
     top 0
@@ -92,8 +96,8 @@
     padding 0 6px
     display flex
     align-items center
-    border-top 1px solid rgba(#000, 0.1)
-    border-bottom 1px solid rgba(#000, 0.1)
+    border-top 1px solid var(--border-color)
+    border-bottom 1px solid var(--border-color)
 
   &__surfer
     height 88px
@@ -134,7 +138,8 @@
         pointer-events auto
         height auto
         position relative
-        border-bottom 1px solid rgba(137, 128, 152, 0.16)
+        border-top 1px solid var(--border-color)
+        border-bottom 1px solid var(--border-color)
     &_placement
       &_bottom
         bottom 0
