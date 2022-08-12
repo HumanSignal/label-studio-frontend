@@ -103,11 +103,11 @@ class RichTextPieceView extends Component {
     this.dragTarget = item.isGrabbingEdge ? event.path[1] : event.target;
     const region = this._determineRegion(this.dragTarget);
     
-
+    this.draggableRegion = region;
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(this.dragTarget, root, doc);
     this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
-    region.deleteRegion();
+    // region.deleteRegion();
     item.initializedDrag = true;
   }
 
@@ -172,6 +172,10 @@ class RichTextPieceView extends Component {
     item.initializedDrag = false;
     this.spanOffsets = null;
     this._removeSelectionStyle();
+
+    if (!selection.isCollapsed) {
+      this.draggableRegion.removeHighlight();
+    }
   }
 
 
@@ -214,7 +218,13 @@ class RichTextPieceView extends Component {
       normedRange.text = selectionText;
       normedRange.isText = item.type === "text";
       normedRange.dynamic = this.props.store.autoAnnotation;
-      item.addRegion(normedRange, this.doubleClickSelection);
+
+      if (isFF(FF_DEV_2786) && this.draggableRegion) {
+        item.highlightRegion(this.draggableRegion, normedRange);
+        this.draggableRegion = undefined;
+      } else {
+        item.addRegion(normedRange, this.doubleClickSelection);
+      }
     }, {
       window: rootEl?.contentWindow ?? window,
       granularity: label?.granularity ?? item.granularity,

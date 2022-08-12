@@ -273,6 +273,11 @@ const Model = types
         const labels = { [control.valueType]: values };
 
         const area = self.annotation.createResult(range, labels, control, self);
+
+        self.highlightRegion(area, range);
+      },
+
+      highlightRegion(area, range) {
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
 

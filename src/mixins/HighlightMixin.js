@@ -100,7 +100,10 @@ export const HighlightMixin = types
      * Removes current highlights
      */
     removeHighlight() {
+      self._spans.forEach(span => span.querySelectorAll("area").forEach(area => area.remove()));
       Utils.Selection.removeRange(self._spans);
+      self._spans = undefined;
+      self.cachedRange = undefined;
     },
 
     /**
