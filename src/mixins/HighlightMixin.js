@@ -324,17 +324,17 @@ const createSpanStylesheet = (document, identifier, color) => {
     [classNames.resizeAreaRight]: `
       opacity: 0;
       position: absolute;
-      cursor: col-resize;
-      height: 17px;
+      cursor: e-resize;
+      height: 1.2em;
       width: 15px;
-      transform: translateX(-15px);
     `,
     [classNames.resizeAreaLeft]: `
       opacity: 0;
       position: absolute;
-      cursor: col-resize;
-      height: 17px;
+      cursor: w-resize;
+      height: 1.2em;
       width: 15px;
+      transform: translateX(-15px);
     `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;

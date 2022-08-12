@@ -105,6 +105,17 @@ const Model = types
     get isReady() {
       return self.isLoaded  && self._isReady;
     },
+
+    get visibleRoot() {
+      const rootEl = self.visibleNodeRef.current;
+
+      return rootEl?.contentDocument?.body ?? rootEl;
+    },
+
+    get visibleDoc() {
+      // @todo we can get it directly
+      return self.visibleRoot.ownerDocument;
+    },
   }))
   .volatile(() => ({
     // the only visible iframe/div

@@ -78,23 +78,22 @@ class RichTextPieceView extends Component {
       `color: ${color};`,
     ];
 
-    if (!this.style) {
-      this.style = doc.createElement("style");
-      root.appendChild(this.style);
+    if (!this.selectionStyle) {
+      this.selectionStyle = doc.createElement("style");
+      root.appendChild(this.selectionStyle);
     }
     
-    this.style.innerText = `::selection {${rules.join("\n")}}`;
+    this.selectionStyle.innerText = `::selection {${rules.join("\n")}}`;
   }
 
   _removeSelectionStyle = () => {
-    if (this.style) this.style.innerText = "";
+    if (this.selectionStyle) this.selectionStyle.innerText = "";
   }
 
   _initializeDrag = (event) => {
     const { item } = this.props;
-    const rootEl = item.visibleNodeRef.current;
-    const root = rootEl?.contentDocument?.body ?? rootEl;
-    const doc = root.ownerDocument;
+    const root = item.visibleRoot;
+    const doc = item.visibleDoc;
     const anchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
 
     const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
@@ -113,16 +112,19 @@ class RichTextPieceView extends Component {
 
   _onMouseMove = (event) => {
     const { item } = this.props;
-    const rootEl = item.visibleNodeRef.current;
-    const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (item.isDragging && item.isActive) {
       event.preventDefault();
 
-      !item.initializedDrag ? this._initializeDrag(event) :
+      if (!item.initializedDrag) {
+        this._initializeDrag(event);
+      } else {
         [this.adjustedOffsets, this.adjustedRange] = this._highlightSelection(
-          root, [event.clientX, event.clientY], this.spanOffsets,
+          item.visibleRoot,
+          [event.clientX, event.clientY],
+          this.spanOffsets,
         );
+      }
     }
   };
 
