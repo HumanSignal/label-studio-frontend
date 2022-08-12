@@ -101,8 +101,11 @@
     ~/_compact &
       height 60px
 
-    ~/_with-playhead &
-      overflow hidden
+    ~/_compact wave
+      overflow revert !important
+
+    ~/_compact showtitle
+      z-index 10 !important
 
     showtitle div
       left 8px
@@ -111,6 +114,11 @@
       position relative
       background-color #fff
       box-shadow 0 4px 15px rgba(#000, 0.2)
+
+    ~/_compact showtitle div
+      background-color #000
+      color #fff
+      box-shadow none
 
   &__timeline
     bottom 0
