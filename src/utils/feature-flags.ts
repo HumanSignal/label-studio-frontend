@@ -76,6 +76,9 @@ export const FF_DEV_2669 = "ff_front_dev_2669_paragraph_author_filter_210622_sho
 
 export const FF_DEV_2432 = "ff_front_dev_2432_auto_save_polygon_draft_210622_short";
 
+// Undo keypoints when create new polygon
+export const FF_DEV_2576 = "ff_feat_front_DEV_2576_undo_key_points_polygon_short";
+
 // Change the rotate tool from bbox
 export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
