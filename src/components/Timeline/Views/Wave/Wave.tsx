@@ -328,27 +328,29 @@ export const Wave: FC<TimelineViewProps> = ({
   }, [cursorPosition]);
 
   const onCursorMouseDown = useCallback((e: any) => {
-    if(!isFF(FF_DEV_2715)) return;
-    if (!cursorRef.current) return;
+    if(!isFF(FF_DEV_2715) || !waveRef.current || !cursorRef.current || !ws.current) return;
 
-    // @todo
-    // - Need to properly interpolate according to timeline/wave element
-    // - Clamp the start/end of the draggable position
-    // - Dragging in the start/end positions will scroll the position of the timeline
-    const dX = e.clientX - cursorRef.current.getBoundingClientRect().left;
+    const wsi = ws.current;
+    const start = waveRef.current.getBoundingClientRect().left;
+    const end = waveRef.current.getBoundingClientRect().right;
+    const wasPlaying = wsi.isPlaying();
+
+    if (wasPlaying) handlers.onPause();
 
     function moveCursor(pageX: number) {
       if (!cursorRef.current) return;
-      cursorRef.current.style.left = `${pageX - dX}px`;
+      cursorRef.current.style.left = `${Math.min(Math.max(pageX - start, 0), end)}px`;
     }
 
-    moveCursor(e.pageX);
+    moveCursor(e.clientX);
 
     function onDocumentMouseMove(docEvent: any) {
-      moveCursor(docEvent.pageX);
+      moveCursor(docEvent.clientX);
     }
 
     function onDocumentMouseUp() {
+      scrollTo(cursorRef.current!.getBoundingClientRect().left - waveRef.current!.getBoundingClientRect().left);
+      if (wasPlaying) handlers.onPlay();
       document.removeEventListener('mousemove', onDocumentMouseMove);
       document.removeEventListener('mouseup', onDocumentMouseUp);
     }
