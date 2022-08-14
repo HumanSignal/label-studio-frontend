@@ -164,7 +164,8 @@ export const CommentStore = types
 
       if (self.annotationId) {
         comment.annotation = self.annotationId;
-      } else if (self.draftId) {
+      }
+      if (self.draftId) {
         comment.draft = self.draftId;
       }
 
