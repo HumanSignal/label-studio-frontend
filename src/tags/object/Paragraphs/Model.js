@@ -313,6 +313,8 @@ const Model = types
         area.makeDynamic();
       }
 
+      area.setText(range.text);
+
       area.notifyDrawingFinished();
 
       area._range = range._range;
