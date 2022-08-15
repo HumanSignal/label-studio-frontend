@@ -548,8 +548,8 @@ const HtxPolygonView = ({ item }) => {
   const stage = item.parent.stageRef;
 
   useEffect(() => {
-    if (isFF(FF_DEV_2431) && !item.closed) item.control.tools.Polygon.resumeUnfinishedPolygon(item);
-  }, []);
+    if (isFF(FF_DEV_2431) && !item.closed) item.control.tools.Polygon.resumeUnfinishedRegion(item);
+  }, [item.closed]);
 
   return (
     <Group

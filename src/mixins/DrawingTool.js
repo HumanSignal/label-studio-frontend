@@ -106,7 +106,7 @@ const DrawingTool = types
         self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
-      resumeUnfinishedPolygon(existingUnclosedPolygon) {        
+      resumeUnfinishedRegion(existingUnclosedPolygon) {
         self.currentArea = existingUnclosedPolygon;
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
@@ -159,7 +159,6 @@ const DrawingTool = types
       },
 
       startDrawing(x, y) {
-        console.log('startDrawing');
         self.annotation.history.freeze();
         self.mode = "drawing";
 
