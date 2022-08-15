@@ -1,14 +1,14 @@
 import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import Tree from 'rc-tree';
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from "react";
 import { IconLockLocked, IconLockUnlocked, LsSparks } from "../../../assets/icons";
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { IconArrow } from "../../../assets/icons/tree";
 import { Button, ButtonProps } from "../../../common/Button/Button";
 import Registry from "../../../core/Registry";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
-import { Block, CN, cn, Elem } from "../../../utils/bem";
+import { Block, cn, Elem } from "../../../utils/bem";
 import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
 import { NodeIcon } from "../../Node/Node";
 import "./TreeView.styl";
@@ -67,24 +67,25 @@ const useDataTree = ({
   selectedKeys,
 }: any) => {
   const processor = useCallback((item: any, idx, _false, _null, _onClick, groupId) => {
-    const { id, type, hidden } = item;
-    const style = item.background ?? item.getOneColor();
+    const { id, type, hidden } = item ?? {};
+    const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? "#666").alpha(1);
     const mods: Record<string, any> = { hidden, type };
-    const key = `${id}${groupId ?? ''}`;
     const label = (() => {
-      if (type.match('label')) {
+      if (!type) {
+        return "No Label";
+      } else if (type.includes('label')) {
         return item.value;
-      } else if(type.match("region")) {
+      } else if (type.includes("region") || type.includes("range")) {
         return (item?.labels ?? []).join(", ") || "No label";
-      } else if(type.match('tool')) {
+      } else if (type.includes('tool')) {
         return item.value;
       }
     })();
 
     return {
       idx,
-      key,
+      key: id,
       type,
       label,
       hidden,
@@ -100,7 +101,7 @@ const useDataTree = ({
       className: rootClass.elem('node').mod(mods).toClassName(),
       title: (data: any) => <RootTitle {...data}/>,
     };
-  }, [hovered]);
+  }, [hovered, selectedKeys]);
 
   return regions.getRegionsTree(processor);
 };
@@ -116,12 +117,11 @@ const useEventHandlers = ({
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node, selected } = evt;
 
-    if (!node.type.match('region')) return;
+    if (node.type.includes("region") || node.type.includes("range")) {
+      if (!multi) regions.selection.clear();
 
-    if (!multi) regions.selection.clear();
-
-    if (selected) regions.selection.select(node.item);
-    else regions.selection.unselect(node.item);
+      regions.toggleSelection(node.item, selected);
+    }
   }, []);
 
   const onMouseEnter = useCallback(({ node }: any) => {
@@ -296,23 +296,29 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const { regions: regionStore } = useContext(OutlinerContext);
 
   const hidden = useMemo(() => {
-    if (type.match('region')) {
+    if (type?.includes('region')) {
       return entity.hidden;
-    } else if(type.match('label') && regions) {
-      return Object
-        .values(regions)
-        .reduce((acc, { hidden }) => acc && hidden, true);
+    } else if ((!type || type.includes('label')) && regions) {
+      return Object.values(regions).every(({ hidden }) => hidden);
     }
     return false;
   }, [entity, type, regions]);
 
   const onToggleHidden = useCallback(() => {
-    if (type.match('region')) {
+    if (type?.includes('region')) {
       entity.toggleHidden();
-    } else if(type.match('label')) {
+    } else if(!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
+
+  const onToggleCollapsed = useCallback((e: MouseEvent) => {
+    toggleCollapsed(e);
+  }, [toggleCollapsed]);
+
+  const onToggleLocked = useCallback(() => {
+    item.setLocked((locked: boolean) => !locked);
+  }, []);
 
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
@@ -330,7 +336,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       <Elem name="control" mod={{ type: "lock" }}>
         {/* TODO: implement manual region locking */}
         {item && (hovered || !item.editable) && (
-          <RegionControlButton disabled={item.readonly} onClick={() => item.setLocked(!item.locked)}>
+          <RegionControlButton disabled={item.readonly} onClick={onToggleLocked}>
             {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
           </RegionControlButton>
         )}
@@ -344,7 +350,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       </Elem>
       {hasControls && (
         <Elem name="control" mod={{ type: "visibility" }}>
-          <RegionControlButton onClick={toggleCollapsed}>
+          <RegionControlButton onClick={onToggleCollapsed}>
             <IconChevronLeft
               style={{
                 transform: `rotate(${collapsed ? -90 : 90}deg)`,

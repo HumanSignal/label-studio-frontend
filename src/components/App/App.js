@@ -225,7 +225,7 @@ class App extends Component {
             {newUIEnabled ? (
               <SidePanels
                 panelsHidden={viewingAll}
-                currentEntity={as.selected}
+                currentEntity={as.selectedHistory ?? as.selected}
                 regions={as.selected.regionStore}
               >
                 {mainContent}

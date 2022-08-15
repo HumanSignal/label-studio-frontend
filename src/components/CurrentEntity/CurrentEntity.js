@@ -13,12 +13,13 @@ export const CurrentEntity = injector(observer(({
   entity,
   showHistory = true,
 }) => {
+  const showDraftInHistory = isFF(FF_DEV_2290);
 
   useEffect(()=>{
     const copyToClipboard = (ev) => {
       const { clipboardData } = ev;
       const results = entity.serializedSelection;
-      
+
       clipboardData.setData('application/json', JSON.stringify(results));
       ev.preventDefault();
 
@@ -104,20 +105,21 @@ export const CurrentEntity = injector(observer(({
       {/* </Space>
       </Elem> */}
 
-      {!isFF(FF_DEV_2290) && (
+      {!showDraftInHistory && (
         <DraftPanel item={entity} />
       )}
 
       {/* {showHistory && !entity.userGenerate && ( */}
       {showHistory && (
-        <>
-          <Elem tag={Space} spread name="title">
-            Annotation History
-            <Elem name="id">#{entity.pk ?? entity.id}</Elem>
-          </Elem>
-          <AnnotationHistory/>
-        </>
+        <Elem tag={Space} spread name="title">
+          Annotation History
+          <Elem name="id">#{entity.pk ?? entity.id}</Elem>
+        </Elem>
       )}
+      <AnnotationHistory
+        enabled={showHistory}
+        showDraft={showDraftInHistory}
+      />
     </Block>
   ) : null;
 }));
