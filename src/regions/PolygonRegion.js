@@ -274,18 +274,17 @@ const Model = types
      * @return {PolygonRegionResult}
      */
     serialize() {
-      if (self.points.length < 3) return null;
-
-      if (isFF(FF_DEV_2432)) {
-        self.closed = self.area.closed;
-      }
-      
+      if (!isFF(FF_DEV_2432) && self.points.length < 3) return null;
       return {
         original_width: self.parent.naturalWidth,
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
           points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+          ...(isFF(FF_DEV_2432) 
+            ? { closed : self.closed }
+            : {}
+          ),
         },
       };
     },
