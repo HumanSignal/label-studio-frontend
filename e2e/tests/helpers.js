@@ -8,13 +8,14 @@
  * @param {object[]} params.annotations
  * @param {object[]} params.predictions
  */
-const initLabelStudio = async ({
+async function initLabelStudio({
   config,
   data,
   annotations = [{ result: [] }],
   predictions = [],
   settings = {},
-}) => {
+  params = {},
+}) {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -37,7 +38,84 @@ const initLabelStudio = async ({
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  new window.LabelStudio("label-studio", { interfaces, config, task, settings });
+  window.labelStudio = new window.LabelStudio("label-studio", { interfaces, config, task, settings, ...params });
+}
+
+const createMethodInjectionIntoScript = (fnName, fn) => {
+  const args = (new Array(fn.length)).fill().map((v, idx) => {
+    return `v${idx}`;
+  }).join(", ");
+  let fnBody = fn.toString();
+
+  if ((/^(?:(?!function)(?!async)[a-zA-Z])+/).test(fnBody)) {
+    fnBody = `function ${fnBody}`;
+  }
+  return (
+    `${fnName}(${args}) {
+  return (${fnBody})(${args});
+}`);
+};
+
+const FN_PREFIX = "fn_";
+const prepareInitialParams = (value, prefix = FN_PREFIX) => {
+  if (Array.isArray(value)) {
+    const result = [];
+    let functions = [];
+
+    value.forEach((val, key) => {
+      const [resParam, resFns] = prepareInitialParams(val, `${prefix}_${key}`);
+
+      result.push(resParam);
+      functions = [...functions, ...resFns];
+    });
+    return [result, functions];
+  }
+  if (typeof value === "object") {
+    const result = {};
+    let functions = [];
+
+    Object.keys(value).forEach(key => {
+      const param = value[key];
+      const [resParam, resFns] = prepareInitialParams(param, `${prefix}_${key}`);
+
+      result[key] = resParam;
+      functions = [...functions, ...resFns];
+    });
+    return [result, functions];
+  }
+  if (typeof value === "function") {
+    const injection = createMethodInjectionIntoScript(prefix, value);
+
+    return [prefix, [injection]];
+  }
+  return [value, []];
+};
+
+const createLabelStudioInitFunction = (params) => {
+  const [preparedParams, fns] = prepareInitialParams(params);
+
+  return new Function("", `
+function linkFunctions(value) {
+ if (Array.isArray(value)) {
+    return value.map(val => linkFunctions(val));
+ }
+ if (typeof value === "object") {
+   const result = {};
+   Object.keys(value).forEach(key => {
+       result[key] = linkFunctions(value[key])
+   })
+   return result;
+ }
+ if (typeof value === "string" && value.startsWith("fn_")) {
+   return fns[value];
+ }
+ return value;
+}  
+function ${createMethodInjectionIntoScript("initLabelStudio", initLabelStudio)}
+const fns = {${fns.join(",")}};
+const params = ${JSON.stringify(preparedParams)};
+initLabelStudio(linkFunctions(params));
+`);
 };
 
 const setFeatureFlags = (featureFlags) => {
@@ -481,6 +559,13 @@ function _not(predicate) {
   };
 }
 
+function saveDraftLocally(ls, annotation) {
+  window.LSDraft = annotation.serializeAnnotation();
+}
+function getLocallySavedDraft() {
+  return window.LSDraft;
+}
+
 function omitBy(object, predicate) {
   return _pickBy(object, _not(predicate));
 }
@@ -491,6 +576,7 @@ function hasSelectedRegion() {
 
 module.exports = {
   initLabelStudio,
+  createLabelStudioInitFunction,
   setFeatureFlags,
   waitForImage,
   waitForAudio,
@@ -521,6 +607,9 @@ module.exports = {
 
   serialize,
   selectText,
+
+  saveDraftLocally,
+  getLocallySavedDraft,
 
   omitBy,
   dumpJSON,
