@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { isAlive, types } from "mobx-state-tree";
 
 import BaseTool, { DEFAULT_DIMENSIONS } from "./Base";
 import ToolMixin from "../mixins/Tool";
@@ -17,13 +17,13 @@ const _Tool = types
       createRegionOptions: self.createRegionOptions,
       isIncorrectControl: self.isIncorrectControl,
       isIncorrectLabel: self.isIncorrectLabel,
-      startDrawing: self.startDrawing,
     };
 
     return {
       get getActivePolygon() {
         const poly = self.currentArea;
 
+        if (isFF(FF_DEV_2432) && poly && !isAlive(poly)) return null;
         if (poly && poly.closed) return null;
         if (poly === undefined) return null;
         if (poly && poly.type !== "polygonregion") return null;
@@ -62,18 +62,8 @@ const _Tool = types
         return Super.createRegionOptions({
           points: [[x, y]],
           width: 10,
+          closed: false,
         });
-      },
-
-      startDrawing(x, y) {
-        if (isFF(FF_DEV_2432)) {
-          self.annotation.history.freeze();
-          self.mode = "drawing";
-
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
-        } else {
-          Super.startDrawing(x, y);
-        }
       },
 
       isIncorrectControl() {
@@ -92,15 +82,21 @@ const _Tool = types
     };
   })
   .actions(self => {
+    const Super = {
+      startDrawing: self.startDrawing,
+      _finishDrawing: self._finishDrawing,
+    };
+
     let disposer;
     let closed;
 
     return {
       handleToolSwitch(tool) {
 
+        self.stopListening();
         if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
           const shape = self.getCurrentArea()?.toJSON();
-          
+
           if (shape?.points?.length > 2) self.finishDrawing();
           else self.cleanupUncloseableShape();
         }
@@ -109,17 +105,41 @@ const _Tool = types
         closed = false;
         disposer = observe(self.getCurrentArea(), "closed", () => {
           if (self.getCurrentArea().closed && !closed) {
-            if (isFF(FF_DEV_2432)) self.mode = "viewing";
-
             self.finishDrawing();
           }
         }, true);
       },
-      closeCurrent() {
+      stopListening() {
         if (disposer) disposer();
+      },
+      closeCurrent() {
+        self.stopListening();
         if (closed) return;
         closed = true;
         self.getCurrentArea().closePoly();
+      },
+
+      startDrawing(x, y) {
+        if (isFF(FF_DEV_2432)) {
+          // self.annotation.history.freeze();
+          self.mode = "drawing";
+
+          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
+        } else {
+          Super.startDrawing(x, y);
+        }
+      },
+
+      _finishDrawing() {
+        if (isFF(FF_DEV_2432)) {
+          self.currentArea.notifyDrawingFinished();
+          self.currentArea = null;
+          self.annotation.setIsDrawing(false);
+          // self.annotation.history.unfreeze();
+          self.mode = "viewing";
+        } else {
+          Super._finishDrawing();
+        }
       },
     };
   });
