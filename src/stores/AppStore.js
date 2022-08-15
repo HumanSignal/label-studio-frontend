@@ -371,13 +371,13 @@ export default types
       hotkeys.addNamed("annotation:undo", function() {
         const annotation = self.annotationStore.selected;
 
-        annotation.undo();
+        if (!annotation.isDrawing) annotation.undo();
       });
 
       hotkeys.addNamed("annotation:redo", function() {
         const annotation = self.annotationStore.selected;
 
-        annotation.redo();
+        if (!annotation.isDrawing) annotation.redo();
       });
 
       hotkeys.addNamed("region:exit", () => {

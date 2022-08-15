@@ -82,6 +82,9 @@ const TagAttrs = types.model({
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
 
+  // this property is just to turn lazyload off to e2e tests
+  lazyoff: types.optional(types.boolean, false),
+
   horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
   verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
   defaultzoom: types.optional(types.enumeration(["auto", "original", "fit"]), "fit"),
