@@ -85,6 +85,7 @@ const _Tool = types
     const Super = {
       startDrawing: self.startDrawing,
       _finishDrawing: self._finishDrawing,
+      deleteRegion: self.deleteRegion,
     };
 
     let disposer;
@@ -121,8 +122,10 @@ const _Tool = types
 
       startDrawing(x, y) {
         if (isFF(FF_DEV_2432)) {
-          // self.annotation.history.freeze();
+          self.annotation.history.freeze();
           self.mode = "drawing";
+
+          self.initializeHotkeys();
 
           self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
         } else {
@@ -135,10 +138,22 @@ const _Tool = types
           self.currentArea.notifyDrawingFinished();
           self.currentArea = null;
           self.annotation.setIsDrawing(false);
-          // self.annotation.history.unfreeze();
+          self.annotation.history.unfreeze();
           self.mode = "viewing";
+          self.disposeHotkeys();
         } else {
           Super._finishDrawing();
+        }
+      },
+
+      deleteRegion() {
+        if (isFF(FF_DEV_2432)) {
+          const { currentArea } = self;
+
+          self.currentArea = null;
+          if (currentArea) currentArea.deleteRegion();
+        } else {
+          Super.deleteRegion();
         }
       },
     };

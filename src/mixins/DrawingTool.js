@@ -172,13 +172,23 @@ const DrawingTool = types
         return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
       },
 
+      initializeHotkeys() {
+        if (isFF(FF_DEV_2576)) {
+          initializeHotkeys(self);
+        }
+      },
+
+      disposeHotkeys() {
+        if (isFF(FF_DEV_2576)) {
+          disposeHotkeys();
+        }
+      },
+
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
 
-        if (isFF(FF_DEV_2576)) {
-          initializeHotkeys(self);
-        }
+        self.initializeHotkeys();
 
         self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
@@ -200,9 +210,7 @@ const DrawingTool = types
         self.annotation.history.unfreeze();
         self.mode = "viewing";
 
-        if (isFF(FF_DEV_2576)) {
-          disposeHotkeys();
-        }
+        self.disposeHotkeys();
       },
     };
   });
