@@ -31,7 +31,7 @@ const Model = types
     object: types.late(() => types.reference(ImageModel)),
 
     points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
-    closed: false,
+    closed: true,
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
@@ -79,7 +79,7 @@ const Model = types
           index,
         }));
       }
-      if (!isFF(FF_DEV_2432) && self.points.length > 2) self.closed = true;
+      if (!isFF(FF_DEV_2432)) self.closed = self.points.length > 2;
       self.checkSizes();
     },
 
