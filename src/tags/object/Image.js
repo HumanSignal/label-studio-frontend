@@ -656,21 +656,11 @@ const Model = types.model({
       const coverScale = self.coverScale;
 
       if (maxScale > 1) { // image < container
-        if (scale < maxScale) { // scale = 1 or before stage size is max
-          self.stageZoom = scale; // scale stage
-          self.zoomScale = 1; // don't scale image
-        } else {
-          self.stageZoom = maxScale; // scale stage to max
-          self.zoomScale = scale / maxScale; // scale image for the rest scale
-        }
+        self.stageZoom = maxScale; // scale stage to max
+        self.zoomScale = scale / maxScale; // scale image for the rest scale
       } else { // image > container
-        if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
-          self.stageZoom = maxScale; // stage squizzed
-          self.zoomScale = scale; // scale image for the rest scale : scale image usually
-        } else { // negative zoom bigger than image negative scale
-          self.stageZoom = scale; // squize stage more
-          self.zoomScale = 1; // don't scale image
-        }
+        self.stageZoom = maxScale; // stage squizzed
+        self.zoomScale = scale; // scale image for the rest scale : scale image usually
       }
 
       if (self.zoomScale > 1) {
@@ -896,10 +886,10 @@ const Model = types.model({
 
       setTimeout(self.annotation.history.unfreeze, 0);
 
-      //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
-      if (_historyLength <= 1){
-        setTimeout(self.annotation.reinitHistory, 0);
-      }
+      // //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
+      // if (_historyLength <= 1){
+      //   setTimeout(self.annotation.reinitHistory, 0);
+      // }
     },
 
     updateImageSize(ev) {
