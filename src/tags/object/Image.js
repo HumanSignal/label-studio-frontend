@@ -872,8 +872,6 @@ const Model = types.model({
     },
 
     _updateRegionsSizes({ width, height, naturalWidth, naturalHeight, userResize }) {
-      const _historyLength = self.annotation?.history?.history?.length;
-
       self.annotation.history.freeze();
 
       self.regions.forEach(shape => {
@@ -885,11 +883,6 @@ const Model = types.model({
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
       setTimeout(self.annotation.history.unfreeze, 0);
-
-      // //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
-      // if (_historyLength <= 1){
-      //   setTimeout(self.annotation.reinitHistory, 0);
-      // }
     },
 
     updateImageSize(ev) {
