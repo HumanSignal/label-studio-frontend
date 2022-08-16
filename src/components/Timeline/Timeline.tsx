@@ -119,6 +119,21 @@ const TimelineComponent: FC<TimelineProps> = ({
 
   const controls = (
     <Elem name="topbar">
+      {allowSeek && (
+        <Seeker
+          length={length}
+          step={step}
+          leftOffset={View.settings?.leftOffset}
+          position={currentPosition}
+          seekOffset={seekOffset}
+          seekVisible={seekVisibleWidth}
+          onIndicatorMove={setSeekOffset}
+          onSeek={setInternalPosition}
+          minimap={View.Minimap ? (
+            <View.Minimap/>
+          ): null}
+        />
+      )}
       <Controls
         length={length}
         position={currentPosition}
@@ -150,22 +165,6 @@ const TimelineComponent: FC<TimelineProps> = ({
           />
         ) : null}
       />
-
-      {allowSeek && (
-        <Seeker
-          length={length}
-          step={step}
-          leftOffset={View.settings?.leftOffset}
-          position={currentPosition}
-          seekOffset={seekOffset}
-          seekVisible={seekVisibleWidth}
-          onIndicatorMove={setSeekOffset}
-          onSeek={setInternalPosition}
-          minimap={View.Minimap ? (
-            <View.Minimap/>
-          ): null}
-        />
-      )}
     </Elem>
   );
 
