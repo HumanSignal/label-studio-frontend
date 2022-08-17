@@ -654,13 +654,24 @@ const Model = types.model({
       // cool comment about all this stuff
       const maxScale = self.maxScale;
       const coverScale = self.coverScale;
+      const regionType = self.annotation.regionStore.regions.some(r => r.type === "polygonregion");
 
       if (maxScale > 1) { // image < container
-        self.stageZoom = maxScale; // scale stage to max
-        self.zoomScale = scale / maxScale; // scale image for the rest scale
+        if (scale < maxScale || !regionType) { // scale = 1 or before stage size is max
+          self.stageZoom = scale; // scale stage
+          self.zoomScale = 1; // don't scale image
+        } else {
+          self.stageZoom = maxScale; // scale stage to max
+          self.zoomScale = scale / maxScale; // scale image for the rest scale
+        }
       } else { // image > container
-        self.stageZoom = maxScale; // stage squizzed
-        self.zoomScale = scale; // scale image for the rest scale : scale image usually
+        if (scale > maxScale || regionType) { // scale = 1 or any other zoom bigger then viewport
+          self.stageZoom = maxScale; // stage squizzed
+          self.zoomScale = scale; // scale image for the rest scale : scale image usually
+        } else { // negative zoom bigger than image negative scale
+          self.stageZoom = scale; // squize stage more
+          self.zoomScale = 1; // don't scale image
+        }
       }
 
       if (self.zoomScale > 1) {
@@ -742,7 +753,7 @@ const Model = types.model({
         let zoomScale = self.currentZoom;
 
         zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
-        if (self.negativezoom !== true && zoomScale <= 1) {
+        if (self.negativezoom === true && zoomScale <= 1) {
           self.setZoom(1);
           self.setZoomPosition(0, 0);
           self.updateImageAfterZoom();

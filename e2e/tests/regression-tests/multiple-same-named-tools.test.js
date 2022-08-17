@@ -5,7 +5,7 @@ const assert = require("assert");
 
 const config = `
   <View>
-    <Image name="image" value="$image" zoomcontrol="true" />
+    <Image name="image" value="$image" zoomcontrol="true"/>
     <RectangleLabels name="label" toName="image">
         <Label value="Airplane" background="green"/>
         <Label value="Car" background="blue"/>

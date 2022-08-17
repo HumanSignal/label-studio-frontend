@@ -7,7 +7,7 @@ const IMAGE = "https://htx-misc.s3.amazonaws.com/opensource/label-studio/example
 
 const config = `
   <View>
-    <Image name="img" value="$image" zoomby="2" />
+    <Image name="img" value="$image" zoomby="2"/>
     <Rectangle name="rect" toName="img"/>
   </View>`;
 
