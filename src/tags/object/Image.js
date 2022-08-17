@@ -753,7 +753,7 @@ const Model = types.model({
         let zoomScale = self.currentZoom;
 
         zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
-        if (self.negativezoom === true && zoomScale <= 1) {
+        if (self.negativezoom !== true && zoomScale <= 1) {
           self.setZoom(1);
           self.setZoomPosition(0, 0);
           self.updateImageAfterZoom();
