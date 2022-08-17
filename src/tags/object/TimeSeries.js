@@ -141,13 +141,19 @@ const Model = types
     },
 
     get parseTimeFn() {
-      return self.timeformat && self.timecolumn ? d3.timeParse(self.timeformat) : Number;
+      return self.timeformat && self.timecolumn ? d3.utcParse(self.timeformat) : Number;
     },
 
     parseTime(time) {
       const parse = self.parseTimeFn;
 
-      return +parse(time);
+      const dt = parse(time);
+
+      if (dt instanceof Date) {
+        return dt.getTime();
+      }
+
+      return dt;
     },
 
     get dataObj() {
