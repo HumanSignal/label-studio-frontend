@@ -1,5 +1,21 @@
 import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
+import {
+  IconAudioConfig,
+  IconBackward,
+  IconChevronLeft,
+  IconChevronRight,
+  IconCollapse,
+  IconExpand,
+  IconFastForward,
+  IconForward,
+  IconFullscreen,
+  IconFullscreenExit,
+  IconNext,
+  IconPause,
+  IconPlay,
+  IconPrev,
+  IconRewind
+} from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
@@ -8,6 +24,7 @@ import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
 import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
+import { FF_DEV_2715, isFF } from "../../utils/feature-flags";
 
 const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const roundedFps = Math.round(fps).toString();
@@ -61,6 +78,19 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     playing ? onPause?.() : onPlay?.();
   }, [playing, onPlay, onPause]);
 
+  const renderControls = () => {
+    return (
+      <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
+        <ControlButton
+          hotkey={settings?.stepAltBack}
+          disabled={false}
+        >
+          {<IconAudioConfig/>}
+        </ControlButton>
+      </Elem>
+    );
+  };
+
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
       if (!settings?.stepSize) return;
@@ -84,24 +114,26 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
   return (
     <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
-      <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
-        {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
-          if (enabled === false) return;
+      {isFF(FF_DEV_2715) ? renderControls() : (
+        <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
+          {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
+            if (enabled === false) return;
 
-          const Component = SideControls[name as keyof typeof SideControls];
+            const Component = SideControls[name as keyof typeof SideControls];
 
-          return isDefined(Component) && (
-            <Component
-              key={name}
-              length={length}
-              position={position - 1}
-              volume={props.volume}
-              onPositionChange={onPositionChange}
-              onVolumeChange={props.onVolumeChange}
-            />
-          );
-        })}
-      </Elem>
+            return isDefined(Component) && (
+              <Component
+                key={name}
+                length={length}
+                position={position - 1}
+                volume={props.volume}
+                onPositionChange={onPositionChange}
+                onVolumeChange={props.onVolumeChange}
+              />
+            );
+          })}
+        </Elem>
+      )}
 
       <Elem name="main-controls">
         <Elem name="group" tag={Space} collapsed>

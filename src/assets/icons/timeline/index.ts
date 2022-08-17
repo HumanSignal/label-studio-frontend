@@ -22,3 +22,4 @@ export { ReactComponent as IconCollapse } from "./collapse.svg";
 export { ReactComponent as IconExpand } from "./expand.svg";
 export { ReactComponent as IconPrev } from './prev_step.svg';
 export { ReactComponent as IconNext } from './next_step.svg';
+export { ReactComponent as IconAudioConfig } from './audio_config.svg';
