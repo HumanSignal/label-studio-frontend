@@ -886,10 +886,10 @@ const Model = types.model({
 
       setTimeout(self.annotation.history.unfreeze, 0);
 
-      // //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
-      // if (_historyLength <= 1){
-      //   setTimeout(self.annotation.reinitHistory, 0);
-      // }
+      //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
+      if (_historyLength <= 1){
+        setTimeout(self.annotation.reinitHistory, 0);
+      }
     },
 
     updateImageSize(ev) {

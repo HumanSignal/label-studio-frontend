@@ -8,7 +8,7 @@ Feature("Test Image object");
 
 const config = `
   <View>
-    <Image name="img" value="$image"></Image>
+    <Image name="img" value="$image" lazyoff="true"></Image>
     <RectangleLabels name="tag" toName="img">
       <Label value="Planet"></Label>
       <Label value="Moonwalker" background="blue"></Label>
@@ -17,7 +17,7 @@ const config = `
 
 const perRegionConfig = `
   <View>
-    <Image name="img" value="$image"></Image>
+    <Image name="img" value="$image" lazyoff="true"></Image>
     <RectangleLabels name="tag" toName="img">
       <Label value="Planet"></Label>
       <Label value="Moonwalker" background="blue"></Label>

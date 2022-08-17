@@ -17,7 +17,7 @@ Feature("Test Image object");
 
 const getConfigWithShape = (shape, props = "") => `
   <View>
-    <Image name="img" value="$image" />
+    <Image name="img" value="$image" lazyoff="true" />
     <${shape} ${props} name="tag" toName="img" />
   </View>`;
 

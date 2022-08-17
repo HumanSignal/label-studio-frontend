@@ -15,7 +15,7 @@ const BLUEVIOLET = {
 };
 const getConfigWithShape = (shape, props = "") => `
   <View>
-    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
+    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true" lazyoff="true"></Image>
     <${shape}Labels ${props} name="tag" toName="img">
         <Label value="Test" background="${BLUEVIOLET.color}"></Label>
     </${shape}Labels>
@@ -229,7 +229,7 @@ const twoColumnsConfigs = [`<View>
             <Label value="Label 1" background="#2C7873"/>
             <Label value="Label 2" background="#7232F2"/>
         </RectangleLabels>
-        <Image name="image" value="$image" zoom="true" rotateControl="true"/>
+        <Image name="image" value="$image" zoom="true" rotateControl="true" lazyoff="true"/>
     </View>
 </View>`, `<View>
     <View style="display:flex;align-items:start;gap:8px;flex-direction:{{direction}}">
@@ -238,7 +238,7 @@ const twoColumnsConfigs = [`<View>
             <Label value="Label 2" background="#7232F2"/>
         </RectangleLabels>
         <View style="flex: 100 0 1%; width: 100%">
-            <Image name="image" value="$image" zoom="true" rotateControl="true"/>
+            <Image name="image" value="$image" zoom="true" rotateControl="true"  lazyoff="true"/>
         </View>
     </View>
 </View>`];

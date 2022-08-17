@@ -17,7 +17,7 @@ const annotationEmpty = {
 const getParamsWithShape = (shape, params = "") => ({
   config: `
   <View>
-    <Image name="img" value="$image" />
+    <Image name="img" value="$image" lazyoff="true" />
     <${shape} ${params} name="tag" toName="img" />
   </View>`,
   data: { image: IMAGE },
@@ -27,7 +27,7 @@ const getParamsWithShape = (shape, params = "") => ({
 const getParamsWithLabels = (shape) => ({
   config: `
   <View>
-    <Image name="img" value="$image" />
+    <Image name="img" value="$image" lazyoff="true" />
     <${shape}Labels name="tag" toName="img">
       <Label value="${shape}" background="orange"/>
     </${shape}Labels>

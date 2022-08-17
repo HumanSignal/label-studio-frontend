@@ -9,7 +9,7 @@ const IMAGE =
 
 const createConfig = ({ shapes = ["Rectangle"], props } = {}) => {
   return `<View>
-    <Image name="image" value="$image" zoomControl="false" selectionControl="false"></Image>
+    <Image name="image" value="$image" zoomControl="false" selectionControl="false" lazyoff="true"></Image>
     ${shapes.map(shapeName => (`
         <${shapeName} name="image${shapeName}" toName="image" ${props} />
         <${shapeName}Labels name="image${shapeName}Labels" toName="image" allowEmpty="true" ${props}>
