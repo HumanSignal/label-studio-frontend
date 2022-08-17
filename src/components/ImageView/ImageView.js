@@ -746,8 +746,11 @@ export default observer(
     }, 16);
 
     componentDidMount() {
+      const { store, item } = this.props;
+      const annotation = store.annotationStore.selected;
+
       window.addEventListener("resize", this.onResize);
-      this.attachObserver(this.props.item.containerRef);
+      this.attachObserver(item.containerRef);
       this.updateReadyStatus();
 
       hotkeys.addDescription("shift", "Pan image");
@@ -890,7 +893,7 @@ export default observer(
                   item.setImageRef(ref);
                   this.imageRef.current = ref;
                 }}
-                loading={isFF(FF_DEV_3077) && "lazy"}
+                loading={(isFF(FF_DEV_3077) && !item.lazyoff) && "lazy"}
                 style={item.imageTransform}
                 src={item._value}
                 onLoad={item.updateImageSize}

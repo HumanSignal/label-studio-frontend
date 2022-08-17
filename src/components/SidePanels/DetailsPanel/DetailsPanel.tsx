@@ -1,6 +1,7 @@
 import { inject, observer } from "mobx-react";
 import { FC } from "react";
 import { Elem } from "../../../utils/bem";
+import { FF_DEV_2290, isFF } from "../../../utils/feature-flags";
 import { Comments } from "../../Comments/Comments";
 import { AnnotationHistory } from "../../CurrentEntity/AnnotationHistory";
 import { PanelBase, PanelProps } from "../PanelBase";
@@ -8,6 +9,7 @@ import "./DetailsPanel.styl";
 import { RegionDetailsMain, RegionDetailsMeta } from "./RegionDetails";
 import { RegionItem } from "./RegionItem";
 import { Relations } from "./Relations";
+import { DraftPanel } from "../../DraftPanel/DraftPanel";
 interface DetailsPanelProps extends PanelProps {
   regions: any;
   selection: any;
@@ -40,16 +42,27 @@ const Content: FC<any> = observer(({
 
 const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
+  const showAnnotationHistory = store.hasInterface("annotations:history");
+  const showDraftInHistory = isFF(FF_DEV_2290);
 
   return (
     <>
       <Elem name="section">
-        <Elem name="section-head">
-          Annotation History
-          <span>#{currentEntity.pk ?? currentEntity.id}</span>
-        </Elem>
+        {!showDraftInHistory && (
+          <DraftPanel item={currentEntity} />
+        )}
+        {showAnnotationHistory && (
+          <Elem name="section-head">
+            Annotation History
+            <span>#{currentEntity.pk ?? currentEntity.id}</span>
+          </Elem>
+        )}
         <Elem name="section-content">
-          <AnnotationHistory inline />
+          <AnnotationHistory
+            inline
+            showDraft={showDraftInHistory}
+            enabled={showAnnotationHistory}
+          />
         </Elem>
       </Elem>
       <Elem name="section">
