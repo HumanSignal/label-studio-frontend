@@ -71,13 +71,12 @@ const useDataTree = ({
     const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? "#666").alpha(1);
     const mods: Record<string, any> = { hidden, type };
-    const key = `${id}${groupId ?? ''}`;
     const label = (() => {
       if (!type) {
         return "No Label";
       } else if (type.includes('label')) {
         return item.value;
-      } else if (type.includes("region")) {
+      } else if (type.includes("region") || type.includes("range")) {
         return (item?.labels ?? []).join(", ") || "No label";
       } else if (type.includes('tool')) {
         return item.value;
@@ -86,7 +85,7 @@ const useDataTree = ({
 
     return {
       idx,
-      key,
+      key: id,
       type,
       label,
       hidden,
@@ -102,7 +101,7 @@ const useDataTree = ({
       className: rootClass.elem('node').mod(mods).toClassName(),
       title: (data: any) => <RootTitle {...data}/>,
     };
-  }, [hovered]);
+  }, [hovered, selectedKeys]);
 
   return regions.getRegionsTree(processor);
 };
@@ -118,12 +117,11 @@ const useEventHandlers = ({
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node, selected } = evt;
 
-    if (!node.type.includes('region')) return;
+    if (node.type.includes("region") || node.type.includes("range")) {
+      if (!multi) regions.selection.clear();
 
-    if (!multi) regions.selection.clear();
-
-    if (selected) regions.selection.select(node.item);
-    else regions.selection.unselect(node.item);
+      regions.toggleSelection(node.item, selected);
+    }
   }, []);
 
   const onMouseEnter = useCallback(({ node }: any) => {
