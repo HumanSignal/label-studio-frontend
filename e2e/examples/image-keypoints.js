@@ -1,6 +1,6 @@
 const config = `
 <View>
-  <Image name="img" value="$image" zoom="true"></Image>
+  <Image name="img" value="$image" zoom="true" lazyoff="true"></Image>
   <KeyPointLabels name="tag" toName="img" strokewidth="5" fillcolor="red">
     <Label value="Hello" background="yellow"></Label>
     <Label value="World" background="blue"></Label>

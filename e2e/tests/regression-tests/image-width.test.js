@@ -7,7 +7,7 @@ const IMAGE = "https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexm
 
 const config = `
   <View>
-    <Image name="img" value="$image" width="50%"/>
+    <Image name="img" value="$image" width="50%" lazyoff="true"/>
     <Rectangle name="rect" toName="img"/>
   </View>`;
 

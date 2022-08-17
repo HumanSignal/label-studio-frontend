@@ -6,7 +6,7 @@ Feature("Brush relations").tag("@regress");
 const IMAGE = "https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg";
 
 const config = `<View>
-    <Image name="img" value="$image"></Image>
+    <Image name="img" value="$image" lazyoff="true"></Image>
     <BrushLabels name="tag" toName="img">
         <Label value="Test" background="orange"></Label>
     </BrushLabels>

@@ -1,6 +1,6 @@
 const config = `
 <View>
-  <Image name="img" value="$image" showMousePos="true" zoom="true"></Image>
+  <Image name="img" value="$image" showMousePos="true" zoom="true" lazyoff="true"></Image>
   <PolygonLabels name="tag" toName="img" strokewidth="5" fillcolor="red" pointstyle="circle" pointsize="small">
     <Label value="Hello" background="red"></Label>
     <Label value="World" background="blue"></Label>

@@ -13,7 +13,7 @@ const BLUEVIOLET = {
 };
 const getConfigWithShape = (shape, props = "") => `
   <View>
-    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
+    <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true" lazyoff="true"></Image>
     <${shape}Labels ${props} name="tag" toName="img">
         <Label value="Test" background="${BLUEVIOLET.color}"></Label>
     </${shape}Labels>

@@ -1,6 +1,6 @@
 const config = `
 <View>
-  <Image name="img" value="$image"></Image>
+  <Image name="img" value="$image" lazyoff="true"></Image>
   <EllipseLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="3">
     <Label value="Planet" background="yellow"></Label>
     <Label value="Moonwalker" background="red"></Label>

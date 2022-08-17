@@ -6,7 +6,7 @@ Feature("OCR scenarios");
 
 const createConfig = ({ shapes = ["Rectangle"], textareaProps = "" } = {}) => {
   return `<View>
-    <Image name="image" value="$image" zoomcontrol="true"></Image>
+    <Image name="image" value="$image" zoomcontrol="true" lazyoff="true"></Image>
     ${shapes.map(shapeName => (`<${shapeName} name="image${shapeName}" toName="image"/>`)).join(`
     `)}
     <Labels name="imageLabels" toName="image" allowEmpty="true">
