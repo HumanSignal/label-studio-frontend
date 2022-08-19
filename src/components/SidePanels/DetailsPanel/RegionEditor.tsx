@@ -121,7 +121,6 @@ const RegionProperty: FC<RegionPropertyProps> = ({
 
   useEffect(() => {
     const cancelObserve = observe(region, property, ({ newValue, oldValue }) => {
-      console.log({ newValue, oldValue });
       if (oldValue.storedValue !== newValue.storedValue) setValue(newValue.storedValue);
     });
 
@@ -167,6 +166,7 @@ const RegionInput: FC<RegionInputProps> = ({
   onChangeValue,
   type,
   value,
+  step,
   ...props
 }) => {
   const normalizeValue = (value: any, type: HTMLInputTypeAttribute) =>{
@@ -217,7 +217,7 @@ const RegionInput: FC<RegionInputProps> = ({
 
       updateValue(normalizeValue(newValue, type));
     }
-  }, [currentValue, type, props.step]);
+  }, [currentValue, type, step]);
 
   useEffect(() => {
     updateValue(value);
@@ -228,7 +228,7 @@ const RegionInput: FC<RegionInputProps> = ({
       {...props}
       className={block?.elem("input").toClassName()}
       type="text"
-      step={props.step}
+      step={step}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
       value={currentValue}
