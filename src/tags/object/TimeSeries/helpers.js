@@ -63,4 +63,4 @@ export const formatRegion = node => {
   return node.instant ? ranges[0] : ranges.join("–");
 };
 
-export const formatTrackerTime = time => new Date(time).toLocaleString();
+export const formatTrackerTime = time => new Date(time).toUTCString();

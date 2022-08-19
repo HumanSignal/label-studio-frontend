@@ -300,7 +300,7 @@ const Model = types
         const { timedisplayformat: format, isDate } = self;
 
         if (format === "date") self._format = formatTrackerTime;
-        else if (format) self._format = isDate ? d3.timeFormat(format) : d3.format(format);
+        else if (format) self._format = isDate ? d3.utcFormat(format) : d3.format(format);
         else self._format = String;
       }
       return self._format(time);
