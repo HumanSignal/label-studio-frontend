@@ -82,6 +82,8 @@ export const FF_DEV_2576 = "ff_feat_front_DEV_2576_undo_key_points_polygon_short
 // Change the rotate tool from bbox
 export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
+export const FF_DEV_2755 = "fflag_feat_dev_2755_regions_list_grouped_by_labels_with_ordered_collapse_short";
+
 export const FF_DEV_3034 = "fflag-feat-dev-3034-comments-with-drafts-short";
 
 export const FF_DEV_3077 = "fflag_feat_front_dev_3077_repeater_tag_loading_performance_short";
