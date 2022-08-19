@@ -109,7 +109,7 @@ const RegionProperty: FC<RegionPropertyProps> = ({
     return coreType === types.boolean;
   }, [propertyType, isPrimitive]);
 
-  const onChangeHandler = useCallback((value, originalValue?: any) => {
+  const onChangeHandler = useCallback((value) => {
     if (value !== region.getProperty(property)) {
       try {
         region.setProperty(property, value);
@@ -141,7 +141,7 @@ const RegionProperty: FC<RegionPropertyProps> = ({
           type={getInputType(propertyType)}
           step="0.01"
           value={value}
-          onChangeValue={(v, vo) => onChangeHandler(v, vo)}
+          onChange={(v) => onChangeHandler(v)}
         />
       ) : options ? (
         <select
@@ -159,11 +159,11 @@ const RegionProperty: FC<RegionPropertyProps> = ({
 
 interface RegionInputProps extends InputHTMLAttributes<HTMLInputElement>  {
   type: HTMLInputTypeAttribute;
-  onChangeValue?: (newValue: any, originalValue: any) => void;
+  onChange?: (newValue: any) => void;
 }
 
 const RegionInput: FC<RegionInputProps> = ({
-  onChangeValue,
+  onChange: onChangeValue,
   type,
   value,
   step,
@@ -181,7 +181,7 @@ const RegionInput: FC<RegionInputProps> = ({
     const newValue = safeValue ? normalizeValue(value, type) : value;
 
     setValue(newValue);
-    if (safeValue) onChangeValue?.(newValue, value);
+    if (safeValue) onChangeValue?.(newValue);
   }, [onChangeValue, type]);
 
   const onChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
