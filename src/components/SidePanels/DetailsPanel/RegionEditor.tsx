@@ -109,17 +109,20 @@ const RegionProperty: FC<RegionPropertyProps> = ({
     return coreType === types.boolean;
   }, [propertyType, isPrimitive]);
 
-  const onChangeHandler = useCallback((value) => {
-    try {
-      region.setProperty(property, value);
-    } catch (err) {
-      console.error(err);
+  const onChangeHandler = useCallback((value, originalValue?: any) => {
+    if (value !== region.getProperty(property)) {
+      try {
+        region.setProperty(property, value);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }, [propertyType, isBoolean]);
 
   useEffect(() => {
-    const cancelObserve = observe(region, property, ({ newValue }) => {
-      setValue(newValue.storedValue);
+    const cancelObserve = observe(region, property, ({ newValue, oldValue }) => {
+      console.log({ newValue, oldValue });
+      if (oldValue.storedValue !== newValue.storedValue) setValue(newValue.storedValue);
     });
 
     return () => cancelObserve();
@@ -139,7 +142,7 @@ const RegionProperty: FC<RegionPropertyProps> = ({
           type={getInputType(propertyType)}
           step="0.01"
           value={value}
-          onChange={(v) => onChangeHandler(v)}
+          onChangeValue={(v, vo) => onChangeHandler(v, vo)}
         />
       ) : options ? (
         <select
@@ -157,17 +160,17 @@ const RegionProperty: FC<RegionPropertyProps> = ({
 
 interface RegionInputProps extends InputHTMLAttributes<HTMLInputElement>  {
   type: HTMLInputTypeAttribute;
-  onChange?: (newValue: any) => void;
+  onChangeValue?: (newValue: any, originalValue: any) => void;
 }
 
 const RegionInput: FC<RegionInputProps> = ({
-  onChange,
+  onChangeValue,
   type,
   value,
   ...props
 }) => {
   const normalizeValue = (value: any, type: HTMLInputTypeAttribute) =>{
-    if (type === "number") return Number(Number(value ?? 0).toFixed(2));
+    // if (type === "number") return Number(Number(value ?? 0).toFixed(2));
     return value;
   };
 
@@ -178,8 +181,8 @@ const RegionInput: FC<RegionInputProps> = ({
     const newValue = safeValue ? normalizeValue(value, type) : value;
 
     setValue(newValue);
-    if (safeValue) onChange?.(newValue);
-  }, [onChange, type]);
+    if (safeValue) onChangeValue?.(newValue, value);
+  }, [onChangeValue, type]);
 
   const onChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -202,7 +205,6 @@ const RegionInput: FC<RegionInputProps> = ({
 
     if (e.key === "ArrowUp" || e.key === 'ArrowDown') {
       e.preventDefault();
-      console.log('arrow');
 
       const step = (e.altKey && e.shiftKey) ? 0.01 : e.shiftKey ? 10 : e.altKey ? 0.1 : 1;
       let newValue = Number(currentValue);
@@ -213,7 +215,7 @@ const RegionInput: FC<RegionInputProps> = ({
         newValue -= step;
       }
 
-      updateValue(parseFloat(newValue.toFixed(2)));
+      updateValue(normalizeValue(newValue, type));
     }
   }, [currentValue, type, props.step]);
 
@@ -226,7 +228,7 @@ const RegionInput: FC<RegionInputProps> = ({
       {...props}
       className={block?.elem("input").toClassName()}
       type="text"
-      step="0.01"
+      step={props.step}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
       value={currentValue}
