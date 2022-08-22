@@ -668,6 +668,11 @@ export default types
     async function postponeTask() {
       const annotation = self.annotationStore.selected;
 
+      if (!annotation.versions.draft) {
+        // annotation created from prediction, so no draft was created
+        annotation.versions.draft = annotation.versions.result;
+      }
+
       await self.submitDraft(annotation, { was_postponed: true });
       await getEnv(self).events.invoke('nextTask');
     }
