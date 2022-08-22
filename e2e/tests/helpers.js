@@ -82,6 +82,26 @@ const waitForAudio = async () => {
   );
 };
 
+
+/**
+ * Wait for objects ready
+ */
+const waitForObjectsReady = async () => {
+  await new Promise(resolve => {
+    const watchObjectsReady = () => {
+      const isReady = window.Htx.annotationStore.selected.objects.every(object => object.isReady);
+
+      if (isReady) {
+        resolve(true);
+      } else {
+        setTimeout(watchObjectsReady, 16);
+      }
+    };
+
+    watchObjectsReady();
+  });
+};
+
 /**
  * Float numbers can't be compared strictly, so convert any numbers or structures with numbers
  * to same structures but with rounded numbers (int for ints, fixed(2) for floats)
@@ -494,6 +514,7 @@ module.exports = {
   setFeatureFlags,
   waitForImage,
   waitForAudio,
+  waitForObjectsReady,
   delay,
 
   getSizeConvertor,
