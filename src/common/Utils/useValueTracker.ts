@@ -5,7 +5,7 @@ export const useValueTracker = <T = any>(
   defaultValue?: T | undefined,
 ): [T | string, (value: T) => void] => {
   const initialValue = useMemo(() => {
-    return (value || defaultValue) ?? "";
+    return value ?? defaultValue ?? "";
   }, [value, defaultValue]);
 
   const [finalValue, setValue] = useState<T | "">(initialValue);
