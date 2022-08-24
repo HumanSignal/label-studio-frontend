@@ -328,8 +328,8 @@ export const Wave: FC<TimelineViewProps> = ({
         <Space spread style={{ gridAutoColumns: 'auto' }}>
           <Range
             continuous
-            value={speed}
             {...SPEED}
+            value={speed}
             resetValue={SPEED.default}
             minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
             maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
@@ -337,8 +337,8 @@ export const Wave: FC<TimelineViewProps> = ({
           />
           <Range
             continuous
-            value={currentZoom}
             {...WS_ZOOM_X}
+            value={currentZoom}
             resetValue={WS_ZOOM_X.default}
             minIcon={<IconZoomOut />}
             maxIcon={<IconZoomIn />}
