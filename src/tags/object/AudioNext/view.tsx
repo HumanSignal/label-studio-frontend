@@ -14,9 +14,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
 
-  const [zoom, setZoom] = useState(Number(item.defaultzoom) ?? WS_ZOOM_X.default);
-  const [volume, setVolume] = useState(Number(item.defaultvolume) ?? 1);
-  const [speed, setSpeed] = useState(Number(item.defaultspeed) ?? 1);
+  const [zoom, setZoom] = useState(Number(item.defaultzoom ?? WS_ZOOM_X.default));
+  const [volume, setVolume] = useState(Number(item.defaultvolume ?? 1));
+  const [speed, setSpeed] = useState(Number(item.defaultspeed ?? 1));
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
