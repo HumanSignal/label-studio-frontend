@@ -16,4 +16,8 @@ module.exports = {
   setFeatureFlags(featureFlags) {
     I.executeScript(Helpers.setFeatureFlags, featureFlags);
   },
+
+  waitForObjectsReady() {
+    I.executeScript(Helpers.waitForObjectsReady);
+  },
 };
