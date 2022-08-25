@@ -9,6 +9,7 @@ import { AudioRegionModel } from "../../../regions/AudioRegion";
 import Utils from "../../../utils";
 import { isDefined } from "../../../utils/utilities";
 import ObjectBase from "../Base";
+import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
 
 
 /**
@@ -49,11 +50,11 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),
-  defaultzoom: types.optional(types.string, '1'),
+  defaultzoom: types.optional(types.string, WS_ZOOM_X.default.toString()),
   volume: types.optional(types.boolean, true),
-  defaultvolume: types.optional(types.string, '1'),
+  defaultvolume: types.optional(types.string, WS_VOLUME.default.toString()),
   speed: types.optional(types.boolean, true),
-  defaultspeed: types.optional(types.string, '1'),
+  defaultspeed: types.optional(types.string, WS_SPEED.default.toString()),
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
