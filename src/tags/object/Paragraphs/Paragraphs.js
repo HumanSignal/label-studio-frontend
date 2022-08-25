@@ -335,7 +335,7 @@ class HtxParagraphsView extends Component {
     if (isFF(FF_DEV_2669) && !item._value) return null;
 
     return (
-      <ObjectTag item={item}>
+      <ObjectTag item={item} className={"lsf-paragraphs"}>
         {withAudio && (
           <audio
             controls={item.showplayer}

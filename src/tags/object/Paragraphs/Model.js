@@ -111,12 +111,14 @@ const Model = types
     get layoutClasses() {
       if (self.layout === "dialogue") {
         return {
+          phrase: styles.phrase,
           name: styles.dialoguename,
           text: styles.dialoguetext,
         };
       }
 
       return {
+        phrase: styles.phrase,
         name: styles.name,
         text: styles.text,
       };
