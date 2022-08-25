@@ -78,11 +78,6 @@ export class TimeSyncSubscriber {
   }
 
   seek(time: number) {
-    if (time === this.currentTime){
-      this.lockedEvents.delete("seek");
-      return;
-    }
-
     this.currentTime = time;
 
     this.whenUnlocked("seek", () => {
@@ -104,14 +99,18 @@ export class TimeSyncSubscriber {
     this.lockedEvents.add(event);
   }
 
+  private releaseEvent(event: TimeSyncEvent) {
+    this.lockedEvents.delete(event);
+  }
+
   private whenUnlocked(event: TimeSyncEvent, fn: () => void) {
     if (this.lockedEvents.has(event)) {
-      this.lockedEvents.delete(event);
       return;
     }
 
     this.lockEvent(event);
     fn();
+    this.releaseEvent(event);
   }
 }
 

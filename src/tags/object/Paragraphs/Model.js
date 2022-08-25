@@ -14,6 +14,7 @@ import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { isValidObjectURL } from "../../../utils/utilities";
 import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
+import { SyncMixin } from "../../../mixins/SyncMixin";
 
 /**
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -38,7 +39,8 @@ import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
  * @param {string} value                 - Data field containing the paragraph content
  * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
  * @param {string} audioUrl              - Audio to sync phrases with
- * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
+ * @param {string} [sync]                - object name to sync with
+ * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs. Ignored if sync object is audio
  * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
  * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
  * @param {string} [nameKey=author]      - The key field to use for name
@@ -79,6 +81,10 @@ const Model = types
 
     get store() {
       return getRoot(self);
+    },
+
+    get syncedAudio() {
+      return self.syncedObject?.type?.startsWith("audio");
     },
 
     get audio() {
@@ -148,19 +154,18 @@ const Model = types
     const audioRef = createRef();
     let audioStopHandler = null;
     let endDuration = 0;
-    let currentId = -1;
 
     function stop() {
-      const audio = audioRef.current;
+      if (!audioRef.current) return;
 
-      if (audio.paused) return;
-      if (audio.currentTime < endDuration) {
-        stopIn(endDuration - audio.currentTime);
+      if (!self.isCurrentlyPlaying) return;
+      if (self.currentTime < endDuration) {
+        stopIn(endDuration - self.currentTime);
         return;
       }
       audioStopHandler = null;
       endDuration = 0;
-      audio.pause();
+      self.handlePause();
       self.reset();
     }
 
@@ -174,8 +179,68 @@ const Model = types
       },
 
       reset() {
-        currentId = -1;
         self.playingId = -1;
+        self.currentTime = 0;
+      },
+
+      handleSyncSeek(time) {
+        self.currentTime = time;
+
+        if (audioRef.current) {
+          audioRef.current.currentTime = time;
+        }
+      },
+
+      handleSyncPlay() {
+        self.isCurrentlyPlaying = true;
+        self.muteSelfWhenSynced();
+
+        if(audioRef.current) {
+          audioRef.current.play();
+        }
+      },
+
+      handleSyncPause() {
+        self.isCurrentlyPlaying = false;
+
+        if(audioRef.current) {
+          audioRef.current.pause();
+        }
+      },
+
+      handleSyncSpeed(speed) {
+        if (!audioRef.current) return;
+        audioRef.current.playbackRate = speed;
+      },
+
+      handlePause() {
+        if (self.syncedAudio) {
+          self.triggerSyncPause();
+        } else {
+          self.handleSyncPause();
+        }
+      },
+
+      handlePlay() {
+        if (self.syncedAudio) {
+          self.triggerSyncPlay();
+        } else {
+          self.handleSyncPlay();
+        }
+      },
+
+      handleSeek(time) {
+        if (self.syncedAudio) {
+          self.triggerSyncSeek(time);
+        } else {
+          self.handleSyncSeek(time);
+        }
+      },
+
+      muteSelfWhenSynced() {
+        if (self.syncedAudio && audioRef.current) {
+          audioRef.current.muted = true;
+        }
       },
 
       play(idx) {
@@ -183,25 +248,29 @@ const Model = types
         const { start, duration } = value;
         const end = duration ? start + duration : value.end || 0;
 
-        if (!audioRef || isNaN(start) || isNaN(end)) return;
-        const audio = audioRef.current;
-
         if (audioStopHandler) {
           window.clearTimeout(audioStopHandler);
           audioStopHandler = null;
         }
-        if (!audio.paused) {
-          audio.pause();
-          self.playingId = -1;
-          if (idx === currentId) return;
+
+        if (isNaN(start) || isNaN(end)) return;
+
+        const currentId = self.playingId;
+
+        if (self.isCurrentlyPlaying) {
+          self.handlePause();
+          self.reset();
+          if (currentId === idx) return;
         }
-        if (idx !== currentId) {
-          audio.currentTime = start;
-        }
-        audio.play();
-        endDuration = end;
+
         self.playingId = idx;
-        currentId = idx;
+
+        if (idx !== currentId) {
+          self.handleSeek(start);
+        }
+
+        self.handlePlay();
+
         end && stopIn(end - start);
       },
 
@@ -362,4 +431,4 @@ const Model = types
     },
   }));
 
-export const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
+export const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, SyncMixin, Model, ObjectBase, AnnotationMixin);

@@ -290,9 +290,9 @@ export const AudioModel = types.compose(
       },
 
       handleSeek() {
-        if (self._ws) {
-          self.triggerSyncSeek(self._ws.getCurrentTime());
-        }
+        if (!self._ws || self.syncedObject?.type === "paragraphs") return;
+
+        self.triggerSyncSeek(self._ws.getCurrentTime());
       },
 
       handleSpeed(speed) {
