@@ -3,7 +3,6 @@ import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { Block } from "../../../utils/bem";
-import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
 
 interface AudioNextProps {
   item: any;
@@ -14,9 +13,9 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
 
-  const [zoom, setZoom] = useState(Number(item.defaultzoom ?? WS_ZOOM_X.default));
-  const [volume, setVolume] = useState(Number(item.defaultvolume ?? WS_VOLUME.default));
-  const [speed, setSpeed] = useState(Number(item.defaultspeed ?? WS_SPEED.default));
+  const [zoom, setZoom] = useState(Number(item.defaultzoom));
+  const [volume, setVolume] = useState(Number(item.defaultvolume));
+  const [speed, setSpeed] = useState(Number(item.defaultspeed));
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
