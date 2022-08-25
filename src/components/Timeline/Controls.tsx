@@ -1,6 +1,5 @@
 import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
-  IconAudioConfig,
   IconBackward,
   IconChevronLeft,
   IconChevronRight,
@@ -25,6 +24,8 @@ import "./Controls.styl";
 import * as SideControls from "./SideControls";
 import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
 import { FF_DEV_2715, isFF } from "../../utils/feature-flags";
+import { AudioControl } from "./Views/Controls/AudioControl";
+import { ConfigControl } from "./Views/Controls/ConfigControl";
 
 const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const roundedFps = Math.round(fps).toString();
@@ -54,12 +55,15 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   onStepBackward,
   onPositionChange,
   onStepForward,
+  onSpeedChange,
   onToggleCollapsed,
   formatPosition,
   ...props
 }) => {
   const { settings } = useContext(TimelineContext);
   const [altControlsMode, setAltControlsMode] = useState(false);
+  const [configModal, setConfigModal] = useState(false);
+  const [audioModal, setAudioModal] = useState(false);
   const [startReached, endReached] = [position === 1, position === length];
 
   const duration = useMemo(() => {
@@ -78,15 +82,36 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     playing ? onPause?.() : onPlay?.();
   }, [playing, onPlay, onPause]);
 
+  const onSetVolumeModal = () => {
+    if(configModal) setConfigModal(false);
+
+    setAudioModal(!audioModal);
+  };
+
+  const onSetConfigModal = () => {
+    if(audioModal) setAudioModal(false);
+
+    setConfigModal(!configModal);
+  };
+
   const renderControls = () => {
     return (
       <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
-        <ControlButton
-          hotkey={settings?.stepAltBack}
-          disabled={false}
-        >
-          {<IconAudioConfig/>}
-        </ControlButton>
+        <ConfigControl
+          onSetModal={onSetConfigModal}
+          onZoom={(zoom: number) => props.onZoom?.(zoom)}
+          configModal={configModal}
+          onSpeedChange={(speed: number) => onSpeedChange?.(speed)}
+          speed={props.speed || 0}
+          zoom={props.zoom || 0}
+        />
+        <AudioControl
+          volume={props.volume || 0}
+          onVolumeChange={props.onVolumeChange}
+          onSetModal={onSetVolumeModal}
+          audioModal={audioModal}
+        />
+
       </Elem>
     );
   };

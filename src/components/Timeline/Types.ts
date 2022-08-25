@@ -148,6 +148,8 @@ export interface TimelineControlsProps {
   collapsed: boolean;
   fullscreen: boolean;
   volume?: number;
+  speed?: number;
+  zoom?: number;
   disableFrames?: boolean;
   extraControls?: JSX.Element | null;
   allowFullscreen?: boolean;
@@ -164,6 +166,8 @@ export interface TimelineControlsProps {
   onPause?: TimelineProps["onPause"];
   onFullScreenToggle: TimelineProps["onFullscreenToggle"];
   onVolumeChange: TimelineProps["onVolumeChange"];
+  onSpeedChange: TimelineProps["onSpeedChange"];
+  onZoom: TimelineProps["onZoom"];
 }
 
 export interface TimelineSideControlProps {

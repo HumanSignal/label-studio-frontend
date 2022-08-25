@@ -251,6 +251,13 @@ export const Wave: FC<TimelineViewProps> = ({
     ws.current?.setVolume(volume);
   }, [volume]);
 
+  useEffect(() => {
+    if (isFF(FF_DEV_2715)) {
+      setCurrentZoom(zoom);
+      ws.current?.zoom(zoom);
+    }
+  }, [zoom]);
+
   // Handle Y scaling
   useEffect(() => {
     const wsi = ws.current;
