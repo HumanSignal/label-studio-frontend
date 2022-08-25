@@ -1,7 +1,7 @@
 import { FF_DEV_2480, isFF } from "./feature-flags";
 import { clamp, isDefined } from "./utilities";
 
-const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
+export const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 const isText = text => text && /[\w']/i.test(text);
 const isSpace = text => text && /[\s\t]/i.test(text);

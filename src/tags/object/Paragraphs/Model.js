@@ -13,7 +13,7 @@ import styles from "./Paragraphs.module.scss";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { isValidObjectURL } from "../../../utils/utilities";
-import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
 
 /**
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -300,25 +300,55 @@ const Model = types
       return r;
     },
 
-    addRegion(range) {
+    addRegions(ranges) {
+      const areas = [];
       const states = self.activeStates();
 
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.annotation.createResult(range, labels, control, self);
 
-      if (getRoot(self).autoAnnotation) {
-        area.makeDynamic();
+      for (const range of ranges) {
+        const area = self.annotation.createResult(range, labels, control, self);
+
+        if (getRoot(self).autoAnnotation) {
+          area.makeDynamic();
+        }
+
+        area.setText(range.text);
+
+        area.notifyDrawingFinished();
+
+        area._range = range._range;
+        areas.push(area);
       }
+      return areas;
+    },
 
-      area.setText(range.text);
+    addRegion(range) {
+      if (isFF(FF_DEV_2918)) {
+        return self.addRegions([range])[0];
+      } else {
+        const states = self.activeStates();
 
-      area.notifyDrawingFinished();
+        if (states.length === 0) return;
 
-      area._range = range._range;
-      return area;
+        const control = states[0];
+        const labels = { [control.valueType]: control.selectedValues() };
+        const area = self.annotation.createResult(range, labels, control, self);
+
+        if (getRoot(self).autoAnnotation) {
+          area.makeDynamic();
+        }
+
+        area.setText(range.text);
+
+        area.notifyDrawingFinished();
+
+        area._range = range._range;
+        return area;
+      }
     },
 
     /**
