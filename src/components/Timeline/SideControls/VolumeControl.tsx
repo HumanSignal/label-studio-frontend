@@ -22,7 +22,6 @@ export const AudioVolumeControl: FC<TimelineSideControlProps> = ({
       min={WS_VOLUME.min}
       max={WS_VOLUME.max}
       step={WS_VOLUME.step}
-      defaultValue={WS_VOLUME.default}
       value={volume}
       minIcon={icon}
       onChange={volume => onVolumeChange?.(Number(volume))}

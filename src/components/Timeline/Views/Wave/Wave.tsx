@@ -316,7 +316,6 @@ export const Wave: FC<TimelineViewProps> = ({
             continuous
             value={speed}
             resetValue={WS_SPEED.default}
-            defaultValue={WS_SPEED.default}
             step={WS_SPEED.step}
             min={WS_SPEED.min}
             max={WS_SPEED.max}
@@ -328,7 +327,6 @@ export const Wave: FC<TimelineViewProps> = ({
             continuous
             value={currentZoom}
             resetValue={WS_ZOOM_X.default}
-            defaultValue={WS_ZOOM_X.default}
             step={WS_ZOOM_X.step}
             min={WS_ZOOM_X.min}
             max={WS_ZOOM_X.max}
