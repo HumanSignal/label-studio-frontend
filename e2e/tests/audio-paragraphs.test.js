@@ -110,7 +110,7 @@ Scenario("Check audio clip is played when using the new sync option", async func
   if (hasFFDev2461) {
     assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
   }
-  assert.equal(startingAudioPlusTime, 0);
+  assert.equal(startingParagraphAudioTime, 0);
 
   I.click(`[aria-label="play-circle"]`);
 
