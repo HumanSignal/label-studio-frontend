@@ -103,7 +103,7 @@ Scenario("Check audio clip is played when using the new sync option", async func
 
   await AtAudioView.waitForAudio();
 
-  I.wait(1);
+  I.wait(5);
 
   const [startingAudioPlusTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
 
