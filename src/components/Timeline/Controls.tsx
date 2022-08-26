@@ -24,8 +24,9 @@ import "./Controls.styl";
 import * as SideControls from "./SideControls";
 import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
 import { FF_DEV_2715, isFF } from "../../utils/feature-flags";
-import { AudioControl } from "./Views/Controls/AudioControl";
-import { ConfigControl } from "./Views/Controls/ConfigControl";
+import { AudioControl } from "./Controls/AudioControl";
+import { ConfigControl } from "./Controls/ConfigControl";
+import { TimerComponent } from "../TimerComponent/TimerComponent";
 
 const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const roundedFps = Math.round(fps).toString();
@@ -276,14 +277,17 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
-        <TimeDisplay
-          currentTime={currentTime}
-          duration={duration}
-          length={length}
-          position={position}
-          framerate={frameRate}
-          formatPosition={formatPosition}
-        />
+        {!isFF(FF_DEV_2715) ? (
+          <TimeDisplay
+            currentTime={currentTime}
+            duration={duration}
+            length={length}
+            position={position}
+            framerate={frameRate}
+            formatPosition={formatPosition}
+          />
+        ) : <TimerComponent maxTime={duration} currentTime={currentTime} minTime={0} />
+        }
       </Elem>
     </Block>
   );

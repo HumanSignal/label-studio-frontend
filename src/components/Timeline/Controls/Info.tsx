@@ -1,8 +1,8 @@
 import React, { FC, useEffect, useRef } from "react";
-import { Block, Elem } from "../../../../utils/bem";
+import { Block, Elem } from "../../../utils/bem";
 
 import "./Info.styl";
-import { IconInfoConfig } from "../../../../assets/icons/timeline";
+import { IconInfoConfig } from "../../../assets/icons/timeline";
 
 export interface InfoProps {
   text:string;

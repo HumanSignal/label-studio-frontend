@@ -1,9 +1,9 @@
 import React, { FC, useEffect, useState } from "react";
-import { Block, Elem } from "../../../../utils/bem";
+import { Block, Elem } from "../../../utils/bem";
 
 import "./AudioControl.styl";
-import { IconSoundConfig, IconSoundMutedConfig } from "../../../../assets/icons/timeline";
-import { ControlButton } from "../../Controls";
+import { IconSoundConfig, IconSoundMutedConfig } from "../../../assets/icons/timeline";
+import { ControlButton } from "../Controls";
 import { Slider } from './Slider';
 
 const MAX_VOL = 200;

@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from "react";
-import { Block, Elem } from "../../../../utils/bem";
+import { Block, Elem } from "../../../utils/bem";
 
 import "./Slider.styl";
 import { Info } from "./Info";
@@ -38,10 +38,11 @@ export const Slider: FC<SliderProps> = ({
 
   const handleChangeInputValue = (e: React.FormEvent<HTMLInputElement>) => {
     setInputVolumeError(min);
-    onChange(e);
 
-    if (parseFloat(e.currentTarget.value) > max) {
+    if (parseFloat(e.currentTarget.value) > max || parseFloat(e.currentTarget.value) < min) {
       setInputVolumeError(parseFloat(e.currentTarget.value));
+    } else {
+      onChange(e);
     }
   };
 
@@ -59,7 +60,7 @@ export const Slider: FC<SliderProps> = ({
           mod={(inputVolumeError > max || inputVolumeError < min) && { error:'volume' }}
           min={min}
           max={max}
-          value={(inputVolumeError < max || inputVolumeError > min) ? Math.round(value) : inputVolumeError}
+          value={(inputVolumeError === min ) ? Math.round(value) : inputVolumeError}
           onChange={handleChangeInputValue}
         />
       </Elem>
