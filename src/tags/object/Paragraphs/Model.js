@@ -13,8 +13,11 @@ import styles from "./Paragraphs.module.scss";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { isValidObjectURL } from "../../../utils/utilities";
-import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_2461, FF_DEV_2669, isFF } from "../../../utils/feature-flags";
 import { SyncMixin } from "../../../mixins/SyncMixin";
+
+
+const isFFDev2461 = isFF(FF_DEV_2461);
 
 /**
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -84,6 +87,7 @@ const Model = types
     },
 
     get syncedAudio() {
+      if (!isFFDev2461) return false;
       return self.syncedObject?.type?.startsWith("audio");
     },
 
@@ -154,18 +158,32 @@ const Model = types
     const audioRef = createRef();
     let audioStopHandler = null;
     let endDuration = 0;
+    let currentId = -1;
 
     function stop() {
-      if (!audioRef.current) return;
+      const audio = audioRef.current;
 
-      if (!self.isCurrentlyPlaying) return;
-      if (self.currentTime < endDuration) {
-        stopIn(endDuration - self.currentTime);
+      if (!audio) return;
+
+      const isPaused = isFFDev2461 ? !self.isCurrentlyPlaying : audio.paused;
+
+      if (isPaused) return;
+
+      const currentTime = audio.currentTime;
+
+      console.log({ currentTime, endDuration });
+
+      if (currentTime < endDuration) {
+        stopIn(endDuration - currentTime);
         return;
       }
       audioStopHandler = null;
       endDuration = 0;
-      self.handlePause();
+      if (isFFDev2461) {
+        self.handlePause();
+      } else {
+        audio.pause();
+      }
       self.reset();
     }
 
@@ -178,14 +196,15 @@ const Model = types
         return audioRef;
       },
 
-      reset() {
+      reset(hard = true) {
         self.playingId = -1;
-        self.currentTime = 0;
+
+        if (!isFFDev2461 || hard) {
+          currentId = -1;
+        }
       },
 
       handleSyncSeek(time) {
-        self.currentTime = time;
-
         if (audioRef.current) {
           audioRef.current.currentTime = time;
         }
@@ -202,6 +221,7 @@ const Model = types
 
       handleSyncPause() {
         self.isCurrentlyPlaying = false;
+        self.reset(false);
 
         if(audioRef.current) {
           audioRef.current.pause();
@@ -248,28 +268,43 @@ const Model = types
         const { start, duration } = value;
         const end = duration ? start + duration : value.end || 0;
 
+        if (!audioRef || isNaN(start) || isNaN(end)) return;
+        const audio = audioRef.current;
+
         if (audioStopHandler) {
           window.clearTimeout(audioStopHandler);
           audioStopHandler = null;
         }
 
-        if (isNaN(start) || isNaN(end)) return;
+        const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
 
-        const currentId = self.playingId;
-
-        if (self.isCurrentlyPlaying) {
-          self.handlePause();
-          self.reset();
-          if (currentId === idx) return;
+        if (isPlaying) {
+          if (isFFDev2461) {
+            self.handlePause();
+          } else {
+            audio.pause();
+            self.playingId = -1;
+          }
+          if (idx === currentId) return;
         }
-
-        self.playingId = idx;
 
         if (idx !== currentId) {
-          self.handleSeek(start);
+          if (isFFDev2461) {
+            self.handleSeek(start);
+          } else {
+            audio.currentTime = start;
+          }
         }
 
-        self.handlePlay();
+        if (isFFDev2461) {
+          self.handlePlay();
+        } else {
+          audio.play();
+        }
+
+        endDuration = end;
+        self.playingId = idx;
+        currentId = idx;
 
         end && stopIn(end - start);
       },
@@ -431,4 +466,15 @@ const Model = types
     },
   }));
 
-export const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, SyncMixin, Model, ObjectBase, AnnotationMixin);
+const paragraphModelMixins = [
+  RegionsMixin,
+  TagAttrs,
+  isFFDev2461 ? SyncMixin : undefined,
+  Model,
+  ObjectBase,
+  AnnotationMixin,
+].filter(Boolean);
+
+export const ParagraphsModel = types.compose("ParagraphsModel",
+  ...paragraphModelMixins,
+);
