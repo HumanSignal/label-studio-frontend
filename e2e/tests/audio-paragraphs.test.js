@@ -101,7 +101,6 @@ Scenario("Check audio clip is played when using the new sync option", async func
   const hasFFDev2461 = await LabelStudio.hasFF("fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short");
 
   if  (!hasFFDev1713) {
-    console.log("Skipping test because ff_front_DEV_1713_audio_ui_150222_short is not installed");
     return;
   }
 
@@ -113,8 +112,6 @@ Scenario("Check audio clip is played when using the new sync option", async func
 
   const [startingAudioPlusTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
 
-  console.log({ hasFFDev2461, startingAudioPlusTime, startingParagraphAudioTime });
-
   if (hasFFDev2461) {
     assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
     assert.equal(startingParagraphAudioTime, 0);
@@ -124,10 +121,7 @@ Scenario("Check audio clip is played when using the new sync option", async func
 
   I.click(`[aria-label="pause-circle"]`);
 
-
   const [seekAudioPlusTime, seekParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
-
-  console.log({ hasFFDev2461, seekAudioPlusTime, seekParagraphAudioTime });
 
   const expectedSeekTime = Math.round(seekAudioPlusTime);
 
