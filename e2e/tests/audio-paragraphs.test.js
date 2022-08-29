@@ -122,24 +122,19 @@ Scenario("Check audio clip is played when using the new sync option", async func
 
   I.click(`[aria-label="play-circle"]`);
 
-  I.wait(1);
-
   I.click(`[aria-label="pause-circle"]`);
 
-  I.wait(1);
 
   const [seekAudioPlusTime, seekParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
-
-  I.wait(1);
 
   console.log({ hasFFDev2461, seekAudioPlusTime, seekParagraphAudioTime });
 
   const expectedSeekTime = Math.round(seekAudioPlusTime);
 
   if (hasFFDev2461) {
-    assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime));
+    assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
   } else {
-    assert(expectedSeekTime > 0);
+    assert(expectedSeekTime > 0, "Expected seek time to be greater than 0");
   }
 });
 
