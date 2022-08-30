@@ -88,6 +88,12 @@ export const FF_DEV_3034 = "fflag-feat-dev-3034-comments-with-drafts-short";
 
 export const FF_DEV_3077 = "fflag_feat_front_dev_3077_repeater_tag_loading_performance_short";
 
+/**
+ * Audio + Paragraphs sync playback of chunk position
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
+ */
+export const FF_DEV_2461 = "fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,

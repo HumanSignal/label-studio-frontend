@@ -246,7 +246,7 @@ class HtxParagraphsView extends Component {
       <ObjectTag item={item}>
         {withAudio && (
           <audio
-            controls={item.showplayer}
+            controls={item.showplayer && !item.syncedAudio}
             className={styles.audio}
             src={item.audio}
             ref={item.getRef()}

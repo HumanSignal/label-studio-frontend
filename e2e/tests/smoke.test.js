@@ -4,6 +4,7 @@ const { initLabelStudio, serialize } = require("./helpers");
 const Utils = require("../examples/utils");
 const examples = [
   require("../examples/audio-regions"),
+  require("../examples/audio-paragraphs"),
   require("../examples/image-bboxes"),
   require("../examples/image-ellipses"),
   require("../examples/image-keypoints"),

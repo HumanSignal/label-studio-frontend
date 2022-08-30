@@ -13,6 +13,10 @@ module.exports = {
     return result;
   },
 
+  hasFF(fflag) {
+    return I.executeScript(Helpers.hasFF, fflag);
+  },
+
   setFeatureFlags(featureFlags) {
     I.executeScript(Helpers.setFeatureFlags, featureFlags);
   },
