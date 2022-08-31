@@ -24,6 +24,10 @@ class RichTextPieceView extends Component {
   // store value of first selected label during double click to apply it later
   doubleClickSelection;
 
+  get isAbleToDragRegion() {
+    return Boolean(window.document.caretRangeFromPoint);
+  }
+
   _selectRegions = (additionalMode) => {
     const { item } = this.props;
     const root = item.visibleNodeRef.current;
@@ -380,6 +384,7 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!item.inline) {
+      // @todo how could it be IFRAME? it's root tag for inline and body for iframe; some bug?
       if (!root || root.tagName === "IFRAME" || !root.childNodes.length || item.isLoaded === false) return;
     }
 

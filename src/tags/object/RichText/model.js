@@ -202,6 +202,7 @@ const Model = types
 
         self._value = val;
 
+        // @todo not used
         self._regionsCache.forEach(({ region, annotation }) => {
           region.setText(self._value.substring(region.startOffset, region.endOffset));
           self.regions.push(region);
