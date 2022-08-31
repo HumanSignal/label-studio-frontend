@@ -57,9 +57,14 @@ class RichTextPieceView extends Component {
     const region = this._determineRegion(event.target);
 
     if (isFF(FF_DEV_2786) && event.buttons === 1 && region?.selected) {
+      const doc = item.visibleDoc;
+
       item.isDragging = true;
       const freezeSideLeft = target?.classList.contains('__resizeAreaRight') && region.startOffset;
       const freezeSideRight = target?.classList.contains('__resizeAreaLeft') && region.endOffset;
+
+      this.draggableRegion = region;
+      this.dragAnchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
       const isEdge = freezeSideRight || freezeSideLeft;
 
       item.isGrabbingEdge = isEdge && { freezeSideLeft, freezeSideRight };
@@ -93,15 +98,12 @@ class RichTextPieceView extends Component {
     const { item } = this.props;
     const root = item.visibleRoot;
     const doc = item.visibleDoc;
-    const anchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
+    const anchor = this.dragAnchor;
 
     const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
-
+    const region = this.draggableRegion;
 
     this.dragTarget = item.isGrabbingEdge ? event.path[1] : event.target;
-    const region = this._determineRegion(this.dragTarget);
-    
-    this.draggableRegion = region;
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(this.dragTarget, root, doc);
     this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
@@ -136,11 +138,13 @@ class RichTextPieceView extends Component {
     const selection = doc.defaultView.getSelection();
 
     const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
+    const regionOffsets = this.draggableRegion.globalOffsets;
+
+    const globalOffsets = [offset + offsets[0], offset + offsets[1]];
 
     const offsetLeft = item.isGrabbingEdge?.freezeSideLeft || offset + offsets[0];
     const offsetRight = item.isGrabbingEdge?.freezeSideRight || offset + offsets[1];
 
-    const globalOffsets = [offsetLeft, offsetRight];
     const range = findRangeNative(globalOffsets[0], globalOffsets[1], root);
 
     selection.removeAllRanges();
@@ -179,6 +183,18 @@ class RichTextPieceView extends Component {
 
     if (!selection.isCollapsed) {
       this.draggableRegion.removeHighlight();
+
+      const normedRange = {
+        isText: item.type === "text",
+        globalOffsets: this.adjustedOffsets,
+      };
+
+      item.highlightRegion(this.draggableRegion, normedRange);
+      item.selectRegion();
+      this.draggableRegion = undefined;
+
+      selection.empty();
+      selection.removeAllRanges();
     }
   }
 
@@ -190,11 +206,10 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const label = states[0]?.selectedLabels?.[0];
     const value = states[0]?.selectedValues?.();
-    let wasDragged = false;
 
     if (isFF(FF_DEV_2786) && item.isDragging) {
       this._onDragStop();
-      wasDragged = true;
+      return;
     }
 
 
@@ -236,7 +251,7 @@ class RichTextPieceView extends Component {
       granularity: label?.granularity ?? item.granularity,
       beforeCleanup: () => {
         this.doubleClickSelection = undefined;
-        if (!wasDragged) this._selectionMode = true;
+        this._selectionMode = true;
       },
     });
     this.doubleClickSelection = {

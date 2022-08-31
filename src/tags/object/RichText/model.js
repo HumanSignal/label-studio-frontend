@@ -291,10 +291,16 @@ const Model = types
       highlightRegion(area, range) {
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
+        let soff, eoff;
 
-        area._range = range._range;
+        if (range.globalOffsets) {
+          // @todo format should be consistent or rename
+          [soff, eoff] = range.globalOffsets;
+        } else {
+          area._range = range._range;
 
-        const [soff, eoff] = rangeToGlobalOffset(range._range, root);
+          [soff, eoff] = rangeToGlobalOffset(range._range, root);
+        }
 
         area.updateGlobalOffsets(soff, eoff);
 
