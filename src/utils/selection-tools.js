@@ -207,6 +207,16 @@ const boundarySelection = (selection, boundary) => {
 };
 
 /**
+ * Return string representation of browser selection
+ * Currently only newlines are fixed for correct display/char count
+ * @param {Selection} selection
+ * @returns string
+ */
+export const getSelectionText = (selection) => {
+  return selection.toString().replace(/[\n\r]/g, "\\n");
+};
+
+/**
  * Captures current selection
  * @param {(response: {selectionText: string, range: Range}) => void} callback
  */
@@ -227,7 +237,7 @@ export const captureSelection = (
 
   applyTextGranularity(selection, granularity);
 
-  const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
+  const selectionText = getSelectionText(selection);
 
   for (let i = 0; i < selection.rangeCount; i++) {
     const range = fixRange(selection.getRangeAt(i));

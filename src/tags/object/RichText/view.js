@@ -4,7 +4,7 @@ import ObjectTag from "../../../components/Tags/Object";
 import * as xpath from "xpath-range";
 import { inject, observer } from "mobx-react";
 import Utils from "../../../utils";
-import { fixCodePointsInRange } from "../../../utils/selection-tools";
+import { fixCodePointsInRange, getSelectionText } from "../../../utils/selection-tools";
 import "./RichText.styl";
 import { isAlive } from "mobx-state-tree";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -176,7 +176,7 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const doc = root.ownerDocument;
     const selection = doc.defaultView.getSelection();
-    const selectionIsEmpty = selection.focusOffset - selection.anchorOffset < 1;
+    const text = getSelectionText(selection);
     
     // if (selectionIsEmpty) this._restoreOriginalRangeAsSelection(doc, selection);
 
@@ -195,6 +195,7 @@ class RichTextPieceView extends Component {
 
       item.highlightRegion(this.draggableRegion, normedRange);
       item.selectRegion();
+      this.draggableRegion.updateText(text);
       this.draggableRegion = undefined;
 
       selection.empty();
