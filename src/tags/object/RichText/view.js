@@ -60,14 +60,13 @@ class RichTextPieceView extends Component {
       const doc = item.visibleDoc;
 
       item.isDragging = true;
-      const freezeSideLeft = target?.classList.contains('__resizeAreaRight') && region.startOffset;
-      const freezeSideRight = target?.classList.contains('__resizeAreaLeft') && region.endOffset;
-
       this.draggableRegion = region;
       this.dragAnchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
+      const freezeSideLeft = target?.classList.contains('__resizeAreaRight');
+      const freezeSideRight = target?.classList.contains('__resizeAreaLeft');
       const isEdge = freezeSideRight || freezeSideLeft;
 
-      item.isGrabbingEdge = isEdge && { freezeSideLeft, freezeSideRight };
+      item.isFreezingEdge = isEdge && { left: freezeSideLeft, right: freezeSideRight };
       item.isActive = isEdge || target?.classList.contains("__active");
     }
   };
@@ -102,10 +101,10 @@ class RichTextPieceView extends Component {
 
     const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
     const region = this.draggableRegion;
+    const dragTarget = item.isFreezingEdge ? event.path[1] : event.target;
 
-    this.dragTarget = item.isGrabbingEdge ? event.path[1] : event.target;
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
-    this._setSelectionStyle(this.dragTarget, root, doc);
+    this._setSelectionStyle(dragTarget, root, doc);
     this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
     // region.deleteRegion();
     item.initializedDrag = true;
@@ -140,10 +139,15 @@ class RichTextPieceView extends Component {
     const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
     const regionOffsets = this.draggableRegion.globalOffsets;
 
-    const globalOffsets = [offset + offsets[0], offset + offsets[1]];
+    let globalOffsets = [offset + offsets[0], offset + offsets[1]];
 
-    const offsetLeft = item.isGrabbingEdge?.freezeSideLeft || offset + offsets[0];
-    const offsetRight = item.isGrabbingEdge?.freezeSideRight || offset + offsets[1];
+    if (item.isFreezingEdge) {
+      if (item.isFreezingEdge.left) {
+        globalOffsets = [regionOffsets.start, offset];
+      } else {
+        globalOffsets = [offset, regionOffsets.end];
+      }
+    }
 
     const range = findRangeNative(globalOffsets[0], globalOffsets[1], root);
 
