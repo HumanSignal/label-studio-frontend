@@ -337,6 +337,12 @@ const createSpanStylesheet = (document, identifier, color) => {
       width: 15px;
       transform: translateX(-15px);
     `,
+    [[
+      `.${stateClass.dragging} ${classNames.resizeAreaRight}`,
+      `.${stateClass.dragging} ${classNames.resizeAreaLeft}`,
+    ].join(',')]: `
+      pointer-events: none;
+    `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;
       background: none;
