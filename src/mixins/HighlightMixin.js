@@ -141,9 +141,9 @@ export const HighlightMixin = types
 
           handleArea.classList.add(className);
           handleArea.classList.add(resizeClass);
-          index === 0 ?
-            spanStart.prepend(handleArea) :
-            spanEnd.append(handleArea);
+          index === 0
+            ? spanStart.prepend(handleArea)
+            : spanEnd.append(handleArea);
         });
       }
 
@@ -219,7 +219,7 @@ export const HighlightMixin = types
 
     /**
      * Add classes to all spans
-     * @param {string[]} classNames
+     * @param {string | string[]} classNames
      */
     addClass(classNames) {
       if (!classNames || !self._spans) return;
@@ -230,7 +230,7 @@ export const HighlightMixin = types
 
     /**
      * Remove classes from all spans
-     * @param {string[]} classNames
+     * @param {string | string[]} classNames
      */
     removeClass(classNames) {
       if (!classNames || !self._spans) return;
@@ -255,6 +255,7 @@ export const HighlightMixin = types
 
 const stateClass = {
   active: "__active",
+  dragging: "__dragging",
   highlighted: "__highlighted",
   resizeAreaRight: "__resizeAreaRight",
   resizeAreaLeft: "__resizeAreaLeft",
@@ -276,7 +277,7 @@ const createSpanStylesheet = (document, identifier, color) => {
   };
 
   const classNames = {
-    active: `${className}.${stateClass.active}:not(.${stateClass.hidden})`,
+    active: `${className}.${stateClass.active}:not(.${stateClass.hidden}):not(.${stateClass.dragging})`,
     highlighted: `${className}.${stateClass.highlighted}`,
     resizeAreaRight: `${className}.${stateClass.resizeAreaRight}`,
     resizeAreaLeft: `${className}.${stateClass.resizeAreaLeft}`,

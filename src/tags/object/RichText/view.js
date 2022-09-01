@@ -112,6 +112,9 @@ class RichTextPieceView extends Component {
     this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
     // region.deleteRegion();
     item.initializedDrag = true;
+
+    // region.removeClass(region._stylesheet.state.active);
+    region.addClass(region._stylesheet.state.dragging);
   }
 
   _onMouseMove = (event) => {
@@ -181,6 +184,7 @@ class RichTextPieceView extends Component {
     const doc = root.ownerDocument;
     const selection = doc.defaultView.getSelection();
     const text = getSelectionText(selection);
+    const region = this.draggableRegion;
     
     // if (selectionIsEmpty) this._restoreOriginalRangeAsSelection(doc, selection);
 
@@ -189,17 +193,20 @@ class RichTextPieceView extends Component {
     this.spanOffsets = null;
     this._removeSelectionStyle();
 
+    region.removeClass(region._stylesheet.state.dragging);
+
     if (!selection.isCollapsed) {
-      this.draggableRegion.removeHighlight();
+      region.removeHighlight();
 
       const normedRange = {
         isText: item.type === "text",
         globalOffsets: this.adjustedOffsets,
       };
 
-      item.highlightRegion(this.draggableRegion, normedRange);
-      item.selectRegion();
-      this.draggableRegion.updateText(text);
+      item.highlightRegion(region, normedRange);
+      // item.selectRegion();
+      region.updateText(text);
+      region.selectRegion();
       this.draggableRegion = undefined;
 
       selection.empty();
