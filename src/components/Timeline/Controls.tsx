@@ -26,7 +26,7 @@ import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineContro
 import { FF_DEV_2715, isFF } from "../../utils/feature-flags";
 import { AudioControl } from "./Controls/AudioControl";
 import { ConfigControl } from "./Controls/ConfigControl";
-import { TimerComponent } from "../TimerComponent/TimerComponent";
+import { TimeDurationControl } from "../TimeDurationControl/TimeDurationControl";
 
 const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const roundedFps = Math.round(fps).toString();
@@ -137,6 +137,10 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       document.removeEventListener('keyup', keyboardHandler);
     };
   }, [altControlsMode]);
+
+  const onTimeUpdateChange = (value: number) =>{
+    onPositionChange(value * frameRate);
+  };
 
   return (
     <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
@@ -286,8 +290,16 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             framerate={frameRate}
             formatPosition={formatPosition}
           />
-        ) : <TimerComponent maxTime={duration} currentTime={currentTime} minTime={0} />
-        }
+        ) : (
+          <TimeDurationControl
+            startTime={0}
+            endTime={duration}
+            minTime={0}
+            maxTime={duration}
+            currentTime={currentTime}
+            onChangeStartTime={onTimeUpdateChange}
+          />
+        )}
       </Elem>
     </Block>
   );
