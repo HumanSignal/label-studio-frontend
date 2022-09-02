@@ -109,11 +109,6 @@ export const Hotkey = (
         .filter(Boolean)
         .forEach(scope => {
           keymaster(keyName, scope, (...args) => {
-            const e = args[0];
-
-            e.stopPropagation();
-            e.preventDefault();
-
             func(...args);
           });
         });
