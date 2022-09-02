@@ -39,10 +39,10 @@ export const AudioControl: FC<AudioControlProps> = ({
       onVolumeChange?.(0);
       return;
     }
-    if(_volumeValue > MAX_VOL) {
+    if (_volumeValue > MAX_VOL) {
       onVolumeChange?.(1);
       return;
-    } else if(_volumeValue < 0) {
+    } else if (_volumeValue < 0) {
       onVolumeChange?.(0);
       return;
     }

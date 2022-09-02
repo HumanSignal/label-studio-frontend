@@ -84,13 +84,13 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   }, [playing, onPlay, onPause]);
 
   const onSetVolumeModal = () => {
-    if(configModal) setConfigModal(false);
+    if (configModal) setConfigModal(false);
 
     setAudioModal(!audioModal);
   };
 
   const onSetConfigModal = () => {
-    if(audioModal) setAudioModal(false);
+    if (audioModal) setAudioModal(false);
 
     setConfigModal(!configModal);
   };
@@ -138,7 +138,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     };
   }, [altControlsMode]);
 
-  const onTimeUpdateChange = (value: number) =>{
+  const onTimeUpdateChange = (value: number) => {
     onPositionChange(value * frameRate);
   };
 

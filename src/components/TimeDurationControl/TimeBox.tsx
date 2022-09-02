@@ -13,7 +13,7 @@ export interface TimerProps {
 export const TimeBox: FC<TimerProps> = ({
   value,
   inverted = false,
-  readonly= false,
+  readonly = false,
   onChange,
   ...props
 }) => {

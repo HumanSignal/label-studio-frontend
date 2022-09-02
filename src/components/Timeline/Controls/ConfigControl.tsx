@@ -69,7 +69,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   const handleChangeZoom = (e: React.FormEvent<HTMLInputElement>) => {
     const _zoom = parseFloat(e.currentTarget.value);
 
-    setTimeout(() =>     onZoom(_zoom * 10));
+    setTimeout(() => onZoom(_zoom * 10));
   };
 
   const renderMuteButton = () => {
