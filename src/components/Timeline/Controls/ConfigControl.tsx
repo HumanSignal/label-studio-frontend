@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { Block, Elem } from "../../../utils/bem";
 
 import "./ConfigControl.styl";
@@ -34,14 +34,20 @@ export const ConfigControl: FC<ConfigControlProps> = ({
 
   const handleSetTimeline = () => {
     setTimeline(!isTimeline);
+
+    console.log('hide/show timeline');
   };
 
   const handleSetAudioWave = () => {
     setAudioWave(!isAudioWave);
+
+    console.log('hide/show audiowave');
   };
 
   const handleSetAudioTrack = () => {
     setAudioTrack(!isAudioTrack);
+
+    console.log('hide/show audiotrack');
   };
 
   const handleChangePlaybackSpeed = (e: React.FormEvent<HTMLInputElement>) => {
@@ -63,7 +69,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   const handleChangeZoom = (e: React.FormEvent<HTMLInputElement>) => {
     const _zoom = parseFloat(e.currentTarget.value);
 
-    onZoom(_zoom * 10);
+    setTimeout(() =>     onZoom(_zoom * 10));
   };
 
   const renderMuteButton = () => {
