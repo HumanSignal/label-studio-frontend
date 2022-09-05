@@ -87,7 +87,8 @@ class RichTextPieceView extends Component {
 
     if (!this.selectionStyle) {
       this.selectionStyle = doc.createElement("style");
-      root.appendChild(this.selectionStyle);
+      // style tag in body changes its inner text, so only head!
+      root.ownerDocument.head.appendChild(this.selectionStyle);
     }
     
     this.selectionStyle.innerText = `::selection {${rules.join("\n")}}`;
@@ -156,7 +157,17 @@ class RichTextPieceView extends Component {
       }
     }
 
+    if (globalOffsets[0] < 0) {
+      // don't allow to go beyond the starting point
+      globalOffsets = [0, offsets[1] - offsets[0]];
+    }
+
     const range = findRangeNative(globalOffsets[0], globalOffsets[1], root);
+
+    if (!range) {
+      // don't allow to go beyond the document range
+      return [this.adjustedOffsets, this.adjustedRange];
+    }
 
     selection.removeAllRanges();
     selection.addRange(range);

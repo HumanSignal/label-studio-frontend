@@ -160,7 +160,7 @@ export const HighlightMixin = types
     afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
       if (isFF(FF_DEV_2786)) {
-        self._spans.forEach(span => span.querySelectorAll("area").forEach(area => area.remove()));
+        self._spans?.forEach(span => span.querySelectorAll("area").forEach(area => area.remove()));
       }
     },
 
