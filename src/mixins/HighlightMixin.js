@@ -299,7 +299,7 @@ const createSpanStylesheet = (document, identifier, color) => {
     [`${className}[data-label]::after`]: `
       position: absolute;
       display: inline-block;
-      transform: translate(-99%, -1px);
+      transform: translate(-99%, -5px);
       background-color: ${initialActiveColor};
       color: ${Utils.Colors.contrastColor(initialActiveColor)};
       height: 5px;
