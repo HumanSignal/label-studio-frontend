@@ -90,7 +90,7 @@ class RichTextPieceView extends Component {
       // style tag in body changes its inner text, so only head!
       root.ownerDocument.head.appendChild(this.selectionStyle);
     }
-    
+
     this.selectionStyle.innerText = `::selection {${rules.join("\n")}}`;
   }
 
@@ -111,10 +111,8 @@ class RichTextPieceView extends Component {
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(dragTarget, root, doc);
     this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
-    // region.deleteRegion();
     item.initializedDrag = true;
 
-    // region.removeClass(region._stylesheet.state.active);
     region.addClass(region._stylesheet.state.dragging);
   }
 
@@ -196,8 +194,7 @@ class RichTextPieceView extends Component {
     const selection = doc.defaultView.getSelection();
     const text = getSelectionText(selection);
     const region = this.draggableRegion;
-    
-    // if (selectionIsEmpty) this._restoreOriginalRangeAsSelection(doc, selection);
+
 
     item.isDragging = false;
     item.initializedDrag = false;
@@ -215,7 +212,6 @@ class RichTextPieceView extends Component {
       };
 
       item.highlightRegion(region, normedRange);
-      // item.selectRegion();
       region.updateText(text);
       region.selectRegion();
       this.draggableRegion = undefined;
