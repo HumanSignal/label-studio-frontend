@@ -281,16 +281,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
-        {!isFF(FF_DEV_2715) ? (
-          <TimeDisplay
-            currentTime={currentTime}
-            duration={duration}
-            length={length}
-            position={position}
-            framerate={frameRate}
-            formatPosition={formatPosition}
-          />
-        ) : (
+        {isFF(FF_DEV_2715) ? (
           <TimeDurationControl
             startTime={0}
             endTime={duration}
@@ -298,6 +289,15 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             maxTime={duration}
             currentTime={currentTime}
             onChangeStartTime={onTimeUpdateChange}
+          />
+        ) : (
+          <TimeDisplay
+            currentTime={currentTime}
+            duration={duration}
+            length={length}
+            position={position}
+            framerate={frameRate}
+            formatPosition={formatPosition}
           />
         )}
       </Elem>
