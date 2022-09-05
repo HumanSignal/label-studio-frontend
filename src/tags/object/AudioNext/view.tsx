@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { WS_ZOOM_X } from "../../../components/Timeline/Views/Wave/Wave";
-import { Block, Elem } from "../../../utils/bem";
+import { Block } from "../../../utils/bem";
 
 interface AudioNextProps {
   item: any;
