@@ -94,6 +94,13 @@ export const FF_DEV_3077 = "fflag_feat_front_dev_3077_repeater_tag_loading_perfo
  */
 export const FF_DEV_2461 = "fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short";
 
+/**
+ * Creating separated regions if selection includes hidden phrases
+ * @see FF_DEV_2669 (allows filtering)
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_2918_labeling_filtered_paragraphs_250822_short
+ */
+export const FF_DEV_2918 = "fflag_fix_front_dev_2918_labeling_filtered_paragraphs_250822_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,
