@@ -83,6 +83,7 @@ const Model = types
       "style",
       "label",
       "relations",
+      "repeater",
       "filter",
       "timeseries",
       "timeserieslabels",

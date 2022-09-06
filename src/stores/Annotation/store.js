@@ -175,6 +175,7 @@ export default types
       let rootModel;
 
       try {
+        console.log('run 1', rootModel);
         rootModel = Tree.treeToModel(config, self.store);
       } catch (e) {
         console.error(e);

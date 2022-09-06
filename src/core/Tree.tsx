@@ -103,8 +103,7 @@ function tagIntoObject(
   if (node.childNodes.length && (!node.children.length || type === "hypertext")) {
     data.value = node.innerHTML?.trim() || data.value || "";
   } else if (node.children.length) {
-    console.log(node.children);
-    data.children = [node.children[0]].map(child => tagIntoObject(child, taskData));
+    data.children = [...node.children].map(child => tagIntoObject(child, taskData));
     //data.children = [...node.children].map(child => tagIntoObject(child, taskData));
   }
 
