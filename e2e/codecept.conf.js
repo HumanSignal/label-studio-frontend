@@ -42,6 +42,7 @@ module.exports.config = {
     AtLabels: "./fragments/AtLabels.js",
     AtSettings: "./fragments/AtSettings.js",
     AtTopbar: "./fragments/AtTopbar.js",
+    AtParagraphs: "./fragments/AtParagraphs.js",
     ErrorsCollector: "./fragments/ErrorsCollector.js",
   },
   bootstrap: null,

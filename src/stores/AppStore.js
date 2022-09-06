@@ -1,7 +1,8 @@
 /* global LSF_VERSION */
 
-import { flow, getEnv, types } from "mobx-state-tree";
+import { flow, getEnv, getSnapshot, types } from "mobx-state-tree";
 
+import uniqBy from "lodash/uniqBy";
 import InfoModal from "../components/Infomodal/Infomodal";
 import { Hotkey } from "../core/Hotkey";
 import ToolsManager from "../tools/Manager";
@@ -370,13 +371,13 @@ export default types
       hotkeys.addNamed("annotation:undo", function() {
         const annotation = self.annotationStore.selected;
 
-        annotation.undo();
+        if (!annotation.isDrawing) annotation.undo();
       });
 
       hotkeys.addNamed("annotation:redo", function() {
         const annotation = self.annotationStore.selected;
 
-        annotation.redo();
+        if (!annotation.isDrawing) annotation.redo();
       });
 
       hotkeys.addNamed("region:exit", () => {
@@ -667,6 +668,11 @@ export default types
     async function postponeTask() {
       const annotation = self.annotationStore.selected;
 
+      if (!annotation.versions.draft) {
+        // annotation created from prediction, so no draft was created
+        annotation.versions.draft = annotation.versions.result;
+      }
+
       await self.submitDraft(annotation, { was_postponed: true });
       await getEnv(self).events.invoke('nextTask');
     }
@@ -685,6 +691,14 @@ export default types
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
       }
+    }
+
+    function setUsers(users) {
+      self.users.replace(users);
+    }
+
+    function mergeUsers(users) {
+      self.setUsers(uniqBy([...getSnapshot(self.users), ...users], 'id'));
     }
 
     return {
@@ -707,6 +721,8 @@ export default types
       updateAnnotation,
       acceptAnnotation,
       rejectAnnotation,
+      setUsers,
+      mergeUsers,
 
       showModal,
       toggleComments,

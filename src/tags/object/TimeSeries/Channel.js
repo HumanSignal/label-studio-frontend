@@ -543,7 +543,7 @@ class ChannelD3 extends React.Component {
 
     this.extent = d3.extent(times);
 
-    const scale = isDate ? d3.scaleTime() : d3.scaleLinear();
+    const scale = isDate ? d3.scaleUtc() : d3.scaleLinear();
     const x = scale
       // .clamp(true)
       .domain(this.extent)
