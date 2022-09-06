@@ -96,14 +96,16 @@ function tagIntoObject(
     }
 
     data.tagName = "View";
-    data.type = "view";
+    data.type = "pagedview";
     data.children = views;
   } else
   // contains only text nodes; HyperText can contain any structure
   if (node.childNodes.length && (!node.children.length || type === "hypertext")) {
     data.value = node.innerHTML?.trim() || data.value || "";
   } else if (node.children.length) {
-    data.children = [...node.children].map(child => tagIntoObject(child, taskData));
+    console.log(node.children);
+    data.children = [node.children[0]].map(child => tagIntoObject(child, taskData));
+    //data.children = [...node.children].map(child => tagIntoObject(child, taskData));
   }
 
   return data;

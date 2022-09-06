@@ -1,0 +1,136 @@
+import React, { useEffect, useState } from "react";
+import { observer } from "mobx-react";
+import { types } from "mobx-state-tree";
+
+import Registry from "../../core/Registry";
+import Types from "../../core/Types";
+import Tree from "../../core/Tree";
+import { Pagination } from "../../common/Pagination/Pagination";
+
+/**
+ * Use the Table tag to display object keys and values in a table.
+ * @example
+ * <!-- Basic labeling configuration for text in a table -->
+ * <View>
+ *   <Table name="text-1" value="$text"></Table>
+ * </View>
+ * @name Table
+ * @meta_title Table Tag to Display Keys & Values in Tables
+ * @meta_description Customize Label Studio by displaying key-value pairs in tasks for machine learning and data science projects.
+ * @param {string} value Data field value containing JSON type for Table
+ * @param {string} [valueType] Value to define the data type in Table
+ */
+const Model = types.model({
+  type: "pagedview",
+  children: Types.unionArray([
+    "view",
+    "header",
+    "labels",
+    "label",
+    "table",
+    "taxonomy",
+    "choices",
+    "choice",
+    "collapse",
+    "datetime",
+    "number",
+    "rating",
+    "ranker",
+    "rectangle",
+    "ellipse",
+    "polygon",
+    "keypoint",
+    "brush",
+    "rectanglelabels",
+    "ellipselabels",
+    "polygonlabels",
+    "keypointlabels",
+    "brushlabels",
+    "hypertextlabels",
+    "timeserieslabels",
+    "text",
+    "audio",
+    "image",
+    "hypertext",
+    "richtext",
+    "timeseries",
+    "audioplus",
+    "list",
+    "dialog",
+    "textarea",
+    "pairwise",
+    "style",
+    "label",
+    "relations",
+    "filter",
+    "timeseries",
+    "timeserieslabels",
+    "pagedview",
+    "paragraphs",
+    "paragraphlabels",
+    "video",
+    "videorectangle",
+  ]),
+});
+const PagedViewModel = types.compose("PagedViewModel", Model);
+
+const DEFAULT_PAGE_SIZE = 1;
+
+const HtxPagedView = observer(({ item }) => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  useEffect(() => {
+    setPageSize(getStoredPageSize('repeater', DEFAULT_PAGE_SIZE));
+  }, []);
+
+  const getStoredPageSize = (name, defaultValue) => {
+    const value = localStorage.getItem(`pages:${name}`);
+
+    if (value) {
+      return parseInt(value);
+    }
+
+    return defaultValue ?? undefined;
+  };
+
+  const setStoredPageSize = (name, pageSize) => {
+    localStorage.setItem(`pages:${name}`, pageSize.toString());
+  };
+
+  const renderPage = () => {
+    const pageView = [];
+
+    for (let i = 0; i < pageSize; i++) {
+      pageView.push(Tree.renderChildren(item.children[i + (pageSize * (page - 1))]));
+    }
+
+    return pageView;
+  };
+
+  return (
+    <div>
+      {renderPage()}
+      <Pagination
+        currentPage={page}
+        totalPages={Math.ceil(item.children.length / pageSize)}
+        pageSize={pageSize}
+        pageSizeOptions={[1, 5, 10, 25, 50, 100]}
+        size={"medium"}
+        onChange={(page, maxPerPage = pageSize) => {
+          setPage(page);
+
+          if(maxPerPage !== pageSize){
+            setStoredPageSize('repeater', maxPerPage);
+            setPageSize(maxPerPage);
+          }
+        }}
+      />
+    </div>
+  );
+});
+
+Registry.addTag("pagedview", PagedViewModel, HtxPagedView);
+
+export { HtxPagedView, PagedViewModel };
+
