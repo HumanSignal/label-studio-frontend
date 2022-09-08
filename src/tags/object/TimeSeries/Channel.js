@@ -515,9 +515,19 @@ class ChannelD3 extends React.Component {
     const markerId = `marker_${item.id}`;
     const clipPathId = `clip_${item.id}`;
 
-    const times = data[time];
-    const values = data[column];
-    const { series } = this.props;
+    let { series } = this.props;
+
+    series = series.filter(x => {
+      return x[column] !== null;
+    });
+
+    const times = series.map(x => {
+      return x[time];
+    });
+    
+    const values = series.map(x => {
+      return x[column];
+    });
 
     if (!values) {
       const names = Object.keys(data).filter(name => name !== time);
