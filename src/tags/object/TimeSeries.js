@@ -28,6 +28,8 @@ import PersistentStateMixin from "../../mixins/PersistentState";
 import "./TimeSeries/Channel";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
+const moment = require("moment");
+
 /**
  * TimeSeries tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
  *
@@ -304,6 +306,17 @@ const Model = types
         else self._format = String;
       }
       return self._format(time);
+    },
+
+    formatDuration(duration) {
+      if (!self._formatDuration) {
+        const { timedisplayformat: format, isDate } = self;
+
+        if (format === "date") self._formatDuration = duration => moment.utc(duration).format("HH:mm:ss.SSS");
+        else if (format) self._formatDuration = isDate ? d3.timeFormat(format) : d3.format(format);
+        else self._formatDuration = String;
+      }
+      return self._formatDuration(duration);
     },
   }))
 

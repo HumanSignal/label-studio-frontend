@@ -358,7 +358,7 @@ class ChannelD3 extends React.Component {
         const sticked = getRegion(d3.event.selection);
 
         brush.move(block, [x(sticked.start), x(sticked.end)]);
-        updateTracker(d3.mouse(this)[0]);
+        updateTracker(d3.mouse(this)[0], sticked.end - sticked.start);
       })
       .on("end", this.newBrushHandler)
       // replacing default filter to allow ctrl-click action
@@ -370,7 +370,7 @@ class ChannelD3 extends React.Component {
     this.gCreator.call(this.brushCreator);
   }
 
-  updateTracker = screenX => {
+  updateTracker = (screenX, brushWidth = 0) => {
     const { width } = this.state;
 
     if (screenX < 0 || screenX > width) return;
@@ -378,7 +378,7 @@ class ChannelD3 extends React.Component {
 
     this.trackerX = dataX;
     this.tracker.attr("transform", `translate(${this.x(dataX) + 0.5},0)`);
-    this.trackerTime.text(this.formatTime(dataX));
+    this.trackerTime.text(this.formatTime(dataX) + (brushWidth === 0 ? "" : " [" + this.formatDuration(brushWidth) + "]"));
     this.trackerValue.text(this.formatValue(dataY) + " " + this.props.item.units);
     this.trackerPoint.attr("cy", this.y(dataY));
     this.tracker.attr("text-anchor", screenX > width - 100 ? "end" : "start");
@@ -523,7 +523,7 @@ class ChannelD3 extends React.Component {
     if (!this.ref.current) return;
 
     const { data, item, range, time, column } = this.props;
-    const { isDate, formatTime, margin, slicesCount } = item.parent;
+    const { isDate, formatTime, formatDuration, margin, slicesCount } = item.parent;
     const height = this.height;
 
     this.zoomStep = slicesCount;
@@ -566,6 +566,7 @@ class ChannelD3 extends React.Component {
 
     this.formatValue = formatValue;
     this.formatTime = formatTime;
+    this.formatDuration = formatDuration;
 
     const offsetWidth = this.ref.current.offsetWidth;
     const width = offsetWidth ? offsetWidth - margin.left - margin.right : this.state.width;
