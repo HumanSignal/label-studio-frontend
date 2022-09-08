@@ -154,5 +154,13 @@
   "video:hop-forward": {
     "key": "shift+alt+right",
     "description": "Hop Forward"
+  },
+  "repeater:next-page": {
+    "key": "alt+right",
+    "description": "Hop Forward"
+  },
+  "repeater:previous-page": {
+    "key": "alt+left",
+    "description": "Hop Forward"
   }
 }

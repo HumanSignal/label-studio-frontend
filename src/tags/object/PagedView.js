@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -6,6 +6,7 @@ import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import Tree from "../../core/Tree";
 import { Pagination } from "../../common/Pagination/Pagination";
+import { Hotkey } from "../../core/Hotkey";
 
 /**
  * Use the Table tag to display object keys and values in a table.
@@ -73,7 +74,7 @@ const Model = types.model({
   ]),
 });
 const PagedViewModel = types.compose("PagedViewModel", Model);
-
+const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;
 
 const HtxPagedView = observer(({ item }) => {
@@ -82,7 +83,37 @@ const HtxPagedView = observer(({ item }) => {
 
   useEffect(() => {
     setPageSize(getStoredPageSize('repeater', DEFAULT_PAGE_SIZE));
-  }, []);
+
+    setTimeout(() => {
+      setHotKey();
+    });
+
+    return () => {
+      disposeHotKey();
+    };
+  }, [page]);
+
+  const setHotKey = () => {
+    hotkeys.addNamed("repeater:next-page", handleSetNextPage);
+    hotkeys.addNamed("repeater:previous-page", handleSetPreviousPage);
+  };
+
+  const disposeHotKey = () => {
+    hotkeys.removeNamed("repeater:next-page");
+    hotkeys.removeNamed("repeater:previous-page");
+  };
+
+  const handleSetPreviousPage = useCallback(() => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  }, [page]);
+
+  const handleSetNextPage = useCallback(() => {
+    if (page < Math.ceil(item.children.length / pageSize)) {
+      setPage(page + 1);
+    }
+  }, [page]);
 
   const getStoredPageSize = (name, defaultValue) => {
     const value = localStorage.getItem(`pages:${name}`);
