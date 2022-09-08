@@ -8,6 +8,7 @@ import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
 import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from "./helpers";
+import { markerSymbol } from "./symbols";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { TagParentMixin } from "../../../mixins/TagParentMixin";
 
@@ -29,6 +30,9 @@ import { TagParentMixin } from "../../../mixins/TagParentMixin";
  * @param {number} [height] height of the plot
  * @param {string=} [strokeColor=#f48a42] plot stroke color, expects hex value
  * @param {number=} [strokeWidth=1] plot stroke width
+ * @param {string=} [markerColor=#f48a42] plot stroke color, expects hex value
+ * @param {number=} [markerSize=0] plot stroke width
+ * @param {number=} [markerSymbol=circle] plot stroke width
  * @param {boolean} [fixedScale] if false current view scales to fit only displayed values; if given overwrites TimeSeries' fixedScale
  */
 
@@ -61,6 +65,10 @@ const TagAttrs = types.model({
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(types.string, "#1f77b4"),
+
+  markersize: types.optional(types.string, "0"),
+  markercolor: types.optional(types.string, "#1f77b4"),
+  markersymbol: types.optional(types.string, "circle"),
 
   fixedscale: types.maybe(types.boolean),
 
@@ -504,6 +512,7 @@ class ChannelD3 extends React.Component {
     const height = this.height;
 
     this.zoomStep = slicesCount;
+    const markerId = `marker_${item.id}`;
     const clipPathId = `clip_${item.id}`;
 
     const times = data[time];
@@ -587,6 +596,17 @@ class ChannelD3 extends React.Component {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    const marker = main
+      .append("defs")
+      .append("marker")
+      .attr("id", markerId)
+      .attr("markerWidth", item.markersize)
+      .attr("markerHeight", item.markersize)
+      .attr("refX", item.markersize / 2)
+      .attr("refY", item.markersize / 2);
+
+    markerSymbol(marker, item.markersymbol, item.markersize, item.markercolor);
+
     main
       .append("clipPath")
       .attr("id", clipPathId)
@@ -623,7 +643,10 @@ class ChannelD3 extends React.Component {
       .attr("vector-effect", "non-scaling-stroke")
       .attr("fill", "none")
       .attr("stroke-width", item.strokewidth || 1)
-      .attr("stroke", item.strokecolor || "steelblue");
+      .attr("stroke", item.strokecolor || "steelblue")
+      .attr("marker-start", item.markersize > 0 ? `url(#${markerId})` : "")
+      .attr("marker-mid", item.markersize > 0 ? `url(#${markerId})` : "")
+      .attr("marker-end", item.markersize > 0 ? `url(#${markerId})` : "");
 
     this.renderTracker();
     this.updateTracker(0); // initial value, will be updated in setRangeWithScaling
