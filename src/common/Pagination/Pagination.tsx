@@ -35,10 +35,6 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   ...props
 }, ref) => {
   const [inputMode, setInputMode] = useState(false);
-  
-  useEffect(() => {
-    console.log('heartex', pageSize);
-  }, [pageSize]);
 
   const handleChangeSelect = (e:ChangeEvent<HTMLSelectElement>) => {
     onChange?.(1, e.currentTarget.value);

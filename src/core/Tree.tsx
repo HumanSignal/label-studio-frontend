@@ -110,7 +110,6 @@ function tagIntoObject(
     data.value = node.innerHTML?.trim() || data.value || "";
   } else if (node.children.length) {
     data.children = [...node.children].map(child => tagIntoObject(child, taskData));
-    //data.children = [...node.children].map(child => tagIntoObject(child, taskData));
   }
 
   return data;

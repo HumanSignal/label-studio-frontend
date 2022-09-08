@@ -8,19 +8,6 @@ import Tree from "../../core/Tree";
 import { Pagination } from "../../common/Pagination/Pagination";
 import { Hotkey } from "../../core/Hotkey";
 
-/**
- * Use the Table tag to display object keys and values in a table.
- * @example
- * <!-- Basic labeling configuration for text in a table -->
- * <View>
- *   <Table name="text-1" value="$text"></Table>
- * </View>
- * @name Table
- * @meta_title Table Tag to Display Keys & Values in Tables
- * @meta_description Customize Label Studio by displaying key-value pairs in tasks for machine learning and data science projects.
- * @param {string} value Data field value containing JSON type for Table
- * @param {string} [valueType] Value to define the data type in Table
- */
 const Model = types.model({
   type: "pagedview",
   children: Types.unionArray([
