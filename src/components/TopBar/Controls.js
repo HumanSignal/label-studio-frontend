@@ -89,6 +89,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           buttonProps={{ disabled, look: "danger" }}
           prompt="Reason of Rejection"
           action="Reject"
+          key="reject"
         />
       );
     } else {
@@ -119,7 +120,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       </Elem>);
     buttons.push(
       <ButtonTooltip key="cancel-skip" title="Cancel skip: []">
-        <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={store.cancelSkippingTask}>
+        <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={store.unskipTask}>
           Cancel skip
         </Button>
       </ButtonTooltip>,
@@ -134,6 +135,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
             buttonProps={{ disabled, look: "danger" }}
             prompt="Reason of cancelling (skipping) task"
             action="Skip"
+            key="skip"
           />,
         );
       } else {
@@ -178,6 +180,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
             buttonProps={{ disabled: disabled || submitDisabled, look: "primary" }}
             prompt="Comment to Reviewer"
             action="Update"
+            key="update"
           />
         );
       } else {

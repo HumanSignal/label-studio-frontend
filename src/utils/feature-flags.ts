@@ -76,10 +76,30 @@ export const FF_DEV_2669 = "ff_front_dev_2669_paragraph_author_filter_210622_sho
 
 export const FF_DEV_2432 = "ff_front_dev_2432_auto_save_polygon_draft_210622_short";
 
+// Undo keypoints when create new polygon
+export const FF_DEV_2576 = "ff_feat_front_DEV_2576_undo_key_points_polygon_short";
+
 // Change the rotate tool from bbox
 export const FF_DEV_2671 = "ff_front_dev_2671_anchor_rotate_bbox_010722_short";
 
-export const FF_DEV_2504 = "fflag-feat-frontend-dev-2504-image-enhancements-zoom-center";
+export const FF_DEV_2755 = "fflag_feat_dev_2755_regions_list_grouped_by_labels_with_ordered_collapse_short";
+
+export const FF_DEV_3034 = "fflag-feat-dev-3034-comments-with-drafts-short";
+
+export const FF_DEV_3077 = "fflag_feat_front_dev_3077_repeater_tag_loading_performance_short";
+
+/**
+ * Audio + Paragraphs sync playback of chunk position
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
+ */
+export const FF_DEV_2461 = "fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short";
+
+/**
+ * Creating separated regions if selection includes hidden phrases
+ * @see FF_DEV_2669 (allows filtering)
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_2918_labeling_filtered_paragraphs_250822_short
+ */
+export const FF_DEV_2918 = "fflag_fix_front_dev_2918_labeling_filtered_paragraphs_250822_short";
 
 export const FF_DEV_2395 = "fflag-feat-front-dev-2395-consistent-working-area-for-all-image-sizes";
 

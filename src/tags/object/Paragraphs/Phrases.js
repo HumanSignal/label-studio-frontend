@@ -12,7 +12,7 @@ export const Phrases = observer(({ item }) => {
 
   const val = item._value.map((v, idx) => {
     const style = item.layoutStyles(v);
-    const classNames = [styles.phrase];
+    const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
 
     if (withAudio) classNames.push(styles.withAudio);

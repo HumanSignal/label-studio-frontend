@@ -1,8 +1,9 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
-import { Block, Elem } from "../../../utils/bem";
+import { WS_ZOOM_X } from "../../../components/Timeline/Views/Wave/Wave";
+import { Block } from "../../../utils/bem";
 
 interface AudioNextProps {
   item: any;
@@ -13,7 +14,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
 
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(WS_ZOOM_X.default);
   const [volume, setVolume] = useState(1);
   const [speed, setSpeed] = useState(1);
 

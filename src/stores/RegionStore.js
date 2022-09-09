@@ -5,6 +5,7 @@ import { isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { debounce } from "../utils/debounce";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
+import { FF_DEV_2755, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("RegionStore");
 
@@ -12,6 +13,7 @@ const localStorageKeys = {
   sort: "outliner:sort",
   sortDirection: "outliner:sort-direction",
   group: "outliner:group",
+  view: "regionstore:view",
 };
 
 const SelectionMap = types.model(
@@ -126,7 +128,10 @@ export default types.model("RegionStore", {
     window.localStorage.getItem(localStorageKeys.group) ?? "manual",
   ),
 
-  view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
+  view: types.optional(
+    types.enumeration(["regions", "labels"]), 
+    window.localStorage.getItem(localStorageKeys.view) ?? "regions",
+  ),
   selection: types.optional(SelectionMap, {}),
 }).views(self => {
   let lastClickedItem;
@@ -264,9 +269,7 @@ export default types.model("RegionStore", {
       const groups = {};
       const result = [];
       const onClick = createClickRegionInTreeHandler(result);
-
       let index = 0;
-
       const getLabelGroup = (label, key) => {
         const labelGroup = groups[key];
 
@@ -279,30 +282,46 @@ export default types.model("RegionStore", {
           children: [],
         };
       };
+      const getRegionLabel = (region) => region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
+      const addToLabelGroup = (key, label, region) => {
+        const group = getLabelGroup(label, key);
+        const groupId = group.id;
+        const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-      const addToLabelGroup = (labels, region) => {
-        for(const label of labels) {
-          const key = `${label.value}#${label.id}`;
-          const group = getLabelGroup(label, key);
-          const groupId = group.id;
-            
-          group.children.push({
-            ...enrich(region, index, false, null, onClick, groupId),
-            item: region,
-            isArea: true,
-          });
+        if( isFF( FF_DEV_2755 ) ) {
+          group.hotkey = labelHotKey;
+          group.pos = groupId.slice(0, groupId.indexOf('#'));
+        }
+        group.children.push({
+          ...enrich(region, index, false, null, onClick, groupId),
+          item: region,
+          isArea: true,
+        });
+      };
+      const addRegionsToLabelGroup = (labels, region) => {
+        if (labels) {
+          for(const label of labels) {
+            addToLabelGroup(`${label.value}#${label.id}`, label, region);
+          }
+        } else {
+          addToLabelGroup('no-label', undefined, region);
         }
       };
-
+      
       for (const region of self.regions) {
-        const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
-
-        addToLabelGroup(labelsForRegion, region);
+        addRegionsToLabelGroup(region.labeling?.selectedLabels, region);
 
         index++;
       }
 
-      result.push(...Object.values(groups));
+      const groupsArray = Object.values(groups);
+
+      if( isFF( FF_DEV_2755 ) ) {
+        groupsArray.sort((a, b) => a.hotkey > b.hotkey ? 1 : a.hotkey < b.hotkey ? -1 : 0);
+      }
+      result.push(
+        ...groupsArray,
+      );
 
       return result;
     },
@@ -369,6 +388,10 @@ export default types.model("RegionStore", {
     get selectedIds() {
       return Array.from(self.selection.selected.values()).map(reg => reg.id);
     },
+
+    get persistantView() {
+      return window.localStorage.getItem(localStorageKeys.view) ?? self.view;
+    },
   };
 }).actions(self => ({
   addRegion(region) {
@@ -382,6 +405,10 @@ export default types.model("RegionStore", {
   },
 
   setView(view) {
+    if( isFF( FF_DEV_2755 ) ) {
+      window.localStorage.setItem(localStorageKeys.view, view);
+      console.log("setView", window.localStorage.getItem(localStorageKeys.view));
+    }
     self.view = view;
   },
 
@@ -440,7 +467,7 @@ export default types.model("RegionStore", {
         self.initHotkeys();
       }
     });
-    self.view = self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
+    self.view = window.localStorage.getItem(localStorageKeys.view) ?? (self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions");
   },
 
   // init Alt hotkeys for regions selection

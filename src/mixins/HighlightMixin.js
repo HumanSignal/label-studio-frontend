@@ -251,7 +251,7 @@ const createSpanStylesheet = (document, identifier, color) => {
   };
 
   const classNames = {
-    active: `${className}.${stateClass.active}`,
+    active: `${className}.${stateClass.active}:not(.${stateClass.hidden})`,
     highlighted: `${className}.${stateClass.highlighted}`,
   };
 
@@ -287,8 +287,9 @@ const createSpanStylesheet = (document, identifier, color) => {
     `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;
-      background: none;
       padding: 0;
+      pointer-events: none;
+      ${variables.color}: transparent;
     `,
     [`${className}.${stateClass.hidden}::before`]: `
       display: none

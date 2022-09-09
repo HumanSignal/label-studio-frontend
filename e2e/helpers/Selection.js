@@ -1,14 +1,17 @@
 /* global locate */
 const Helper = require('@codeceptjs/helper');
 
+const getPage = (h) => {
+  return (h.Puppeteer ?? h.Playwright).page;
+};
+
 class Selection extends Helper {
   async dblClickOnWord(text, parent = "*") {
-    const { Puppeteer } = this.helpers;
-    const { page } = Puppeteer;
+    const page = getPage(this.helpers);
     const { mouse } = page;
     const xpath = [locate(parent).toXPath(),`//text()[contains(., '${text}')]`,"[last()]"].join("");
-    const textEls = await page.$x(xpath);
-    const point = await page.evaluate((textEl, text)=>{
+    const point = await page.evaluate(({ xpath, text })=>{
+      const textEl = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null).iterateNext();
       const pos = textEl.wholeText.search(text);
       const range = new Range();
 
@@ -20,33 +23,34 @@ class Selection extends Helper {
         x: (bbox.left + bbox.right) / 2,
         y: (bbox.top + bbox.bottom) / 2,
       };
-    },textEls[0], text);
+    },{ xpath, text });
 
     return mouse.click(point.x, point.y, { button: "left", clickCount: 2, delay: 50 });
   }
   async dblClickOnElement(elementLocator) {
-    const { Puppeteer } = this.helpers;
-    const { page } = Puppeteer;
+    const page = getPage(this.helpers);
     const { mouse } = page;
-    const els = await page.$x(locate(elementLocator).toXPath());
-    const point = await page.evaluate((el)=>{
+    const elsXpath = locate(elementLocator).toXPath();
+    const point = await page.evaluate((elsXpath)=>{
+      const el = document.evaluate(elsXpath, document, null, XPathResult.ANY_TYPE, null).iterateNext();
       const bbox = el.getBoundingClientRect();
 
       return {
         x: (bbox.left + bbox.right) / 2,
         y: (bbox.top + bbox.bottom) / 2,
       };
-    },els[0]);
+    },elsXpath);
 
     return mouse.click(point.x, point.y, { button: "left", clickCount: 2, delay: 50 });
   }
   async setSelection(startLocator, startOffset, endLocator, endOffset) {
-    const { Puppeteer } = this.helpers;
-    const { page } = Puppeteer;
-    const startContainers = await page.$x(locate(startLocator).toXPath());
-    const endContainers = await page.$x(locate(endLocator).toXPath());
+    const page = getPage(this.helpers);
+    const startContainerXPath = locate(startLocator).toXPath();
+    const endContainerXPath = locate(endLocator).toXPath();
 
-    await page.evaluate((startContainer, startOffset, endContainer, endOffset)=>{
+    await page.evaluate(({ startContainerXPath, startOffset, endContainerXPath, endOffset })=>{
+      const startContainer = document.evaluate(startContainerXPath, document, null, XPathResult.ANY_TYPE, null).iterateNext();
+      const endContainer = document.evaluate(endContainerXPath, document, null, XPathResult.ANY_TYPE, null).iterateNext();
       const range = new Range();
 
       range.setStart(startContainer, startOffset);
@@ -60,7 +64,7 @@ class Selection extends Helper {
 
       evt.initMouseEvent("mouseup", true, true);
       endContainer.dispatchEvent(evt);
-    },startContainers[0], startOffset, endContainers[0], endOffset);
+    },{ startContainerXPath, startOffset, endContainerXPath, endOffset });
   }
 }
 

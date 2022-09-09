@@ -47,6 +47,13 @@ const setFeatureFlags = (featureFlags) => {
     ...window.APP_SETTINGS.feature_flags,
     ...featureFlags,
   };
+  return window.APP_SETTINGS.feature_flags;
+};
+
+const hasFF = (fflag) => {
+  if (!window.APP_SETTINGS || !window.APP_SETTINGS.feature_flags) return true;
+
+  return window.APP_SETTINGS.feature_flags[fflag] === true;
 };
 
 /**
@@ -80,6 +87,35 @@ const waitForAudio = async () => {
       });
     }),
   );
+};
+
+
+/**
+ * Wait for objects ready
+ */
+const waitForObjectsReady = async () => {
+  await new Promise(resolve => {
+    const watchObjectsReady = () => {
+      const isReady = window.Htx.annotationStore.selected.objects.every(object => object.isReady);
+
+      if (isReady) {
+        resolve(true);
+      } else {
+        setTimeout(watchObjectsReady, 16);
+      }
+    };
+
+    watchObjectsReady();
+  });
+};
+
+/**
+ * Get the currentTime of the audio element(s)
+ */
+const getCurrentAudioTime = () => {
+  const audios = document.querySelectorAll("audio");
+
+  return [...audios].map(audio => audio.currentTime);
 };
 
 /**
@@ -492,8 +528,11 @@ function hasSelectedRegion() {
 module.exports = {
   initLabelStudio,
   setFeatureFlags,
+  hasFF,
   waitForImage,
   waitForAudio,
+  getCurrentAudioTime,
+  waitForObjectsReady,
   delay,
 
   getSizeConvertor,

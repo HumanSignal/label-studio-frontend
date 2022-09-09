@@ -1,7 +1,8 @@
 /* global LSF_VERSION */
 
-import { flow, getEnv, types } from "mobx-state-tree";
+import { flow, getEnv, getSnapshot, types } from "mobx-state-tree";
 
+import uniqBy from "lodash/uniqBy";
 import InfoModal from "../components/Infomodal/Infomodal";
 import { Hotkey } from "../core/Hotkey";
 import ToolsManager from "../tools/Manager";
@@ -16,6 +17,7 @@ import Task from "./TaskStore";
 import { UserExtended } from "./UserStore";
 import { UserLabels } from "./UserLabels";
 import { FF_DEV_1536, isFF } from "../utils/feature-flags";
+import { CommentStore } from "./Comment/CommentStore";
 
 const hotkeys = Hotkey("AppStore", "Global Hotkeys");
 
@@ -58,6 +60,13 @@ export default types
       annotations: [],
       predictions: [],
       history: [],
+    }),
+
+    /**
+     * Comments Store
+     */
+    commentStore: types.optional(CommentStore, {
+      comments: [],
     }),
 
     /**
@@ -178,14 +187,22 @@ export default types
       return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
     get canGoNextTask() {
-      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[self.taskHistory.length - 1].taskId) {
-        return true;
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+
+      if (hasHistory) {
+        const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+        
+        return self.task.id !== lastTaskId;
       }
       return false;
     },
     get canGoPrevTask() {
-      if (self.taskHistory && self.task && self.taskHistory.length > 1 && self.task.id !== self.taskHistory[0].taskId) {
-        return true;
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+
+      if (hasHistory) {
+        const firstTaskId = self.taskHistory[0].taskId;
+
+        return self.task.id !== firstTaskId;
       }
       return false;
     },
@@ -354,13 +371,13 @@ export default types
       hotkeys.addNamed("annotation:undo", function() {
         const annotation = self.annotationStore.selected;
 
-        annotation.undo();
+        if (!annotation.isDrawing) annotation.undo();
       });
 
       hotkeys.addNamed("annotation:redo", function() {
         const annotation = self.annotationStore.selected;
 
-        annotation.redo();
+        if (!annotation.isDrawing) annotation.redo();
       });
 
       hotkeys.addNamed("region:exit", () => {
@@ -435,12 +452,12 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
-    function submitDraft(c) {
+    function submitDraft(c, params = {}) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
         if (!events.hasEvent('submitDraft')) return resolve();
-        const res = events.invokeFirst('submitDraft', self, c);
+        const res = events.invokeFirst('submitDraft', self, c, params);
 
         if (res && res.then) res.then(resolve);
         else resolve(res);
@@ -503,9 +520,9 @@ export default types
       }, "Error during skip, try again");
     }
 
-    function cancelSkippingTask() {
+    function unskipTask() {
       handleSubmittingFlag(() => {
-        getEnv(self).events.invoke('cancelSkippingTask', self);
+        getEnv(self).events.invoke('unskipTask', self);
       }, "Error during cancel skipping task, try again");
     }
 
@@ -648,6 +665,18 @@ export default types
       }
     }
 
+    async function postponeTask() {
+      const annotation = self.annotationStore.selected;
+
+      if (!annotation.versions.draft) {
+        // annotation created from prediction, so no draft was created
+        annotation.versions.draft = annotation.versions.result;
+      }
+
+      await self.submitDraft(annotation, { was_postponed: true });
+      await getEnv(self).events.invoke('nextTask');
+    }
+
     function nextTask() {
       if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
@@ -664,6 +693,14 @@ export default types
       }
     }
 
+    function setUsers(users) {
+      self.users.replace(users);
+    }
+
+    function mergeUsers(users) {
+      self.setUsers(uniqBy([...getSnapshot(self.users), ...users], 'id'));
+    }
+
     return {
       setFlags,
       addInterface,
@@ -678,12 +715,14 @@ export default types
       attachHotkeys,
 
       skipTask,
-      cancelSkippingTask,
+      unskipTask,
       submitDraft,
       submitAnnotation,
       updateAnnotation,
       acceptAnnotation,
       rejectAnnotation,
+      setUsers,
+      mergeUsers,
 
       showModal,
       toggleComments,
@@ -697,6 +736,7 @@ export default types
       addAnnotationToTaskHistory,
       nextTask,
       prevTask,
+      postponeTask,
       beforeDestroy() {
         ToolsManager.removeAllTools();
       },

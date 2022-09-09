@@ -11,7 +11,6 @@ export type CommentFormProps = {
   commentStore: any,
   value?: string,
   onChange?: (value: string) => void,
-  onInput?: (value: string) => void,
   inline?: boolean,
   rows?: number,
   maxRows?: number,
@@ -22,7 +21,6 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   value = "", 
   inline = true,
   onChange,
-  onInput,
   rows = 1,
   maxRows = 4,
 }) => {
@@ -47,6 +45,10 @@ export const CommentForm: FC<CommentFormProps> = observer(({
       actionRef.current.update?.(comment || "");
       console.error(err);
     }
+  }, [commentStore]);
+
+  const onInput = useCallback((comment: string) => {
+    commentStore.setCurrentComment(comment || '');
   }, [commentStore]);
 
   return (

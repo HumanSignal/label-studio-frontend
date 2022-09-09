@@ -7,7 +7,6 @@ import ToolMixin from "../mixins/Tool";
 import { Tool } from "../components/Toolbar/Tool";
 import { FlyoutMenu } from "../components/Toolbar/FlyoutMenu";
 import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
-import { FF_DEV_2504, isFF } from "../utils/feature-flags";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -33,27 +32,25 @@ const ToolView = observer(({ item }) => {
           item.handleZoom(1);
         }}
       />
-      {isFF(FF_DEV_2504) && (
-        <FlyoutMenu
-          icon={<IconExpand />}
-          items={[
-            {
-              label: `Zoom to fit`,
-              shortcut: "shift+1",
-              onClick: () => {
-                item.sizeToFit();
-              },
+      <FlyoutMenu
+        icon={<IconExpand />}
+        items={[
+          {
+            label: `Zoom to fit`,
+            shortcut: "shift+1",
+            onClick: () => {
+              item.sizeToFit();
             },
-            {
-              label: `Zoom to actual size`,
-              shortcut: "shift+2",
-              onClick: () => {
-                item.sizeToOriginal();
-              },
+          },
+          {
+            label: `Zoom to actual size`,
+            shortcut: "shift+2",
+            onClick: () => {
+              item.sizeToOriginal();
             },
-          ]}
-        />
-      )}
+          },
+        ]}
+      />
       <Tool
         icon={<IconZoomOut />}
         ariaLabel="zoom-out"

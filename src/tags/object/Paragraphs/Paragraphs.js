@@ -7,7 +7,7 @@ import { isSelectionContainsSpan } from "../../../utils/selection-tools";
 import styles from "./Paragraphs.module.scss";
 import { AuthorFilter } from "./AuthorFilter";
 import { Phrases } from "./Phrases";
-import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
 
 class HtxParagraphsView extends Component {
   _regionSpanSelector = ".htx-highlight";
@@ -42,7 +42,8 @@ class HtxParagraphsView extends Component {
   }
 
   captureDocumentSelection() {
-    const cls = this.props.item.layoutClasses;
+    const item = this.props.item;
+    const cls = item.layoutClasses;
     const names = [...this.myRef.current.getElementsByClassName(cls.name)];
 
     names.forEach(el => {
@@ -75,16 +76,97 @@ class HtxParagraphsView extends Component {
         const [startOffset, , start] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
         const [endOffset, , end] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset);
 
-        // user selection always has only one range, so we can use selection's text
-        // which doesn't contain hidden elements (names in our case)
-        ranges.push({
-          startOffset,
-          start: String(start),
-          endOffset,
-          end: String(end),
-          _range: r,
-          text: selection.toString(),
-        });
+        if (isFF(FF_DEV_2918)) {
+          const visibleIndexes = item._value.reduce((visibleIndexes, v, idx) => {
+            const isContentVisible = item.isVisibleForAuthorFilter(v);
+
+            if (isContentVisible && start <= idx && end >= idx) {
+              visibleIndexes.push(idx);
+            }
+
+            return visibleIndexes;
+          }, []);
+
+          if (visibleIndexes.length !== end - start + 1) {
+            const texts = [...this.myRef.current.getElementsByClassName(cls.text)];
+            let fromIdx = start;
+
+            for (let k = 0; k < visibleIndexes.length; k++) {
+              const curIdx = visibleIndexes[k];
+              const isLastVisibleIndex = k === visibleIndexes.length - 1;
+
+              if (isLastVisibleIndex || visibleIndexes[k + 1] !== curIdx + 1) {
+                let anchorOffset, focusOffset;
+
+                const _range = r.cloneRange();
+
+                if (fromIdx === start) {
+                  anchorOffset = startOffset;
+                } else {
+                  anchorOffset = 0;
+
+                  const walker = texts[fromIdx].ownerDocument.createTreeWalker(texts[fromIdx], NodeFilter.SHOW_ALL);
+
+                  while (walker.firstChild()) ;
+
+                  _range.setStart(walker.currentNode, anchorOffset);
+                }
+                if (curIdx === end) {
+                  focusOffset = endOffset;
+                } else {
+                  const curRange = document.createRange();
+
+                  curRange.selectNode(texts[curIdx]);
+                  focusOffset = curRange.toString().length;
+
+                  const walker = texts[curIdx].ownerDocument.createTreeWalker(texts[curIdx], NodeFilter.SHOW_ALL);
+
+                  while (walker.lastChild()) ;
+
+                  _range.setEnd(walker.currentNode, walker.currentNode.length);
+                }
+
+                selection.removeAllRanges();
+                selection.addRange(_range);
+
+                ranges.push({
+                  startOffset: anchorOffset,
+                  start: String(fromIdx),
+                  endOffset: focusOffset,
+                  end: String(curIdx),
+                  _range,
+                  text: selection.toString(),
+                });
+
+                if (visibleIndexes.length - 1 > k) {
+                  fromIdx = visibleIndexes[k + 1];
+                }
+              }
+            }
+          } else {
+            // user selection always has only one range, so we can use selection's text
+            // which doesn't contain hidden elements (names in our case)
+            ranges.push({
+              startOffset,
+              start: String(start),
+              endOffset,
+              end: String(end),
+              _range: r,
+              text: selection.toString(),
+            });
+          }
+        } else {
+          // user selection always has only one range, so we can use selection's text
+          // which doesn't contain hidden elements (names in our case)
+          ranges.push({
+            startOffset,
+            start: String(start),
+            endOffset,
+            end: String(end),
+            _range: r,
+            text: selection.toString(),
+          });
+        }
       } catch (err) {
         console.error("Can not get selection", err);
       }
@@ -151,11 +233,21 @@ class HtxParagraphsView extends Component {
 
     item._currentSpan = null;
 
-    const htxRange = item.addRegion(selectedRanges[0]);
+    if (isFF(FF_DEV_2918)) {
+      const htxRanges = item.addRegions(selectedRanges);
 
-    const spans = htxRange.createSpans();
+      for (const htxRange of htxRanges) {
+        const spans = htxRange.createSpans();
 
-    htxRange.addEventsToSpans(spans);
+        htxRange.addEventsToSpans(spans);
+      }
+    } else {
+      const htxRange = item.addRegion(selectedRanges[0]);
+
+      const spans = htxRange.createSpans();
+
+      htxRange.addEventsToSpans(spans);
+    }
   }
 
   _handleUpdate() {
@@ -239,11 +331,14 @@ class HtxParagraphsView extends Component {
     const { item } = this.props;
     const withAudio = !!item.audio;
 
+    // current way to not render when we wait for data
+    if (isFF(FF_DEV_2669) && !item._value) return null;
+
     return (
-      <ObjectTag item={item}>
+      <ObjectTag item={item} className={"lsf-paragraphs"}>
         {withAudio && (
           <audio
-            controls={item.showplayer}
+            controls={item.showplayer && !item.syncedAudio}
             className={styles.audio}
             src={item.audio}
             ref={item.getRef()}
