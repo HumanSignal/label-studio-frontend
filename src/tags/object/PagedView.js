@@ -63,58 +63,36 @@ const Model = types.model({
 const PagedViewModel = types.compose("PagedViewModel", Model);
 const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;
+const PAGE_SIZE_OPTIONS = [1, 5, 10, 25, 50, 100];
 
 const HtxPagedView = observer(({ item }) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
+  const totalPages = Math.ceil(item.children.length / pageSize);
+
   useEffect(() => {
     setPageSize(getStoredPageSize('repeater', DEFAULT_PAGE_SIZE));
+  }, []);
 
-    setTimeout(() => {
-      setHotKey();
+  useEffect(() => {
+    hotkeys.addNamed("repeater:next-page", () => {
+      if (page < totalPages) {
+        setPage(page + 1);
+      }
+    });
+
+    hotkeys.addNamed("repeater:previous-page", () => {
+      if (page > 1) {
+        setPage(page - 1);
+      }
     });
 
     return () => {
-      disposeHotKey();
+      hotkeys.removeNamed("repeater:next-page");
+      hotkeys.removeNamed("repeater:previous-page");
     };
   }, [page]);
-
-  const setHotKey = () => {
-    hotkeys.addNamed("repeater:next-page", handleSetNextPage);
-    hotkeys.addNamed("repeater:previous-page", handleSetPreviousPage);
-  };
-
-  const disposeHotKey = () => {
-    hotkeys.removeNamed("repeater:next-page");
-    hotkeys.removeNamed("repeater:previous-page");
-  };
-
-  const handleSetPreviousPage = useCallback(() => {
-    if (page > 1) {
-      setPage(page - 1);
-    }
-  }, [page]);
-
-  const handleSetNextPage = useCallback(() => {
-    if (page < Math.ceil(item.children.length / pageSize)) {
-      setPage(page + 1);
-    }
-  }, [page]);
-
-  const getStoredPageSize = (name, defaultValue) => {
-    const value = localStorage.getItem(`pages:${name}`);
-
-    if (value) {
-      return parseInt(value);
-    }
-
-    return defaultValue ?? undefined;
-  };
-
-  const setStoredPageSize = (name, pageSize) => {
-    localStorage.setItem(`pages:${name}`, pageSize.toString());
-  };
 
   const renderPage = () => {
     const pageView = [];
@@ -131,9 +109,9 @@ const HtxPagedView = observer(({ item }) => {
       {renderPage()}
       <Pagination
         currentPage={page}
-        totalPages={Math.ceil(item.children.length / pageSize)}
+        totalPages={totalPages}
         pageSize={pageSize}
-        pageSizeOptions={[1, 5, 10, 25, 50, 100]}
+        pageSizeOptions={ PAGE_SIZE_OPTIONS }
         size={"medium"}
         onChange={(page, maxPerPage = pageSize) => {
           setPage(page);
@@ -147,6 +125,20 @@ const HtxPagedView = observer(({ item }) => {
     </div>
   );
 });
+
+const getStoredPageSize = (name, defaultValue) => {
+  const value = localStorage.getItem(`pages:${name}`);
+
+  if (value) {
+    return parseInt(value);
+  }
+
+  return defaultValue ?? undefined;
+};
+
+const setStoredPageSize = (name, pageSize) => {
+  localStorage.setItem(`pages:${name}`, pageSize.toString());
+};
 
 Registry.addTag("pagedview", PagedViewModel, HtxPagedView);
 
