@@ -157,10 +157,10 @@
   },
   "repeater:next-page": {
     "key": "alt+right",
-    "description": "Hop Forward"
+    "description": "Next Page"
   },
   "repeater:previous-page": {
     "key": "alt+left",
-    "description": "Hop Forward"
+    "description": "Previous Page"
   }
 }
