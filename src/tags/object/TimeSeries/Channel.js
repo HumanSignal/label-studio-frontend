@@ -378,7 +378,7 @@ class ChannelD3 extends React.Component {
 
     this.trackerX = dataX;
     this.tracker.attr("transform", `translate(${this.x(dataX) + 0.5},0)`);
-    this.trackerTime.text(this.formatTime(dataX) + (brushWidth === 0 ? "" : " [" + this.formatDuration(brushWidth) + "]"));
+    this.trackerTime.text(`${this.formatTime(dataX)}${brushWidth === 0 ? "" :  ` [${this.formatDuration(brushWidth)}]`}`);
     this.trackerValue.text(this.formatValue(dataY) + " " + this.props.item.units);
     this.trackerPoint.attr("cy", this.y(dataY));
     this.tracker.attr("text-anchor", screenX > width - 100 ? "end" : "start");
@@ -418,12 +418,13 @@ class ChannelD3 extends React.Component {
 
   renderXAxis = () => {
     const { item } = this.props;
+
+    if (!item.showaxis) return;
+
     const { width } = this.state;
     const { margin } = item.parent;
     const tickSize = this.height + margin.top;
     const shift = -margin.top;
-
-    if (!item.showaxis) return;
 
     let g = this.main.select(".xaxis");
 
