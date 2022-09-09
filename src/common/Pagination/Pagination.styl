@@ -146,7 +146,13 @@
 
   &__page-size
     min-width 170px
-    padding-left 16px
+    border 1px solid rgba(0,0,0,0.15)
+    border-radius 5px
+    position relative
+    background #fafafa
+    margin 0 0 0 16px
+    box-sizing border-box
+
 
     ~/_size_small &
       padding-left 8px
@@ -155,11 +161,12 @@
   select
     height: 40px;
     min-height: 40px;
-    background: #fafafa;
     font-size: 16px;
     line-height: 22px;
-    border: 1px solid rgba(0,0,0,0.15);
     box-sizing: border-box;
-    border-radius: 5px;
     padding: 0 16px;
     transition: box-shadow 80ms ease;
+    border none
+    outline none
+    background none
+    min-width 155px

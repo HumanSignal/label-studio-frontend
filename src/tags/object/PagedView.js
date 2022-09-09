@@ -76,6 +76,8 @@ const HtxPagedView = observer(({ item }) => {
   }, []);
 
   useEffect(() => {
+    document.querySelector('#label-studio-dm')?.scrollTo(0, 0);
+
     hotkeys.addNamed("repeater:next-page", () => {
       if (page < totalPages) {
         setPage(page + 1);
