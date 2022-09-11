@@ -28,8 +28,6 @@ import PersistentStateMixin from "../../mixins/PersistentState";
 import "./TimeSeries/Channel";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
-const moment = require("moment");
-
 /**
  * TimeSeries tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
  *
@@ -66,6 +64,7 @@ const moment = require("moment");
  * @param {string} [timeColumn] Column name or index that provides temporal values. If your time series data has no temporal column then one is automatically generated.
  * @param {string} [timeFormat] Pattern used to parse values inside timeColumn, parsing is provided by d3, and follows `strftime` implementation
  * @param {string} [timeDisplayFormat] Format used to display temporal value. Can be a number or a date. If a temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
+ * @param {string} [durationDisplayFormat] Format used to display temporal duration value for brush range. If the temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
  * @param {string} [sep=,] Separator for your CSV file.
  * @param {string} [overviewChannels] Comma-separated list of channel names or indexes displayed in overview.
  * @param {string} [overviewWidth=25%] Default width of overview window in percents
@@ -80,6 +79,7 @@ const TagAttrs = types.model({
   sep: ",",
   timeformat: "",
   timedisplayformat: "",
+  durationdisplayformat: ".0f",
   overviewchannels: "", // comma-separated list of channels to show
   overviewwidth: "25%",
 
@@ -310,14 +310,14 @@ const Model = types
 
     formatDuration(duration) {
       if (!self._formatDuration) {
-        const { timedisplayformat: format, isDate } = self;
+        const { durationdisplayformat: format, isDate } = self;
 
-        if (format === "date") self._formatDuration = duration => moment.utc(duration).format("HH:mm:ss.SSS");
-        else if (format) self._formatDuration = isDate ? d3.timeFormat(format) : d3.format(format);
+        if (format) self._formatDuration = isDate ? d3.utcFormat(format) : d3.format(format);
         else self._formatDuration = String;
       }
       return self._formatDuration(duration);
     },
+
   }))
 
   .actions(self => ({
