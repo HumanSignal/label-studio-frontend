@@ -16,21 +16,7 @@ import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
 import { useMemo } from "react";
 import { WaveSurferParams } from "wavesurfer.js/types/params";
 import ResizeObserver from "../../../../utils/resize-observer";
-
-export const WS_ZOOM_X = {
-  min: 1,
-  max: 1500,
-  step: 10,
-  default: 1,
-  defaultValue: 1,
-};
-
-const SPEED = {
-  min: 0.5,
-  max: 2,
-  step: 0.01,
-  default: 1,
-};
+import { WS_SPEED, WS_ZOOM_X } from "../../../../tags/object/AudioNext/constants";
 
 export const Wave: FC<TimelineViewProps> = ({
   position,
@@ -38,7 +24,7 @@ export const Wave: FC<TimelineViewProps> = ({
   regions,
   volume = 1,
   zoom = WS_ZOOM_X.default,
-  speed = SPEED.default,
+  speed = WS_SPEED.default,
   onReady,
   onPositionChange,
   onSeek,
@@ -329,8 +315,10 @@ export const Wave: FC<TimelineViewProps> = ({
           <Range
             continuous
             value={speed}
-            {...SPEED}
-            resetValue={SPEED.default}
+            resetValue={WS_SPEED.default}
+            step={WS_SPEED.step}
+            min={WS_SPEED.min}
+            max={WS_SPEED.max}
             minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
             maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
             onChange={(value) => onSpeedChange?.(Number(value))}
@@ -338,8 +326,10 @@ export const Wave: FC<TimelineViewProps> = ({
           <Range
             continuous
             value={currentZoom}
-            {...WS_ZOOM_X}
             resetValue={WS_ZOOM_X.default}
+            step={WS_ZOOM_X.step}
+            min={WS_ZOOM_X.min}
+            max={WS_ZOOM_X.max}
             minIcon={<IconZoomOut />}
             maxIcon={<IconZoomIn />}
             onChange={value =>  setZoom(Number(value)) }
