@@ -129,7 +129,7 @@ export default types.model("RegionStore", {
   ),
 
   view: types.optional(
-    types.enumeration(["regions", "labels"]), 
+    types.enumeration(["regions", "labels"]),
     window.localStorage.getItem(localStorageKeys.view) ?? "regions",
   ),
   selection: types.optional(SelectionMap, {}),
@@ -215,8 +215,19 @@ export default types.model("RegionStore", {
       return sorted;
     },
 
-    asTree(enrich) {
+    getRegionsTree(enrich) {
+      if (self.group === null || self.group === "manual") {
+        return self.asTree(enrich);
+      } else if (self.group === 'label') {
+        return self.asLabelsTree(enrich);
+      } else if (self.group === 'type') {
+        return self.asTypeTree(enrich);
+      } else {
+        console.error(`Grouping by ${self.group} is not implemented`);
+      }
+    },
 
+    asTree(enrich) {
       const regions = self.sortedRegions;
       const tree = [];
       const lookup = new Map();
@@ -250,18 +261,6 @@ export default types.model("RegionStore", {
       }));
 
       return tree;
-    },
-
-    getRegionsTree(enrich) {
-      if (self.group === null || self.group === "manual") {
-        return self.asTree(enrich);
-      } else if (self.group === 'label') {
-        return self.asLabelsTree(enrich);
-      } else if (self.group === 'type') {
-        return self.asTypeTree(enrich);
-      } else {
-        console.error(`Grouping by ${self.group} is not implemented`);
-      }
     },
 
     asLabelsTree(enrich) {
@@ -307,7 +306,7 @@ export default types.model("RegionStore", {
           addToLabelGroup('no-label', undefined, region);
         }
       };
-      
+
       for (const region of self.regions) {
         addRegionsToLabelGroup(region.labeling?.selectedLabels, region);
 
@@ -351,6 +350,7 @@ export default types.model("RegionStore", {
           key,
           isArea: false,
           children: [],
+          isNotLabel: true,
           type: region.type,
           entity: region,
         };
