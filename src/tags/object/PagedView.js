@@ -78,16 +78,18 @@ const HtxPagedView = observer(({ item }) => {
   useEffect(() => {
     document.querySelector('#label-studio-dm')?.scrollTo(0, 0);
 
-    hotkeys.addNamed("repeater:next-page", () => {
-      if (page < totalPages) {
-        setPage(page + 1);
-      }
-    });
+    setTimeout(() => {
+      hotkeys.addNamed("repeater:next-page", () => {
+        if (page < totalPages) {
+          setPage(page + 1);
+        }
+      });
 
-    hotkeys.addNamed("repeater:previous-page", () => {
-      if (page > 1) {
-        setPage(page - 1);
-      }
+      hotkeys.addNamed("repeater:previous-page", () => {
+        if (page > 1) {
+          setPage(page - 1);
+        }
+      });
     });
 
     return () => {
