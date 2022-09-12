@@ -502,7 +502,7 @@ const Model = types.model({
     return self.isSideways
       ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
       : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-  }, 
+  },
 
   get coverScale() {
     return self.isSideways
@@ -649,7 +649,7 @@ const Model = types.model({
      * Set zoom
      */
     setZoom(scale) {
-      self.currentZoom = scale;
+      self.currentZoom = clamp(scale, 1, Infinity);
 
       // cool comment about all this stuff
       const maxScale = self.maxScale;
@@ -777,7 +777,7 @@ const Model = types.model({
         self.setZoom(zoomScale);
 
         stageScale = self.zoomScale;
-        
+
         const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,

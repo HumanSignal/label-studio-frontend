@@ -13,7 +13,11 @@ import styles from "./Paragraphs.module.scss";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { isValidObjectURL } from "../../../utils/utilities";
-import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
+import { SyncMixin } from "../../../mixins/SyncMixin";
+
+
+const isFFDev2461 = isFF(FF_DEV_2461);
 
 /**
  * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -38,7 +42,8 @@ import { FF_DEV_2669, isFF } from "../../../utils/feature-flags";
  * @param {string} value                 - Data field containing the paragraph content
  * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
  * @param {string} audioUrl              - Audio to sync phrases with
- * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs
+ * @param {string} [sync]                - object name to sync with
+ * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs. Ignored if sync object is audio
  * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
  * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
  * @param {string} [nameKey=author]      - The key field to use for name
@@ -81,6 +86,11 @@ const Model = types
       return getRoot(self);
     },
 
+    get syncedAudio() {
+      if (!isFFDev2461) return false;
+      return self.syncedObject?.type?.startsWith("audio");
+    },
+
     get audio() {
       if (!self.audiourl) return null;
       if (self.audiourl[0] === "$") {
@@ -111,12 +121,14 @@ const Model = types
     get layoutClasses() {
       if (self.layout === "dialogue") {
         return {
+          phrase: styles.phrase,
           name: styles.dialoguename,
           text: styles.dialoguetext,
         };
       }
 
       return {
+        phrase: styles.phrase,
         name: styles.name,
         text: styles.text,
       };
@@ -153,14 +165,27 @@ const Model = types
     function stop() {
       const audio = audioRef.current;
 
-      if (audio.paused) return;
-      if (audio.currentTime < endDuration) {
-        stopIn(endDuration - audio.currentTime);
+      if (!audio) return;
+
+      const isPaused = isFFDev2461 ? !self.isCurrentlyPlaying : audio.paused;
+
+      if (isPaused) return;
+
+      const currentTime = audio.currentTime;
+
+      console.log({ currentTime, endDuration });
+
+      if (currentTime < endDuration) {
+        stopIn(endDuration - currentTime);
         return;
       }
       audioStopHandler = null;
       endDuration = 0;
-      audio.pause();
+      if (isFFDev2461) {
+        self.handlePause();
+      } else {
+        audio.pause();
+      }
       self.reset();
     }
 
@@ -173,9 +198,71 @@ const Model = types
         return audioRef;
       },
 
-      reset() {
-        currentId = -1;
+      reset(hard = true) {
         self.playingId = -1;
+
+        if (!isFFDev2461 || hard) {
+          currentId = -1;
+        }
+      },
+
+      handleSyncSeek(time) {
+        if (audioRef.current) {
+          audioRef.current.currentTime = time;
+        }
+      },
+
+      handleSyncPlay() {
+        self.isCurrentlyPlaying = true;
+        self.muteSelfWhenSynced();
+
+        if(audioRef.current) {
+          audioRef.current.play();
+        }
+      },
+
+      handleSyncPause() {
+        self.isCurrentlyPlaying = false;
+        self.reset(false);
+
+        if(audioRef.current) {
+          audioRef.current.pause();
+        }
+      },
+
+      handleSyncSpeed(speed) {
+        if (!audioRef.current) return;
+        audioRef.current.playbackRate = speed;
+      },
+
+      handlePause() {
+        if (self.syncedAudio) {
+          self.triggerSyncPause();
+        } else {
+          self.handleSyncPause();
+        }
+      },
+
+      handlePlay() {
+        if (self.syncedAudio) {
+          self.triggerSyncPlay();
+        } else {
+          self.handleSyncPlay();
+        }
+      },
+
+      handleSeek(time) {
+        if (self.syncedAudio) {
+          self.triggerSyncSeek(time);
+        } else {
+          self.handleSyncSeek(time);
+        }
+      },
+
+      muteSelfWhenSynced() {
+        if (self.syncedAudio && audioRef.current) {
+          audioRef.current.muted = true;
+        }
       },
 
       play(idx) {
@@ -190,18 +277,37 @@ const Model = types
           window.clearTimeout(audioStopHandler);
           audioStopHandler = null;
         }
-        if (!audio.paused) {
-          audio.pause();
-          self.playingId = -1;
+
+        const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
+
+        if (isPlaying) {
+          if (isFFDev2461) {
+            self.handlePause();
+          } else {
+            audio.pause();
+            self.playingId = -1;
+          }
           if (idx === currentId) return;
         }
+
         if (idx !== currentId) {
-          audio.currentTime = start;
+          if (isFFDev2461) {
+            self.handleSeek(start);
+          } else {
+            audio.currentTime = start;
+          }
         }
-        audio.play();
+
+        if (isFFDev2461) {
+          self.handlePlay();
+        } else {
+          audio.play();
+        }
+
         endDuration = end;
         self.playingId = idx;
         currentId = idx;
+
         end && stopIn(end - start);
       },
 
@@ -300,25 +406,55 @@ const Model = types
       return r;
     },
 
-    addRegion(range) {
+    addRegions(ranges) {
+      const areas = [];
       const states = self.activeStates();
 
       if (states.length === 0) return;
 
       const control = states[0];
       const labels = { [control.valueType]: control.selectedValues() };
-      const area = self.annotation.createResult(range, labels, control, self);
 
-      if (getRoot(self).autoAnnotation) {
-        area.makeDynamic();
+      for (const range of ranges) {
+        const area = self.annotation.createResult(range, labels, control, self);
+
+        if (getRoot(self).autoAnnotation) {
+          area.makeDynamic();
+        }
+
+        area.setText(range.text);
+
+        area.notifyDrawingFinished();
+
+        area._range = range._range;
+        areas.push(area);
       }
+      return areas;
+    },
 
-      area.setText(range.text);
+    addRegion(range) {
+      if (isFF(FF_DEV_2918)) {
+        return self.addRegions([range])[0];
+      } else {
+        const states = self.activeStates();
 
-      area.notifyDrawingFinished();
+        if (states.length === 0) return;
 
-      area._range = range._range;
-      return area;
+        const control = states[0];
+        const labels = { [control.valueType]: control.selectedValues() };
+        const area = self.annotation.createResult(range, labels, control, self);
+
+        if (getRoot(self).autoAnnotation) {
+          area.makeDynamic();
+        }
+
+        area.setText(range.text);
+
+        area.notifyDrawingFinished();
+
+        area._range = range._range;
+        return area;
+      }
     },
 
     /**
@@ -362,4 +498,15 @@ const Model = types
     },
   }));
 
-export const ParagraphsModel = types.compose("ParagraphsModel", RegionsMixin, TagAttrs, Model, ObjectBase, AnnotationMixin);
+const paragraphModelMixins = [
+  RegionsMixin,
+  TagAttrs,
+  isFFDev2461 ? SyncMixin : undefined,
+  Model,
+  ObjectBase,
+  AnnotationMixin,
+].filter(Boolean);
+
+export const ParagraphsModel = types.compose("ParagraphsModel",
+  ...paragraphModelMixins,
+);
