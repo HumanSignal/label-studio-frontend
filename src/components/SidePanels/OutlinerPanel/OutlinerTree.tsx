@@ -79,7 +79,6 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
           switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
           expandedKeys={expandedKeys}
           onExpand={( internalExpandedKeys, { node } ) => {
-            // console.log("onExpand", regions, node, internalExpandedKeys);
             const region = regionsTree.find((region: any) => region.key === node.key);
             const pos = region.pos;
     
