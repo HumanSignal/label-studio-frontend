@@ -1,5 +1,5 @@
 import { clamp } from "lodash";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
 import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
@@ -38,6 +38,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
   const [offsetY, setOffsetY] = useState(0);
+  const [regionSelectionDisabled, setRegionSelectionDisabled] = useState(false);
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
@@ -170,6 +171,36 @@ export const Frames: FC<TimelineViewProps> = ({
     return value - currentOffsetX + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
 
+  const onFrameScrub = useCallback((e: MouseEvent) => {
+    const getMouseToFrame = (e: MouseEvent | globalThis.MouseEvent) => {
+      const mouseOffset = e.pageX - scrollable.current!.getBoundingClientRect().left - timelineStartOffset;
+
+      return mouseOffset + currentOffsetX;
+    };
+
+    const offset = getMouseToFrame(e);
+
+    setIndicatorOffset(offset);
+
+    const onMouseMove = (e: globalThis.MouseEvent) => {
+      const offset = getMouseToFrame(e);
+
+      setHoverEnabled(false);
+      setRegionSelectionDisabled(true);
+      setIndicatorOffset(offset);
+    };
+
+    const onMouseUp = () => {
+      setHoverEnabled(true);
+      setRegionSelectionDisabled(false);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }, [currentOffsetX, setIndicatorOffset]);
+
   useEffect(() => {
     if (scrollable.current) {
       scrollable.current.scrollLeft = currentOffsetX;
@@ -249,6 +280,7 @@ export const Frames: FC<TimelineViewProps> = ({
         onMouseMove={hoverHandler}
         onMouseLeave={() => setHoverOffset(null)}
         onClickCapture={scrollClickHandler}
+        onMouseDown={onFrameScrub}
       >
         <Elem name="filler">
           <KeypointsVirtual
@@ -256,6 +288,7 @@ export const Frames: FC<TimelineViewProps> = ({
             scrollTop={currentOffsetY}
             startOffset={timelineStartOffset}
             onSelectRegion={onSelectRegion}
+            disabled={regionSelectionDisabled}
           />
         </Elem>
       </Elem>
@@ -269,6 +302,7 @@ interface KeypointsVirtualProps {
   regions: any[];
   startOffset: number;
   scrollTop: number;
+  disabled?: boolean;
   onSelectRegion: TimelineViewProps["onSelectRegion"];
 }
 
@@ -276,6 +310,7 @@ const KeypointsVirtual: FC<KeypointsVirtualProps> = ({
   regions,
   startOffset,
   scrollTop,
+  disabled,
   onSelectRegion,
 }) => {
   const extra = 5;
@@ -299,7 +334,7 @@ const KeypointsVirtual: FC<KeypointsVirtualProps> = ({
             idx={i + 1}
             region={region}
             startOffset={startOffset}
-            onSelectRegion={onSelectRegion}
+            onSelectRegion={disabled ? undefined : onSelectRegion}
             renderable={bounds[0] <= i && i <= bounds[1]}
           />
         ) : null;
