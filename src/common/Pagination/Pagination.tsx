@@ -76,7 +76,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
                 if (e.code === 'Escape') {
                   setInputMode(false);
                 } else if (e.code === 'Enter') {
-                  if (_value <= pageSize && _value >= 1) {
+                  if (_value <= totalPages && _value >= 1) {
                     onChange?.(_value);
                   }
 
@@ -89,7 +89,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
               onBlur={(e) => {
                 const _value = parseFloat(e.currentTarget.value);
 
-                if (_value <= pageSize && _value >= 1) {
+                if (_value <= totalPages && _value >= 1) {
                   onChange?.(_value);
                 }
 

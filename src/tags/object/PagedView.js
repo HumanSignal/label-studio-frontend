@@ -76,7 +76,7 @@ const HtxPagedView = observer(({ item }) => {
   }, []);
 
   useEffect(() => {
-    document.querySelector('#label-studio-dm')?.scrollTo(0, 0);
+    document.querySelector('.lsf-sidepanels__content')?.scrollTo(0, 0);
 
     setTimeout(() => {
       hotkeys.addNamed("repeater:next-page", () => {
@@ -119,6 +119,8 @@ const HtxPagedView = observer(({ item }) => {
         size={"medium"}
         onChange={(page, maxPerPage = pageSize) => {
           setPage(page);
+
+          console.log('page', page);
 
           if (maxPerPage !== pageSize) {
             setStoredPageSize('repeater', maxPerPage);
