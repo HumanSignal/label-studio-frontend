@@ -11,7 +11,11 @@ import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
 import { Block, cn, Elem } from "../../../utils/bem";
 import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
 import { NodeIcon } from "../../Node/Node";
+import { FF_DEV_2755, isFF } from "../../../utils/feature-flags";
 import "./TreeView.styl";
+
+const { localStorage } = window;
+const localStoreName = `collapsed-label-pos`;
 
 interface OutlinerContextProps {
   regions: any;
@@ -37,27 +41,79 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   const eventHandlers = useEventHandlers({ regions, onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
-  return (
-    <OutlinerContext.Provider value={{ regions }}>
-      <Block name="outliner-tree">
-        <Tree
-          draggable={regions.group === 'manual'}
-          multiple
-          defaultExpandAll
-          defaultExpandParent
-          autoExpandParent
-          checkable={false}
-          prefixCls="lsf-tree"
-          className={rootClass.toClassName()}
-          treeData={regionsTree}
-          selectedKeys={selectedKeys}
-          icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
-          switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
-          {...eventHandlers}
-        />
-      </Block>
-    </OutlinerContext.Provider>
-  );
+  if( isFF(FF_DEV_2755) ) {
+    const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(",")?.filter( pos => !!pos ) ?? [] );
+    
+    const updateLocalStorage = ( collapsedPos: Array<string> ) => {
+      localStorage.setItem( localStoreName, collapsedPos.join(",") );
+    };
+
+    const collapse = ( pos: string ) => {
+      const newCollapsedPos = [...collapsedPos, pos];
+
+      setCollapsedPos( newCollapsedPos );
+      updateLocalStorage( newCollapsedPos );
+    };
+
+    const expand = ( pos: string ) => {
+      const newCollapsedPos = collapsedPos.filter( cPos => cPos !== pos );
+      
+      setCollapsedPos( newCollapsedPos );
+      updateLocalStorage( newCollapsedPos );
+    };
+    const expandedKeys = regionsTree.filter( (item: any) => !collapsedPos.includes( item.pos ) ).map( (item: any) => item.key ) ?? [];
+    
+    return (
+      <OutlinerContext.Provider value={{ regions }}>
+        <Block name="outliner-tree">
+          <Tree
+            draggable={regions.group === 'manual'}
+            multiple
+            defaultExpandAll={true}
+            defaultExpandParent={false}
+            autoExpandParent
+            checkable={false}
+            prefixCls="lsf-tree"
+            className={rootClass.toClassName()}
+            treeData={regionsTree}
+            selectedKeys={selectedKeys}
+            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
+            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            expandedKeys={expandedKeys}
+            onExpand={( internalExpandedKeys, { node } ) => {
+              const region = regionsTree.find((region: any) => region.key === node.key);
+              const pos = region.pos;
+      
+              collapsedPos.includes(pos) ? expand(pos) : collapse(pos);
+            }}
+            {...eventHandlers}
+          />
+        </Block>
+      </OutlinerContext.Provider>
+    );
+  } else {
+    return (
+      <OutlinerContext.Provider value={{ regions }}>
+        <Block name="outliner-tree">
+          <Tree
+            draggable={regions.group === 'manual'}
+            multiple
+            defaultExpandAll
+            defaultExpandParent
+            autoExpandParent
+            checkable={false}
+            prefixCls="lsf-tree"
+            className={rootClass.toClassName()}
+            treeData={regionsTree}
+            selectedKeys={selectedKeys}
+            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
+            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            {...eventHandlers}
+          />
+        </Block>
+      </OutlinerContext.Provider>
+    );
+  }
 };
 
 const useDataTree = ({
