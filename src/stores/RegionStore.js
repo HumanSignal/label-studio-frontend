@@ -277,6 +277,7 @@ export default types.model("RegionStore", {
         return groups[key] = {
           ...enrich(label, index, true),
           id: key,
+          isGroup: true,
           isNotLabel: true,
           children: [],
         };
@@ -350,7 +351,7 @@ export default types.model("RegionStore", {
           key,
           isArea: false,
           children: [],
-          isNotLabel: true,
+          isGroup: true,
           type: region.type,
           entity: region,
         };

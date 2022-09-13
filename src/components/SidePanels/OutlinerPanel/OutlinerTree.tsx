@@ -37,8 +37,6 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   const eventHandlers = useEventHandlers({ regions, onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
-  console.log({ regionsTree });
-
   return (
     <OutlinerContext.Provider value={{ regions }}>
       <Block name="outliner-tree">
@@ -53,7 +51,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
           className={rootClass.toClassName()}
           treeData={regionsTree}
           selectedKeys={selectedKeys}
-          icon={({ entity, isNotLabel }: any) => <NodeIconComponent node={entity}/>}
+          icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
           switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
           {...eventHandlers}
         />
@@ -244,12 +242,10 @@ const RootTitle: FC<any> = observer(({
     setCollapsed(!collapsed);
   }, [collapsed]);
 
-  console.log(props.entity);
-
   return (
     <Block name="outliner-item">
       <Elem name="content">
-        {!props.isNotLabel && <Elem name="index">{props.idx + 1}</Elem>}
+        {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
         <Elem name="title">{label}</Elem>
         <RegionControls
           hovered={hovered}
