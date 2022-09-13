@@ -96,10 +96,19 @@ export const Seeker: FC<SeekerProps> = ({
     document.addEventListener("mouseup", onMouseUp);
   }, [length]);
 
-  const navigationHandler = showIndicator ? onIndicatorDrag : onSeekerDrag;
+  const onDrag = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.target === viewRef.current) {
+      onIndicatorDrag(e);
+    } else {
+      onSeekerDrag(e);
+    }
+  }, [onIndicatorDrag, onSeekerDrag]);
 
   return (
-    <Block name="seeker" ref={rootRef} onMouseDown={navigationHandler}>
+    <Block name="seeker" ref={rootRef} onMouseDown={onDrag}>
       <Elem name="track"/>
       {showIndicator && (
         <Elem name="indicator" ref={viewRef} style={{ left: windowOffset, width }}/>
