@@ -10,6 +10,7 @@ import Utils from "../../../utils";
 import { FF_DEV_2461, isFF } from "../../../utils/feature-flags";
 import { isDefined } from "../../../utils/utilities";
 import ObjectBase from "../Base";
+import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
 
 
 /**
@@ -32,13 +33,16 @@ import ObjectBase from "../Base";
  * @param {string} name - Name of the element
  * @param {string} value - Data field containing path or a URL to the audio
  * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
+ * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1)
  * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
+ * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2)
  * @param {boolean} [zoom=true] - Whether to show the zoom slider
+ * @param {string} [defaultzoom=1] - Default zoom level (from 1 to 1500)
  * @param {string} [hotkey] - Hotkey used to play or pause audio
  * @param {string} [sync] object name to sync with
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
  * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
- * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform  
+ * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  */
@@ -47,8 +51,11 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),
+  defaultzoom: types.optional(types.string, WS_ZOOM_X.default.toString()),
   volume: types.optional(types.boolean, true),
+  defaultvolume: types.optional(types.string, WS_VOLUME.default.toString()),
   speed: types.optional(types.boolean, true),
+  defaultspeed: types.optional(types.string, WS_SPEED.default.toString()),
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
