@@ -66,7 +66,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       if (!settings?.stepSize) return;
       const altMode = e.key === "Shift";
 
-      if (e.type === 'keydown' && altMode) {
+      if (e.type === 'keydown' && altMode && !altControlsMode) {
         setAltControlsMode(true);
       } else if (e.type === 'keyup' && altMode && altControlsMode) {
         setAltControlsMode(false);
