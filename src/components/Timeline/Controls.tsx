@@ -54,8 +54,6 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   }, [position, frameRate]);
 
   const customControls = useCustomControls(props.customControls);
-
-
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
     handler(e, stepSize ?? undefined);
   };
