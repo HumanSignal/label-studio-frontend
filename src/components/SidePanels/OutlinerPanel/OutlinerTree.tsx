@@ -301,6 +301,7 @@ const RootTitle: FC<any> = observer(({
   return (
     <Block name="outliner-item">
       <Elem name="content">
+        {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
         <Elem name="title">{label}</Elem>
         <RegionControls
           hovered={hovered}

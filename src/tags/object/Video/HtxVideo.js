@@ -380,6 +380,7 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
+            allowFullscreen={false}
             fullscreen={isFullScreen}
             defaultStepSize={16}
             disableView={!supportsRegions}
