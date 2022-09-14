@@ -440,7 +440,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
 
     return {
       canStartDrawing() {
-        return !self.isIncorrectControl() && !self.annotation.isDrawing;
+        return !self.isIncorrectControl();
       },
       updateDraw: (x, y) => {
         if (currentMode === DEFAULT_MODE)
@@ -496,7 +496,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       mousedownEv(ev, [x, y]) {
-        if (!self.canStartDrawing()) return;
+        if (!self.canStartDrawing() || self.annotation.isDrawing) return;
         lastEvent = MOUSE_DOWN_EVENT;
         startPoint = { x, y };
         self.mode = "drawing";
