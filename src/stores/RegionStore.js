@@ -125,7 +125,7 @@ export default types.model("RegionStore", {
 
   group: types.optional(
     types.enumeration(["type", "label", "manual"]),
-    window.localStorage.getItem(localStorageKeys.group) ?? "manual",
+    () => window.localStorage.getItem(localStorageKeys.group) ?? "manual",
   ),
 
   view: types.optional(
