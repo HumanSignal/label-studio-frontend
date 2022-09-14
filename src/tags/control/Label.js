@@ -236,7 +236,7 @@ const Model = types.model({
   },
 
   onHotKey() {
-    return self.toggleSelected();
+    return self.annotation.isDrawing ? false : self.toggleSelected();
   },
 
   _updateBackgroundColor(val) {

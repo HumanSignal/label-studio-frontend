@@ -70,14 +70,15 @@ export const Tool = ({
     currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
-        onClick?.();
+        if (!(tool?.annotation?.isDrawing ?? false))
+          onClick?.();
       }, label);
     }
 
     return () => {
       removeShortcut();
     };
-  }, [shortcut]);
+  }, [shortcut, tool?.annotation]);
 
   useEffect(() => {
     const removeShortcuts = () => {
@@ -106,17 +107,20 @@ export const Tool = ({
   }, [smart, extra]);
 
   const showControls = dynamic === false && controls?.length && (active || (controlsOnHover && hovered));
+  const isAnnotationDrawing = tool?.annotation?.isDrawing ?? false;
 
   return (
     <Block name="tool" tag="button" aria-label={ariaLabel} mod={{
       active,
-      disabled,
+      disabled: disabled || !isAnnotationDrawing,
       alignment,
       expanded: expanded && !dynamic,
       smart: dynamic || smart,
     }} onClick={(e) => {
-      e.preventDefault();
-      onClick?.(e);
+      if(!isAnnotationDrawing) {
+        e.preventDefault();
+        onClick?.(e);
+      }
     }} onMouseEnter={() => {
       setHovered(true);
     }} onMouseLeave={() => {

@@ -163,7 +163,7 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
+        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
       },
 
       startDrawing(x, y) {
@@ -440,7 +440,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
 
     return {
       canStartDrawing() {
-        return !self.isIncorrectControl();
+        return !self.isIncorrectControl() && !self.annotation.isDrawing;
       },
       updateDraw: (x, y) => {
         if (currentMode === DEFAULT_MODE)
