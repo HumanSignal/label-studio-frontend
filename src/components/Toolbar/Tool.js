@@ -70,7 +70,7 @@ export const Tool = ({
     currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
-        if (!(tool?.annotation?.isDrawing ?? false))
+        if (!(tool?.annotation?.isDrawing))
           onClick?.();
       }, label);
     }
