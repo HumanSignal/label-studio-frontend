@@ -377,7 +377,7 @@ const HtxVideoView = ({ item }) => {
                     <Dropdown.Trigger
                       inline={isFullScreen}
                       content={(
-                        <Menu size="medium" style={{ width: 150, minWidth: 0 }} closeDropdownOnItemClick={false}>
+                        <Menu size="auto" closeDropdownOnItemClick={false}>
                           <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
                           <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
                           <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
@@ -385,7 +385,7 @@ const HtxVideoView = ({ item }) => {
                         </Menu>
                       )}
                     >
-                      <Button size="small" style={{ padding: 0 }}><IconZoomIn/></Button>
+                      <Button size="small" nopadding><IconZoomIn/></Button>
                     </Dropdown.Trigger>
                   );
                 },

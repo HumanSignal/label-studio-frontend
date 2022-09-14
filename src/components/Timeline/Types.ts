@@ -169,7 +169,7 @@ export interface TimelineControlsProps {
 }
 
 export interface TimelineCustomControls {
-  position: "left" | "right" | "left-center" | "right-center";
+  position: "left" | "right" | "leftCenter" | "rightCenter";
   component: JSX.Element | (() => JSX.Element);
 }
 

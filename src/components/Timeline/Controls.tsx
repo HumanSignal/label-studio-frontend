@@ -55,7 +55,6 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
   const customControls = useCustomControls(props.customControls);
 
-  console.log({ customControls });
 
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
     handler(e, stepSize ?? undefined);
@@ -105,7 +104,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             />
           );
         })}
-        {customControls?.['left']}
+        {customControls?.left}
       </Elem>
 
       <Elem name="main-controls">
@@ -113,7 +112,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
           {extraControls}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
-          {customControls?.['left-center']}
+          {customControls?.leftCenter}
           <AltControls
             showAlterantive={altControlsMode && !disableFrames}
             main={(
@@ -199,7 +198,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
               </>
             )}
           />
-          {customControls?.['right-center']}
+          {customControls?.rightCenter}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           {!disableFrames && allowViewCollapse && (
@@ -226,7 +225,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
-        {customControls?.['right']}
+        {customControls?.right}
         <TimeDisplay
           currentTime={currentTime}
           duration={duration}
