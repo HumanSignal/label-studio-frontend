@@ -79,7 +79,7 @@ const HtxPagedView = observer(({ item }) => {
 
   useEffect(() => {
     item.annotation.regions.map((obj) => {
-      if(obj.selected) {
+      if (obj.selected) {
         const _pageNumber = parseFloat(obj.object.name.split('_')[1]) + 1;
 
         setPage(Math.ceil(_pageNumber / pageSize));
