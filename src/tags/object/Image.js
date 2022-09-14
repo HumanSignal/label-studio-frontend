@@ -477,7 +477,6 @@ const Model = types.model({
       const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
       imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
-      // imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
     }
 
     if (self.rotation) {
