@@ -107,7 +107,7 @@ export const Tool = ({
   }, [smart, extra]);
 
   const showControls = dynamic === false && controls?.length && (active || (controlsOnHover && hovered));
-  const isAnnotationDrawing = tool?.annotation?.isDrawing ?? false;
+  const isAnnotationDrawing = tool?.annotation?.isDrawing;
 
   return (
     <Block name="tool" tag="button" aria-label={ariaLabel} mod={{
