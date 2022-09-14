@@ -71,6 +71,7 @@ const Model = types
       "timeserieslabels",
       "text",
       "audio",
+      "audioultra",
       "image",
       "hypertext",
       "richtext",

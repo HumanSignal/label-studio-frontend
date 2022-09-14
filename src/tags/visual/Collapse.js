@@ -53,6 +53,7 @@ const PanelModel = types.model({
     "hypertextlabels",
     "text",
     "audio",
+    "audioultra",
     "image",
     "hypertext",
     "audioplus",
