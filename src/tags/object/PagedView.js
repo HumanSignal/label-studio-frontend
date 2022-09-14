@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -7,6 +7,8 @@ import Types from "../../core/Types";
 import Tree from "../../core/Tree";
 import { Pagination } from "../../common/Pagination/Pagination";
 import { Hotkey } from "../../core/Hotkey";
+import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const Model = types.model({
   type: "pagedview",
@@ -60,7 +62,7 @@ const Model = types.model({
     "videorectangle",
   ]),
 });
-const PagedViewModel = types.compose("PagedViewModel", Model);
+const PagedViewModel = types.compose("PagedViewModel", Model, AnnotationMixin);
 const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;
 const PAGE_SIZE_OPTIONS = [1, 5, 10, 25, 50, 100];
@@ -76,7 +78,21 @@ const HtxPagedView = observer(({ item }) => {
   }, []);
 
   useEffect(() => {
-    document.querySelector('.lsf-sidepanels__content')?.scrollTo(0, 0);
+    item.annotation.regions.map((obj) => {
+      if(obj.selected) {
+        const _pageNumber = parseFloat(obj.object.name.split('_')[1]) + 1;
+
+        setPage(Math.ceil(_pageNumber / pageSize));
+      }
+    });
+  }, [JSON.stringify(item)]);
+
+  useEffect(() => {
+    if (isFF(FF_DEV_1170)) {
+      document.querySelector('.lsf-sidepanels__content')?.scrollTo(0, 0);
+    } else {
+      document.querySelector('#label-studio-dm')?.scrollTo(0, 0);
+    }
 
     setTimeout(() => {
       hotkeys.addNamed("repeater:next-page", () => {
@@ -119,9 +135,6 @@ const HtxPagedView = observer(({ item }) => {
         size={"medium"}
         onChange={(page, maxPerPage = pageSize) => {
           setPage(page);
-
-          console.log('page', page);
-
           if (maxPerPage !== pageSize) {
             setStoredPageSize('repeater', maxPerPage);
             setPageSize(maxPerPage);
