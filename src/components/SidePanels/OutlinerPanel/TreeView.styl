@@ -17,6 +17,9 @@
     &-selected
       background-color var(--selection-color, rgba(#000, 0.04))
 
+    &:hover .outliner-item__controls
+      display grid
+
   &-switcher
     width 24px
     height 24px
@@ -59,7 +62,7 @@
     height 0
 
     &-unit
-      width 16px
+      width 24px
       display inline-block
 
   &-title
@@ -72,6 +75,7 @@
 
 .outliner-item
   min-height 32px
+  position relative
 
   &__content
     display flex
@@ -79,13 +83,29 @@
     align-items center
     justify-content space-between
 
+  &__index
+    width 18px
+    height 18px
+    display flex
+    font-size 9px
+    color #fff
+    margin-right 4px
+    text-align center
+    align-items center
+    border-radius 4px
+    justify-content center
+    background-color var(--text-color, #000)
+
   &__title
     flex 1
     color var(--text-color, #000)
 
   &__controls
+    top 0
+    right 0
     height 32px
-    display grid
+    display none
+    position absolute
     align-items center
     justify-content center
     grid-template-columns repeat(5, 32px)
@@ -106,6 +126,9 @@
 
       &_predict
         color $magic_color
+
+  &:hover &__controls
+    display grid
 
 .ocr
   background none
