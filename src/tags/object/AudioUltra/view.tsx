@@ -32,6 +32,8 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     console.log(controls.currentTime);
   }, [controls.currentTime]);
 
+  console.log(controls);
+
   return (
     <div>
       <div ref={(el) => (rootRef.current = el)}></div>
@@ -41,6 +43,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         volume={controls.volume}
         speed={controls.rate}
         zoom={controls.zoom}
+        duration={controls.duration}
         onPlay={() => controls.setPlaying(true)}
         onPause={() => controls.setPlaying(false)}
         allowFullscreen={false}
@@ -49,7 +52,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         onStepForward={() => {}}
         onRewind={(steps) => {}}
         onForward={(steps) => {}}
-        onPositionChange={() => {}}
+        onPositionChange={pos => controls.setCurrentTime(pos)}
         onSpeedChange={speed => controls.setRate(speed)}
         onZoom={zoom => controls.setZoom(zoom)}
       />

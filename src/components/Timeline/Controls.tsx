@@ -38,11 +38,12 @@ const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
 };
 
 export const Controls: FC<TimelineControlsProps> = memo(({
-  length = 100,
+  length = 1000,
   position,
   frameRate = 1024,
   playing,
   collapsed,
+  duration,
   extraControls,
   fullscreen,
   disableFrames,
@@ -67,7 +68,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   const [audioModal, setAudioModal] = useState(false);
   const [startReached, endReached] = [position === 1, position === length];
 
-  const duration = useMemo(() => {
+  const durationFormatted = useMemo(() => {
     return Math.max((length - 1) / frameRate, 0);
   }, [length, frameRate]);
 
@@ -139,7 +140,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   }, [altControlsMode]);
 
   const onTimeUpdateChange = (value: number) => {
-    onPositionChange(value * frameRate);
+    onPositionChange(value);
   };
 
   return (
@@ -287,13 +288,13 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             endTime={duration}
             minTime={0}
             maxTime={duration}
-            currentTime={currentTime}
+            currentTime={position}
             onChangeStartTime={onTimeUpdateChange}
           />
         ) : (
           <TimeDisplay
             currentTime={currentTime}
-            duration={duration}
+            duration={durationFormatted}
             length={length}
             position={position}
             framerate={frameRate}

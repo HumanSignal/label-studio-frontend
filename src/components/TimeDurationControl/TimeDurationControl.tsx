@@ -6,9 +6,9 @@ import { TimeBox } from "./TimeBox";
 
 export interface TimerProps {
   startTime: number;
-  endTime: number;
+  endTime: number | undefined;
   minTime: number;
-  maxTime: number;
+  maxTime: number | undefined;
   currentTime?: number;
   startTimeReadonly?: boolean;
   endTimeReadonly?: boolean;
@@ -18,9 +18,9 @@ export interface TimerProps {
 
 export const TimeDurationControl: FC<TimerProps> = ({
   startTime,
-  endTime,
+  endTime = 0,
   minTime,
-  maxTime,
+  maxTime = 0,
   currentTime,
   startTimeReadonly = false,
   endTimeReadonly = true,
