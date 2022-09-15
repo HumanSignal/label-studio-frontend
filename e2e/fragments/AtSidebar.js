@@ -14,7 +14,7 @@ module.exports = {
   _outlinerEmpty: locate(".lsf-outliner__empty"),
   _outlinerSelectedRegionLocator: locate(".lsf-tree__node .lsf-tree-node-selected"),
   async seeRegions(count) {
-    const hasFFDev1170 = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+    const hasFFDev1170 = false; //await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
 
     if (count) {
       if(hasFFDev1170) {
@@ -47,7 +47,7 @@ module.exports = {
     I.dontSee(`Relations`, this._sideBarLocator);
   },
   async seeSelectedRegion() {
-    const hasFFDev1170 = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+    const hasFFDev1170 = false;// await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
 
     if(hasFFDev1170) {
       I.seeElement(this._outlinerSelectedRegionLocator);
