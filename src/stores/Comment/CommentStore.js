@@ -9,9 +9,11 @@ export const CommentStore = types
   .model("CommentStore", {
     loading: types.optional(types.maybeNull(types.string), "list"),
     comments: types.optional(types.array(Comment), []),
+    addedCommentThisSession: false,
   })
   .volatile(() => ({
     currentComment: '',
+    inputRef: {},
   }))
   .views(self => ({
     get store() {
@@ -171,7 +173,7 @@ export const CommentStore = types
 
       // @todo setComments?
       self.comments.unshift(comment);
-
+      self.addedCommentThisSession = true;
       if (self.canPersist) {
         try {
           self.setLoading("addComment");

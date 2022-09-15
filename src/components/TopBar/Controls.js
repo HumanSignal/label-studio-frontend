@@ -31,6 +31,7 @@ const controlsInjector = inject(({ store }) => {
   };
 });
 
+/* @deprecated */
 const ActionDialog = ({ buttonProps, prompt, type, action, onAction }) => {
   const [show, setShow] = useState(false);
   const [comment, setComment] = useState("");
@@ -73,6 +74,7 @@ const ActionDialog = ({ buttonProps, prompt, type, action, onAction }) => {
 
 export const Controls = controlsInjector(observer(({ store, history, annotation }) => {
   const isReview = store.hasInterface("review");
+  
   const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
   const buttons = [];
@@ -80,27 +82,30 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const disabled = store.isSubmitting || historySelected;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
 
-  const RejectButton = useMemo(() => {
-    if (isFF(FF_DEV_1593) && store.hasInterface("comments:reject")) {
-      return (
-        <ActionDialog
-          type="reject"
-          onAction={store.rejectAnnotation}
-          buttonProps={{ disabled, look: "danger" }}
-          prompt="Reason of Rejection"
-          action="Reject"
-          key="reject"
-        />
-      );
+  const rejectHandler = useCallback(() => {
+    if(store.commentStore.addedCommentThisSession){
+      store.rejectAnnotation();
     } else {
-      return (
-        <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-          <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
-            Reject
-          </Button>
-        </ButtonTooltip>
-      );
+      store.commentStore.inputRef.current.focus();
     }
+  }, [store.rejectAnnotation, store.commentStore.inputRef, store.commentStore.addedCommentThisSession]);
+
+  const skipHandler = useCallback(() => {
+    if(store.commentStore.addedCommentThisSession){
+      store.skipTask();
+    } else {
+      store.commentStore.inputRef.current.focus();
+    }
+  }, [store.skipTask, store.commentStore.inputRef, store.commentStore.addedCommentThisSession]);
+
+  const RejectButton = useMemo(() => {
+    return (
+      <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
+        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={rejectHandler}>
+          Reject
+        </Button>
+      </ButtonTooltip>
+    );
   }, [disabled, store]);
 
   if (isReview) {
@@ -127,26 +132,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     );
   } else {
     if (store.hasInterface("skip")) {
-      if (isFF(FF_DEV_2458)) {
-        buttons.push(
-          <ActionDialog
-            type="skip"
-            onAction={store.skipTask}
-            buttonProps={{ disabled, look: "danger" }}
-            prompt="Reason of cancelling (skipping) task"
-            action="Skip"
-            key="skip"
-          />,
-        );
-      } else {
-        buttons.push(
-          <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-            <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={store.skipTask}>
-              Skip
-            </Button>
-          </ButtonTooltip>,
-        );
-      }
+      buttons.push(
+        <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
+          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={skipHandler}>
+            Skip
+          </Button>
+        </ButtonTooltip>,
+      );
     }
 
     if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {

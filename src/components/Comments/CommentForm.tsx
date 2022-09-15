@@ -1,4 +1,4 @@
-import { FC, useCallback, useRef } from "react";
+import { FC, MutableRefObject, RefObject, useCallback, useEffect, useRef } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
@@ -25,8 +25,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   maxRows = 4,
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  const actionRef = useRef<{ update?: (text?: string) => void }>({});
-
+  const actionRef = useRef<{ update?: (text?: string) => void, ele?: RefObject<HTMLTextAreaElement> }>({});
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
@@ -51,6 +50,12 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     commentStore.setCurrentComment(comment || '');
   }, [commentStore]);
 
+  commentStore.addedCommentThisSession = false;
+
+  useEffect(() => {
+    commentStore.inputRef = actionRef.current.ele;
+  }, [actionRef, commentStore]);
+  
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
       <TextArea
