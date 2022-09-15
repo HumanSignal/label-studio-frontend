@@ -14,7 +14,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     waveColor: "#BEB9C5",
     gridColor: "#BEB9C5",
     gridWidth: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fafafa",
     autoCenter: true,
     zoomToCursor: true,
     enabledChannels: [0],
@@ -23,6 +23,9 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     muted: false,
     rate: 1,
     onLoad: item.onLoad,
+    timeline: {
+      backgroundColor: "#ffffff",
+    },
   });
 
   useEffect(() => {
