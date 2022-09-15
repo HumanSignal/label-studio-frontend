@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useRef } from "react";
+import { FC, useRef } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
 
 interface AudioUltraProps {
@@ -9,7 +9,6 @@ interface AudioUltraProps {
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
 
-  // const { waveform: _, ...controls } =
   useWaveform(rootRef, {
     src: item._value,
     waveColor: "#BEB9C5",
@@ -23,31 +22,13 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     zoom: 1,
     muted: false,
     rate: 1,
+    onLoad: item.onLoad,
   });
 
-  const handleReady = useCallback(() => {
-  }, []);
-
-  const handlePositionChange = useCallback(() => {
-  }, []);
-
-  const handleSeek = useCallback(() => {
-  }, []);
-
-  const handleSpeed = useCallback(() => {
-  }, []);
-
-  const formatPosition = useCallback(() => {
-  }, []);
-
-  const handlePlay = useCallback(() => {
-  }, []);
-
-  const handlePause = useCallback(() => {
-  }, []);
-
   return (
-    <div ref={(el) => (rootRef.current = el)}></div>
+    <div>
+      <div ref={(el) => (rootRef.current = el)}></div>
+    </div>
   );
 };
 

@@ -308,14 +308,15 @@ export const AudioModel = types.compose(
       },
 
       createWsRegion(region) {
-        const r = self._ws.addRegion(region.wsRegionOptions);
+        // const r = self._ws.addRegion(region.wsRegionOptions);
 
-        region._ws_region = r;
-        region.updateAppearenceFromState();
+        // region._ws_region = r;
+        // region.updateAppearenceFromState();
       },
 
       onLoad(ws) {
         self._ws = ws;
+        console.log("ws loaded", ws);
 
         self.regs.forEach(reg => {
           self.createWsRegion(reg);
