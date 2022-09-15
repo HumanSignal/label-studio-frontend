@@ -464,8 +464,9 @@ const Model = types.model({
 
   get imageTransform() {
     const imgStyle = {
-      width: `${self.stageWidth}px`,
-      height: `${self.stageHeight}px`,
+      // scale transform leaves gaps on image border, so much better to change image sizes
+      width: `${self.stageWidth * self.zoomScale}px`,
+      height: `${self.stageHeight * self.zoomScale}px`,
       transformOrigin: "left top",
       transform: "none",
       filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
@@ -476,7 +477,6 @@ const Model = types.model({
       const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
       imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
-      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
     }
 
     if (self.rotation) {
