@@ -46,6 +46,6 @@
  * @meta_description Customize Label Studio with the Repeater tag to repeat similar data blocks to accelerate labeling for machine learning and data science projects.
  * @param {string} on                  - Data field object with array with similar data
  * @param {string} [indexFlag={{idx}}] - Placeholder for array index in params of underlying tags
- * @param {default|pagination} [mode]  - Select display mode between default and paginated
+ * @param {list|pagination} [mode]  - Select display mode between default and paginated
  */
 export const Repeater = () => {};
