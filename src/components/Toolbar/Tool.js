@@ -70,8 +70,10 @@ export const Tool = ({
     currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
-        if (!(tool?.annotation?.isDrawing))
+        if (!(tool?.annotation?.isDrawing)){
+          tool.annotation.unselectAreas();
           onClick?.();
+        }
       }, label);
     }
 
@@ -119,6 +121,7 @@ export const Tool = ({
     }} onClick={(e) => {
       if(!isAnnotationDrawing) {
         e.preventDefault();
+        tool?.annotation?.unselectAreas?.();
         onClick?.(e);
       }
     }} onMouseEnter={() => {

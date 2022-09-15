@@ -123,6 +123,7 @@ const _Tool = types
         const value = { coordstype: "px", touches: source.touches, dynamic: source.dynamic };
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
+        currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
         self.deleteRegion();
         newArea.notifyDrawingFinished();
@@ -163,9 +164,11 @@ const _Tool = types
 
             self.obj.annotation.selectArea(newBrush);
             self.annotation.history.unfreeze();
+            self.obj.annotation.setIsDrawing(false);
           });
         } else {
           self.annotation.history.unfreeze();
+          self.obj.annotation.setIsDrawing(false);
         }
       },
 
@@ -200,6 +203,7 @@ const _Tool = types
           self.annotation.history.freeze();
           self.mode = "drawing";
           brush.setDrawing(true);
+          self.obj.annotation.setIsDrawing(true);
           isFirstBrushStroke = false;
           brush.beginPath({
             type: "add",
@@ -212,6 +216,7 @@ const _Tool = types
           self.annotation.history.freeze();
           self.mode = "drawing";
           isFirstBrushStroke = true;
+          self.obj.annotation.setIsDrawing(true);
           brush = self.createDrawingRegion({
             touches: [],
             coordstype: "px",
