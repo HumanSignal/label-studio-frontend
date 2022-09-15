@@ -28,12 +28,6 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     },
   });
 
-  useEffect(() => {
-    console.log(controls.currentTime);
-  }, [controls.currentTime]);
-
-  console.log(controls);
-
   return (
     <div>
       <div ref={(el) => (rootRef.current = el)}></div>

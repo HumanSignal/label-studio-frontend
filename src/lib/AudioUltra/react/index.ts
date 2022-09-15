@@ -41,8 +41,6 @@ export const useWaveform = (
     wf.on("volumeChange", setVolume);
     wf.on("rateChanged", setRate);
 
-    Object.assign(window, { wf });
-
     return () => {
       wf.destroy();
     };
