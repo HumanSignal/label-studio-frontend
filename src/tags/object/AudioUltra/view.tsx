@@ -1,11 +1,11 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback } from "react";
 
-interface AudioUltraViewProps {
+interface AudioUltraProps {
   item: any;
 }
 
-const AudioUltraView: FC<AudioUltraViewProps> = ({ item }) => {
+const AudioUltraView: FC<AudioUltraProps> = () => {
 
   const handleReady = useCallback(() => {
   }, []);
@@ -29,8 +29,8 @@ const AudioUltraView: FC<AudioUltraViewProps> = ({ item }) => {
   }, []);
 
   return (
-    <div>AudioUltra</div>
+    <>AudioUltra</>
   );
 };
 
-export const AudioView = observer(AudioUltraView);
+export const AudioUltra = observer(AudioUltraView);

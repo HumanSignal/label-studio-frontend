@@ -67,15 +67,15 @@ const TagAttrs = types.model({
   scrollparent: types.optional(types.boolean, true),
 });
 
-export const AudioUltraModel = types.compose(
-  "AudioUltraModel",
+export const AudioModel = types.compose(
+  "AudioModel",
   TagAttrs,
   SyncMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
   IsReadyMixin,
-  types.model("AudioUltraModel", {
+  types.model("AudioModel", {
     type: "audio",
     _value: types.optional(types.string, ""),
 
