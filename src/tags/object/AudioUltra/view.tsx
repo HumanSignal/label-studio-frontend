@@ -1,6 +1,7 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useRef } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
+import { Controls } from "../../../components/Timeline/Controls";
 
 interface AudioUltraProps {
   item: any;
@@ -8,9 +9,7 @@ interface AudioUltraProps {
 
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
-
-  // const { waveform: _, ...controls } =
-  useWaveform(rootRef, {
+  const { waveform: _, ...controls } = useWaveform(rootRef, {
     src: item._value,
     waveColor: "#BEB9C5",
     gridColor: "#BEB9C5",
@@ -25,29 +24,32 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     rate: 1,
   });
 
-  const handleReady = useCallback(() => {
-  }, []);
-
-  const handlePositionChange = useCallback(() => {
-  }, []);
-
-  const handleSeek = useCallback(() => {
-  }, []);
-
-  const handleSpeed = useCallback(() => {
-  }, []);
-
-  const formatPosition = useCallback(() => {
-  }, []);
-
-  const handlePlay = useCallback(() => {
-  }, []);
-
-  const handlePause = useCallback(() => {
-  }, []);
+  useEffect(() => {
+    console.log(controls.currentTime);
+  }, [controls.currentTime]);
 
   return (
-    <div ref={(el) => (rootRef.current = el)}></div>
+    <div>
+      <div ref={(el) => (rootRef.current = el)}></div>
+      <Controls
+        position={controls.currentTime}
+        playing={controls.playing}
+        volume={controls.volume}
+        speed={controls.rate}
+        zoom={controls.zoom}
+        onPlay={() => controls.setPlaying(true)}
+        onPause={() => controls.setPlaying(false)}
+        allowFullscreen={false}
+        onVolumeChange={vol => controls.setVolume(vol)}
+        onStepBackward={() => {}}
+        onStepForward={() => {}}
+        onRewind={(steps) => {}}
+        onForward={(steps) => {}}
+        onPositionChange={() => {}}
+        onSpeedChange={speed => controls.setRate(speed)}
+        onZoom={zoom => controls.setZoom(zoom)}
+      />
+    </div>
   );
 };
 

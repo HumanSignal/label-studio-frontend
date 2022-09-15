@@ -1,5 +1,20 @@
 import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
+import {
+  IconBackward,
+  IconChevronLeft,
+  IconChevronRight,
+  IconCollapse,
+  IconExpand,
+  IconFastForward,
+  IconForward,
+  IconFullscreen,
+  IconFullscreenExit,
+  IconNext,
+  IconPause,
+  IconPlay,
+  IconPrev,
+  IconRewind
+} from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
@@ -8,6 +23,10 @@ import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
 import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
+import { FF_DEV_2715, isFF } from "../../utils/feature-flags";
+import { AudioControl } from "./Controls/AudioControl";
+import { ConfigControl } from "./Controls/ConfigControl";
+import { TimeDurationControl } from "../TimeDurationControl/TimeDurationControl";
 
 const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const roundedFps = Math.round(fps).toString();
@@ -19,9 +38,9 @@ const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
 };
 
 export const Controls: FC<TimelineControlsProps> = memo(({
-  length,
+  length = 100,
   position,
-  frameRate,
+  frameRate = 1024,
   playing,
   collapsed,
   extraControls,
@@ -37,12 +56,15 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   onStepBackward,
   onPositionChange,
   onStepForward,
+  onSpeedChange,
   onToggleCollapsed,
   formatPosition,
   ...props
 }) => {
   const { settings } = useContext(TimelineContext);
   const [altControlsMode, setAltControlsMode] = useState(false);
+  const [configModal, setConfigModal] = useState(false);
+  const [audioModal, setAudioModal] = useState(false);
   const [startReached, endReached] = [position === 1, position === length];
 
   const duration = useMemo(() => {
@@ -60,6 +82,40 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   const handlePlay = useCallback(() => {
     playing ? onPause?.() : onPlay?.();
   }, [playing, onPlay, onPause]);
+
+  const onSetVolumeModal = () => {
+    if (configModal) setConfigModal(false);
+
+    setAudioModal(!audioModal);
+  };
+
+  const onSetConfigModal = () => {
+    if (audioModal) setAudioModal(false);
+
+    setConfigModal(!configModal);
+  };
+
+  const renderControls = () => {
+    return (
+      <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
+        <ConfigControl
+          onSetModal={onSetConfigModal}
+          onZoom={(zoom: number) => props.onZoom?.(zoom)}
+          configModal={configModal}
+          onSpeedChange={(speed: number) => onSpeedChange?.(speed)}
+          speed={props.speed || 0}
+          zoom={props.zoom || 0}
+        />
+        <AudioControl
+          volume={props.volume || 0}
+          onVolumeChange={props.onVolumeChange}
+          onSetModal={onSetVolumeModal}
+          audioModal={audioModal}
+        />
+
+      </Elem>
+    );
+  };
 
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
@@ -82,26 +138,32 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     };
   }, [altControlsMode]);
 
+  const onTimeUpdateChange = (value: number) => {
+    onPositionChange(value * frameRate);
+  };
+
   return (
     <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
-      <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
-        {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
-          if (enabled === false) return;
+      {isFF(FF_DEV_2715) ? renderControls() : (
+        <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
+          {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
+            if (enabled === false) return;
 
-          const Component = SideControls[name as keyof typeof SideControls];
+            const Component = SideControls[name as keyof typeof SideControls];
 
-          return isDefined(Component) && (
-            <Component
-              key={name}
-              length={length}
-              position={position - 1}
-              volume={props.volume}
-              onPositionChange={onPositionChange}
-              onVolumeChange={props.onVolumeChange}
-            />
-          );
-        })}
-      </Elem>
+            return isDefined(Component) && (
+              <Component
+                key={name}
+                length={length}
+                position={position - 1}
+                volume={props.volume}
+                onPositionChange={onPositionChange}
+                onVolumeChange={props.onVolumeChange}
+              />
+            );
+          })}
+        </Elem>
+      )}
 
       <Elem name="main-controls">
         <Elem name="group" tag={Space} collapsed>
@@ -219,14 +281,25 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
-        <TimeDisplay
-          currentTime={currentTime}
-          duration={duration}
-          length={length}
-          position={position}
-          framerate={frameRate}
-          formatPosition={formatPosition}
-        />
+        {isFF(FF_DEV_2715) ? (
+          <TimeDurationControl
+            startTime={0}
+            endTime={duration}
+            minTime={0}
+            maxTime={duration}
+            currentTime={currentTime}
+            onChangeStartTime={onTimeUpdateChange}
+          />
+        ) : (
+          <TimeDisplay
+            currentTime={currentTime}
+            duration={duration}
+            length={length}
+            position={position}
+            framerate={frameRate}
+            formatPosition={formatPosition}
+          />
+        )}
       </Elem>
     </Block>
   );
