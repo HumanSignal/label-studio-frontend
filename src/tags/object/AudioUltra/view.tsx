@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
 import { Controls } from "../../../components/Timeline/Controls";
 
@@ -22,6 +22,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     zoom: 1,
     muted: false,
     rate: 1,
+    onLoad: item.onLoad,
   });
 
   useEffect(() => {

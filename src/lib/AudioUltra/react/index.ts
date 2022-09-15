@@ -3,7 +3,7 @@ import { Waveform, WaveformOptions } from "../Waveform";
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
-  options: Omit<WaveformOptions, "container">,
+  options: Omit<WaveformOptions, "container"> & { onLoad?: (wf: Waveform) => void },
 ) => {
   const waveform = useRef<Waveform>();
 
@@ -29,6 +29,7 @@ export const useWaveform = (
 
     wf.on("load", () => {
       setDuration(wf.duration);
+      options?.onLoad?.(wf);
     });
 
     wf.on("play", () => setPlaying(true));
