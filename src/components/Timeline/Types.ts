@@ -28,6 +28,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   data?: any;
   controlsOnTop?: boolean;
   controls?: TimelineControls;
+  customControls?: TimelineCustomControls[];
   onReady?: (data: Record<string, any>) => void;
   onPlay?: () => void;
   onPause?: () => void;
@@ -153,6 +154,7 @@ export interface TimelineControlsProps {
   allowFullscreen?: boolean;
   allowViewCollapse?: boolean;
   controls?: TimelineProps["controls"];
+  customControls?: TimelineCustomControls[];
   onRewind: (steps?: number) => void;
   onForward: (steps?: number) => void;
   onPositionChange: (position: number) => void;
@@ -164,6 +166,11 @@ export interface TimelineControlsProps {
   onPause?: TimelineProps["onPause"];
   onFullScreenToggle: TimelineProps["onFullscreenToggle"];
   onVolumeChange: TimelineProps["onVolumeChange"];
+}
+
+export interface TimelineCustomControls {
+  position: "left" | "right" | "leftCenter" | "rightCenter";
+  component: JSX.Element | (() => JSX.Element);
 }
 
 export interface TimelineSideControlProps {
