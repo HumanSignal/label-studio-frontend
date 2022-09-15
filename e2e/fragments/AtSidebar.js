@@ -1,7 +1,7 @@
 const { assert } = require("assert");
 
 /* global inject, locate */
-const { I } = inject();
+const { I, LabelStudio } = inject();
 
 module.exports = {
   _sideBarLocator: locate(".lsf-sidebar-tabs"),
@@ -9,12 +9,26 @@ module.exports = {
   _regionsCounterLocator: locate(".lsf-entities__counter"),
   _regionLocator: locate(".lsf-region-item"),
   _selectedRegionsLocator: locate(".lsf-entity"),
-  seeRegions(count) {
+  _outlinerRegionTree: locate(".lsf-outliner-tree"),
+  _outlinerRegionTreeNodes: locate(".lsf-tree__node"),
+  _outlinerEmpty: locate(".lsf-outliner__empty"),
+  _outlinerSelectedRegionLocator: locate(".lsf-tree__node .lsf-tree-node-selected"),
+  async seeRegions(count) {
+    const hasFFDev1170 = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+
     if (count) {
-      I.seeElement(this._regionsCounterLocator.withText(`${count}`));
+      if(hasFFDev1170) {
+        I.seeElement(this._outlinerRegionTree.withDescendant(this._outlinerRegionTreeNodes.at(count)));
+      } else {
+        I.seeElement(this._regionsCounterLocator.withText(`${count}`));
+      }
     } else {
-      I.seeElement(this._regionGroupButton.withText("Regions"));
-      I.dontSeeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
+      if(hasFFDev1170) {
+        I.seeElement(this._outlinerEmpty);
+      } else {
+        I.seeElement(this._regionGroupButton.withText("Regions"));
+        I.dontSeeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
+      }
     }
   },
   dontSeeRegions(count) {
@@ -32,8 +46,14 @@ module.exports = {
   dontSeeRelations() {
     I.dontSee(`Relations`, this._sideBarLocator);
   },
-  seeSelectedRegion() {
-    I.seeElement(this._selectedRegionsLocator);
+  async seeSelectedRegion() {
+    const hasFFDev1170 = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+
+    if(hasFFDev1170) {
+      I.seeElement(this._outlinerSelectedRegionLocator);
+    } else {
+      I.seeElement(this._selectedRegionsLocator);
+    }
   },
   dontSeeSelectedRegion() {
     I.dontSeeElement(this._selectedRegionsLocator);
