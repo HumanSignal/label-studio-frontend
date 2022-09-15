@@ -4,7 +4,7 @@ import { Block, Elem } from "../../utils/bem";
 import "./TimeBox.styl";
 
 export interface TimerProps {
-  value: number;
+  value: number | undefined;
   readonly?: boolean;
   inverted?: boolean;
   onChange: (value: number) => void;
@@ -80,7 +80,7 @@ export const TimeBox: FC<TimerProps> = ({
   };
 
   const handleFocusInput = () => {
-    setCurrentInputTime(formatTime(currentDisplayedTime, true));
+    setCurrentInputTime(formatTime(currentDisplayedTime || 0, true));
   };
 
   const handleChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
@@ -114,7 +114,7 @@ export const TimeBox: FC<TimerProps> = ({
       <Elem name={'displayed-time'}
         onClick={handleClickToInput}
       >
-        {formatTime(currentDisplayedTime)}:<span>{formatPosition(currentDisplayedTime)}</span>
+        {formatTime(currentDisplayedTime || 0)}:<span>{formatPosition(currentDisplayedTime || 0)}</span>
       </Elem>
     );
   };

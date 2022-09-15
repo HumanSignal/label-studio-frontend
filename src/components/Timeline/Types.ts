@@ -150,6 +150,7 @@ export interface TimelineControlsProps {
   volume?: number;
   speed?: number;
   zoom?: number;
+  duration?: number;
   disableFrames?: boolean;
   extraControls?: JSX.Element | null;
   allowFullscreen?: boolean;
