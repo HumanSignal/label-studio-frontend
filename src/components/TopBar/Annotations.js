@@ -82,8 +82,8 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
     return (
       <>
-        <Elem name={'draft'}>{_drafts}</Elem>
-        <Elem name={'annotation'}>{_annotations}</Elem>
+        <Elem name="draft">{_drafts}</Elem>
+        <Elem name="annotation">{_annotations}</Elem>
       </>
     );
   };
