@@ -164,7 +164,6 @@ const Model = types
     addRegion(data) {
       const control = self.videoControl() ?? self.control();
 
-      console.log({ control });
 
       const sequence = [
         {
