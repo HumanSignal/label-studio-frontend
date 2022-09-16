@@ -82,6 +82,7 @@ export class Regions {
     }
 
     this.renderAll();
+
     this.visualizer.draw(true);
   }
 

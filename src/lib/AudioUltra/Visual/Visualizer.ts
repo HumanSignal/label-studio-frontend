@@ -198,9 +198,9 @@ export class Visualizer extends Events<VisualizerEvents> {
 
         // Render all enabled channels
         this.renderAvailableChannels();
-
-        this.renderCursor();
       }
+
+      this.renderCursor();
 
       this.invoke("draw", [this]);
 
