@@ -31,47 +31,6 @@ const controlsInjector = inject(({ store }) => {
   };
 });
 
-/* @deprecated */
-const ActionDialog = ({ buttonProps, prompt, type, action, onAction }) => {
-  const [show, setShow] = useState(false);
-  const [comment, setComment] = useState("");
-  const onClick = useCallback(() => {
-    onAction({ comment: comment.length ? comment : null });
-    setShow(false);
-    setComment("");
-  });
-
-  return (
-    <Dropdown.Trigger
-      visible={show}
-      toggle={() => { }}
-      onToggle={setShow}
-      content={(
-        <Block name="action-dialog">
-          <Elem name="input-title">
-            {prompt}
-          </Elem>
-          <Elem
-            name="input"
-            tag="textarea"
-            type="text"
-            value={comment}
-            onChange={(event) => { setComment(event.target.value); }}
-          />
-          <Elem name="footer">
-            <Button onClick={() => setShow(false)}>Cancel</Button>
-            <Button style={{ marginLeft: 8 }} onClick={onClick} {...buttonProps}>{action}</Button>
-          </Elem>
-        </Block>
-      )}
-    >
-      <Button aria-label={`${type}-annotation`} {...buttonProps}>
-        {action}
-      </Button>
-    </Dropdown.Trigger>
-  );
-};
-
 export const Controls = controlsInjector(observer(({ store, history, annotation }) => {
   const isReview = store.hasInterface("review");
   
@@ -85,6 +44,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const buttonHandler = useCallback(async (e, callback) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
+    console.log("buttonHandler", self, this, annotation);
     if(addedCommentThisSession){
       callback();
     } else if(currentComment) {
@@ -123,7 +83,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
-        <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={store.acceptAnnotation}>
+        <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={(e)=> buttonHandler(e, () => store.acceptAnnotation())}>
           {history.canUndo ? "Fix + Accept" : "Accept"}
         </Button>
       </ButtonTooltip>,
@@ -172,28 +132,15 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       const isUpdate = sentUserGenerate || versions.result;
       // const isRejected = store.task.queue?.includes("Rejected queue");
       const withComments = isFF(FF_DEV_2186) || store.hasInterface("comments:update");
-      let button;
-      
-      if (withComments && isUpdate) {
-        button = (
-          <ActionDialog
-            type="update"
-            onAction={store.updateAnnotation}
-            buttonProps={{ disabled: disabled || submitDisabled, look: "primary" }}
-            prompt="Comment to Reviewer"
-            action="Update"
-            key="update"
-          />
-        );
-      } else {
-        button = (
-          <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={() => store.updateAnnotation()}>
-              {isUpdate ? "Update" : "Submit"}
-            </Button>
-          </ButtonTooltip>
-        );
-      }
+      const button = (
+        <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
+          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={(e) => {
+            (withComments && isUpdate) ? buttonHandler(e, store.skipTask) : store.updateAnnotation();
+          }}>
+            {isUpdate ? "Update" : "Submit"}
+          </Button>
+        </ButtonTooltip>
+      );
 
       buttons.push(button);
     }
