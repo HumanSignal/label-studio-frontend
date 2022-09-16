@@ -586,10 +586,10 @@ export class Visualizer extends Events<VisualizerEvents> {
       if(!playhead.isHovered) {
         playhead.invoke("mouseEnter", [e]);
       }
-      this.draw(false);
+      // this.draw(false);
     } else if (playhead.isHovered) {
       playhead.invoke("mouseLeave", [e]);
-      this.draw(false);
+      // this.draw(false);
     }
   };
 
@@ -602,7 +602,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const playheadX = clamp(x, 0, this.width);
 
     this.playhead.setX(playheadX);
-    this.wf.seek(currentPosition * duration);
+    this.wf.currentTime = currentPosition * duration;
   };
 
   private handleMouseDown = (e: MouseEvent) => {
