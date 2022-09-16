@@ -12,19 +12,19 @@ const MAX_ZOOM = 150;
 export interface ConfigControlProps {
   configModal: boolean;
   speed: number;
-  zoom: number;
+  amp: number;
   onSetModal?: () => void;
   onSpeedChange: (speed: number) => void;
-  onZoom: (zoom: number) => void;
+  onAmpChange: (amp: number) => void;
 }
 
 export const ConfigControl: FC<ConfigControlProps> = ({
   configModal,
   speed,
-  zoom,
+  amp,
   onSpeedChange,
   onSetModal,
-  onZoom,
+  onAmpChange,
   ...props
 }) => {
   const [playbackSpeed, setplaybackSpeed] = useState(100);
@@ -66,10 +66,10 @@ export const ConfigControl: FC<ConfigControlProps> = ({
     }
   };
 
-  const handleChangeZoom = (e: React.FormEvent<HTMLInputElement>) => {
-    const _zoom = parseFloat(e.currentTarget.value);
+  const handleChangeAmp = (e: React.FormEvent<HTMLInputElement>) => {
+    const _amp = parseFloat(e.currentTarget.value);
 
-    setTimeout(() => onZoom(_zoom * 10));
+    onAmpChange(_amp * 10);
   };
 
   const renderMuteButton = () => {
@@ -111,10 +111,10 @@ export const ConfigControl: FC<ConfigControlProps> = ({
         <Slider
           min={0}
           max={MAX_ZOOM}
-          value={zoom / 10}
+          value={amp / 10}
           description={"Audio zoom y-axis"}
           info={"Increase or decrease the appearance of amplitude"}
-          onChange={handleChangeZoom}
+          onChange={handleChangeAmp}
         />
         {renderMuteButton()}
       </Elem>

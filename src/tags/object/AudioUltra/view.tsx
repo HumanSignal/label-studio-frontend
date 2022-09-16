@@ -49,6 +49,8 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         onPositionChange={pos => controls.setCurrentTime(pos)}
         onSpeedChange={speed => controls.setRate(speed)}
         onZoom={zoom => controls.setZoom(zoom)}
+        amp={controls.amp}
+        onAmpChange={amp => controls.setAmp(amp)}
       />
     </div>
   );

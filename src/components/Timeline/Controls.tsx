@@ -101,11 +101,11 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
         <ConfigControl
           onSetModal={onSetConfigModal}
-          onZoom={(zoom: number) => props.onZoom?.(zoom)}
+          onAmpChange={props.onAmpChange}
           configModal={configModal}
           onSpeedChange={(speed: number) => onSpeedChange?.(speed)}
           speed={props.speed || 0}
-          zoom={props.zoom || 0}
+          amp={props.amp || 0}
         />
         <AudioControl
           volume={props.volume || 0}

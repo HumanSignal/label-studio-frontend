@@ -150,6 +150,7 @@ export interface TimelineControlsProps {
   volume?: number;
   speed?: number;
   zoom?: number;
+  amp?: number;
   duration?: number;
   disableFrames?: boolean;
   extraControls?: JSX.Element | null;
@@ -169,6 +170,7 @@ export interface TimelineControlsProps {
   onVolumeChange: TimelineProps["onVolumeChange"];
   onSpeedChange: TimelineProps["onSpeedChange"];
   onZoom: TimelineProps["onZoom"];
+  onAmpChange: (amp: number) => void;
 }
 
 export interface TimelineSideControlProps {
