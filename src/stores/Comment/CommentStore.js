@@ -14,6 +14,7 @@ export const CommentStore = types
   .volatile(() => ({
     currentComment: '',
     inputRef: {},
+    commentFormSubmit: () => {},
   }))
   .views(self => ({
     get store() {
@@ -76,8 +77,20 @@ export const CommentStore = types
       self.currentComment = comment;
     }
 
+    function setCommentFormSubmit(submitCallback) {
+      self.commentFormSubmit = submitCallback;
+    }
+
+    function setInputRef(inputRef) {
+      self.inputRef = inputRef;
+    }
+
     function setLoading(loading = null) {
       self.loading = loading;
+    }
+
+    function setAddedCommentThisSession(isAddedCommentThisSession = false) {
+      self.addedCommentThisSession = isAddedCommentThisSession;
     }
 
     function replaceId(id, newComment) {
@@ -173,7 +186,7 @@ export const CommentStore = types
 
       // @todo setComments?
       self.comments.unshift(comment);
-      self.addedCommentThisSession = true;
+      self.setAddedCommentThisSession(true);
       if (self.canPersist) {
         try {
           self.setLoading("addComment");
@@ -289,6 +302,9 @@ export const CommentStore = types
       toCache,
       fromCache,
       restoreCommentsFromCache,
+      setAddedCommentThisSession,
+      setCommentFormSubmit,
+      setInputRef,
       setLoading,
       replaceId,
       removeCommentById,

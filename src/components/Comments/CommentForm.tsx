@@ -50,11 +50,12 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     commentStore.setCurrentComment(comment || '');
   }, [commentStore]);
 
-  commentStore.addedCommentThisSession = false;
+  commentStore.setAddedCommentThisSession(false);
 
   useEffect(() => {
-    commentStore.inputRef = actionRef.current.ele;
-  }, [actionRef, commentStore]);
+    commentStore.setInputRef(actionRef.current.ele);
+    commentStore.setCommentFormSubmit(() => onSubmit());
+  }, [actionRef, commentStore, formRef]);
   
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 

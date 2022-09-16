@@ -82,26 +82,36 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const disabled = store.isSubmitting || historySelected;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
 
-  const rejectHandler = useCallback(() => {
-    if(store.commentStore.addedCommentThisSession){
-      store.rejectAnnotation();
-    } else {
-      store.commentStore.inputRef.current.focus();
-    }
-  }, [store.rejectAnnotation, store.commentStore.inputRef, store.commentStore.addedCommentThisSession]);
+  const buttonHandler = useCallback(async (e, callback) => {
+    const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
-  const skipHandler = useCallback(() => {
-    if(store.commentStore.addedCommentThisSession){
-      store.skipTask();
+    if(addedCommentThisSession){
+      callback();
+    } else if(currentComment) {
+      e.preventDefault();
+      await commentFormSubmit();
+      callback();
     } else {
-      store.commentStore.inputRef.current.focus();
+      const commentsInput = inputRef.current;
+
+      commentsInput.scrollIntoView({ 
+        behavior: 'smooth', 
+      });
+      commentsInput.focus({ preventScroll: true });
     }
-  }, [store.skipTask, store.commentStore.inputRef, store.commentStore.addedCommentThisSession]);
+  }, [
+    store.rejectAnnotation, 
+    store.skipTask, 
+    store.commentStore.currentComment, 
+    store.commentStore.inputRef, 
+    store.commentStore.commentFormSubmit, 
+    store.commentStore.addedCommentThisSession,
+  ]);
 
   const RejectButton = useMemo(() => {
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={rejectHandler}>
+        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> buttonHandler(e, () => store.rejectAnnotation({}))}>
           Reject
         </Button>
       </ButtonTooltip>
@@ -134,7 +144,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if (store.hasInterface("skip")) {
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={skipHandler}>
+          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> buttonHandler(e, store.skipTask)}>
             Skip
           </Button>
         </ButtonTooltip>,
