@@ -26,6 +26,7 @@ export interface ButtonProps extends HTMLButtonProps {
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
   tooltip?: string;
+  nopadding?: boolean;
 }
 
 export interface ButtonGroupProps {
@@ -51,6 +52,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   danger,
   hotkey,
   tooltip,
+  nopadding,
   ...rest
 }, ref) => {
   const finalTag = tag ?? (rest.href ? "a" : "button");
@@ -60,6 +62,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
     waiting,
     type,
     danger,
+    nopadding,
     look: look ?? [],
     withIcon: !!icon,
     withExtra: !!extra,
