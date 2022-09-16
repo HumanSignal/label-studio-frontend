@@ -127,7 +127,7 @@ export class Player extends Destructable {
         return this.playRange(regionsStart, regionsEnd);
       }
       this.looping = false;
-      const start = from ?? 0;
+      const start = from ?? this.currentTime;
       const end = to !== undefined ? (to - start) : undefined;
 
       this.playRange(start, end);

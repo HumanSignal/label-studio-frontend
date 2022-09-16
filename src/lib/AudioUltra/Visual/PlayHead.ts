@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { rgba, RgbaColorArray } from "../Common/Color";
 import { Events } from "../Common/Events";
-import { clamp } from "../Common/Utils";
+import { clamp, getCursorTime } from "../Common/Utils";
 import { cursorSymbol } from "../Cursor/Cursor";
 import { Layer } from "../Visual/Layer";
 import { Visualizer } from "../Visual/Visualizer";
@@ -92,6 +92,7 @@ export class Playhead extends Events<PlayheadEvents> {
 
           if(x !== this._x) {
             this.setX(x);
+            this.wf.currentTime = getCursorTime(e, this.visualizer, this.wf.duration);
             this.render();
           }
         }
