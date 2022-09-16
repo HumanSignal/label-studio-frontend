@@ -584,19 +584,20 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private playHeadMove = (e: MouseEvent, cursor: Cursor) => {
     const { x, y } = cursor;
-    const { playhead, playheadPadding } = this;
+    const { playhead, playheadPadding, height } = this;
     const playHeadTop = (this.reservedSpace - playhead.capHeight - playhead.capPadding);
     
     if(x >= playhead.x - playheadPadding && 
       x <= (playhead.x + playhead.width + playheadPadding) &&
-      y >= playHeadTop) {
+        y >= playHeadTop &&
+        y <= height) {
       if(!playhead.isHovered) {
         playhead.invoke("mouseEnter", [e]);
       }
-      // this.draw(false);
+      this.draw(true);
     } else if (playhead.isHovered) {
       playhead.invoke("mouseLeave", [e]);
-      // this.draw(false);
+      this.draw(true);
     }
   };
 
