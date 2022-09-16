@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import { FC, useEffect, useRef } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
 import { Controls } from "../../../components/Timeline/Controls";
+import { RegionOptions } from "../../../lib/AudioUltra/Regions/Region";
 
 interface AudioUltraProps {
   item: any;
@@ -9,6 +10,15 @@ interface AudioUltraProps {
 
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
+  const regions: RegionOptions[] = item.regions.map((region: any) => {
+    console.log(region);
+    return {
+      start: region.start,
+      end: region.end,
+      color: region.color,
+    };
+  });
+
   const { waveform: _, ...controls } = useWaveform(rootRef, {
     src: item._value,
     waveColor: "#BEB9C5",
@@ -23,6 +33,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     muted: false,
     rate: 1,
     onLoad: item.onLoad,
+    regions,
     timeline: {
       backgroundColor: "#ffffff",
     },

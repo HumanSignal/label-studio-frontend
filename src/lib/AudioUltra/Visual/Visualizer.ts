@@ -162,7 +162,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.scrollLeft = value;
 
     if (redraw) {
-      this.draw();
+      this.draw(this.getZoom() > 1);
     }
   }
 
@@ -619,7 +619,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private handlePlaying = (currentTime: number) => {
     this.currentTime = currentTime / this.wf.duration;
-    this.draw();
+    this.draw(this.zoom === 1);
   };
 
   private handleScroll = (e: WheelEvent) => {

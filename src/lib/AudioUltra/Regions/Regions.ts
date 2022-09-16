@@ -67,7 +67,8 @@ export class Regions {
     const region = new Region(options, this.waveform, this.visualizer, this);
 
     this.regions.push(region);
-    this.visualizer.draw();
+    this.renderAll();
+    this.visualizer.draw(true);
 
     return region;
   }
@@ -80,7 +81,8 @@ export class Regions {
       this.regions = this.regions.filter(r => r !== region);
     }
 
-    this.visualizer.draw();
+    this.renderAll();
+    this.visualizer.draw(true);
   }
 
   destroy() {

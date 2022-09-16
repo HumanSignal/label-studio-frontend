@@ -293,7 +293,7 @@ export const AudioModel = types.compose(
       handlePlay() {
         if (self._ws) {
           self.playing = !self.playing;
-          self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+          self._ws.playing ? self.triggerSyncPlay() : self.triggerSyncPause();
         }
       },
 
@@ -308,7 +308,11 @@ export const AudioModel = types.compose(
       },
 
       createWsRegion(region) {
-        // const r = self._ws.addRegion(region.wsRegionOptions);
+        const options = region.wsRegionOptions;
+
+        console.log("createWsRegion", options);
+
+        // const r = self._ws.addRegion(options);
 
         // region._ws_region = r;
         // region.updateAppearenceFromState();
@@ -316,7 +320,6 @@ export const AudioModel = types.compose(
 
       onLoad(ws) {
         self._ws = ws;
-        console.log("ws loaded", ws);
 
         self.regs.forEach(reg => {
           self.createWsRegion(reg);
@@ -325,10 +328,6 @@ export const AudioModel = types.compose(
 
       onError(error) {
         self.errors = [error];
-      },
-
-      wsCreated(ws) {
-        self._ws = ws;
       },
 
       beforeDestroy() {

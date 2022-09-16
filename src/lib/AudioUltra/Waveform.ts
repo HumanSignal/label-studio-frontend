@@ -120,6 +120,8 @@ export interface WaveformOptions {
 
   padding?: Padding;
 
+  autoPlayNewSegments?: boolean;
+
 
   // Cursor options
   cursor?: CursorOptions;
@@ -403,7 +405,7 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Handle cursor move event
    */
   private handleCursorMove = (e: MouseEvent) => {
-    if (this.cursor.inView) {
+    if (this.loaded && this.cursor.inView) {
       setTimeout(() => {
         if (!this.cursor.hasFocus()) {
           this.cursor.set(CursorSymbol.crosshair);
