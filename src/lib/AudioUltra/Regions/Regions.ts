@@ -156,6 +156,8 @@ export class Regions {
       const start = pixelsToTime(startX, zoomedWidth, duration);
       const end = pixelsToTime(startX, zoomedWidth, duration);
 
+      // @todo - handle autoPlayNewSegments option
+      // - handle autoSelectNewSegments option
       region = this.addRegion({
         start,
         end,
@@ -185,6 +187,8 @@ export class Regions {
 
       if (region && region.start === region.end) {
         region.remove();
+      } else {
+        this.waveform.invoke("regionCreate", [region]);
       }
       this.unlock();
     };

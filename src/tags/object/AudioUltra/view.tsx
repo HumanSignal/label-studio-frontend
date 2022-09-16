@@ -2,7 +2,8 @@ import { observer } from "mobx-react";
 import { FC, useEffect, useRef } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
 import { Controls } from "../../../components/Timeline/Controls";
-import { RegionOptions } from "../../../lib/AudioUltra/Regions/Region";
+import { Region, RegionOptions } from "../../../lib/AudioUltra/Regions/Region";
+import { Segment } from "../../../lib/AudioUltra/Regions/Segment";
 
 interface AudioUltraProps {
   item: any;
@@ -19,7 +20,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     };
   });
 
-  const { waveform: _, ...controls } = useWaveform(rootRef, {
+  const { waveform, ...controls } = useWaveform(rootRef, {
     src: item._value,
     waveColor: "#BEB9C5",
     gridColor: "#BEB9C5",
@@ -38,6 +39,24 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       backgroundColor: "#ffffff",
     },
   });
+
+  useEffect(() => {
+    const createRegion = (region: Region|Segment) => {
+      item.addRegion(region);
+    };
+
+    const updateRegion = (region: Region|Segment) => {
+      // item.updateRegion(region);
+    };
+
+    waveform.current?.on("regionCreate", createRegion);
+    waveform.current?.on("regionUpdate", updateRegion);
+
+    return () => {
+      waveform.current?.off("regionCreate", createRegion);
+      waveform.current?.off("regionUpdate", updateRegion);
+    };
+  }, []);
 
   return (
     <div>

@@ -6,6 +6,7 @@ import { CursorSymbol } from "../Cursor/Cursor";
 import { Layer } from "../Visual/Layer";
 import { Visualizer } from "../Visual/Visualizer";
 import { Waveform } from "../Waveform";
+import { Region } from "./Region";
 import { Regions } from "./Regions";
 
 export interface SegmentOptions {
@@ -15,8 +16,9 @@ export interface SegmentOptions {
 }
 
 export interface SegmentGlobalEvents {
-  regionUpdate: (region: Segment) => void;
-  regionRemoved: (region: Segment) => void;
+  regionCreate: (region: Region|Segment) => void;
+  regionUpdate: (region: Region|Segment) => void;
+  regionRemoved: (region: Region|Segment) => void;
 }
 
 interface SegmentEvents {
@@ -311,6 +313,13 @@ export class Segment extends Events<SegmentEvents> {
     this.controller.layerGroup.removeLayer(this.layer);
 
     this.waveform.invoke("regionRemoved", [this]);
+  }
+
+  toJSON() {
+    return {
+      start: this.start,
+      end: this.end,
+    };
   }
 }
 
