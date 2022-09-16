@@ -172,8 +172,12 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [position, currentOffsetX, step, length]);
 
   const onFrameScrub = useCallback((e: MouseEvent) => {
+    const dimensions = scrollable.current!.getBoundingClientRect();
+    const offsetLeft = dimensions.left;
+    const rightLimit = dimensions.width - timelineStartOffset;
+
     const getMouseToFrame = (e: MouseEvent | globalThis.MouseEvent) => {
-      const mouseOffset = e.pageX - scrollable.current!.getBoundingClientRect().left - timelineStartOffset;
+      const mouseOffset = e.pageX - offsetLeft - timelineStartOffset;
 
       return mouseOffset + currentOffsetX;
     };
@@ -185,9 +189,11 @@ export const Frames: FC<TimelineViewProps> = ({
     const onMouseMove = (e: globalThis.MouseEvent) => {
       const offset = getMouseToFrame(e);
 
-      setHoverEnabled(false);
-      setRegionSelectionDisabled(true);
-      setIndicatorOffset(offset);
+      if (offset >= 0 && offset <= rightLimit) {
+        setHoverEnabled(false);
+        setRegionSelectionDisabled(true);
+        setIndicatorOffset(offset);
+      }
     };
 
     const onMouseUp = () => {
