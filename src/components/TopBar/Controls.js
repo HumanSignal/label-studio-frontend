@@ -7,8 +7,7 @@ import { IconBan } from "../../assets/icons";
 
 import "./Controls.styl";
 import { useCallback, useMemo, useState } from "react";
-import { Dropdown } from "../../common/Dropdown/DropdownComponent";
-import { FF_DEV_1593, FF_DEV_2186, FF_DEV_2458, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2186, isFF } from "../../utils/feature-flags";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -44,7 +43,6 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const buttonHandler = useCallback(async (e, callback) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
-    console.log("buttonHandler", self, this, annotation);
     if(addedCommentThisSession){
       callback();
     } else if(currentComment) {
@@ -71,7 +69,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const RejectButton = useMemo(() => {
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> buttonHandler(e, () => store.rejectAnnotation({}))}>
+        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> (
+          store?.project?.require_comment_on_skip ?? true ? buttonHandler(e, () => store.rejectAnnotation({})) : store.rejectAnnotation()
+        )}>
           Reject
         </Button>
       </ButtonTooltip>
@@ -104,7 +104,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if (store.hasInterface("skip")) {
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> buttonHandler(e, store.skipTask)}>
+          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> (
+            store?.project?.require_comment_on_skip ?? true ? buttonHandler(e, () => store.skipTask({})) : store.skipTask()
+          )}>
             Skip
           </Button>
         </ButtonTooltip>,
@@ -135,7 +137,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       const button = (
         <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
           <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={(e) => {
-            (withComments && isUpdate) ? buttonHandler(e, store.skipTask) : store.updateAnnotation();
+            (withComments && isUpdate) ? buttonHandler(e, store.updateAnnotation) : store.updateAnnotation();
           }}>
             {isUpdate ? "Update" : "Submit"}
           </Button>
