@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { rgba, RgbaColorArray } from "../Common/Color";
 import { Events } from "../Common/Events";
 import { clamp, getCursorTime } from "../Common/Utils";
-import { cursorSymbol } from "../Cursor/Cursor";
+import { CursorSymbol } from "../Cursor/Cursor";
 import { Layer } from "../Visual/Layer";
 import { Visualizer } from "../Visual/Visualizer";
 import { Waveform } from "../Waveform";
@@ -198,9 +198,9 @@ export class Playhead extends Events<PlayheadEvents> {
 
     if(layer) {
       if (isHovered) {
-        this.wf.cursor.set(isDragging ? cursorSymbol.grabbing : cursorSymbol.grab, "playhead");
+        this.wf.cursor.set(isDragging ? CursorSymbol.grabbing : CursorSymbol.grab, "playhead");
       } else {
-        this.wf.cursor.set(cursorSymbol.default);
+        this.wf.cursor.set(CursorSymbol.default);
       }
       layer.clear();
       layer.save();

@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { rgba, RgbaColorArray } from "../Common/Color";
 import { Events } from "../Common/Events";
 import { clamp, defaults, getCursorPositionX, getCursorTime, pixelsToTime } from "../Common/Utils";
-import { Cursor, cursorSymbol } from "../Cursor/Cursor";
+import { CursorSymbol } from "../Cursor/Cursor";
 import { Layer } from "../Visual/Layer";
 import { Visualizer } from "../Visual/Visualizer";
 import { Waveform } from "../Waveform";
@@ -129,8 +129,12 @@ export class Segment extends Events<SegmentEvents> {
     return true;
   }
 
-  private switchCursor = (symbol: Cursor["style"]) => {
-    this.waveform.cursor.set(symbol, symbol !== cursorSymbol.crosshair ? this.layerName : "");
+  private requiresCursorFocus(symbol: CursorSymbol) {
+    return ![CursorSymbol.crosshair].includes(symbol);
+  }
+
+  private switchCursor = (symbol: CursorSymbol, shouldGrabFocus = true) => {
+    this.waveform.cursor.set(symbol, shouldGrabFocus && this.requiresCursorFocus(symbol) ? this.layerName : "");
   };
 
   private edgeGrabCheck = (e: MouseEvent) => {
@@ -149,14 +153,19 @@ export class Segment extends Events<SegmentEvents> {
     const isEdgeGrab = this.edgeGrabCheck(e);
 
     if (this.isDragging) return;
-    if (isEdgeGrab.isRightEdge || isEdgeGrab.isLeftEdge) this.switchCursor(cursorSymbol.colResize);
-    else this.switchCursor(cursorSymbol.grab);
+    if (isEdgeGrab.isRightEdge || isEdgeGrab.isLeftEdge) this.switchCursor(CursorSymbol.colResize);
+    else this.switchCursor(CursorSymbol.grab);
   };
 
   private handleMouseUp = () => {
-    this.switchCursor(cursorSymbol.grab);
     this.controller.unlock();
-    if (!this.isDragging) this.handleSelected();
+
+    if (this.isDragging) {
+      this.switchCursor(CursorSymbol.grab);
+    } else {
+      this.handleSelected();
+    }
+    
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
@@ -165,6 +174,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
+    console.log("dragging");
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
@@ -179,13 +189,14 @@ export class Segment extends Events<SegmentEvents> {
       const newPosition = currentPosition - grabPosition;
       const seconds = pixelsToTime(newPosition, zoomedWidth, duration);
       const timeDiff = end - start;
-      const newStart = freezeEnd ? start + seconds : clamp(start + seconds, 0, this.duration - timeDiff);  
+      const newStart = freezeEnd ? start + seconds : clamp(start + seconds, 0, this.duration - timeDiff);
       const startTime = freezeStart ? start : newStart;
       const endTime = freezeEnd ? end : newStart + timeDiff;
-      
-      if (freezeStart || freezeEnd) this.switchCursor(cursorSymbol.colResize);
-      else  this.switchCursor(cursorSymbol.grabbing);
+
+      if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
+      else  this.switchCursor(CursorSymbol.grabbing);
       this.updatePosition(startTime, endTime);
+
     }
   };
 
@@ -273,7 +284,7 @@ export class Segment extends Events<SegmentEvents> {
   updatePosition(start?: number, end?: number) {
     let newStart = start ?? this.start;
     let newEnd = end ?? this.end;
-    
+
     if (newStart > newEnd) {
       [newStart, newEnd] = [newEnd, newStart];
     }

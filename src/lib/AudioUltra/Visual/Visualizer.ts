@@ -635,8 +635,10 @@ export class Visualizer extends Events<VisualizerEvents> {
       const newRelativePosition = clamp(newPosition / maxScroll, 0, maxRelativeScroll);
       const scrollLeft = newRelativePosition / this.zoom;
 
-      this.wf.invoke("scroll", [scrollLeft]);
-      this.setScrollLeft(scrollLeft);
+      if (scrollLeft !== this.scrollLeft) {
+        this.wf.invoke("scroll", [scrollLeft]);
+        this.setScrollLeft(scrollLeft);
+      }
     }
   };
 
@@ -664,7 +666,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private preventScrollX = (e: WheelEvent) => {
     const [dX, dY] = [Math.abs(e.deltaX), Math.abs(e.deltaY)];
 
-    if (dX > dY || (e.ctrlKey && dY > dX)) {
+    if (dX >= dY || (e.ctrlKey && dY >= dX)) {
       e.preventDefault();
       e.stopPropagation();
     }

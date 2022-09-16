@@ -8,13 +8,42 @@ interface CursorEvents {
   mouseMove: (event: MouseEvent, cursor: Cursor) => void;
 }
 
-export enum cursorSymbol {
-  colResize = "col-resize",
+export enum CursorSymbol {
+  auto = "auto",
   crosshair = "crosshair",
+  default = "default",
+  pointer = "pointer",
+  move = "move",
+  text = "text",
+  wait = "wait",
+  help = "help",
+  progress = "progress",
+  notAllowed = "not-allowed",
+  contextMenu = "context-menu",
+  cell = "cell",
+  verticalText = "vertical-text",
+  alias = "alias",
+  copy = "copy",
+  noDrop = "no-drop",
+  allScroll = "all-scroll",
+  colResize = "col-resize",
+  rowResize = "row-resize",
   grab = "grab",
   grabbing = "grabbing",
-  default = "default"
-}
+  nResize = "n-resize",
+  neResize = "ne-resize",
+  nwResize = "nw-resize",
+  nsResize = "ns-resize",
+  neswResize = "nesw-resize",
+  nwseResize = "nwse-resize",
+  sResize = "s-resize",
+  seResize = "se-resize",
+  swResize = "sw-resize",
+  wResize = "w-resize",
+  ewResize = "ew-resize",
+  zoomIn = "zoom-in",
+  zoomOut = "zoom-out",
+} 
 
 export interface CursorOptions {
   x?: number;
@@ -25,7 +54,7 @@ export interface CursorOptions {
 
 export class Cursor extends Events<CursorEvents> {
   private visualizer: Visualizer;
-  private style: CSSStyleDeclaration["cursor"] = "default";
+  private symbol = CursorSymbol.default;
   private focusId = "";
 
   color = rgba("#000000");
@@ -47,7 +76,7 @@ export class Cursor extends Events<CursorEvents> {
   }
 
   initialize() {
-    this.set(this.style);
+    this.set(this.symbol);
     document.addEventListener("mousemove", this.handleMouseMove);
   }
 
@@ -71,13 +100,17 @@ export class Cursor extends Events<CursorEvents> {
     return this.focusId !== "";
   }
 
-  set(cursor: CSSStyleDeclaration["cursor"], id = "") {
+  get(): CursorSymbol {
+    return this.symbol;
+  }
+
+  set(cursor: CursorSymbol, id = "") {
     this.focusId = id || "";
-    if (cursor === this.style) {
+    if (cursor === this.symbol) {
       return;
     }
-    this.style = cursor;
-    this.visualizer.container.style.cursor = this.style;
+    this.symbol = cursor;
+    this.visualizer.container.style.cursor = this.symbol;
 
     if (this.hasFocus()) {
       this.visualizer.lockSeek();
@@ -87,7 +120,7 @@ export class Cursor extends Events<CursorEvents> {
   }
 
   render(ctx: RenderingContext) {
-    if (this.style !== "crosshair") {
+    if (this.symbol !== "crosshair") {
       return;
     }
     ctx.fillStyle = this.color.toString();

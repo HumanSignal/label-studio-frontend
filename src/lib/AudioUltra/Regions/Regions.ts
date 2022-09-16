@@ -1,5 +1,6 @@
 import { rgba, RgbaColorArray } from "../Common/Color";
 import { defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from "../Common/Utils";
+import { CursorSymbol } from "../Cursor/Cursor";
 import { LayerGroup } from "../Visual/LayerGroup";
 import { Visualizer } from "../Visual/Visualizer";
 import { Waveform } from "../Waveform";
@@ -194,7 +195,7 @@ export class Regions {
         region.invoke("mouseLeave", [region, e]);
       });
       this.hoveredRegions.clear();
-      this.waveform.cursor.set("default");
+      this.waveform.cursor.set(CursorSymbol.default);
     }
   };
 

@@ -2,7 +2,7 @@ import { Events } from "./Common/Events";
 import { MediaLoader } from "./Media/MediaLoader";
 import { Player } from "./Controls/Player";
 import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
-import { Cursor, CursorOptions } from "./Cursor/Cursor";
+import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
 import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
 import { Regions } from "./Regions/Regions";
@@ -406,7 +406,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     if (this.cursor.inView) {
       setTimeout(() => {
         if (!this.cursor.hasFocus()) {
-          this.cursor.set("crosshair");
+          this.cursor.set(CursorSymbol.crosshair);
         }
       });
 
@@ -417,7 +417,7 @@ export class Waveform extends Events<WaveformEventTypes> {
 
       this.tooltip.show(clientX, clientY - 20, onlyTime);
     } else {
-      this.cursor.set("default");
+      this.cursor.set(CursorSymbol.default);
       this.tooltip.hide();
     }
   };
