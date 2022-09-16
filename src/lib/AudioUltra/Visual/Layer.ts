@@ -347,6 +347,7 @@ export class Layer {
 
     this._context.globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
     this._context.globalCompositeOperation = this.compositeOperation;
+    this._context.imageSmoothingEnabled = false;
 
     return canvas;
   }
@@ -370,6 +371,7 @@ export class Layer {
 
       this._context.globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
       this._context.globalCompositeOperation = this.compositeOperation;
+      this._context.imageSmoothingEnabled = false;
     } else {
       canvas = this.createVisibleCanvas();
 

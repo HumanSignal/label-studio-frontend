@@ -174,7 +174,6 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
-    console.log("dragging");
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();

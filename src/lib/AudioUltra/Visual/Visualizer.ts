@@ -60,7 +60,9 @@ export class Visualizer extends Events<VisualizerEvents> {
   private gridColor = rgba("rgba(0, 0, 0, 0.1)");
   private backgroundColor = rgba("#fff");
   private waveColor = rgba("#000");
-  private waveHeight = 110;
+  private waveHeight = 100;
+  private _container!: HTMLElement;
+
   timelineHeight: number = defaults.timelineHeight;
   timelinePlacement: TimelineOptions["placement"] = "top";
   maxZoom = 1500;
@@ -375,8 +377,8 @@ export class Visualizer extends Events<VisualizerEvents> {
       layer.lineWidth = this.gridWidth;
       layer.strokeStyle = this.gridColor.toString();
 
-      // Draw middle line or the timeline border for top placement
-      const linePositionY = ((this.height - this.reservedSpace - (this.timelinePlacement === "top" ? layer.lineWidth : 0))) / 2;
+      // Draw middle line and the timeline border for top placement
+      const linePositionY = (this.height + this.reservedSpace) / 2;
 
       layer.beginPath();
       layer.moveTo(0, linePositionY);
@@ -412,6 +414,8 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   get container(){
+    if (this._container) return this._container;
+
     let result: HTMLElement | null = null;
 
     if (this.waveContainer instanceof HTMLElement) {
@@ -422,11 +426,14 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     if (!result) throw new Error("Container element does not exist.");
 
+    this._container = result;
+
     return result;
   }
 
   private initialRender() {
     if (this.container) {
+      this.container.style.height = `${this.waveHeight}px`;
       this.createLayers();
     } else {
       // TBD
@@ -675,7 +682,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private handleResize = () => {
     requestAnimationFrame(() => {
       const newWidth = this.wrapper.clientWidth;
-      const newHeight = this.waveHeight ?? 100;
+      const newHeight = this.waveHeight;
 
       this.updateChannels(() => {
         this.layers.forEach(layer => layer.setSize(newWidth, newHeight));

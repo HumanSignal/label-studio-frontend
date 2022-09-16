@@ -35,7 +35,7 @@ export class Timeline {
   private gridWidth = 1;
   private fontFamily = "Arial";
   private fontColor = rgba("#413C4A");
-  private gridColor = rgba("#413C4A");
+  private gridColor = rgba("rgba(137,128,152,0.16)");
   private backgroundColor = rgba("#fff");
   private _labeMaxWidth: LabelMaxWidth = {
     true: 0, // includeMs
@@ -82,6 +82,8 @@ export class Timeline {
     layer.beginPath();
     layer.fillRect(0, yOffset, width + xOffset, height);
     this.renderIntervals();
+    layer.fillStyle = strokeStyle;
+    layer.fillRect(0, yOffset + height, width + xOffset, lineWidth);
     layer.stroke();
   }
   
@@ -114,7 +116,7 @@ export class Timeline {
       layer.fillText(
         ts,
         markXOffset,
-        placement === "top" ? yOffset + ((height * 0.75) / 2) + (fontSize / 4): yOffset + height - 8,
+        placement === "top" ? yOffset + ((height * 0.75) / 2) + (fontSize / 2) - this.gridWidth: yOffset + height - 8,
       );
     }
   }
