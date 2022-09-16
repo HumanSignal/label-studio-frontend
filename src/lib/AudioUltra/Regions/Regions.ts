@@ -144,24 +144,34 @@ export class Regions {
       return;
     }
     this.lock();
-    const { container, zoomedWidth } = this.visualizer;
-    const { duration } = this.waveform;
-    const scrollLeft = this.visualizer.getScrollLeftPx();
-    const startX = getCursorPositionX(e, container) + scrollLeft;
-    const start = pixelsToTime(startX,zoomedWidth, duration);
-    const end = pixelsToTime(startX, zoomedWidth, duration);
 
-    const region = this.addRegion({
-      start,
-      end,
-      color: this.defaultColor.toString(),
-      selected: false,
-    });
+    let region: Region;
+    let startX: number;
+    const addRegion = () => {
+      const { container, zoomedWidth } = this.visualizer;
+      const { duration } = this.waveform;
+      const scrollLeft = this.visualizer.getScrollLeftPx();
+
+      startX = getCursorPositionX(e, container) + scrollLeft;
+      const start = pixelsToTime(startX, zoomedWidth, duration);
+      const end = pixelsToTime(startX, zoomedWidth, duration);
+
+      region = this.addRegion({
+        start,
+        end,
+        color: this.defaultColor.toString(),
+        selected: false,
+      });
+    };
 
     const handleMouseMove = (e: MouseEvent) => {
       const { container } = this.visualizer;
       const scrollLeft = this.visualizer.getScrollLeftPx();
       const currentX = getCursorPositionX(e, container) + scrollLeft;
+
+      if (!region) {
+        addRegion();
+      }
 
       if (Math.abs(currentX - startX) > 5) {
         region.updatePosition(region.start, this.pixelsToTime(currentX));
@@ -173,7 +183,7 @@ export class Regions {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
 
-      if (region.start === region.end) {
+      if (region && region.start === region.end) {
         region.remove();
       }
       this.unlock();

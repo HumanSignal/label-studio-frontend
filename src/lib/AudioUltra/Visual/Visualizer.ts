@@ -162,7 +162,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.scrollLeft = value;
 
     if (redraw) {
-      this.draw(this.getZoom() > 1);
+      this.draw();
     }
   }
 
