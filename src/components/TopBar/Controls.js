@@ -69,9 +69,14 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const RejectButton = useMemo(() => {
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> (
-          store?.project?.require_comment_on_skip ?? true ? buttonHandler(e, () => store.rejectAnnotation({})) : store.rejectAnnotation()
-        )}>
+        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> {
+          if(store?.project?.require_comment_on_skip ?? true) {
+            store.commentStore.setTooltipMessage("You must enter a comment before rejecting");
+            buttonHandler(e, () => store.rejectAnnotation({}));
+          } else {
+            store.rejectAnnotation();
+          }
+        }}>
           Reject
         </Button>
       </ButtonTooltip>
@@ -104,9 +109,14 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if (store.hasInterface("skip")) {
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> (
-            store?.project?.require_comment_on_skip ?? true ? buttonHandler(e, () => store.skipTask({})) : store.skipTask()
-          )}>
+          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> {
+            if(store?.project?.require_comment_on_skip ?? true) {
+              store.commentStore.setTooltipMessage("You must enter a comment before skipping");
+              buttonHandler(e, () => store.skipTask({}));
+            } else {
+              store.skipTask();
+            }
+          }}>
             Skip
           </Button>
         </ButtonTooltip>,

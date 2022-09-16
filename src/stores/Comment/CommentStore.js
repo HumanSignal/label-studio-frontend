@@ -9,12 +9,13 @@ export const CommentStore = types
   .model("CommentStore", {
     loading: types.optional(types.maybeNull(types.string), "list"),
     comments: types.optional(types.array(Comment), []),
-    addedCommentThisSession: false,
   })
   .volatile(() => ({
+    addedCommentThisSession: false,
+    commentFormSubmit: () => {},
     currentComment: '',
     inputRef: {},
-    commentFormSubmit: () => {},
+    tooltipMessage: "",
   }))
   .views(self => ({
     get store() {
@@ -87,6 +88,10 @@ export const CommentStore = types
 
     function setLoading(loading = null) {
       self.loading = loading;
+    }
+    
+    function setTooltipMessage(tooltipMessage) {
+      self.tooltipMessage = tooltipMessage;
     }
 
     function setAddedCommentThisSession(isAddedCommentThisSession = false) {
@@ -306,6 +311,7 @@ export const CommentStore = types
       setCommentFormSubmit,
       setInputRef,
       setLoading,
+      setTooltipMessage,
       replaceId,
       removeCommentById,
       persistQueuedComments,

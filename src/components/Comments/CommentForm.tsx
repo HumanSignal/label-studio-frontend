@@ -1,9 +1,10 @@
-import { FC, MutableRefObject, RefObject, useCallback, useEffect, useRef } from "react";
+import { FC, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
 import "./CommentForm.styl";
 import { TextArea } from "../../common/TextArea/TextArea";
+import { Tooltip } from "../../../src/common/Tooltip/Tooltip";
 import { observer } from "mobx-react";
 
 
@@ -26,6 +27,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const actionRef = useRef<{ update?: (text?: string) => void, ele?: RefObject<HTMLTextAreaElement> }>({});
+  let isTooltipShowing = false;
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
@@ -69,7 +71,21 @@ export const CommentForm: FC<CommentFormProps> = observer(({
         onChange={onChange}
         onInput={onInput}
         onSubmit={inline ? onSubmit : undefined}
+        onFocus={() => {
+          if(commentStore.tooltipMessage) {
+            isTooltipShowing = true;
+          }
+        }}
+        onBlur={() => {
+          isTooltipShowing = false;
+          commentStore.setTooltipMessage("");
+        }}
       />
+      {commentStore.tooltipMessage && (
+        <Tooltip title="" theme="light">
+          <>{commentStore.tooltipMessage}</>
+        </Tooltip>
+      )}
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />

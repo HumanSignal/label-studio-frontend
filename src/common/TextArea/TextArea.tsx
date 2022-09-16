@@ -11,6 +11,8 @@ export type TextAreaProps = {
   onSubmit?: () => void|Promise<void>,
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
+  onFocus?: (e: FocusEvent) => void,
+  onBlur?: (e: FocusEvent) => void,
   ref?: MutableRefObject<HTMLTextAreaElement>,
   actionRef?: MutableRefObject<{ update?: (text?: string) => void, ele?: RefObject<HTMLTextAreaElement> }>,
   rows?: number,
