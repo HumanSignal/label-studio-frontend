@@ -70,7 +70,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
         <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> {
-          if(store?.project?.require_comment_on_skip ?? true) {
+          if(store.hasInterface("comments:reject") ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), "Please enter a comment before rejecting");
           } else {
             store.rejectAnnotation({});
@@ -109,7 +109,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
           <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> {
-            if(store?.project?.require_comment_on_skip ?? true) {
+            if(store.hasInterface("comments:skip") ?? true) {
               buttonHandler(e, () => store.skipTask({}), "Please enter a comment before skipping");
             } else {
               store.skipTask({});
