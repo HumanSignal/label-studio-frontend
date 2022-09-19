@@ -91,12 +91,10 @@ export const CommentStore = types
     }
     
     function setTooltipMessage(tooltipMessage) {
-      console.log("setTooltipMessage", tooltipMessage);
       self.tooltipMessage = tooltipMessage;
     }
 
     function setAddedCommentThisSession(isAddedCommentThisSession = false) {
-      console.log("setAddedCommentThisSession", isAddedCommentThisSession);
       self.addedCommentThisSession = isAddedCommentThisSession;
     }
 
