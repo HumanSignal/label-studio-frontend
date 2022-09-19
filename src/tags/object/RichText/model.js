@@ -132,6 +132,8 @@ const Model = types
     regsObserverDisposer: null,
     _isLoaded: false,
     _loadedForAnnotation: null,
+
+    isEditing: false,
   }))
   .actions(self => {
     let beforeNeedsUpdateCallback, afterNeedsUpdateCallback;
@@ -144,6 +146,10 @@ const Model = types
       setLoaded(value = true) {
         self._isLoaded = value;
         self._loadedForAnnotation = self.annotation?.id;
+      },
+
+      setIsEditing(value) {
+        self.isEditing = value;
       },
 
       updateValue: flow(function * (store) {

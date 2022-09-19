@@ -224,17 +224,19 @@ class RichTextPieceView extends Component {
 
   _onMouseUp = (ev) => {
     const { item } = this.props;
-    const states = item.activeStates();
-    const rootEl = item.visibleNodeRef.current;
-    const root = rootEl?.contentDocument?.body ?? rootEl;
-    const label = states[0]?.selectedLabels?.[0];
-    const value = states[0]?.selectedValues?.();
+
+    if (item.isEditing) return;
 
     if (isFF(FF_DEV_2786) && item.isDragging) {
       this._onDragStop();
       return;
     }
 
+    const states = item.activeStates();
+    const rootEl = item.visibleNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+    const label = states[0]?.selectedLabels?.[0];
+    const value = states[0]?.selectedValues?.();
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false) return;
@@ -290,6 +292,35 @@ class RichTextPieceView extends Component {
     selection.removeAllRanges();
   };
 
+  _enableEditing = (event) => {
+    const { item } = this.props;
+    const root = item.visibleRoot;
+    const doc = root.ownerDocument;
+    const range = doc.caretRangeFromPoint(event.clientX, event.clientY);
+
+
+    item.annotation.regionStore.unselectAll();
+    item.setIsEditing(true);
+    root.contentEditable = 'true';
+
+    const selection = doc.defaultView.getSelection();
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const fn = ev => {
+      if (ev.key === "Escape") {
+        ev.stopPropagation();
+        ev.preventDefault();
+        item.setIsEditing(false);
+        root.contentEditable = 'false';
+        root.removeEventListener("keydown", fn);
+      }
+    };
+
+    root.addEventListener("keydown", fn);
+  };
+
   /**
    * @param {MouseEvent} event
    */
@@ -305,7 +336,13 @@ class RichTextPieceView extends Component {
 
     const region = this._determineRegion(event.target);
 
-    if (!region) return;
+    if (!region) {
+      if (!this.props.item.isEditing) this._enableEditing(event);
+      return;
+    }
+
+    if (this.props.item.isEditing) return;
+
     region && region.onClickRegion(event);
     event.stopPropagation();
   };
