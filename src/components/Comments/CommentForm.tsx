@@ -57,7 +57,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   }, [commentStore]);
 
   commentStore.setAddedCommentThisSession(false);
-
+  useEffect(() => clearTooltipMessage(), []);
   useEffect(() => {
     commentStore.setInputRef(actionRef.current.ele);
     commentStore.setCommentFormSubmit(() => onSubmit());
@@ -75,7 +75,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
         onChange={onChange}
         onInput={onInput}
         onSubmit={inline ? onSubmit : undefined}
-        onBlur={() => clearTooltipMessage()}
+        onBlur={() => commentStore.currentComment ? onSubmit() : clearTooltipMessage()}
       />
       <Elem tag="div" name="primary-action">
         <button type="submit">

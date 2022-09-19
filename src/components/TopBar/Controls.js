@@ -6,8 +6,7 @@ import { isDefined } from "../../utils/utilities";
 import { IconBan } from "../../assets/icons";
 
 import "./Controls.styl";
-import { useCallback, useMemo, useState } from "react";
-import { FF_DEV_2186, isFF } from "../../utils/feature-flags";
+import { useCallback, useMemo } from "react";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -88,7 +87,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
-        <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={(e)=> buttonHandler(e, () => store.acceptAnnotation())}>
+        <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={store.acceptAnnotation}>
           {history.canUndo ? "Fix + Accept" : "Accept"}
         </Button>
       </ButtonTooltip>,
@@ -142,13 +141,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       const isUpdate = sentUserGenerate || versions.result;
-      // const isRejected = store.task.queue?.includes("Rejected queue");
-      const withComments = isFF(FF_DEV_2186) || store.hasInterface("comments:update");
       const button = (
         <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={(e) => {
-            (withComments && isUpdate) ? buttonHandler(e, store.updateAnnotation) : store.updateAnnotation();
-          }}>
+          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={() => store.updateAnnotation()}>
             {isUpdate ? "Update" : "Submit"}
           </Button>
         </ButtonTooltip>
