@@ -132,12 +132,13 @@ const HtxPagedView = observer(({ item }) => {
         totalPages={totalPages}
         pageSize={pageSize}
         pageSizeOptions={ PAGE_SIZE_OPTIONS }
+        paginated={false}
         size={"medium"}
         onChange={(page, maxPerPage = pageSize) => {
           setPage(page);
           if (maxPerPage !== pageSize) {
-            setStoredPageSize('repeater', pageSize);
-            setPageSize(pageSize);
+            setStoredPageSize('repeater', maxPerPage);
+            setPageSize(maxPerPage);
           }
         }}
       />
