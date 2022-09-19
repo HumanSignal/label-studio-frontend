@@ -56,12 +56,17 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     commentStore.setCurrentComment(comment || '');
   }, [commentStore]);
 
-  commentStore.setAddedCommentThisSession(false);
-  useEffect(() => clearTooltipMessage(), []);
+  
+  useEffect(() => {
+    console.log("reset happened");
+    commentStore.setAddedCommentThisSession(false);
+    clearTooltipMessage();
+  }, []);
+
   useEffect(() => {
     commentStore.setInputRef(actionRef.current.ele);
     commentStore.setCommentFormSubmit(() => onSubmit());
-  }, [actionRef, commentStore, formRef]);
+  }, [actionRef, commentStore]);
   
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 

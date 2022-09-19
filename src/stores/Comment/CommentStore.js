@@ -91,10 +91,12 @@ export const CommentStore = types
     }
     
     function setTooltipMessage(tooltipMessage) {
+      console.log("setTooltipMessage", tooltipMessage);
       self.tooltipMessage = tooltipMessage;
     }
 
     function setAddedCommentThisSession(isAddedCommentThisSession = false) {
+      console.log("setAddedCommentThisSession", isAddedCommentThisSession);
       self.addedCommentThisSession = isAddedCommentThisSession;
     }
 
@@ -188,7 +190,6 @@ export const CommentStore = types
       if (self.draftId) {
         comment.draft = self.draftId;
       }
-
       // @todo setComments?
       self.comments.unshift(comment);
       self.setAddedCommentThisSession(true);

@@ -39,7 +39,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const disabled = store.isSubmitting || historySelected;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
 
-  const buttonHandler = useCallback(async (e, callback) => {
+  const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
     if(addedCommentThisSession){
@@ -50,7 +50,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       callback();
     } else {
       const commentsInput = inputRef.current;
-
+      
+      store.commentStore.setTooltipMessage(tooltipMessage);
       commentsInput.scrollIntoView({ 
         behavior: 'smooth', 
       });
@@ -70,10 +71,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
         <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> {
           if(store?.project?.require_comment_on_skip ?? true) {
-            store.commentStore.setTooltipMessage("Please enter a comment before rejecting");
-            buttonHandler(e, () => store.rejectAnnotation({}));
+            buttonHandler(e, () => store.rejectAnnotation({}), "Please enter a comment before rejecting");
           } else {
-            store.rejectAnnotation();
+            store.rejectAnnotation({});
           }
         }}>
           Reject
@@ -110,10 +110,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
           <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> {
             if(store?.project?.require_comment_on_skip ?? true) {
-              store.commentStore.setTooltipMessage("Please enter a comment before skipping");
-              buttonHandler(e, () => store.skipTask({}));
+              buttonHandler(e, () => store.skipTask({}), "Please enter a comment before skipping");
             } else {
-              store.skipTask();
+              store.skipTask({});
             }
           }}>
             Skip
