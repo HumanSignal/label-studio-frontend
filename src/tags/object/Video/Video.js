@@ -84,6 +84,10 @@ const Model = types
       return self.annotation.toNames.get(self.name)?.find(s => !s.type.endsWith("labels"));
     },
 
+    videoControl() {
+      return self.annotation.toNames.get(self.name)?.find(s => s.type.includes("video"));
+    },
+
     states() {
       return self.annotation.toNames.get(self.name)?.filter(s => s.type.endsWith("labels"));
     },
@@ -158,7 +162,8 @@ const Model = types
     },
 
     addRegion(data) {
-      const control = self.control();
+      const control = self.videoControl() ?? self.control();
+
 
       const sequence = [
         {
