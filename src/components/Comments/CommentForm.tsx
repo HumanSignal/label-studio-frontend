@@ -27,7 +27,9 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const actionRef = useRef<{ update?: (text?: string) => void, ele?: RefObject<HTMLTextAreaElement> }>({});
-  let isTooltipShowing = false;
+  const clearTooltipMessage = () => {
+    commentStore.setTooltipMessage("");
+  };
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
@@ -36,6 +38,8 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     const comment = new FormData(formRef.current).get("comment") as string;
 
     if (!comment.trim()) return;
+    
+    clearTooltipMessage();
 
     try {
       actionRef.current.update?.("");
@@ -71,26 +75,18 @@ export const CommentForm: FC<CommentFormProps> = observer(({
         onChange={onChange}
         onInput={onInput}
         onSubmit={inline ? onSubmit : undefined}
-        onFocus={() => {
-          if(commentStore.tooltipMessage) {
-            isTooltipShowing = true;
-          }
-        }}
-        onBlur={() => {
-          isTooltipShowing = false;
-          commentStore.setTooltipMessage("");
-        }}
+        onBlur={() => clearTooltipMessage()}
       />
-      {commentStore.tooltipMessage && (
-        <Tooltip title="" theme="light">
-          <>{commentStore.tooltipMessage}</>
-        </Tooltip>
-      )}
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />
         </button>
       </Elem>
+      {commentStore.tooltipMessage && (
+        <Elem name="tooltipMessage">
+          {commentStore.tooltipMessage}
+        </Elem>
+      )}
     </Block>
   );
 });
