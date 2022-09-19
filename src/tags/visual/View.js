@@ -87,6 +87,7 @@ const Model = types
       "filter",
       "timeseries",
       "timeserieslabels",
+      "pagedview",
       "paragraphs",
       "paragraphlabels",
       "video",

@@ -126,6 +126,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         playing={playing}
         volume={props.volume}
         controls={props.controls}
+        customControls={props.customControls}
         collapsed={viewCollapsed}
         onPlay={() => handlers.onPlay?.()}
         onPause={() => handlers.onPause?.()}

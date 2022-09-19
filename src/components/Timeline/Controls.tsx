@@ -22,7 +22,7 @@ import { isDefined } from "../../utils/utilities";
 import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
-import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
+import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineCustomControls, TimelineProps, TimelineStepFunction } from "./Types";
 import { FF_DEV_2715, isFF } from "../../utils/feature-flags";
 import { AudioControl } from "./Controls/AudioControl";
 import { ConfigControl } from "./Controls/ConfigControl";
@@ -76,6 +76,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     return (position - 1) / frameRate;
   }, [position, frameRate]);
 
+  const customControls = useCustomControls(props.customControls);
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
     handler(e, stepSize ?? undefined);
   };
@@ -123,7 +124,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       if (!settings?.stepSize) return;
       const altMode = e.key === "Shift";
 
-      if (e.type === 'keydown' && altMode) {
+      if (e.type === 'keydown' && altMode && !altControlsMode) {
         setAltControlsMode(true);
       } else if (e.type === 'keyup' && altMode && altControlsMode) {
         setAltControlsMode(false);
@@ -163,14 +164,15 @@ export const Controls: FC<TimelineControlsProps> = memo(({
               />
             );
           })}
+          {customControls?.left}
         </Elem>
       )}
-
       <Elem name="main-controls">
         <Elem name="group" tag={Space} collapsed>
           {extraControls}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
+          {customControls?.leftCenter}
           <AltControls
             showAlterantive={altControlsMode && !disableFrames}
             main={(
@@ -256,6 +258,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
               </>
             )}
           />
+          {customControls?.rightCenter}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           {!disableFrames && allowViewCollapse && (
@@ -283,23 +286,30 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
       <Elem name="group" tag={Space} size="small">
         {isFF(FF_DEV_2715) ? (
-          <TimeDurationControl
-            startTime={0}
-            endTime={duration}
-            minTime={0}
-            maxTime={duration}
-            currentTime={position}
-            onChangeStartTime={onTimeUpdateChange}
-          />
+          <>
+            {customControls?.right}
+            <TimeDurationControl
+              startTime={0}
+              endTime={duration}
+              minTime={0}
+              maxTime={duration}
+              currentTime={position}
+              onChangeStartTime={onTimeUpdateChange}
+            />
+          </>
         ) : (
-          <TimeDisplay
-            currentTime={currentTime}
-            duration={durationFormatted}
-            length={length}
-            position={position}
-            framerate={frameRate}
-            formatPosition={formatPosition}
-          />
+          <>
+            {customControls?.right}
+            <TimeDisplay
+              currentTime={currentTime}
+              duration={durationFormatted}
+              length={length}
+              position={position}
+              framerate={frameRate}
+              formatPosition={formatPosition}
+            />
+
+          </>
         )}
       </Elem>
     </Block>
@@ -378,3 +388,22 @@ const AltControls: FC<AltControlsProps> = (props) => {
   return props.showAlterantive ? props.alt : props.main;
 };
 
+type ControlGroups = Record<TimelineCustomControls["position"], JSX.Element[]>;
+
+const useCustomControls = (
+  customControls?: TimelineCustomControls[],
+): ControlGroups | null => {
+  if (!customControls) return null;
+
+  const groups = customControls?.reduce<ControlGroups>((groups, item) => {
+    const group = groups[item.position] ?? [];
+    const component = item.component instanceof Function ? item.component() : item.component;
+
+    group.push(component);
+    groups[item.position] = group;
+
+    return groups;
+  }, {} as ControlGroups);
+
+  return groups;
+};

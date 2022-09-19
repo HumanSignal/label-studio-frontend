@@ -96,7 +96,13 @@ function tagIntoObject(
     }
 
     data.tagName = "View";
-    data.type = "view";
+
+    if (props.mode === 'pagination') {
+      data.type = "pagedview";
+    } else {
+      data.type = "view";
+    }
+
     data.children = views;
   } else
   // contains only text nodes; HyperText can contain any structure
