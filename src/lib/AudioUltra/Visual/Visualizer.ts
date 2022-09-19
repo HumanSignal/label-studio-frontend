@@ -256,8 +256,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       layer.clear();
 
       this.enabledChannels.forEach((channel) => {
-        // this.renderWave(channel, layer);
-        measure("Render wave", () => {
+        measure(`Render wave channel ${channel}`, () => {
           this.renderWave(channel, layer);
         });
       });

@@ -187,7 +187,7 @@ export class Regions {
 
       if (region && region.start === region.end) {
         region.remove();
-      } else {
+      } else if(region) {
         this.waveform.invoke("regionCreate", [region]);
       }
       this.unlock();
