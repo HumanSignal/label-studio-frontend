@@ -392,8 +392,8 @@ export default types
 
       hotkeys.addNamed("region:delete", () => {
         const c = self.annotationStore.selected;
-
-        if (c) {
+        
+        if (c && !c.dragMode) {
           c.deleteSelectedRegions();
         }
       });

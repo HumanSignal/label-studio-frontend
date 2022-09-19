@@ -299,16 +299,15 @@ const createSpanStylesheet = (document, identifier, color) => {
     [`${className}[data-label]::after`]: `
       position: absolute;
       display: inline-block;
-      transform: translate(-99%, -5px);
+      transform: translate(-100%, 2px);
       background-color: ${initialActiveColor};
       color: ${Utils.Colors.contrastColor(initialActiveColor)};
-      height: 5px;
-      padding: 6px 6px 1px;
+      padding: 2px;
       font-size: 9.5px;
       font-weight: bold;
       font-family: Monaco;
       content: attr(data-label);
-      line-height: 0;
+      line-height: 1;
     `,
     [`${className}[data-label]:hover::after`]: `
       display: none;

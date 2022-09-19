@@ -63,6 +63,7 @@ class RichTextPieceView extends Component {
     if (isFF(FF_DEV_2786) && event.buttons === 1 && region?.selected) {
       const doc = item.visibleDoc;
 
+      region.annotation.setDragMode(true);
       item.isDragging = true;
       this.draggableRegion = region;
       this.dragAnchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
@@ -106,8 +107,9 @@ class RichTextPieceView extends Component {
 
     const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
     const region = this.draggableRegion;
-    const dragTarget = item.isFreezingEdge ? event.path[1] : event.target;
 
+    const dragTarget = item.isFreezingEdge && event.path ? event.path[1] : event.target;
+    
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(dragTarget, root, doc);
     this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
@@ -133,7 +135,6 @@ class RichTextPieceView extends Component {
       }
     }
   };
-
 
   _highlightSelection = (root, cursor, offsets) => {
     const { item } = this.props;
@@ -195,7 +196,7 @@ class RichTextPieceView extends Component {
     const text = getSelectionText(selection);
     const region = this.draggableRegion;
 
-
+    region.annotation.setDragMode(false);
     item.isDragging = false;
     item.initializedDrag = false;
     this.spanOffsets = null;
@@ -220,7 +221,6 @@ class RichTextPieceView extends Component {
       selection.removeAllRanges();
     }
   }
-
 
   _onMouseUp = (ev) => {
     const { item } = this.props;
