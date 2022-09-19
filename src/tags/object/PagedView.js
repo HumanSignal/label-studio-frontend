@@ -82,8 +82,7 @@ const HtxPagedView = observer(({ item }) => {
       if (obj.selected) {
         const _pageNumber = parseFloat(obj.object.name.split('_')[1]) + 1;
 
-        changePageSize(1);
-        setTimeout(() => setPage(_pageNumber));
+        setPage(Math.ceil(_pageNumber / pageSize));
       }
     });
   }, [JSON.stringify(item)]);
@@ -115,11 +114,6 @@ const HtxPagedView = observer(({ item }) => {
     };
   }, [page]);
 
-  const changePageSize = (pageSize) => {
-    setStoredPageSize('repeater', pageSize);
-    setPageSize(pageSize);
-  };
-
   const renderPage = () => {
     const pageView = [];
 
@@ -142,7 +136,8 @@ const HtxPagedView = observer(({ item }) => {
         onChange={(page, maxPerPage = pageSize) => {
           setPage(page);
           if (maxPerPage !== pageSize) {
-            changePageSize(maxPerPage);
+            setStoredPageSize('repeater', pageSize);
+            setPageSize(pageSize);
           }
         }}
       />
