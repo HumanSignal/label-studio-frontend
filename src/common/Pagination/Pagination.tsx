@@ -13,7 +13,7 @@ interface PaginationProps {
   pageSize: number;
   totalPages: number;
   pageSizeOptions?: [];
-  paginated: boolean;
+  pageSizeSelectable: boolean;
   size?: "small" | "medium" | "large";
   onChange?: (pageNumber: number, maxPerPage?: number | string) => void;
 }
@@ -32,7 +32,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   currentPage,
   pageSize,
   totalPages,
-  paginated = true,
+  pageSizeSelectable = true,
   onChange,
   ...props
 }, ref) => {
@@ -124,7 +124,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
           />
         </>
       </Elem>
-      {paginated && (
+      {pageSizeSelectable && (
         <Elem name="page-size">
           <select value={pageSize} onChange={handleChangeSelect}>
             {renderOptions()}
