@@ -157,10 +157,12 @@ const HtxVideoView = ({ item }) => {
     const startY = e.pageY;
 
     const onMouseMove = (e) => {
-      const position = {
-        x: pan.x + (e.pageX - startX),
-        y: pan.y + (e.pageY - startY),
-      };
+      const position = item.ref.current.adjustPan(
+        pan.x + (e.pageX - startX),
+        pan.y + (e.pageY - startY),
+      );
+
+      console.log(position);
 
       requestAnimationFrame(() => {
         setPan(position);
@@ -343,6 +345,7 @@ const HtxVideoView = ({ item }) => {
                   speed={item.speed}
                   framerate={item.framerate}
                   allowInteractions={false}
+                  allowPanOffscreen={false}
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}

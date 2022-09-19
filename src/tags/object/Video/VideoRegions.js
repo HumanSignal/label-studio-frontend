@@ -161,6 +161,7 @@ const VideoRegionsPure = ({
     onMouseUp: handleMouseUp,
   } : {};
 
+  console.log({ width, height });
 
   return (
     <Stage

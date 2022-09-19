@@ -2,7 +2,14 @@ import React from "react";
 import { Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { useRegionStyles } from "../../../hooks/useRegionColor";
+import { clamp } from "../../../utils/utilities";
 
+/**
+ *
+ * @param {import("konva/lib/Shape").Shape<import("konva/lib/Shape").ShapeConfig> | import("konva/lib/Stage").Stage} node
+ * @param {{realWidth: number, realHeight: number}} workingArea
+ * @returns
+ */
 const getNodeAbsoluteDimensions = (node, workingArea) => {
   const { realWidth: width, realHeight: height } = workingArea;
 
@@ -22,6 +29,8 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
   if (!box) return null;
 
   const { realWidth: waWidth, realHeight: waHeight } = workingArea;
+
+  console.log(workingArea);
 
   const newBox = {
     x: box.x * waWidth / 100,
@@ -53,6 +62,27 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
         node.setHeight(h);
 
         reg.updateShape(getNodeAbsoluteDimensions(node, workingArea), frame);
+      }}
+      dragBoundFunc={function(pos) {
+        const { realWidth, realHeight, width, height } = workingArea;
+
+        const nodeWidth = this.width();
+        const nodeHeight = this.height();
+        const newX = clamp(pos.x, realWidth - width, realWidth - nodeWidth);
+        const newY = clamp(pos.y, realHeight - height, realHeight - nodeHeight);
+
+        return { x: newX, y: newY };
+      }}
+
+      onDragMove={e => {
+        const node = e.target;
+
+        getNodeAbsoluteDimensions(node, workingArea);
+      }}
+      onTransform={e => {
+        const node = e.target;
+
+        getNodeAbsoluteDimensions(node, workingArea);
       }}
       onDragEnd={e => {
         const node = e.target;
