@@ -26,7 +26,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   maxRows = 4,
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  const actionRef = useRef<{ update?: (text?: string) => void, ele?: RefObject<HTMLTextAreaElement> }>({});
+  const actionRef = useRef<{ update?: (text?: string) => void, el?: RefObject<HTMLTextAreaElement> }>({});
   const clearTooltipMessage = () => {
     commentStore.setTooltipMessage("");
   };
