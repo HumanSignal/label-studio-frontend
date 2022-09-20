@@ -149,13 +149,11 @@ export class Regions {
   };
 
   private handleDrawRegion = (e: MouseEvent) => {
-    // @todo - handle regions creation in a way that doesn't require rendering and removing regions on each mouse click
-    // of the waveform
-
     if (this.locked || !this.createable) return;
     if (this.hoveredRegions.size > 0 && !e.shiftKey) {
       return;
     }
+
     this.lock();
 
     let region: Region;
@@ -211,11 +209,8 @@ export class Regions {
   };
 
   private handleMouseMove = (e: MouseEvent) => {
-    if (!this.updateable) return;
-
     const region = this.findRegionUnderCursor(e);
 
-    if (!region?.updateable) return;
     if (region) {
       region.invoke("mouseOver", [region, e]);
 
@@ -223,12 +218,12 @@ export class Regions {
         this.hoveredRegions.clear();
         this.hover(region, e);
       }
-    } else if (this.hoveredRegions.size !== 0) {
+    } else if (this.hoveredRegions.size) {
       this.hoveredRegions.forEach(region => {
         region.invoke("mouseLeave", [region, e]);
       });
       this.hoveredRegions.clear();
-      this.waveform.cursor.set(CursorSymbol.default);
+      this.waveform.cursor.set(CursorSymbol.crosshair);
     }
   };
 

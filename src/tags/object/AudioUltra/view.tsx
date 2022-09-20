@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
-import { FC, useEffect, useMemo, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
 import { Controls } from "../../../components/Timeline/Controls";
-import { Region, RegionOptions } from "../../../lib/AudioUltra/Regions/Region";
+import { Region } from "../../../lib/AudioUltra/Regions/Region";
 import { Segment } from "../../../lib/AudioUltra/Regions/Segment";
 
 interface AudioUltraProps {
@@ -11,20 +11,6 @@ interface AudioUltraProps {
 
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
-
-  //   const regions: RegionOptions[] = useMemo(() => {
-  //     item.handleNewRegions();
-
-  //     return item.regions.map((region: any) => {
-  //       console.log(JSON.stringify(region));
-  //       return {
-  //         start: region.start,
-  //         end: region.end,
-  //         color: region.bgcolor,
-  //         labels: region.labels,
-  //       };
-  //     });
-  //   }, []);
 
   const { waveform, ...controls } = useWaveform(rootRef, {
     src: item._value,

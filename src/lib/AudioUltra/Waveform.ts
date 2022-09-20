@@ -116,8 +116,6 @@ export interface WaveformOptions {
   // Regions
   regions?: RegionsOptions;
 
-  defaultRegionColor?: string;
-
   padding?: Padding;
 
   autoPlayNewSegments?: boolean;
@@ -206,7 +204,6 @@ export class Waveform extends Events<WaveformEventTypes> {
       this.visualizer,
     );
     this.regions = new Regions({
-      defaultColor: this.params?.defaultRegionColor,
       ...this.params?.regions,
     }, this, this.visualizer);
 
