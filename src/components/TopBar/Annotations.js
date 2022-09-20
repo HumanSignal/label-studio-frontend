@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconPlusCircle, LsSparks } from "../../assets/icons";
+import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
@@ -15,7 +15,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
   const enableAnnotations = store.hasInterface('annotations:tabs');
   const enablePredictions = store.hasInterface('predictions:tabs');
   const enableCreateAnnotation = store.hasInterface('annotations:add-new');
-  const groundTrurhEnabled = store.hasInterface('ground-truth');
+  const groundTruthEnabled = store.hasInterface('ground-truth');
 
   const entities = [];
 
@@ -48,6 +48,59 @@ export const Annotations = observer(({ store, annotationStore }) => {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
+  const renderCommentIcon = (ent) => {
+    if (ent.unresolved_comment_count > 0) {
+      return <LsCommentRed />;
+    } else if (ent.comment_count > 0) {
+      return <LsComment />;
+    }
+
+    return null;
+  };
+
+  const renderAnnotation = (ent, i) => {
+    return (
+      <Annotation
+        key={`${ent.pk ?? ent.id}${ent.type}`}
+        entity={ent}
+        aria-label={`${ent.type} ${i + 1}`}
+        selected={ent === annotationStore.selected}
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpened(false);
+          onAnnotationSelect?.(ent, ent.type === 'prediction');
+        }}
+        extra={(
+          <Elem name={'icons'}>
+            {renderCommentIcon(ent)}
+            {groundTruthEnabled && <GroundTruth entity={ent} disabled/>}
+          </Elem>
+        )}
+      />
+    );
+  };
+
+  const renderAnnotationList = (entities) => {
+    const _drafts = [];
+    const _annotations = [];
+
+    entities.forEach((obj, i) => {
+      if (obj.pk) {
+        _annotations.push(renderAnnotation(obj, i));
+      } else {
+        _drafts.push(renderAnnotation(obj, i));
+      }
+    });
+
+    return (
+      <>
+        <Elem name="draft">{_drafts}</Elem>
+        <Elem name="annotation">{_annotations}</Elem>
+      </>
+    );
+  };
+
   return (enableAnnotations || enablePredictions || enableCreateAnnotation) ? (
     <Elem name="section" mod={{ flat: true }}>
       <Block name="annotations-list" ref={dropdownRef}>
@@ -79,23 +132,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
               />
             )}
 
-            {entities.map((ent, i) => (
-              <Annotation
-                key={`${ent.pk ?? ent.id}${ent.type}`}
-                entity={ent}
-                aria-label={`${ent.type} ${i + 1}`}
-                selected={ent === annotationStore.selected}
-                onClick={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setOpened(false);
-                  onAnnotationSelect?.(ent, ent.type === 'prediction');
-                }}
-                extra={groundTrurhEnabled && (
-                  <GroundTruth entity={ent} disabled/>
-                )}
-              />
-            ))}
+            {renderAnnotationList(entities)}
           </Elem>
         )}
       </Block>
