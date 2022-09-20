@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconPlusCircle, LsSparks } from "../../assets/icons";
+import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
@@ -48,6 +48,16 @@ export const Annotations = observer(({ store, annotationStore }) => {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
+  const renderCommentIcon = (ent) => {
+    if (ent.unresolved_comment_count > 0) {
+      return <LsCommentRed />;
+    } else if (ent.comment_count > 0) {
+      return <LsComment />;
+    }
+
+    return null;
+  };
+
   const renderAnnotation = (ent, i) => {
     return (
       <Annotation
@@ -61,8 +71,11 @@ export const Annotations = observer(({ store, annotationStore }) => {
           setOpened(false);
           onAnnotationSelect?.(ent, ent.type === 'prediction');
         }}
-        extra={groundTruthEnabled && (
-          <GroundTruth entity={ent} disabled/>
+        extra={(
+          <Elem name={'icons'}>
+            {renderCommentIcon(ent)}
+            {groundTruthEnabled && <GroundTruth entity={ent} disabled/>}
+          </Elem>
         )}
       />
     );
