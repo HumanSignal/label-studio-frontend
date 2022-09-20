@@ -109,10 +109,10 @@ class RichTextPieceView extends Component {
     const region = this.draggableRegion;
 
     const dragTarget = item.isFreezingEdge && event.path ? event.path[1] : event.target;
-    
+
+    root.addEventListener("mouseleave", this._outOfBoundsDrag);
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(dragTarget, root, doc);
-    this.originalRange = [region.globalOffsets.start, region.globalOffsets.end];
     item.initializedDrag = true;
 
     region.addClass(region._stylesheet.state.dragging);
@@ -173,15 +173,25 @@ class RichTextPieceView extends Component {
     return [globalOffsets, range];
   };
 
-  _restoreOriginalRangeAsSelection = (doc, selection) => {
-    if (this.originalRange) {
-      const range = doc.createRange();
+  _outOfBoundsDrag = () => {
+    const { item } = this.props;
+    const rootEl = item.visibleNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+    const region = this.draggableRegion;
 
-      range.setStart(selection.anchorNode, this.originalRange[0]);
-      range.setEnd(selection.anchorNode, this.originalRange[1]);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    root.removeEventListener("mouseleave", this._outOfBoundsDrag);
+    region.selectRegion();
+    region.annotation.setDragMode(false);
+    region.removeClass(region._stylesheet.state.dragging);
+
+    item.isDragging = false;
+    item.initializedDrag = false;
+    const doc = root.ownerDocument;
+    const selection = doc.defaultView.getSelection();
+
+    selection.empty();
+    selection.removeAllRanges();
+    this._removeSelectionStyle();
   };
 
   _onDragStop = () => {
