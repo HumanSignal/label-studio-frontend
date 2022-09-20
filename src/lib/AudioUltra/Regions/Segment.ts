@@ -20,6 +20,7 @@ export interface SegmentOptions {
 }
 
 export interface SegmentGlobalEvents {
+  beforeRegionCreated: (region: Region|Segment) => void;
   regionCreated: (region: Region|Segment) => void;
   regionUpdated: (region: Region|Segment) => void;
   regionRemoved: (region: Region|Segment) => void;
@@ -290,10 +291,14 @@ export class Segment extends Events<SegmentEvents> {
     this.waveform.invoke("regionUpdated", [this]);
   };
   
-  updateColor(color: string) {
-    if (!this.updateable) return;
+  setColor(color: string|RgbaColorArray) {
     this.color = rgba(color);
     this.handleColor = this.color.darken(0.6);
+  }
+
+  updateColor(color: string|RgbaColorArray) {
+    if (!this.updateable) return;
+    this.setColor(color);
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
   }

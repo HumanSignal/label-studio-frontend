@@ -72,6 +72,10 @@ export class Regions {
   addRegion(options: RegionOptions, render = true) {
     const region = new Region(options, this.waveform, this.visualizer, this);
 
+    this.waveform.invoke("beforeRegionCreated", [region]);
+
+    console.log(region);
+
     this.regions.push(region);
 
     if (render) {

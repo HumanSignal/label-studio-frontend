@@ -153,6 +153,20 @@ export const AudioModel = types.compose(
         });
       },
 
+      findRegionByWsRegion(wsRegion) {
+        return self.regs.find(r => r._ws_region?.id === wsRegion?.id);
+      },
+
+      getRegionColor(wsRegion) {
+        const region = self.findRegionByWsRegion(wsRegion);
+
+        if (region) {
+          return region.getColor();
+        }
+
+        return "#ccc";
+      },
+
       onHotKey(e) {
         e && e.preventDefault();
         self._ws.togglePlay();
@@ -271,8 +285,17 @@ export const AudioModel = types.compose(
         const r = self.annotation.createResult(wsRegion, labels, control, self);
 
         r._ws_region = wsRegion;
-        // r.updateAppearenceFromState();
+        
         return r;
+      },
+
+      updateRegion(wsRegion) {
+        const r = self.findRegionByWsRegion(wsRegion);
+
+        if (!r) return;
+
+        r.start = wsRegion.start;
+        r.end = wsRegion.end;
       },
 
       /**
