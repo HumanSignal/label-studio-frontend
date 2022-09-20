@@ -84,8 +84,8 @@ examples.forEach(example => {
       Asserts.notDeepEqualWithTolerance(result, restored, 1);
       for (let i = result.length; i--;) {
         Asserts.deepEqualWithTolerance(
-          Helpers.omitBy(result[i], (val, key) => key === "from_name" || isLabels(val, key)),
-          Helpers.omitBy(restored[i], (val, key) => key === "from_name" || isLabels(val, key)),
+          Helpers.omitBy(result[i], (val, key) => key === "from_name" || key === "text" || isLabels(val, key)),
+          Helpers.omitBy(restored[i], (val, key) => key === "from_name" || key === "text" || isLabels(val, key)),
           1,
         );
       }
