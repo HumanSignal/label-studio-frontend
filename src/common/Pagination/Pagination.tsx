@@ -13,6 +13,7 @@ interface PaginationProps {
   pageSize: number;
   totalPages: number;
   pageSizeOptions?: [];
+  pageSizeSelectable: boolean;
   size?: "small" | "medium" | "large";
   onChange?: (pageNumber: number, maxPerPage?: number | string) => void;
 }
@@ -31,6 +32,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   currentPage,
   pageSize,
   totalPages,
+  pageSizeSelectable = true,
   onChange,
   ...props
 }, ref) => {
@@ -122,11 +124,13 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
           />
         </>
       </Elem>
-      <Elem name="page-size">
-        <select value={pageSize} onChange={handleChangeSelect}>
-          {renderOptions()}
-        </select>
-      </Elem>
+      {pageSizeSelectable && (
+        <Elem name="page-size">
+          <select value={pageSize} onChange={handleChangeSelect}>
+            {renderOptions()}
+          </select>
+        </Elem>
+      )}
     </Block>
   );
 });

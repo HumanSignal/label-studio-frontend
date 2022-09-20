@@ -132,6 +132,7 @@ const HtxPagedView = observer(({ item }) => {
         totalPages={totalPages}
         pageSize={pageSize}
         pageSizeOptions={ PAGE_SIZE_OPTIONS }
+        pageSizeSelectable={false}
         size={"medium"}
         onChange={(page, maxPerPage = pageSize) => {
           setPage(page);
