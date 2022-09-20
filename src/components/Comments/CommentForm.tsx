@@ -63,7 +63,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   }, []);
 
   useEffect(() => {
-    commentStore.setInputRef(actionRef.current.ele);
+    commentStore.setInputRef(actionRef.current.el);
     commentStore.setCommentFormSubmit(() => onSubmit());
   }, [actionRef, commentStore]);
   
