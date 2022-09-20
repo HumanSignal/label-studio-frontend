@@ -14,7 +14,7 @@ export type TextAreaProps = {
   onFocus?: (e: FocusEvent) => void,
   onBlur?: (e: FocusEvent) => void,
   ref?: MutableRefObject<HTMLTextAreaElement>,
-  actionRef?: MutableRefObject<{ update?: (text?: string) => void, ele?: RefObject<HTMLTextAreaElement> }>,
+  actionRef?: MutableRefObject<{ update?: (text?: string) => void, el?: RefObject<HTMLTextAreaElement> }>,
   rows?: number,
   maxRows?: number,
   autoSize?: boolean,
