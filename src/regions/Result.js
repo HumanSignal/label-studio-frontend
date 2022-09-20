@@ -256,15 +256,19 @@ const Result = types
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
+      // cut off annotation id
+      const id = self.area?.cleanId;
 
       if (!data) return null;
       if (!self.isSubmitable) return null;
-      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
-      if (type === "labels" && self.to_name.mergeLabelsAndResults) return null;
-      // cut off annotation id
-      const id = self.area.cleanId;
 
       if (!isDefined(data.value)) data.value = {};
+      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
+      if (self.to_name.mergeLabelsAndResults) {
+        if (type === "labels") return null;
+        // add labels to the main region, not nested ones
+        if (self.area?.labels?.length && !self.from_name.perregion) data.value.labels = self.area.labels;
+      }
 
       const contolMeta = self.from_name.metaValue;
 
