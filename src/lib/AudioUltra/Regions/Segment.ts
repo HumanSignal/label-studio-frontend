@@ -10,14 +10,18 @@ import { Region } from "./Region";
 import { Regions } from "./Regions";
 
 export interface SegmentOptions {
+  id?: string;
   start: number;
   end: number;
   selected?: boolean;
+  updateable?: boolean;
+  deleteable?: boolean;
+  visible?: boolean;
 }
 
 export interface SegmentGlobalEvents {
-  regionCreate: (region: Region|Segment) => void;
-  regionUpdate: (region: Region|Segment) => void;
+  regionCreated: (region: Region|Segment) => void;
+  regionUpdated: (region: Region|Segment) => void;
   regionRemoved: (region: Region|Segment) => void;
 }
 
@@ -38,6 +42,9 @@ export class Segment extends Events<SegmentEvents> {
   color: RgbaColorArray = rgba("#ccc");
   handleColor: RgbaColorArray;
   selected = false;
+  updateable = true;
+  deleteable = true;
+  visible = true;
   private waveform: Waveform;
   private visualizer: Visualizer;
   private controller: Regions;
@@ -58,10 +65,12 @@ export class Segment extends Events<SegmentEvents> {
     if (options.start < 0) throw new Error("Segment start must be greater than 0");
     if (options.end < 0) throw new Error("Segment end must be greater than 0");
 
-    this.id = nanoid(5);
+    this.id = options.id ?? nanoid(5);
     this.start = options.start;
     this.end = options.end;
     this.selected = !!options.selected;
+    this.updateable = options.updateable ?? this.updateable;
+    this.visible = options.visible ?? this.visible;
     this.handleColor = this.color.darken(0.6);
     this.waveform = waveform;
     this.visualizer = visualizer;
@@ -152,6 +161,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private mouseOver = (_: Segment, e: MouseEvent) => {
+    if (!this.updateable) return;
     const isEdgeGrab = this.edgeGrabCheck(e);
 
     if (this.isDragging) return;
@@ -160,6 +170,8 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleMouseUp = () => {
+    if (!this.updateable) return;
+
     this.controller.unlock();
 
     if (this.isDragging) {
@@ -176,6 +188,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
+    if (!this.updateable) return;
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
@@ -202,6 +215,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private mouseDown = (_: Segment, e: MouseEvent) => {
+    if (!this.updateable) return;
     if (e.shiftKey || this.controller.isLocked) return;
     const { container } = this.visualizer;
     const scrollLeft = this.visualizer.getScrollLeft();
@@ -225,7 +239,7 @@ export class Segment extends Events<SegmentEvents> {
    * Render the region on the canvas
    */
   render() {
-    if (!this.inViewport) {
+    if (!this.visible || !this.inViewport) {
       return;
     }
     const { color, handleColor, timelinePlacement, timelineHeight } = this;
@@ -267,22 +281,25 @@ export class Segment extends Events<SegmentEvents> {
    */
 
   handleSelected = () => {
+    if (!this.updateable) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = !this.selected;
     if (this.selected) this.color = this.color.darken(0.5);
     else this.color = this.color.lighten(1);
     this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdate", [this]);
+    this.waveform.invoke("regionUpdated", [this]);
   };
   
   updateColor(color: string) {
+    if (!this.updateable) return;
     this.color = rgba(color);
     this.handleColor = this.color.darken(0.6);
     this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdate", [this]);
+    this.waveform.invoke("regionUpdated", [this]);
   }
 
   updatePosition(start?: number, end?: number) {
+    if (!this.updateable) return;
     let newStart = start ?? this.start;
     let newEnd = end ?? this.end;
 
@@ -293,10 +310,11 @@ export class Segment extends Events<SegmentEvents> {
     this.start = newStart;
     this.end = newEnd;
     this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdate", [this]);
+    this.waveform.invoke("regionUpdated", [this]);
   }
 
   remove() {
+    if (!this.deleteable) return;
     this.waveform.invoke("regionRemoved", [this]);
   }
 
@@ -306,13 +324,13 @@ export class Segment extends Events<SegmentEvents> {
    * Remove region's layer
    */
   destroy() {
-    if (this.isDestroyed) return;
+    if (!this.deleteable || this.isDestroyed) return;
 
     super.destroy();
 
     this.controller.layerGroup.removeLayer(this.layer);
 
-    this.waveform.invoke("regionRemoved", [this]);
+    this.remove();
   }
 
   toJSON() {

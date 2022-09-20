@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useMemo, useRef } from "react";
 import { useWaveform } from "../../../lib/AudioUltra/react";
 import { Controls } from "../../../components/Timeline/Controls";
 import { Region, RegionOptions } from "../../../lib/AudioUltra/Regions/Region";
@@ -11,14 +11,20 @@ interface AudioUltraProps {
 
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
-  const regions: RegionOptions[] = item.regions.map((region: any) => {
-    console.log(region);
-    return {
-      start: region.start,
-      end: region.end,
-      color: region.color,
-    };
-  });
+
+  //   const regions: RegionOptions[] = useMemo(() => {
+  //     item.handleNewRegions();
+
+  //     return item.regions.map((region: any) => {
+  //       console.log(JSON.stringify(region));
+  //       return {
+  //         start: region.start,
+  //         end: region.end,
+  //         color: region.bgcolor,
+  //         labels: region.labels,
+  //       };
+  //     });
+  //   }, []);
 
   const { waveform, ...controls } = useWaveform(rootRef, {
     src: item._value,
@@ -31,10 +37,14 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     enabledChannels: [0],
     height: 94,
     zoom: 1,
-    muted: false,
     rate: 1,
+    muted: false,
     onLoad: item.onLoad,
-    regions,
+    regions: {
+      createable: !item.readonly,
+      updateable: !item.readonly,
+      deleteable: !item.readonly,
+    },
     timeline: {
       backgroundColor: "#ffffff",
     },
@@ -45,16 +55,10 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       item.addRegion(region);
     };
 
-    const updateRegion = (region: Region|Segment) => {
-      // item.updateRegion(region);
-    };
-
-    waveform.current?.on("regionCreate", createRegion);
-    waveform.current?.on("regionUpdate", updateRegion);
+    waveform.current?.on("regionCreated", createRegion);
 
     return () => {
-      waveform.current?.off("regionCreate", createRegion);
-      waveform.current?.off("regionUpdate", updateRegion);
+      waveform.current?.off("regionCreated", createRegion);
     };
   }, []);
 

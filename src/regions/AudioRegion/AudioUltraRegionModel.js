@@ -46,7 +46,6 @@ export const AudioUltraRegionModel = types
     },
   }))
   .actions(self => {
-    console.log('heartex');
     /**
      * @example
      * {
@@ -70,7 +69,7 @@ export const AudioUltraRegionModel = types
     return {
       serialize() {
         const res = {
-          original_length: self.object._ws?.getDuration(),
+          original_length: self.object._ws?.duration,
           value: {
             start: self.start,
             end: self.end,
@@ -78,6 +77,10 @@ export const AudioUltraRegionModel = types
         };
 
         return res;
+      },
+
+      getColor() {
+        return Utils.Colors.convertToRGBA(self.getOneColor(), 1);
       },
 
       updateColor(alpha = 1) {

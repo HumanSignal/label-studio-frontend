@@ -3,9 +3,9 @@ import { MediaLoader } from "./Media/MediaLoader";
 import { Player } from "./Controls/Player";
 import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
 import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
-import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
+import { RegionGlobalEvents } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
-import { Regions } from "./Regions/Regions";
+import { Regions, RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
 import { Padding } from "./Common/Style";
 import { getCursorTime } from "./Common/Utils";
@@ -114,14 +114,13 @@ export interface WaveformOptions {
   seekStep?: number;
 
   // Regions
-  regions?: RegionOptions[];
+  regions?: RegionsOptions;
 
   defaultRegionColor?: string;
 
   padding?: Padding;
 
   autoPlayNewSegments?: boolean;
-
 
   // Cursor options
   cursor?: CursorOptions;
@@ -207,8 +206,8 @@ export class Waveform extends Events<WaveformEventTypes> {
       this.visualizer,
     );
     this.regions = new Regions({
-      regions: this.params.regions ?? [],
       defaultColor: this.params?.defaultRegionColor,
+      ...this.params?.regions,
     }, this, this.visualizer);
 
     this.player = new Player(this);
@@ -260,6 +259,17 @@ export class Waveform extends Events<WaveformEventTypes> {
    */
   pause() {
     this.player.pause();
+  }
+
+  /**
+   * Toggle playback
+   */
+  togglePlay() {
+    if (this.playing) {
+      this.pause();
+    } else {
+      this.play();
+    }
   }
 
   /**

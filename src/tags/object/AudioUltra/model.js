@@ -121,14 +121,14 @@ export const AudioModel = types.compose(
 
       handleSyncPlay() {
         if (!self._ws) return;
-        if (self._ws.isPlaying()) return;
+        if (self._ws.playing) return;
 
         self._ws?.play();
       },
 
       handleSyncPause() {
         if (!self._ws) return;
-        if (!self._ws.isPlaying()) return;
+        if (!self._ws.playing) return;
 
         self._ws?.pause();
       },
@@ -137,8 +137,8 @@ export const AudioModel = types.compose(
 
       handleSyncSeek(time) {
         try {
-          if (self._ws && time !== self._ws.getCurrentTime()) {
-            self._ws.setCurrentTime(time);
+          if (self._ws && time !== self._ws.currentTime) {
+            self._ws.currentTime = time;
           }
         } catch (err) {
           console.log(err);
@@ -146,7 +146,7 @@ export const AudioModel = types.compose(
       },
 
       handleNewRegions() {
-        if (!self._ws?.isReady) return;
+        if (!self._ws?.loaded) return;
         self.regs.map(reg => {
           if (reg._ws_region) return;
           self.createWsRegion(reg);
@@ -155,7 +155,7 @@ export const AudioModel = types.compose(
 
       onHotKey(e) {
         e && e.preventDefault();
-        self._ws.playPause();
+        self._ws.togglePlay();
         return false;
       },
 
@@ -169,9 +169,6 @@ export const AudioModel = types.compose(
 
         if (!fm.perregion && fromModel.type !== "labels") return;
 
-        /**
-       *
-       */
         const tree = {
           pid: obj.id,
           start: obj.value.start,
@@ -185,12 +182,9 @@ export const AudioModel = types.compose(
 
         if (fromModel) {
           m = restoreNewsnapshot(fromModel);
-          // m.fromStateJSON(obj);
 
           if (!r) {
-          // tree.states = [m];
             r = self.createRegion(tree, [m]);
-          // r = self.addRegion(tree);
           } else {
             r.states.push(m);
           }
@@ -200,13 +194,9 @@ export const AudioModel = types.compose(
           self._ws.addRegion({
             start: r.start,
             end: r.end,
+            color: r.getColor(),
           });
         }
-
-        // if (fm.perregion)
-        //     fm.perRegionCleanup();
-
-        r.updateAppearenceFromState();
 
         return r;
       },
@@ -248,7 +238,7 @@ export const AudioModel = types.compose(
       },
 
       selectRange(ev, ws_region) {
-        const selectedRegions = self.regs.filter(r=>r.start >= ws_region.start && r.end <= ws_region.end);
+        const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
 
         ws_region.remove && ws_region.remove();
         if (!selectedRegions.length) return;
@@ -261,31 +251,28 @@ export const AudioModel = types.compose(
       },
 
       addRegion(wsRegion) {
-        console.log("addRegion", wsRegion.toJSON());
-        // // area id is assigned to WS region during deserealization
-        // const find_r = self.annotation.areas.get(wsRegion.id);
+        // area id is assigned to WS region during deserealization
+        const find_r = self.annotation.areas.get(wsRegion.id);
 
-        // if (find_r) {
-        //   // find_r.applyCSSClass(wsRegion);
+        if (find_r) {
+          find_r._ws_region = wsRegion;
+          return find_r;
+        }
 
-        //   find_r._ws_region = wsRegion;
-        //   return find_r;
-        // }
+        const states = self.getAvailableStates();
 
-        // const states = self.getAvailableStates();
+        if (states.length === 0) {
+          // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+          return;
+        }
 
-        // if (states.length === 0) {
-        //   // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
-        //   return;
-        // }
+        const control = self.activeStates()[0];
+        const labels = { [control.valueType]: control.selectedValues() };
+        const r = self.annotation.createResult(wsRegion, labels, control, self);
 
-        // const control = self.activeStates()[0];
-        // const labels = { [control.valueType]: control.selectedValues() };
-        // const r = self.annotation.createResult(wsRegion, labels, control, self);
-
-        // r._ws_region = wsRegion;
-        // // r.updateAppearenceFromState();
-        // return r;
+        r._ws_region = wsRegion;
+        // r.updateAppearenceFromState();
+        return r;
       },
 
       /**
@@ -301,7 +288,7 @@ export const AudioModel = types.compose(
       handleSeek() {
         if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
 
-        self.triggerSyncSeek(self._ws.getCurrentTime());
+        self.triggerSyncSeek(self._ws.currentTime);
       },
 
       handleSpeed(speed) {
@@ -311,19 +298,21 @@ export const AudioModel = types.compose(
       createWsRegion(region) {
         const options = region.wsRegionOptions;
 
-        console.log("createWsRegion", options);
+        options.updateable = !region.readonly;
+        options.deleteable = !region.readonly;
+        options.color = region.getColor();
 
-        // const r = self._ws.addRegion(options);
+        const r = self._ws.addRegion(options, false);
 
-        // region._ws_region = r;
-        // region.updateAppearenceFromState();
+        region._ws_region = r;
       },
 
       onLoad(ws) {
         self._ws = ws;
 
-        self.regs.forEach(reg => {
-          self.createWsRegion(reg);
+        setTimeout(() => {
+          self.needsUpdate();
+          self._ws.regions.renderAll();
         });
       },
 

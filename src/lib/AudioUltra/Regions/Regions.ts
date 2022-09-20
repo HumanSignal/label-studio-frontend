@@ -7,8 +7,11 @@ import { Waveform } from "../Waveform";
 import { Region, RegionOptions } from "./Region";
 import { Segment } from "./Segment";
 
-interface RegionsOptions {
-  regions: RegionOptions[];
+export interface RegionsOptions {
+  regions?: RegionOptions[];
+  updateable?: boolean;
+  createable?: boolean;
+  deleteable?: boolean;
   defaultColor?: string|RgbaColorArray;
 }
 
@@ -20,17 +23,20 @@ export class Regions {
   private locked = false;
   private hoveredRegions = new Set<Segment>();
   private defaultColor = rgba("#787878");
+  private createable = true;
+  private updateable = true;
+  private deleteable = true;
 
   layerGroup: LayerGroup;
 
-  constructor({
-    regions = [],
-    defaultColor,
-  }: RegionsOptions, waveform: Waveform, visualizer: Visualizer) {
+  constructor(options: RegionsOptions, waveform: Waveform, visualizer: Visualizer) {
     this.waveform = waveform;
     this.visualizer = visualizer;
-    this.initialRegions = regions ?? [];
-    this.defaultColor = defaultColor ? rgba(defaultColor) : this.defaultColor;
+    this.initialRegions = options?.regions ?? [];
+    this.defaultColor = options?.defaultColor ? rgba(options.defaultColor) : this.defaultColor;
+    this.createable = options?.createable ?? this.createable;
+    this.updateable = options?.updateable ?? this.updateable;
+    this.deleteable = options?.deleteable ?? this.deleteable;
     this.layerGroup = this.visualizer.getLayer("regions") as LayerGroup;
 
     this.init();
@@ -40,7 +46,7 @@ export class Regions {
     // Regions general events
     this.visualizer.on("initialized", this.handleInit);
     this.waveform.on("regionRemoved", this.handleRegionRemoved);
-    this.waveform.on("regionUpdate", this.handleRegionUpdated);
+    this.waveform.on("regionUpdated", this.handleRegionUpdated);
 
     this.visualizer.container.addEventListener("mousedown", this.handleDrawRegion);
 
@@ -63,20 +69,27 @@ export class Regions {
     this.regions.forEach(region => region.render());
   }
 
-  addRegion(options: RegionOptions) {
+  addRegion(options: RegionOptions, render = true) {
     const region = new Region(options, this.waveform, this.visualizer, this);
 
     this.regions.push(region);
-    this.renderAll();
-    this.visualizer.draw(true);
+
+    if (render) {
+      this.renderAll();
+      this.visualizer.draw(true);
+    }
 
     return region;
   }
 
-  removeRegion(regionId: string) {
-    const region = this.regions.find(region => region.id === regionId);
+  findRegion(id: string) {
+    return this.regions.find(region => region.id === id);
+  }
 
-    if (region) {
+  removeRegion(regionId: string) {
+    const region = this.findRegion(regionId);
+
+    if (this.deleteable && region?.deleteable) {
       region.destroy();
       this.regions = this.regions.filter(r => r !== region);
     }
@@ -92,7 +105,7 @@ export class Regions {
     this.visualizer.off("initialized", this.handleInit);
     this.visualizer.off("draw", this.handleDraw);
     this.waveform.off("regionRemoved", this.handleRegionRemoved);
-    this.waveform.off("regionUpdate", this.handleRegionUpdated);
+    this.waveform.off("regionUpdated", this.handleRegionUpdated);
 
     container.removeEventListener("mousemove", this.handleMouseMove);
     container.removeEventListener("mousedown", this.handleMouseDown);
@@ -139,7 +152,7 @@ export class Regions {
     // @todo - handle regions creation in a way that doesn't require rendering and removing regions on each mouse click
     // of the waveform
 
-    if (this.locked) return;
+    if (this.locked || !this.createable) return;
     if (this.hoveredRegions.size > 0 && !e.shiftKey) {
       return;
     }
@@ -188,7 +201,7 @@ export class Regions {
       if (region && region.start === region.end) {
         region.remove();
       } else if(region) {
-        this.waveform.invoke("regionCreate", [region]);
+        this.waveform.invoke("regionCreated", [region]);
       }
       this.unlock();
     };
@@ -198,8 +211,11 @@ export class Regions {
   };
 
   private handleMouseMove = (e: MouseEvent) => {
+    if (!this.updateable) return;
+
     const region = this.findRegionUnderCursor(e);
 
+    if (!region?.updateable) return;
     if (region) {
       region.invoke("mouseOver", [region, e]);
 
@@ -217,9 +233,10 @@ export class Regions {
   };
 
   private handleMouseDown = (e: MouseEvent) => {
+    if (!this.updateable) return;
     const region = this.findRegionUnderCursor(e);
 
-    if (region) {
+    if (region?.updateable) {
       e.preventDefault();
       e.stopPropagation();
 
@@ -228,9 +245,10 @@ export class Regions {
   };
 
   private handleMouseUp = (e: MouseEvent) => {
+    if (!this.updateable) return;
     const region = this.findRegionUnderCursor(e);
 
-    if (region) {
+    if (region?.updateable) {
       region.invoke("mouseUp", [region, e]);
     }
   };

@@ -20,7 +20,7 @@ const AudioRegionModel = types.compose(
 );
 
 const AudioUltraRegionModel = types.compose(
-  "AudioUltraRegionModel",
+  "AudioRegionModel",
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
