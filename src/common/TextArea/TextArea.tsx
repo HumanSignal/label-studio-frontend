@@ -100,7 +100,7 @@ export const TextArea: FC<TextAreaProps> = ({
         textAreaRef.current.value = text;
         resizeTextArea();
       },
-      ele: textAreaRef,
+      el: textAreaRef,
     };
   }
 
