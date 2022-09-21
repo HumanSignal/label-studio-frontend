@@ -110,7 +110,7 @@ class RichTextPieceView extends Component {
 
     const dragTarget = item.isFreezingEdge && event.path ? event.path[1] : event.target;
 
-    root.addEventListener("mouseleave", this._outOfBoundsDrag);
+    document.addEventListener("mouseup", this._outOfBoundsDrag);
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(dragTarget, root, doc);
     item.initializedDrag = true;
@@ -173,25 +173,28 @@ class RichTextPieceView extends Component {
     return [globalOffsets, range];
   };
 
-  _outOfBoundsDrag = () => {
+  _outOfBoundsDrag = (ev) => {
     const { item } = this.props;
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const region = this.draggableRegion;
 
-    root.removeEventListener("mouseleave", this._outOfBoundsDrag);
-    region.selectRegion();
-    region.annotation.setDragMode(false);
-    region.removeClass(region._stylesheet.state.dragging);
+    document.removeEventListener("mouseup", this._outOfBoundsDrag);
 
-    item.isDragging = false;
-    item.initializedDrag = false;
-    const doc = root.ownerDocument;
-    const selection = doc.defaultView.getSelection();
+    if (!root.contains(ev.target)) {
+      region.selectRegion();
+      region.annotation.setDragMode(false);
+      region.removeClass(region._stylesheet.state.dragging);
 
-    selection.empty();
-    selection.removeAllRanges();
-    this._removeSelectionStyle();
+      item.isDragging = false;
+      item.initializedDrag = false;
+      const doc = root.ownerDocument;
+      const selection = doc.defaultView.getSelection();
+
+      selection.empty();
+      selection.removeAllRanges();
+      this._removeSelectionStyle();
+    }
   };
 
   _onDragStop = () => {
@@ -213,7 +216,7 @@ class RichTextPieceView extends Component {
     this._removeSelectionStyle();
 
     region.removeClass(region._stylesheet.state.dragging);
-
+    
     if (!selection.isCollapsed) {
       region.removeHighlight();
 
