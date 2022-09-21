@@ -19,7 +19,7 @@ Scenario("Travel through history with the selected brush region", async function
 
   await AtImageView.waitForImage();
 
-  await AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   AtSidebar.dontSeeSelectedRegion();
 
   I.say("Draw a brush region");
@@ -71,7 +71,7 @@ Scenario("Travel through history after moving the rectangle region", async funct
   </View>`,
   });
   await AtImageView.waitForImage();
-  await AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   AtSidebar.dontSeeSelectedRegion();
 
   I.say("Draw a rectangle region");
