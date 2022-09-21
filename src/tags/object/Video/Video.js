@@ -127,12 +127,12 @@ const Model = types
 
     handleSyncSeek(time) {
       if (self.ref.current) {
-        // If the incoming value was synced from video leave it as is
+        // If the incoming value was synced from video leave it as is and reset the capture value
         if (self._seekedValue >= 0) {
           self._seekedValue = -1;
         } else {
           // If the incoming value was not synced from video, then we need to sync it with a possible offset
-          self.ref.current.position = time + self.durationOffset;
+          self.ref.current.currentTime = time + self.durationOffset;
         }
       }
     },
