@@ -25,9 +25,6 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
 
   if (enableAnnotations) entities.push(...annotationStore.annotations);
 
-
-  console.log('heartex', annotationStore);
-
   const onAnnotationSelect = useCallback((entity, isPrediction) => {
     if (!entity.selected) {
       if (isPrediction) {
@@ -111,8 +108,6 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
   const renderAnnotationList = (entities) => {
     const _drafts = [];
     const _annotations = [];
-
-    console.log('heartex drafts', entities);
 
     entities.forEach((obj, i) => {
       if (obj.pk) {
