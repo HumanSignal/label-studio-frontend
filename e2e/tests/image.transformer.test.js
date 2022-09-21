@@ -277,11 +277,11 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     AtImageView.clickAt(rectangleCenter.x, rectangleCenter.y);
     AtSidebar.seeSelectedRegion();
 
-    // // Switch to move tool to force appearance of transformer
-    // I.pressKey("v");
-    // const isTransformerExist = await AtImageView.isTransformerExist();
+    // Switch to move tool to force appearance of transformer
+    I.pressKey("v");
+    const isTransformerExist = await AtImageView.isTransformerExist();
 
-    // assert.strictEqual(isTransformerExist, true);
+    assert.strictEqual(isTransformerExist, true);
 
     // The rotator anchor must be above top anchor by 50 pixels
     const rotatorPosition = {
