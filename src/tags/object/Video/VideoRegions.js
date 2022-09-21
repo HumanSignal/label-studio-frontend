@@ -7,6 +7,7 @@ import { Layer, Rect, Stage, Transformer } from "react-konva";
 import Constants from "../../../core/Constants";
 import { Annotation } from "../../../stores/Annotation/Annotation";
 import { Rectangle } from "./Rectangle";
+import { boundBoxFunction, onDragMove } from "./TransformTools";
 
 const MIN_SIZE = 5;
 
@@ -196,7 +197,7 @@ const VideoRegionsPure = ({
           locked={locked}
           isDrawing={isDrawing}
           workinAreaCoordinates={workinAreaCoordinates}
-          allowRegionsOutsideWorkingArea={allowRegionsOutsideWorkingArea}
+          onDragMove={onDragMove(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           stageRef={stageRef}
         />
       </Layer>
@@ -212,7 +213,8 @@ const VideoRegionsPure = ({
             keepRatio={false}
             ignoreStroke
             flipEnabled={false}
-            onTransform={e => console.log(e.target.width())}
+            boundBoxFunc={boundBoxFunction(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
+            onDragMove={onDragMove(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           />
         </Layer>
       )}
@@ -220,7 +222,15 @@ const VideoRegionsPure = ({
   );
 };
 
-const RegionsLayer = observer(({ regions, item, layerProps, locked, isDrawing, workinAreaCoordinates, allowRegionsOutsideWorkingArea, stageRef }) => {
+const RegionsLayer = observer(({
+  regions,
+  item,
+  locked,
+  isDrawing,
+  workinAreaCoordinates,
+  stageRef,
+  onDragMove,
+}) => {
   return (
     <>
       {regions.map(reg => (
@@ -229,13 +239,12 @@ const RegionsLayer = observer(({ regions, item, layerProps, locked, isDrawing, w
           key={reg.id}
           reg={reg}
           frame={item.frame}
-          position={layerProps.position}
           workingArea={workinAreaCoordinates}
           draggable={!isDrawing && !locked}
           selected={reg.selected || reg.inSelection}
           listening={!reg.locked && !reg.readonly}
-          allowRegionsOutsideWorkingArea={allowRegionsOutsideWorkingArea}
           stageRef={stageRef}
+          onDragMove={onDragMove}
         />
       ))}
     </>
