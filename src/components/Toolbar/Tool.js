@@ -70,10 +70,12 @@ export const Tool = ({
     currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
-        if (tool?.isDrawingTool && !(tool?.annotation?.isDrawing)){
-          tool.annotation.unselectAreas();
-        } 
-        onClick?.();
+        if(!(tool?.annotation?.isDrawing)) {
+          if (tool?.isDrawingTool){
+            tool.annotation.unselectAreas();
+          }
+          onClick?.();
+        }
       }, label);
     }
 
@@ -119,11 +121,13 @@ export const Tool = ({
       expanded: expanded && !dynamic,
       smart: dynamic || smart,
     }} onClick={(e) => {
-      e.preventDefault();
-      if(tool?.isDrawingTool && !isAnnotationDrawing) {
-        tool?.annotation?.unselectAreas?.();
+      if(!isAnnotationDrawing) {
+        e.preventDefault();
+        if(tool?.isDrawingTool) {
+          tool?.annotation?.unselectAreas?.();
+        }
+        onClick?.(e);
       }
-      onClick?.(e);
     }} onMouseEnter={() => {
       setHovered(true);
     }} onMouseLeave={() => {
