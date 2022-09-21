@@ -116,7 +116,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   await I.executeScript(setSelectAfterCreate, false);
 
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
 

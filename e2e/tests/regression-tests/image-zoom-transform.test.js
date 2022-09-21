@@ -24,7 +24,7 @@ Scenario("Transforming the region on the border of zoomed image", async ({ I, La
   });
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   // Zoom in
   I.click("[aria-label='zoom-in']");
@@ -68,7 +68,7 @@ Scenario("Transforming the region on the border of zoomed image after window res
   });
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   // Zoom in
   I.click("[aria-label='zoom-in']");

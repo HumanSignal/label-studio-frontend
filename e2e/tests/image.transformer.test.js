@@ -145,7 +145,7 @@ Data(shapesTable).Scenario("Check transformer existing for different shapes, the
 
   LabelStudio.init(getParamsWithLabels(shapeName));
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
 
   // Draw two regions
@@ -205,7 +205,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
     const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
@@ -252,7 +252,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
 
@@ -311,7 +311,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
 
@@ -364,7 +364,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
 
@@ -512,7 +512,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
 
     const bbox = {
@@ -592,7 +592,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
 
     const bbox1 = {
@@ -695,7 +695,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionTr
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
     const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
@@ -779,7 +779,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionTr
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
     const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
@@ -893,7 +893,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
 
@@ -1008,7 +1008,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
 
@@ -1164,7 +1164,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasRotator))
     I.amOnPage("/");
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
     const canvasSize = await AtImageView.getCanvasSize();
     const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);

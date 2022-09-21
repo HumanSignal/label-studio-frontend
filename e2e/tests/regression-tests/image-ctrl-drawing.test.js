@@ -117,7 +117,7 @@ Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
@@ -146,7 +146,7 @@ Scenario("Drawing with ctrl pressed", async function({ I, LabelStudio, AtSidebar
 
     LabelStudio.init(params);
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     I.say(`Drawing ${innerRegion.shape} on ${outerRegion.shape}`);
     await AtImageView.lookForStage();
     I.pressKey(outerRegion.hotKey);
@@ -180,7 +180,7 @@ Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   const regionPairs = [];
@@ -210,7 +210,7 @@ Scenario("How it works without ctrl", async function({ I, LabelStudio, AtSidebar
 
     LabelStudio.init(params);
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     I.say(`Drawing ${innerRegion.shape} on ${outerRegion.shape}`);
     I.pressKey(["u"]);
     await AtImageView.lookForStage();

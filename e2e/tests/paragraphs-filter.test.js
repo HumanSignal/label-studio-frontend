@@ -62,7 +62,7 @@ Scenario("Create two results using excluding a phrase  by the filter", async ({ 
 
   LabelStudio.setFeatureFlags(FEATURE_FLAGS);
   LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   I.say("Select 2 regions in the consecutive phrases of the one person");
 
@@ -88,7 +88,7 @@ Scenario("Create two results using excluding a phrase  by the filter", async ({ 
 
   I.say("Reset to initial state");
   LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   I.say("Filter the phrases by that person.");
   AtParagraphs.clickFilter("Vincent Vega:");
@@ -143,7 +143,7 @@ Scenario("Check different cases ", async ({ I, LabelStudio, AtSidebar, AtParagra
 
   LabelStudio.setFeatureFlags(FEATURE_FLAGS);
   LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   I.say("Hide Author 3");
   AtParagraphs.clickFilter("Author 1", "Author 2");
