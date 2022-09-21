@@ -221,27 +221,27 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
 
     // Switch to move tool to force appearance of transformer
     I.pressKey("v");
-    // const isTransformerExist = await AtImageView.isTransformerExist();
+    const isTransformerExist = await AtImageView.isTransformerExist();
 
-    // assert.strictEqual(isTransformerExist, true);
+    assert.strictEqual(isTransformerExist, true);
 
 
-    // // Transform the shape
-    // // Move the top anchor up for 50px (limited by image border) => {x1:50,y1:0,x2:150,y2:150}
-    // AtImageView.drawByDrag(100, 50, 0, -100);
-    // // Move the left anchor left for 50px (limited by image border) => {x1:0,y1:0,x2:150,y2:150}
-    // AtImageView.drawByDrag(50, 75, -300, -100);
-    // // Move the right anchor left for 50px => {x1:0,y1:0,x2:100,y2:150}
-    // AtImageView.drawByDrag(150, 75, -50, 0);
-    // // Move the bottom anchor down for 100px => {x1:0,y1:0,x2:100,y2:250}
-    // AtImageView.drawByDrag(50, 150, 10, 100);
-    // // Move the right-bottom anchor right for 200px and down for 50px => {x1:0,y1:0,x2:300,y2:300}
-    // AtImageView.drawByDrag(100, 250, 200, 50);
-    // // Check resulting sizes
-    // const rectangleResult = await LabelStudio.serialize();
-    // const exceptedResult = Shape.byBBox(0, 0, 300, 300).result;
+    // Transform the shape
+    // Move the top anchor up for 50px (limited by image border) => {x1:50,y1:0,x2:150,y2:150}
+    AtImageView.drawByDrag(100, 50, 0, -100);
+    // Move the left anchor left for 50px (limited by image border) => {x1:0,y1:0,x2:150,y2:150}
+    AtImageView.drawByDrag(50, 75, -300, -100);
+    // Move the right anchor left for 50px => {x1:0,y1:0,x2:100,y2:150}
+    AtImageView.drawByDrag(150, 75, -50, 0);
+    // Move the bottom anchor down for 100px => {x1:0,y1:0,x2:100,y2:250}
+    AtImageView.drawByDrag(50, 150, 10, 100);
+    // Move the right-bottom anchor right for 200px and down for 50px => {x1:0,y1:0,x2:300,y2:300}
+    AtImageView.drawByDrag(100, 250, 200, 50);
+    // Check resulting sizes
+    const rectangleResult = await LabelStudio.serialize();
+    const exceptedResult = Shape.byBBox(0, 0, 300, 300).result;
 
-    // Asserts.deepEqualWithTolerance(rectangleResult[0].value, convertToImageSize(exceptedResult));
+    Asserts.deepEqualWithTolerance(rectangleResult[0].value, convertToImageSize(exceptedResult));
   });
 
 Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRotator))
