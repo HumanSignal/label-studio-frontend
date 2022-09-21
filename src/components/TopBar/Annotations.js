@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -48,7 +48,7 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
-  useEffect(() => {
+  const commentsNumber = useMemo(() => {
     let _unresolvedComments = 0;
     let _comments = 0;
 
@@ -58,9 +58,15 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
       if (!obj.isResolved) _unresolvedComments++;
     });
 
-    commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
-    commentStore.annotation.setCommentCount(_comments);
-  }, [JSON.stringify(commentStore)]);
+    return [_comments, _unresolvedComments];
+  }, [[...commentStore.comments]]);
+
+  useEffect(() => {
+    const [comments, unresolved] = commentsNumber;
+
+    commentStore.annotation.setUnresolvedCommentCount(unresolved);
+    commentStore.annotation.setCommentCount(comments);
+  }, [commentsNumber]);
 
   const renderCommentIcon = (ent) => {
     if (ent.unresolved_comment_count > 0) {
