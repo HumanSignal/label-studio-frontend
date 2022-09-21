@@ -1,13 +1,13 @@
 import chroma from "chroma-js";
 import { clamp } from "lodash";
-import { inject, observer } from "mobx-react";
+import { observer } from "mobx-react";
 import { getParentOfType } from "mobx-state-tree";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Layer, Rect, Stage, Transformer } from "react-konva";
 import Constants from "../../../core/Constants";
 import { Annotation } from "../../../stores/Annotation/Annotation";
 import { Rectangle } from "./Rectangle";
-import { boundBoxFunction, onDragMove } from "./TransformTools";
+import { createBoundingBoxGetter, createOnDragMoveHandler } from "./TransformTools";
 
 const MIN_SIZE = 5;
 
@@ -196,7 +196,7 @@ const VideoRegionsPure = ({
           locked={locked}
           isDrawing={isDrawing}
           workinAreaCoordinates={workinAreaCoordinates}
-          onDragMove={onDragMove(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
+          onDragMove={createOnDragMoveHandler(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           stageRef={stageRef}
         />
       </Layer>
@@ -212,8 +212,8 @@ const VideoRegionsPure = ({
             keepRatio={false}
             ignoreStroke
             flipEnabled={false}
-            boundBoxFunc={boundBoxFunction(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
-            onDragMove={onDragMove(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
+            boundBoxFunc={createBoundingBoxGetter(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
+            onDragMove={createOnDragMoveHandler(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           />
         </Layer>
       )}

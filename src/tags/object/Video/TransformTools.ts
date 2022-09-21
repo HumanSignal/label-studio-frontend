@@ -1,6 +1,5 @@
 import { KonvaEventObject } from "konva/lib/Node";
 import { Box, Transformer } from "konva/lib/shapes/Transformer";
-import { Stage } from "konva/lib/Stage";
 import { WorkingArea } from "./types";
 
 // define several math function
@@ -39,7 +38,7 @@ export const getClientRect = (rotatedBox: Box) => {
   };
 };
 
-export const getTotalBox = (boxes: {
+export const getCommonBBox = (boxes: {
   x: number,
   y: number,
   width: number,
@@ -65,7 +64,7 @@ export const getTotalBox = (boxes: {
   };
 };
 
-export const boundBoxFunction = (workingArea: WorkingArea, enabled = true) => (oldBox: Box, newBox: Box) => {
+export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true) => (oldBox: Box, newBox: Box) => {
   if (!enabled) return newBox;
 
   const box = getClientRect(newBox);
@@ -83,12 +82,12 @@ export const boundBoxFunction = (workingArea: WorkingArea, enabled = true) => (o
   return newBox;
 };
 
-export const onDragMove = (workingArea: WorkingArea, enabled = true) => function(this: Transformer, e: KonvaEventObject<DragEvent>) {
+export const createOnDragMoveHandler = (workingArea: WorkingArea, enabled = true) => function(this: Transformer, e: KonvaEventObject<DragEvent>) {
   if (!enabled) return;
 
   const nodes = this?.nodes ? this.nodes() : [e.target];
   const boxes = nodes.map((node) => node.getClientRect());
-  const box = getTotalBox(boxes);
+  const box = getCommonBBox(boxes);
 
   nodes.forEach((shape) => {
     const absPos = shape.getAbsolutePosition();
