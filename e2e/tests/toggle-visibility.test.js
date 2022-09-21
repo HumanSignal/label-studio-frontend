@@ -116,11 +116,11 @@ Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSide
   await checkVisible(0);
 });
 
-Scenario("Hiding bulk visibility toggle", async ({ I, AtImageView, AtLabels, AtSidebar }) => {
+Scenario("Hiding bulk visibility toggle", ({ I, AtImageView, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
   I.executeScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
-  await AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
   AtLabels.clickLabel("Planet");
   AtImageView.dragKonva(300, 300, 50, 50);

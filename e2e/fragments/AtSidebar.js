@@ -1,7 +1,7 @@
 const { assert } = require("assert");
 
 /* global inject, locate */
-const { I, LabelStudio } = inject();
+const { I } = inject();
 
 module.exports = {
   _sideBarLocator: locate(".lsf-sidebar-tabs"),
