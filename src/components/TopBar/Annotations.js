@@ -9,7 +9,7 @@ import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import "./Annotations.styl";
 import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
 
-export const Annotations = observer(({ store, annotationStore }) => {
+export const Annotations = observer(({ store, annotationStore, commentStore }) => {
   const dropdownRef = useRef();
   const [opened, setOpened] = useState(false);
   const enableAnnotations = store.hasInterface('annotations:tabs');
@@ -47,6 +47,20 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
     return () => document.removeEventListener('click', handleClick);
   }, []);
+
+  useEffect(() => {
+    let _unresolvedComments = 0;
+    let _comments = 0;
+
+    commentStore.comments.forEach(obj => {
+      _comments++;
+
+      if (!obj.isResolved) _unresolvedComments++;
+    });
+
+    commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
+    commentStore.annotation.setCommentCount(_comments);
+  }, [JSON.stringify(commentStore)]);
 
   const renderCommentIcon = (ent) => {
     if (ent.unresolved_comment_count > 0) {

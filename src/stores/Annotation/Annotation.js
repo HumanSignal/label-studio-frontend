@@ -41,7 +41,6 @@ export const Annotation = types
     last_annotation_history: types.maybeNull(types.integer),
 
     comment_count: types.maybeNull(types.integer),
-
     unresolved_comment_count: types.maybeNull(types.integer),
 
     loadedDate: types.optional(types.Date, () => new Date()),
@@ -220,6 +219,14 @@ export const Annotation = types
 
     setIsDrawing(isDrawing) {
       self.isDrawing = isDrawing;
+    },
+
+    setUnresolvedCommentCount(val) {
+      self.unresolved_comment_count = val;
+    },
+
+    setCommentCount(val) {
+      self.comment_count = val;
     },
 
     setGroundTruth(value, ivokeEvent = true) {
