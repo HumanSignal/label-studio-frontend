@@ -10,7 +10,7 @@ module.exports = {
   _regionLocator: locate(".lsf-region-item"),
   _selectedRegionsLocator: locate(".lsf-entity"),
   _outlinerRegionTree: locate(".lsf-outliner-tree"),
-  _outlinerRegionTreeNodes: locate(".lsf-tree__node"),
+  _outlinerRegionTreeNodes: locate(".lsf-outliner-tree .lsf-tree__node"),
   _outlinerEmpty: locate(".lsf-outliner__empty"),
   _outlinerSelectedRegionLocator: locate(".lsf-tree__node .lsf-tree-node-selected"),
   async seeRegions(count) {
@@ -18,7 +18,7 @@ module.exports = {
 
     if (count) {
       if(hasFFDev1170) {
-        I.seeElement(this._outlinerRegionTree.withDescendant(this._outlinerRegionTreeNodes.at(count)));
+        I.seeElement(this._outlinerRegionTreeNodes.at(count));
       } else {
         I.seeElement(this._regionsCounterLocator.withText(`${count}`));
       }
