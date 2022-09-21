@@ -32,9 +32,9 @@ const BaseTool = types
   }))
   .views(self => {
     return {
-      get isDrawingTool() {
-        return self.isDrawingTool;
-      },
+      // get isDrawingTool() {
+      //   return self.isDrawingTool;
+      // },
       get toolName() {
         return getType(self).name;
       },
