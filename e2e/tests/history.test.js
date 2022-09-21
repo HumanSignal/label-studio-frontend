@@ -71,7 +71,7 @@ Scenario("Travel through history after moving the rectangle region", async funct
   </View>`,
   });
   await AtImageView.waitForImage();
-  // AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   AtSidebar.dontSeeSelectedRegion();
 
   I.say("Draw a rectangle region");
