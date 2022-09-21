@@ -9,16 +9,12 @@ module.exports = {
   _regionsCounterLocator: locate(".lsf-entities__counter"),
   _regionLocator: locate(".lsf-region-item"),
   _selectedRegionsLocator: locate(".lsf-entity"),
-  _outlinerRegionTree: locate(".lsf-outliner-tree"),
-  _outlinerRegionTreeNodes: locate(".lsf-outliner-tree .lsf-tree__node"),
-  _outlinerEmpty: locate(".lsf-outliner__empty"),
-  _outlinerSelectedRegionLocator: locate(".lsf-tree__node .lsf-tree-node-selected"),
   seeRegions(count) {
     if (count) {
       I.seeElement(this._regionsCounterLocator.withText(`${count}`));
     } else {
       I.seeElement(this._regionGroupButton.withText("Regions"));
-      I.dontSeeElement(this._regionsCounterLocator);
+      I.dontSeeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
     }
   },
   dontSeeRegions(count) {
