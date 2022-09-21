@@ -120,7 +120,7 @@ Data(shapesTable).Scenario("Simple rotation", async function({ I, LabelStudio, A
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  await AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (const region of current.regions) {
@@ -159,7 +159,7 @@ Data(shapesTable).Scenario("Rotate zoomed", async function({ I, LabelStudio, AtI
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  await AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (const region of current.regions) {
@@ -206,7 +206,7 @@ Data(windowSizesTable).Scenario("Rotation with different window sizes", async fu
   I.resizeWindow(current.width, current.height);
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  await AtSidebar.seeRegions(0);
+  AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const imageSize = await AtImageView.getImageFrameSize();
   const rotationQueue = ["right", "right", "right", "right", "left", "left", "left", "left"];
