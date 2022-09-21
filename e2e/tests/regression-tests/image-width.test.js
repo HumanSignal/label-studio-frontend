@@ -20,7 +20,7 @@ Scenario("Setting width 50% shouldn't break canvas size on resize of working are
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
   let canvasSize = await AtImageView.getCanvasSize();
   let imageSize = await AtImageView.getImageSize();

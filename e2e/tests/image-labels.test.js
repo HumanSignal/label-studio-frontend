@@ -129,7 +129,7 @@ DataStore.Scenario("Preventing applying labels of mismatch types", async ({
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   const offset = size * 0.05;
@@ -167,7 +167,7 @@ DataStore.Scenario("Preventing applying labels of mismatch types", async ({
 
     LabelStudio.init(params);
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     I.click(toolSelector);
     await AtImageView.lookForStage();
     I.say(`${shape}: Drawing.`);

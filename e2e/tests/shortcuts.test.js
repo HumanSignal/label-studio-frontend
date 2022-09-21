@@ -47,7 +47,7 @@ Data(configParams).Scenario("Should keep the focus and cursor position.", async 
     ff_front_dev_1564_dev_1565_shortcuts_focus_and_cursor_010222_short: true,
   });
   LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   // Check if there is right input element
   I.seeElement((inline ? "input" : "textarea") + TEXT_SELECTOR);
@@ -109,7 +109,7 @@ Data(configParams).Scenario("Should work with emoji.", async ({ I, LabelStudio, 
     ff_front_dev_1564_dev_1565_shortcuts_focus_and_cursor_010222_short: true,
   });
   LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
 
   // Check if there is right input element
   I.seeElement((inline ? "input" : "textarea") + TEXT_SELECTOR);

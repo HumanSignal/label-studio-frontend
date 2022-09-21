@@ -37,7 +37,7 @@ Scenario("Brush relations shouldn't crash everything", async ({ I, LabelStudio, 
   await ErrorsCollector.run();
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   await AtImageView.lookForStage();
   const canvasSize = await AtImageView.getCanvasSize();
   const regionsCentralPoints = [];

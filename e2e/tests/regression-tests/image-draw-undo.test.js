@@ -116,7 +116,7 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
   I.amOnPage("/");
   LabelStudio.init(params);
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   const canvasSize = await AtImageView.getCanvasSize();
   const size = Math.min(canvasSize.width, canvasSize.height);
   const regions = [];
@@ -141,7 +141,7 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
 
     LabelStudio.init(params);
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
     I.say(`Drawing ${region.shape}`);
     await AtImageView.lookForStage();
     I.pressKey(region.hotKey);
@@ -149,6 +149,6 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
     AtSidebar.seeRegions(1);
     I.say(`Try to undo ${region.shape}`);
     I.pressKey(['CommandOrControl', 'Z']);
-    AtSidebar.seeRegions(0);
+    await AtSidebar.seeRegions(0);
   }
 }).retry(2);

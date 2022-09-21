@@ -120,7 +120,7 @@ Scenario("Hiding bulk visibility toggle", async ({ I, AtImageView, AtLabels, AtS
   I.amOnPage("/");
   I.executeScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
   AtLabels.clickLabel("Planet");
   AtImageView.dragKonva(300, 300, 50, 50);
