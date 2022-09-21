@@ -578,10 +578,10 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       [bboxCenter.x, bbox.y + bbox.height + 200],
     ], "steps", 10);
 
-    // // Check that region has been rotated for 180 degrees
-    // const rectangleResult = await LabelStudio.serialize();
+    // Check that region has been rotated for 180 degrees
+    const rectangleResult = await LabelStudio.serialize();
 
-    // Asserts.deepEqualWithTolerance(rectangleResult[0].value.rotation, 180);
+    Asserts.deepEqualWithTolerance(rectangleResult[0].value.rotation, 180);
   });
 
 Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRotator))
