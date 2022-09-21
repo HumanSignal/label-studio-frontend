@@ -56,9 +56,7 @@ const HtxVideoView = ({ item }) => {
   }, [videoLength]);
 
   const supportsRegions = useMemo(() => {
-    const controlType = item.control()?.type;
-
-    return controlType ? controlType.match("video") : false;
+    return isDefined(item?.videoControl());
   }, [item]);
 
   useEffect(() => {
@@ -360,6 +358,7 @@ const HtxVideoView = ({ item }) => {
             )}
           </Elem>
         </Block>
+
         {loaded && (
           <Elem
             name="timeline"
