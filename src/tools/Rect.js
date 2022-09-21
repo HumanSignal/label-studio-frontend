@@ -11,6 +11,7 @@ const _BaseNPointTool = types
     group: "segmentation",
     smart: true,
     shortcut: "R",
+    isDrawingTool: true,
   })
   .views(self => {
     const Super = {

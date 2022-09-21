@@ -52,6 +52,7 @@ const _Tool = types
     group: "segmentation",
     shortcut: "B",
     smart: true,
+    isDrawingTool: true,
   })
   .views(self => ({
     get viewClass() {
