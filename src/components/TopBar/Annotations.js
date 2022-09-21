@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
@@ -8,6 +8,7 @@ import { isDefined, userDisplayName } from "../../utils/utilities";
 import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import "./Annotations.styl";
 import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
+import { reaction } from "mobx";
 
 export const Annotations = observer(({ store, annotationStore, commentStore }) => {
   const dropdownRef = useRef();
@@ -19,9 +20,13 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
 
   const entities = [];
 
+
   if (enablePredictions) entities.push(...annotationStore.predictions);
 
   if (enableAnnotations) entities.push(...annotationStore.annotations);
+
+
+  console.log('heartex', annotationStore);
 
   const onAnnotationSelect = useCallback((entity, isPrediction) => {
     if (!entity.selected) {
@@ -45,28 +50,30 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
 
     document.addEventListener('click', handleClick);
 
-    return () => document.removeEventListener('click', handleClick);
+    const runOnPropertyChange = (value) => {
+      let _unresolvedComments = 0;
+      let _comments = 0;
+
+      value.forEach(obj => {
+        _comments++;
+
+        if (!obj) _unresolvedComments++;
+      });
+
+      commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
+      commentStore.annotation.setCommentCount(_comments);
+    };
+
+    const reactionDisposer = reaction(
+      () => [...commentStore.comments.map(item => item.isResolved)],
+      runOnPropertyChange,
+    );
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+      reactionDisposer();
+    };
   }, []);
-
-  const commentsNumber = useMemo(() => {
-    let _unresolvedComments = 0;
-    let _comments = 0;
-
-    commentStore.comments.forEach(obj => {
-      _comments++;
-
-      if (!obj.isResolved) _unresolvedComments++;
-    });
-
-    return [_comments, _unresolvedComments];
-  }, [[...commentStore.comments]]);
-
-  useEffect(() => {
-    const [comments, unresolved] = commentsNumber;
-
-    commentStore.annotation.setUnresolvedCommentCount(unresolved);
-    commentStore.annotation.setCommentCount(comments);
-  }, [commentsNumber]);
 
   const renderCommentIcon = (ent) => {
     if (ent.unresolved_comment_count > 0) {
@@ -104,6 +111,8 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
   const renderAnnotationList = (entities) => {
     const _drafts = [];
     const _annotations = [];
+
+    console.log('heartex drafts', entities);
 
     entities.forEach((obj, i) => {
       if (obj.pk) {
