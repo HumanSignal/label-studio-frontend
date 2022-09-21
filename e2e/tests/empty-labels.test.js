@@ -217,7 +217,7 @@ Scenario(`Consistency of empty labels`, async ({ I, LabelStudio, AtSidebar, AtIm
 
   I.amOnPage("/");
   LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
+  await AtSidebar.seeRegions(0);
   AtImageView.waitForImage();
   AtLabels.clickLabel("1");
   AtImageView.dragKonva(200, 200, 100, 100);

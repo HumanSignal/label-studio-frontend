@@ -27,7 +27,7 @@ module.exports = {
         I.seeElement(this._outlinerEmpty);
       } else {
         I.seeElement(this._regionGroupButton.withText("Regions"));
-        I.dontSeeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
+        I.dontSeeElement(this._regionsCounterLocator);
       }
     }
   },
