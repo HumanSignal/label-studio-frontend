@@ -108,10 +108,14 @@ export const FF_DEV_2918 = "fflag_fix_front_dev_2918_labeling_filtered_paragraph
  */
 export const FF_DEV_3350 = "fflag_fix_front_dev_3350_restrict_drawing_area_short";
 
+if (window.APP_SETTINGS) {
+  Object.assign(window.APP_SETTINGS.feature_flags, {
+    // [FF_DEV_3350]: true,
+  });
+}
+
 function getFeatureFlags() {
-  return window.APP_SETTINGS?.feature_flags || {
-    // ff_front_DEV_1713_audio_ui_150222_short: true,
-  };
+  return window.APP_SETTINGS?.feature_flags ?? {};
 }
 
 export function isFF(id: string) {

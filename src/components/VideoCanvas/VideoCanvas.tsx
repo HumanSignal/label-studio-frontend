@@ -19,7 +19,6 @@ type VideoProps = {
   allowInteractions?: boolean,
   speed: number,
 
-  allowNegativeZoom?: boolean,
   allowPanOffscreen?: boolean,
 
   contrast?: number,

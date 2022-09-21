@@ -255,7 +255,7 @@ function renderChildren(item: IAnyStateTreeNode) {
  * @param {*} obj
  * @param {*} classes
  */
-function findParentOfType(obj: IAnyStateTreeNode, classes: IAnyComplexType[]) {
+export function findParentOfType(obj: IAnyStateTreeNode, classes: IAnyComplexType[]) {
   for (const c of classes) {
     try {
       const p = getParentOfType(obj, c);

@@ -19,6 +19,7 @@ import { VideoRegions } from "./VideoRegions";
 import ResizeObserver from "../../../utils/resize-observer";
 import { useFullscreen } from "../../../hooks/useFullscreen";
 import { IconZoomIn } from "../../../assets/icons";
+import { FF_DEV_3350, isFF } from "../../../utils/feature-flags";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
 
@@ -42,6 +43,7 @@ const HtxVideoView = ({ item }) => {
     onEnterFullscreen() { enterFullscreen(); },
     onExitFullscreen() { exitFullscren(); },
   });
+  const limitCanvasDrawingBoundaries = isFF(FF_DEV_3350);
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
@@ -161,8 +163,6 @@ const HtxVideoView = ({ item }) => {
         pan.x + (e.pageX - startX),
         pan.y + (e.pageY - startY),
       );
-
-      console.log(position);
 
       requestAnimationFrame(() => {
         setPan(position);
@@ -332,6 +332,7 @@ const HtxVideoView = ({ item }) => {
                     width={videoSize[0]}
                     height={videoSize[1]}
                     workingArea={videoDimensions}
+                    allowRegionsOutsideWorkingArea={!limitCanvasDrawingBoundaries}
                   />
                 )}
                 <VideoCanvas
@@ -345,7 +346,7 @@ const HtxVideoView = ({ item }) => {
                   speed={item.speed}
                   framerate={item.framerate}
                   allowInteractions={false}
-                  allowPanOffscreen={false}
+                  allowPanOffscreen={!limitCanvasDrawingBoundaries}
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}
