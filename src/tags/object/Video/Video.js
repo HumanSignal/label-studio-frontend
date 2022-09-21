@@ -105,13 +105,10 @@ const Model = types
 
     get durationOffset() {
       const duration = self.duration;
-      const syncedDuration = self.syncedObject?.duration ?? 1;
+      const syncedDuration = self.syncedObject?.duration ?? duration;
+      const offset = duration - syncedDuration;
 
-      const diff = duration - syncedDuration;
-
-      console.log({ syncedDuration, duration, diff });
-
-      return diff;
+      return offset;
     },
 
     get hasStates() {
@@ -130,9 +127,11 @@ const Model = types
 
     handleSyncSeek(time) {
       if (self.ref.current) {
+        // If the incoming value was synced from video leave it as is
         if (self._seekedValue >= 0) {
           self._seekedValue = -1;
         } else {
+          // If the incoming value was not synced from video, then we need to sync it with a possible offset
           self.ref.current.position = time + self.durationOffset;
         }
       }
@@ -152,6 +151,7 @@ const Model = types
 
     handleSeek() {
       if (self.ref.current) {
+        // Capture the current seeked value with the offset so that we can skip it when syncing back to the video
         self._seekedValue = self.ref.current.currentTime - self.durationOffset;
         self.triggerSyncSeek(self._seekedValue);
       }
