@@ -216,13 +216,13 @@ const HtxVideoView = ({ item }) => {
   const handleVideoEnded = useCallback(() => {
     setPlaying(false);
     setPosition(videoLength);
+    item.setOnlyFrame(videoLength);
   }, [videoLength, setPosition, setPlaying]);
 
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
     setPlaying((playing) => {
       if (playing === false) {
-        item.ref.current.play();
         item.triggerSyncPlay();
         return true;
       }
@@ -233,7 +233,6 @@ const HtxVideoView = ({ item }) => {
   const handlePause = useCallback(() => {
     setPlaying((playing) => {
       if (playing === true) {
-        item.ref.current.pause();
         item.triggerSyncPause();
         return false;
       }
@@ -344,7 +343,6 @@ const HtxVideoView = ({ item }) => {
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}
-                  // onClick={togglePlaying}
                   onEnded={handleVideoEnded}
                   onPlay={handlePlay}
                   onPause={handlePause}

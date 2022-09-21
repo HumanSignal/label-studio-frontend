@@ -77,9 +77,13 @@ export const Wave: FC<TimelineViewProps> = ({
 
     if (!wsi) return;
 
-    handlers.onPositionChange?.(wsi.getCurrentTime() * 1000);
+    const currentTime = wsi.getCurrentTime();
+    const duration = wsi.getDuration();
 
-    if (wsi.getCurrentTime() === wsi.getDuration() && !shouldStartOver) {
+    handlers.onPositionChange?.(currentTime * 1000);
+
+    if (currentTime >= duration && !shouldStartOver) {
+      wsi.setCurrentTime(duration);
       startOver();
     }
 

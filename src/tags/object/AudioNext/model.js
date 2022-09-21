@@ -104,6 +104,10 @@ export const AudioModel = types.compose(
         return self.annotation.toNames.get(self.name);
       },
 
+      get duration() {
+        return self._ws?.getDuration?.() ?? 1;
+      },
+
       activeStates() {
         const states = self.states();
 

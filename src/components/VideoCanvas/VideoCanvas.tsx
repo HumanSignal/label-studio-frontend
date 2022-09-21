@@ -200,9 +200,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const handleVideoEnded = useCallback(() => {
     setPlaying(false);
     setBuffering(false);
-    props.onSeeked?.();
     props.onEnded?.();
     props.onPause?.();
+    props.onSeeked?.();
   }, [props.onEnded]);
 
   const handleAnimationFrame = () => {
@@ -338,8 +338,8 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     set volume(value: number) {
       const video = videoRef.current;
 
-      if (video) {
-        video.currentTime = value;
+      if (video && value !== this.volume) {
+        video.volume = value;
       }
     },
     setZoom(value) {
@@ -365,12 +365,14 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     },
     seek(time) {
       this.currentTime = clamp(time, 0, this.duration);
+
       requestAnimationFrame(() => drawVideo());
     },
     goToFrame(frame: number) {
       const frameClamped = clamp(frame, 1, length);
 
       this.currentTime = frameClamped / framerate;
+
       requestAnimationFrame(() => drawVideo());
     },
   };
