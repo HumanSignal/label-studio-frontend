@@ -508,7 +508,6 @@ export default observer(
 
       item.updateSkipInteractions(e);
 
-      // item.freezeHistory();
       const p = e.target.getParent();
 
       if (!item.annotation.editable) return;

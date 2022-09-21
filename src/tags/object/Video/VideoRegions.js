@@ -154,7 +154,6 @@ const VideoRegionsPure = ({
     if (!isDrawing) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
-    // const { offsetX: x, offsetY: y } = e.evt;
 
     if (Math.abs(newRegion.x - x) < MIN_SIZE && Math.abs(newRegion.y - y) < MIN_SIZE) {
       setNewRegion(null);
@@ -265,7 +264,6 @@ const Shape = observer(({
       box={box}
       frame={frame}
       onClick={(e) => {
-        // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
         const annotation = getParentOfType(reg, Annotation);
 
         if (annotation && annotation.relationMode) {

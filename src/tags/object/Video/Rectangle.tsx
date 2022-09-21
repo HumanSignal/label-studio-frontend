@@ -51,10 +51,7 @@ const RectanglePure: FC<RectProps> = ({
   };
 
   const onTransform = (e: KonvaEventObject<Event>) => {
-    const node = e.target;
-    // limitTransformations(e.target);
-
-    normalizeNodeDimentions(node, "rect");
+    normalizeNodeDimentions(e.target, "rect");
   };
 
   return (
@@ -71,7 +68,6 @@ const RectanglePure: FC<RectProps> = ({
       onTransformEnd={onDimensionUpdate}
       onDragMove={onDimensionUpdate}
       onDragEnd={onDimensionUpdate}
-      // dragBoundFunc={dragBoundFunc}
       {...rest}
     />
   );
