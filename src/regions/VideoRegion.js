@@ -70,8 +70,6 @@ const Model = types
         }),
       };
 
-      if (self.labels?.length) value.labels = self.labels;
-
       return { value };
     },
 
