@@ -13,22 +13,12 @@ module.exports = {
   _outlinerRegionTreeNodes: locate(".lsf-outliner-tree .lsf-tree__node"),
   _outlinerEmpty: locate(".lsf-outliner__empty"),
   _outlinerSelectedRegionLocator: locate(".lsf-tree__node .lsf-tree-node-selected"),
-  async seeRegions(count) {
-    const hasFFDev1170 = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
-
+  seeRegions(count) {
     if (count) {
-      if(hasFFDev1170) {
-        I.seeElement(this._outlinerRegionTreeNodes.at(count));
-      } else {
-        I.seeElement(this._regionsCounterLocator.withText(`${count}`));
-      }
+      I.seeElement(this._regionsCounterLocator.withText(`${count}`));
     } else {
-      if(hasFFDev1170) {
-        I.seeElement(this._outlinerEmpty);
-      } else {
-        I.seeElement(this._regionGroupButton.withText("Regions"));
-        I.dontSeeElement(this._regionsCounterLocator);
-      }
+      I.seeElement(this._regionGroupButton.withText("Regions"));
+      I.dontSeeElement(this._regionsCounterLocator);
     }
   },
   dontSeeRegions(count) {
@@ -46,14 +36,8 @@ module.exports = {
   dontSeeRelations() {
     I.dontSee(`Relations`, this._sideBarLocator);
   },
-  async seeSelectedRegion() {
-    const hasFFDev1170 = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
-
-    if(hasFFDev1170) {
-      I.seeElement(this._outlinerSelectedRegionLocator);
-    } else {
-      I.seeElement(this._selectedRegionsLocator);
-    }
+  seeSelectedRegion() {
+    I.seeElement(this._selectedRegionsLocator);
   },
   dontSeeSelectedRegion() {
     I.dontSeeElement(this._selectedRegionsLocator);
