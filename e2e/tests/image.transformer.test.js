@@ -924,80 +924,80 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
     // assert.strictEqual(isTransformerExist, true);
 
     // The rotator anchor must be above top anchor by 50 pixels
-    // const rotatorPosition = {
-    //   x: bboxCenter.x,
-    //   y: bbox.y - 50,
-    // };
+    const rotatorPosition = {
+      x: bboxCenter.x,
+      y: bbox.y - 50,
+    };
 
-    // // Rotate for 180 degrees clockwise
-    // AtImageView.drawThroughPoints([
-    //   [rotatorPosition.x, rotatorPosition.y],
-    //   [bboxCenter.x + 100, bboxCenter.y],
-    //   [bboxCenter.x, bboxCenter.y + 100],
-    //   [bboxCenter.x, bboxCenter.y + 200],
-    // ], "steps", 10);
+    // Rotate for 180 degrees clockwise
+    AtImageView.drawThroughPoints([
+      [rotatorPosition.x, rotatorPosition.y],
+      [bboxCenter.x + 100, bboxCenter.y],
+      [bboxCenter.x, bboxCenter.y + 100],
+      [bboxCenter.x, bboxCenter.y + 200],
+    ], "steps", 10);
 
-    // // When we have the  rotated region, we need to check its behavior when we drag it across the borders of the image
-    // let rectangleResult;
+    // When we have the  rotated region, we need to check its behavior when we drag it across the borders of the image
+    let rectangleResult;
 
-    // I.say("Drag the region over the left border");
-    // AtImageView.drawThroughPoints([
-    //   [bboxCenter.x, bboxCenter.y],
-    //   [-500, bboxCenter.y],
-    // ], "steps", 20);
-    // AtSidebar.seeSelectedRegion();
-    // // moving of the region should be constrained by borders
-    // rectangleResult = await LabelStudio.serialize();
-    // Asserts.deepEqualWithTolerance(
-    //   rectangleResult[0].value.x * canvasSize.width / 100,
-    //   Shape.byBBox(bbox.width, bbox.y + bbox.height, -bbox.width, -bbox.height).result.x,
-    // );
-    // // reset position by undo
-    // I.pressKey(["Control", "z"]);
+    I.say("Drag the region over the left border");
+    AtImageView.drawThroughPoints([
+      [bboxCenter.x, bboxCenter.y],
+      [-500, bboxCenter.y],
+    ], "steps", 20);
+    AtSidebar.seeSelectedRegion();
+    // moving of the region should be constrained by borders
+    rectangleResult = await LabelStudio.serialize();
+    Asserts.deepEqualWithTolerance(
+      rectangleResult[0].value.x * canvasSize.width / 100,
+      Shape.byBBox(bbox.width, bbox.y + bbox.height, -bbox.width, -bbox.height).result.x,
+    );
+    // reset position by undo
+    I.pressKey(["Control", "z"]);
 
-    // I.say("Drag the region over the top border");
-    // AtImageView.drawThroughPoints([
-    //   [bboxCenter.x, bboxCenter.y],
-    //   [bboxCenter.x, -500],
-    // ], "steps", 20);
-    // AtSidebar.seeSelectedRegion();
-    // // moving of the region should be constrained by borders
-    // rectangleResult = await LabelStudio.serialize();
-    // Asserts.deepEqualWithTolerance(
-    //   rectangleResult[0].value.y * canvasSize.height / 100,
-    //   Shape.byBBox(bbox.x + bbox.width, bbox.height, -bbox.width, -bbox.height).result.y,
-    // );
-    // // reset position by undo
-    // I.pressKey(["Control", "z"]);
+    I.say("Drag the region over the top border");
+    AtImageView.drawThroughPoints([
+      [bboxCenter.x, bboxCenter.y],
+      [bboxCenter.x, -500],
+    ], "steps", 20);
+    AtSidebar.seeSelectedRegion();
+    // moving of the region should be constrained by borders
+    rectangleResult = await LabelStudio.serialize();
+    Asserts.deepEqualWithTolerance(
+      rectangleResult[0].value.y * canvasSize.height / 100,
+      Shape.byBBox(bbox.x + bbox.width, bbox.height, -bbox.width, -bbox.height).result.y,
+    );
+    // reset position by undo
+    I.pressKey(["Control", "z"]);
 
-    // I.say("Drag the region over the right border");
-    // AtImageView.drawThroughPoints([
-    //   [bboxCenter.x, bboxCenter.y],
-    //   [canvasSize.width + 500, bboxCenter.y],
-    // ], "steps", 20);
-    // AtSidebar.seeSelectedRegion();
-    // // moving of the region should be constrained by borders
-    // rectangleResult = await LabelStudio.serialize();
+    I.say("Drag the region over the right border");
+    AtImageView.drawThroughPoints([
+      [bboxCenter.x, bboxCenter.y],
+      [canvasSize.width + 500, bboxCenter.y],
+    ], "steps", 20);
+    AtSidebar.seeSelectedRegion();
+    // moving of the region should be constrained by borders
+    rectangleResult = await LabelStudio.serialize();
 
-    // Asserts.deepEqualWithTolerance(
-    //   rectangleResult[0].value.x * canvasSize.width / 100,
-    //   Shape.byBBox(canvasSize.width, bbox.y + bbox.height, -bbox.width, -bbox.height).result.x,
-    // );
-    // // reset position by undo
-    // I.pressKey(["Control", "z"]);
+    Asserts.deepEqualWithTolerance(
+      rectangleResult[0].value.x * canvasSize.width / 100,
+      Shape.byBBox(canvasSize.width, bbox.y + bbox.height, -bbox.width, -bbox.height).result.x,
+    );
+    // reset position by undo
+    I.pressKey(["Control", "z"]);
 
-    // I.say("Drag the region over the bottom border");
-    // AtImageView.drawThroughPoints([
-    //   [bboxCenter.x, bboxCenter.y],
-    //   [bboxCenter.x, canvasSize.height + 500],
-    // ], "steps", 20);
-    // AtSidebar.seeSelectedRegion();
-    // // moving of the region should be constrained by borders
-    // rectangleResult = await LabelStudio.serialize();
-    // Asserts.deepEqualWithTolerance(
-    //   rectangleResult[0].value.y * canvasSize.height / 100,
-    //   Shape.byBBox(bbox.x + bbox.width, canvasSize.height, -bbox.width, -bbox.height).result.y,
-    // );
+    I.say("Drag the region over the bottom border");
+    AtImageView.drawThroughPoints([
+      [bboxCenter.x, bboxCenter.y],
+      [bboxCenter.x, canvasSize.height + 500],
+    ], "steps", 20);
+    AtSidebar.seeSelectedRegion();
+    // moving of the region should be constrained by borders
+    rectangleResult = await LabelStudio.serialize();
+    Asserts.deepEqualWithTolerance(
+      rectangleResult[0].value.y * canvasSize.height / 100,
+      Shape.byBBox(bbox.x + bbox.width, canvasSize.height, -bbox.width, -bbox.height).result.y,
+    );
   });
 
 Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRotator))
