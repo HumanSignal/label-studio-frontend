@@ -6,9 +6,7 @@ import { isDefined } from "../../utils/utilities";
 import { IconBan } from "../../assets/icons";
 
 import "./Controls.styl";
-import { useCallback, useMemo, useState } from "react";
-import { Dropdown } from "../../common/Dropdown/DropdownComponent";
-import { FF_DEV_1593, FF_DEV_2186, FF_DEV_2458, isFF } from "../../utils/feature-flags";
+import { useCallback, useMemo } from "react";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -31,48 +29,9 @@ const controlsInjector = inject(({ store }) => {
   };
 });
 
-const ActionDialog = ({ buttonProps, prompt, type, action, onAction }) => {
-  const [show, setShow] = useState(false);
-  const [comment, setComment] = useState("");
-  const onClick = useCallback(() => {
-    onAction({ comment: comment.length ? comment : null });
-    setShow(false);
-    setComment("");
-  });
-
-  return (
-    <Dropdown.Trigger
-      visible={show}
-      toggle={() => { }}
-      onToggle={setShow}
-      content={(
-        <Block name="action-dialog">
-          <Elem name="input-title">
-            {prompt}
-          </Elem>
-          <Elem
-            name="input"
-            tag="textarea"
-            type="text"
-            value={comment}
-            onChange={(event) => { setComment(event.target.value); }}
-          />
-          <Elem name="footer">
-            <Button onClick={() => setShow(false)}>Cancel</Button>
-            <Button style={{ marginLeft: 8 }} onClick={onClick} {...buttonProps}>{action}</Button>
-          </Elem>
-        </Block>
-      )}
-    >
-      <Button aria-label={`${type}-annotation`} {...buttonProps}>
-        {action}
-      </Button>
-    </Dropdown.Trigger>
-  );
-};
-
 export const Controls = controlsInjector(observer(({ store, history, annotation }) => {
   const isReview = store.hasInterface("review");
+  
   const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
   const buttons = [];
@@ -80,27 +39,47 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const disabled = store.isSubmitting || historySelected;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
 
-  const RejectButton = useMemo(() => {
-    if (isFF(FF_DEV_1593) && store.hasInterface("comments:reject")) {
-      return (
-        <ActionDialog
-          type="reject"
-          onAction={store.rejectAnnotation}
-          buttonProps={{ disabled, look: "danger" }}
-          prompt="Reason of Rejection"
-          action="Reject"
-          key="reject"
-        />
-      );
+  const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
+    const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
+
+    if(addedCommentThisSession){
+      callback();
+    } else if(currentComment) {
+      e.preventDefault();
+      await commentFormSubmit();
+      callback();
     } else {
-      return (
-        <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-          <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={store.rejectAnnotation}>
-            Reject
-          </Button>
-        </ButtonTooltip>
-      );
+      const commentsInput = inputRef.current;
+      
+      store.commentStore.setTooltipMessage(tooltipMessage);
+      commentsInput.scrollIntoView({ 
+        behavior: 'smooth', 
+      });
+      commentsInput.focus({ preventScroll: true });
     }
+  }, [
+    store.rejectAnnotation, 
+    store.skipTask, 
+    store.commentStore.currentComment, 
+    store.commentStore.inputRef, 
+    store.commentStore.commentFormSubmit, 
+    store.commentStore.addedCommentThisSession,
+  ]);
+
+  const RejectButton = useMemo(() => {
+    return (
+      <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
+        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={(e)=> {
+          if(store.hasInterface("comments:reject") ?? true) {
+            buttonHandler(e, () => store.rejectAnnotation({}), "Please enter a comment before rejecting");
+          } else {
+            store.rejectAnnotation({});
+          }
+        }}>
+          Reject
+        </Button>
+      </ButtonTooltip>
+    );
   }, [disabled, store]);
 
   if (isReview) {
@@ -127,26 +106,19 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     );
   } else {
     if (store.hasInterface("skip")) {
-      if (isFF(FF_DEV_2458)) {
-        buttons.push(
-          <ActionDialog
-            type="skip"
-            onAction={store.skipTask}
-            buttonProps={{ disabled, look: "danger" }}
-            prompt="Reason of cancelling (skipping) task"
-            action="Skip"
-            key="skip"
-          />,
-        );
-      } else {
-        buttons.push(
-          <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-            <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={store.skipTask}>
-              Skip
-            </Button>
-          </ButtonTooltip>,
-        );
-      }
+      buttons.push(
+        <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
+          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={(e)=> {
+            if(store.hasInterface("comments:skip") ?? true) {
+              buttonHandler(e, () => store.skipTask({}), "Please enter a comment before skipping");
+            } else {
+              store.skipTask({});
+            }
+          }}>
+            Skip
+          </Button>
+        </ButtonTooltip>,
+      );
     }
 
     if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface("submit"))) {
@@ -168,30 +140,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface("update"))) {
       const isUpdate = sentUserGenerate || versions.result;
-      // const isRejected = store.task.queue?.includes("Rejected queue");
-      const withComments = isFF(FF_DEV_2186) || store.hasInterface("comments:update");
-      let button;
-      
-      if (withComments && isUpdate) {
-        button = (
-          <ActionDialog
-            type="update"
-            onAction={store.updateAnnotation}
-            buttonProps={{ disabled: disabled || submitDisabled, look: "primary" }}
-            prompt="Comment to Reviewer"
-            action="Update"
-            key="update"
-          />
-        );
-      } else {
-        button = (
-          <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={() => store.updateAnnotation()}>
-              {isUpdate ? "Update" : "Submit"}
-            </Button>
-          </ButtonTooltip>
-        );
-      }
+      const button = (
+        <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
+          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={() => store.updateAnnotation()}>
+            {isUpdate ? "Update" : "Submit"}
+          </Button>
+        </ButtonTooltip>
+      );
 
       buttons.push(button);
     }

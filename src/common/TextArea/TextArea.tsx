@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, useCallback, useEffect, useRef } from "react";
+import { FC, MutableRefObject, RefObject, useCallback, useEffect, useRef } from "react";
 import { debounce } from "lodash";
 import { cn } from "../../utils/bem";
 import { isMacOS } from "../../utils/utilities";
@@ -11,8 +11,10 @@ export type TextAreaProps = {
   onSubmit?: () => void|Promise<void>,
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
+  onFocus?: (e: FocusEvent) => void,
+  onBlur?: (e: FocusEvent) => void,
   ref?: MutableRefObject<HTMLTextAreaElement>,
-  actionRef?: MutableRefObject<{ update?: (text?: string) => void }>,
+  actionRef?: MutableRefObject<{ update?: (text?: string) => void, el?: RefObject<HTMLTextAreaElement> }>,
   rows?: number,
   maxRows?: number,
   autoSize?: boolean,
@@ -98,6 +100,7 @@ export const TextArea: FC<TextAreaProps> = ({
         textAreaRef.current.value = text;
         resizeTextArea();
       },
+      el: textAreaRef,
     };
   }
 

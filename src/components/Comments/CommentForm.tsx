@@ -1,9 +1,10 @@
-import { FC, useCallback, useRef } from "react";
+import { FC, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
 import "./CommentForm.styl";
 import { TextArea } from "../../common/TextArea/TextArea";
+import { Tooltip } from "../../../src/common/Tooltip/Tooltip";
 import { observer } from "mobx-react";
 
 
@@ -25,8 +26,10 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   maxRows = 4,
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  const actionRef = useRef<{ update?: (text?: string) => void }>({});
-
+  const actionRef = useRef<{ update?: (text?: string) => void, el?: RefObject<HTMLTextAreaElement> }>({});
+  const clearTooltipMessage = () => {
+    commentStore.setTooltipMessage("");
+  };
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
@@ -35,6 +38,8 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     const comment = new FormData(formRef.current).get("comment") as string;
 
     if (!comment.trim()) return;
+    
+    clearTooltipMessage();
 
     try {
       actionRef.current.update?.("");
@@ -51,6 +56,17 @@ export const CommentForm: FC<CommentFormProps> = observer(({
     commentStore.setCurrentComment(comment || '');
   }, [commentStore]);
 
+  
+  useEffect(() => {
+    commentStore.setAddedCommentThisSession(false);
+    clearTooltipMessage();
+  }, []);
+
+  useEffect(() => {
+    commentStore.setInputRef(actionRef.current.el);
+    commentStore.setCommentFormSubmit(() => onSubmit());
+  }, [actionRef, commentStore]);
+  
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
       <TextArea
@@ -63,12 +79,18 @@ export const CommentForm: FC<CommentFormProps> = observer(({
         onChange={onChange}
         onInput={onInput}
         onSubmit={inline ? onSubmit : undefined}
+        onBlur={() => commentStore.currentComment ? onSubmit() : clearTooltipMessage()}
       />
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />
         </button>
       </Elem>
+      {commentStore.tooltipMessage && (
+        <Elem name="tooltipMessage">
+          {commentStore.tooltipMessage}
+        </Elem>
+      )}
     </Block>
   );
 });
