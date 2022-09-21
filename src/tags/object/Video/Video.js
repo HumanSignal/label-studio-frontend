@@ -132,7 +132,7 @@ const Model = types
           self._seekedValue = -1;
         } else {
           // If the incoming value was not synced from video, then we need to sync it with a possible offset
-          self.ref.current.currentTime = time + self.durationOffset;
+          // self.ref.current.currentTime = time + self.durationOffset;
         }
       }
     },
