@@ -190,11 +190,10 @@ const HtxVideoView = ({ item }) => {
   });
 
   // VIDEO EVENT HANDLERS
-  const handleFrameChange = useCallback((position, length) => {
+  const handleFrameChange = useCallback((position) => {
     setPosition(position);
-    setVideoLength(length);
     item.setOnlyFrame(position);
-  }, [item, setPosition, setVideoLength]);
+  }, [item, setPosition]);
 
   const handleVideoLoad = useCallback(({ length, videoDimensions }) => {
     setLoaded(true);
@@ -211,9 +210,9 @@ const HtxVideoView = ({ item }) => {
   }, []);
 
   const handleVideoEnded = useCallback(() => {
+    item.setFrame(videoLength);
     setPlaying(false);
     setPosition(videoLength);
-    item.setOnlyFrame(videoLength);
   }, [videoLength, setPosition, setPlaying]);
 
   // TIMELINE EVENT HANDLERS
@@ -236,7 +235,6 @@ const HtxVideoView = ({ item }) => {
       return playing;
     });
   }, []);
-
 
   const handleSelectRegion = useCallback((_, id, select) => {
     const region = item.findRegion(id);

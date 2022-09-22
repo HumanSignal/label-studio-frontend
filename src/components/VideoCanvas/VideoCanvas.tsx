@@ -251,10 +251,15 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   // Handle extrnal state change [play/pause]
   useEffect(() => {
     if (videoRef.current) {
-      if (props.playing && !playing) {
-        videoRef.current.play();
-      } else if (props.playing === false && playing) {
-        videoRef.current.pause();
+      if (props.playing !== undefined) {
+        if (props.playing && !playing) {
+          videoRef.current.play();
+        } else if (props.playing === false && playing) {
+          videoRef.current.pause();
+        }
+      } else {
+        if (playing) videoRef.current.play();
+        else videoRef.current.pause();
       }
     }
   }, [playing, props.playing]);

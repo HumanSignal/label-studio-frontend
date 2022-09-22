@@ -304,7 +304,9 @@ export const AudioModel = types.compose(
       handleSeek() {
         if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
 
-        self.triggerSyncSeek(self._ws.getCurrentTime());
+        const currentTime = self._ws.getCurrentTime();
+
+        self.triggerSyncSeek(currentTime);
       },
 
       handleSpeed(speed) {

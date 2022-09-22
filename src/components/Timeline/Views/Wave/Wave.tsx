@@ -77,15 +77,16 @@ export const Wave: FC<TimelineViewProps> = ({
 
     if (!wsi) return;
 
-    const currentTime = wsi.getCurrentTime();
+    let currentTime = wsi.getCurrentTime();
     const duration = wsi.getDuration();
 
-    handlers.onPositionChange?.(currentTime * 1000);
-
-    if (currentTime >= duration && !shouldStartOver) {
+    if (currentTime >= duration && !shouldStartOver.current) {
       wsi.setCurrentTime(duration);
+      currentTime = duration;
       startOver();
     }
+
+    handlers.onPositionChange?.(currentTime * 1000);
 
     tracker.current = setTimeout(trackProgress.current);
   });
@@ -103,6 +104,7 @@ export const Wave: FC<TimelineViewProps> = ({
     if (wsi.isPlaying() === true) onPlay?.();
 
     trackProgress.current();
+
   }, [onPlay, onPositionChange]);
 
   const handlePause = useCallback(() => {
@@ -110,10 +112,18 @@ export const Wave: FC<TimelineViewProps> = ({
 
     if (wsi?.isPlaying() === false) onPause?.();
 
+    const currentTime = wsi?.getCurrentTime();
+    const duration = wsi?.getDuration();
+
+    if (currentTime && duration && currentTime >= duration && !shouldStartOver.current) {
+      startOver();
+    }
+
     if (tracker.current) {
       clearTimeout(tracker.current);
       tracker.current = null;
     }
+
   }, [onPause]);
 
   const scrollTo = useCallback((value: number) => {
@@ -150,7 +160,6 @@ export const Wave: FC<TimelineViewProps> = ({
     },
     onLoaded: setLoading,
     onPlay: () => {
-      resetStartOver();
       handlers.onPlay();
     },
     onPause: () => handlers.onPause(),
@@ -162,7 +171,6 @@ export const Wave: FC<TimelineViewProps> = ({
       setScrollOffset(p);
     },
     onSeek: (p) => {
-      resetStartOver();
       handlers.onSeek?.(p);
     },
     onZoom: (zoom) => handlers.onZoom?.(zoom),
@@ -460,10 +468,16 @@ const useWaveSurfer = ({
 
     wsi.setCurrentTime = (time: number) => {
       const duration = wsi.getDuration();
+      const currentTime = wsi.getCurrentTime();
 
-      if (!isNaN(duration) && time !== wsi.getCurrentTime()) {
+      if (!isNaN(duration) && time !== currentTime) {
         time = clamp(time, 0, duration);
-        wsi.seekTo(time / wsi.getDuration());
+        const progress = time / duration;
+
+        wsi.seekTo(progress);
+        if (progress === 1) {
+          wsi.fireEvent("finish");
+        }
       }
     };
 

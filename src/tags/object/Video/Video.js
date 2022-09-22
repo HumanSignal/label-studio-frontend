@@ -65,6 +65,7 @@ const Model = types
     ref: React.createRef(),
     frame: 1,
     length: 1,
+    startOver: false,
   }))
   .views(self => ({
     get store() {
@@ -102,6 +103,10 @@ const Model = types
 
       return states && states.length > 0;
     },
+
+    get duration() {
+      return self.ref.current?.duration ?? 1;
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -113,7 +118,9 @@ const Model = types
 
     handleSyncSeek(time) {
       if (self.ref.current) {
-        self.ref.current.currentTime = time;
+        if (time !== self.ref.current.currentTime) {
+          self.ref.current.currentTime = time;
+        }
       }
     },
 
@@ -131,7 +138,16 @@ const Model = types
 
     handleSeek() {
       if (self.ref.current) {
-        self.triggerSyncSeek(self.ref.current.currentTime);
+        let time = self.ref.current.currentTime;
+
+        if (self.startOver) {
+          time = 0;
+          self.startOver = false;
+        } else if (time === self.ref.current.duration) {
+          self.startOver = true;
+        }
+
+        self.triggerSyncSeek(time);
       }
     },
 
@@ -156,13 +172,15 @@ const Model = types
     setFrame(frame) {
       if (self.frame !== frame) {
         self.frame = frame;
-        self.ref.current.currentTime = frame / self.framerate;
+
+        const currentTime = frame / self.framerate;
+
+        self.ref.current.currentTime = currentTime;
       }
     },
 
     addRegion(data) {
       const control = self.videoControl() ?? self.control();
-
 
       const sequence = [
         {
@@ -189,7 +207,6 @@ const Model = types
     },
 
     deleteRegion(id) {
-
       self.findRegion(id)?.deleteRegion();
     },
 
