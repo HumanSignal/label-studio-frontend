@@ -140,7 +140,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
           offsetLeft, offsetTop, resultWidth, resultHeight,
         );
       }
-    } catch (e) {
+    } catch(e) {
       console.log('Error rendering video', e);
     }
   }, [videoDimensions, zoom, pan, filters, canvasWidth, canvasHeight]);
