@@ -22,6 +22,7 @@ export const TopBar = observer(({ store }) => {
           <Annotations
             store={store}
             annotationStore={store.annotationStore}
+            commentStore={store.commentStore}
           />
         )}
         <Actions store={store}/>
