@@ -4,6 +4,8 @@ import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
 import { VirtualCanvas } from "./VirtualCanvas";
 import { VirtualVideo } from "./VirtualVideo";
+import InfoModal from "../../components/Infomodal/Infomodal";
+import useUpdateEffect from "../../hooks/useUpdateEffect";
 
 type VideoProps = {
   src: string,
@@ -138,7 +140,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
           offsetLeft, offsetTop, resultWidth, resultHeight,
         );
       }
-    } catch(e) {
+    } catch (e) {
       console.log('Error rendering video', e);
     }
   }, [videoDimensions, zoom, pan, filters, canvasWidth, canvasHeight]);
@@ -215,7 +217,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     }
   };
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     if (!playing) {
       drawVideo();
     }
@@ -296,7 +298,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     }
   }, [props.saturation]);
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     drawVideo();
   }, [filters, zoom, pan, canvasWidth, canvasHeight]);
 
@@ -388,6 +390,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (videoDimensions.ratio !== ratio) {
       const result = { ...videoDimensions, ratio };
 
+      console.log(result);
       setVideoDimensions(result);
 
       if (props.zoom !== videoDimensions.ratio) {
@@ -398,9 +401,18 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     let isLoaded = false;
+    let timeout = undefined;
 
-    const checkVideoLoaded = () => {
+    const checkVideoLoaded: (counter: number) => NodeJS.Timeout | undefined = (counter) => {
       if (isLoaded) return;
+      if (counter > 300) {
+        const modalExists = document.querySelector('.ant-modal');
+
+        if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        setLoading(false);
+        return;
+      }
+      counter++;
 
       if (videoRef.current?.readyState === 4) {
         isLoaded = true;
@@ -429,13 +441,12 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         }, 200);
         return;
       }
-
-      setTimeout(checkVideoLoaded, 10);
+      return setTimeout(() => checkVideoLoaded(counter), 10);
     };
 
-    checkVideoLoaded();
+    clearTimeout(timeout);
+    timeout = checkVideoLoaded(0);
   }, []);
-
 
 
   // Trick to load/dispose the video
