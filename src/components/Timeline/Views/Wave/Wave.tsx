@@ -173,6 +173,7 @@ export const Wave: FC<TimelineViewProps> = ({
     const surfer = waveRef.current!.querySelector("wave")!;
     const offset = surfer.getBoundingClientRect().left;
     const duration = ws.current?.getDuration();
+
     const relativeOffset = (surfer.scrollLeft + (e.clientX - offset)) / surfer.scrollWidth;
     const time = relativeOffset * (duration ?? 0);
 
@@ -199,6 +200,7 @@ export const Wave: FC<TimelineViewProps> = ({
     const updatePosition = () => {
       const wsi = ws.current;
       const duration = wsi?.getDuration();
+
       const currentTime = wsi?.getCurrentTime();
       const pos = clamp(position / 1000, 0, duration ?? 0);
 
@@ -456,8 +458,6 @@ const useWaveSurfer = ({
       ],
     });
 
-    Object.assign(window, { wsi });
-
     wsi.setCurrentTime = (time: number) => {
       const duration = wsi.getDuration();
 
@@ -481,6 +481,12 @@ const useWaveSurfer = ({
 
     wsi.on("ready", () => {
       onLoaded(false);
+      const duration = wsi.getDuration();
+
+      // overwrite to preserve the correct initial value
+      Object.assign(wsi, {
+        getDuration: () => duration,
+      });
 
       wsi.initPlugin("regions");
       wsi.initPlugin("timeline");
@@ -565,7 +571,7 @@ const useWaveSurfer = ({
       }
 
       onReady?.({
-        duration: wsi.getDuration(),
+        duration,
         surfer: wsi,
       });
     });

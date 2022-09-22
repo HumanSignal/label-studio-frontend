@@ -3,13 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown";
 import { Menu } from "../../../common/Menu/Menu";
-import { Space } from "../../../common/Space/Space";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
 import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
-// import { Hotkey } from "../../../core/Hotkey";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
 import { useToggle } from "../../../hooks/useToggle";
@@ -20,7 +18,6 @@ import ResizeObserver from "../../../utils/resize-observer";
 import { useFullscreen } from "../../../hooks/useFullscreen";
 import { IconZoomIn } from "../../../assets/icons";
 
-// const hotkeys = Hotkey("Video", "Video Annotation");
 
 const HtxVideoView = ({ item }) => {
   if (!item._value) return null;

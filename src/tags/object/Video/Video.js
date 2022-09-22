@@ -6,7 +6,6 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
-import Types from "../../../core/Types";
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
@@ -66,7 +65,6 @@ const Model = types
     ref: React.createRef(),
     frame: 1,
     length: 1,
-    _seekedValue: -1,
   }))
   .views(self => ({
     get store() {
@@ -99,18 +97,6 @@ const Model = types
       return states ? states.filter(c => c.isSelected === true) : null;
     },
 
-    get duration() {
-      return self.ref.current?.duration ?? 1;
-    },
-
-    get durationOffset() {
-      const duration = self.duration;
-      const syncedDuration = self.syncedObject?.duration ?? duration;
-      const offset = duration - syncedDuration;
-
-      return offset;
-    },
-
     get hasStates() {
       const states = self.states();
 
@@ -127,13 +113,7 @@ const Model = types
 
     handleSyncSeek(time) {
       if (self.ref.current) {
-        // If the incoming value was synced from video leave it as is and reset the capture value
-        if (self._seekedValue >= 0) {
-          self._seekedValue = -1;
-        } else {
-          // If the incoming value was not synced from video, then we need to sync it with a possible offset
-          // self.ref.current.currentTime = time + self.durationOffset;
-        }
+        self.ref.current.currentTime = time;
       }
     },
 
@@ -151,9 +131,7 @@ const Model = types
 
     handleSeek() {
       if (self.ref.current) {
-        // Capture the current seeked value with the offset so that we can skip it when syncing back to the video
-        self._seekedValue = self.ref.current.currentTime - self.durationOffset;
-        self.triggerSyncSeek(self._seekedValue);
+        self.triggerSyncSeek(self.ref.current.currentTime);
       }
     },
 
@@ -211,6 +189,7 @@ const Model = types
     },
 
     deleteRegion(id) {
+
       self.findRegion(id)?.deleteRegion();
     },
 
