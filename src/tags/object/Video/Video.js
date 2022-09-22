@@ -125,7 +125,9 @@ const Model = types
     },
 
     handleSyncPlay() {
-      self.ref.current?.play();
+      setTimeout(() => {
+        self.ref.current?.play();
+      });
     },
 
     handleSyncPause() {
