@@ -14,7 +14,10 @@ export const CurrentTask = observer(({ store }) => {
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
   // @todo some interface?
-  const canPostpone = isFF(FF_DEV_3034) && !store.canGoNextTask && !store.hasInterface('review');
+  const canPostpone = isFF(FF_DEV_3034)
+    && !store.canGoNextTask
+    && !store.hasInterface('review')
+    && store.hasInterface("postpone");
 
   return (
     <Elem name="section">
