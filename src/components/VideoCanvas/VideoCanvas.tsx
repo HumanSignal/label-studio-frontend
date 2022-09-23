@@ -390,7 +390,6 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (videoDimensions.ratio !== ratio) {
       const result = { ...videoDimensions, ratio };
 
-      console.log(result);
       setVideoDimensions(result);
 
       if (props.zoom !== videoDimensions.ratio) {
@@ -405,7 +404,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
     const checkVideoLoaded: (counter: number) => NodeJS.Timeout | undefined = (counter) => {
       if (isLoaded) return;
-      if (counter > 300) {
+      const loadingFailedWaitTime = 300;
+
+      if (counter > loadingFailedWaitTime) {
         const modalExists = document.querySelector('.ant-modal');
 
         if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
