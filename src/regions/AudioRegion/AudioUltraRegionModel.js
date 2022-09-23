@@ -17,18 +17,17 @@ export const AudioUltraRegionModel = types
     hideable: true,
   }))
   .views(self => ({
-    get wsRegionOptions() {
+    wsRegionOptions() {
       const reg = {
         id: self.id,
         start: self.start,
         end: self.end,
-        color: "orange",
+        color: self.getColor(),
+        visible: !self.hidden,
+        updateable: !self.readonly,
+        deletable: !self.readonly,
       };
 
-      if (self.readonly) {
-        reg.drag = false;
-        reg.resize = false;
-      }
       return reg;
     },
   }))
@@ -162,7 +161,6 @@ export const AudioUltraRegionModel = types
       onUpdateEnd() {
         self.start = self._ws_region.start;
         self.end = self._ws_region.end;
-        console.log("onUpdateEnd", self.start, self.end);
         self.notifyDrawingFinished();
       },
 

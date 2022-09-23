@@ -13,6 +13,7 @@ export interface SegmentOptions {
   id?: string;
   start: number;
   end: number;
+  color?: string|RgbaColorArray;
   selected?: boolean;
   updateable?: boolean;
   deleteable?: boolean;
@@ -23,11 +24,13 @@ export interface SegmentGlobalEvents {
   beforeRegionCreated: (region: Region|Segment) => void;
   regionCreated: (region: Region|Segment) => void;
   regionUpdated: (region: Region|Segment) => void;
+  regionUpdatedEnd: (region: Region|Segment) => void;
   regionRemoved: (region: Region|Segment) => void;
 }
 
 interface SegmentEvents {
   update: (region: Segment) => void;
+  updateEnd: (region: Segment) => void;
   mouseEnter: (region: Segment, event: MouseEvent) => void;
   mouseOver: (region: Segment, event: MouseEvent) => void;
   mouseLeave: (region: Segment, event: MouseEvent) => void;
@@ -83,6 +86,32 @@ export class Segment extends Events<SegmentEvents> {
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
 
     this.initialize();
+  }
+
+  update(options: Partial<SegmentOptions>) {
+    if (!this.updateable && !options.updateable) return;
+
+    if (options.updateable !== undefined) {
+      this.updateable = options.updateable;
+    }
+    if (options.deleteable !== undefined) {
+      this.deleteable = options.deleteable;
+    }
+    if (options.start !== undefined) {
+      this.start = options.start;
+    }
+    if (options.end !== undefined) {
+      this.end = options.end;
+    }
+    if (options.selected !== undefined) {
+      this.selected = options.selected;
+    }
+    if (options.visible !== undefined) {
+      this.visible = options.visible;
+    }
+    if (options.color !== undefined) {
+      this.color = rgba(options.color);
+    }
   }
 
   setVisibility(visible: boolean) {
@@ -186,6 +215,7 @@ export class Segment extends Events<SegmentEvents> {
 
     if (this.isDragging) {
       this.switchCursor(CursorSymbol.grab);
+      this.handleUpdateEnd();
     } else {
       this.handleSelected();
     }
@@ -220,7 +250,6 @@ export class Segment extends Events<SegmentEvents> {
       if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
       else  this.switchCursor(CursorSymbol.grabbing);
       this.updatePosition(startTime, endTime);
-
     }
   };
 
@@ -285,10 +314,10 @@ export class Segment extends Events<SegmentEvents> {
     // }
   }
 
-  /**
-   * Update region's color
-   * @param color Color to set on the region
-   */
+  handleUpdateEnd() {
+    this.invoke("updateEnd", [this]);
+    this.waveform.invoke("regionUpdatedEnd", [this]);
+  }
 
   handleSelected = (selected?: boolean) => {
     if (!this.updateable) return;
@@ -309,6 +338,10 @@ export class Segment extends Events<SegmentEvents> {
     this.waveform.invoke("regionUpdated", [this]);
   };
   
+  /**
+   * Update region's color
+   */
+
   setColor(color: string|RgbaColorArray) {
     this.color.update(color);
     this.handleColor.update(color).darken(0.6);

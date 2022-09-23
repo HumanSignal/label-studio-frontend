@@ -38,28 +38,28 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
   useEffect(() => {
     const createRegion = (region: Region|Segment) => {
-      console.log("createRegion", region);
       item.addRegion(region);
     };
+
     const updateRegionColor = (region: Region|Segment) => {
       const regionColor = item.getRegionColor(region);
 
       console.log("updateRegion", regionColor);
       // region.setColor();
     };
+
     const updateRegion = (region: Region|Segment) => {
-      console.log("updateRegion", region);
-      // item.updateRegion(region);
+      item.updateRegion(region);
     };
 
     waveform.current?.on("beforeRegionCreated", updateRegionColor);
     waveform.current?.on("regionCreated", createRegion);
-    // waveform.current?.on("regionUpdated", updateRegion);
+    waveform.current?.on("regionUpdatedEnd", updateRegion);
 
     return () => {
       waveform.current?.off("beforeRegionCreated", updateRegionColor);
       waveform.current?.off("regionCreated", createRegion);
-      // waveform.current?.off("regionUpdated", updateRegion);
+      waveform.current?.off("regionUpdatedEnd", updateRegion);
     };
   }, []);
 

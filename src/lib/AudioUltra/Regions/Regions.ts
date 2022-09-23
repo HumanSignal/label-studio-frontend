@@ -72,15 +72,14 @@ export class Regions {
   addRegion(options: RegionOptions, render = true) {
     const region = new Region(options, this.waveform, this.visualizer, this);
 
-    this.waveform.invoke("beforeRegionCreated", [region]);
-
-    console.log(region);
+    if (render) {
+      this.waveform.invoke("beforeRegionCreated", [region]);
+    }
 
     this.regions.push(region);
 
     if (render) {
-      this.renderAll();
-      this.visualizer.draw(true);
+      this.redraw();
     }
 
     return region;
@@ -88,6 +87,27 @@ export class Regions {
 
   findRegion(id: string) {
     return this.regions.find(region => region.id === id);
+  }
+
+  updateRegion(options: RegionOptions, render = true) {
+    if (!this.updateable || !options.id) return;
+
+    const region = this.findRegion(options.id);
+
+    if (!region) return;
+
+    region.update(options);
+
+    if (render) {
+      this.redraw();
+    }
+
+    return region;
+  }
+
+  redraw() {
+    this.renderAll();
+    this.visualizer.draw(true);
   }
 
   removeRegion(regionId: string) {
@@ -98,9 +118,7 @@ export class Regions {
       this.regions = this.regions.filter(r => r !== region);
     }
 
-    this.renderAll();
-
-    this.visualizer.draw(true);
+    this.redraw();
   }
 
   destroy() {
