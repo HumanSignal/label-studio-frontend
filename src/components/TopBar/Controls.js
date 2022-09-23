@@ -45,7 +45,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if(addedCommentThisSession){
       callback();
-    } else if(currentComment) {
+    } else if((currentComment ?? "").trim()) {
       e.preventDefault();
       await commentFormSubmit();
       callback();
