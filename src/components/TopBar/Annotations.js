@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconPlusCircle, LsSparks } from "../../assets/icons";
+import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
 import { Userpic } from "../../common/Userpic/Userpic";
 import { Block, Elem } from "../../utils/bem";
@@ -8,8 +8,9 @@ import { isDefined, userDisplayName } from "../../utils/utilities";
 import { GroundTruth } from "../CurrentEntity/GroundTruth";
 import "./Annotations.styl";
 import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
+import { reaction } from "mobx";
 
-export const Annotations = observer(({ store, annotationStore }) => {
+export const Annotations = observer(({ store, annotationStore, commentStore }) => {
   const dropdownRef = useRef();
   const [opened, setOpened] = useState(false);
   const enableAnnotations = store.hasInterface('annotations:tabs');
@@ -18,6 +19,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
   const groundTruthEnabled = store.hasInterface('ground-truth');
 
   const entities = [];
+
 
   if (enablePredictions) entities.push(...annotationStore.predictions);
 
@@ -45,8 +47,40 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
     document.addEventListener('click', handleClick);
 
-    return () => document.removeEventListener('click', handleClick);
+    const runOnPropertyChange = (value) => {
+      let _unresolvedComments = 0;
+      let _comments = 0;
+
+      value.forEach(obj => {
+        _comments++;
+
+        if (!obj) _unresolvedComments++;
+      });
+
+      commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
+      commentStore.annotation.setCommentCount(_comments);
+    };
+
+    const reactionDisposer = reaction(
+      () => [...commentStore.comments.map(item => item.isResolved)],
+      runOnPropertyChange,
+    );
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+      reactionDisposer();
+    };
   }, []);
+
+  const renderCommentIcon = (ent) => {
+    if (ent.unresolved_comment_count > 0) {
+      return <LsCommentRed />;
+    } else if (ent.comment_count > 0) {
+      return <LsComment />;
+    }
+
+    return null;
+  };
 
   const renderAnnotation = (ent, i) => {
     return (
@@ -61,8 +95,11 @@ export const Annotations = observer(({ store, annotationStore }) => {
           setOpened(false);
           onAnnotationSelect?.(ent, ent.type === 'prediction');
         }}
-        extra={groundTruthEnabled && (
-          <GroundTruth entity={ent} disabled/>
+        extra={(
+          <Elem name={'icons'}>
+            {renderCommentIcon(ent)}
+            {groundTruthEnabled && <GroundTruth entity={ent} disabled/>}
+          </Elem>
         )}
       />
     );

@@ -11,7 +11,11 @@ export const CommentStore = types
     comments: types.optional(types.array(Comment), []),
   })
   .volatile(() => ({
+    addedCommentThisSession: false,
+    commentFormSubmit: () => {},
     currentComment: '',
+    inputRef: {},
+    tooltipMessage: "",
   }))
   .views(self => ({
     get store() {
@@ -74,8 +78,24 @@ export const CommentStore = types
       self.currentComment = comment;
     }
 
+    function setCommentFormSubmit(submitCallback) {
+      self.commentFormSubmit = submitCallback;
+    }
+
+    function setInputRef(inputRef) {
+      self.inputRef = inputRef;
+    }
+
     function setLoading(loading = null) {
       self.loading = loading;
+    }
+    
+    function setTooltipMessage(tooltipMessage) {
+      self.tooltipMessage = tooltipMessage;
+    }
+
+    function setAddedCommentThisSession(isAddedCommentThisSession = false) {
+      self.addedCommentThisSession = isAddedCommentThisSession;
     }
 
     function replaceId(id, newComment) {
@@ -168,10 +188,9 @@ export const CommentStore = types
       if (self.draftId) {
         comment.draft = self.draftId;
       }
-
       // @todo setComments?
       self.comments.unshift(comment);
-
+      self.setAddedCommentThisSession(true);
       if (self.canPersist) {
         try {
           self.setLoading("addComment");
@@ -287,7 +306,11 @@ export const CommentStore = types
       toCache,
       fromCache,
       restoreCommentsFromCache,
+      setAddedCommentThisSession,
+      setCommentFormSubmit,
+      setInputRef,
       setLoading,
+      setTooltipMessage,
       replaceId,
       removeCommentById,
       persistQueuedComments,
