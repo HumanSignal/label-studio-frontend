@@ -25,47 +25,83 @@ export const rgbaRegex = new RegExp(
 export const namedColorRegex = /^[a-z]+$/i;
 
 export class RgbaColorArray  {
+  base: [number, number, number, number];
   rgba: [number, number, number, number];
 
   constructor(rbga: [number, number, number, number]) {
+    this.base = rbga;
     this.rgba = rbga;
   }
 
+  update(color: string|RgbaColorArray): RgbaColorArray {
+    const next = rgba(color);
+
+    this.rgba = next.rgba;
+    this.base = next.base;
+
+    return this;
+  }
+
+  reset(): RgbaColorArray {
+    this.rgba = this.base;
+
+    return this;
+  }
+
+  clone(): RgbaColorArray {
+    return new RgbaColorArray(this.rgba);
+  }
+
   opaque(amount: number): RgbaColorArray {
-    return new RgbaColorArray([
+    const next = [
       this.r,
       this.g,
       this.b,
       clamp(toPrecision(this.a + this.a * amount, 1), 0, 1),
-    ]);
+    ] as [number, number, number, number];
+
+    this.rgba = next;
+
+    return this;
   }
 
   translucent(amount: number): RgbaColorArray {
-    return new RgbaColorArray([
+    const next = [
       this.r,
       this.g,
       this.b,
       clamp(toPrecision(this.a - this.a * amount, 1), 0, 1),
-    ]);
+    ] as [number, number, number, number];
+
+    this.rgba = next;
+
+    return this;
   }
 
-
   darken(amount: number): RgbaColorArray {
-    return new RgbaColorArray([
+    const next = [
       clamp(Math.round(this.r - this.r * amount), 0, 255),
       clamp(Math.round(this.g - this.g * amount), 0, 255),
       clamp(Math.round(this.b - this.b * amount), 0, 255),
       this.a,
-    ]);
+    ] as [number, number, number, number];
+
+    this.rgba = next;
+
+    return this;
   }
 
   lighten(amount: number): RgbaColorArray {
-    return new RgbaColorArray([
+    const next = [
       clamp(Math.round(this.r + this.r * amount), 0, 255),
       clamp(Math.round(this.g + this.g * amount), 0, 255),
       clamp(Math.round(this.b + this.b * amount), 0, 255),
       this.a,
-    ]);
+    ] as [number, number, number, number];
+
+    this.rgba = next;
+
+    return this;
   }
 
   get luminance(): number {

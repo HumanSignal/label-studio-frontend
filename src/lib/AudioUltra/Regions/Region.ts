@@ -19,7 +19,7 @@ export class Region extends Segment {
     super(options, waveform, visualizer, controller);
     this.labels = options.labels ?? this.labels;
     this.color = options.color ? rgba(options.color) : this.color;
-    this.handleColor = this.color.darken(0.6);
+    this.handleColor = this.color.clone().darken(0.6);
   }
 
   toJSON() {

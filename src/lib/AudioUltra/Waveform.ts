@@ -3,7 +3,7 @@ import { MediaLoader } from "./Media/MediaLoader";
 import { Player } from "./Controls/Player";
 import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
 import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
-import { RegionGlobalEvents } from "./Regions/Region";
+import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
 import { Regions, RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
@@ -288,8 +288,8 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.tooltip.destroy();
   }
 
-  addRegion(options: RegionOptions) {
-    this.regions.addRegion(options);
+  addRegion(options: RegionOptions, render = true) {
+    return this.regions.addRegion(options, render);
   }
 
   removeRegion(regionId: string) {

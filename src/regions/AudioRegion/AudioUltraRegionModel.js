@@ -1,4 +1,4 @@
-import { getRoot, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { AudioModel } from "../../tags/object/AudioNext";
 import Utils from "../../utils";
 import Constants from "../../core/Constants";
@@ -17,19 +17,6 @@ export const AudioUltraRegionModel = types
     hideable: true,
   }))
   .views(self => ({
-    getRegionElement() {
-      return self.wsRegionElement(self._ws_region);
-    },
-
-    wsRegionElement(wsRegion) {
-      if (!wsRegion) return null;
-
-      const elID = wsRegion.id;
-      const el = document.querySelector(`[data-id="${elID}"]`);
-
-      return el;
-    },
-
     get wsRegionOptions() {
       const reg = {
         id: self.id,
@@ -79,102 +66,65 @@ export const AudioUltraRegionModel = types
         return res;
       },
 
-      getColor() {
-        return Utils.Colors.convertToRGBA(self.getOneColor(), 1);
+      getColor(alpha = 1) {
+        return Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
       },
 
       updateColor(alpha = 1) {
-        const color = Utils.Colors.convertToRGBA(self.getOneColor(), alpha);
-        // eslint-disable-next-line no-unused-expressions
+        const color = self.getColor(alpha);
 
-        try {
-          self._ws_region?.update({ color });
-        } catch {
-          /**
-           * Sometimes this method is called too soon in the new UI so it fails.
-           * Will be good on the next execution
-           * */
-        }
+        self._ws_region?.updateColor(color);
       },
 
-      updateAppearenceFromState() {
-        if (self._ws_region?.update) {
-          self._ws_region.start = self.start;
-          self._ws_region.end = self.end;
-          self.applyCSSClass(self._ws_region);
-        }
-      },
-
-      applyCSSClass(wsRegion) {
-        self.updateColor(0.3);
-
-        const settings = getRoot(self).settings;
-        const el = self.wsRegionElement(wsRegion);
-
-        if (!el) return;
-
-        const lastClassList = el.className.split(' ');
-
-        for(const obj in lastClassList){
-          if(lastClassList[obj].indexOf('htx-label') >= 0){
-            lastClassList.splice(obj, 1);
-          }
-        }
-
-        const classes = [...new Set([...lastClassList, "htx-highlight", "htx-highlight-last"])];
-
-        if (!self.parent.showlabels && !settings.showLabels) {
-          classes.push("htx-no-label");
-        } else {
-          const cssCls = Utils.HTML.labelWithCSS(el, {
-            labels: self.labeling?.mainValue,
-            score: self.score,
-          });
-
-          classes.push(cssCls);
-        }
-
-        el.className = classes.filter(Boolean).join(" ");
-      },
+      // updateAppearenceFromState() {
+      //   if (self._ws_region?.update) {
+      //     self._ws_region.start = self.start;
+      //     self._ws_region.end = self.end;
+      //     self.applyCSSClass(self._ws_region);
+      //   }
+      // },
 
       /**
        * Select audio region
        */
       selectRegion() {
-        self.updateColor(0.8);
+        if (!self._ws_region) return;
+        self._ws_region.handleSelected(true);
 
-        const el = self.wsRegionElement(self._ws_region);
+        // @todo: figure out a way to scroll to the region
+      
+        // if (el) {
+        //   // scroll object tag but don't scroll the document
+        //   const container = window.document.scrollingElement;
+        //   const top = container.scrollTop;
+        //   const left = container.scrollLeft;
 
-        if (el) {
-          // scroll object tag but don't scroll the document
-          const container = window.document.scrollingElement;
-          const top = container.scrollTop;
-          const left = container.scrollLeft;
-
-          el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
-          window.document.scrollingElement.scrollTo(left, top);
-        }
+        //   el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
+        //   window.document.scrollingElement.scrollTo(left, top);
+        // }
       },
 
       /**
        * Unselect audio region
        */
       afterUnselectRegion() {
-        self.updateColor(0.3);
+        if (!self._ws_region) return;
+        self._ws_region.handleSelected(false);
       },
 
       setHighlight(val) {
         self._highlighted = val;
 
         if (!self._ws_region) return;
+        self._ws_region.handleHighlighted(val);
 
-        if (val) {
-          self.updateColor(0.8);
-          self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
-        } else {
-          self.updateColor(0.3);
-          self._ws_region.element.style.border = "none";
-        }
+        // if (val) {
+        //   self.updateColor(0.8);
+        //   self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
+        // } else {
+        //   self.updateColor(0.3);
+        //   self._ws_region.element.style.border = "none";
+        // }
       },
 
       beforeDestroy() {
@@ -189,7 +139,7 @@ export const AudioUltraRegionModel = types
           //   // r.update({ color: self.selectedregionbg });
           // });
 
-          self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
+          // self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
         }
 
         self.onClickRegion(ev);
@@ -198,28 +148,30 @@ export const AudioUltraRegionModel = types
       onMouseOver() {
         if (self.annotation.relationMode) {
           self.setHighlight(true);
-          self._ws_region.element.style.cursor = Constants.RELATION_MODE_CURSOR;
+          self._ws_region.swithCursor(Constants.RELATION_MODE_CURSOR);
         }
       },
 
       onMouseLeave() {
         if (self.annotation.relationMode) {
           self.setHighlight(false);
-          self._ws_region.element.style.cursor = Constants.MOVE_CURSOR;
+          self._ws_region.swithCursor(Constants.MOVE_CURSOR);
         }
       },
 
       onUpdateEnd() {
         self.start = self._ws_region.start;
         self.end = self._ws_region.end;
-        self.updateColor(self.selected ? 0.8 : 0.3);
+        console.log("onUpdateEnd", self.start, self.end);
         self.notifyDrawingFinished();
       },
 
       toggleHidden(e) {
-        self.hidden = !self.hidden;
-        self._ws_region.element.style.display = self.hidden ?  "none" : "block";
         e?.stopPropagation();
+        self.hidden = !self.hidden;
+
+        if(!self._ws_region) return;
+        self._ws_region.setVisibility(!self.hidden);
       },
     };
   });

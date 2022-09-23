@@ -109,6 +109,7 @@ function getFeatureFlags() {
 export function isFF(id: string) {
   const featureFlags = getFeatureFlags();
 
+  // if (id === FF_DEV_2715) return false;
   if (id in featureFlags) {
     return featureFlags[id] === true;
   } else {

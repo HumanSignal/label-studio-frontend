@@ -43,6 +43,7 @@ export class Segment extends Events<SegmentEvents> {
   color: RgbaColorArray = rgba("#ccc");
   handleColor: RgbaColorArray;
   selected = false;
+  highlighted = false;
   updateable = true;
   deleteable = true;
   visible = true;
@@ -72,7 +73,7 @@ export class Segment extends Events<SegmentEvents> {
     this.selected = !!options.selected;
     this.updateable = options.updateable ?? this.updateable;
     this.visible = options.visible ?? this.visible;
-    this.handleColor = this.color.darken(0.6);
+    this.handleColor = this.color.clone().darken(0.6);
     this.waveform = waveform;
     this.visualizer = visualizer;
     this.controller = controller;
@@ -82,6 +83,14 @@ export class Segment extends Events<SegmentEvents> {
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
 
     this.initialize();
+  }
+
+  setVisibility(visible: boolean) {
+    if (visible === this.visible) return;
+    this.visible = visible;
+
+    this.invoke("update", [this]);
+    this.waveform.invoke("regionUpdated", [this]);
   }
 
   protected get layerName() {
@@ -145,7 +154,7 @@ export class Segment extends Events<SegmentEvents> {
     return ![CursorSymbol.crosshair].includes(symbol);
   }
 
-  private switchCursor = (symbol: CursorSymbol, shouldGrabFocus = true) => {
+  switchCursor = (symbol: CursorSymbol, shouldGrabFocus = true) => {
     this.waveform.cursor.set(symbol, shouldGrabFocus && this.requiresCursorFocus(symbol) ? this.layerName : "");
   };
 
@@ -281,19 +290,28 @@ export class Segment extends Events<SegmentEvents> {
    * @param color Color to set on the region
    */
 
-  handleSelected = () => {
+  handleSelected = (selected?: boolean) => {
     if (!this.updateable) return;
     if (this.waveform.playing) this.waveform.player.pause();
-    this.selected = !this.selected;
-    if (this.selected) this.color = this.color.darken(0.5);
-    else this.color = this.color.lighten(1);
+    this.selected = selected ?? !this.selected;
+    if (this.selected) this.color.darken(0.5);
+    else this.color.reset();
+    this.invoke("update", [this]);
+    this.waveform.invoke("regionUpdated", [this]);
+  };
+
+  handleHighlighted = (highlighted?: boolean) => {
+    if (!this.updateable) return;
+    this.highlighted = highlighted ?? !this.highlighted;
+    if (this.highlighted) this.color.darken(0.5);
+    else this.color.reset();
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
   };
   
   setColor(color: string|RgbaColorArray) {
-    this.color = rgba(color);
-    this.handleColor = this.color.darken(0.6);
+    this.color.update(color);
+    this.handleColor.update(color).darken(0.6);
   }
 
   updateColor(color: string|RgbaColorArray) {

@@ -151,6 +151,7 @@ export const AudioModel = types.compose(
           if (reg._ws_region) return;
           self.createWsRegion(reg);
         });
+        console.log("handleNewRegions", self.regs);
       },
 
       findRegionByWsRegion(wsRegion) {
@@ -229,6 +230,8 @@ export const AudioModel = types.compose(
 
         if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
 
+        console.log("createRegion", wsRegion, states, bgColor);
+
         const r = AudioRegionModel.create({
           id: wsRegion.id ? wsRegion.id : guidGenerator(),
           pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
@@ -254,6 +257,8 @@ export const AudioModel = types.compose(
       selectRange(ev, ws_region) {
         const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
 
+        console.log("selectRange", selectedRegions);
+
         ws_region.remove && ws_region.remove();
         if (!selectedRegions.length) return;
         // @todo: needs preventing drawing with ctrl pressed
@@ -270,10 +275,13 @@ export const AudioModel = types.compose(
 
         if (find_r) {
           find_r._ws_region = wsRegion;
+          find_r.updateColor(0.3);
           return find_r;
         }
 
         const states = self.getAvailableStates();
+
+        console.log(states);
 
         if (states.length === 0) {
           // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
@@ -282,6 +290,8 @@ export const AudioModel = types.compose(
 
         const control = self.activeStates()[0];
         const labels = { [control.valueType]: control.selectedValues() };
+
+        console.log({ labels, control });
         const r = self.annotation.createResult(wsRegion, labels, control, self);
 
         r._ws_region = wsRegion;
