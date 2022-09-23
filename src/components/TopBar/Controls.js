@@ -34,7 +34,6 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   
   const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
-  const { commentFormSubmit } = store.commentStore;
   const buttons = [];
 
   const disabled = store.isSubmitting || historySelected;
@@ -74,7 +73,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           if(store.hasInterface("comments:reject") ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), "Please enter a comment before rejecting");
           } else {
-            await commentFormSubmit();
+            console.log("rejecting");
+            await store.commentStore.commentFormSubmit();
             store.rejectAnnotation({});
           }
         }}>
@@ -90,7 +90,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
         <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={async () => {
-          await commentFormSubmit();
+          await store.commentStore.commentFormSubmit();
           store.acceptAnnotation();
         }}>
           {history.canUndo ? "Fix + Accept" : "Accept"}
@@ -105,7 +105,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     buttons.push(
       <ButtonTooltip key="cancel-skip" title="Cancel skip: []">
         <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={async () => {
-          await commentFormSubmit();
+          await store.commentStore.commentFormSubmit();
           store.unskipTask();
         }}>
           Cancel skip
@@ -120,7 +120,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
             if(store.hasInterface("comments:skip") ?? true) {
               buttonHandler(e, () => store.skipTask({}), "Please enter a comment before skipping");
             } else {
-              await commentFormSubmit();
+              await store.commentStore.commentFormSubmit();
               store.skipTask({});
             }
           }}>
@@ -140,7 +140,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         <ButtonTooltip key="submit" title={title}>
           <Elem name="tooltip-wrapper">
             <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={async () => {
-              await commentFormSubmit();
+              await store.commentStore.commentFormSubmit();
               store.submitAnnotation();
             }}>
               Submit
@@ -155,7 +155,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       const button = (
         <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
           <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={async () => {
-            await commentFormSubmit();
+            await store.commentStore.commentFormSubmit();
             store.updateAnnotation();
           }}>
             {isUpdate ? "Update" : "Submit"}
