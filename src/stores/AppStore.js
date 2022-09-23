@@ -433,19 +433,30 @@ export default types
      *
      * @param {*} taskObject
      */
-    function assignTask(taskObject) {
+    function assignTask(taskObject, isPrevious) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
           data: JSON.stringify(taskObject.data),
         };
       }
+
       self.task = Task.create(taskObject);
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
-        self.taskHistory.push({
-          taskId: self.task.id,
-          annotationId: null,
-        });
+        if (isPrevious) {
+          self.taskHistory = [
+            {
+              taskId: self.task.id,
+              annotationId: null,
+            },
+            ...self.taskHistory,
+          ];
+        } else {
+          self.taskHistory.push({
+            taskId: self.task.id,
+            annotationId: null,
+          });
+        }
       }
     }
 
@@ -677,7 +688,7 @@ export default types
       }
     }
 
-    async function postponeTask() {
+    async function postponeTask(type) {
       const annotation = self.annotationStore.selected;
 
       if (!annotation.versions.draft) {
@@ -686,7 +697,7 @@ export default types
       }
 
       await self.submitDraft(annotation, { was_postponed: true });
-      await getEnv(self).events.invoke('nextTask');
+      await getEnv(self).events.invoke(type);
     }
 
     function nextTask() {

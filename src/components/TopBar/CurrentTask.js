@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Button } from "../../common/Button/Button";
 import { Block, Elem } from "../../utils/bem";
 import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
@@ -19,6 +19,11 @@ export const CurrentTask = observer(({ store }) => {
     && !store.hasInterface('review')
     && store.hasInterface("postpone");
 
+  const canPrepone = isFF(FF_DEV_3034)
+    && !store.canGoPrevTask
+    && !store.hasInterface('review')
+    && store.hasInterface("postpone");
+
   return (
     <Elem name="section">
       <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
@@ -35,10 +40,14 @@ export const CurrentTask = observer(({ store }) => {
             <Elem
               tag={Button}
               name="prevnext"
-              mod={{ prev: true, disabled: !store.canGoPrevTask }}
+              mod={{
+                prev: true,
+                disabled: !store.canGoPrevTask && !canPrepone,
+                postpone: !store.canGoPrevTask && canPrepone,
+              }}
               type="link"
-              disabled={!historyEnabled || !store.canGoPrevTask}
-              onClick={store.prevTask}
+              disabled={!historyEnabled || !store.canGoPrevTask && !canPrepone}
+              onClick={store.canGoPrevTask ? store.prevTask : () => store.postponeTask('prevTask')}
               style={{ background: 'none', backgroundColor: 'none' }}
             />
             <Elem
@@ -51,7 +60,7 @@ export const CurrentTask = observer(({ store }) => {
               }}
               type="link"
               disabled={!store.canGoNextTask && !canPostpone}
-              onClick={store.canGoNextTask ? store.nextTask : store.postponeTask}
+              onClick={store.canGoNextTask ? store.nextTask : () => store.postponeTask('nextTask')}
               style={{ background: 'none', backgroundColor: 'none' }}
             />
           </Elem>
