@@ -59,7 +59,7 @@ class RichTextPieceView extends Component {
     const { item } = this.props;
     const target = event.target;
     const region = this._determineRegion(event.target);
-
+    
     if (isFF(FF_DEV_2786) && event.buttons === 1 && region?.selected) {
       const doc = item.visibleDoc;
 
@@ -110,7 +110,7 @@ class RichTextPieceView extends Component {
 
     const dragTarget = item.isFreezingEdge && event.path ? event.path[1] : event.target;
 
-    document.addEventListener("mouseup", this._outOfBoundsDrag);
+    root.addEventListener("mouseleave", this._outOfBoundsDrag);
     this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
     this._setSelectionStyle(dragTarget, root, doc);
     item.initializedDrag = true;
@@ -124,7 +124,7 @@ class RichTextPieceView extends Component {
     if (item.isDragging && item.isActive) {
       event.preventDefault();
 
-      if (!item.initializedDrag) {
+      if (!item.initializedDrag && item.isFreezingEdge) {
         this._initializeDrag(event);
       } else {
         [this.adjustedOffsets, this.adjustedRange] = this._highlightSelection(
@@ -173,28 +173,26 @@ class RichTextPieceView extends Component {
     return [globalOffsets, range];
   };
 
-  _outOfBoundsDrag = (ev) => {
+  _outOfBoundsDrag = () => {
     const { item } = this.props;
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
     const region = this.draggableRegion;
+    const doc = root.ownerDocument;
+    const selection = doc.defaultView.getSelection();
 
-    document.removeEventListener("mouseup", this._outOfBoundsDrag);
+    root.removeEventListener("mouseleave", this._outOfBoundsDrag);
 
-    if (!root.contains(ev.target)) {
-      region.selectRegion();
-      region.annotation.setDragMode(false);
-      region.removeClass(region._stylesheet.state.dragging);
+    region.selectRegion();
+    region.annotation.setDragMode(false);
+    region.removeClass(region._stylesheet.state.dragging);
 
-      item.isDragging = false;
-      item.initializedDrag = false;
-      const doc = root.ownerDocument;
-      const selection = doc.defaultView.getSelection();
+    item.isDragging = false;
+    item.initializedDrag = false;
 
-      selection.empty();
-      selection.removeAllRanges();
-      this._removeSelectionStyle();
-    }
+    selection.empty();
+    selection.removeAllRanges();
+    this._removeSelectionStyle();
   };
 
   _onDragStop = () => {
@@ -572,7 +570,7 @@ class RichTextPieceView extends Component {
 
       val = htmlEscape(val)
         .split(/\n|\r/g)
-        .map(s => `<span class="${cnLine}">${s}</span>`)
+        .map(s => `<span draggable="false" class="${cnLine}">${s}</span>`)
         .join(newLineReplacement);
     }
 

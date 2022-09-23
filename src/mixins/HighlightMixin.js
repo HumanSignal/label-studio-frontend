@@ -315,7 +315,6 @@ const createSpanStylesheet = (document, identifier, color) => {
     [classNames.active]: `
       color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
       ${variables.color}: ${initialActiveColor};
-      cursor: move;
     `,
     [classNames.highlighted]: `
       position: relative;
