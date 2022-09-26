@@ -191,8 +191,8 @@ const HtxVideoView = ({ item }) => {
 
   // VIDEO EVENT HANDLERS
   const handleFrameChange = useCallback((position) => {
-    setPosition(position);
     item.setOnlyFrame(position);
+    setPosition(position);
   }, [item, setPosition]);
 
   const handleVideoLoad = useCallback(({ length, videoDimensions }) => {
@@ -219,7 +219,11 @@ const HtxVideoView = ({ item }) => {
   const handlePlay = useCallback(() => {
     setPlaying((playing) => {
       if (playing === false) {
-        item.triggerSyncPlay();
+        if (item.synced) {
+          item.triggerSyncPlay();
+        } else {
+          item.handleSyncPlay();
+        }
         return true;
       }
       return playing;
@@ -229,7 +233,11 @@ const HtxVideoView = ({ item }) => {
   const handlePause = useCallback(() => {
     setPlaying((playing) => {
       if (playing === true) {
-        item.triggerSyncPause();
+        if (item.synced) {
+          item.triggerSyncPause();
+        } else {
+          item.handleSyncPause();
+        }
         return false;
       }
       return playing;
