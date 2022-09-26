@@ -42,7 +42,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
-    if(addedCommentThisSession){
+    if(!inputRef.current || addedCommentThisSession){
       callback();
     } else if((currentComment ?? "").trim()) {
       e.preventDefault();
