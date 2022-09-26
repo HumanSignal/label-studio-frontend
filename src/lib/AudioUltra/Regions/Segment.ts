@@ -80,7 +80,7 @@ export class Segment extends Events<SegmentEvents> {
     this.waveform = waveform;
     this.visualizer = visualizer;
     this.controller = controller;
-    this.handleWidth = 4;
+    this.handleWidth = 2;
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };

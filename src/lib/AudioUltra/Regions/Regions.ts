@@ -23,6 +23,7 @@ export class Regions {
   private locked = false;
   private hoveredRegions = new Set<Segment>();
   private defaultColor = rgba("#787878");
+  private activeColor = rgba("#787878");
   private createable = true;
   private updateable = true;
   private deleteable = true;
@@ -136,6 +137,14 @@ export class Regions {
 
     this.regions.forEach(region => region.destroy());
     this.regions = [];
+  }
+
+  setActiveColor(color: string|RgbaColorArray) {
+    this.activeColor = rgba(color);
+  }
+
+  resetActiveColor() {
+    this.activeColor = this.defaultColor.clone();
   }
 
   get list() {
