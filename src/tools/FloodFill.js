@@ -34,6 +34,7 @@ const _Tool = types
   .model("FloodFillTool", {
     threshold: types.optional(types.number, DEF_THRESHOLD),
     group: "segmentation",
+    isDrawingTool: true,
   })
   .views(self => ({
     get viewClass() {
