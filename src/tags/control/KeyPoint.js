@@ -42,7 +42,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     type: "keypoint",
-
+    isDrawingTool: true,
     // tools: types.array(BaseTool)
   })
   .views(self => ({
