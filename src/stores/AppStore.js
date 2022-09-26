@@ -262,6 +262,18 @@ export default types
       return self.interfaces.push(name);
     }
 
+    function toggleInterface(name, value) {
+      const index = self.interfaces.indexOf(name);
+      const newValue = value ?? (index < 0);
+
+      if (newValue) {
+        if (index < 0) self.interfaces.push(name);
+      } else {
+        if (index < 0) return;
+        self.interfaces.splice(index, 1);
+      }
+    }
+
     function toggleComments(state) {
       return (self.showComments = state);
     }
@@ -705,6 +717,7 @@ export default types
       setFlags,
       addInterface,
       hasInterface,
+      toggleInterface,
 
       afterCreate,
       assignTask,
