@@ -169,7 +169,23 @@ const Model = types
         return self.touches.length;
       },
       get bboxCoords() {
-        if (!self.imageData) return null;
+        if (!self.imageData) {
+          const points = { x: [], y:[] };
+
+          for(let i = 0; i in (self.touches?.[0]?.points ?? []); i += 2) {
+            const curX = (self.touches?.[0]?.points ?? [])[i];
+            const curY = (self.touches?.[0]?.points ?? [])[i+1];
+
+            points.x.push(curX);
+            points.y.push(curY);
+          }
+          return {
+            left: Math.min(...points.x),
+            top: Math.min(...points.y),
+            right: Math.max(...points.x),
+            bottom: Math.max(...points.y),
+          };
+        }
         const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
 
         if (!imageBBox) return null;

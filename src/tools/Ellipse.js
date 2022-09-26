@@ -9,6 +9,7 @@ const _Tool = types
   .model("EllipseTool", {
     group: "segmentation",
     shortcut: "O",
+    isDrawingTool: true,
   })
   .views(self => {
     const Super = {

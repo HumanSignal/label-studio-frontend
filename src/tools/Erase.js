@@ -50,6 +50,7 @@ const _Tool = types
   .model("EraserTool", {
     strokeWidth: types.optional(types.number, 10),
     group: "segmentation",
+    isDrawingTool: true,
   })
   .volatile(() => ({
     index: 9999,
