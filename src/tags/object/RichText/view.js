@@ -517,6 +517,7 @@ class RichTextPieceView extends Component {
     }
   }
 
+  // @todo block Ctrl+Z in editing mode
   _passHotkeys = e => {
     const props = "key code keyCode location ctrlKey shiftKey altKey metaKey".split(" ");
     const init = {};
@@ -528,34 +529,55 @@ class RichTextPieceView extends Component {
     document.dispatchEvent(internal);
   }
 
+  _getEventHandlers = (asProps = false) => {
+    const forIframe = !asProps;
+    const handlers = {
+      Click: [this._onRegionClick, true],
+      MouseUp: [this._onMouseUp, false],
+      MouseOver: [this._onRegionMouseOver, true],
+    };
+
+    if (isFF(FF_DEV_2786)) {
+      Object.assign(handlers, {
+        MouseDown: [this._onMouseDown, true],
+        MouseMove: [this._onMouseMove, true],
+      });
+    }
+
+    if (forIframe) {
+      Object.assign(handlers, {
+        KeyDown: [this._passHotkeys, false],
+        KeyUp: [this._passHotkeys, false],
+        KeyPress: [this._passHotkeys, false],
+      });
+    }
+
+    if (asProps) {
+      const props = {};
+
+      for (const name in handlers) {
+        const [handler, capture] = handlers[name];
+
+        props["on" + name + (capture ? "Capture" : "")] = handler;
+      }
+      return props;
+    }
+
+    return handlers;
+  }
+
   onIFrameLoad = () => {
     const { item } = this.props;
     const iframe = item.visibleNodeRef.current;
     const doc = iframe?.contentDocument;
     const body = doc?.body;
     const htmlEl = body?.parentElement;
-    const eventHandlers = isFF(FF_DEV_2786) ? {
-      click: [this._onRegionClick, true],
-      keydown: [this._passHotkeys, false],
-      keyup: [this._passHotkeys, false],
-      keypress: [this._passHotkeys, false],
-      mousedown: [this._onMouseDown, true],
-      mouseup: [this._onMouseUp, false],
-      mousemove: [this._onMouseMove, true],
-      mouseover: [this._onRegionMouseOver, true],
-    } : {
-      click: [this._onRegionClick, true],
-      keydown: [this._passHotkeys, false],
-      keyup: [this._passHotkeys, false],
-      keypress: [this._passHotkeys, false],
-      mouseup: [this._onMouseUp, false],
-      mouseover: [this._onRegionMouseOver, true],
-    };
+    const eventHandlers = this._getEventHandlers(false);
 
     if (!body) return;
 
     for (const event in eventHandlers) {
-      body.addEventListener(event, ...eventHandlers[event]);
+      body.addEventListener(event.toLowerCase(), ...eventHandlers[event]);
     }
 
     // @todo remove this, project-specific
@@ -601,17 +623,7 @@ class RichTextPieceView extends Component {
     }
 
     if (item.inline) {
-      const eventHandlers = isFF(FF_DEV_2786) ? {
-        onClickCapture: this._onRegionClick,
-        onMouseUp: this._onMouseUp,
-        onMouseDown: this._onMouseDown,
-        onMouseMove: this._onMouseMove,
-        onMouseOverCapture: this._onRegionMouseOver,
-      } : {
-        onClickCapture: this._onRegionClick,
-        onMouseUp: this._onMouseUp,
-        onMouseOverCapture: this._onRegionMouseOver,
-      };
+      const eventHandlers = this._getEventHandlers(true);
 
       return (
         <Block
