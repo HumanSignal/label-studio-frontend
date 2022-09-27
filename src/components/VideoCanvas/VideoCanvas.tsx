@@ -4,6 +4,7 @@ import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
 import { VirtualCanvas } from "./VirtualCanvas";
 import { VirtualVideo } from "./VirtualVideo";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 type VideoProps = {
   src: string,
@@ -397,11 +398,28 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [zoom, canvasWidth, canvasHeight, videoDimensions]);
 
   useEffect(() => {
+    const loadingFailedCount = 300;
     let isLoaded = false;
+    let timeout: NodeJS.Timeout | undefined = undefined;
+    let readyState = 0;
+    let loadAttempts = 0;
 
     const checkVideoLoaded = () => {
       if (isLoaded) return;
 
+      if (loadAttempts > loadingFailedCount) {
+        const modalExists = document.querySelector('.ant-modal');
+
+        if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        setLoading(false);
+        return;
+      }
+      if (videoRef.current) {
+        readyState = videoRef.current.readyState;
+      }
+      if (readyState === 0) {
+        loadAttempts++;
+      }
       if (videoRef.current?.readyState === 4) {
         isLoaded = true;
         const video = videoRef.current;
@@ -430,10 +448,16 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         return;
       }
 
-      setTimeout(checkVideoLoaded, 10);
+      timeout = setTimeout(checkVideoLoaded, 10);
     };
 
     checkVideoLoaded();
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
   }, []);
 
 
