@@ -336,10 +336,7 @@ export const AudioModel = types.compose(
 
         options.labels = region.labels?.length ? region.labels : undefined;
 
-        console.log("createWsRegion", region);
         const r = self._ws.addRegion(options, false);
-
-        console.log("createWsRegion", r);
 
         region._ws_region = r;
       },
@@ -355,6 +352,7 @@ export const AudioModel = types.compose(
       onLoad(ws) {
         self._ws = ws;
 
+        console.log(self.annotation);
         setTimeout(() => {
           self.needsUpdate();
         });
