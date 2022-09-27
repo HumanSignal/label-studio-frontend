@@ -4,7 +4,12 @@ import { Visualizer } from "../Visual/Visualizer";
 import { Regions } from "./Regions";
 import { Segment, SegmentGlobalEvents, SegmentOptions } from "./Segment";
 
-export type RegionGlobalEvents = SegmentGlobalEvents
+export interface RegionGlobalEvents extends SegmentGlobalEvents {
+  regionCreated: (region: Region|Segment) => void;
+  regionUpdated: (region: Region|Segment) => void;
+  regionUpdatedEnd: (region: Region|Segment) => void;
+  regionRemoved: (region: Region|Segment) => void;
+}
 
 export interface RegionOptions extends SegmentOptions {
   labels?: string[]; 
@@ -20,6 +25,10 @@ export class Region extends Segment {
     this.labels = options.labels ?? this.labels;
     this.color = options.color ? rgba(options.color) : this.color;
     this.handleColor = this.color.clone().darken(0.6);
+  }
+
+  get isRegion() {
+    return true;
   }
 
   toJSON() {

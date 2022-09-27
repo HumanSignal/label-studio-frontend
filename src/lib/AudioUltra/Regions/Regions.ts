@@ -7,6 +7,11 @@ import { Waveform } from "../Waveform";
 import { Region, RegionOptions } from "./Region";
 import { Segment } from "./Segment";
 
+export interface RegionsGlobalEvents { 
+  beforeRegionsDraw: (regions: Regions) => void;
+  afterRegionsDraw: (regions: Regions) => void;
+}
+
 export interface RegionsOptions {
   regions?: RegionOptions[];
   updateable?: boolean;
@@ -16,17 +21,18 @@ export interface RegionsOptions {
 }
 
 export class Regions {
-  private regions: Region[] = [];
+  private regions: (Region|Segment)[] = [];
   private waveform: Waveform;
   private visualizer: Visualizer;
   private initialRegions: RegionOptions[];
   private locked = false;
-  private hoveredRegions = new Set<Segment>();
+  private hoveredRegions = new Set<Region|Segment>();
   private defaultColor = rgba("#787878");
-  private activeColor = rgba("#787878");
+  private drawingColor = rgba("#787878");
   private createable = true;
   private updateable = true;
   private deleteable = true;
+  private drawableTarget = Segment;
 
   layerGroup: LayerGroup;
 
@@ -70,11 +76,25 @@ export class Regions {
     this.regions.forEach(region => region.render());
   }
 
-  addRegion(options: RegionOptions, render = true) {
-    const region = new Region(options, this.waveform, this.visualizer, this);
+  regionDrawableTarget() {
+    this.drawableTarget = Region;
+  }
 
-    if (render) {
-      this.waveform.invoke("beforeRegionCreated", [region]);
+  segmentDrawableTarget() {
+    this.drawableTarget = Segment;
+  }
+
+  resetDrawableTarget() {
+    this.segmentDrawableTarget();
+  }
+
+  addRegion(options: RegionOptions, render = true) {
+    let region: Region|Segment;
+
+    if (options.labels?.length || this.drawableTarget === Region) {
+      region = new Region(options, this.waveform, this.visualizer, this);
+    } else {
+      region = new Segment(options, this.waveform, this.visualizer, this);
     }
 
     this.regions.push(region);
@@ -139,12 +159,12 @@ export class Regions {
     this.regions = [];
   }
 
-  setActiveColor(color: string|RgbaColorArray) {
-    this.activeColor = rgba(color);
+  setDrawingColor(color: string|RgbaColorArray) {
+    this.drawingColor = rgba(color);
   }
 
-  resetActiveColor() {
-    this.activeColor = this.defaultColor.clone();
+  resetDrawingColor() {
+    this.drawingColor = this.defaultColor.clone();
   }
 
   get list() {
@@ -187,8 +207,12 @@ export class Regions {
 
     this.lock();
 
-    let region: Region;
+    let region: Region|Segment;
     let startX: number;
+
+
+    this.waveform.invoke("beforeRegionsDraw", [this]);
+
     const addRegion = () => {
       const { container, zoomedWidth } = this.visualizer;
       const { duration } = this.waveform;
@@ -198,13 +222,14 @@ export class Regions {
       const start = pixelsToTime(startX, zoomedWidth, duration);
       const end = pixelsToTime(startX, zoomedWidth, duration);
 
-      // @todo - handle autoPlayNewSegments option
-      // - handle autoSelectNewSegments option
       region = this.addRegion({
         start,
         end,
-        color: this.defaultColor.toString(),
+        color: this.drawingColor.toString(),
         selected: false,
+        // @todo - handle autoPlayNewSegments option
+        // - handle autoSelectNewSegments option
+        //
       });
     };
 
@@ -232,6 +257,8 @@ export class Regions {
       } else if(region) {
         this.waveform.invoke("regionCreated", [region]);
       }
+
+      this.waveform.invoke("afterRegionsDraw", [this]);
       this.unlock();
     };
 
@@ -301,7 +328,7 @@ export class Regions {
    * @param region Regions to compare against
    * @returns True if cursor is within the region bounds
    */
-  private cursorInRegion(e: MouseEvent, region: Region) {
+  private cursorInRegion(e: MouseEvent, region: Segment) {
     const { xStart, width } = region;
     const { container, timelinePlacement, timelineHeight = 0, height } = this.visualizer;
     const timelineTop = timelinePlacement === defaults.timelinePlacement;

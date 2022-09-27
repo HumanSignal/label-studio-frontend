@@ -28,6 +28,8 @@ export const AudioUltraRegionModel = types
         deletable: !self.readonly,
       };
 
+      console.log(reg);
+
       return reg;
     },
   }))

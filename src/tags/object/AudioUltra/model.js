@@ -169,14 +169,14 @@ export const AudioModel = types.compose(
         return self.regs.find(r => r._ws_region?.id === wsRegion?.id);
       },
 
-      getRegionColor(wsRegion) {
-        const region = self.findRegionByWsRegion(wsRegion);
+      getRegionColor() {
+        const control = self.activeStates()[0];
 
-        if (region) {
-          return region.getColor();
+        if (control) {
+          return control.selectedColor;
         }
 
-        return "#ccc";
+        return null;
       },
 
       onHotKey(e) {
@@ -334,13 +334,20 @@ export const AudioModel = types.compose(
       createWsRegion(region) {
         const options = region.wsRegionOptions();
 
+        options.labels = region.labels?.length ? region.labels : undefined;
+
+        console.log("createWsRegion", region);
         const r = self._ws.addRegion(options, false);
+
+        console.log("createWsRegion", r);
 
         region._ws_region = r;
       },
 
       updateWsRegion(region) {
         const options = region.wsRegionOptions();
+
+        options.labels = region.labels?.length ? region.labels : undefined;
 
         self._ws.updateRegion(options, false);
       },

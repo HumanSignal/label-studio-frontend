@@ -6,8 +6,7 @@ import { CursorSymbol } from "../Cursor/Cursor";
 import { Layer } from "../Visual/Layer";
 import { Visualizer } from "../Visual/Visualizer";
 import { Waveform } from "../Waveform";
-import { Region } from "./Region";
-import { Regions } from "./Regions";
+import type { Regions } from "./Regions";
 
 export interface SegmentOptions {
   id?: string;
@@ -21,11 +20,10 @@ export interface SegmentOptions {
 }
 
 export interface SegmentGlobalEvents {
-  beforeRegionCreated: (region: Region|Segment) => void;
-  regionCreated: (region: Region|Segment) => void;
-  regionUpdated: (region: Region|Segment) => void;
-  regionUpdatedEnd: (region: Region|Segment) => void;
-  regionRemoved: (region: Region|Segment) => void;
+  regionCreated: (region: Segment) => void;
+  regionUpdated: (region: Segment) => void;
+  regionUpdatedEnd: (region: Segment) => void;
+  regionRemoved: (region: Segment) => void;
 }
 
 interface SegmentEvents {
@@ -86,6 +84,10 @@ export class Segment extends Events<SegmentEvents> {
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
 
     this.initialize();
+  }
+
+  get isRegion() {
+    return false;
   }
 
   update(options: Partial<SegmentOptions>) {

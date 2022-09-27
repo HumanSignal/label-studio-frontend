@@ -5,11 +5,13 @@ import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
 import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
 import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
-import { Regions, RegionsOptions } from "./Regions/Regions";
+import { Regions,RegionsGlobalEvents,  RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
 import { Padding } from "./Common/Style";
 import { getCursorTime } from "./Common/Utils";
 import { PlayheadOptions } from "./Visual/PlayHead";
+import { RgbaColorArray } from "./Common/Color";
+
 
 export interface WaveformOptions {
   /** URL of an audio or video */
@@ -140,7 +142,7 @@ export interface WaveformOptions {
     denoize: boolean,
   };
 }
-interface WaveformEventTypes extends RegionGlobalEvents {
+interface WaveformEventTypes extends RegionGlobalEvents, RegionsGlobalEvents {
   "load": () => void;
   "resize": (wf: Waveform, width: number, height: number) => void;
   "pause": () => void;
@@ -286,6 +288,14 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.media.destroy();
     this.cursor.destroy();
     this.tooltip.destroy();
+  }
+
+  setRegionDrawingColor(color?: string|RgbaColorArray) {
+    if (color) {
+      this.regions.setDrawingColor(color);
+    } else {
+      this.regions.resetDrawingColor();
+    }
   }
 
   addRegion(options: RegionOptions, render = true) {

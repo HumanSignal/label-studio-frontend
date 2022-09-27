@@ -4,6 +4,7 @@ import { useWaveform } from "../../../lib/AudioUltra/react";
 import { Controls } from "../../../components/Timeline/Controls";
 import { Region } from "../../../lib/AudioUltra/Regions/Region";
 import { Segment } from "../../../lib/AudioUltra/Regions/Segment";
+import { Regions } from "../../../lib/AudioUltra/Regions/Regions";
 
 interface AudioUltraProps {
   item: any;
@@ -37,27 +38,40 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   });
 
   useEffect(() => {
+    const updateBeforeRegionDraw = (regions: Regions) => {
+      const regionColor = item.getRegionColor();
+
+      if (regionColor) {
+        regions.regionDrawableTarget();
+        regions.setDrawingColor(regionColor);
+      }
+    };
+
+    const updateAfterRegionDraw = (regions: Regions) => {
+      regions.resetDrawableTarget();
+      regions.resetDrawingColor();
+    };
+
     const createRegion = (region: Region|Segment) => {
+      // @todo - create and add new region, or segment and listen to updates for changes to label selection when either
+      // are selected
+      console.log(region);
       item.addRegion(region);
     };
 
-    const updateRegionColor = (region: Region|Segment) => {
-      const regionColor = item.getRegionColor(region);
-
-      console.log("updateRegion", regionColor);
-      // region.setColor();
-    };
 
     const updateRegion = (region: Region|Segment) => {
       item.updateRegion(region);
     };
 
-    waveform.current?.on("beforeRegionCreated", updateRegionColor);
+    waveform.current?.on("beforeRegionsDraw", updateBeforeRegionDraw);
+    waveform.current?.on("afterRegionsDraw", updateAfterRegionDraw);
     waveform.current?.on("regionCreated", createRegion);
     waveform.current?.on("regionUpdatedEnd", updateRegion);
 
     return () => {
-      waveform.current?.off("beforeRegionCreated", updateRegionColor);
+      waveform.current?.off("beforeRegionsDraw", updateBeforeRegionDraw);
+      waveform.current?.off("afterRegionsDraw", updateAfterRegionDraw);
       waveform.current?.off("regionCreated", createRegion);
       waveform.current?.off("regionUpdatedEnd", updateRegion);
     };
