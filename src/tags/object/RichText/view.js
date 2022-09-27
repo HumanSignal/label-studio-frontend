@@ -647,6 +647,7 @@ class RichTextPieceView extends Component {
 
   render() {
     const { item } = this.props;
+    const style = item.isEditing ? { outline: "1px solid black" } : {};
 
     if (!item._value) return null;
 
@@ -684,6 +685,7 @@ class RichTextPieceView extends Component {
             className="htx-richtext"
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
+            style={style}
           />
           <Elem
             key="orig"
@@ -707,9 +709,12 @@ class RichTextPieceView extends Component {
           tag={ObjectTag}
           item={item}
         >
-          <Elem name="loading" ref={this.loadingRef}>
-            <LoadingOutlined />
-          </Elem>
+          {/* // @todo fix it someday, on rerender it should be hidden */}
+          {false && (!item.isLoaded || !item.isReady) && (
+            <Elem name="loading" ref={this.loadingRef}>
+              <LoadingOutlined />
+            </Elem>
+          )}
 
           <Elem
             key="root"
@@ -724,6 +729,7 @@ class RichTextPieceView extends Component {
             className="htx-richtext"
             srcDoc={val}
             onLoad={this.onIFrameLoad}
+            style={style}
           />
           <Elem
             key="orig"
