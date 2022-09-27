@@ -500,6 +500,13 @@ const useWaveSurfer = ({
          * Add region to wave
          */
         wsi.on("region-created", (reg) => {
+          const history = data.annotation?.history;
+
+          // if user draw new region the final state will be in `onUpdateEnd`
+          // so we should skip history action in `addRegion`;
+          // during annotation init this step will be rewritten at the end
+          // during undo/redo this action will be skipped the same way
+          history?.setSkipNextUndoState();
           const region = onAddRegion?.(reg);
 
           if (!region) {
