@@ -529,12 +529,39 @@ class RichTextPieceView extends Component {
     document.dispatchEvent(internal);
   }
 
+  _recalcOffsets = () => {
+    const { item } = this.props;
+    const root = item.visibleRoot;
+
+    item.regs.forEach(reg => {
+      const spans = reg._spans;
+
+      if (!spans.some(span => span.isConnected)) {
+        console.log("DELETE");
+        return;
+      }
+
+      const lastSpan = spans[spans.length - 1];
+      const stored = reg.globalOffsets;
+      // @todo more correct is to find min of every span's start and max of ends
+      const actual = [
+        findGlobalOffset(spans[0], 0, root),
+        findGlobalOffset(lastSpan, lastSpan.textContent.length, root),
+      ];
+
+      if (actual[0] !== stored.start || actual[1] !== stored.end) {
+        reg.updateGlobalOffsets(...actual);
+      }
+    });
+  }
+
   _getEventHandlers = (asProps = false) => {
     const forIframe = !asProps;
     const handlers = {
       Click: [this._onRegionClick, true],
       MouseUp: [this._onMouseUp, false],
       MouseOver: [this._onRegionMouseOver, true],
+      Input: [this._recalcOffsets, true],
     };
 
     if (isFF(FF_DEV_2786)) {
