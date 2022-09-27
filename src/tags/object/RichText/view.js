@@ -555,6 +555,20 @@ class RichTextPieceView extends Component {
     });
   }
 
+  _pasteOnlyText = (e) => {
+    e.preventDefault();
+
+    const data = e.clipboardData || window.clipboardData;
+    const paste = data.getData('text');
+    const doc = this.props.item.visibleDoc;
+    const selection = doc.defaultView.getSelection();
+
+    if (!selection.rangeCount) return;
+    selection.deleteFromDocument();
+    selection.getRangeAt(0).insertNode(document.createTextNode(paste));
+    selection.collapseToEnd();
+  }
+
   _getEventHandlers = (asProps = false) => {
     const forIframe = !asProps;
     const handlers = {
@@ -562,6 +576,7 @@ class RichTextPieceView extends Component {
       MouseUp: [this._onMouseUp, false],
       MouseOver: [this._onRegionMouseOver, true],
       Input: [this._recalcOffsets, true],
+      Paste: [this._pasteOnlyText, true],
     };
 
     if (isFF(FF_DEV_2786)) {
